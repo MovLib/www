@@ -373,6 +373,24 @@ location ^~ <?= $r("/company") ?> {
     try_files $movlib_cache @php;
   }
 
+  location ~* "^<?= $rp("/company/{0}/movies", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Company\\Movies";
+    set $movlib_company_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $rp("/company/{0}/series", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Company\\Series";
+    set $movlib_company_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $rp("/company/{0}/releases", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Company\\Releases";
+    set $movlib_company_id $1;
+    try_files $movlib_cache @php;
+  }
+
   #
   # ---------------------------------------- Company Photo
   #

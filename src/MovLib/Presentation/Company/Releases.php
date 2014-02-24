@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Company;
 
 /**
- * Allows editing a company
+ * Releases of a company.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -26,10 +26,10 @@ namespace MovLib\Presentation\Company;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Edit extends \MovLib\Presentation\Company\AbstractBase {
+class Releases extends \MovLib\Presentation\Company\AbstractBase {
 
   /**
-   * Instantiate new edit company presentation.
+   * Instantiate new releases presentation of a company.
    *
    * @global \MovLib\Data\I18n $i18n
    */
@@ -38,10 +38,10 @@ class Edit extends \MovLib\Presentation\Company\AbstractBase {
 
     parent::__construct();
 
-    $this->initLanguageLinks("/company/{0}/edit", [ $this->company->id ]);
-    $this->breadcrumbTitle = $i18n->t("Edit");
+    $this->initLanguageLinks("/company/{0}/releases", [ $this->company->id ], true);
+    $this->breadcrumbTitle = $i18n->t("Releases");
 
-    $title  = $i18n->t("Edit {company_name}");
+    $title  = $i18n->t("Releases of {company_name}");
     $search = "{company_name}";
     $this->initPage(str_replace($search, $this->company->name, $title));
     $this->pageTitle = str_replace($search, "<a href='{$this->company->route}'>{$this->company->name}</a>", $title);
@@ -49,6 +49,6 @@ class Edit extends \MovLib\Presentation\Company\AbstractBase {
 
   protected function getPageContent() {
     global $i18n;
-    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("edit company") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("releases") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
   }
 }

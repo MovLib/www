@@ -38,6 +38,7 @@ class Discussion extends \MovLib\Presentation\Company\AbstractBase {
 
     parent::__construct();
 
+    $this->initLanguageLinks("/company/{0}/discussion", [ $this->company->id ]);
     $this->breadcrumbTitle = $i18n->t("Discussion");
 
     $title  = $i18n->t("Discuss {company_name}");

@@ -38,6 +38,7 @@ class History extends \MovLib\Presentation\Company\AbstractBase {
 
     parent::__construct();
 
+    $this->initLanguageLinks("/company/{0}/history", [ $this->company->id ]);
     $this->breadcrumbTitle = $i18n->t("History");
 
     $title  = $i18n->t("History of {company_name}");

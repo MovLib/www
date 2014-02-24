@@ -38,6 +38,7 @@ class Delete extends \MovLib\Presentation\Company\AbstractBase {
 
     parent::__construct();
 
+    $this->initLanguageLinks("/company/{0}/delete", [ $this->company->id ]);
     $this->breadcrumbTitle = $i18n->t("Delete");
 
     $title  = $i18n->t("Delete {company_name}");

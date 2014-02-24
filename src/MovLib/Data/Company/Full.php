@@ -185,6 +185,97 @@ class Full extends \MovLib\Data\Company\Company {
   }
 
   /**
+   * The count of movies this company was involved.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return integer
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getMovieCount() {
+    global $db;
+    return $db->query(
+      "SELECT count(DISTINCT `movie_id`) as `count` FROM `movies_crew` WHERE `company_id` = ?", "i", [ $this->id ]
+    )->fetch()["count"];
+  }
+
+  /**
+   * Get the mysqli result for all movies this company was involved.
+   *
+   * @todo Implement
+   * @global \MovLib\Data\Database $db
+   * @return \mysqli_result
+   *   The mysqli result for all movies of this company.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getMovieResult() {
+    return null;
+  }
+
+  /**
+   * The count of master releases of this company.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return integer
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getReleasesCount() {
+    global $db;
+    return $db->query(
+      "SELECT count(*) as `count` FROM `master_releases_labels` WHERE `company_id` = ?", "i", [ $this->id ]
+    )->fetch()["count"];
+  }
+
+  /**
+   * Get the mysqli result for all releases this company was involved.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return \mysqli_result
+   *   The mysqli result for all releases of this company.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getReleasesResult() {
+    global $db;
+    return $db->query(
+      "SELECT
+        `master_releases_labels`.`company_id` AS `company_id`,
+        `master_releases_labels`.`master_release_id` AS `master_release_id`
+      FROM `master_releases_labels'
+        INNER JOIN `title` AS `master_releases_title` ON `master_releases`.`id` = `master_releases_labels`.`master_release_id`
+      WHERE `master_releases_labels`.`company_id` = ?
+      ORDER BY `master_releases`.`release_date` DESC",
+      "i",
+      [ $this->id ]
+    )->get_result();
+  }
+
+  /**
+   * The count of series this company was involved.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return integer
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getSeriesCount() {
+    global $db;
+    return $db->query(
+      "SELECT count(DISTINCT `series_id`) as `count` FROM `episode_crew` WHERE `company_id` = ?", "i", [ $this->id ]
+    )->fetch()["count"];
+  }
+
+  /**
+   * Get the mysqli result for all series this company was involved.
+   *
+   * @todo Implement
+   * @global \MovLib\Data\Database $db
+   * @return \mysqli_result
+   *   The mysqli result for all series of this company.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getSeriesResult() {
+    return null;
+  }
+
+  /**
    * @inheritdoc
    */
   protected function init() {
