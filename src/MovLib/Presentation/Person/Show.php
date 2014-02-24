@@ -42,16 +42,12 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
   /**
    * Instantiate new person presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @throws \MovLib\Presentation\Error\NotFound
    * @throws \LogicException
    */
   public function __construct() {
-    global $i18n, $kernel;
     parent::__construct();
-    $this->initPage($this->person->name);
-    $routeArgs = [$this->person->id ];
+    $routeArgs = [ $this->person->id ];
     $this->initLanguageLinks("/person/{0}", $routeArgs);
     array_pop($this->breadcrumb->menuitems);
 
