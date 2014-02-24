@@ -1652,6 +1652,47 @@ ROW_FORMAT = COMPRESSED;
 
 SHOW WARNINGS;
 
+-- -----------------------------------------------------
+-- Table `movlib`.`episodes_crew`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`episodes_crew` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The crew ID within the episode.',
+  `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique series ID.',
+  `seasons_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season number within a series.',
+  `position` SMALLINT UNSIGNED NOT NULL COMMENT 'The episode number within a season.',
+  `job_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique job ID.',
+  `company_id` BIGINT UNSIGNED NULL COMMENT 'The unique company ID.',
+  `person_id` BIGINT UNSIGNED NULL COMMENT 'The unique person ID.',
+  INDEX `fk_episodes_crew_seasons_episodes.idx` (`series_id` ASC, `seasons_number` ASC, `position` ASC),
+  PRIMARY KEY (`id`, `series_id`, `seasons_number`, `position`),
+  INDEX `fk_episodes_crew_jobs_idx` (`job_id` ASC),
+  INDEX `fk_episodes_crew_companies_idx` (`company_id` ASC),
+  INDEX `fk_episodes_crew_persons_idx` (`person_id` ASC),
+  CONSTRAINT `fk_episodes_crew_seasons_episodes`
+    FOREIGN KEY (`series_id` , `seasons_number` , `position`)
+    REFERENCES `movlib`.`seasons_episodes` (`series_id` , `seasons_number` , `position`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_episodes_crew_jobs`
+    FOREIGN KEY (`job_id`)
+    REFERENCES `movlib`.`jobs` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_episodes_crew_companies`
+    FOREIGN KEY (`company_id`)
+    REFERENCES `movlib`.`companies` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_episodes_crew_persons`
+    FOREIGN KEY (`person_id`)
+    REFERENCES `movlib`.`persons` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains the crew of a episode.';
+
+SHOW WARNINGS;
+
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
