@@ -30,7 +30,7 @@ use \MovLib\Presentation\Partial\Date;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Persons extends \MovLib\Presentation\Partial\Lists\Images {
+class Persons extends \MovLib\Presentation\Partial\Lists\AbstractList {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -49,6 +49,13 @@ class Persons extends \MovLib\Presentation\Partial\Lists\Images {
    * @var integer
    */
   public $imageStyle = PersonImage::STYLE_SPAN_01;
+
+  /**
+   * The attributes of the list's items.
+   *
+   * @var array
+   */
+  public $listItemsAttributes;
 
   /**
    * Show additional information or not.
@@ -78,9 +85,10 @@ class Persons extends \MovLib\Presentation\Partial\Lists\Images {
    *   Show additional information e.g. life dates or not, defaults to <code>FALSE</code>.
    */
   public function __construct($listItems, $noItemsText = "", array $listItemsAttributes = null, array $attributes = null, $spanSize = 5, $showAdditionalInfo = false) {
-    $this->addClass("r", $attributes);
-    $this->addClass("r s s{$spanSize}", $listItemsAttributes);
-    parent::__construct($listItems, $noItemsText, $listItemsAttributes, $attributes);
+    parent::__construct($listItems, $noItemsText, $attributes);
+    $this->addClass("hover-list no-list r", $this->attributes);
+    $this->listItemsAttributes = $listItemsAttributes;
+    $this->addClass("r s s{$spanSize}", $this->listItemsAttributes);
     $this->descriptionSpan                 = --$spanSize;
     $this->listItemsAttributes[]           = "itemscope";
     $this->listItemsAttributes["itemtype"] = "http://schema.org/Person";
@@ -138,6 +146,11 @@ class Persons extends \MovLib\Presentation\Partial\Lists\Images {
           if ($additionalNames || $lifeDates) {
             $additionalInfo = "<span class='small'>{$additionalNames}{$lifeDates}</span>";
           }
+        }
+
+        // Add the role info if there is any.
+        if (isset($person->role)) {
+          $additionalInfo .= "<br><span class='small'>{$person->role}</small>";
         }
 
         $list .=

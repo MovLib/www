@@ -27,7 +27,7 @@
 
 .label {
   display: inline;
-  padding: 0.2em 0.6em 0.3em;
+  padding: 0.1em 0.5em 0.2em;
   line-height: 1;
   letter-spacing: 0.2px;
   color: #fff;
@@ -59,4 +59,14 @@
 
 .label-inverse {
   background-color: #555;
+}
+
+a.label {
+  border: 0 none;
+  transition: background-color 0.4s ease-in-out;
+}
+
+a.label:hover,
+a.label:focus {
+  background-color: #09c;
 }

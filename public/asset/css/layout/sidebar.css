@@ -50,9 +50,15 @@
 }
 
 #sidebar-nav a .fr {
+  position: absolute;
+  top:8px;
+  right:10px;
+  background-color: #fcfcfc;
+  padding-left: 5px;
+  box-shadow: -5px 0 10px #fcfcfc;
   color: #c7c7c7;
   transition: inherit;
-  transition-property: color;
+  transition-property: color, background-color;
 }
 
 #sidebar-nav a.active .fr,

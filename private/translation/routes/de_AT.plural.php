@@ -21,6 +21,7 @@
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -46,9 +47,11 @@ return [
   "/releases" => "/veröffentlichungen",
 
   // ------------------------------------------------------------------------------------------------------------------- Companies
-  "/companies"         => "/unternehmen",
-
-
+  "/companies"             => "/unternehmen",
+  "/company/{0}/movies"    => "/unternehmen/{0}/filme",
+  "/company/{0}/series"    => "/unternehmen/{0}/serien",
+  "/company/{0}/releases"  => "/unternehmen/{0}/veröffentlichungen",
+  
   // ------------------------------------------------------------------------------------------------------------------- Persons
   "/persons"           => "/personen",
 

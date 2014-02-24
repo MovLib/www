@@ -69,6 +69,9 @@ abstract class AbstractBase extends \MovLib\Presentation\Page{
     // Try to load person data.
     $this->person = new FullPerson($_SERVER["PERSON_ID"]);
 
+    // Initialize the page title.
+    $this->initPage($this->person->name);
+
     // Initialize Breadcrumb already with the person route, since all presentations are subpages except for Show.
     $this->initBreadcrumb([[ $i18n->rp("/persons"), $i18n->t("Persons") ], [ $this->person->route, $this->person->name ]]);
 
