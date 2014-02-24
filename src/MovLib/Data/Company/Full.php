@@ -195,7 +195,7 @@ class Full extends \MovLib\Data\Company\Company {
     global $db;
     return $db->query(
       "SELECT count(DISTINCT `movie_id`) as `count` FROM `movies_crew` WHERE `company_id` = ?", "i", [ $this->id ]
-    )->fetch()["count"];
+    )->get_result()->fetch_assoc()["count"];
   }
 
   /**
@@ -222,7 +222,7 @@ class Full extends \MovLib\Data\Company\Company {
     global $db;
     return $db->query(
       "SELECT count(*) as `count` FROM `master_releases_labels` WHERE `company_id` = ?", "i", [ $this->id ]
-    )->fetch()["count"];
+    )->get_result()->fetch_assoc()["count"];
   }
 
   /**
@@ -258,8 +258,8 @@ class Full extends \MovLib\Data\Company\Company {
   public function getSeriesCount() {
     global $db;
     return $db->query(
-      "SELECT count(DISTINCT `series_id`) as `count` FROM `episode_crew` WHERE `company_id` = ?", "i", [ $this->id ]
-    )->fetch()["count"];
+      "SELECT count(DISTINCT `series_id`) as `count` FROM `episodes_crew` WHERE `company_id` = ?", "i", [ $this->id ]
+    )->get_result()->fetch_assoc()["count"];
   }
 
   /**

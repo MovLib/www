@@ -84,9 +84,9 @@ abstract class AbstractBase extends \MovLib\Presentation\Page{
       [ $i18n->r("/company/{0}/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history" ] ],
       [ $i18n->r("/company/{0}/delete", $routeArgs), $i18n->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
 
-      [ $i18n->rp("/company/{0}/movies", $routeArgs), "{$i18n->t("Movies")} <span class='fr'>{$i18n->format("{0,number}", [ $this->company->getMovieCount() ])}</span>", [ "class" => "ico ico-movie separator" ] ],
+      [ $i18n->rp("/company/{0}/movies", $routeArgs), "{$i18n->t("Movies")} <span class='fr'>{$i18n->format("{0,number}", [ $this->company->getMovieCount() ])}</span>", [ "class" => "ico ico-movie" ] ],
       [ $i18n->rp("/company/{0}/series", $routeArgs), "{$i18n->t("Series")} <span class='fr'>{$i18n->format("{0,number}", [ $this->company->getSeriesCount() ])}</span>", [ "class" => "ico ico-series" ] ],
-      [ $i18n->rp("/company/{0}/releases", $routeArgs), "{$i18n->t("Releases")} <span class='fr'>{$i18n->format("{0,number}", [ $this->company->getReleasesCount() ])}</span>", [ "class" => "ico ico-release" ] ],
+      [ $i18n->rp("/company/{0}/releases", $routeArgs), "{$i18n->t("Releases")} <span class='fr'>{$i18n->format("{0,number}", [ $this->company->getReleasesCount() ])}</span>", [ "class" => "ico ico-release separator" ] ],
     ]);
     $this->schemaType = "Corporation";
 
