@@ -24,147 +24,153 @@
 # SINCE:      0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-#
-# Windows Shortcut (also set the icon to use the UAC shield)
-#
-# Target:   %windir%\system32\WindowsPowerShell\v1.0\powershell.exe -NoLogo -Sta -ExecutionPolicy Unrestricted -File .\conf\vagrant\bootstrap.ps1
-# Start In: %cd%
-#
+# Ensure current path is available (always available in PS3+).
+$PSScriptRoot = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
 
-#
-# Some links that helped a lot to create this script:
-# * http://blogs.msdn.com/b/virtual_pc_guy/archive/2010/09/23/a-self-elevating-powershell-script.aspx
-#
+# Export current working directory to variable.
+$pwd = Get-Location | Select-Object -ExpandProperty Path
 
-# Get the ID and security principal of the current user account
-$principal = new-object System.Security.Principal.WindowsPrincipal([System.Security.Principal.WindowsIdentity]::GetCurrent())
+# Make all errors terminating.
+$ErrorActionPreference = 'Stop'
 
-# Get the security principal for the Administrator role
-$adminRole = [System.Security.Principal.WindowsBuiltInRole]::Administrator
+# Include the icon change script.
+. "$PSScriptRoot\Set-ConsoleIcon.ps1"
+. "$PSScriptRoot\Show-BalloonTip.ps1"
 
-# Check to see if we are currently running "as Administrator".
-if ($principal.IsInRole($adminRole)) {
-  # Make all errors terminating.
-  $ErrorActionPreference = 'Stop'
+# Change the icon of our application.
+Set-ConsoleIcon "$PSScriptRoot\Visual Studio Project\MovLib Vagrant Bootstrap\vagrant.ico"
 
-  # Ensure that we are in the root directory of the repository.
-  Set-Location(Split-Path $myInvocation.MyCommand.Path -Parent)
-  Set-Location(Resolve-Path '..\..\')
+# Change the title of our application.
+$host.UI.RawUI.WindowTitle = 'MovLib Vagrant Bootstrap'
 
-  Write-Host 'MovLib Vagrant Bootstrap'
-  Write-Host 'Copyright (c) 2014 MovLib, the free movie library.'
-  Write-Host 'MovLib is free software, see LICENSE.txt for more information.'
-  Write-Host ''
-  Write-Host 'Validating environment...' -ForegroundColor Yellow
+# ----------------------------------------------------------------------------------------------------------------------
+# Start the application.
 
-  #
-  # Validate that git is installed, in our PATH, and at least version 1.9.0.0
-  #
+Write-Host
+Write-Host 'MovLib Vagrant Bootstrap'
+Write-Host 'Copyright (c) 2014 MovLib, the free movie library.'
+Write-Host 'MovLib is free software, see LICENSE.txt for more information.'
+Write-Host
+Write-Host 'Validating environment...' -ForegroundColor Yellow
 
-  try {
-    Get-Command git | Out-Null
-  }
-  catch {
-    Throw 'Please install git on your system and ensure that it is in your PATH'
-  }
+# ----------------------------------------------------------------------------------------------------------------------
+# Validate that git is installed, in our PATH, and at least version 1.9.0.0
 
-  $version = git --version -ireplace '[a-z ]+([0-9]+\.[0-9]+\.[0-9]+)\.[a-z]+(\.[0-9]+)', '$1$2'
-  Write-Debug $version
-  if (!$version -or $version.CompareTo('1.9.0.0') -lt 0) {
-    Throw 'Please install at least git 1.9.0.0'
-  }
-
-  # We now know that we have Git installed, export ssh.exe to PATH if it's missing.
-  try {
-    Get-Command ssh | Out-Null
-  }
-  catch {
-    $sh = Split-Path(Split-Path(Get-Command git | Select-Object -ExpandProperty Definition) -Parent) -Parent
-    $env:PATH += ";$sh\bin"
-    [System.Environment]::SetEnvironmentVariable('PATH', $env:PATH, 'Machine')
-  }
-
-  #
-  # Validate that vagrant is installed, in our PATH, and at least version 1.4.3
-  #
-
-  try {
-    Get-Command vagrant | Out-Null
-  }
-  catch {
-    Throw 'Please install Vagrant on your system and ensure that it is in your PATH'
-  }
-
-  $version = vagrant --version -ireplace 'Vagrant ([0-9]+\.[0-9]+\.[0-9]+)', '$1.0'
-  Write-Debug $version
-  if (!$version -or $version.CompareTo('1.4.3') -lt 0) {
-    Throw 'Please install at least Vagrant 1.4.3'
-  }
-
-  Write-Host 'All good, great job!' -ForegroundColor Green
-
-  #
-  # Validate VirtualBox is installed and at least version 4.3.6
-  #
-
-  try {
-    $version = (Get-Item -Path HKLM:\Software\Oracle\VirtualBox).getValue('VersionExt')
-  }
-  catch {
-    Throw 'Please install Oracle VirtualBox on your system'
-  }
-
-  Write-Debug $version
-  if (!$version -or $version.CompareTo('4.3.6') -lt 0) {
-    Throw 'Please install Oracle VirtualBox 4.3.6'
-  }
-
-  #
-  # Install/Update all Puppet modules and Vagrant plugins.
-  #
-
-  Write-Host ''
-  Write-Host 'Updating git submodules...' -ForegroundColor Yellow
-
-  git submodule update --remote
-
-  Write-Host ''
-  Write-Host 'Installing and updating Vagrant plugins...' -ForegroundColor Yellow
-
-  $installed = vagrant plugin list
-  $plugins   = @('hostsupdater', 'vbguest', 'puppet-install')
-  foreach ($plugin in $plugins) {
-    $found = 0
-    foreach ($i in $installed) {
-      if ($i -match "vagrant-$plugin") {
-        vagrant plugin update "vagrant-$plugin" | ForEach-Object {
-          $output = $_ -ireplace 'Installing', 'Updating' -ireplace 'Installed', 'Updated'
-          Write-Host $output
-        }
-        $found = 1
-        break
-      }
-    }
-    if (!$found) {
-      vagrant plugin install "vagrant-$plugin"
-    }
-  }
-
-  #
-  # Start the MovDev VM.
-  #
-
-  Write-Host ''
-  Write-Host 'Starting Vagrant...' -ForegroundColor Yellow
-  vagrant up
-  Write-Host ''
+try {
+  Get-Command git | Out-Null
 }
-# We are not running "as Administrator" - so relaunch as administrator.
-else {
-  # Create a new process object that starts PowerShell and start it.
-  $elevated           = new-object System.Diagnostics.ProcessStartInfo 'PowerShell'
-  $elevated.Arguments = '-NoExit ' + $myInvocation.MyCommand.Definition
-  $elevated.Verb      = 'runAs'
-  [System.Diagnostics.Process]::Start($elevated)
-  exit
+catch {
+  $message = 'Please install Git on your system and ensure that it is in your PATH'
+  Show-BalloonTip -Title 'Missing Git!' -Message $message -BalloonType 'Error' | Out-Null
+  Throw $message
+}
+
+$version = git --version -ireplace '[a-z ]+([0-9]+\.[0-9]+\.[0-9]+)\.[a-z]+(\.[0-9]+)', '$1$2'
+Write-Debug $version
+if (!$version -or $version.CompareTo('1.9.0.0') -lt 0) {
+  $message = 'Please install at least Git 1.9.0.0'
+  Show-BalloonTip -Title 'Old Git!' -Message $message -BalloonType 'Error' | Out-Null
+  Throw $message
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Validate that vagrant is installed, in our PATH, and at least version 1.4.3
+
+try {
+  Get-Command vagrant | Out-Null
+}
+catch {
+  $message = 'Please install Vagrant on your system and ensure that it is in your PATH'
+  Show-BalloonTip -Title 'Missing Vagrant!' -Message $message -BalloonType 'Error' | Out-Null
+  Throw $message
+}
+
+$version = vagrant --version -ireplace 'Vagrant ([0-9]+\.[0-9]+\.[0-9]+)', '$1.0'
+Write-Debug $version
+if (!$version -or $version.CompareTo('1.4.3') -lt 0) {
+  $message = 'Please install at least Vagrant 1.4.3'
+  Show-BalloonTip -Title 'Old Vagrant!' -Message $message -BalloonType 'Error' | Out-Null
+  Throw $message
+}
+
+Write-Host 'All good, great job!' -ForegroundColor Green
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Validate VirtualBox is installed and at least version 4.3.6
+
+try {
+  $version = (Get-Item -Path HKLM:\Software\Oracle\VirtualBox).getValue('VersionExt')
+}
+catch {
+  $message = 'Please install Oracle VirtualBox on your system'
+  Show-BalloonTip -Title 'Missing VirtualBox!' -Message $message -BalloonType 'Error' | Out-Null
+  Throw $message
+}
+
+Write-Debug $version
+if (!$version -or $version.CompareTo('4.3.6') -lt 0) {
+  $message = 'Please install Oracle VirtualBox 4.3.6'
+  Show-BalloonTip -Title 'Old VirtualBox!' -Message $message -BalloonType 'Error' | Out-Null
+  Throw $message
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Install/Update all Puppet modules and Vagrant plugins.
+
+Write-Host
+Write-Host 'Updating git submodules, this might take several minutes...' -ForegroundColor Yellow
+
+git submodule update --remote
+
+Write-Host
+Write-Host 'Installing and updating Vagrant plugins, this might take several minutes...' -ForegroundColor Yellow
+
+$installed = vagrant plugin list
+$plugins   = @('hostsupdater', 'vbguest', 'puppet-install')
+foreach ($plugin in $plugins) {
+  $found = 0
+  foreach ($i in $installed) {
+    if ($i -match "vagrant-$plugin") {
+      vagrant plugin update "vagrant-$plugin" | ForEach-Object {
+        $output = $_ -ireplace 'Installing', 'Updating' -ireplace 'Installed', 'Updated'
+        Write-Host $output
+      }
+      $found = 1
+      break
+    }
+  }
+  if (!$found) {
+    vagrant plugin install "vagrant-$plugin"
+  }
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Start the MovDev VM.
+
+Write-Host
+Write-Host 'Starting Vagrant, this might take several minutes...' -ForegroundColor Yellow
+
+# We execute `vagrant up` with the installed GitBash because we cannot safely assume that the various executables from
+# the bin folder are within our PATH and we need ssh.exe for `vagrant ssh` to work. Rather than altering the PATH, which
+# would replace various Windows built-in commands like find, we make use of GitBash which has that path set and access
+# to all necessary executables.
+$arguments = '/C ""';
+$arguments += Split-Path(Split-Path(Get-Command git | Select-Object -ExpandProperty Definition) -Parent) -Parent
+$arguments += '\bin\sh.exe" --login -i -c "'
+$arguments += "printf '\n# vagrant up\n' '' && vagrant up"
+$arguments += '""'
+$p = Start-Process -PassThru -NoNewWindow -WorkingDirectory $pwd -FilePath $env:WinDir\System32\cmd.exe -ArgumentList $arguments
+$p.WaitForExit()
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Let the user know that provisioning is finished and ensure that the balloon tip is correctly disposed upon exit.
+
+Write-Host
+$balloon = Show-BalloonTip -Title "Finished Provisioning!" -Message "Your MovDev VM is now ready to use."
+
+Write-Host 'Press [ESC] to exit or any key to continue...'
+$keyCode = $host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown') | Select-Object -ExpandProperty VirtualKeyCode
+$balloon.Dispose()
+if ($keyCode -eq 27) {
+  Stop-Process -Id $PID | Out-Null
 }

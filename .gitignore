@@ -20,3 +20,6 @@ Desktop.ini
 /vendor/
 /public/vagrant/
 /.vagrant/
+/conf/vagrant/Visual Studio Project/MovLib Vagrant Bootstrap/publish/
+/conf/vagrant/Visual Studio Project/MovLib Vagrant Bootstrap/bin/
+/conf/vagrant/Visual Studio Project/MovLib Vagrant Bootstrap/obj/

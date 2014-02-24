@@ -19,6 +19,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # Ensure all Git submodules and Vagrant plugins are installed and start Vagrant MovDev machine.
 #
+# TODO:       Extend to validate environment.
 # AUTHOR:     Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT:  © 2013 MovLib
 # LICENSE:    http://www.gnu.org/licenses/agpl.html AGPL-3.0
