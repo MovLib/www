@@ -55,6 +55,12 @@ ol ol {
   background-color: #e2f4fb;
 }
 
+.hover-list .li .rating-user,
+.hover-list .li .rating-mean {
+  float: right;
+  margin-right: 20px;
+}
+
 .hover-list .li .rating-mean {
   background: url("/asset/img/star.svg") center center no-repeat;
   background-size: 60px 60px; /* Important for older WebKit browsers! */
@@ -66,10 +72,6 @@ ol ol {
   line-height: 63px;
   text-shadow: 0 0 5px #fff, 0 0 20px #fff;
   width: 60px;
-}
-
-.hover-list .li .rating-user {
-  padding-right: 20px;
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------

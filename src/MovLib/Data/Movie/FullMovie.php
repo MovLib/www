@@ -122,6 +122,8 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
         throw new NotFound;
       }
       $stmt->close();
+    }
+    if ($this->id) {
       $this->init();
     }
   }
@@ -142,15 +144,21 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
     global $db, $i18n;
     return $db->query(
       "SELECT
-        `persons`.`id`,
-        `persons`.`name`
-      FROM `movies_cast`
-        INNER JOIN `persons` ON `persons`.`id` = `movies_cast`.`person_id`
-      WHERE `movies_cast`.`movie_id` = ?
-      ORDER BY `persons`.`name`{$db->collations[$i18n->languageCode]} ASC
+        `p`.`id` AS `id`,
+        `p`.`name` AS `name`,
+        `p`.`sex` AS `sex`,
+        `p`.`birthdate` AS `birthDate`,
+        `p`.`born_name` AS `bornName`,
+        `p`.`deathdate` AS `deathDate`,
+        `p`.`nickname` AS `nickname`,
+        IFNULL(COLUMN_GET(`mc`.`roles`, ? AS BINARY), COLUMN_GET(`mc`.`roles`, ? AS BINARY)) AS `role`
+      FROM `movies_cast` AS `mc`
+        INNER JOIN `persons` AS `p` ON `p`.`id` = `mc`.`person_id`
+      WHERE `mc`.`movie_id` = ? AND `p`.`deleted` = false
+      ORDER BY `p`.`name`{$db->collations[$i18n->languageCode]} ASC
       LIMIT ?",
-      "di",
-      [ $this->id, $limit ]
+      "ssdi",
+      [ $i18n->languageCode, $i18n->defaultLanguageCode, $this->id, $limit ]
     )->get_result();
   }
 

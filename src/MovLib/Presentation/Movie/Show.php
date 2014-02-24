@@ -148,9 +148,10 @@ class Show extends \MovLib\Presentation\Page {
   /**
    * @inheritdoc
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Data\User\Session $session
    */
   protected function getPageContent() {
-    global $i18n;
+    global $i18n, $session;
     $this->schemaType = "Movie";
 
     // Enhance the page's title with microdata.
@@ -191,7 +192,7 @@ class Show extends \MovLib\Presentation\Page {
     ];
 
     // Build the stars that show the currently signed in user's rating and allow her or him to rate this movie.
-    $userRating = $this->movie->getUserRating();
+    $userRating = $this->movie->getUserRating($session->userId);
     $stars      = null;
     for ($i = 1; $i < 6; ++$i) {
       $rated  = $i <= $userRating ? " class='rated'" : null;
