@@ -46,11 +46,11 @@
 
 @font-face {
   font-family: "Open Sans";
-  src: url("/bower/open-sans-fontface/fonts/Light/OpenSans-Light.eot");
-  src: url("/bower/open-sans-fontface/fonts/Light/OpenSans-Light.eot?#iefix") format("embedded-opentype"),
-       url("/bower/open-sans-fontface/fonts/Light/OpenSans-Light.woff") format("woff"),
-       url("/bower/open-sans-fontface/fonts/Light/OpenSans-Light.ttf") format("truetype"),
-       url("/bower/open-sans-fontface/fonts/Light/OpenSans-Light.svg#OpenSansLight") format("svg")
+  src: url("/asset/font/open-sans/fonts/Light/OpenSans-Light.eot");
+  src: url("/asset/font/open-sans/fonts/Light/OpenSans-Light.eot?#iefix") format("embedded-opentype"),
+       url("/asset/font/open-sans/fonts/Light/OpenSans-Light.woff") format("woff"),
+       url("/asset/font/open-sans/fonts/Light/OpenSans-Light.ttf") format("truetype"),
+       url("/asset/font/open-sans/fonts/Light/OpenSans-Light.svg#OpenSansLight") format("svg")
   ;
   font-weight: 200;
   font-style: normal;
@@ -58,11 +58,11 @@
 
 @font-face {
   font-family: "Open Sans";
-  src: url("/bower/open-sans-fontface/fonts/LightItalic/OpenSans-LightItalic.eot");
-  src: url("/bower/open-sans-fontface/fonts/LightItalic/OpenSans-LightItalic.eot?#iefix") format("embedded-opentype"),
-       url("/bower/open-sans-fontface/fonts/LightItalic/OpenSans-LightItalic.woff") format("woff"),
-       url("/bower/open-sans-fontface/fonts/LightItalic/OpenSans-LightItalic.ttf") format("truetype"),
-       url("/bower/open-sans-fontface/fonts/LightItalic/OpenSans-LightItalic.svg#OpenSansLightItalic") format("svg")
+  src: url("/asset/font/open-sans/fonts/LightItalic/OpenSans-LightItalic.eot");
+  src: url("/asset/font/open-sans/fonts/LightItalic/OpenSans-LightItalic.eot?#iefix") format("embedded-opentype"),
+       url("/asset/font/open-sans/fonts/LightItalic/OpenSans-LightItalic.woff") format("woff"),
+       url("/asset/font/open-sans/fonts/LightItalic/OpenSans-LightItalic.ttf") format("truetype"),
+       url("/asset/font/open-sans/fonts/LightItalic/OpenSans-LightItalic.svg#OpenSansLightItalic") format("svg")
   ;
   font-weight: 200;
   font-style: italic;
@@ -70,11 +70,11 @@
 
 @font-face {
   font-family: "Open Sans";
-  src: url("/bower/open-sans-fontface/fonts/Regular/OpenSans-Regular.eot");
-  src: url("/bower/open-sans-fontface/fonts/Regular/OpenSans-Regular.eot?#iefix") format("embedded-opentype"),
-       url("/bower/open-sans-fontface/fonts/Regular/OpenSans-Regular.woff") format("woff"),
-       url("/bower/open-sans-fontface/fonts/Regular/OpenSans-Regular.ttf") format("truetype"),
-       url("/bower/open-sans-fontface/fonts/Regular/OpenSans-Regular.svg#OpenSansRegular") format("svg")
+  src: url("/asset/font/open-sans/fonts/Regular/OpenSans-Regular.eot");
+  src: url("/asset/font/open-sans/fonts/Regular/OpenSans-Regular.eot?#iefix") format("embedded-opentype"),
+       url("/asset/font/open-sans/fonts/Regular/OpenSans-Regular.woff") format("woff"),
+       url("/asset/font/open-sans/fonts/Regular/OpenSans-Regular.ttf") format("truetype"),
+       url("/asset/font/open-sans/fonts/Regular/OpenSans-Regular.svg#OpenSansRegular") format("svg")
   ;
   font-weight: normal;
   font-style: normal;
@@ -82,11 +82,11 @@
 
 @font-face {
   font-family: "Open Sans";
-  src: url("/bower/open-sans-fontface/fonts/Italic/OpenSans-Italic.eot");
-  src: url("/bower/open-sans-fontface/fonts/Italic/OpenSans-Italic.eot?#iefix") format("embedded-opentype"),
-       url("/bower/open-sans-fontface/fonts/Italic/OpenSans-Italic.woff") format("woff"),
-       url("/bower/open-sans-fontface/fonts/Italic/OpenSans-Italic.ttf") format("truetype"),
-       url("/bower/open-sans-fontface/fonts/Italic/OpenSans-Italic.svg#OpenSansItalic") format("svg")
+  src: url("/asset/font/open-sans/fonts/Italic/OpenSans-Italic.eot");
+  src: url("/asset/font/open-sans/fonts/Italic/OpenSans-Italic.eot?#iefix") format("embedded-opentype"),
+       url("/asset/font/open-sans/fonts/Italic/OpenSans-Italic.woff") format("woff"),
+       url("/asset/font/open-sans/fonts/Italic/OpenSans-Italic.ttf") format("truetype"),
+       url("/asset/font/open-sans/fonts/Italic/OpenSans-Italic.svg#OpenSansItalic") format("svg")
   ;
   font-weight: normal;
   font-style: italic;
@@ -95,11 +95,11 @@
 /*
 @font-face {
   font-family: "Open Sans";
-  src: url("/bower/open-sans-fontface/fonts/Semibold/OpenSans-Semibold.eot");
-  src: url("/bower/open-sans-fontface/fonts/Semibold/OpenSans-Semibold.eot?#iefix") format("embedded-opentype"),
-       url("/bower/open-sans-fontface/fonts/Semibold/OpenSans-Semibold.woff") format("woff"),
-       url("/bower/open-sans-fontface/fonts/Semibold/OpenSans-Semibold.ttf") format("truetype"),
-       url("/bower/open-sans-fontface/fonts/Semibold/OpenSans-Semibold.svg#OpenSansRegular") format("svg")
+  src: url("/asset/font/open-sans/fonts/Semibold/OpenSans-Semibold.eot");
+  src: url("/asset/font/open-sans/fonts/Semibold/OpenSans-Semibold.eot?#iefix") format("embedded-opentype"),
+       url("/asset/font/open-sans/fonts/Semibold/OpenSans-Semibold.woff") format("woff"),
+       url("/asset/font/open-sans/fonts/Semibold/OpenSans-Semibold.ttf") format("truetype"),
+       url("/asset/font/open-sans/fonts/Semibold/OpenSans-Semibold.svg#OpenSansRegular") format("svg")
   ;
   font-weight: 600;
   font-style: normal;
@@ -107,11 +107,11 @@
 
 @font-face {
   font-family: "Open Sans";
-  src: url("/bower/open-sans-fontface/fonts/SemiboldItalic/OpenSans-SemiboldItalic.eot");
-  src: url("/bower/open-sans-fontface/fonts/SemiboldItalic/OpenSans-SemiboldItalic.eot?#iefix") format("embedded-opentype"),
-       url("/bower/open-sans-fontface/fonts/SemiboldItalic/OpenSans-SemiboldItalic.woff") format("woff"),
-       url("/bower/open-sans-fontface/fonts/SemiboldItalic/OpenSans-SemiboldItalic.ttf") format("truetype"),
-       url("/bower/open-sans-fontface/fonts/SemiboldItalic/OpenSans-SemiboldItalic.svg#OpenSansItalic") format("svg")
+  src: url("/asset/font/open-sans/fonts/SemiboldItalic/OpenSans-SemiboldItalic.eot");
+  src: url("/asset/font/open-sans/fonts/SemiboldItalic/OpenSans-SemiboldItalic.eot?#iefix") format("embedded-opentype"),
+       url("/asset/font/open-sans/fonts/SemiboldItalic/OpenSans-SemiboldItalic.woff") format("woff"),
+       url("/asset/font/open-sans/fonts/SemiboldItalic/OpenSans-SemiboldItalic.ttf") format("truetype"),
+       url("/asset/font/open-sans/fonts/SemiboldItalic/OpenSans-SemiboldItalic.svg#OpenSansItalic") format("svg")
   ;
   font-weight: 600;
   font-style: italic;
@@ -120,11 +120,11 @@
 
 @font-face {
   font-family: "Open Sans";
-  src: url("/bower/open-sans-fontface/fonts/Bold/OpenSans-Bold.eot");
-  src: url("/bower/open-sans-fontface/fonts/Bold/OpenSans-Bold.eot?#iefix") format("embedded-opentype"),
-       url("/bower/open-sans-fontface/fonts/Bold/OpenSans-Bold.woff") format("woff"),
-       url("/bower/open-sans-fontface/fonts/Bold/OpenSans-Bold.ttf") format("truetype"),
-       url("/bower/open-sans-fontface/fonts/Bold/OpenSans-Bold.svg#OpenSansRegular") format("svg")
+  src: url("/asset/font/open-sans/fonts/Bold/OpenSans-Bold.eot");
+  src: url("/asset/font/open-sans/fonts/Bold/OpenSans-Bold.eot?#iefix") format("embedded-opentype"),
+       url("/asset/font/open-sans/fonts/Bold/OpenSans-Bold.woff") format("woff"),
+       url("/asset/font/open-sans/fonts/Bold/OpenSans-Bold.ttf") format("truetype"),
+       url("/asset/font/open-sans/fonts/Bold/OpenSans-Bold.svg#OpenSansRegular") format("svg")
   ;
   font-weight: bold;
   font-style: normal;
@@ -132,11 +132,11 @@
 
 @font-face {
   font-family: "Open Sans";
-  src: url("/bower/open-sans-fontface/fonts/BoldItalic/OpenSans-BoldItalic.eot");
-  src: url("/bower/open-sans-fontface/fonts/BoldItalic/OpenSans-BoldItalic.eot?#iefix") format("embedded-opentype"),
-       url("/bower/open-sans-fontface/fonts/BoldItalic/OpenSans-BoldItalic.woff") format("woff"),
-       url("/bower/open-sans-fontface/fonts/BoldItalic/OpenSans-BoldItalic.ttf") format("truetype"),
-       url("/bower/open-sans-fontface/fonts/BoldItalic/OpenSans-BoldItalic.svg#OpenSansItalic") format("svg")
+  src: url("/asset/font/open-sans/fonts/BoldItalic/OpenSans-BoldItalic.eot");
+  src: url("/asset/font/open-sans/fonts/BoldItalic/OpenSans-BoldItalic.eot?#iefix") format("embedded-opentype"),
+       url("/asset/font/open-sans/fonts/BoldItalic/OpenSans-BoldItalic.woff") format("woff"),
+       url("/asset/font/open-sans/fonts/BoldItalic/OpenSans-BoldItalic.ttf") format("truetype"),
+       url("/asset/font/open-sans/fonts/BoldItalic/OpenSans-BoldItalic.svg#OpenSansItalic") format("svg")
   ;
   font-weight: bold;
   font-style: italic;
@@ -145,11 +145,11 @@
 /*
 @font-face {
   font-family: "Open Sans";
-  src: url("/bower/open-sans-fontface/fonts/ExtraBold/OpenSans-ExtraBold.eot");
-  src: url("/bower/open-sans-fontface/fonts/ExtraBold/OpenSans-ExtraBold.eot?#iefix") format("embedded-opentype"),
-       url("/bower/open-sans-fontface/fonts/ExtraBold/OpenSans-ExtraBold.woff") format("woff"),
-       url("/bower/open-sans-fontface/fonts/ExtraBold/OpenSans-ExtraBold.ttf") format("truetype"),
-       url("/bower/open-sans-fontface/fonts/ExtraBold/OpenSans-ExtraBold.svg#OpenSansRegular") format("svg")
+  src: url("/asset/font/open-sans/fonts/ExtraBold/OpenSans-ExtraBold.eot");
+  src: url("/asset/font/open-sans/fonts/ExtraBold/OpenSans-ExtraBold.eot?#iefix") format("embedded-opentype"),
+       url("/asset/font/open-sans/fonts/ExtraBold/OpenSans-ExtraBold.woff") format("woff"),
+       url("/asset/font/open-sans/fonts/ExtraBold/OpenSans-ExtraBold.ttf") format("truetype"),
+       url("/asset/font/open-sans/fonts/ExtraBold/OpenSans-ExtraBold.svg#OpenSansRegular") format("svg")
   ;
   font-weight: 800;
   font-style: normal;
@@ -157,11 +157,11 @@
 
 @font-face {
   font-family: "Open Sans";
-  src: url("/bower/open-sans-fontface/fonts/ExtraBoldItalic/OpenSans-ExtraBoldItalic.eot");
-  src: url("/bower/open-sans-fontface/fonts/ExtraBoldItalic/OpenSans-ExtraBoldItalic.eot?#iefix") format("embedded-opentype"),
-       url("/bower/open-sans-fontface/fonts/ExtraBoldItalic/OpenSans-ExtraBoldItalic.woff") format("woff"),
-       url("/bower/open-sans-fontface/fonts/ExtraBoldItalic/OpenSans-ExtraBoldItalic.ttf") format("truetype"),
-       url("/bower/open-sans-fontface/fonts/ExtraBoldItalic/OpenSans-ExtraBoldItalic.svg#OpenSansItalic") format("svg")
+  src: url("/asset/font/open-sans/fonts/ExtraBoldItalic/OpenSans-ExtraBoldItalic.eot");
+  src: url("/asset/font/open-sans/fonts/ExtraBoldItalic/OpenSans-ExtraBoldItalic.eot?#iefix") format("embedded-opentype"),
+       url("/asset/font/open-sans/fonts/ExtraBoldItalic/OpenSans-ExtraBoldItalic.woff") format("woff"),
+       url("/asset/font/open-sans/fonts/ExtraBoldItalic/OpenSans-ExtraBoldItalic.ttf") format("truetype"),
+       url("/asset/font/open-sans/fonts/ExtraBoldItalic/OpenSans-ExtraBoldItalic.svg#OpenSansItalic") format("svg")
   ;
   font-weight: 800;
   font-style: italic;
