@@ -192,17 +192,8 @@ class Full extends \MovLib\Data\Company\Company {
     if ($this->place) {
       $this->place = new Place($this->place);
     }
-    if ($this->aliases) {
-      $this->aliases = unserialize($this->aliases);
-    }
-    else {
-      $this->aliases = [];
-    }
-    if ($this->links) {
-      $this->links = unserialize($this->links);
-    }
-    else {
-      $this->links = [];
-    }
+
+    $this->aliases = $this->aliases ? unserialize($this->aliases) : [];
+    $this->links   = $this->links ? unserialize($this->links) : [];
   }
 }
