@@ -277,7 +277,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_crew` (
   `alias_id` BIGINT NULL,
   `company_id` BIGINT UNSIGNED NULL COMMENT 'The company’s unique ID.',
   `person_id` BIGINT UNSIGNED NULL COMMENT 'The person’s unique ID.',
-  PRIMARY KEY (`crew_id`, `movie_id`),
+  PRIMARY KEY (`crew_id`),
   INDEX `fk_movies_crew_movies` (`movie_id` ASC),
   INDEX `fk_movies_crew_jobs` (`job_id` ASC),
   INDEX `fk_movies_crew_companies` (`company_id` ASC),
@@ -317,17 +317,20 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_cast`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_cast` (
+  `cast_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.',
   `job_id` BIGINT UNSIGNED NOT NULL,
-  `roles` BLOB NOT NULL COMMENT 'The names of the role the person played in the movie as comma separated list.',
+  `dyn_role` BLOB NOT NULL COMMENT 'The cast’s translated role names (if role_id is null).',
   `weight` SMALLINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The weight (display order) of the movie’s cast. Default is 0.',
   `alias_id` BIGINT NULL,
-  PRIMARY KEY (`movie_id`, `person_id`),
+  `role_id` BIGINT UNSIGNED NULL,
+  PRIMARY KEY (`cast_id`),
   INDEX `fk_movies_cast_movies` (`movie_id` ASC),
   INDEX `fk_movies_cast_persons` (`person_id` ASC),
   INDEX `fk_movies_cast_persons_aliases` (`alias_id` ASC),
   INDEX `fk_movies_cast_jobs` (`job_id` ASC),
+  INDEX `fk_movies_cast_persons_role` (`role_id` ASC),
   CONSTRAINT `fk_movies_cast_persons`
     FOREIGN KEY (`person_id`)
     REFERENCES `movlib`.`persons` (`id`)
@@ -346,6 +349,11 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_cast` (
   CONSTRAINT `fk_movies_cast_jobs`
     FOREIGN KEY (`job_id`)
     REFERENCES `movlib`.`jobs` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_cast_persons1`
+    FOREIGN KEY (`role_id`)
+    REFERENCES `movlib`.`persons` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
