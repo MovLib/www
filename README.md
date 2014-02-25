@@ -14,8 +14,7 @@ Stay tuned!
 4. Install [Virtual Box](https://www.virtualbox.org/wiki/Downloads)
 5. Depending on your operating system:
   * **Windows:** double click the `vagrantup.exe`
-  * **Linux:** execute `vagrantup.sh`
-  * **Mac:** no support (*yet*)
+  * **Unix:** execute `vagrantup.sh`
 
 This will set up a full local development virtual machine that is similar to the real production server. The VM includes the [Debian 7 Wheezy](http://www.debian.org/) with [Gnome GUI](http://www.gnome.org/), the [Oracle NetBeans IDE](https://netbeans.org/), and all other dependencies provisioned via [Puppet](http://puppetlabs.com/). You'll be able to develop, debug, and test right away.
 
