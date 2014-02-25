@@ -1,0 +1,39 @@
+{
+  "classes": [
+    "apt",
+    "curl",
+    "wget",
+    "build-essential",
+    "locales",
+    "timezone",
+    "ntp",
+    "mariadb",
+    "oracle_java_jdk",
+    "elasticsearch"
+  ],
+
+  "timezone::autoupgrade"       : true,
+  "timezone::timezone"          : "UTC",
+
+  "ntp::package_ensure"         : "present",
+  "ntp::service_enable"         : true,
+  "ntp::service_ensure"         : "running",
+  "ntp::service_manage"         : true,
+
+  "locales::autoupgrade"        : true,
+  "locales::ensure"             : "present",
+  "locales::locales"            : [ "en_US.UTF-8 UTF-8", "de_DE.UTF-8 UTF-8" ],
+
+  "mariadb::version"            : "10.0",
+  "mariadb"                     : { "repo::base_url": "http://tweedo.com/mirror/mariadb/repo" },
+
+  "oracle_java_jdk::release"    : "trusty",
+  "oracle_java_jdk::version"    : "7",
+
+  "elasticsearch::autoupgrade"  : true,
+  "elasticsearch::ensure"       : "present",
+  "elasticsearch::manage_repo"  : true,
+  "elasticsearch::repo_version" : "1.0",
+  "elasticsearch::status"       : "enabled"
+
+}
