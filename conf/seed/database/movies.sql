@@ -114,7 +114,7 @@ INSERT INTO `persons` SET
   `dyn_image_descriptions` = ''
 ;
 SET @harriet_hartley_id = LAST_INSERT_ID();
-INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @harriet_hartley_id, `job_id` = @job_actor, `roles` = COLUMN_CREATE('en', 'Herself', 'de', 'Selbst');
+INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @harriet_hartley_id, `job_id` = @job_actor, `dyn_role` = '';
 
 INSERT INTO `persons` SET
   `name`                   = 'Adolphe Le Prince',
@@ -123,7 +123,7 @@ INSERT INTO `persons` SET
   `dyn_image_descriptions` = ''
 ;
 SET @adolphe_le_prince_id = LAST_INSERT_ID();
-INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @adolphe_le_prince_id, `job_id` = @job_actor, `roles` = COLUMN_CREATE('en', 'Himself', 'de', 'Selbst');
+INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @adolphe_le_prince_id, `job_id` = @job_actor, `dyn_role` = '', `role_id` = @adolphe_le_prince_id;
 
 INSERT INTO `persons` SET
   `name`                   = 'Joseph Whitley',
@@ -132,7 +132,7 @@ INSERT INTO `persons` SET
   `dyn_image_descriptions` = ''
 ;
 SET @joseph_whitley_id = LAST_INSERT_ID();
-INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @joseph_whitley_id, `job_id` = @job_actor, `roles` = COLUMN_CREATE('en', 'Himself', 'de', 'Selbst');
+INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @joseph_whitley_id, `job_id` = @job_actor, `dyn_role` = '', `role_id` = @joseph_whitley_id;
 
 INSERT INTO `persons` SET
   `name`                   = 'Sarah Whitley',
@@ -144,7 +144,7 @@ INSERT INTO `persons` SET
   `dyn_image_descriptions` = ''
 ;
 SET @sarah_whitley_id = LAST_INSERT_ID();
-INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @sarah_whitley_id, `job_id` = @job_actor, `roles` = COLUMN_CREATE('en', 'Herself', 'de', 'Selbst');
+INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @sarah_whitley_id, `job_id` = @job_actor, `dyn_role` = '', `role_id` = @sarah_whitley_id;
 
 -- END "Roundhay Garden Scene"
 
