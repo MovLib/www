@@ -17,9 +17,7 @@
  */
 namespace MovLib\Presentation\Partial\Lists;
 
-use \MovLib\Data\User\User;
 use \MovLib\Data\Image\MoviePoster;
-use \MovLib\Presentation\Partial\Time;
 
 /**
  * Special images list for movie instances.
@@ -30,25 +28,11 @@ use \MovLib\Presentation\Partial\Time;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Movies extends \MovLib\Presentation\Partial\Lists\AbstractList {
+class Movies extends \MovLib\Presentation\Partial\Lists\AbstractMovieList {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   * The span size for a single person's description.
-   *
-   * @var integer
-   */
-  protected $descriptionSpan;
-
-  /**
-   * The attributes of the list's items.
-   *
-   * @var array
-   */
-  public $listItemsAttributes;
 
   /**
    * Display global rating, user rating or no rating at all.
@@ -64,9 +48,10 @@ class Movies extends \MovLib\Presentation\Partial\Lists\AbstractList {
   /**
    * Instantiate new special movies listing.
    *
-   * @global \MovLib\Kernel $kernel
    * @param \mysqli_result $listItems
    *   The mysqli result object containing the movies.
+   * @param stdClass $entity
+   * {@inheritdoc}
    * @param string $noItemsText [optional]
    *   {@inheritdoc}
    * @param array $listItemsAttributes [optional]
@@ -83,17 +68,12 @@ class Movies extends \MovLib\Presentation\Partial\Lists\AbstractList {
    *     <li><code>USER_ID</code>: rating of a specific user</li>
    *   </ul>
    */
-  public function __construct($listItems, $noItemsText = "", array $listItemsAttributes = null, array $attributes = null, $spanSize = 10, $showRating = false) {
-    global $kernel;
-    parent::__construct($listItems, $noItemsText, $attributes);
-    $kernel->stylesheets[] = "movie";
-    $this->addClass("hover-list no-list r", $this->attributes);
-    $this->listItemsAttributes = $listItemsAttributes;
-    $this->addClass("r s s{$spanSize}", $this->listItemsAttributes);
-    $this->descriptionSpan                 = --$spanSize;
-    $this->listItemsAttributes[]           = "itemscope";
-    $this->listItemsAttributes["itemtype"] = "http://schema.org/Movie";
+  public function __construct($listItems, $entity, $noItemsText = "", array $listItemsAttributes = null, array $attributes = null, $spanSize = 10, $showRating = false) {
+    parent::__construct($listItems, null, $noItemsText, $listItemsAttributes, $attributes, $spanSize);
     $this->showRating                      = $showRating;
+    if ($showRating === true) {
+      $this->descriptionSpan--;
+    }
   }
 
 
@@ -103,75 +83,40 @@ class Movies extends \MovLib\Presentation\Partial\Lists\AbstractList {
   /**
    * @inheritdoc
    */
-  protected function render() {
+  protected function formatItem($movie, $entity) {
     global $i18n;
 
-    if ($this->showRating === true) {
-      $this->descriptionSpan--;
+    // Display average rating information according to parameter.
+    $ratingInfo = null;
+    if ($this->showRating !== false && $movie->ratingMean > 0) {
+      $rating = \NumberFormatter::create($i18n->locale, \NumberFormatter::DECIMAL)->format($movie->ratingMean);
+      $ratingInfo = "<span class='rating-mean tac'>{$rating}</span>";
     }
 
-    try {
-      $list   = null;
-      /* @var $movie \MovLib\Data\Movie\FullMovie */
-      while ($movie = $this->listItems->fetch_object("\\MovLib\\Data\\Movie\\FullMovie")) {
-        // We have to use different micro-data if display and original title differ.
-        if ($movie->displayTitle != $movie->originalTitle) {
-          $displayTitleItemprop = "alternateName";
-          $movie->originalTitle = "<br><span class='small'>{$i18n->t("{0} ({1})", [
-            "<span itemprop='name'{$this->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>",
-            "<i>{$i18n->t("original title")}</i>",
-          ])}</span>";
-        }
-        // Simplay clear the original title if it's the same as the display title.
-        else {
-          $displayTitleItemprop = "name";
-          $movie->originalTitle = null;
-        }
-        $movie->displayTitle = "<span class='link-color' itemprop='{$displayTitleItemprop}'{$this->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}</span>";
-
-        // Append year enclosed in micro-data to display title if available.
-        if (isset($movie->year)) {
-          $movie->displayTitle = $i18n->t("{0} ({1})", [ $movie->displayTitle, "<span itemprop='datePublished'>{$movie->year}</span>" ]);
-        }
-
-        // Display average rating information according to parameter.
-        $ratingInfo = null;
-        if ($this->showRating !== false && $movie->ratingMean > 0) {
-          $rating = \NumberFormatter::create($i18n->locale, \NumberFormatter::DECIMAL)->format($movie->ratingMean);
-          $ratingInfo = "<span class='rating-mean tac'>{$rating}</span>";
-        }
-
-        $genres = null;
-        $result = $movie->getGenres();
-        while ($row = $result->fetch_assoc()) {
-          if ($genres) {
-            $genres .= ", ";
-          }
-          $genres      .= $row["name"];
-        }
-        if ($genres) {
-          $genres = "<p class='small'>{$genres}</p>";
-        }
-
-        // Put the movie list entry together.
-        $list .=
-          "<li{$this->expandTagAttributes($this->listItemsAttributes)}>" .
-            "<a class='img li r' href='{$movie->route}' itemprop='url'>" .
-              "<div class='s s1 tac'>" .
-                $this->getImage($movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01), false, [ "itemprop" => "image" ]) .
-              "</div>" .
-              $ratingInfo .
-              "<span class='s s{$this->descriptionSpan}'><p>{$movie->displayTitle}{$movie->originalTitle}</p>{$genres}</span>" .
-            "</a>" .
-          "</li>";
+    $genres = null;
+    $result = $movie->getGenres();
+    while ($row = $result->fetch_assoc()) {
+      if ($genres) {
+        $genres .= "&nbsp;";
       }
+      $genres      .= "<span class='label'>{$row["name"]}</span>";
+    }
+    if ($genres) {
+      $genres = "<p class='small'>{$genres}</p>";
+    }
 
-      // Put it all together and we're done.
-      return "<ol{$this->expandTagAttributes($this->attributes)}>{$list}</ol>";
-    }
-    catch (\Exception $e) {
-      return $e->getMessage();
-    }
+    // Put the movie list entry together.
+    return
+      "<li{$this->expandTagAttributes($this->listItemsAttributes)}>" .
+        "<a class='img li r' href='{$movie->route}' itemprop='url'>" .
+          "<div class='s s1 tac'>" .
+            $this->getImage($movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01), false, [ "itemprop" => "image" ]) .
+          "</div>" .
+          $ratingInfo .
+          "<div class='s s{$this->descriptionSpan}'>{$this->getTitleInfo($movie)}{$genres}</div>" .
+        "</a>" .
+      "</li>";
+
   }
 
 }
