@@ -24,18 +24,18 @@
 # SINCE:      0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
+
+# Make all errors terminating.
+$ErrorActionPreference = 'Stop'
+
 # Ensure current path is available (always available in PS3+).
 $PSScriptRoot = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
 
 # Export current working directory to variable.
 $pwd = Get-Location | Select-Object -ExpandProperty Path
 
-# Make all errors terminating.
-$ErrorActionPreference = 'Stop'
-
 # Include the icon change script.
 . "$PSScriptRoot\Set-ConsoleIcon.ps1"
-. "$PSScriptRoot\Show-BalloonTip.ps1"
 
 # Change the icon of our application.
 Set-ConsoleIcon "$PSScriptRoot\Visual Studio Project\MovLib Vagrant Bootstrap\vagrant.ico"
@@ -43,15 +43,181 @@ Set-ConsoleIcon "$PSScriptRoot\Visual Studio Project\MovLib Vagrant Bootstrap\va
 # Change the title of our application.
 $host.UI.RawUI.WindowTitle = 'MovLib Vagrant Bootstrap'
 
-# ----------------------------------------------------------------------------------------------------------------------
-# Start the application.
+
+# ---------------------------------------------------------------------------------------------------------------------- Variables
+
+
+$gitURL = 'http://git-scm.com/downloads'
+$vagrantURL = 'http://www.vagrantup.com/downloads.html'
+$virtualBoxURL = 'https://www.virtualbox.org/wiki/Downloads'
+
+
+# ---------------------------------------------------------------------------------------------------------------------- Functions
+
+
+# Ask the user for a keystroke to exit or continue.
+#
+# PARAMS:
+#   -Balloon
+#     You can pass in any balloon tip for proper dispose.
+#     Default: $null
+# RETURN:
+#   $null
+#     This function will always exit the script.
+function Script-Continue {
+  [cmdletbinding()]
+
+  # Function parameters and defaults.
+  param(
+    [System.Windows.Forms.NotifyIcon]$Balloon = $null
+  )
+
+  Write-Host 'Press [ESC] to exit or any key to continue...'
+  $keyCode = $host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown') | Select-Object -ExpandProperty VirtualKeyCode
+
+  if ($Balloon -ne $null) {
+    $Balloon.Dispose()
+  }
+
+  if ($keyCode -eq 27) {
+    Stop-Process -Id $PID | Out-Null
+  }
+
+  exit
+}
+
+# Display system tray balloon (notification) tip.
+#
+# PARAMS:
+#   -Title
+#     The balloon tip's title.
+#   -Message
+#     The balloon tip's message.
+#   -BalloonType
+#     The balloon tip's type, one of Info, Warning, Error.
+#     Default: Info
+#   -Duration
+#     The balloon tip's display duration in milliseconds.
+#     Default: 5000
+# RETURN:
+#   System.Windows.Forms.NotifyIcon
+#     The balloon tip.
+function Show-BalloonTip {
+  [cmdletbinding()]
+
+  # Function parameters and defaults.
+  param(
+    [parameter(Mandatory = $true)]
+    [string]$Title,
+    [parameter(Mandatory = $true)]
+    [string]$Message,
+    [ValidateSet('Info', 'Warning', 'Error')]
+    [string]$BalloonType = 'Info',
+    [string]$Duration = 5000
+  )
+
+  # Load required assemblies.
+  [System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms') | Out-Null
+
+  # Remove any registered events related to balloon tips.
+  Remove-Event BalloonClicked_event -ea SilentlyContinue
+  Unregister-Event -SourceIdentifier BalloonClicked_event -ea silentlycontinue
+  Remove-Event BalloonClosed_event -ea SilentlyContinue
+  Unregister-Event -SourceIdentifier BalloonClosed_event -ea silentlycontinue
+  Remove-Event Disposed -ea SilentlyContinue
+  Unregister-Event -SourceIdentifier Disposed -ea silentlycontinue
+
+  # Create the balloon tip.
+  $balloon = New-Object System.Windows.Forms.NotifyIcon
+  $path = Get-Process -id $pid | Select-Object -ExpandProperty Path
+  $icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path)
+  $balloon.Icon = $icon
+  $balloon.BalloonTipIcon = $BalloonType
+  $balloon.BalloonTipText = $Message
+  $balloon.BalloonTipTitle = $Title
+
+  # Make balloon tip visible when called.
+  $balloon.Visible = $true
+  $balloon.ShowBalloonTip($Duration)
+
+  # Dispose balloon tip upon click.
+  Register-ObjectEvent $balloon BalloonTipClosed BalloonClosed_event -Action {$balloon.Dispose()} | Out-Null
+
+  return $balloon
+}
+
+# Display info, warning, or error message.
+#
+# PARAMS:
+#   -Title
+#     The message's title.
+#   -Message
+#     The message's body.
+#   -MessageType
+#     The message's type, one of Info, Warning, Error
+#     Default: Error
+#   -URL
+#     URL to open in the user's web browser.
+#     Default: $null
+#   -Duration
+#     The balloon tip's display duration in milliseconds.
+#     Default: 5000
+# RETURN:
+#   $null
+#     If message type is Error the function will exit the script.
+function Display-Message {
+  [cmdletbinding()]
+
+  # Function parameters and defaults.
+  param(
+    [parameter(Mandatory = $true)]
+    [string]$Title,
+    [parameter(Mandatory = $true)]
+    [string]$Message,
+    [ValidateSet('Info', 'Warning', 'Error')]
+    [string]$MessageType = 'Error',
+    [string]$URL = $null,
+    [string]$Duration = 5000
+  )
+
+  # Display balloon tip to ensure that the user knows about the problem.
+  Show-BalloonTip -Title $Title -Message $Message -BalloonType 'Error' | Out-Null
+
+  # Open web browser with given URL (if any).
+  if ($URL -ne $null) {
+    Start-Process $URL
+  }
+
+  # Switch the color, depending on the message's type.
+  switch ($MessageType) {
+    'Info'    { $fc = 'Cyan'       }
+    'Warning' { $fc = 'DarkYellow' }
+    'Error'   { $fc = 'Red'        }
+  }
+
+  # Display message, error messages are displayed without stack.
+  Write-Host
+  Write-Host "$MessageType! $Title" -ForegroundColor $fc
+  Write-Host
+  Write-Host $Message -ForegroundColor $fc
+  Write-Host
+
+  # Only exit on error.
+  if ($MessageType -eq 'Error') {
+    Script-Continue
+  }
+}
+
+
+# ---------------------------------------------------------------------------------------------------------------------- Start
+
 
 Write-Host
 Write-Host 'MovLib Vagrant Bootstrap'
 Write-Host 'Copyright (c) 2014 MovLib, the free movie library.'
 Write-Host 'MovLib is free software, see LICENSE.txt for more information.'
 Write-Host
-Write-Host 'Validating environment...' -ForegroundColor Yellow
+Write-Host 'Validating environment...' -ForegroundColor 'Cyan'
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Validate that git is installed, in our PATH, and at least version 1.9.0.0
@@ -60,17 +226,13 @@ try {
   Get-Command git | Out-Null
 }
 catch {
-  $message = 'Please install Git on your system and ensure that it is in your PATH'
-  Show-BalloonTip -Title 'Missing Git!' -Message $message -BalloonType 'Error' | Out-Null
-  Throw $message
+  Display-Message -Title 'Missing Git!' -Message 'Please install Git on your system and ensure that it is in your PATH.' -URL $gitURL
 }
 
 $version = git --version -ireplace '[a-z ]+([0-9]+\.[0-9]+\.[0-9]+)\.[a-z]+(\.[0-9]+)', '$1$2'
 Write-Debug $version
-if (!$version -or $version.CompareTo('1.9.0.0') -lt 0) {
-  $message = 'Please install at least Git 1.9.0.0'
-  Show-BalloonTip -Title 'Old Git!' -Message $message -BalloonType 'Error' | Out-Null
-  Throw $message
+if (!$version -or $version.CompareTo('1.9.0') -lt 0) {
+  Display-Message -Title 'Missing Git!' -Message 'Please install at least Git "1.9.0".' -URL $gitURL
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -80,20 +242,14 @@ try {
   Get-Command vagrant | Out-Null
 }
 catch {
-  $message = 'Please install Vagrant on your system and ensure that it is in your PATH'
-  Show-BalloonTip -Title 'Missing Vagrant!' -Message $message -BalloonType 'Error' | Out-Null
-  Throw $message
+  Display-Message -Title 'Missing Vagrant!' -Message 'Please install Vagrant on your system and ensure that it is in your PATH.' -URL $vagrantURL
 }
 
 $version = vagrant --version -ireplace 'Vagrant ([0-9]+\.[0-9]+\.[0-9]+)', '$1.0'
 Write-Debug $version
 if (!$version -or $version.CompareTo('1.4.3') -lt 0) {
-  $message = 'Please install at least Vagrant 1.4.3'
-  Show-BalloonTip -Title 'Old Vagrant!' -Message $message -BalloonType 'Error' | Out-Null
-  Throw $message
+  Display-Message -Title 'Old Vagrant!' -Message 'Please install at least Vagrant "1.4.3".' -URL $vagrantURL
 }
-
-Write-Host 'All good, great job!' -ForegroundColor Green
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Validate VirtualBox is installed and at least version 4.3.6
@@ -102,28 +258,25 @@ try {
   $version = (Get-Item -Path HKLM:\Software\Oracle\VirtualBox).getValue('VersionExt')
 }
 catch {
-  $message = 'Please install Oracle VirtualBox on your system'
-  Show-BalloonTip -Title 'Missing VirtualBox!' -Message $message -BalloonType 'Error' | Out-Null
-  Throw $message
+  Display-Message -Title 'Missing VirtualBox!' -Message 'Please install Oracle VirtualBox on your system.' -URL $virtualBoxURL
 }
 
 Write-Debug $version
 if (!$version -or $version.CompareTo('4.3.6') -lt 0) {
-  $message = 'Please install Oracle VirtualBox 4.3.6'
-  Show-BalloonTip -Title 'Old VirtualBox!' -Message $message -BalloonType 'Error' | Out-Null
-  Throw $message
+  Display-Message -Title 'Old VirtualBox!' -Message 'Please install Oracle VirtualBox "4.3.6".' -URL $virtualBoxURL
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Install/Update all Puppet modules and Vagrant plugins.
 
+Write-Host 'All good, great job!' -ForegroundColor 'Green'
 Write-Host
-Write-Host 'Updating git submodules, this might take several minutes...' -ForegroundColor Yellow
+Write-Host 'Updating git submodules, this might take several minutes...' -ForegroundColor 'Cyan'
 
 git submodule update --remote
 
 Write-Host
-Write-Host 'Installing and updating Vagrant plugins, this might take several minutes...' -ForegroundColor Yellow
+Write-Host 'Installing and updating Vagrant plugins, this might take several minutes...' -ForegroundColor 'Cyan'
 
 $installed = vagrant plugin list
 $plugins   = @('hostsupdater', 'vbguest', 'puppet-install')
@@ -148,7 +301,18 @@ foreach ($plugin in $plugins) {
 # Start the MovDev VM.
 
 Write-Host
-Write-Host 'Starting Vagrant, this might take several minutes...' -ForegroundColor Yellow
+Write-Host 'Starting Vagrant, this might take several minutes...' -ForegroundColor 'Cyan'
+
+# Work around net-ssh bug related to pageant, see: https://github.com/mitchellh/vagrant/issues/1455
+$pageant = Get-Process pageant -ErrorAction SilentlyContinue
+if ($pageant -ne $null) {
+  kill -name pageant
+  Display-Message `
+    -Title 'Killed Pageant!' `
+    -Message = 'The Ruby SSH implementation has a bug related to Pageant, therefore I had to close the running process.' `
+    -MessageType 'Warning' `
+    -Duration 20000
+}
 
 # We execute `vagrant up` with the installed GitBash because we cannot safely assume that the various executables from
 # the bin folder are within our PATH and we need ssh.exe for `vagrant ssh` to work. Rather than altering the PATH, which
@@ -157,7 +321,7 @@ Write-Host 'Starting Vagrant, this might take several minutes...' -ForegroundCol
 $arguments = '/C ""';
 $arguments += Split-Path(Split-Path(Get-Command git | Select-Object -ExpandProperty Definition) -Parent) -Parent
 $arguments += '\bin\sh.exe" --login -i -c "'
-$arguments += "printf '\n# vagrant up\n' '' && vagrant up"
+$arguments += "printf '\n# vagrant up\n\n' '' && vagrant up"
 $arguments += '""'
 $p = Start-Process -PassThru -NoNewWindow -WorkingDirectory $pwd -FilePath $env:WinDir\System32\cmd.exe -ArgumentList $arguments
 $p.WaitForExit()
@@ -166,11 +330,5 @@ $p.WaitForExit()
 # Let the user know that provisioning is finished and ensure that the balloon tip is correctly disposed upon exit.
 
 Write-Host
-$balloon = Show-BalloonTip -Title "Finished Provisioning!" -Message "Your MovDev VM is now ready to use."
-
-Write-Host 'Press [ESC] to exit or any key to continue...'
-$keyCode = $host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown') | Select-Object -ExpandProperty VirtualKeyCode
-$balloon.Dispose()
-if ($keyCode -eq 27) {
-  Stop-Process -Id $PID | Out-Null
-}
+$balloon = Show-BalloonTip -Title 'Finished Provisioning!' -Message 'Your MovDev VM is now ready to use.'
+Script-Continue -Balloon $balloon
