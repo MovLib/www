@@ -120,10 +120,12 @@ INSERT INTO `jobs` SET
   )
 ;
 
+SET @production_company_id = LAST_INSERT_ID();
+
 INSERT INTO `movies_crew` SET
   `movie_id`    = 3,
   `company_id`  = 3,
-  `job_id`      = 1
+  `job_id`      = @production_company_id
 ;
 
 -- END "Castle Rock Entertainment"

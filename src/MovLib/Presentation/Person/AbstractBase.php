@@ -18,7 +18,7 @@
 
 namespace MovLib\Presentation\Person;
 
-use \MovLib\Data\Person\Full as FullPerson;
+use \MovLib\Data\Person\FullPerson as FullPerson;
 use \MovLib\Presentation\Error\Gone;
 
 /**
@@ -40,7 +40,7 @@ abstract class AbstractBase extends \MovLib\Presentation\Page{
   /**
    * The person to present.
    *
-   * @var \MovLib\Data\Person\Full
+   * @var \MovLib\Data\Person\FullPerson
    */
   protected $person;
 

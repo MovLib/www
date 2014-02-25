@@ -30,6 +30,28 @@ TRUNCATE TABLE `movies_directors`;
 TRUNCATE TABLE `movies`;
 TRUNCATE TABLE `persons`;
 
+-- Insert director and actor jobs
+
+INSERT INTO `jobs` SET
+  `dyn_titles` = COLUMN_CREATE(
+    'en', 'Director',
+    'de', 'Regisseur'
+  ),
+  `dyn_descriptions` = ''
+;
+
+SET @job_director = LAST_INSERT_ID();
+
+INSERT INTO `jobs` SET
+  `dyn_titles` = COLUMN_CREATE(
+    'en', 'Actor',
+    'de', 'Schauspieler'
+  ),
+  `dyn_descriptions` = ''
+;
+
+SET @job_actor = LAST_INSERT_ID();
+
 -- START "Roundhay Garden Scene"
 
 INSERT INTO `movies` SET
@@ -83,7 +105,7 @@ INSERT INTO `persons` SET
 
 SET @louis_le_prince_id = LAST_INSERT_ID();
 
-INSERT INTO `movies_directors` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @louis_le_prince_id;
+INSERT INTO `movies_directors` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @louis_le_prince_id, `job_id` = @job_director;
 
 INSERT INTO `persons` SET
   `name`                   = 'Harriet Hartley',
@@ -92,7 +114,7 @@ INSERT INTO `persons` SET
   `dyn_image_descriptions` = ''
 ;
 SET @harriet_hartley_id = LAST_INSERT_ID();
-INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @harriet_hartley_id, `roles` = COLUMN_CREATE('en', 'Herself', 'de', 'Selbst');
+INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @harriet_hartley_id, `job_id` = @job_actor, `roles` = COLUMN_CREATE('en', 'Herself', 'de', 'Selbst');
 
 INSERT INTO `persons` SET
   `name`                   = 'Adolphe Le Prince',
@@ -101,7 +123,7 @@ INSERT INTO `persons` SET
   `dyn_image_descriptions` = ''
 ;
 SET @adolphe_le_prince_id = LAST_INSERT_ID();
-INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @adolphe_le_prince_id, `roles` = COLUMN_CREATE('en', 'Himself', 'de', 'Selbst');
+INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @adolphe_le_prince_id, `job_id` = @job_actor, `roles` = COLUMN_CREATE('en', 'Himself', 'de', 'Selbst');
 
 INSERT INTO `persons` SET
   `name`                   = 'Joseph Whitley',
@@ -110,7 +132,7 @@ INSERT INTO `persons` SET
   `dyn_image_descriptions` = ''
 ;
 SET @joseph_whitley_id = LAST_INSERT_ID();
-INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @joseph_whitley_id, `roles` = COLUMN_CREATE('en', 'Himself', 'de', 'Selbst');
+INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @joseph_whitley_id, `job_id` = @job_actor, `roles` = COLUMN_CREATE('en', 'Himself', 'de', 'Selbst');
 
 INSERT INTO `persons` SET
   `name`                   = 'Sarah Whitley',
@@ -122,7 +144,7 @@ INSERT INTO `persons` SET
   `dyn_image_descriptions` = ''
 ;
 SET @sarah_whitley_id = LAST_INSERT_ID();
-INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @sarah_whitley_id, `roles` = COLUMN_CREATE('en', 'Herself', 'de', 'Selbst');
+INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @sarah_whitley_id, `job_id` = @job_actor, `roles` = COLUMN_CREATE('en', 'Herself', 'de', 'Selbst');
 
 -- END "Roundhay Garden Scene"
 
@@ -170,7 +192,7 @@ INSERT INTO `persons` SET
 
 SET @sacha_goedegebure_id = LAST_INSERT_ID();
 
-INSERT INTO `movies_directors` SET `movie_id` = @big_buck_bunny_id, `person_id` = @sacha_goedegebure_id;
+INSERT INTO `movies_directors` SET `movie_id` = @big_buck_bunny_id, `person_id` = @sacha_goedegebure_id, `job_id` = @job_director;
 INSERT INTO `movies_countries` SET `movie_id` = @big_buck_bunny_id, `country_code` = 'US';
 INSERT INTO `movies_languages` SET `movie_id` = @big_buck_bunny_id, `language_code` = 'xx';
 INSERT INTO `movies_genres` SET `movie_id` = @big_buck_bunny_id, `genre_id` = (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Short' LIMIT 1);
@@ -252,7 +274,8 @@ SET @frank_darabont_id = LAST_INSERT_ID();
 
 INSERT INTO `movies_directors` SET
   `movie_id`  = @the_shawshank_redemption_id,
-  `person_id` = @frank_darabont_id
+  `person_id` = @frank_darabont_id,
+  `job_id` = @job_director
 ;
 
 INSERT INTO `movies_titles` SET

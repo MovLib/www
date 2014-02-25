@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Person;
 
-use \MovLib\Data\Person\Full;
+use \MovLib\Data\Person\FullPerson;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputCheckbox;
@@ -193,7 +193,7 @@ class Create extends \MovLib\Presentation\Page {
   protected function valid() {
     global $i18n, $kernel;
 
-    $person            = new Full();
+    $person            = new FullPerson();
     $person->aliases   = $this->inputAliases->value;
     $person->biography = $this->inputBiography->value;
     $person->birthDate = $this->inputBirthDate->value;
