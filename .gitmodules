@@ -28,3 +28,15 @@
 [submodule "conf/puppet/module/oracle_java_jdk"]
 	path = conf/puppet/module/oracle_java_jdk
 	url = https://github.com/Fleshgrinder/puppet-oracle-java-jdk.git
+[submodule "conf/puppet/module/vcsrepo"]
+	path = conf/puppet/module/vcsrepo
+	url = https://github.com/puppetlabs/puppetlabs-vcsrepo.git
+[submodule "conf/puppet/module/ntp"]
+	path = conf/puppet/module/ntp
+	url = https://github.com/puppetlabs/puppetlabs-ntp.git
+[submodule "conf/puppet/module/curl"]
+	path = conf/puppet/module/curl
+	url = https://github.com/alphagov/puppet-curl.git
+[submodule "conf/puppet/module/build-essential"]
+	path = conf/puppet/module/build-essential
+	url = https://github.com/rogeriopradoj/puppet-build-essential.git
