@@ -201,14 +201,46 @@ class Full extends \MovLib\Data\Company\Company {
   /**
    * Get the mysqli result for all movies this company was involved.
    *
-   * @todo Implement
    * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
    * @return \mysqli_result
    *   The mysqli result for all movies of this company.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMovieResult() {
-    return null;
+    global $db, $i18n;
+    return $db->query(
+      "SELECT
+        `movies_crew`.`movie_id` AS `id`,
+        `jobs`.`id` AS `jobId`,
+        IFNULL(COLUMN_GET(`jobs`.`dyn_titles`, ? AS CHAR), COLUMN_GET(`jobs`.`dyn_titles`, ? AS CHAR)) AS `jobTitle`,
+        `movies`.`year` AS `year`,
+        IFNULL(`dt`.`title`, `ot`.`title`) AS `displayTitle`,
+        IFNULL(`dt`.`language_code`, `ot`.`language_code`) AS `displayTitleLanguageCode`,
+        `ot`.`title` AS `originalTitle`,
+        `ot`.`language_code` AS `originalTitleLanguageCode`,
+        `p`.`poster_id` AS `displayPoster`
+      FROM `movies_crew`
+        LEFT JOIN `movies` AS `movies`
+          ON `movies`.`id` = `movies_crew`.`movie_id`
+        LEFT JOIN `movies_display_titles` AS `mdt`
+          ON `mdt`.`movie_id` = `movies_crew`.`movie_id`
+          AND `mdt`.`language_code` = ?
+        LEFT JOIN `movies_titles` AS `dt`
+          ON `dt`.`id` = `mdt`.`title_id`
+        LEFT JOIN `movies_original_titles` AS `mot`
+          ON `mot`.`movie_id` = `movies_crew`.`movie_id`
+        LEFT JOIN `movies_titles` AS `ot`
+          ON `ot`.`id` = `mot`.`title_id`
+        LEFT JOIN `display_posters` AS `p`
+          ON `p`.`movie_id` = `movies_crew`.`movie_id`
+          AND `p`.`language_code` = ?
+        LEFT JOIN `jobs` ON `movies_crew`.`job_id` = `jobs`.`id`
+      WHERE `movies_crew`.`company_id` = ?
+      ORDER BY `jobTitle` DESC",
+      "ssssi",
+      [ $i18n->languageCode, $i18n->defaultLanguageCode, $i18n->languageCode, $i18n->languageCode, $this->id ]
+    )->get_result();
   }
 
   /**
@@ -265,14 +297,13 @@ class Full extends \MovLib\Data\Company\Company {
   /**
    * Get the mysqli result for all series this company was involved.
    *
-   * @todo Implement
    * @global \MovLib\Data\Database $db
    * @return \mysqli_result
    *   The mysqli result for all series of this company.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getSeriesResult() {
-    return null;
+    // @todo Implement
   }
 
   /**

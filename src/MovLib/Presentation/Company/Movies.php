@@ -17,6 +17,9 @@
  */
 namespace MovLib\Presentation\Company;
 
+use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Presentation\Partial\Lists\MovieJobs as MoviesPartial;
+
 /**
  * Movies of a company.
  *
@@ -47,8 +50,12 @@ class Movies extends \MovLib\Presentation\Company\AbstractBase {
     $this->pageTitle = str_replace($search, "<a href='{$this->company->route}'>{$this->company->name}</a>", $title);
   }
 
+  /**
+   * @global \MovLib\Data\I18n $i18n
+   * @return \MovLib\Presentation\Partial\Lists\Movies
+   */
   protected function getPageContent() {
     global $i18n;
-    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("movies") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new MoviesPartial($this->company->getMovieResult(), (new Alert($i18n->t("No movies found."), null, Alert::SEVERITY_INFO))->__toString());
   }
 }

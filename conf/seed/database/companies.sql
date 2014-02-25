@@ -115,7 +115,7 @@ INSERT INTO `jobs` SET
     'de', '&lt;p&gt;Unter einer Filmproduktionsgesellschaft versteht man ein Unternehmen, das seine Einnahmen überwiegend aus der Produktion von Filmen erwirtschaftet.&lt;/p&gt;&lt;p&gt;Das Arbeitsgebiet einer Filmproduktionsgesellschaft umfasst dabei alle Phasen der Filmproduktion, von der Stoffentwicklung und Filmfinanzierung über die Produktionsvorbereitung und die Dreharbeiten bis hin zur Postproduktion. Kleinere Unternehmen, die keinen eigenen Verleihbetrieb haben und fertige Produktionen zur Kinoauswertung einem externen Filmverleih anvertrauen, erledigen in der Übergangszeit, bis ein Verleih gefunden ist, auch Aufgaben der Filmherausbringung (Launch) wie die Anmeldung des Films bei der FSK und der Filmbewertungsstelle (beides nur in Deutschland), Öffentlichkeitsarbeit und Werbung, Festivalbewerbungen und die Organisation einer - oft groß aufgezogenen - Kinopremiere, einschließlich der Einwerbung von Sponsoren- und Fördergeldern zur Finanzierung dieser Arbeiten.&lt;/p&gt;'
   ),
   `dyn_titles`             = COLUMN_CREATE(
-    'en', 'Production Companies',
+    'en', 'Production Company',
     'de', 'Filmproduktionsgesellschaft'
   )
 ;
