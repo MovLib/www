@@ -79,6 +79,7 @@ class Show extends \MovLib\Presentation\Page {
     return "<div id='filter' class='tar'>Filter</div>" .
             new MoviesPartial(
               Movie::getMovies($this->paginationOffset, $this->paginationLimit),
+              null,
               new Alert($i18n->t("No movies match your search criteria."), null, Alert::SEVERITY_INFO),
               null,
               null,
