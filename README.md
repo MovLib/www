@@ -28,24 +28,12 @@ This will set up a full local development virtual machine that is similar to the
 * [Twitter](https://twitter.com/MovLib)
 * [Richard Fussenegger](http://richard.fussenegger.info/)
 * [Fachhochschule Salzburg GmbH](http://www.fh-salzburg.ac.at/)
-* [AGPL-v3](http://www.gnu.org/licenses/agpl.html)
 
 ## License
-```
-This file is part of MovLib.
-
-Copyright © 2013-present MovLib.
-
-MovLib is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.
-
-MovLib is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public
-License along with MovLib. If not, see <http://www.gnu.org/licenses/>.
-```
+> Copyright © 2013-present [MovLib](https://movlib.org/).
+>
+> MovLib is free software: you can redistribute it and/or modify it under the terms of the [GNU Affero General Public License](https://www.gnu.org/licenses/agpl.html) as published by the Free Software Foundation, either version 3 of the license, or (at your option) any later version.
+>
+> MovLib is distributed in the hope that it will be useful, but **without any warranty**; without even the implied warranty of **merchantability** or **fitness for a particular purpose**. See the GNU Affero General Public License for more details.
+>
+> You should have received a copy of the GNU Affero General Public License along with MovLib. If not, see [gnu.org/licenses](http://www.gnu.org/licenses/).
