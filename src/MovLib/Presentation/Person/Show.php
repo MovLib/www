@@ -19,8 +19,11 @@ namespace MovLib\Presentation\Person;
 
 use \MovLib\Data\Image\PersonImage;
 use \MovLib\Data\Movie\Movie;
+use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Presentation\Partial\Place;
 use \MovLib\Presentation\Partial\Date;
+use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Presentation\Partial\Lists\MovieJobs;
 use \MovLib\Presentation\Partial\Lists\Ordered;
 
 /**
@@ -211,47 +214,10 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
       ,
     ];
 
-    // Filmography section.
-    $filmography = null;
-    $director = $this->formatFilmographyList($this->person->getMovieDirectorIdsResult());
-    if ($director) {
-      $filmography["director"] = [
-        $i18n->t("Director"),
-        $director
-      ];
-    }
-
-    $cast = $this->formatFilmographyList($this->person->getMovieCastIdsResult());
-    if ($cast) {
-      if ($this->person->sex === 1) {
-        $jobTitle = $i18n->t("Actor");
-      }
-      elseif ($this->person->sex === 2) {
-        $jobTitle = $i18n->t("Actress");
-      }
-      else {
-        $jobTitle = $i18n->t("Actor/Actress");
-      }
-      $filmography["cast"] = [
-        $jobTitle,
-        $cast
-      ];
-    }
-
-    $crew = $this->formatFilmographyList($this->person->getMovieCrewIdsResult());
-    if ($crew) {
-      $filmography["crew"] = [
-        $i18n->t("Crew"),
-        $crew,
-      ];
-    }
-
-    if (!$filmography) {
-      $filmography = $i18n->t("No jobs available. Please go to a movie or serial page and add them there.");
-    }
-    $sections["filmography"] = [
-      $i18n->t("Filmography"),
-      $filmography,
+    // Movies section.
+    $sections["movies"] = [
+      $i18n->t("Movies"),
+      new MovieJobs(FullMovie::getPersonAppearances($this->person->id), $this->person, $i18n->t("No movie jobs available. Please go to movie pages and add some."))
     ];
 
     // Additional names section.
@@ -297,50 +263,6 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
       $content .= "</div>";
     }
     return $content;
-  }
-
-  /**
-   * Format a mysql result for display in the filmography section.
-   *
-   * @param \mysqli_result $result
-   *   The result set to format.
-   * @return string
-   *   The fomatted list.
-   */
-  protected function formatFilmographyList($result) {
-    $list = null;
-    while ($row = $result->fetch_assoc()) {
-      // Retrieve the correct entity.
-      if ($row["movie_id"]) {
-        $entity = new Movie($row["movie_id"]);
-      }
-      else {
-        $entity = new Serial($row["serial_id"]);
-      }
-
-      // Mark up roles or jobs, depending on being cast or crew.
-      $roleOrJob = null;
-      if (!empty($row["roles"])) {
-        // @todo: Link to role page and provide microdata.
-        $roleOrJob = "<br><span class='o1 s s9'>{$row["roles"]}</span>";
-      }
-      elseif (!empty($row["job_title"])) {
-        $roleOrJob = "<br><span class='o1 s s9'>{$row["job_title"]}</span>";
-      }
-
-      $list .=
-        "<li class='li r'>" .
-          "<span itemscope itemtype='http://schema.org/Movie'>" .
-            "<span class='s s1' itemprop='datePublished'>{$entity->year}</span>" .
-            "<span class='s s9'><a href='{$entity->route}' itemprop='url name'{$this->lang($entity->displayTitleLanguageCode)}>{$entity->displayTitle}</a></span>" .
-          "</span>" .
-          $roleOrJob .
-        "</li>"
-      ;
-    }
-    if ($list) {
-      return "<ol class='hover-list no-list'>{$list}</ol>";
-    }
   }
 
 }

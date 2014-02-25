@@ -28,7 +28,7 @@ use \MovLib\Data\Image\MoviePoster;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieJobs extends \MovLib\Presentation\Partial\Lists\Movies {
+class MovieJobs extends \MovLib\Presentation\Partial\Lists\AbstractMovieList {
 
   /**
    * @inheritdoc
