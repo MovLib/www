@@ -17,29 +17,65 @@
  */
 namespace MovLib\Presentation\Genres;
 
-use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Data\Genre;
 
 /**
- * @todo Description of Show
+ * List of all genres.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2014 MovLib
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
 class Show extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\TraitPagination;
+  use \MovLib\Presentation\TraitSidebar;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new genres show presentation.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   */
   public function __construct() {
-    global $i18n;
+    global $i18n, $kernel;
     $this->initPage($i18n->t("Genres"));
-    $this->initLanguageLinks("/genres");
     $this->initBreadcrumb();
-    $this->alerts .= new Alert(
-      $i18n->t("The genres feature isn’t implemented yet."),
-      $i18n->t("Check back later"),
-      Alert::SEVERITY_INFO
-    );
+    $this->initLanguageLinks("/genres", null, true);
+    $this->paginationInit(Genre::getTotalCount());
+    $this->sidebarInit([
+      [ $kernel->requestPath, $this->title ],
+    ]);
+    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/genre/create")}'>{$i18n->t("Create New Genre")}</a>";
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inheritdoc
+   */
+  protected function getPageContent() {
+    global $i18n;
+    $list  = null;
+    $genres = Genre::getGenres($this->paginationOffset, $this->paginationLimit);
+    /* @var $genre \MovLib\Data\Genre */
+    while ($genre = $genres->fetch_object("\\MovLib\\Data\\Genre")) {
+      $list .=
+        "<li class='s s5' itemscope itemtype='http://schema.org/CreativeWork'>" .
+          "<a href='{$i18n->r("/genre/{0}", [ $genre->id ])}' itemprop='url'>" .
+            "<span class='s s5' itemprop='genre'>{$genre->name}</span>" .
+          "</a>" .
+        "</li>"
+      ;
+    }
+    return "<div id='filter'>filter filter filter</div><ol class='hover-list no-list r'>{$list}</ol>";
   }
 
 }

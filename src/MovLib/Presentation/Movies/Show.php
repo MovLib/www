@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presentation\Movies;
 
-use \MovLib\Data\Image\MoviePoster;
 use \MovLib\Data\Movie\Movie;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Lists\Movies as MoviesPartial;
@@ -54,7 +53,7 @@ class Show extends \MovLib\Presentation\Page {
       [ $i18n->rp("/serials"), $i18n->t("Serials"), [ "class" => "ico ico-series" ] ],
       [ $i18n->rp("/releases"), $i18n->t("Releases"), [ "class" => "ico ico-release" ] ],
       [ $i18n->rp("/persons"), $i18n->t("Persons"), [ "class" => "ico ico-person" ] ],
-      [ $i18n->rp("/companies"), $i18n->t("Companies"), [ "class" => "ico ico-comoany" ] ],
+      [ $i18n->rp("/companies"), $i18n->t("Companies"), [ "class" => "ico ico-company" ] ],
       [ $i18n->rp("/help"), $i18n->t("Help"), [ "class" => "ico ico-help" ] ],
     ]);
     $this->paginationInit(Movie::getMoviesCount());
@@ -80,6 +79,7 @@ class Show extends \MovLib\Presentation\Page {
             new MoviesPartial(
               Movie::getMovies($this->paginationOffset, $this->paginationLimit),
               new Alert($i18n->t("No movies match your search criteria."), null, Alert::SEVERITY_INFO),
+              null,
               null,
               null,
               10,

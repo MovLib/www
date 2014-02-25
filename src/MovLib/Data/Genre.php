@@ -69,41 +69,45 @@ class Genre extends \MovLib\Data\Database {
 
 
   /**
-   * Get all available genres.
+   * Get the count of all genres.
+   *
+   * @global \MovLib\Data\Database $db
+   * @staticvar null|integer $count
+   * @return integer
+   */
+  public static function getTotalCount() {
+    global $db;
+    static $count = null;
+    if (!$count) {
+      $count = $db->query("SELECT COUNT(`id`) FROM `genres` LIMIT 1")->get_result()->fetch_row()[0];
+    }
+    return $count;
+  }
+
+  /**
+   * Get all genres matching the offset and row count.
    *
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
-   * @staticvar array Used to cache the genres.
-   * @param array $filter [optional]
-   *   Associative array where the keys are the genre identifiers that should be returned.
-   * @return array
-   *   All available genres.
+   * @param integer $offset
+   *   The offset in the result.
+   * @param integer $rowCount
+   *   The number of rows to retrieve.
+   * @return \mysqli_result
+   *   The query result.
    */
-  public static function getGenres(array $filter = null) {
+  public static function getGenres($offset, $rowCount) {
     global $db, $i18n;
-    static $genres = null;
-
-    // Fetch, sort and cache all available genre's for the current display language.
-    if (!isset($genres[$i18n->locale])) {
-      $query  = self::getQuery();
-      $result = $db->query("{$query} ORDER BY `name` ASC", "ss", [ $i18n->languageCode, $i18n->languageCode ])->get_result();
-      while ($genre = $result->fetch_assoc()) {
-        $genres[$i18n->locale][$genre["id"]] = $genre["name"];
-      }
-    }
-
-    // Filter the result if a filter was passed and make sure to keep the sorting.
-    if ($filter) {
-      $filtered = [];
-      foreach ($genres[$i18n->locale] as $id => $name) {
-        if (isset($filter[$id])) {
-          $filtered[$id] = $name;
-        }
-      }
-      return $filtered;
-    }
-
-    return $genres[$i18n->locale];
+    return $db->query("
+        SELECT
+          `id`,
+          IFNULL(COLUMN_GET(`dyn_names`, ? AS CHAR), COLUMN_GET(`dyn_names`, ? AS CHAR)) AS `name`
+        FROM `genres`
+        ORDER BY `name` ASC
+        LIMIT ? OFFSET ?",
+      "ssii",
+      [ $i18n->languageCode, $i18n->defaultLanguageCode, $rowCount, $offset ]
+    )->get_result();
   }
 
   /**
@@ -128,6 +132,4 @@ class Genre extends \MovLib\Data\Database {
     }
     return $query;
   }
-
-
 }
