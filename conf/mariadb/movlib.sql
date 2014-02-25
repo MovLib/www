@@ -319,6 +319,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_cast` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.',
+  `job_id` BIGINT UNSIGNED NOT NULL,
   `roles` BLOB NOT NULL COMMENT 'The names of the role the person played in the movie as comma separated list.',
   `weight` SMALLINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The weight (display order) of the movie’s cast. Default is 0.',
   `alias_id` BIGINT NULL,
@@ -326,6 +327,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_cast` (
   INDEX `fk_movies_cast_movies` (`movie_id` ASC),
   INDEX `fk_movies_cast_persons` (`person_id` ASC),
   INDEX `fk_movies_cast_persons_aliases` (`alias_id` ASC),
+  INDEX `fk_movies_cast_jobs` (`job_id` ASC),
   CONSTRAINT `fk_movies_cast_persons`
     FOREIGN KEY (`person_id`)
     REFERENCES `movlib`.`persons` (`id`)
@@ -336,9 +338,14 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_cast` (
     REFERENCES `movlib`.`movies` (`id`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_cast_persons_aliases1`
+  CONSTRAINT `fk_movies_cast_persons_aliases`
     FOREIGN KEY (`alias_id`)
     REFERENCES `movlib`.`persons_aliases` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_cast_jobs`
+    FOREIGN KEY (`job_id`)
+    REFERENCES `movlib`.`jobs` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -404,12 +411,14 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_directors` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.',
+  `job_id` BIGINT UNSIGNED NOT NULL,
   `weight` SMALLINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The weight (display order) of the movie’s director. Default is 0.',
   `alias_id` BIGINT NULL,
   PRIMARY KEY (`movie_id`, `person_id`),
   INDEX `fk_movies_directors_persons` (`person_id` ASC),
   INDEX `fk_movies_directors_movies` (`movie_id` ASC),
   INDEX `fk_movies_directors_persons_aliases` (`alias_id` ASC),
+  INDEX `fk_movies_directors_jobs` (`job_id` ASC),
   CONSTRAINT `fk_movies_directors_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
@@ -420,9 +429,14 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_directors` (
     REFERENCES `movlib`.`persons` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_directors_persons_aliases1`
+  CONSTRAINT `fk_movies_directors_persons_aliases`
     FOREIGN KEY (`alias_id`)
     REFERENCES `movlib`.`persons_aliases` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_directors_jobs`
+    FOREIGN KEY (`job_id`)
+    REFERENCES `movlib`.`jobs` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
