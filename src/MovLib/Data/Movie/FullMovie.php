@@ -128,6 +128,10 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
     }
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
    * Get the mysqli result for the movie's cast.
    *
