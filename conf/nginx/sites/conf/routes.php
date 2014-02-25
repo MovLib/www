@@ -443,6 +443,62 @@ location = <?= $rp("/genres") ?> {
   try_files $movlib_cache @php;
 }
 
+location = <?= $r("/genre/create") ?> {
+  set $movlib_presenter "Genre\\Create";
+  try_files $movlib_cache @php;
+}
+
+location ^~ <?= $r("/genre") ?> {
+
+  #
+  # ---------------------------------------- Genre
+  #
+
+  location ~* "^<?= $r("/genre/{0}", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Genre\\Show";
+    set $movlib_genre_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $r("/genre/{0}/discussion", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Genre\\Discussion";
+    set $movlib_genre_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $r("/genre/{0}/edit", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Genre\\Edit";
+    set $movlib_genre_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $r("/genre/{0}/delete", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Genre\\Delete";
+    set $movlib_genre_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $r("/genre/{0}/history", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Genre\\History";
+    set $movlib_genre_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $rp("/genre/{0}/movies", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Genre\\Movies";
+    set $movlib_genre_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $rp("/genre/{0}/series", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Genre\\Series";
+    set $movlib_genre_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  rewrite .* /error/NotFound last;
+}
+
 
 # ---------------------------------------------------------------------------------------------------------------------- person(s)
 

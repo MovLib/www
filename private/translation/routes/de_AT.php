@@ -145,7 +145,8 @@ return [
   "/genre/{0}"            => "/genre/{0}",
   "/genre/{0}/discussion" => "/genre/{0}/diskussion",
   "/genre/{0}/edit"       => "/genre/{0}/bearbeiten",
-  "/genre/{0}/löschen"    => "/genre/{0}/löschen",
+  "/genre/{0}/delete"     => "/genre/{0}/löschen",
+  "/genre/{0}/history"    => "/genre/{0}/geschichte",
 
   // ------------------------------------------------------------------------------------------------------------------- System Pages
   "/about-movlib"                 => "/über-movlib",
