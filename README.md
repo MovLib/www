@@ -1,18 +1,48 @@
-# MovLib, the free movie library.
+# ![MovLib logo](https://github.com/MovLib/www/blob/master/public/asset/img/logo/32.png?raw=true) MovLib, the free movie library.
+Imagine [Wikipedia](https://en.wikipedia.org/), [Discogs](http://www.discogs.com/), [Last.fm](http://www.last.fm/), [IMDb](http://www.imdb.com/), and [TheMovieDB](http://www.themoviedb.org/) combined in a totally free and open project.
 
-The free movie library that anyone can edit.
-
-Our target is to combine the power of websites like Wikipedia, IMDb, OFDb, Discogs, … and alike into a single big free project.
+[Sign up for the open beta](https://movlib.org/) or [visit the current development (alpha) version](https://alpha.movlib.org/).
 
 Stay tuned!
 
-- - -
+## Local Development
+> The Virtual Machine isn't finished yet, but it should be finished within the next days. The steps will stay the same.
 
+1. Clone the repository: `git clone https://github.com/MovLib/www.git`
+2. Install [Git](http://git-scm.com/downloads)
+3. Install [Vagrant](http://www.vagrantup.com/downloads.html)
+4. Install [Virtual Box](https://www.virtualbox.org/wiki/Downloads)
+5. Depending on your operating system:
+  * **Windows:** double click the `vagrantup.exe`
+  * **Linux:** execute `vagrantup.sh`
+  * **Mac:** no support (*yet*)
+
+This will set up a full local development virtual machine that is similar to the real production server. The VM includes the [Debian 7 Wheezy](http://www.debian.org/) with [Gnome GUI](http://www.gnome.org/), the [Oracle NetBeans IDE](https://netbeans.org/), and all other dependencies provisioned via [Puppet](http://puppetlabs.com/). You'll be able to develop, debug, and test right away.
+
+## Weblinks
 * [Official Website](https://movlib.org/)
 * [Ohloh](https://www.ohloh.net/p/movlib)
+* [Travis-CI](https://travis-ci.org/MovLib/www) (*unused*)
 * [Facebook](https://www.facebook.com/MovLib.org)
 * [Google+](https://google.com/+MovlibOrg)
 * [Twitter](https://twitter.com/MovLib)
 * [Richard Fussenegger](http://richard.fussenegger.info/)
 * [Fachhochschule Salzburg GmbH](http://www.fh-salzburg.ac.at/)
 * [AGPL-v3](http://www.gnu.org/licenses/agpl.html)
+
+## License
+```
+This file is part of MovLib.
+
+Copyright © 2013-present MovLib.
+
+MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License along with MovLib.
+If not, see http://www.gnu.org/licenses/.
+```
