@@ -16,7 +16,7 @@ Stay tuned!
   * **Windows:** double click the `vagrantup.exe`
   * **Unix:** execute `vagrantup.sh`
 
-This will set up a full local development virtual machine that is similar to the real production server. The VM includes the [Debian 7 Wheezy](http://www.debian.org/) with [Gnome GUI](http://www.gnome.org/), the [Oracle NetBeans IDE](https://netbeans.org/), and all other dependencies provisioned via [Puppet](http://puppetlabs.com/). You'll be able to develop, debug, and test right away.
+This will set up a full local development virtual machine that is similar to the real production server. The VM includes [Debian 7 Wheezy](http://www.debian.org/) with [Gnome GUI](http://www.gnome.org/), the [Oracle NetBeans IDE](https://netbeans.org/), and all other dependencies provisioned via [Puppet](http://puppetlabs.com/). You'll be able to develop, debug, and test right away.
 
 ## Weblinks
 * [Official Website](https://movlib.org/)
