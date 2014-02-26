@@ -53,6 +53,20 @@ class Genre extends \MovLib\Data\Database {
    */
   public $name;
 
+  /**
+   * Amount of movies with this genre.
+   *
+   * @var integer
+   */
+  public $moviesCount;
+
+  /**
+   * Amount of series with this genre.
+   *
+   * @var integer
+   */
+  public $seriesCount;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -98,35 +112,33 @@ class Genre extends \MovLib\Data\Database {
    */
   public static function getGenres($offset, $rowCount) {
     global $db, $i18n;
+    $query = self::getQuery();
     return $db->query("
-        SELECT
-          `id`,
-          IFNULL(COLUMN_GET(`dyn_names`, ? AS CHAR), COLUMN_GET(`dyn_names`, ? AS CHAR)) AS `name`
-        FROM `genres`
+        {$query}
         ORDER BY `name` ASC
         LIMIT ? OFFSET ?",
-      "ssii",
-      [ $i18n->languageCode, $i18n->defaultLanguageCode, $rowCount, $offset ]
+      "ssssii",
+      [ $i18n->languageCode, $i18n->defaultLanguageCode, $i18n->languageCode, $i18n->defaultLanguageCode, $rowCount, $offset ]
     )->get_result();
   }
 
   /**
    * Get the default query.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @staticvar string Used to cache the default query.
    * @return string
    *   The default query.
    */
   protected static function getQuery() {
-    global $i18n;
     static $query = null;
     if (!$query) {
       $query =
         "SELECT
           `id`,
-          IFNULL(COLUMN_GET(`dyn_names`, ? AS CHAR), COLUMN_GET(`dyn_names`, '{$i18n->languageCode}' AS CHAR)) AS `name`,
-          COLUMN_GET('dyn_descriptions`, ? AS CHAR) AS `description`
+          IFNULL(COLUMN_GET(`dyn_names`, ? AS CHAR), COLUMN_GET(`dyn_names`, ? AS CHAR)) AS `name`,
+          IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS CHAR), COLUMN_GET(`dyn_descriptions`, ? AS CHAR)) AS `description`,
+          `movies_count` AS `moviesCount`,
+          `series_count` AS `seriesCount`
         FROM `genres`"
       ;
     }

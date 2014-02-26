@@ -18,6 +18,8 @@
 namespace MovLib\Presentation\Genres;
 
 use \MovLib\Data\Genre;
+use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Presentation\Partial\Lists\Genres AS GenresPartial;
 
 /**
  * List of all genres.
@@ -63,19 +65,23 @@ class Show extends \MovLib\Presentation\Page {
    */
   protected function getPageContent() {
     global $i18n;
-    $list  = null;
-    $genres = Genre::getGenres($this->paginationOffset, $this->paginationLimit);
-    /* @var $genre \MovLib\Data\Genre */
-    while ($genre = $genres->fetch_object("\\MovLib\\Data\\Genre")) {
-      $list .=
-        "<li class='s s5' itemscope itemtype='http://schema.org/CreativeWork'>" .
-          "<a href='{$i18n->r("/genre/{0}", [ $genre->id ])}' itemprop='url'>" .
-            "<span class='s s5' itemprop='genre'>{$genre->name}</span>" .
-          "</a>" .
-        "</li>"
-      ;
-    }
-    return "<div id='filter'>filter filter filter</div><ol class='hover-list no-list r'>{$list}</ol>";
+    return "<div id='filter' class='tar'>{$i18n->t("Filter")}</div>" . new GenresPartial(
+      Genre::getGenres($this->paginationOffset, $this->paginationLimit),
+      new Alert(
+        $i18n->t(
+          "We couldn’t find any genre matching your filter criteria, or there simply aren’t any genres available. Would you like to {0}create a new entry{1}?",
+          [
+            "<a href='{$i18n->r("/genre/create")}'>",
+            "</a>"
+          ]
+        ),
+        $i18n->t("No genres"),
+        Alert::SEVERITY_INFO
+      ),
+      null,
+      null,
+      10,
+      true
+    );
   }
-
 }
