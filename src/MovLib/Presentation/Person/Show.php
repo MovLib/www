@@ -18,12 +18,12 @@
 namespace MovLib\Presentation\Person;
 
 use \MovLib\Data\Image\PersonImage;
-use \MovLib\Data\Movie\Movie;
-use \MovLib\Data\Movie\FullMovie;
+use \MovLib\Data\Image\MoviePoster;
+use \MovLib\Data\Movie\Cast;
+use \MovLib\Data\Movie\Crew;
 use \MovLib\Presentation\Partial\Place;
 use \MovLib\Presentation\Partial\Date;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Lists\MovieJobs;
+use \MovLib\Presentation\Partial\Lists\Unordered;
 use \MovLib\Presentation\Partial\Lists\Ordered;
 
 /**
@@ -217,7 +217,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     // Movies section.
     $sections["movies"] = [
       $i18n->t("Movies"),
-      new MovieJobs(FullMovie::getPersonAppearances($this->person->id), $this->person, $i18n->t("No movie jobs available. Please go to movie pages and add some."))
+      $this->getMoviesSection()
     ];
 
     // Additional names section.
@@ -263,6 +263,173 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
       $content .= "</div>";
     }
     return $content;
+  }
+
+  protected function getMoviesSection() {
+    global $i18n;
+    $moviesResult = $this->person->getMovies();
+    $movieInfos   = [];
+    $movieJobs    = [];
+
+
+    // ----------------------------------------------------------------------------------------------------------------- Fetch movie information
+
+
+    /* @var $movie \MovLib\Data\Movie\FullMovie */
+    while ($movie = $moviesResult->fetch_object("\\MovLib\\Data\\Movie\\FullMovie")) {
+      // Get the movie's genres.
+      $genres = null;
+      $result = $movie->getGenres();
+      while ($row = $result->fetch_assoc()) {
+        if ($genres) {
+          $genres .= "&nbsp;";
+        }
+        $genres      .= "<span class='label'>{$row["name"]}</span>";
+      }
+      if ($genres) {
+        $genres = "<p class='small'>{$genres}</p>";
+      }
+
+      // Construct basic movie information.
+      $movieInfos[$movie->id] =
+        "<a class='img fl' href='{$movie->route}' itemprop='url'>" .
+          "<div class='s s1 tac'>" .
+            $this->getImage($movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01), false, [ "itemprop" => "image" ]) .
+          "</div>" .
+          "<div class='s s5'>{$this->getTitleInfo($movie)}{$genres}</div>" .
+        "</a>";
+
+      // Add the director job if our person directed the current movie.
+      if ($movie->director) {
+        $movieJobs[$movie->id] = [ "<a href='{$i18n->r("/job/{0}", [ $movie->director ])}'>{$i18n->t("Director")}</a>" ];
+      }
+      else {
+        $movieJobs[$movie->id] = [];
+      }
+    }
+
+    // If there were no movies consumed, return a descriptive text.
+    if (empty($movieInfos)) {
+      return $i18n->t("No movie jobs available. Please go to movie pages and add some.");
+    }
+
+
+    // ----------------------------------------------------------------------------------------------------------------- Fetch cast information
+
+
+    $castResult       = Cast::getPersonCast($this->person->id);
+    $jobActor         = $i18n->t("Actor");
+    $jobActress       = $i18n->t("Actress");
+    $jobActorActress  = $i18n->t("Actor/Actress");
+    $roleHimself      = $i18n->t("Himself");
+    $roleHerself      = $i18n->t("Herself");
+    $roleSelf         = $i18n->t("Self");
+    /* @var $cast \MovLib\Data\Movie\Cast */
+    while ($cast = $castResult->fetch_object("\\MovLib\\Data\\Movie\\Cast")) {
+      if ($this->person->sex === 1) {
+        $job = $jobActor;
+        $role = $roleHimself;
+      }
+      elseif ($this->person->sex === 2) {
+        $job = $jobActress;
+        $role = $roleHerself;
+      }
+      else {
+        $job = $jobActorActress;
+        $role = $roleSelf;
+      }
+      $job = $this->a($i18n->r("/job/{0}", [ $cast->jobId ]), $job);
+
+      if ($cast->roleName) {
+        $role = $cast->roleName;
+      }
+      elseif ($cast->role) {
+        if ($cast->role === true) {
+          $role = $this->a($this->person->route, $role);
+        }
+        else {
+          $role = $this->a($cast->role->route, $cast->role->name);
+        }
+      }
+
+      if (!$role) {
+        $movieJobs[$cast->movieId][] = $i18n->t("{job}", [ "job" => $job ]);
+      }
+      else {
+        $movieJobs[$cast->movieId][] = $i18n->t("{job} ({role})", [ "job" => $job, "role" => $role ]);
+      }
+    }
+
+
+    // ----------------------------------------------------------------------------------------------------------------- Fetch crew information
+
+
+    $crewResult = Crew::getPersonCrew($this->person->id);
+    /* @var $crew \MovLib\Data\Movie\Crew */
+    while ($crew = $crewResult->fetch_object("\\MovLib\\Data\\Movie\\Crew")) {
+      $movieJobs[$crew->movieId][] = $this->a($i18n->r("/job/{0}", [ $crew->jobId ]), $crew->jobTitle);
+    }
+
+
+    // ----------------------------------------------------------------------------------------------------------------- Build the listing
+
+
+    // @todo Get cast and crew, consume and construct jobs array. display everything.
+    $movieIdsQuery = implode(array_keys($movieInfos));
+
+    $list = null;
+    foreach ($movieInfos as $id => $info) {
+      $jobs = new Unordered($movieJobs[$id], "", [ "class" => "no-list s s4 tar" ]);
+      $list .= "<li class='li s r'>{$info}{$jobs}</li>";
+    }
+    return "<ol class='hover-list no-list'>{$list}</ol>";
+  }
+
+  /**
+   * Construct movie title information for display.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @param \MovLib\Data\Movie\Movie $movie
+   *   The movie to display the title information for. Can also be <code>\\MovLib\\Data\\Movie\\FullMovie</code>.
+   * @param array $attributes [optional]
+   *   Additional attributes to apply to the wrapper.
+   * @param string $wrap
+   *   The enclosing tag.
+   * @return string
+   *   The formatted title information.
+   * @throws \LogicException
+   */
+  protected function getTitleInfo($movie) {
+    global $i18n;
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (!isset($movie) || !isset($movie->displayTitle)) {
+      throw new \LogicException("You have to pass a valid movie object to get title information!");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    // We have to use different micro-data if display and original title differ.
+    if ($movie->displayTitle != $movie->originalTitle) {
+      $displayTitleItemprop = "alternateName";
+      $originalTitle = "<br><span class='small'>{$i18n->t("{0} ({1})", [
+        "<span itemprop='name'{$this->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>",
+        "<i>{$i18n->t("original title")}</i>",
+      ])}</span>";
+    }
+    // Simply clear the original title if it's the same as the display title.
+    else {
+      $displayTitleItemprop = "name";
+      $originalTitle = null;
+    }
+    $displayTitle = "<span class='link-color' itemprop='{$displayTitleItemprop}'{$this->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}</span>";
+
+    // Append year enclosed in micro-data to display title if available.
+    if (isset($movie->year)) {
+      $displayTitle = $i18n->t("{title} ({year})", [ "title" => $displayTitle, "year" => "<span itemprop='datePublished'>{$movie->year}</span>" ]);
+    }
+
+    return "<p>{$displayTitle}{$originalTitle}</p>";
   }
 
 }
