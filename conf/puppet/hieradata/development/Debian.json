@@ -1,0 +1,23 @@
+{
+  "classes": [
+    "apt",
+    "build-essential"
+  ],
+
+  "movlib_packages": [
+    "debconf-utils",
+    "libxml2-dev",
+    "libssl-dev",
+    "libcurl4-openssl-dev",
+    "libmcrypt-dev",
+    "libtidy-dev",
+    "autoconf"
+  ],
+
+  "movlib_packages_testing": [
+    "libicu-dev"
+  ],
+
+  "mariadb::repo::base_url" : "http://tweedo.com/mirror/mariadb/repo",
+  "mariadb::repo::apt_pin"  : "900"
+}

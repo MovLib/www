@@ -33,22 +33,104 @@
 # SINCE:      0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
+# This helps broken modules.
+Exec { path => '/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin' }
+
 # Install all modules.
 hiera_include('classes')
 
-# Execute all save package updates.
-#exec { 'apt_upgrade':
-#  command => '/usr/bin/apt-get upgrade -y',
-#  require => Exec['apt_update'],
-#}
 
-# Install default packages.
-#package { [
-#  'debconf-utils', 'gcc', 'g++', 'make',
+# ----------------------------------------------------------------------------------------------------------------------
+#                                                                                                                 Debian
+# ----------------------------------------------------------------------------------------------------------------------
+# pub   4096R/46925553 2012-04-27 [expires: 2020-04-25]
+# uid                  Debian Archive Automatic Signing Key (7.0/wheezy) <ftpmaster@debian.org>
 
-  # TODO: These packages are for PHP, move to module.
-#  'libxml2-dev', 'libssl-dev', 'libcurl4-openssl-dev', 'libmcrypt-dev', 'libtidy-dev', 'autoconf',
 
-  # TODO: This package is for MovLib, move to module.
-#  'pwgen'
-#]: require => Exec['apt_update'] }
+if $::operatingsystem == 'Debian' {
+
+  # ------------------------------------------------------------------------------------------------------------- Stable
+
+  # Set up proper pinning for stable Debian releases.
+  apt::pin{ 'debian_stable':
+    priority   => 500,
+    originator => 'Debian',
+    release    => 'stable',
+  }
+
+  # Execute all save package updates.
+  exec { 'apt_upgrade':
+    command => '/usr/bin/apt-get upgrade -y',
+    require => Exec['apt_update'],
+  }
+
+  # Add Puppetlabs source.
+  apt::source { 'puppetlabs':
+    location   => 'http://apt.puppetlabs.com',
+    repos      => 'main',
+    key        => '4BD6EC30',
+    key_server => 'pgp.mit.edu',
+    pin        => '-10',
+  }
+
+  # Install packages, if any.
+  $movlib_packages = hiera_array('movlib_packages', undef)
+  if $movlib_packages {
+    package { $movlib_packages:
+      require => Exec['apt_update'],
+    }
+  }
+
+  # ------------------------------------------------------------------------------------------------------------ Testing
+
+  $movlib_packages_testing = hiera_array('movlib_packages_testing', undef)
+  if $movlib_packages_testing {
+    apt::source { 'debian_testing':
+      location          => 'http://ftp.at.debian.org/debian/',
+      release           => 'testing',
+      repos             => 'main',
+      required_packages => 'debian-keyring debian-archive-keyring',
+      key               => '46925553',
+      key_server        => 'subkeys.pgp.net',
+    }
+
+    apt::pin { 'debian_testing_pin':
+      priority   => '-10',
+      originator => 'Debian',
+      release    => 'testing',
+      require    => Apt::Source['debian_testing'],
+    }
+
+    apt::force { $movlib_packages_testing:
+      release => 'testing',
+      require => [ Exec['apt_update'], Apt::Source['debian_testing'], Apt::Pin['debian_testing_pin'] ],
+    }
+  }
+
+  # ----------------------------------------------------------------------------------------------------------- Unstable
+
+  $movlib_packages_unstable = hiera_array('movlib_packages_unstable', undef)
+  if $movlib_packages_unstable {
+    apt::source { 'debian_unstable':
+      location          => 'http://ftp.at.debian.org/debian/',
+      release           => 'unstable',
+      repos             => 'main',
+      required_packages => 'debian-keyring debian-archive-keyring',
+      key               => '46925553',
+      key_server        => 'subkeys.pgp.net',
+      pin               => '-10',
+    }
+
+    apt::pin { 'debian_unstable_pin':
+      priority   => '-10',
+      originator => 'Debian',
+      release    => 'unstable',
+      require    => Apt::Source['debian_unstable'],
+    }
+
+    apt::force { $movlib_packages_unstable:
+      release => 'unstable',
+      require => [ Exec['apt_update'], Apt::Source['debian_unstable'], Apt::Pin['debian_unstable_pin'] ],
+    }
+  }
+}

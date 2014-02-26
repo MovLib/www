@@ -1,15 +1,6 @@
 {
-  "classes": [
-    "apt",
-    "curl",
-    "wget",
-    "build-essential",
-    "locales",
-    "timezone",
-    "ntp",
-    "mariadb",
-    "oracle_java_jdk",
-    "elasticsearch"
+  "movlib_packages": [
+    "pwgen"
   ],
 
   "timezone::autoupgrade"       : true,
@@ -25,7 +16,6 @@
   "locales::locales"            : [ "en_US.UTF-8 UTF-8", "de_DE.UTF-8 UTF-8" ],
 
   "mariadb::version"            : "10.0",
-  "mariadb"                     : { "repo::base_url": "http://tweedo.com/mirror/mariadb/repo" },
 
   "oracle_java_jdk::release"    : "trusty",
   "oracle_java_jdk::version"    : "7",
