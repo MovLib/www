@@ -439,7 +439,7 @@ if ($pageant -ne $null) {
   Display-Message `
     -Title 'Killed Pageant!' `
     -Message 'The Ruby SSH implementation has a bug related to Pageant, therefore I had to close the running process.' `
-    -MessageType 'Warning'
+    -MessageType 'Warning' | Out-Null
 }
 
 # We execute `vagrant up` with the installed GitBash because we cannot safely assume that the various executables from
