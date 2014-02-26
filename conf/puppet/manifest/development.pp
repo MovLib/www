@@ -33,84 +33,22 @@
 # SINCE:      0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-# Global defaults for various commands.
-Exec    { path   => '/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin' }
-Package { ensure => 'present' }
-Service { path   => '/etc/init.d' }
-
-# Module includes, dependencies for other later modules.
-include apt
-include wget
-
-# Make sure that we have the latest package definitions before attempting to install anything.
-exec { 'apt-update':
-  command => 'apt-get update',
-}
+# Install all modules.
+hiera_include('classes')
 
 # Execute all save package updates.
-exec { 'apt-upgrade':
-  command => 'apt-get upgrade -y',
-}
+#exec { 'apt_upgrade':
+#  command => '/usr/bin/apt-get upgrade -y',
+#  require => Exec['apt_update'],
+#}
 
-# Ensure default software is installed.
-package { [
-  # Generic default packages.
-  'debconf-utils', 'git', 'subversion', 'curl', 'ntp', 'gcc', 'g++', 'build-essential', 'make',
+# Install default packages.
+#package { [
+#  'debconf-utils', 'gcc', 'g++', 'make',
 
-  # Packages for PHP installation.
-  # TODO: Move to module!
-  'libxml2-dev', 'libssl-dev', 'libcurl4-openssl-dev', 'libmcrypt-dev', 'libtidy-dev', 'autoconf',
+  # TODO: These packages are for PHP, move to module.
+#  'libxml2-dev', 'libssl-dev', 'libcurl4-openssl-dev', 'libmcrypt-dev', 'libtidy-dev', 'autoconf',
 
-  # Packages for MovLib.
-  # TODO: Move to module!
-  'pwgen',
-]: }
-
-# Set time zone to UTC.
-class { 'timezone':
-  autoupgrade => true,
-  timezone    => 'UTC',
-}
-
-# Make sure machine time is always correctly synced.
-service { 'ntp':
-  ensure => 'running',
-  enable => true,
-}
-
-# Ensure machine is using correct locales.
-# TODO: Does this affect the Gnome keyboard layout?
-class { 'locales':
-  default_locale => 'en_US.UTF-8',
-}
-
-# Install MariaDB
-# TODO: Move version to Hiera configuration.
-class { 'mariadb':
-  service_enable => false,
-  version        => '10.0',
-}
-
-file { 'mysql-init':
-  ensure => 'present',
-  path   => '/etc/init.d/mysql',
-}
-
-service { 'mysql-service':
-  ensure => 'running',
-  require => [ File['mysql-init'] ]
-}
-
-# Install Oracle Java JDK.
-# TODO: Move version to Hiera configuration.
-class { 'oracle_java_jdk':
-  version => '7',
-  release => 'trusty',
-}
-
-# Install Elasticsearch.
-# TODO: Move version to Hiera configuration.
-class { 'elasticsearch':
-  manage_repo  => true,
-  repo_version => '1.0',
-}
+  # TODO: This package is for MovLib, move to module.
+#  'pwgen'
+#]: require => Exec['apt_update'] }

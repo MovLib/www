@@ -88,10 +88,11 @@ Vagrant.configure("2") do |config|
   #
   # LINK: http://docs.vagrantup.com/v2/provisioning/puppet_apply.html
   config.vm.provision "puppet" do |pp|
-    pp.manifests_path = "conf/puppet/development"
-    pp.manifest_file  = "bootstrap.pp"
-    pp.module_path    = "conf/puppet/module"
-    pp.options        = "--environment 'development'"
+    pp.hiera_config_path = "conf/puppet/hiera.yaml"
+    pp.manifests_path    = "conf/puppet/manifest"
+    pp.manifest_file     = "development.pp"
+    pp.module_path       = "conf/puppet/module"
+    pp.options           = "--environment 'development'"
   end
 
   # Additional folders to share between the host and guest system.
