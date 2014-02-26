@@ -56,7 +56,7 @@ function Set-ConsoleIcon {
     [parameter(Mandatory = $true)] [string] $IconFile
   )
 
-  [System.Reflection.Assembly ]::LoadWithPartialName('System.Drawing') | Out-Null
+  [System.Reflection.Assembly]::LoadWithPartialName('System.Drawing') | Out-Null
 
   # Verify the file exists
   if ([System.IO.File]::Exists($iconFile) -eq $true) {
@@ -76,7 +76,7 @@ function Set-ConsoleIcon {
     }
   }
   else {
-    Write-Host 'Icon file not found' -ForegroundColor Red
+    Write-Host 'Icon file not found' -ForegroundColor 'Red'
   }
 }
 
@@ -193,34 +193,6 @@ function Send-Message {
   Invoke-Win32 'user32.dll' ([Int32]) 'SendMessage' $parameterTypes $parameters
 }
 
-# Ask the user for a keystroke to exit or continue.
-#
-# PARAM:
-#   -Balloon
-#     You can pass in any balloon tip for proper dispose.
-#     Default: $null
-# RETURN:
-#   $null
-#     This function will always exit the script.
-function Script-Continue {
-  Param(
-    [System.Windows.Forms.NotifyIcon] $Balloon = $null
-  )
-
-  Write-Host 'Press [ESC] to exit or any key to continue...'
-  $keyCode = $host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown') | Select-Object -ExpandProperty VirtualKeyCode
-
-  if ($Balloon -ne $null) {
-    $Balloon.Dispose()
-  }
-
-  if ($keyCode -eq 27) {
-    Stop-Process -Id $PID | Out-Null
-  }
-
-  exit
-}
-
 # Display system tray balloon (notification) tip.
 #
 # PARAM:
@@ -333,6 +305,34 @@ function Display-Message {
   return $balloon
 }
 
+# Ask the user for a keystroke to exit or continue.
+#
+# PARAM:
+#   -Balloon
+#     You can pass in any balloon tip for proper dispose.
+#     Default: $null
+# RETURN:
+#   $null
+#     This function will always exit the script.
+function Script-Continue {
+  Param(
+    [System.Windows.Forms.NotifyIcon] $Balloon = $null
+  )
+
+  Write-Host 'Press [ESC] to exit or any key to continue...'
+  $keyCode = $host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown') | Select-Object -ExpandProperty VirtualKeyCode
+
+  if ($Balloon -ne $null) {
+    $Balloon.Dispose()
+  }
+
+  if ($keyCode -eq 27) {
+    Stop-Process -Id $PID | Out-Null
+  }
+
+  exit
+}
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 #                                                                                                                  Start
@@ -410,7 +410,7 @@ Write-Host 'All good, great job!' -ForegroundColor 'Green'
 # Install/Update all Puppet modules.
 Write-Host
 Write-Host 'Updating git submodules, this may take a few minutes...' -ForegroundColor 'Cyan'
-git submodule update --remote
+#git submodule update --remote
 
 # Install/Update all Vagrant plugins.
 Write-Host
@@ -421,16 +421,16 @@ foreach ($plugin in $plugins) {
   $found = 0
   foreach ($i in $installed) {
     if ($i -match "vagrant-$plugin") {
-      vagrant plugin update "vagrant-$plugin" | ForEach-Object {
-        $output = $_ -ireplace 'Installing', 'Updating' -ireplace 'Installed', 'Updated'
-        Write-Host $output
-      }
+      #vagrant plugin update "vagrant-$plugin" | ForEach-Object {
+      #  $output = $_ -ireplace 'Installing', 'Updating' -ireplace 'Installed', 'Updated'
+      #  Write-Host $output
+      #}
       $found = 1
       break
     }
   }
   if (!$found) {
-    vagrant plugin install "vagrant-$plugin"
+    #vagrant plugin install "vagrant-$plugin"
   }
 }
 
@@ -452,36 +452,20 @@ if ($pageant -ne $null) {
 # the bin folder are within our PATH and we need ssh.exe for `vagrant ssh` to work. Rather than altering the PATH, which
 # would replace various Windows built-in commands like find, we make use of GitBash which has that path set and access
 # to all necessary executables.
-$psi = New-Object System.Diagnostics.ProcessStartInfo
-$psi.Arguments = '/C ""'
-$psi.Arguments += Split-Path(Split-Path(Get-Command git | Select-Object -ExpandProperty Definition) -Parent) -Parent
-$psi.Arguments += '\bin\sh.exe" --login -i -c "'
-$psi.Arguments += "printf '\n# vagrant up\n\n' '' && vagrant up"
-$psi.Arguments += '""'
-$psi.CreateNoWindow = $true
-$psi.FileName = 'cmd'
-$psi.RedirectStandardOutput = $true
-$psi.RedirectStandardError = $true
-$psi.UseShellExecute = $false
-$psi.WorkingDirectory = $pwd
-
-# Asynchronously read standard output and error, we want to ensure proper coloring.
-# LINK: http://xiaalex.wordpress.com/2013/05/03/use-asynchronous-read-on-standard-output-of-a-process/
-$p = New-Object System.Diagnostics.Process
-$p.StartInfo = $psi
-Register-ObjectEvent -InputObject $p -EventName 'OutputDataReceived' -Action { Write-Host $Event.SourceEventArgs.Data } | Out-Null
-Register-ObjectEvent -InputObject $p -EventName 'ErrorDataReceived' -Action { Write-Host $Event.SourceEventArgs.Data -ForegroundColor 'Red' } | Out-Null
-$p.Start() | Out-Null
-$p.BeginOutputReadLine()
-$p.BeginErrorReadLine()
-do {} while (!$p.HasExited) # This line is necessary for correct consumption of the asynchronous events!
+#
+# Have a look at "colored-puppet-output.ps1" for an alternative approach that allows coloring of the error output.
+$arguments = '/C ""';
+$arguments += Split-Path(Split-Path(Get-Command git | Select-Object -ExpandProperty Definition) -Parent) -Parent
+$arguments += '\bin\sh.exe" --login -i -c "'
+$arguments += "printf '\n# vagrant up\n\n' '' && vagrant up"
+$arguments += '""'
+$p = Start-Process -PassThru -Wait -NoNewWindow -WorkingDirectory $pwd -FilePath $env:WinDir\System32\cmd.exe -ArgumentList $arguments
 $p.WaitForExit()
 
 # Check if provisioning succeeded.
 if ($p.ExitCode -ne 0) {
-  Display-Message -Title 'Provisioning Error!' -Message 'Something went wrong while setting up your MovDev VM. Please report this issue.'
+  Display-Message -Title 'Provisioning Failed!' -Message 'Something went wrong while setting up your MovDev VM. Please report this issue.'
 }
 
 # Let the user know that provisioning is finished and ensure that the balloon tip is correctly disposed upon exit.
-$balloon = Display-Message -Title 'Finished Provisioning!' -Message 'Your MovDev VM is now ready to use.' -MessageType 'Info'
-Script-Continue -Balloon $balloon
+Script-Continue(Display-Message -Title 'Finished Provisioning!' -Message 'Your MovDev VM is now ready to use.' -MessageType 'Info')
