@@ -40,6 +40,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`genres` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The genre’s unique ID.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The genre’s description in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_names` BLOB NOT NULL COMMENT 'The genre’s name in various languages. Keys are ISO alpha-2 language codes.',
+  `movies_count` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Amount of movies with this genre.',
+  `series_count` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Amount of series with this genre.',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 COMMENT = 'Contains all movie genres.'
