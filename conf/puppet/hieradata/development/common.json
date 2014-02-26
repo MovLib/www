@@ -1,4 +1,15 @@
 {
+  "classes": [
+    "curl",
+    "wget",
+    "locales",
+    "timezone",
+    "ntp",
+    "mariadb",
+    "oracle_java_jdk",
+    "elasticsearch"
+  ],
+
   "movlib_packages": [
     "pwgen"
   ],
