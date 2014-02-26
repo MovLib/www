@@ -71,7 +71,7 @@ class Genres extends \MovLib\Presentation\Partial\Lists\Images {
     $this->addClass("r s s{$spanSize}", $listItemsAttributes);
     parent::__construct($listItems, $noItemsText, $listItemsAttributes, $attributes);
     $this->listItemsAttributes[]           = "itemscope";
-    $this->listItemsAttributes["itemtype"] = "http://schema.org/CreativeWork";
+    $this->listItemsAttributes["itemtype"] = "http://schema.org/Article";
     $this->showAdditionalInfo              = $showAdditionalInfo;
     $this->descriptionSpan                 = ($this->showAdditionalInfo === true) ? ($spanSize - 3) : $spanSize;
   }

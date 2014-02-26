@@ -61,6 +61,12 @@ class Genre extends \MovLib\Data\Database {
   public $moviesCount;
 
   /**
+   * The translated route of this genre.
+   *
+   * @var string
+   */
+  public $route;
+  /**
    * Amount of series with this genre.
    *
    * @var integer
@@ -74,7 +80,27 @@ class Genre extends \MovLib\Data\Database {
   public function __construct($id = null) {
     global $db, $i18n;
     if ($id) {
+      $this->id = $id;
       $query = self::getQuery();
+      $stmt = $db->query("
+          {$query}
+          WHERE
+            `id` = ?
+          LIMIT 1",
+        "ssssi",
+        [ $i18n->languageCode, $i18n->defaultLanguageCode, $i18n->languageCode, $i18n->defaultLanguageCode, $this->id ]
+      );
+      $stmt->bind_result(
+        $this->id,
+        $this->name,
+        $this->description,
+        $this->moviesCount,
+        $this->seriesCount
+      );
+      if (!$stmt->fetch()) {
+        throw new NotFound;
+      }
+      $stmt->close();
     }
   }
 
@@ -119,6 +145,47 @@ class Genre extends \MovLib\Data\Database {
         LIMIT ? OFFSET ?",
       "ssssii",
       [ $i18n->languageCode, $i18n->defaultLanguageCode, $i18n->languageCode, $i18n->defaultLanguageCode, $rowCount, $offset ]
+    )->get_result();
+  }
+
+/**
+   * Get the mysqli result for all movies that are of this genre.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @return \mysqli_result
+   *   The mysqli result for all movies that are of this genre.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getMovieResult() {
+    global $db, $i18n;
+    return $db->query(
+      "SELECT
+        `movies`.`year` AS `year`,
+        IFNULL(`dt`.`title`, `ot`.`title`) AS `displayTitle`,
+        IFNULL(`dt`.`language_code`, `ot`.`language_code`) AS `displayTitleLanguageCode`,
+        `ot`.`title` AS `originalTitle`,
+        `ot`.`language_code` AS `originalTitleLanguageCode`,
+        `p`.`poster_id` AS `displayPoster`
+      FROM `movies`
+        LEFT JOIN `movies_genres`
+          ON `movies`.`id` = `movies_genres`.`movie_id`
+        LEFT JOIN `movies_display_titles` AS `mdt`
+          ON `mdt`.`movie_id` = `movies`.`id`
+          AND `mdt`.`language_code` = ?
+        LEFT JOIN `movies_titles` AS `dt`
+          ON `dt`.`id` = `mdt`.`title_id`
+        LEFT JOIN `movies_original_titles` AS `mot`
+          ON `mot`.`movie_id` = `movies`.`id`
+        LEFT JOIN `movies_titles` AS `ot`
+          ON `ot`.`id` = `mot`.`title_id`
+        LEFT JOIN `display_posters` AS `p`
+          ON `p`.`movie_id` = `movies`.`id`
+          AND `p`.`language_code` = ?
+      WHERE `movies_genres`.`genre_id` = ?
+      ORDER BY `displayTitle` DESC",
+      "ssi",
+      [ $i18n->languageCode, $i18n->languageCode, $this->id ]
     )->get_result();
   }
 
