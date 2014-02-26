@@ -25,7 +25,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 
-# ---------------------------------------------------------------------------------------------------------------------- Variables
+# ----------------------------------------------------------------------------------------------------------------------
+#                                                                                                              Variables
+# ----------------------------------------------------------------------------------------------------------------------
 
 
 $gitURL = 'http://git-scm.com/downloads'
@@ -33,7 +35,9 @@ $vagrantURL = 'http://www.vagrantup.com/downloads.html'
 $virtualBoxURL = 'https://www.virtualbox.org/wiki/Downloads'
 
 
-# ---------------------------------------------------------------------------------------------------------------------- Functions
+# ----------------------------------------------------------------------------------------------------------------------
+#                                                                                                              Functions
+# ----------------------------------------------------------------------------------------------------------------------
 
 
 # Set the icon of the current console window to the specified icon.
@@ -330,7 +334,9 @@ function Display-Message {
 }
 
 
-# ---------------------------------------------------------------------------------------------------------------------- Start
+# ----------------------------------------------------------------------------------------------------------------------
+#                                                                                                                  Start
+# ----------------------------------------------------------------------------------------------------------------------
 
 
 # Make all errors terminating.
@@ -404,7 +410,7 @@ Write-Host 'All good, great job!' -ForegroundColor 'Green'
 # Install/Update all Puppet modules.
 Write-Host
 Write-Host 'Updating git submodules, this may take a few minutes...' -ForegroundColor 'Cyan'
-#git submodule update --remote
+git submodule update --remote
 
 # Install/Update all Vagrant plugins.
 Write-Host
@@ -415,16 +421,16 @@ foreach ($plugin in $plugins) {
   $found = 0
   foreach ($i in $installed) {
     if ($i -match "vagrant-$plugin") {
-      #vagrant plugin update "vagrant-$plugin" | ForEach-Object {
-      #  $output = $_ -ireplace 'Installing', 'Updating' -ireplace 'Installed', 'Updated'
-      #  Write-Host $output
-      #}
+      vagrant plugin update "vagrant-$plugin" | ForEach-Object {
+        $output = $_ -ireplace 'Installing', 'Updating' -ireplace 'Installed', 'Updated'
+        Write-Host $output
+      }
       $found = 1
       break
     }
   }
   if (!$found) {
-    #vagrant plugin install "vagrant-$plugin"
+    vagrant plugin install "vagrant-$plugin"
   }
 }
 
