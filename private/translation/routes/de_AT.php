@@ -148,6 +148,24 @@ return [
   "/genre/{0}/delete"     => "/genre/{0}/löschen",
   "/genre/{0}/history"    => "/genre/{0}/geschichte",
 
+  // ------------------------------------------------------------------------------------------------------------------- Job
+  "/job"                => "/tätigkeit",
+  "/job/create"         => "/tätigkeit/erstellen",
+  "/job/{0}"            => "/tätigkeit/{0}",
+  "/job/{0}/discussion" => "/tätigkeit/{0}/diskussion",
+  "/job/{0}/edit"       => "/tätigkeit/{0}/bearbeiten",
+  "/job/{0}/delete"     => "/tätigkeit/{0}/löschen",
+  "/job/{0}/history"    => "/tätigkeit/{0}/geschichte",
+
+  // ------------------------------------------------------------------------------------------------------------------- Award
+  "/award"                => "/auszeichnung",
+  "/award/create"         => "/auszeichnung/erstellen",
+  "/award/{0}"            => "/auszeichnung/{0}",
+  "/award/{0}/discussion" => "/auszeichnung/{0}/diskussion",
+  "/award/{0}/edit"       => "/auszeichnung/{0}/bearbeiten",
+  "/award/{0}/delete"     => "/auszeichnung/{0}/löschen",
+  "/award/{0}/history"    => "/auszeichnung/{0}/geschichte",
+
   // ------------------------------------------------------------------------------------------------------------------- System Pages
   "/about-movlib"                 => "/über-movlib",
   "/about-movlib/edit"            => "/über-movlib/bearbeiten",

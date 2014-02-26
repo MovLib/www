@@ -51,7 +51,7 @@ return [
   "/company/{0}/movies"    => "/unternehmen/{0}/filme",
   "/company/{0}/series"    => "/unternehmen/{0}/serien",
   "/company/{0}/releases"  => "/unternehmen/{0}/veröffentlichungen",
-  
+
   // ------------------------------------------------------------------------------------------------------------------- Persons
   "/persons"           => "/personen",
 
@@ -86,6 +86,14 @@ return [
   "/genres"           => "/genres",
   "/genre/{0}/movies" => "/genre/{0}/filme",
   "/genre/{0}/series" => "/genre/{0}/serien",
+
+  // ------------------------------------------------------------------------------------------------------------------- Awards
+  "/awards"           => "/auszeichnungen",
+  "/award/{0}/movies" => "/auszeichnung/{0}/filme",
+  "/award/{0}/series" => "/auszeichnung/{0}/serien",
+
+  // ------------------------------------------------------------------------------------------------------------------- Jobs
+  "/jobs"           => "/tätigkeiten",
 
 ];
 // @codeCoverageIgnoreEnd

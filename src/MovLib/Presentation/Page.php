@@ -299,7 +299,9 @@ class Page extends \MovLib\Presentation\AbstractBase {
           [ $i18n->r("/company/random"), $i18n->t("Random Company") ],
         ]],
         "more" => [ $i18n->t("More"), [
-          [ $i18n->rp("/genres"), $i18n->t("Explore all genres") ],
+          [ $i18n->rp("/genres"), $i18n->t("Explore all Genres") ],
+          [ $i18n->rp("/jobs"), $i18n->t("Explore all Jobs") ],
+          [ $i18n->rp("/awards"), $i18n->t("Explore all Awards") ],
         ]],
       ],
       "community" => [

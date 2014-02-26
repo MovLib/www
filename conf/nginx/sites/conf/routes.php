@@ -500,6 +500,124 @@ location ^~ <?= $r("/genre") ?> {
 }
 
 
+# ---------------------------------------------------------------------------------------------------------------------- award(s)
+
+
+location = <?= $rp("/awards") ?> {
+  set $movlib_presenter "Awards\\Show";
+  try_files $movlib_cache @php;
+}
+
+location = <?= $r("/award/create") ?> {
+  set $movlib_presenter "Award\\Create";
+  try_files $movlib_cache @php;
+}
+
+location ^~ <?= $r("/award") ?> {
+
+  #
+  # ---------------------------------------- Award
+  #
+
+  location ~* "^<?= $r("/award/{0}", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Award\\Show";
+    set $movlib_award_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $r("/award/{0}/discussion", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Award\\Discussion";
+    set $movlib_award_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $r("/award/{0}/edit", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Award\\Edit";
+    set $movlib_award_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $r("/award/{0}/delete", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Award\\Delete";
+    set $movlib_award_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $r("/award/{0}/history", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Award\\History";
+    set $movlib_award_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $rp("/award/{0}/movies", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Award\\Movies";
+    set $movlib_award_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $rp("/award/{0}/series", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Award\\Series";
+    set $movlib_award_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  rewrite .* /error/NotFound last;
+}
+
+
+# ---------------------------------------------------------------------------------------------------------------------- job(s)
+
+
+location = <?= $rp("/jobs") ?> {
+  set $movlib_presenter "Jobs\\Show";
+  try_files $movlib_cache @php;
+}
+
+location = <?= $r("/job/create") ?> {
+  set $movlib_presenter "Job\\Create";
+  try_files $movlib_cache @php;
+}
+
+location ^~ <?= $r("/job") ?> {
+
+  #
+  # ---------------------------------------- Job
+  #
+
+  location ~* "^<?= $r("/job/{0}", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Job\\Show";
+    set $movlib_job_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $r("/job/{0}/discussion", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Job\\Discussion";
+    set $movlib_job_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $r("/job/{0}/edit", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Job\\Edit";
+    set $movlib_job_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $r("/job/{0}/delete", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Job\\Delete";
+    set $movlib_job_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $r("/job/{0}/history", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Job\\History";
+    set $movlib_job_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  rewrite .* /error/NotFound last;
+}
+
+
 # ---------------------------------------------------------------------------------------------------------------------- person(s)
 
 
