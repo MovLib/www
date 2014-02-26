@@ -35,6 +35,18 @@
   width: auto;
 }
 
+.s {
+  float: left;
+  min-height: 1px;
+  margin-left: 20px;
+}
+
+/* Special style to enforce an element width of 100%. */
+.w100 {
+  width: 100%;
+}
+
+/* Must come after .s declaration. */
 .r {
   margin-left: -20px;
 }
@@ -57,17 +69,6 @@
 
 .fl {
   float: left;
-}
-
-.s {
-  float: left;
-  min-height: 1px;
-  margin-left: 20px;
-}
-
-/* Special style to enforce an element width of 100%. */
-.w100 {
-  width: 100%;
 }
 
 .s1 {
