@@ -154,15 +154,14 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
         `p`.`birthdate` AS `birthDate`,
         `p`.`born_name` AS `bornName`,
         `p`.`deathdate` AS `deathDate`,
-        `p`.`nickname` AS `nickname`,
-        IFNULL(COLUMN_GET(`mc`.`roles`, ? AS BINARY), COLUMN_GET(`mc`.`roles`, ? AS BINARY)) AS `role`
+        `p`.`nickname` AS `nickname`
       FROM `movies_cast` AS `mc`
         INNER JOIN `persons` AS `p` ON `p`.`id` = `mc`.`person_id`
       WHERE `mc`.`movie_id` = ? AND `p`.`deleted` = false
       ORDER BY `p`.`name`{$db->collations[$i18n->languageCode]} ASC
       LIMIT ?",
-      "ssdi",
-      [ $i18n->languageCode, $i18n->defaultLanguageCode, $this->id, $limit ]
+      "di",
+      [ $this->id, $limit ]
     )->get_result();
   }
 

@@ -65,6 +65,11 @@
   margin-left: 20px;
 }
 
+/* Special style to enforce an element width of 100%. */
+.w100 {
+  width: 100%;
+}
+
 .s1 {
   width: 60px;
 }

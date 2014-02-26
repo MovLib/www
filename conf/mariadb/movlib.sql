@@ -273,13 +273,13 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_crew`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_crew` (
-  `crew_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The crew’s unique ID within the movie.',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The crew’s unique ID within the movie.',
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `job_id` BIGINT UNSIGNED NOT NULL COMMENT 'The job’s unique ID.',
   `alias_id` BIGINT NULL,
   `company_id` BIGINT UNSIGNED NULL COMMENT 'The company’s unique ID.',
   `person_id` BIGINT UNSIGNED NULL COMMENT 'The person’s unique ID.',
-  PRIMARY KEY (`crew_id`),
+  PRIMARY KEY (`id`),
   INDEX `fk_movies_crew_movies` (`movie_id` ASC),
   INDEX `fk_movies_crew_jobs` (`job_id` ASC),
   INDEX `fk_movies_crew_companies` (`company_id` ASC),
@@ -319,7 +319,7 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_cast`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_cast` (
-  `cast_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.',
   `job_id` BIGINT UNSIGNED NOT NULL,
@@ -327,7 +327,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_cast` (
   `weight` SMALLINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The weight (display order) of the movie’s cast. Default is 0.',
   `alias_id` BIGINT NULL,
   `role_id` BIGINT UNSIGNED NULL,
-  PRIMARY KEY (`cast_id`),
+  PRIMARY KEY (`id`),
   INDEX `fk_movies_cast_movies` (`movie_id` ASC),
   INDEX `fk_movies_cast_persons` (`person_id` ASC),
   INDEX `fk_movies_cast_persons_aliases` (`alias_id` ASC),

@@ -75,18 +75,16 @@ class Show extends \MovLib\Presentation\Page {
     // Ensure it's easy for users to find the page where the can create new movies.
     $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/movie/create")}'>{$i18n->t("Create New Movie")}</a>";
 
-    return "<div id='filter' class='tar'>Filter</div>" .
-            new MoviesPartial(
-              Movie::getMovies($this->paginationOffset, $this->paginationLimit),
-              null,
-              new Alert($i18n->t("No movies match your search criteria."), null, Alert::SEVERITY_INFO),
-              null,
-              null,
-              null,
-              10,
-              true
-            )
-    ;
+    $partial = new MoviesPartial(
+      Movie::getMovies($this->paginationOffset, $this->paginationLimit),
+      new Alert($i18n->t("No movies match your search criteria."), null, Alert::SEVERITY_INFO),
+      null,
+      null,
+      10,
+      true
+    );
+
+    return "<div id='filter' class='tar'>Filter</div>{$partial}";
   }
 
 }

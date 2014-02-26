@@ -198,6 +198,59 @@ class FullPerson extends \MovLib\Data\Person\Person {
   }
 
   /**
+   * Get the mysqli result for all movies this person has appeared in.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @return \mysqli_result
+   *   The movies with appearances of this person.
+   */
+  public function getMovies() {
+    global $db, $i18n;
+    return $db->query("
+      SELECT DISTINCT
+        `movies`.`id`,
+        `movies`.`deleted`,
+        `movies`.`year`,
+        `movies`.`mean_rating` AS `ratingMean`,
+        IFNULL(`dt`.`title`, `ot`.`title`) AS `displayTitle`,
+        IFNULL(`dt`.`language_code`, `ot`.`language_code`) AS `displayTitleLanguageCode`,
+        `ot`.`title` AS `originalTitle`,
+        `ot`.`language_code` AS `originalTitleLanguageCode`,
+        `p`.`poster_id` AS `displayPoster`,
+        `md`.`job_id` AS `director`
+      FROM `movies`
+        LEFT JOIN `movies_directors` AS `md`
+          ON `md`.`movie_id` = `movies`.`id`
+          AND `md`.`person_id` = ?
+        LEFT JOIN `movies_cast` AS `mc`
+          ON `mc`.`movie_id` = `movies`.`id`
+          AND `mc`.`person_id` = ?
+        LEFT JOIN `movies_crew` AS `mcr`
+          ON `mcr`.`movie_id` = `movies`.`id`
+          AND `mcr`.`person_id` = ?
+        LEFT JOIN `movies_display_titles` AS `mdt`
+          ON `mdt`.`movie_id` = `movies`.`id`
+          AND `mdt`.`language_code` = ?
+        LEFT JOIN `movies_titles` AS `dt`
+          ON `dt`.`movie_id` = `movies`.`id`
+          AND `dt`.`id` = `mdt`.`title_id`
+        LEFT JOIN `movies_original_titles` AS `mot`
+          ON `mot`.`movie_id` = `movies`.`id`
+        LEFT JOIN `movies_titles` AS `ot`
+          ON `ot`.`movie_id` = `movies`.`id`
+          AND `ot`.`id` = `mot`.`title_id`
+        LEFT JOIN `display_posters` AS `p`
+          ON `p`.`movie_id` = `movies`.`id`
+          AND `p`.`language_code` = ?
+      WHERE `movies`.`deleted` = false
+        AND NOT (`md`.`person_id` IS NULL AND `mc`.`person_id` IS NULL AND `mcr`.`person_id` IS NULL)",
+      "dddss",
+      [ $this->id, $this->id, $this->id, $i18n->languageCode, $i18n->languageCode ]
+    )->get_result();
+  }
+
+  /**
    * Get the mysqli result for all movie IDs this person has played in.
    *
    * @global \MovLib\Data\Database $db
