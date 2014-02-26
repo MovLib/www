@@ -556,8 +556,6 @@ class Session implements \ArrayAccess {
    * @throws \MemcachedException
    */
   protected function start() {
-    global $kernel;
-
     // Create backup of existing session data (if any).
     $sessionData = isset($_SESSION) ? $_SESSION : null;
 
