@@ -80,7 +80,6 @@ class Genre extends \MovLib\Data\Database {
   public function __construct($id = null) {
     global $db, $i18n;
     if ($id) {
-      $this->id = $id;
       $query = self::getQuery();
       $stmt = $db->query("
           {$query}
@@ -88,7 +87,7 @@ class Genre extends \MovLib\Data\Database {
             `id` = ?
           LIMIT 1",
         "ssssi",
-        [ $i18n->languageCode, $i18n->defaultLanguageCode, $i18n->languageCode, $i18n->defaultLanguageCode, $this->id ]
+        [ $i18n->languageCode, $i18n->defaultLanguageCode, $i18n->languageCode, $i18n->defaultLanguageCode, $id ]
       );
       $stmt->bind_result(
         $this->id,
@@ -101,6 +100,8 @@ class Genre extends \MovLib\Data\Database {
         throw new NotFound;
       }
       $stmt->close();
+
+      $this->init();
     }
   }
 
@@ -210,5 +211,16 @@ class Genre extends \MovLib\Data\Database {
       ;
     }
     return $query;
+  }
+
+  /**
+   * Initialize genre.
+   *
+   * @global type $i18n
+   */
+  protected function init() {
+    global $i18n;
+
+    $this->route = $i18n->r("/genre/{0}", [ $this->id ]);
   }
 }
