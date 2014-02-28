@@ -127,7 +127,7 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
    *
    * @return this
    */
-  public abstract function delete();
+  abstract public function delete();
 
   /**
    * Generate all supported image styles.
@@ -138,7 +138,7 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
    *   Whether to regenerate existing styles.
    * @return this
    */
-  protected abstract function generateStyles($source, $regenerate = false);
+  abstract protected function generateStyles($source, $regenerate = false);
 
   /**
    * Set deletion request's unique identifier.
@@ -147,7 +147,7 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
    *   The deletion request's unique identifier.
    * @return this
    */
-  public abstract function setDeletionRequest($id);
+  abstract public function setDeletionRequest($id);
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods

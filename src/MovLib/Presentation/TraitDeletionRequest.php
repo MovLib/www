@@ -140,7 +140,7 @@ trait TraitDeletionRequest {
    *
    * @return this
    */
-  protected abstract function delete();
+  abstract protected function delete();
 
   /**
    * Remove the deletion request's identifier from the database record.
@@ -149,7 +149,7 @@ trait TraitDeletionRequest {
    *   The unique identifier of the deletion request.
    * @return this
    */
-  protected abstract function removeDeletionRequestIdentifier($id);
+  abstract protected function removeDeletionRequestIdentifier($id);
 
   /**
    * Stores the deletion request's identifier in the database record that should be deleted.
@@ -158,7 +158,7 @@ trait TraitDeletionRequest {
    *   The unique identifier of the deletion request.
    * @return this
    */
-  protected abstract function storeDeletionRequestIdentifier($id);
+  abstract protected function storeDeletionRequestIdentifier($id);
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods

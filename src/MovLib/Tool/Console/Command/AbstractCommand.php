@@ -152,7 +152,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *
    * @param type $max
    */
-  protected final function progressStart($max = null) {
+  final protected function progressStart($max = null) {
     if ($this->output && $this->quiet === false) {
       $this->progress = $this->getHelperSet()->get("progress");
       $this->progress->setBarCharacter("<comment>=</comment>");
@@ -171,7 +171,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   Whether to redraw the progress output or not.
    * @return this
    */
-  protected final function progressAdvance($steps = 1, $redraw = false) {
+  final protected function progressAdvance($steps = 1, $redraw = false) {
     if ($this->progress) {
       $this->progress->advance($steps, $redraw);
     }
@@ -183,7 +183,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *
    * @return this
    */
-  protected final function progressFinish() {
+  final protected function progressFinish() {
     if ($this->progress) {
       $this->progress->finish();
       $this->progress = null;
@@ -213,7 +213,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
      *   The default value (must be null for <code>InputOption::VALUE_REQUIRED</code> or <code>InputOption::VALUE_NONE<code>).
      * @return this
      */
-  protected final function addInputOption($name, $mode = null, $description = "", $default = null) {
+  final protected function addInputOption($name, $mode = null, $description = "", $default = null) {
     return $this->addOption($name, $this->getShortcut($name), $mode, $description, $default);
   }
 
@@ -229,7 +229,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    * @return mixed
    *   The answer or <var>$default</var> if user requested no interaction or quiet execution.
    */
-  protected final function ask($question, $default = null, array $autocomplete = null) {
+  final protected function ask($question, $default = null, array $autocomplete = null) {
     if ($this->output && $this->dialog && $this->interaction === true && $this->quiet === false) {
       $defaultDisplay = $default ? " [default: {$default}]" : null;
       return $this->dialog->ask($this->output, "<question>{$question}</question>{$defaultDisplay} ", $default, $autocomplete);
@@ -247,7 +247,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    * @return boolean
    *   The answer or <var>$default</var> if user requested no interaction or quiet execution.
    */
-  protected final function askConfirmation($question, $default = true) {
+  final protected function askConfirmation($question, $default = true) {
     if ($this->output && $this->dialog && $this->interaction === true && $this->quiet === false) {
       $defaultDisplay = $default ? "y" : "n";
       return $this->dialog->askConfirmation($this->output, "<question>{$question}</question> [default: {$defaultDisplay}] ", $default);
@@ -269,7 +269,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    * @return mixed
    *   The answer or <var>$default</var> if user requested no interaction or quiet execution.
    */
-  protected final function askWithChoices($text, $default = null, array $choices = null, array $choiceExplanations = null) {
+  final protected function askWithChoices($text, $default = null, array $choices = null, array $choiceExplanations = null) {
     if ($this->output && $this->interaction === true && $this->quiet === false) {
       $this->write($text, self::MESSAGE_TYPE_COMMENT)->write("Possible choices are:\n", self::MESSAGE_TYPE_COMMENT);
       if ($choices && $choiceExplanations){
@@ -299,7 +299,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   Depends on <var>$exception</var>.
    * @throws \RuntimeException
    */
-  protected final function checkPrivileges($exception = true) {
+  final protected function checkPrivileges($exception = true) {
     if (posix_getuid() !== 0) {
       if ($exception === true) {
         throw new \RuntimeException("This script must be executed as privileged user (root or sudo).");
@@ -352,7 +352,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   The shortcut.
    * @throws \InvalidArgumentException
    */
-  protected final function getShortcut($name) {
+  final protected function getShortcut($name) {
     if (empty($name)) {
       throw new \InvalidArgumentException("Name cannot be empty!");
     }
@@ -401,7 +401,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   Defaults to no style (white text).
    * @return this
    */
-  protected final function write($message, $type = null) {
+  final protected function write($message, $type = null) {
     if ($this->output && $this->quiet === false) {
       if (is_array($message)) {
         $message = $this->getHelper("formatter")->formatBlock($message, $type, true);

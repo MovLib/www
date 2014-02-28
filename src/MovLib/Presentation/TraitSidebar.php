@@ -99,7 +99,7 @@ trait TraitSidebar {
    * @return string
    *   The presentation's page content.
    */
-  protected abstract function getPageContent();
+  abstract protected function getPageContent();
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods

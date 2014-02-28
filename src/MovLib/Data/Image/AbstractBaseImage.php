@@ -201,7 +201,7 @@ abstract class AbstractBaseImage {
    * @return \MovLib\Data\Image\Style
    *   The image's desired style object.
    */
-  public abstract function getStyle($style = self::STYLE_SPAN_02);
+  abstract public function getStyle($style = self::STYLE_SPAN_02);
 
   /**
    * Upload the <var>$source</var>, overriding any existing image.
@@ -217,7 +217,7 @@ abstract class AbstractBaseImage {
    * @return this
    * @throws \RuntimeException
    */
-  public abstract function upload($source, $extension, $height, $width);
+  abstract public function upload($source, $extension, $height, $width);
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods

@@ -33,6 +33,6 @@ abstract class AbstractClientException extends \RuntimeException {
    *
    * @return string
    */
-  public abstract function getPresentation();
+  abstract public function getPresentation();
 
 }

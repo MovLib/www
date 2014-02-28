@@ -108,6 +108,6 @@ abstract class AbstractList extends \MovLib\Presentation\AbstractBase {
    * @return string
    *   String representation of concrete list.
    */
-  protected abstract function render();
+  abstract protected function render();
 
 }

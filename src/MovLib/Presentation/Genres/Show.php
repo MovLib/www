@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Genres;
 
 use \MovLib\Data\Genre;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Lists\Genres AS GenresPartial;
+use \MovLib\Presentation\Partial\Lists\Genres as GenresPartial;
 
 /**
  * List of all genres.

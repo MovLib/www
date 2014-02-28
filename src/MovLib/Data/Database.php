@@ -103,7 +103,7 @@ class Database {
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected final function connect() {
+  final protected function connect() {
     if (!isset(self::$connections[$this->database])) {
       // A cached reflection function is faster than call_user_func_array()!
       if (!self::$stmtBindParam) {
