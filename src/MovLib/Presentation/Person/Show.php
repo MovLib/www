@@ -374,12 +374,9 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     // ----------------------------------------------------------------------------------------------------------------- Build the listing
 
 
-    // @todo Get cast and crew, consume and construct jobs array. display everything.
-    $movieIdsQuery = implode(array_keys($movieInfos));
-
     $list = null;
     foreach ($movieInfos as $id => $info) {
-      $jobs = new Unordered($movieJobs[$id], "", [ "class" => "no-list s s4 tar" ]);
+      $jobs = new Unordered($movieJobs[$id], "", [ "class" => "no-list jobs s s4 tar" ]);
       $list .= "<li class='li s r'>{$info}{$jobs}</li>";
     }
     return "<ol class='hover-list no-list'>{$list}</ol>";

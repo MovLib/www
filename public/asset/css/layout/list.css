@@ -55,6 +55,10 @@ ol ol {
   background-color: #e2f4fb;
 }
 
+.hover-list .li .jobs {
+  padding-right: 20px;
+}
+
 .hover-list .li .rating-user,
 .hover-list .li .rating-mean {
   float: right;
