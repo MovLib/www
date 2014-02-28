@@ -69,7 +69,7 @@ USER="www-data"
 GROUP="www-data"
 
 # The amount of memory in MB.
-MEMORY=64
+MEMORY=256
 
 # The number of threads to run.
 THREADS=1
@@ -90,7 +90,7 @@ PATH_SOCKET="${PATH_DIR}/${NAME}.sock"
 PIDFILE="${PATH_DIR}/${NAME}.pid"
 
 # Arguments that should be passed to the executable.
-DAEMON_ARGS="-m ${MEMORY} -t ${THREADS} -d -r -u www-data -s ${PATH_SOCKET} -a 0770 -P ${PIDFILE}"
+DAEMON_ARGS="-m ${MEMORY} -t ${THREADS} -d -k -r -u www-data -s ${PATH_SOCKET} -a 0770 -P ${PIDFILE}"
 
 
 # -----------------------------------------------------------------------------
