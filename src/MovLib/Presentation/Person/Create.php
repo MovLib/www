@@ -143,7 +143,7 @@ class Create extends \MovLib\Presentation\Page {
     $this->inputAliases   = new InputLinesText("aliases", $i18n->t("Additional Names"), [ "placeholder" => $i18n->t("Please supply one name per line") ]);
     $this->inputBiography = new InputHTML("biography", $i18n->t("Biography"), null, [ "placeholder" => $i18n->t("Enter the person's biography here") ]);
     $this->inputBiography->allowBlockqoutes()->allowImages()->allowLists();
-    $this->inputLinks     = new InputLinesURL("links", $i18n->t("External Links"), [ "data-allow-external" => true ,"placeholder" => $i18n->t("Please supply one URL per line") ]);
+    $this->inputLinks     = new InputLinesURL("links", $i18n->t("External Links"), [ "data-allow-external" => true, "placeholder" => $i18n->t("Please supply one URL per line") ]);
     $this->form           = new Form($this, [
       $this->inputName,
       $this->inputBiography,
