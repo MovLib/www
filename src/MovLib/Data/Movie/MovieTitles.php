@@ -26,26 +26,26 @@ namespace MovLib\Data\Movie;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieTitles extends \MovLib\Data\DatabaseArrayObject {  
- 
-  
+class MovieTitles extends \MovLib\Data\DatabaseArrayObject {
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
-  
-  
+
+
   /**
    * The movie's unique identifier.
    *
    * @var int
    */
   public $movieId;
-  
-  
+
+
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
    * Instantiate new MovieTitles object.
-   * 
+   *
    * @param int $movieId
    *   The unique ID of the movie the titles belong to.
    */
@@ -88,7 +88,7 @@ class MovieTitles extends \MovLib\Data\DatabaseArrayObject {
       else {
         $movieTitle->dynComments = [];
       }
-      
+
       $this->objectsArray[] = $movieTitle;
     }
     return $this;

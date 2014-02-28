@@ -38,7 +38,7 @@ class MovieRatings extends \MovLib\Data\Database {
    * @var int
    */
   const FROM_MOVIE_ID = "movie_id";
-  
+
   /**
    * Load the movie ratings from USER_ID.
    *
@@ -46,16 +46,16 @@ class MovieRatings extends \MovLib\Data\Database {
    */
   const FROM_USER_ID = "user_id";
 
-  
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
-  
-  
+
+
   /**
    * The query to fetch movie ratings without <code>WHERE</code> clause.
    *
    * @var string
    */
-  protected $query = 
+  protected $query =
     "SELECT
       `movie_id` AS `movieId`,
       `user_id` AS `userId`,
@@ -63,7 +63,7 @@ class MovieRatings extends \MovLib\Data\Database {
       `rating`
     FROM `movies_ratings`"
   ;
-  
+
   /**
    * The MySQLi bind param types of the columns.
    *
@@ -73,10 +73,10 @@ class MovieRatings extends \MovLib\Data\Database {
     self::FROM_MOVIE_ID => "i",
     self::FROM_USER_ID  => "i",
   ];
-    
- 
+
+
   // ------------------------------------------------------------------------------------------------------------------- Methods
-  
+
   /**
    * Get all movie ratings ordered by their creation timestamp.
    *
@@ -84,7 +84,7 @@ class MovieRatings extends \MovLib\Data\Database {
    * @param string $from
    *   Defines how the object should be filled with data, use the various <var>FROM_*</var> class constants.
    * @param mixed $value
-   *   Data to identify the movie ratings, see the various <var>FROM_*</var> class constants.   
+   *   Data to identify the movie ratings, see the various <var>FROM_*</var> class constants.
    * @return array
    *   Numeric array containing MovieRatings.
    * @throws \MovLib\Exception\DatabaseException
@@ -100,4 +100,3 @@ class MovieRatings extends \MovLib\Data\Database {
   }
 
 }
- 

@@ -184,60 +184,61 @@ class Show extends \MovLib\Presentation\Page {
     $ratingStream = null;
     /* @var $movie \MovLib\Data\Movie\FullMovie */
     while ($movie = $ratings->fetch_object("\\MovLib\\Data\\Movie\\FullMovie")) {
-        // We have to use different micro-data if display and original title differ.
-        if ($movie->displayTitle != $movie->originalTitle) {
-          $displayTitleItemprop = "alternateName";
-          $movie->originalTitle = "<br><span class='small'>{$i18n->t("{0} ({1})", [
-            "<span itemprop='name'{$this->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>",
-            "<i>{$i18n->t("original title")}</i>",
-          ])}</span>";
-        }
-        // Simplay clear the original title if it's the same as the display title.
-        else {
-          $displayTitleItemprop = "name";
-          $movie->originalTitle = null;
-        }
-        $movie->displayTitle = "<span class='link-color' itemprop='{$displayTitleItemprop}'{$this->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}</span>";
+      // We have to use different micro-data if display and original title differ.
+      if ($movie->displayTitle != $movie->originalTitle) {
+        $displayTitleItemprop = "alternateName";
+        $movie->originalTitle = "<br><span class='small'>{$i18n->t("{0} ({1})", [
+          "<span itemprop='name'{$this->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>",
+          "<i>{$i18n->t("original title")}</i>",
+        ])}</span>";
+      }
+      // Simplay clear the original title if it's the same as the display title.
+      else {
+        $displayTitleItemprop = "name";
+        $movie->originalTitle = null;
+      }
+      $movie->displayTitle = "<span class='link-color' itemprop='{$displayTitleItemprop}'{$this->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}</span>";
 
-        // Append year enclosed in micro-data to display title if available.
-        if (isset($movie->year)) {
-          $movie->displayTitle = $i18n->t("{0} ({1})", [ $movie->displayTitle, "<span itemprop='datePublished'>{$movie->year}</span>" ]);
-        }
+      // Append year enclosed in micro-data to display title if available.
+      if (isset($movie->year)) {
+        $movie->displayTitle = $i18n->t("{0} ({1})", [ $movie->displayTitle, "<span itemprop='datePublished'>{$movie->year}</span>" ]);
+      }
 
-        $ratingInfo = null;
-        $ratingData = $movie->getUserRating($this->user->id);
-        if ($ratingData !== null) {
-          $rating = str_repeat("<img alt='' height='20' src='{$kernel->getAssetURL("star", "svg")}' width='24'>", $ratingData["rating"]);
-          $ratingTime = (new Time($ratingData["created"]))->formatRelative();
-          $ratingInfo = "<div class ='rating-user tar' title='{$i18n->t("{user}’s rating", [ "user" => $this->user->name])}'>{$rating}<br><small>{$ratingTime}</small></div>";
-        }
+      $ratingInfo = null;
+      $ratingData = $movie->getUserRating($this->user->id);
+      if ($ratingData !== null) {
+        $rating = str_repeat("<img alt='' height='20' src='{$kernel->getAssetURL("star", "svg")}' width='24'>", $ratingData["rating"]);
+        $ratingTime = (new Time($ratingData["created"]))->formatRelative();
+        $ratingInfo = "<div class ='rating-user tar' title='{$i18n->t("{user}’s rating", [ "user" => $this->user->name])}'>{$rating}<br><small>{$ratingTime}</small></div>";
+      }
 
-        // Construct the genre listing.
-        $genres = null;
-        $result = $movie->getGenres();
-        $route  = $i18n->r("/genre/{0}");
-        while ($row = $result->fetch_assoc()) {
-          if ($genres) {
-            $genres .= "&nbsp;";
-          }
-          $row["route"] = str_replace("{0}", $row["id"], $route);
-          $genres      .= "<a class='label' href='{$row["route"]}' itemprop='genre'>{$row["name"]}</a>";
-        }
+      // Construct the genre listing.
+      $genres = null;
+      $result = $movie->getGenres();
+      $route  = $i18n->r("/genre/{0}");
+      while ($row = $result->fetch_assoc()) {
         if ($genres) {
-          $genres = "<p class='small'>{$genres}</p>";
+          $genres .= "&nbsp;";
         }
+        $row["route"] = str_replace("{0}", $row["id"], $route);
+        $genres      .= "<a class='label' href='{$row["route"]}' itemprop='genre'>{$row["name"]}</a>";
+      }
+      if ($genres) {
+        $genres = "<p class='small'>{$genres}</p>";
+      }
 
-        // Put the movie list entry together.
-        $ratingStream .=
-          "<li class='r s s10' itemtype='http://schema.org/Movie' itemscope>" .
-            "<div class='img li r'>" .
-              "<div class='s s1 tac'>" .
-                $this->getImage($movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01), false, [ "itemprop" => "image" ]) .
-              "</div>" .
-              $ratingInfo .
-              "<span class='s s7'><p><a href='{$movie->route}' itemprop='url'>{$movie->displayTitle}</a>{$movie->originalTitle}</p>{$genres}</span>" .
-            "</a>" .
-          "</li>";
+      // Put the movie list entry together.
+      $ratingStream .=
+        "<li class='r s s10' itemtype='http://schema.org/Movie' itemscope>" .
+          "<div class='img li r'>" .
+            "<div class='s s1 tac'>" .
+              $this->getImage($movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01), false, [ "itemprop" => "image" ]) .
+            "</div>" .
+            $ratingInfo .
+            "<span class='s s7'><p><a href='{$movie->route}' itemprop='url'>{$movie->displayTitle}</a>{$movie->originalTitle}</p>{$genres}</span>" .
+          "</a>" .
+        "</li>"
+      ;
     }
 
     if ($ratingStream) {
