@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Partial\Lists;
 
 use \MovLib\Data\Image\PersonImage;
+use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Date;
 
 /**
@@ -80,15 +81,15 @@ class Persons extends \MovLib\Presentation\Partial\Lists\AbstractList {
    * @param array $attributes
    *   {@inheritdoc}
    * @param integer $spanSize [optional]
-   *   The span size the list items should reserve, defaults to <code>5</code>
+   *   The span size the list items should reserve, defaults to <code>10</code>
    * @param boolean $showAdditionalInfo [optional]
    *   Show additional information e.g. life dates or not, defaults to <code>FALSE</code>.
    */
-  public function __construct($listItems, $noItemsText = "", array $listItemsAttributes = null, array $attributes = null, $spanSize = 5, $showAdditionalInfo = false) {
+  public function __construct($listItems, $noItemsText = "", array $listItemsAttributes = null, array $attributes = null, $spanSize = 10, $showAdditionalInfo = false) {
     parent::__construct($listItems, $noItemsText, $attributes);
     $this->addClass("hover-list no-list r", $this->attributes);
     $this->listItemsAttributes = $listItemsAttributes;
-    $this->addClass("r s s{$spanSize}", $this->listItemsAttributes);
+    $this->addClass("s s{$spanSize}", $this->listItemsAttributes);
     $this->descriptionSpan                 = --$spanSize;
     $this->listItemsAttributes[]           = "itemscope";
     $this->listItemsAttributes["itemtype"] = "http://schema.org/Person";
@@ -163,7 +164,7 @@ class Persons extends \MovLib\Presentation\Partial\Lists\AbstractList {
         ;
       }
       if (!$list) {
-        return $this->noItemsText;
+        return (string) new Alert($this->noItemsText, null, Alert::SEVERITY_INFO);
       }
       return "<ol{$this->expandTagAttributes($this->attributes)}>{$list}</ol>";
     }

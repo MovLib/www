@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Partial\Lists;
 
 use \MovLib\Data\Image\MoviePoster;
+use \MovLib\Presentation\Partial\Alert;
 
 /**
  * Special images list for movie instances.
@@ -95,7 +96,7 @@ class Movies extends \MovLib\Presentation\Partial\Lists\AbstractList {
     $kernel->stylesheets[] = "movie";
     $this->addClass("hover-list no-list r", $this->attributes);
     $this->listItemsAttributes = $listItemsAttributes;
-    $this->addClass("r s s{$spanSize}", $this->listItemsAttributes);
+    $this->addClass("s s{$spanSize}", $this->listItemsAttributes);
     $this->descriptionSpan                 = --$spanSize;
     $this->listItemsAttributes[]           = "itemscope";
     $this->listItemsAttributes["itemtype"] = "http://schema.org/Movie";
@@ -197,7 +198,7 @@ class Movies extends \MovLib\Presentation\Partial\Lists\AbstractList {
     }
 
     if (!$list) {
-      return $this->noItemsText;
+      return (string) new Alert($this->noItemsText, null, Alert::SEVERITY_INFO);
     }
 
     // Put it all together and we're done.

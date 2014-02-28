@@ -268,7 +268,9 @@ class Show extends \MovLib\Presentation\Page {
       new Persons(
         $this->movie->getDirectors(),
         $i18n->t("No directors assigned yet, {0}add directors{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]),
-        [ "itemprop" => "director" ]
+        [ "itemprop" => "director" ],
+        null,
+        5
       ),
     ];
 
