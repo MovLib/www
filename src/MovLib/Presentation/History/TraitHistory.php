@@ -33,7 +33,7 @@ trait TraitHistory {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
-  
+
 
   /**
    * Method to generate Liste of changed items.
@@ -191,7 +191,7 @@ trait TraitHistory {
    *   Diff between revisions as HTML.
    */
   protected function getDiff($head, $ref, $filename) {
-    global $i18n;   
+    global $i18n;
     $methodName = ucfirst($filename);
     if (in_array($filename, $this->historyModel->files)) {
       return $this->textDiffOfRevisions($head, $ref, $filename, true);

@@ -32,14 +32,14 @@ use \MovLib\Presentation\Partial\Lists\Unordered;
  */
 class MovieTitles extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   use \MovLib\Presentation\Movie\TraitMoviePage;
-  
+
   /**
    * The movie titles to display.
    *
    * @var \MovLib\Data\Movie\MovieTitles
    */
   protected $movieTitles;
-  
+
   /**
    * Instatiate new movie titles presentation.
    */
@@ -49,10 +49,10 @@ class MovieTitles extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
     $this->init($i18n->t("Titles of {0}", [ $this->title ]));
     $this->movieTitles = new MovieTitlesModel($_SERVER["MOVIE_ID"]);
   }
-  
+
   /**
    * Helper mothod to format comments.
-   * 
+   *
    * @global \MovLib\Data\I18n $i18n
    * @param array
    *   One comment as associative array.
@@ -63,10 +63,10 @@ class MovieTitles extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
     $key = key($movieTitleComments);
     return "($key) : {$movieTitleComments[$key]}";
   }
-  
+
    /**
    * Helper mothod to format titles.
-   * 
+   *
    * @global \MovLib\Data\I18n $i18n
    * @param \MovLib\Data\Movie\MovieTitle $movieTitle
    *   A MovieTitle.
@@ -81,8 +81,8 @@ class MovieTitles extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
       $i18n->t("There are no Comments.")
     );
     $list->closure = [ $this, "formatComments" ];
-    
-    return 
+
+    return
       "({$language->code}) {$movieTitle->title}{$displayTitle}"
       . "<div class='well well--small'>{$list}</div>";
   }
@@ -90,14 +90,14 @@ class MovieTitles extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   /**
    * @inheritdoc
    */
-  protected function getPageContent() {  
+  protected function getPageContent() {
     global $i18n;
     $list = new Unordered($this->movieTitles->orderById(),
       $i18n->t("There are no titles.")
     );
     $list->closure = [ $this, "formatTitles" ];
-    
+
     return "<h3>{$this->title}</h3>{$list}";
   }
-  
+
 }
