@@ -123,8 +123,8 @@ class Person {
 
     // Try to load the person for the given identifier.
     if ($id) {
-      $stmt = $db->query("
-          SELECT
+      $stmt = $db->query(
+        "SELECT
             `id`,
             `deleted`,
             `name`,
@@ -197,8 +197,8 @@ class Person {
    */
   public static function getPersons($offset, $rowCount) {
     global $db;
-    return $db->query("
-        SELECT
+    return $db->query(
+      "SELECT
           `id`,
           `deleted`,
           `name`,

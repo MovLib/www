@@ -88,8 +88,8 @@ class Place {
     // Try to load the place for the given identifier.
     if ($id) {
       $this->id = $id;
-      $stmt = $db->query("
-          SELECT
+      $stmt = $db->query(
+        "SELECT
             `country_code`,
             IFNULL(COLUMN_GET(`dyn_names`, '{$i18n->languageCode}' AS BINARY), COLUMN_GET(`dyn_names`, '{$i18n->defaultLanguageCode}' AS BINARY)),
             `latitude`,

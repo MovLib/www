@@ -65,12 +65,9 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractSecondaryNav
    */
   public function formatChangedFile($listItem) {
     global $i18n;
-    return $this->a($i18n->r("/{0}/{1}/diff/{2}#{3}", [
-        $this->historyModel->type,
-        $this->historyModel->id,
-        $this->revisionItemHash,
-        $listItem
-      ]), $listItem
+    return $this->a(
+      $i18n->r("/{0}/{1}/diff/{2}#{3}", [ $this->historyModel->type, $this->historyModel->id, $this->revisionItemHash, $listItem ]),
+      $listItem
     );
   }
 

@@ -77,14 +77,10 @@ class MovieTitles extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
     global $i18n;
     $language = new Language(Language::FROM_ID, $movieTitle->languageId);
     $displayTitle = ($movieTitle->isDisplayTitle) ? " ({$i18n->t("display Title")})" : null;
-    $list = new Unordered($movieTitle->dynComments,
-      $i18n->t("There are no Comments.")
-    );
+    $list = new Unordered($movieTitle->dynComments, $i18n->t("There are no Comments."));
     $list->closure = [ $this, "formatComments" ];
 
-    return
-      "({$language->code}) {$movieTitle->title}{$displayTitle}"
-      . "<div class='well well--small'>{$list}</div>";
+    return "({$language->code}) {$movieTitle->title}{$displayTitle}<div class='well well--small'>{$list}</div>";
   }
 
   /**
@@ -92,9 +88,7 @@ class MovieTitles extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    */
   protected function getPageContent() {
     global $i18n;
-    $list = new Unordered($this->movieTitles->orderById(),
-      $i18n->t("There are no titles.")
-    );
+    $list = new Unordered($this->movieTitles->orderById(), $i18n->t("There are no titles."));
     $list->closure = [ $this, "formatTitles" ];
 
     return "<h3>{$this->title}</h3>{$list}";

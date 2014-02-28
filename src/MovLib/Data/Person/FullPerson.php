@@ -64,8 +64,8 @@ class FullPerson extends \MovLib\Data\Person\Person {
     // Try to load the person for the given identifier.
     if ($id) {
       $this->id = $id;
-      $stmt = $db->query("
-          SELECT
+      $stmt = $db->query(
+        "SELECT
             `created`,
             `deleted`,
             COLUMN_GET(`dyn_biographies`, '{$i18n->languageCode}' AS BINARY),
@@ -207,8 +207,8 @@ class FullPerson extends \MovLib\Data\Person\Person {
    */
   public function getMovies() {
     global $db, $i18n;
-    return $db->query("
-      SELECT DISTINCT
+    return $db->query(
+      "SELECT DISTINCT
         `movies`.`id`,
         `movies`.`deleted`,
         `movies`.`year`,

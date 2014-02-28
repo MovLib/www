@@ -96,14 +96,13 @@ class Stacktrace extends \MovLib\Presentation\Page {
   protected function getContent() {
     global $i18n, $kernel;
     $stacktrace = new Alert(
-      "<div id='stacktrace-details'>" .
-        "<div class='title'><i class='ico ico-info'></i> {$i18n->t("{exception_message} in {class} on line {line, number}", [
+      "<div id='stacktrace-details'><div class='title'><i class='ico ico-info'></i> {$i18n->t(
+        "{exception_message} in {class} on line {line, number}", [
           "exception_message" => nl2br($this->exception->getMessage(), false),
           "class"             => str_replace([ $kernel->documentRoot, "/src/" ], "", $this->exception->getFile()),
           "line"              => $this->exception->getLine(),
-        ])}</div>" .
-        "<table>{$this->formatStacktrace($this->exception->getTrace())}</table>" .
-      "</div>",
+        ]
+      )}</div><table>{$this->formatStacktrace($this->exception->getTrace())}</table></div>",
       $i18n->t("Stacktrace for {0}", [ $this->placeholder($this->fatal === true ? "Fatal Error" : get_class($this->exception)) ]),
       Alert::SEVERITY_INFO
     );

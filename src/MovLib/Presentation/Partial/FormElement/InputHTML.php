@@ -496,18 +496,12 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\TextareaHTMLRaw
     }
     // A <blockquote> without a <cite> is invalid.
     else {
-      throw new ValidationException(
-        $i18n->t("The “{label}” text contains a quotation without source.",
-        [ "label" => $this->label ]
-      ));
+      throw new ValidationException($i18n->t("The “{label}” text contains a quotation without source.", [ "label" => $this->label ]));
     }
 
     // Do not allow quotations without content.
     if (!isset($node->child[0])) {
-      throw new ValidationException(
-        $i18n->t("The “{label}” text contains quotation without text.",
-        [ "label" => $this->label ]
-      ));
+      throw new ValidationException($i18n->t("The “{label}” text contains quotation without text.", [ "label" => $this->label ]));
     }
 
     return "blockquote{$this->validateUserClasses($node)}";

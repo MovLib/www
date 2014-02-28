@@ -103,6 +103,7 @@ class Mailer extends \MovLib\Presentation\AbstractBase {
    */
   protected function getBase64EncodedHTML() {
     return base64_encode(
+      // @codingStandardsIgnoreStart
       "<!DOCTYPE html PUBLIC '-//W3C//DTD XHTML 1.0 Strict//EN' 'http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd'>" .
       "<html>" .
         "<head>" .
@@ -111,6 +112,7 @@ class Mailer extends \MovLib\Presentation\AbstractBase {
         "</head>" .
         "<body style='font:\"open sans\",arial,sans-serif'>{$this->email->getHTML()}</body>" .
       "</html>"
+      // @codingStandardsIgnoreEnd
     );
   }
 

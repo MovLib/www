@@ -128,9 +128,8 @@ final class InputImage extends \MovLib\Presentation\Partial\FormElement\Abstract
     // Only authenticated users are allowed to upload images.
     if ($session->isAuthenticated === false) {
       throw new Unauthorized($i18n->t(
-        "You must be signed in to upload images. If you don’t have an account yet why not {0}join {sitename}{1}?.", [
-          "<a href='{$i18n->r("/profile/join")}'>", "</a>", "sitename" => $kernel->siteName,
-        ]
+        "You must be signed in to upload images. If you don’t have an account yet why not {0}join {sitename}{1}?.",
+        [ "<a href='{$i18n->r("/profile/join")}'>", "</a>", "sitename" => $kernel->siteName ]
       ));
     }
 

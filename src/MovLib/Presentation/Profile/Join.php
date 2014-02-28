@@ -319,9 +319,9 @@ final class Join extends \MovLib\Presentation\Page {
         throw new ValidationException(
           "<p>{$i18n->t("We couldn’t find any activation data for your token.")}</p>" .
           "<ul>" .
-            "<li>{$i18n->t("The token might have expired, remember that you only have 24 hours to activate your account.")}</li>" .
-            "<li>{$i18n->t("The token might be invalid, check the email again we’ve sent you and be sure to copy the whole link.")}</li>" .
-            "<li>{$i18n->t("You can also just fill out the form again and we send you a new token.")}</li>" .
+          "<li>{$i18n->t("The token might have expired, remember that you only have 24 hours to activate your account.")}</li>" .
+          "<li>{$i18n->t("The token might be invalid, check the email again we’ve sent you and be sure to copy the whole link.")}</li>" .
+          "<li>{$i18n->t("You can also just fill out the form again and we send you a new token.")}</li>" .
           "</ul>"
         );
       }

@@ -485,8 +485,7 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
         ->convert($source, self::STYLE_SPAN_03)
         ->convert($source, self::STYLE_SPAN_02)
         ->convert($source, self::STYLE_SPAN_01)
-        ->convert($source, self::STYLE_SPAN_01_SQUARE, self::STYLE_SPAN_01, self::STYLE_SPAN_01, true)
-      ;
+        ->convert($source, self::STYLE_SPAN_01_SQUARE, self::STYLE_SPAN_01, self::STYLE_SPAN_01, true);
 
       // Only update the styles if we are regenerating.
       if ($regenerate === true) {
