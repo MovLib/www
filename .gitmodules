@@ -40,3 +40,12 @@
 [submodule "conf/puppet/module/build-essential"]
 	path = conf/puppet/module/build-essential
 	url = https://github.com/rogeriopradoj/puppet-build-essential.git
+[submodule "conf/puppet/module/nodejs"]
+	path = conf/puppet/module/nodejs
+	url = https://github.com/puppetlabs/puppetlabs-nodejs.git
+[submodule "conf/puppet/module/limits"]
+	path = conf/puppet/module/limits
+	url = https://github.com/erwbgy/puppet-limits.git
+[submodule "conf/puppet/module/memcached"]
+	path = conf/puppet/module/memcached
+	url = https://github.com/example42/puppet-memcached.git

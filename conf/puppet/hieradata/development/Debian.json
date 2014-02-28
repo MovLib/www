@@ -4,7 +4,13 @@
     "build-essential"
   ],
 
-  "movlib_packages": [
+  "movlib::initscript": [
+    "memcached-server1",
+    "memcached-session",
+    "nginx",
+    "php-fpm"
+  ],
+  "movlib::packages": [
     "debconf-utils",
     "libxml2-dev",
     "libssl-dev",
@@ -13,11 +19,10 @@
     "libtidy-dev",
     "autoconf"
   ],
-
-  "movlib_packages_testing": [
+  "movlib::packages_testing": [
     "libicu-dev"
   ],
 
-  "mariadb::repo::base_url" : "http://tweedo.com/mirror/mariadb/repo",
-  "mariadb::repo::apt_pin"  : "900"
+  "mariadb::repo::base_url": "http://tweedo.com/mirror/mariadb/repo",
+  "mariadb::repo::apt_pin": "900"
 }
