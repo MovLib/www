@@ -45,21 +45,21 @@ class RadioGroup extends \MovLib\Presentation\Partial\FormElement\Select {
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-    $options = null;
-    foreach ($this->options as $value => $option) {
-      $checked  = $this->value == $value ? " checked" : null;
-      $options .=
-        "<label class='radio inline'>" .
-          "<input{$checked} name='{$this->id}' required type='radio' value='{$this->htmlEncode($value)}'>{$option}" .
-        "</label>"
+      $options = null;
+      foreach ($this->options as $value => $option) {
+        $checked  = $this->value == $value ? " checked" : null;
+        $options .=
+          "<label class='radio inline'>" .
+            "<input{$checked} name='{$this->id}' required type='radio' value='{$this->htmlEncode($value)}'>{$option}" .
+          "</label>"
+        ;
+      }
+      return
+        "{$this->required}{$this->helpPopup}{$this->helpText}" .
+        "<fieldset aria-expanded='true'{$this->expandTagAttributes($this->attributes)}>" .
+          "<legend>{$this->label}</legend>{$options}" .
+        "</fieldset>"
       ;
-    }
-    return
-      "{$this->required}{$this->helpPopup}{$this->helpText}" .
-      "<fieldset aria-expanded='true'{$this->expandTagAttributes($this->attributes)}>" .
-        "<legend>{$this->label}</legend>{$options}" .
-      "</fieldset>"
-    ;
 
     // @devStart
     // @codeCoverageIgnoreStart

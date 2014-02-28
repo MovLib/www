@@ -157,28 +157,28 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
     try {
     // @codeCoverageIgnoreEnd
     // @devEnd
-    $menuitems = null;
-    foreach ($this->menuitems as $menuitem) {
-      if ($menuitems && $this->unorderedList === false) {
-        $menuitems .= $this->glue;
-      }
-      if ($this->callback) {
-        $menuitem = call_user_func($this->callback, $menuitem);
-      }
-      if (!empty($menuitem)) {
-        if (is_array($menuitem)) {
-          $menuitem[2]["role"] = "menuitem";
-          $menuitem            = $this->a($menuitem[0], $menuitem[1], $menuitem[2], $this->ignoreQuery);
+      $menuitems = null;
+      foreach ($this->menuitems as $menuitem) {
+        if ($menuitems && $this->unorderedList === false) {
+          $menuitems .= $this->glue;
         }
-        $menuitems .= $this->unorderedList === true ? "<li>{$menuitem}</li>" : $menuitem;
+        if ($this->callback) {
+          $menuitem = call_user_func($this->callback, $menuitem);
+        }
+        if (!empty($menuitem)) {
+          if (is_array($menuitem)) {
+            $menuitem[2]["role"] = "menuitem";
+            $menuitem            = $this->a($menuitem[0], $menuitem[1], $menuitem[2], $this->ignoreQuery);
+          }
+          $menuitems .= $this->unorderedList === true ? "<li>{$menuitem}</li>" : $menuitem;
+        }
       }
-    }
-    if ($this->unorderedList === true) {
-      $menuitems = "<ul class='no-list'>{$menuitems}</ul>";
-    }
-    $this->attributes["role"] = "navigation";
-    $hideTitle                = $this->hideTitle ? " class='vh'" : null;
-    return "<nav{$this->expandTagAttributes($this->attributes)}><h{$this->headingLevel}{$hideTitle}>{$this->title}</h{$this->headingLevel}><div role='menu'>{$menuitems}</div></nav>";
+      if ($this->unorderedList === true) {
+        $menuitems = "<ul class='no-list'>{$menuitems}</ul>";
+      }
+      $this->attributes["role"] = "navigation";
+      $hideTitle                = $this->hideTitle ? " class='vh'" : null;
+      return "<nav{$this->expandTagAttributes($this->attributes)}><h{$this->headingLevel}{$hideTitle}>{$this->title}</h{$this->headingLevel}><div role='menu'>{$menuitems}</div></nav>";
     // @devStart
     // @codeCoverageIgnoreStart
     }

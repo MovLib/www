@@ -47,22 +47,20 @@ class TextareaHTMLRaw extends \MovLib\Presentation\Partial\FormElement\AbstractF
     try {
     // @codeCoverageIgnoreEnd
     // @devEnd
+      // Remove tags that are inserted by our auto-paragraph method and empty attributes (inserted by Tidy).
+      $content = str_replace(
+        [ "\n\n", "<br>", "<p>", "</p>", "=''", '=""' ],
+        [ "\n", "", "", "\n", "", "" ],
+        tidy_get_output(tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body>{$this->htmlDecode($this->value)}</body></html>"))
+      );
 
-    // Remove tags that are inserted by our auto-paragraph method and empty attributes (inserted by Tidy).
-    $content = str_replace(
-      [ "\n\n", "<br>", "<p>", "</p>", "=''", '=""' ],
-      [ "\n", "", "", "\n", "", "" ],
-      tidy_get_output(tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body>{$this->htmlDecode($this->value)}</body></html>"))
-    );
-
-    $this->attributes["aria-multiline"] = "true";
-    return
-      "{$this->required}{$this->helpPopup}{$this->helpText}<p>" .
-        "<label for='{$this->id}'>{$this->label}</label>" .
-        "<textarea{$this->expandTagAttributes($this->attributes)}>{$content}</textarea>" .
-      "</p>"
-    ;
-
+      $this->attributes["aria-multiline"] = "true";
+      return
+        "{$this->required}{$this->helpPopup}{$this->helpText}<p>" .
+          "<label for='{$this->id}'>{$this->label}</label>" .
+          "<textarea{$this->expandTagAttributes($this->attributes)}>{$content}</textarea>" .
+        "</p>"
+      ;
     // @devStart
     // @codeCoverageIgnoreStart
     }

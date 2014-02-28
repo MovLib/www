@@ -101,36 +101,34 @@ class Select extends \MovLib\Presentation\Partial\FormElement\AbstractFormElemen
     try {
     // @codeCoverageIgnoreEnd
     // @devEnd
-
-    $options = null;
-    //  The first child option element of a select element with a required attribute and without a multiple attribute,
-    //  and whose size is 1, must have either an empty value attribute, or must have no text content.
-    if ($this->required) {
-      $options = "<option disabled value=''>{$i18n->t("Please Select…")}</option>";
-    }
-    else {
-      $selected = empty($this->value) ? " selected" : null;
-      $options = "<option{$selected} value=''>{$i18n->t("None")}</option>";
-    }
-    foreach ($this->options as $value => $option) {
-      $attributes = [];
-      if ($option === (array) $option) {
-        $attributes = $option[1];
-        $option     = $option[0];
+      $options = null;
+      //  The first child option element of a select element with a required attribute and without a multiple attribute,
+      //  and whose size is 1, must have either an empty value attribute, or must have no text content.
+      if ($this->required) {
+        $options = "<option disabled value=''>{$i18n->t("Please Select…")}</option>";
       }
-      $attributes["value"] = $value;
-      if ($this->value == $value) {
-        $attributes["selected"] = true;
+      else {
+        $selected = empty($this->value) ? " selected" : null;
+        $options = "<option{$selected} value=''>{$i18n->t("None")}</option>";
       }
-      $options .= "<option{$this->expandTagAttributes($attributes)}>{$option}</option>";
-    }
-    return
-      "{$this->required}{$this->helpPopup}{$this->helpText}<p>" .
-        "<label for='{$this->id}'>{$this->label}</label>" .
-        "<select id='{$this->id}' name='{$this->id}'{$this->expandTagAttributes($this->attributes)}>{$options}</select>" .
-      "</p>"
-    ;
-
+      foreach ($this->options as $value => $option) {
+        $attributes = [];
+        if ($option === (array) $option) {
+          $attributes = $option[1];
+          $option     = $option[0];
+        }
+        $attributes["value"] = $value;
+        if ($this->value == $value) {
+          $attributes["selected"] = true;
+        }
+        $options .= "<option{$this->expandTagAttributes($attributes)}>{$option}</option>";
+      }
+      return
+        "{$this->required}{$this->helpPopup}{$this->helpText}<p>" .
+          "<label for='{$this->id}'>{$this->label}</label>" .
+          "<select id='{$this->id}' name='{$this->id}'{$this->expandTagAttributes($this->attributes)}>{$options}</select>" .
+        "</p>"
+      ;
     // @devStart
     // @codeCoverageIgnoreStart
     }

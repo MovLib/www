@@ -72,7 +72,7 @@ final class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\Abstr
     try {
     // @codeCoverageIgnoreEnd
     // @devEnd
-    return "{$this->required}{$this->helpPopup}<p><label class='checkbox'><input{$this->expandTagAttributes($this->attributes)} name='{$this->id}' type='checkbox'>{$this->label}</label></p>";
+      return "{$this->required}{$this->helpPopup}<p><label class='checkbox'><input{$this->expandTagAttributes($this->attributes)} name='{$this->id}' type='checkbox'>{$this->label}</label></p>";
     // @devStart
     // @codeCoverageIgnoreStart
     }

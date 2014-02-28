@@ -114,23 +114,23 @@ class InputDateSeparate extends \MovLib\Presentation\Partial\FormElement\Abstrac
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-    // Always add CSS class for proper styling.
-    $this->addClass("date-separate", $this->attributes);
+      // Always add CSS class for proper styling.
+      $this->addClass("date-separate", $this->attributes);
 
-    $attributes = [
-      "y" => [],
-      "m" => [],
-      "d" => [],
-    ];
+      $attributes = [
+        "y" => [],
+        "m" => [],
+        "d" => [],
+      ];
 
-    return
-      "{$this->required}{$this->helpPopup}<fieldset{$this->expandTagAttributes($this->attributes)}>" .
-        "<legend>{$this->label}</legend>" .
-        "<label class='s s2'><span class='vh'>{$i18n->t("Year")}</span><input{$this->expandTagAttributes($attributes["y"])}></label>" .
-        "<label class='s s1'><span class='vh'>{$i18n->t("Month")}</span><input{$this->expandTagAttributes($attributes["m"])}></label>" .
-        "<label class='s s1'><span class='vh'>{$i18n->t("Day")}</span><input{$this->expandTagAttributes($attributes["d"])}></label>" .
-      "</fieldset>"
-    ;
+      return
+        "{$this->required}{$this->helpPopup}<fieldset{$this->expandTagAttributes($this->attributes)}>" .
+          "<legend>{$this->label}</legend>" .
+          "<label class='s s2'><span class='vh'>{$i18n->t("Year")}</span><input{$this->expandTagAttributes($attributes["y"])}></label>" .
+          "<label class='s s1'><span class='vh'>{$i18n->t("Month")}</span><input{$this->expandTagAttributes($attributes["m"])}></label>" .
+          "<label class='s s1'><span class='vh'>{$i18n->t("Day")}</span><input{$this->expandTagAttributes($attributes["d"])}></label>" .
+        "</fieldset>"
+      ;
 
     // @devStart
     // @codeCoverageIgnoreStart

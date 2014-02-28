@@ -78,7 +78,7 @@ abstract class AbstractInput extends \MovLib\Presentation\Partial\FormElement\Ab
     try {
     // @codeCoverageIgnoreEnd
     // @devEnd
-    return "{$this->required}{$this->helpPopup}{$this->helpText}<p><label for='{$this->id}'>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
+      return "{$this->required}{$this->helpPopup}{$this->helpText}<p><label for='{$this->id}'>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
     // @devStart
     // @codeCoverageIgnoreStart
     }
