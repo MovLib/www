@@ -29,13 +29,53 @@ namespace MovLib\Presentation\Partial\FormElement;
  */
 final class InputSex extends \MovLib\Presentation\Partial\FormElement\RadioGroup {
 
+  /**
+   * 0
+   *
+   * Unknown sex according to the standard.
+   */
+  const UNKNOWN = 0;
+
+  /**
+   * 1
+   *
+   * Male sex according to the standard.
+   */
+  const MALE = 1;
+
+  /**
+   * 2
+   *
+   * Female sex according to the standard.
+   */
+  const FEMALE = 2;
+
+  /**
+   * Instantiate new input sex element.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @param string $id
+   *   {@inheritdoc}
+   * @param string $label
+   *   {@inheritdoc}
+   * @param mixed $value
+   *   {@inheritdoc}
+   * @param null|string $help
+   *   The input's help text (if any).
+   * @param null|string $helpPopup
+   *   The input's help popup (if any).
+   *
+   */
   public function __construct($id, $label, &$value, $help = null, $helpPopup = false) {
     global $i18n;
     parent::__construct($id, $label, [
-      2 => $i18n->t("Female"),
-      1 => $i18n->t("Male"),
-      0 => $i18n->t("Unknown"),
-    ], $value, $help, $helpPopup);
+      self::FEMALE  => $i18n->t("Female"),
+      self::MALE    => $i18n->t("Male"),
+      self::UNKNOWN => $i18n->t("Unknown"),
+    ], $value);
+    if ($helpPopup) {
+      $this->attributes["#help-popup"] = $help;
+    }
   }
 
 }
