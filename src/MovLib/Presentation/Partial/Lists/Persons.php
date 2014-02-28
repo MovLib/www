@@ -106,71 +106,66 @@ class Persons extends \MovLib\Presentation\Partial\Lists\AbstractList {
   protected function render() {
     global $i18n;
     $list = null;
-    try {
-      /* @var $person \MovLib\Data\Person\Person */
-      while ($person = $this->listItems->fetch_object("\\MovLib\\Data\\Person\\Person")) {
-        $additionalInfo = null;
-        if ($this->showAdditionalInfo === true) {
-          $additionalNames = null;
-          if ($person->bornName) {
-            $additionalNames .= $i18n->t("{0} ({1})", [
-              "<span itemprop='additionalName'>{$person->bornName}</span>",
-              "<i>{$i18n->t("born name")}</i>",
-            ]);
-          }
-          if ($person->nickname) {
-            if ($additionalNames) {
-              $additionalNames .= " ";
-            }
-            $additionalNames .= $i18n->t("aka “{0}”", [ "<span itemprop='additionalName'>{$person->nickname}</span>" ]);
-          }
+    /* @var $person \MovLib\Data\Person\Person */
+    while ($person = $this->listItems->fetch_object("\\MovLib\\Data\\Person\\Person")) {
+      $additionalInfo = null;
+      if ($this->showAdditionalInfo === true) {
+        $additionalNames = null;
+        if ($person->bornName) {
+          $additionalNames .= $i18n->t("{0} ({1})", [
+            "<span itemprop='additionalName'>{$person->bornName}</span>",
+            "<i>{$i18n->t("born name")}</i>",
+          ]);
+        }
+        if ($person->nickname) {
           if ($additionalNames) {
-            $additionalNames = "<br>{$additionalNames}";
+            $additionalNames .= " ";
           }
-
-          $lifeDates = null;
-          if ($person->birthDate || $person->deathDate) {
-            if ($person->birthDate) {
-              $lifeDates .= (new Date($person->birthDate))->format([ "itemprop" => "birthDate", "title" => $i18n->t("Date of Birth") ]);
-            }
-            else {
-              $lifeDates .= $i18n->t("{0}unknown{1}", [ "<em title='{$i18n->t("Date of Birth")}'>", "</em>" ]);
-            }
-
-            if ($person->deathDate) {
-              $lifeDates .= " – " . (new Date($person->deathDate))->format([ "itemprop" => "deathDate", "title" => $i18n->t("Date of Death") ]);
-            }
-
-            $lifeDates = "<br>{$lifeDates}";
-          }
-
-          if ($additionalNames || $lifeDates) {
-            $additionalInfo = "<span class='small'>{$additionalNames}{$lifeDates}</span>";
-          }
+          $additionalNames .= $i18n->t("aka “{0}”", [ "<span itemprop='additionalName'>{$person->nickname}</span>" ]);
+        }
+        if ($additionalNames) {
+          $additionalNames = "<br>{$additionalNames}";
         }
 
-        // Add the role info if there is any.
-        if (isset($person->role)) {
-          $additionalInfo .= "<br><span class='small'>{$person->role}</small>";
+        $lifeDates = null;
+        if ($person->birthDate || $person->deathDate) {
+          if ($person->birthDate) {
+            $lifeDates .= (new Date($person->birthDate))->format([ "itemprop" => "birthDate", "title" => $i18n->t("Date of Birth") ]);
+          }
+          else {
+            $lifeDates .= $i18n->t("{0}unknown{1}", [ "<em title='{$i18n->t("Date of Birth")}'>", "</em>" ]);
+          }
+
+          if ($person->deathDate) {
+            $lifeDates .= " – " . (new Date($person->deathDate))->format([ "itemprop" => "deathDate", "title" => $i18n->t("Date of Death") ]);
+          }
+
+          $lifeDates = "<br>{$lifeDates}";
         }
 
-        $list .=
-          "<li{$this->expandTagAttributes($this->listItemsAttributes)}>" .
-            "<a class='img li r' href='{$i18n->r("/person/{0}", [ $person->id ])}' itemprop='url'>" .
-              $this->getImage($person->displayPhoto->getStyle($this->imageStyle), false, [ "class" => "s s1", "itemprop" => "image" ]) .
-              "<span class='s s{$this->descriptionSpan}'><span class='link-color' itemprop='name'>{$person->name}</span>{$additionalInfo}</span>" .
-            "</a>" .
-          "</li>"
-        ;
+        if ($additionalNames || $lifeDates) {
+          $additionalInfo = "<span class='small'>{$additionalNames}{$lifeDates}</span>";
+        }
       }
-      if (!$list) {
-        return (string) new Alert($this->noItemsText, null, Alert::SEVERITY_INFO);
+
+      // Add the role info if there is any.
+      if (isset($person->role)) {
+        $additionalInfo .= "<br><span class='small'>{$person->role}</small>";
       }
-      return "<ol{$this->expandTagAttributes($this->attributes)}>{$list}</ol>";
+
+      $list .=
+        "<li{$this->expandTagAttributes($this->listItemsAttributes)}>" .
+          "<a class='img li r' href='{$i18n->r("/person/{0}", [ $person->id ])}' itemprop='url'>" .
+            $this->getImage($person->displayPhoto->getStyle($this->imageStyle), false, [ "class" => "s s1", "itemprop" => "image" ]) .
+            "<span class='s s{$this->descriptionSpan}'><span class='link-color' itemprop='name'>{$person->name}</span>{$additionalInfo}</span>" .
+          "</a>" .
+        "</li>"
+      ;
     }
-    catch (\Exception $e) {
-      return $e->getMessage();
+    if (!$list) {
+      return (string) new Alert($this->noItemsText, null, Alert::SEVERITY_INFO);
     }
+    return "<ol{$this->expandTagAttributes($this->attributes)}>{$list}</ol>";
   }
 
 }
