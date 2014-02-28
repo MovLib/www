@@ -25,6 +25,7 @@ use \MovLib\Presentation\Partial\Place;
 use \MovLib\Presentation\Partial\Date;
 use \MovLib\Presentation\Partial\Lists\Unordered;
 use \MovLib\Presentation\Partial\Lists\Ordered;
+use \MovLib\Presentation\Partial\FormElement\InputSex;
 
 /**
  * Presentation of a single person.
@@ -49,15 +50,14 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
    * @throws \LogicException
    */
   public function __construct() {
+    global $kernel;
     parent::__construct();
     $routeArgs = [ $this->person->id ];
     $this->initLanguageLinks("/person/{0}", $routeArgs);
     array_pop($this->breadcrumb->menuitems);
 
     // Enhance the page title with microdata.
-    $this->pageTitle = "<span itemprop='name'>{$this->person->name}</span>";
-
-
+    $this->pageTitle = "<span property='name'>{$this->person->name}</span>";
   }
 
 
@@ -76,11 +76,11 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     $this->headingBefore = "<div class='r'><div class='s s10'>";
 
     // Append sex information to name.
-    if ($this->person->sex === 1 || $this->person->sex === 2) {
-      if ($this->person->sex === 1) {
+    if ($this->person->sex === InputSex::MALE || $this->person->sex === InputSex::FEMALE) {
+      if ($this->person->sex === InputSex::MALE) {
         $title = $i18n->t("Male");
       }
-      elseif ($this->person->sex === 2) {
+      elseif ($this->person->sex === InputSex::FEMALE) {
         $title = $i18n->t("Female");
       }
       $this->pageTitle .= " <sup class='ico ico-sex{$this->person->sex} sex sex-{$this->person->sex}' title='{$title}'></sup>";
@@ -90,7 +90,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     $info = null;
     if ($this->person->bornName) {
       $info = $i18n->t("{0} ({1})", [
-        "<span itemprop='additionalName'>{$this->person->bornName}</span>",
+        "<span property='additionalName'>{$this->person->bornName}</span>",
         "<i>{$i18n->t("born name")}</i>",
       ]);
     }
@@ -99,7 +99,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     $birth = $birthDate = $birthDateFormatted = $birthAge = $birthPlace = null;
     if ($this->person->birthDate) {
       $birthDate          = new Date($this->person->birthDate);
-      $birthDateFormatted = "<a href='{$i18n->rp("/year/{0}/persons", [ $birthDate->dateInfo["year"] ])}'>{$birthDate->format([ "itemprop" => "birthDate" ])}</a>";
+      $birthDateFormatted = "<a href='{$i18n->rp("/year/{0}/persons", [ $birthDate->dateInfo["year"] ])}'>{$birthDate->format([ "property" => "birthDate" ])}</a>";
       $birthAge           = $birthDate->getAge();
     }
     if ($this->person->birthplace) {
@@ -138,7 +138,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     $death = $deathDate = $deathDateFormatted = $deathAge = $deathPlace = null;
     if ($this->person->deathDate) {
       $deathDate          = new Date($this->person->deathDate);
-      $deathDateFormatted = $deathDate->format([ "itemprop" => "deathDate" ]);
+      $deathDateFormatted = $deathDate->format([ "property" => "deathDate" ]);
       if ($this->person->birthDate) {
         $deathAge         = $birthDate->getAge($this->person->deathDate);
       }
@@ -178,14 +178,14 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
       if ($info) {
         $info .= "<br>";
       }
-      $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->person->wikipedia}' itemprop='sameAs' target='_blank'>{$i18n->t("Wikipedia Article")}</a>";
+      $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->person->wikipedia}' property='sameAs' target='_blank'>{$i18n->t("Wikipedia Article")}</a>";
     }
 
     // Put all header information together after the closing title.
     $this->headingAfter =
           "<p>{$info}</p>" .
         "</div>" . // close .s
-        "<div id='person-photo' class='s s2'>{$this->getImage($this->person->displayPhoto->getStyle(PersonImage::STYLE_SPAN_02), true, [ "itemprop" => "image" ])}</div>" .
+        "<div id='person-photo' class='s s2'>{$this->getImage($this->person->displayPhoto->getStyle(PersonImage::STYLE_SPAN_02), true, [ "property" => "image" ])}</div>" .
       "</div>" // close .r
     ;
 
@@ -223,7 +223,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     // Additional names section.
     $sections["aliases"] = [
       $i18n->t("Also Known As"),
-      new Ordered($this->person->aliases, $i18n->t("No additional names available, {0}add some{1}?", [ $editLinkOpen, "</a>" ]), [ "class" => "grid-list no-list r" ], [ "class" => "mb10 s s3", "itemprop" => "additionalName" ]),
+      new Ordered($this->person->aliases, $i18n->t("No additional names available, {0}add some{1}?", [ $editLinkOpen, "</a>" ]), [ "class" => "grid-list no-list r" ], [ "class" => "mb10 s s3", "property" => "additionalName" ]),
     ];
 
     // External links section.
@@ -236,7 +236,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
       $c = count($this->person->links);
       for ($i = 0; $i < $c; ++$i) {
         $hostname = str_replace("www.", "", parse_url($this->person->links[$i], PHP_URL_HOST));
-        $links .= "<li class='mb10 s s3'><a href='{$this->person->links[$i]}' itemprop='url' rel='nofollow' target='_blank'>{$hostname}</a></li>";
+        $links .= "<li class='mb10 s s3'><a href='{$this->person->links[$i]}' property='url' rel='nofollow' target='_blank'>{$hostname}</a></li>";
       }
       $links .= "</ul>";
     }
@@ -265,6 +265,13 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     return $content;
   }
 
+  /**
+   * Construct the movies section with all appearances of this person.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return string
+   *   The movies section.
+   */
   protected function getMoviesSection() {
     global $i18n;
     $moviesResult = $this->person->getMovies();
@@ -284,7 +291,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
         if ($genres) {
           $genres .= "&nbsp;";
         }
-        $genres      .= "<span class='label'>{$row["name"]}</span>";
+        $genres      .= "<span class='label' property='genre'>{$row["name"]}</span>";
       }
       if ($genres) {
         $genres = "<p class='small'>{$genres}</p>";
@@ -292,19 +299,17 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
 
       // Construct basic movie information.
       $movieInfos[$movie->id] =
-        "<a class='img fl' href='{$movie->route}' itemprop='url'>" .
+        "<a class='img fl' href='{$movie->route}' property='url'>" .
           "<div class='s s1 tac'>" .
-            $this->getImage($movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01), false, [ "itemprop" => "image" ]) .
+            $this->getImage($movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01), false, [ "property" => "image" ]) .
           "</div>" .
           "<div class='s s5'>{$this->getTitleInfo($movie)}{$genres}</div>" .
         "</a>";
 
       // Add the director job if our person directed the current movie.
+      $movieJobs[$movie->id] = null;
       if ($movie->director) {
-        $movieJobs[$movie->id] = [ "<a href='{$i18n->r("/job/{0}", [ $movie->director ])}'>{$i18n->t("Director")}</a>" ];
-      }
-      else {
-        $movieJobs[$movie->id] = [];
+        $movieJobs[$movie->id] .= "<li property='director' resource='#'><a href='{$i18n->r("/job/{0}", [ $movie->director ])}'>{$i18n->t("Director")}</a></li>";
       }
     }
 
@@ -317,27 +322,26 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     // ----------------------------------------------------------------------------------------------------------------- Fetch cast information
 
 
-    $castResult       = Cast::getPersonCast($this->person->id);
-    $jobActor         = $i18n->t("Actor");
-    $jobActress       = $i18n->t("Actress");
-    $jobActorActress  = $i18n->t("Actor/Actress");
-    $roleHimself      = $i18n->t("Himself");
-    $roleHerself      = $i18n->t("Herself");
-    $roleSelf         = $i18n->t("Self");
+    $castResult = Cast::getPersonCast($this->person->id);
+    switch ($this->person->sex) {
+      case InputSex::MALE:
+        $job  = $i18n->t("Actor");
+        $role = $i18n->t("Himself");
+        break;
+
+      case InputSex::FEMALE:
+        $job  = $i18n->t("Actress");
+        $role = $i18n->t("Herself");
+        break;
+
+      default:
+        $job  = $i18n->t("Actor/Actress");
+        $role = $i18n->t("Self");
+        break;
+    }
+
     /* @var $cast \MovLib\Data\Movie\Cast */
     while ($cast = $castResult->fetch_object("\\MovLib\\Data\\Movie\\Cast")) {
-      if ($this->person->sex === 1) {
-        $job = $jobActor;
-        $role = $roleHimself;
-      }
-      elseif ($this->person->sex === 2) {
-        $job = $jobActress;
-        $role = $roleHerself;
-      }
-      else {
-        $job = $jobActorActress;
-        $role = $roleSelf;
-      }
       $job = $this->a($i18n->r("/job/{0}", [ $cast->jobId ]), $job);
 
       if ($cast->roleName) {
@@ -352,12 +356,11 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
         }
       }
 
-      if (!$role) {
-        $movieJobs[$cast->movieId][] = $i18n->t("{job}", [ "job" => $job ]);
+      if ($role) {
+        $job = $i18n->t("{0} ({1})", [ $job, $role ]);
       }
-      else {
-        $movieJobs[$cast->movieId][] = $i18n->t("{job} ({role})", [ "job" => $job, "role" => $role ]);
-      }
+
+      $movieJobs[$cast->movieId] .= "<li property='actor' resource='#'>{$job}</li>";
     }
 
 
@@ -367,7 +370,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     $crewResult = Crew::getPersonCrew($this->person->id);
     /* @var $crew \MovLib\Data\Movie\Crew */
     while ($crew = $crewResult->fetch_object("\\MovLib\\Data\\Movie\\Crew")) {
-      $movieJobs[$crew->movieId][] = $this->a($i18n->r("/job/{0}", [ $crew->jobId ]), $crew->jobTitle);
+      $movieJobs[$crew->movieId] .= "<li>{$this->a($i18n->r("/job/{0}", [ $crew->jobId ]), $crew->jobTitle)}</li>";
     }
 
 
@@ -376,8 +379,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
 
     $list = null;
     foreach ($movieInfos as $id => $info) {
-      $jobs = new Unordered($movieJobs[$id], "", [ "class" => "no-list jobs s s4 tar" ]);
-      $list .= "<li class='li s r'>{$info}{$jobs}</li>";
+      $list .= "<li class='li s r' vocab='http://schema.org/' typeof='Movie'>{$info}<ul class='no-list jobs s s4 tar'>{$movieJobs[$id]}</ul></li>";
     }
     return "<ol class='hover-list no-list'>{$list}</ol>";
   }
@@ -410,7 +412,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     if ($movie->displayTitle != $movie->originalTitle) {
       $displayTitleItemprop = "alternateName";
       $originalTitle = "<br><span class='small'>{$i18n->t("{0} ({1})", [
-        "<span itemprop='name'{$this->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>",
+        "<span property='name'{$this->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>",
         "<i>{$i18n->t("original title")}</i>",
       ])}</span>";
     }
@@ -419,11 +421,11 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
       $displayTitleItemprop = "name";
       $originalTitle = null;
     }
-    $displayTitle = "<span class='link-color' itemprop='{$displayTitleItemprop}'{$this->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}</span>";
+    $displayTitle = "<span class='link-color' property='{$displayTitleItemprop}'{$this->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}</span>";
 
     // Append year enclosed in micro-data to display title if available.
     if (isset($movie->year)) {
-      $displayTitle = $i18n->t("{title} ({year})", [ "title" => $displayTitle, "year" => "<span itemprop='datePublished'>{$movie->year}</span>" ]);
+      $displayTitle = $i18n->t("{title} ({year})", [ "title" => $displayTitle, "year" => "<span property='datePublished'>{$movie->year}</span>" ]);
     }
 
     return "<p>{$displayTitle}{$originalTitle}</p>";

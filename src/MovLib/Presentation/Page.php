@@ -528,7 +528,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
     // The schema for the complete page content.
     $schema = null;
     if ($this->schemaType) {
-      $schema = " itemscope itemtype='http://schema.org/{$this->schemaType}'";
+      $schema = " vocab='http://schema.org/' typeof='{$this->schemaType}'";
     }
 
     // The schema property of the heading.
