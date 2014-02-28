@@ -152,6 +152,72 @@ class Cast {
 
 
   /**
+   * Get the person playing the role.
+   *
+   * @return \MovLib\Data\Person\Person
+   *   The person playing this role.
+   */
+  public function getPerson() {
+    if ($this->personId) {
+      return new Person($this->personId);
+    }
+  }
+
+  /**
+   * Get the cast of a movie.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @param integer $movieId
+   *   The movie's unique ID to fetch the cast for.
+   * @param null|integer $limit
+   *   Limit of unique cast members to return, defaults to <code>8</code>. <code>NULL</code> means no limit.
+   * @return \mysqli_result
+   *   The cast.
+   */
+  public static function getMovieCast($movieId, $limit = 8) {
+    global $db, $i18n;
+    if ($limit) {
+      return $db->query(
+        "SELECT
+          `movies_cast`.`id`,
+          `movie_id` AS `movieId`,
+          `person_id` AS `personId`,
+          `job_id` AS `jobId`,
+          IFNULL(COLUMN_GET(`dyn_role`, ? AS BINARY), COLUMN_GET(`dyn_role`, ? AS BINARY)) AS `roleName`,
+          `alias_id` AS `alias`,
+          `role_id` AS `role`
+        FROM `movies_cast`
+        INNER JOIN `persons` AS `p`
+          ON `p`.`id` = `movies_cast`.`person_id`
+        WHERE `movie_id` = ?
+        ORDER BY `p`.`name`{$db->collations[$i18n->languageCode]} ASC",
+        "ssd",
+        [ $i18n->languageCode, $i18n->defaultLanguageCode, $movieId ]
+      )->get_result();
+    }
+    else {
+      return $db->query(
+        "SELECT
+          `id`,
+          `movie_id` AS `movieId`,
+          `person_id` AS `personId`,
+          `job_id` AS `jobId`,
+          IFNULL(COLUMN_GET(`dyn_role`, ? AS BINARY), COLUMN_GET(`dyn_role`, ? AS BINARY)) AS `roleName`,
+          `alias_id` AS `alias`,
+          `role_id` AS `role`
+        FROM `movies_cast`
+        INNER JOIN `persons` AS `p`
+          ON `p`.`id` = `movies_cast`.`person_id`
+        WHERE `person_id` = ?
+        ORDER BY `p`.`name`{$db->collations[$i18n->languageCode]} ASC",
+        "ssd",
+        [ $i18n->languageCode, $i18n->defaultLanguageCode, $movieId ]
+      )->get_result();
+    }
+  }
+
+  /**
    * Get all cast appearances of a person.
    *
    * @global \MovLib\Data\Database $db
