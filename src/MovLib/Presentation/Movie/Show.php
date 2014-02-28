@@ -18,12 +18,14 @@
 namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Image\MoviePoster;
+use \MovLib\Data\Movie\Cast;
 use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Duration;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\Lists\Persons;
+use \MovLib\Presentation\Partial\Lists\Cast as CastPartial;
 
 /**
  * Single movie presentation page.
@@ -274,13 +276,11 @@ class Show extends \MovLib\Presentation\Page {
       ),
     ];
 
-    // @todo Use the partial when it's done
     $sections["cast"] = [
       $i18n->t("Cast"),
-      new Persons(
-        $this->movie->getCast(),
-        $i18n->t("No cast assigned yet, {0}add cast{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]),
-        [ "itemprop" => "actor" ]
+      new CastPartial(
+        Cast::getMovieCast($this->movie->id),
+        $i18n->t("No cast assigned yet, {0}add cast{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ])
       ),
     ];
 
