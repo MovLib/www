@@ -1,4 +1,4 @@
-# ![MovLib logo](https://github.com/MovLib/www/blob/master/public/asset/img/logo/32.png?raw=true) MovLib, the free movie library.
+# ![MovLib logo](https://alpha.movlib.org/asset/img/logo/32.png) MovLib, the free movie library.
 Imagine [Wikipedia](https://en.wikipedia.org/), [Discogs](http://www.discogs.com/), [Last.fm](http://www.last.fm/), [IMDb](http://www.imdb.com/), and [TheMovieDB](http://www.themoviedb.org/) combined in a totally free and open project.
 
 [Sign up for the open beta](https://movlib.org/) or [visit the current development (alpha) version](https://alpha.movlib.org/).
