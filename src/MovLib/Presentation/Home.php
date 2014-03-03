@@ -126,9 +126,7 @@ class Home extends \MovLib\Presentation\Page {
                 "use the data we all collect here at {sitename}.",
                 [ "sitename" => $kernel->siteName ]
               )}</p>" .
-              "<p><a class='btn btn-primary btn-large' href='//{$kernel->domainAPI}/'>{$i18n->t(
-                "Read the API documentation"
-              )}</a></p>" .
+              "<p><a class='btn btn-primary btn-large' href='{$i18n->r("/help/api")}'>{$i18n->t("Read the API documentation")}</a></p>" .
             "</article>" .
           "</div>" .
         "</div>" .
