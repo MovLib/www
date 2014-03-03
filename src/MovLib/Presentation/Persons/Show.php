@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -70,18 +70,14 @@ class Show extends \MovLib\Presentation\Page {
    */
   protected function getPageContent() {
     global $i18n;
-
-    return "<div id='filter' class='tar'>Filter</div>" . new PersonsPartial(
+    $persons = new PersonsPartial(
       Person::getPersons($this->paginationOffset, $this->paginationLimit),
       new Alert(
         $i18n->t(
           "We couldn’t find any persons matching your filter criteria, or there simply aren’t any persons available. Would you like to {0}create a new entry{1}?",
-          [
-            "<a href='{$i18n->r("/person/create")}'>",
-            "</a>"
-          ]
+          [ "<a href='{$i18n->r("/person/create")}'>", "</a>" ]
         ),
-        $i18n->t("No persons"),
+        $i18n->t("No Persons"),
         Alert::SEVERITY_INFO
       ),
       null,
@@ -89,6 +85,7 @@ class Show extends \MovLib\Presentation\Page {
       10,
       true
     );
+    return "<div id='filter' class='tar'>Filter</div>{$persons}";
   }
 
 }
