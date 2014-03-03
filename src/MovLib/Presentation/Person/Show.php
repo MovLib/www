@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Person;
 
+use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Data\Image\PersonImage;
 use \MovLib\Data\Image\MoviePoster;
 use \MovLib\Data\Movie\Cast;
@@ -26,6 +27,7 @@ use \MovLib\Presentation\Partial\Date;
 use \MovLib\Presentation\Partial\Lists\Unordered;
 use \MovLib\Presentation\Partial\Lists\Ordered;
 use \MovLib\Presentation\Partial\FormElement\InputSex;
+use \MovLib\Presentation\Partial\Listing\Movie\MoviePersonListing;
 
 /**
  * Presentation of a single person.
@@ -274,48 +276,10 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
    */
   protected function getMoviesSection() {
     global $i18n;
-    $moviesResult = $this->person->getMovies();
-    $movieInfos   = [];
-    $movieJobs    = [];
 
-
-    // ----------------------------------------------------------------------------------------------------------------- Fetch movie information
-
-
-    /* @var $movie \MovLib\Data\Movie\FullMovie */
-    while ($movie = $moviesResult->fetch_object("\\MovLib\\Data\\Movie\\FullMovie")) {
-      // Get the movie's genres.
-      $genres = null;
-      $result = $movie->getGenres();
-      while ($row = $result->fetch_assoc()) {
-        if ($genres) {
-          $genres .= "&nbsp;";
-        }
-        $genres      .= "<span class='label' property='genre'>{$row["name"]}</span>";
-      }
-      if ($genres) {
-        $genres = "<p class='small'>{$genres}</p>";
-      }
-
-      // Construct basic movie information.
-      $movieInfos[$movie->id] =
-        "<a class='img fl' href='{$movie->route}' property='url'>" .
-          "<div class='s s1 tac'>" .
-            $this->getImage($movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01), false, [ "property" => "image" ]) .
-          "</div>" .
-          "<div class='s s5'>{$this->getTitleInfo($movie)}{$genres}</div>" .
-        "</a>";
-
-      // Add the director job if our person directed the current movie.
-      $movieJobs[$movie->id] = null;
-      if ($movie->director) {
-        $movieJobs[$movie->id] .= "<li property='director' resource='#'><a href='{$i18n->r("/job/{0}", [ $movie->director ])}'>{$i18n->t("Director")}</a></li>";
-      }
-    }
-
-    // If there were no movies consumed, return a descriptive text.
-    if (empty($movieInfos)) {
-      return $i18n->t("No movie jobs available. Please go to movie pages and add some.");
+    $listing = new MoviePersonListing($this->person->getMovies());
+    if (!($movies = $listing->getListing())) {
+      return new Alert($i18n->t("Seems like {person_name} hasn’t worked on any movies."), $i18n->t("No Movies"), Alert::SEVERITY_INFO);
     }
 
 
@@ -360,7 +324,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
         $job = $i18n->t("{0} ({1})", [ $job, $role ]);
       }
 
-      $movieJobs[$cast->movieId] .= "<li property='actor' resource='#'>{$job}</li>";
+      $movies[$cast->movieId]["#jobs"] .= "<li property='actor' resource='#'>{$job}</li>";
     }
 
 
@@ -370,7 +334,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     $crewResult = Crew::getPersonCrew($this->person->id);
     /* @var $crew \MovLib\Data\Movie\Crew */
     while ($crew = $crewResult->fetch_object("\\MovLib\\Data\\Movie\\Crew")) {
-      $movieJobs[$crew->movieId] .= "<li>{$this->a($i18n->r("/job/{0}", [ $crew->jobId ]), $crew->jobTitle)}</li>";
+      $movies[$crew->movieId]["#jobs"] .= "<li>{$this->a($i18n->r("/job/{0}", [ $crew->jobId ]), $crew->jobTitle)}</li>";
     }
 
 
@@ -378,8 +342,8 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
 
 
     $list = null;
-    foreach ($movieInfos as $id => $info) {
-      $list .= "<li class='li s r' vocab='http://schema.org/' typeof='Movie'>{$info}<ul class='no-list jobs s s4 tar'>{$movieJobs[$id]}</ul></li>";
+    foreach ($movies as $id => $html) {
+      $list .= "<li class='li s r' typeof='Movie'>{$html["#movie"]}<ul class='no-list jobs s s4 tar'>{$html["#jobs"]}</ul></li>";
     }
     return "<ol class='hover-list no-list'>{$list}</ol>";
   }

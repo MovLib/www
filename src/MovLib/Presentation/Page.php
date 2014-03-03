@@ -495,7 +495,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
         // @todo Add opensearch tag (rel="search").
         $this->headElements .
       "</head>" .
-      "<body id='{$this->id}' class='{$this->bodyClasses}'>" .
+      "<body id='{$this->id}' class='{$this->bodyClasses}' vocab='http://schema.org/'>" .
         "{$this->getHeader()}{$content}{$this->getFooter()}" .
         "<script id='jss' type='application/json'>{$jsSettings}</script>" .
         "<script async src='{$kernel->getAssetURL("MovLib", "js")}'></script>"
@@ -527,13 +527,13 @@ class Page extends \MovLib\Presentation\AbstractBase {
     // The schema for the complete page content.
     $schema = null;
     if ($this->schemaType) {
-      $schema = " vocab='http://schema.org/' typeof='{$this->schemaType}'";
+      $schema = " typeof='{$this->schemaType}'";
     }
 
     // The schema property of the heading.
     $headingprop = null;
     if ($this->headingSchemaProperty) {
-      $headingprop = " itemprop='{$this->headingSchemaProperty}'";
+      $headingprop = " property='{$this->headingSchemaProperty}'";
     }
 
     $noscript = new Alert($i18n->t("Please activate JavaScript in your browser to experience our website with all its features."), $i18n->t("JavaScript Disabled"));
