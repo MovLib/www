@@ -588,20 +588,20 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_trailers`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_trailers` (
-  `id` BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The movie trailer’s unique ID within the movie.',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The movie trailer’s unique ID.',
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The trailer\'s translated descriptions.',
   `language_code` CHAR(2) NOT NULL COMMENT 'The movie trailer’s ISO alpha-2 language code.',
   `url` VARCHAR(255) NOT NULL COMMENT 'The movie trailer’s url, e.g. youtube.',
-  `weight` SMALLINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The weight (display order) of this trailer, default is 0.',
   `country_code` CHAR(2) NULL COMMENT 'The movie trailer’s ISO alpha-2 country code.',
-  PRIMARY KEY (`id`, `movie_id`),
+  PRIMARY KEY (`id`),
   CONSTRAINT `fk_movies_trailers_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-COMMENT = 'Contains all movie trailsers.';
+COMMENT = 'Contains all movie trailers.';
 
 SHOW WARNINGS;
 
