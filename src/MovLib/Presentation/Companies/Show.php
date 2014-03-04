@@ -71,18 +71,14 @@ class Show extends \MovLib\Presentation\Page {
    */
   protected function getPageContent() {
     global $i18n;
-
-    return "<div id='filter' class='tar'>{$i18n->t("Filter")}</div>" . new CompaniesPartial(
+    $companies = new CompaniesPartial(
       Company::getCompanies($this->paginationOffset, $this->paginationLimit),
       new Alert(
         $i18n->t(
           "We couldn’t find any company matching your filter criteria, or there simply aren’t any companies available. Would you like to {0}create a new entry{1}?",
-          [
-            "<a href='{$i18n->r("/company/create")}'>",
-            "</a>"
-          ]
+          [ "<a href='{$i18n->r("/company/create")}'>", "</a>" ]
         ),
-        $i18n->t("No companies"),
+        $i18n->t("No Companies"),
         Alert::SEVERITY_INFO
       ),
       null,
@@ -90,6 +86,7 @@ class Show extends \MovLib\Presentation\Page {
       10,
       true
     );
+    return "<div id='filter' class='tar'>{$i18n->t("Filter")}</div>{$companies}";
   }
 
 }

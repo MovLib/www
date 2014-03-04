@@ -66,10 +66,19 @@ class MoviePersonListing extends \MovLib\Presentation\Partial\Listing\Movie\Abst
     $list[$movie->id]["#jobs"] = null;
 
     // Directly add the director if this person directed this movie (this can't happen multiple times).
-    if ($movie->director) {
+    if (isset($movie->director)) {
       $list[$movie->id]["#jobs"] .=
         "<li property='director' resource='#'>" .
           "<a href='{$i18n->r("/job/{0}", [ $movie->director ])}'>{$i18n->t("Director")}</a>" .
+        "</li>"
+      ;
+    }
+
+    // Directly add the job if jobTitle and jobId are set.
+    if (isset($movie->jobTitle) && isset($movie->jobId)) {
+      $list[$movie->id]["#jobs"] .=
+        "<li>" .
+          "<a href='{$i18n->r("/job/{0}", [ $movie->jobId ])}'>{$movie->jobTitle}</a>" .
         "</li>"
       ;
     }

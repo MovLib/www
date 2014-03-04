@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Company;
 
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Lists\MovieJobs as MoviesPartial;
+use \MovLib\Presentation\Partial\Listing\Movie\MoviePersonListing;
 
 /**
  * Movies of a company.
@@ -51,11 +51,20 @@ class Movies extends \MovLib\Presentation\Company\AbstractBase {
   }
 
   /**
-   * @global \MovLib\Data\I18n $i18n
    * @return \MovLib\Presentation\Partial\Lists\Movies
    */
   protected function getPageContent() {
     global $i18n;
-    return new MoviesPartial($this->company->getMovieResult(), (new Alert($i18n->t("No movies found."), null, Alert::SEVERITY_INFO))->__toString());
+    $movies = (new MoviePersonListing($this->company->getMovieResult()))->getListing();
+
+    if (empty($movies)) {
+      return new Alert($i18n->t("There are no movies this company was involved!"), $i18n->t("No Movies"), Alert::SEVERITY_INFO);
+    }
+
+    $list = null;
+    foreach ($movies as $id => $html) {
+      $list .= "<li class='li s r' typeof='Movie'>{$html["#movie"]}<ul class='no-list jobs s s4 tar'>{$html["#jobs"]}</ul></li>";
+    }
+    return "<ol class='hover-list no-list'>{$list}</ol>";
   }
 }

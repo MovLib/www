@@ -1,24 +1,23 @@
 <?php
 
 /*!
- *  This file is part of {@link https://github.com/MovLib MovLib}.
+ * This file is part of {@link https://github.com/MovLib MovLib}.
  *
- *  Copyright © 2013-present {@link http://movlib.org/ MovLib}.
+ * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
  *
- *  MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
- *  License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- *  version.
+ * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  *
- *  MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
- *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ * MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License along with MovLib.
- *  If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
+ * You should have received a copy of the GNU Affero General Public License along with MovLib.
+ * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-
 namespace MovLib\Presentation\Company;
 
-use \MovLib\Data\Company\Full as FullCompany;
+use \MovLib\Data\Company\FullCompany;
 use \MovLib\Presentation\Error\Gone;
 
 /**
@@ -30,7 +29,7 @@ use \MovLib\Presentation\Error\Gone;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractBase extends \MovLib\Presentation\Page{
+abstract class AbstractBase extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitSidebar;
 
 
@@ -67,12 +66,15 @@ abstract class AbstractBase extends \MovLib\Presentation\Page{
     global $i18n, $kernel;
 
     // Try to load company data.
-    $this->company = new FullCompany($_SERVER["COMPANY_ID"]);
+    $this->company = new FullCompany((int)$_SERVER["COMPANY_ID"]);
 
     $this->title = $this->company->name;
 
-    // Initialize Breadcrumb already with the company route, since all presentations are subpages except for Show.
-    $this->initBreadcrumb([[ $i18n->rp("/companies"), $i18n->t("Companies") ], [ $this->company->route, $this->company->name ]]);
+    $breadcrumbArgs = [ [ $i18n->rp("/companies"), $i18n->t("Companies") ] ];
+    if ($kernel->requestURI != $this->company->route) {
+      $breadcrumbArgs[] = [ $this->company->route, $this->company->name ];
+    }
+    $this->initBreadcrumb($breadcrumbArgs);
 
     // Initialize edit route, sidebar and schema.
     $routeArgs = [ $this->company->id ];
@@ -89,12 +91,43 @@ abstract class AbstractBase extends \MovLib\Presentation\Page{
       [ $i18n->rp("/company/{0}/releases", $routeArgs), "{$i18n->t("Releases")} <span class='fr'>{$i18n->format("{0,number}", [ $this->company->getReleasesCount() ])}</span>", [ "class" => "ico ico-release separator" ] ],
     ]);
     $this->schemaType = "Corporation";
+    $kernel->stylesheets[] = "company";
 
     // Display Gone page if this person was deleted.
     if ($this->company->deleted === true) {
       // @todo Implement Gone presentation for companies instead of this generic one.
       throw new Gone;
     }
-    $kernel->stylesheets[] = "company";
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Construct content and sidebar.
+   *
+   * @param string $id
+   *   The section identifier.
+   * @param string $title
+   *   The translated section title.
+   * @param array|string $content
+   *   The content of the section.
+   */
+  protected function getSection($id, $title, $content) {
+    $this->sidebarNavigation->menuitems[] = [ "#{$id}", $title ];
+    $result = "<div id='{$id}'><h2>{$title}</h2>";
+    if (is_array($content)) {
+      foreach ($content as $subId => $subSection) {
+        $this->sidebarNavigation->menuitems[] = [ "#{$id}-{$subId}", $subSection[0] ];
+        $attributes = isset($subSection[2]) ? $this->expandTagAttributes($subSection[2]) : null;
+        $result .= "<div id='{$id}-{$subId}'><h3{$attributes}>{$subSection[0]}</h3>{$subSection[1]}</div>";
+      }
+    }
+    else {
+      $result .= $content;
+    }
+    return "{$result}</div>";
+  }
+  
 }

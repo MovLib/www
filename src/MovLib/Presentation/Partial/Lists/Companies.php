@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Partial\Lists;
 
-use \MovLib\Data\Image\CompanyImage;
+use \MovLib\Data\Company\Company;
 use \MovLib\Presentation\Partial\Date;
 
 /**
@@ -47,7 +47,7 @@ class Companies extends \MovLib\Presentation\Partial\Lists\Images {
    *
    * @var integer
    */
-  public $imageStyle = CompanyImage::STYLE_SPAN_01;
+  public $imageStyle = Company::STYLE_SPAN_01;
 
   /**
    * Show additional information or not.
@@ -77,9 +77,10 @@ class Companies extends \MovLib\Presentation\Partial\Lists\Images {
    *   Show additional information or not, defaults to <code>FALSE</code>.
    */
   public function __construct($listItems, $noItemsText = "", array $listItemsAttributes = null, array $attributes = null, $spanSize = 5, $showAdditionalInfo = false) {
-    $this->addClass("r", $attributes);
-    $this->addClass("r s s{$spanSize}", $listItemsAttributes);
-    parent::__construct($listItems, $noItemsText, $listItemsAttributes, $attributes);
+    parent::__construct($listItems, $noItemsText, $attributes);
+    $this->addClass("hover-list no-list r", $this->attributes);
+    $this->listItemsAttributes = $listItemsAttributes;
+    $this->addClass("s s{$spanSize}", $this->listItemsAttributes);
     $this->descriptionSpan                 = --$spanSize;
     $this->listItemsAttributes[]           = "itemscope";
     $this->listItemsAttributes["itemtype"] = "http://schema.org/Corporation";
@@ -125,7 +126,7 @@ class Companies extends \MovLib\Presentation\Partial\Lists\Images {
         $list .=
           "<li{$this->expandTagAttributes($this->listItemsAttributes)}>" .
             "<a class='img li r' href='{$i18n->r("/company/{0}", [ $company->id ])}' itemprop='url'>" .
-              $this->getImage($company->displayPhoto->getStyle($this->imageStyle), false, [ "class" => "s s1", "itemprop" => "image" ]) .
+              $this->getImage($company->getStyle($this->imageStyle), false, [ "class" => "s s1", "itemprop" => "image" ]) .
               "<span class='s s{$this->descriptionSpan}'><span class='link-color' itemprop='name'>{$company->name}</span>{$additionalInfo}</span>" .
             "</a>" .
           "</li>"

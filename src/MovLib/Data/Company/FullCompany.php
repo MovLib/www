@@ -29,11 +29,18 @@ use \MovLib\Presentation\Error\NotFound;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Full extends \MovLib\Data\Company\Company {
+class FullCompany extends \MovLib\Data\Company\Company {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
+
+  /**
+   * The company’s aliases.
+   *
+   * @var array
+   */
+  public $aliases = [];
 
   /**
    * The company’s creation timestamp.
@@ -50,18 +57,11 @@ class Full extends \MovLib\Data\Company\Company {
   public $description;
 
   /**
-   * The company’s translated Wikipedia link.
+   * The company logo’s description.
    *
    * @var string
    */
-  public $wikipedia;
-
-  /**
-   * The company’s aliases.
-   *
-   * @var array
-   */
-  public $aliases = [];
+  public $imageDescription;
 
   /**
    * The company’s weblinks.
@@ -76,6 +76,13 @@ class Full extends \MovLib\Data\Company\Company {
    * @var integer|object
    */
   public $place;
+
+  /**
+   * The company’s translated Wikipedia link.
+   *
+   * @var string
+   */
+  public $wikipedia;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -97,23 +104,31 @@ class Full extends \MovLib\Data\Company\Company {
     if ($id) {
       $this->id = $id;
       $stmt = $db->query("
-          SELECT
-            `aliases`,
-            `created`,
-            `defunct_date` AS `defunctDate`,
-            `deleted`,
-            COLUMN_GET(`dyn_descriptions`, '{$i18n->languageCode}' AS BINARY),
-            COLUMN_GET(`dyn_wikipedia`, '{$i18n->languageCode}' AS BINARY),
-            `founding_date` AS `foundingDate`,
-            `links`,
-            `name`,
-            `place_id` AS `place`
-          FROM `companies`
-          WHERE
-            `id` = ?
-          LIMIT 1",
-        "d",
-        [ $this->id ]
+        SELECT
+          `aliases`,
+          `created`,
+          `defunct_date`,
+          `deleted`,
+          IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS BINARY), COLUMN_GET(`dyn_descriptions`, '{$i18n->defaultLanguageCode}' AS BINARY)),
+          IFNULL(COLUMN_GET(`dyn_wikipedia`, ? AS BINARY), COLUMN_GET(`dyn_wikipedia`, '{$i18n->defaultLanguageCode}' AS BINARY)),
+          `founding_date`,
+          `links`,
+          `name`,
+          `place_id`,
+          `image_uploader_id`,
+          `image_width`,
+          `image_height`,
+          `image_filesize`,
+          `image_extension`,
+          UNIX_TIMESTAMP(`image_changed`),
+          IFNULL(COLUMN_GET(`dyn_image_descriptions`, ? AS BINARY), COLUMN_GET(`dyn_image_descriptions`, '{$i18n->defaultLanguageCode}' AS BINARY)),
+          `image_styles`
+        FROM `companies`
+        WHERE
+          `id` = ?
+        LIMIT 1",
+        "sssd",
+        [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $this->id ]
       );
       $stmt->bind_result(
         $this->aliases,
@@ -125,7 +140,15 @@ class Full extends \MovLib\Data\Company\Company {
         $this->foundingDate,
         $this->links,
         $this->name,
-        $this->place
+        $this->place,
+        $this->uploaderId,
+        $this->width,
+        $this->height,
+        $this->filesize,
+        $this->extension,
+        $this->changed,
+        $this->imageDescription,
+        $this->styles
       );
       if (!$stmt->fetch()) {
         throw new NotFound;
@@ -149,6 +172,7 @@ class Full extends \MovLib\Data\Company\Company {
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @return $this
+   * @throws \MovLib\Exception\DatabaseException
    */
   public function create() {
     global $db, $i18n;
@@ -165,7 +189,7 @@ class Full extends \MovLib\Data\Company\Company {
         `name` = ?,
         `place_id` = ?
         ",
-      "sssssssi",
+      "sssssssd",
       [
         serialize($this->aliases),
         $this->defunctDate,
@@ -213,7 +237,7 @@ class Full extends \MovLib\Data\Company\Company {
       "SELECT
         `movies_crew`.`movie_id` AS `id`,
         `jobs`.`id` AS `jobId`,
-        IFNULL(COLUMN_GET(`jobs`.`dyn_titles`, ? AS CHAR), COLUMN_GET(`jobs`.`dyn_titles`, ? AS CHAR)) AS `jobTitle`,
+        IFNULL(COLUMN_GET(`jobs`.`dyn_titles`, ? AS CHAR), COLUMN_GET(`jobs`.`dyn_titles`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `jobTitle`,
         `movies`.`year` AS `year`,
         IFNULL(`dt`.`title`, `ot`.`title`) AS `displayTitle`,
         IFNULL(`dt`.`language_code`, `ot`.`language_code`) AS `displayTitleLanguageCode`,
@@ -238,8 +262,8 @@ class Full extends \MovLib\Data\Company\Company {
         LEFT JOIN `jobs` ON `movies_crew`.`job_id` = `jobs`.`id`
       WHERE `movies_crew`.`company_id` = ?
       ORDER BY `jobTitle` DESC",
-      "ssssi",
-      [ $i18n->languageCode, $i18n->defaultLanguageCode, $i18n->languageCode, $i18n->languageCode, $this->id ]
+      "sssd",
+      [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $this->id ]
     )->get_result();
   }
 
@@ -253,7 +277,7 @@ class Full extends \MovLib\Data\Company\Company {
   public function getReleasesCount() {
     global $db;
     return $db->query(
-      "SELECT count(*) as `count` FROM `master_releases_labels` WHERE `company_id` = ?", "i", [ $this->id ]
+      "SELECT count(*) as `count` FROM `master_releases_labels` WHERE `company_id` = ?", "d", [ $this->id ]
     )->get_result()->fetch_assoc()["count"];
   }
 
@@ -275,7 +299,7 @@ class Full extends \MovLib\Data\Company\Company {
         INNER JOIN `title` AS `master_releases_title` ON `master_releases`.`id` = `master_releases_labels`.`master_release_id`
       WHERE `master_releases_labels`.`company_id` = ?
       ORDER BY `master_releases`.`release_date` DESC",
-      "i",
+      "d",
       [ $this->id ]
     )->get_result();
   }
@@ -290,20 +314,21 @@ class Full extends \MovLib\Data\Company\Company {
   public function getSeriesCount() {
     global $db;
     return $db->query(
-      "SELECT count(DISTINCT `series_id`) as `count` FROM `episodes_crew` WHERE `company_id` = ?", "i", [ $this->id ]
+      "SELECT count(DISTINCT `series_id`) as `count` FROM `episodes_crew` WHERE `company_id` = ?", "d", [ $this->id ]
     )->get_result()->fetch_assoc()["count"];
   }
 
   /**
    * Get the mysqli result for all series this company was involved.
    *
+   * @todo Implement
    * @global \MovLib\Data\Database $db
    * @return \mysqli_result
    *   The mysqli result for all series of this company.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getSeriesResult() {
-    // @todo Implement
+    return $this;
   }
 
   /**
