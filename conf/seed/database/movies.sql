@@ -99,8 +99,8 @@ INSERT INTO `movies_trailers` SET
   `language_code`     = 'xx',
   `url`               = 'http://www.youtube.com/watch?v=F1i40rnpOsA',
   `dyn_descriptions`  = COLUMN_CREATE(
-    'en', 'The whole film, since the copyright has already expired.',
-    'de', 'Der gesamte Film, da das Urheberrecht bereits abgelaufen ist.'
+    'en', 'Whole film',
+    'de', 'Gesamter Film'
   )
 ;
 

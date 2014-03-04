@@ -26,6 +26,12 @@
  * @since 0.0.1-dev
  */
 
+ol,
+ul {
+  padding-left: 0;
+  list-style-position: inside;
+}
+
 ol ol {
   list-style-type: lower-alpha;
 }

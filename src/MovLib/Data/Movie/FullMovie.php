@@ -246,28 +246,46 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
   }
 
   /**
-   * Get the mysqli result for the movie's trailers.
+   * Get the the movie's trailers as associative array.
+   *
+   * The key is the already translated text of the trailer, the value is the trailer's url.
    *
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
-   * @return \mysqli_result
-   *   The mysqli result for the movie's trailers.
+   * @return array
+   *   The sorted array of movie's trailers.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getTrailers() {
     global $db, $i18n;
-    return $db->query(
+    $result = $db->query(
       "SELECT
-        `id`,
-        `movie_id` AS `movieId`,
         IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS BINARY), COLUMN_GET(`dyn_descriptions`, '{$i18n->defaultLanguageCode}' AS BINARY)) AS `description`,
         `language_code` as `languageCode`,
-        `url`
+        `url`,
+        `vq`.`name` AS `quality`
       FROM `movies_trailers`
+      INNER JOIN `video_qualities` `vq`
+        ON `vq`.`id` = `movies_trailers`.`video_quality_id`
       WHERE `movie_id` = ? AND `language_code` IN(?, ?)",
-      "sdsss",
+      "sdss",
       [ $i18n->languageCode, $this->id, $i18n->languageCode, "xx" ]
     )->get_result();
+    $trailers = null;
+    while ($row = $result->fetch_assoc()) {
+      \FB::send($row);
+      $host = str_replace("www.", "", parse_url($row["url"])["host"]);
+      if ($row["description"]) {
+        $trailers[$i18n->t("{0} – {1} ({2})", [ $row["description"], $host, $row["quality"] ])] = $row["url"];
+      }
+      else {
+        $trailers[$i18n->t("{0} ({1})", [ $host, $row["quality"] ])] = $row["url"];
+      }
+    }
+    if ($trailers) {
+      $i18n->getCollator()->ksort($trailers, \Collator::SORT_STRING);
+      return $trailers;
+    }
   }
 
   /**

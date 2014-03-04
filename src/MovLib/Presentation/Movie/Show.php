@@ -26,7 +26,6 @@ use \MovLib\Presentation\Partial\Duration;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\Lists\Persons;
 use \MovLib\Presentation\Partial\Lists\Cast as CastPartial;
-use \MovLib\Presentation\Partial\Lists\Trailers;
 
 /**
  * Single movie presentation page.
@@ -290,22 +289,20 @@ class Show extends \MovLib\Presentation\Page {
       new Alert("Not implemented yet!"),
     ];
 
-    $trailers = null;
     $trailersResult = $this->movie->getTrailers();
-    while ($row = $trailersResult->fetch_assoc()) {
-      $trailer = null;
-      if ($row["description"]) {
-        $trailer .= "{$row["description"]} ";
+    $trailers       = null;
+    if ($trailersResult) {
+      foreach ($trailersResult as $text => $url) {
+        $trailers .= "<li><a href='{$url}' rel='nofollow' target='_blank'>{$text}</a></li>";
       }
-      $host = str_replace("www.", "", parse_url($row["url"])["host"]);
-      $trailers[] = "{$host} ({$row["quality"]})";
+      $trailers = "<ul>{$trailers}</ul>";
+    }
+    else {
+      $trailers = new Alert($i18n->t("No trailers available, {0}add trailers{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]), $i18n->t("No trailers."), Alert::SEVERITY_INFO);
     }
     $sections["trailers"] = [
       $i18n->t("Trailers"),
-      new Trailers(
-        $this->movie->getTrailers(),
-        $i18n->t("No trailers available, {0}add trailers{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ])
-      ),
+      $trailers,
     ];
 
     $sections["reviews"] = [
