@@ -53,6 +53,17 @@ INSERT INTO `jobs` SET
 
 SET @job_actor = LAST_INSERT_ID();
 
+-- Insert video qualities
+INSERT INTO `video_qualities` SET `name` = '144p';
+INSERT INTO `video_qualities` SET `name` = '240p';
+SET @quality_240 = LAST_INSERT_ID();
+INSERT INTO `video_qualities` SET `name` = '360p';
+INSERT INTO `video_qualities` SET `name` = '480p';
+INSERT INTO `video_qualities` SET `name` = '720p';
+INSERT INTO `video_qualities` SET `name` = '1080p';
+INSERT INTO `video_qualities` SET `name` = '1440p';
+INSERT INTO `video_qualities` SET `name` = '2160p';
+
 -- START "Roundhay Garden Scene"
 
 INSERT INTO `movies` SET
@@ -84,10 +95,10 @@ INSERT INTO `movies_languages` SET `movie_id` = @roundhay_garden_scene_id, `lang
 INSERT INTO `movies_genres` SET `movie_id` = @roundhay_garden_scene_id, `genre_id` = (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Short' LIMIT 1);
 INSERT INTO `movies_trailers` SET
   `movie_id` = @roundhay_garden_scene_id,
-  `language_code` = 'xx',
-  `country_code` = 'UK',
-  `url` = 'http://www.youtube.com/watch?v=F1i40rnpOsA',
-  `dyn_descriptions` = COLUMN_CREATE(
+  `video_quality_id`  = @quality_240,
+  `language_code`     = 'xx',
+  `url`               = 'http://www.youtube.com/watch?v=F1i40rnpOsA',
+  `dyn_descriptions`  = COLUMN_CREATE(
     'en', 'The whole film, since the copyright has already expired.',
     'de', 'Der gesamte Film, da das Urheberrecht bereits abgelaufen ist.'
   )

@@ -585,20 +585,40 @@ KEY_BLOCK_SIZE = 8;
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
+-- Table `movlib`.`video_qualities`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`video_qualities` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT 'The video quality’s unique identifier.',
+  `name` VARCHAR(50) NOT NULL COMMENT 'The video quality\'s name (e.g. 1080p).',
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `name_UNIQUE` (`name` ASC))
+ENGINE = InnoDB
+COMMENT = 'Contains all video qualities.'
+ROW_FORMAT = COMPRESSED;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
 -- Table `movlib`.`movies_trailers`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_trailers` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The movie trailer’s unique ID.',
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
+  `video_quality_id` BIGINT NOT NULL,
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The trailer\'s translated descriptions.',
   `language_code` CHAR(2) NOT NULL COMMENT 'The movie trailer’s ISO alpha-2 language code.',
   `url` VARCHAR(255) NOT NULL COMMENT 'The movie trailer’s url, e.g. youtube.',
-  `country_code` CHAR(2) NULL COMMENT 'The movie trailer’s ISO alpha-2 country code.',
   PRIMARY KEY (`id`),
+  INDEX `fk_movies_trailers_video_qualities` (`video_quality_id` ASC),
   CONSTRAINT `fk_movies_trailers_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
     ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_trailers_video_qualities`
+    FOREIGN KEY (`video_quality_id`)
+    REFERENCES `movlib`.`video_qualities` (`id`)
+    ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Contains all movie trailers.';
