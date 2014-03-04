@@ -67,9 +67,10 @@ class Genres extends \MovLib\Presentation\Partial\Lists\Images {
    *   Show additional information or not, defaults to <code>FALSE</code>.
    */
   public function __construct($listItems, $noItemsText = "", array $listItemsAttributes = null, array $attributes = null, $spanSize = 5, $showAdditionalInfo = false) {
-    $this->addClass("r", $attributes);
-    $this->addClass("r s s{$spanSize}", $listItemsAttributes);
-    parent::__construct($listItems, $noItemsText, $listItemsAttributes, $attributes);
+    parent::__construct($listItems, $noItemsText, $attributes);
+    $this->addClass("hover-list no-list r", $this->attributes);
+    $this->listItemsAttributes = $listItemsAttributes;
+    $this->addClass("s s{$spanSize}", $this->listItemsAttributes);
     $this->listItemsAttributes[]           = "itemscope";
     $this->listItemsAttributes["itemtype"] = "http://schema.org/Article";
     $this->showAdditionalInfo              = $showAdditionalInfo;

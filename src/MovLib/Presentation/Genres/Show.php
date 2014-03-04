@@ -65,15 +65,12 @@ class Show extends \MovLib\Presentation\Page {
    */
   protected function getPageContent() {
     global $i18n;
-    return "<div id='filter' class='tar'>{$i18n->t("Filter")}</div>" . new GenresPartial(
+    $list = new GenresPartial(
       Genre::getGenres($this->paginationOffset, $this->paginationLimit),
       new Alert(
         $i18n->t(
           "We couldn’t find any genre matching your filter criteria, or there simply aren’t any genres available. Would you like to {0}create a new entry{1}?",
-          [
-            "<a href='{$i18n->r("/genre/create")}'>",
-            "</a>"
-          ]
+          [ "<a href='{$i18n->r("/genre/create")}'>", "</a>" ]
         ),
         $i18n->t("No genres"),
         Alert::SEVERITY_INFO
@@ -83,5 +80,6 @@ class Show extends \MovLib\Presentation\Page {
       10,
       true
     );
+    return "<div id='filter' class='tar'>{$i18n->t("Filter")}</div>{$list}";
   }
 }

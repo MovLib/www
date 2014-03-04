@@ -41,9 +41,7 @@ class Show extends \MovLib\Presentation\Genre\AbstractBase {
   public function __construct() {
     parent::__construct();
     $this->initPage($this->genre->name);
-    $routeArgs = [ $this->genre->id ];
-    $this->initLanguageLinks("/genre/{0}", $routeArgs);
-    array_pop($this->breadcrumb->menuitems);
+    $this->initLanguageLinks("/genre/{0}", [ $this->genre->id ]);
 
     // Enhance the page title with microdata.
     $this->pageTitle = "<span itemprop='genre'>{$this->genre->name}</span>";
@@ -60,34 +58,16 @@ class Show extends \MovLib\Presentation\Genre\AbstractBase {
   protected function getPageContent() {
     global $i18n;
 
-    $editLinkOpen = "<a href='{$this->routeEdit}'>";
+    $editLinkOpen = [ "<a href='{$this->routeEdit}'>", "</a>" ];
+
+    $content = null;
 
     // Description section.
-    $sections["description"] = [
-      $i18n->t("Description"),
-      empty($this->genre->description)
-        ? $i18n->t("No description available, {0}write one{1}?", [ $editLinkOpen, "</a>" ])
-        : $this->htmlDecode($this->genre->description)
-      ,
-    ];
+    $description = empty($this->genre->description)
+      ? $i18n->t("No description available, {0}write one{1}?", $editLinkOpen)
+      : $this->htmlDecode($this->genre->description);
+    $content .= $this->getSection("description", $i18n->t("Description"), $description);
 
-    // Construct content and sidebar.
-    $content = null;
-    foreach ($sections as $id => $section) {
-      $this->sidebarNavigation->menuitems[] = [ "#{$id}", $section[0] ];
-      $content .= "<div id='{$id}'><h2>{$section[0]}</h2>";
-      if (is_array($section[1])) {
-        foreach ($section[1] as $subId => $subSection) {
-          $this->sidebarNavigation->menuitems[] = [ "#{$id}-{$subId}", $subSection[0] ];
-          $attributes = isset($subSection[2]) ? $this->expandTagAttributes($subSection[2]) : null;
-          $content .= "<div id='{$id}-{$subId}'><h3{$attributes}>{$subSection[0]}</h3>{$subSection[1]}</div>";
-        }
-      }
-      else {
-        $content .= $section[1];
-      }
-      $content .= "</div>";
-    }
     return $content;
   }
 

@@ -21,6 +21,7 @@ namespace MovLib\Data;
  * Handling of one Genre.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -82,12 +83,12 @@ class Genre extends \MovLib\Data\Database {
     if ($id) {
       $query = self::getQuery();
       $stmt = $db->query("
-          {$query}
-          WHERE
-            `id` = ?
-          LIMIT 1",
-        "ssssi",
-        [ $i18n->languageCode, $i18n->defaultLanguageCode, $i18n->languageCode, $i18n->defaultLanguageCode, $id ]
+        {$query}
+        WHERE
+          `id` = ?
+        LIMIT 1",
+        "ssd",
+        [ $i18n->languageCode, $i18n->languageCode, $id ]
       );
       $stmt->bind_result(
         $this->id,
@@ -114,6 +115,7 @@ class Genre extends \MovLib\Data\Database {
    *
    * @global \MovLib\Data\Database $db
    * @staticvar null|integer $count
+   *   The genre's count.
    * @return integer
    */
   public static function getTotalCount() {
@@ -141,15 +143,29 @@ class Genre extends \MovLib\Data\Database {
     global $db, $i18n;
     $query = self::getQuery();
     return $db->query("
-        {$query}
-        ORDER BY `name` ASC
-        LIMIT ? OFFSET ?",
-      "ssssii",
-      [ $i18n->languageCode, $i18n->defaultLanguageCode, $i18n->languageCode, $i18n->defaultLanguageCode, $rowCount, $offset ]
+      {$query}
+      ORDER BY `name` ASC
+      LIMIT ? OFFSET ?",
+      "ssdd",
+      [ $i18n->languageCode, $i18n->languageCode, $rowCount, $offset ]
     )->get_result();
   }
 
-/**
+  /**
+   * The count of movies with this genre.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return integer
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getMovieCount() {
+    global $db;
+    return $db->query(
+      "SELECT count(DISTINCT `movie_id`) as `count` FROM `movies_genres` WHERE `genre_id` = ?", "d", [ $this->id ]
+    )->get_result()->fetch_assoc()["count"];
+  }
+
+ /**
    * Get the mysqli result for all movies that are of this genre.
    *
    * @global \MovLib\Data\Database $db
@@ -162,6 +178,7 @@ class Genre extends \MovLib\Data\Database {
     global $db, $i18n;
     return $db->query(
       "SELECT
+        `movies`.`id` AS `id`,
         `movies`.`year` AS `year`,
         IFNULL(`dt`.`title`, `ot`.`title`) AS `displayTitle`,
         IFNULL(`dt`.`language_code`, `ot`.`language_code`) AS `displayTitleLanguageCode`,
@@ -191,20 +208,37 @@ class Genre extends \MovLib\Data\Database {
   }
 
   /**
+   * The count of series with this genre.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return integer
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getSeriesCount() {
+    global $db;
+    return $db->query(
+      "SELECT count(DISTINCT `series_id`) as `count` FROM `series_genres` WHERE `genre_id` = ?", "d", [ $this->id ]
+    )->get_result()->fetch_assoc()["count"];
+  }
+
+  /**
    * Get the default query.
    *
-   * @staticvar string Used to cache the default query.
+   * @global \MovLib\Data\I18n $i18n
+   * @staticvar string $query
+   *   Used to cache the default query.
    * @return string
    *   The default query.
    */
   protected static function getQuery() {
+    global $i18n;
     static $query = null;
     if (!$query) {
       $query =
         "SELECT
           `id`,
-          IFNULL(COLUMN_GET(`dyn_names`, ? AS CHAR), COLUMN_GET(`dyn_names`, ? AS CHAR)) AS `name`,
-          IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS CHAR), COLUMN_GET(`dyn_descriptions`, ? AS CHAR)) AS `description`,
+          IFNULL(COLUMN_GET(`dyn_names`, ? AS CHAR), COLUMN_GET(`dyn_names`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `name`,
+          IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS CHAR), COLUMN_GET(`dyn_descriptions`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `description`,
           `movies_count` AS `moviesCount`,
           `series_count` AS `seriesCount`
         FROM `genres`"
@@ -223,4 +257,5 @@ class Genre extends \MovLib\Data\Database {
 
     $this->route = $i18n->r("/genre/{0}", [ $this->id ]);
   }
+
 }
