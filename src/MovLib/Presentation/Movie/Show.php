@@ -26,6 +26,7 @@ use \MovLib\Presentation\Partial\Duration;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\Lists\Persons;
 use \MovLib\Presentation\Partial\Lists\Cast as CastPartial;
+use \MovLib\Presentation\Partial\Lists\Trailers;
 
 /**
  * Single movie presentation page.
@@ -289,9 +290,22 @@ class Show extends \MovLib\Presentation\Page {
       new Alert("Not implemented yet!"),
     ];
 
+    $trailers = null;
+    $trailersResult = $this->movie->getTrailers();
+    while ($row = $trailersResult->fetch_assoc()) {
+      $trailer = null;
+      if ($row["description"]) {
+        $trailer .= "{$row["description"]} ";
+      }
+      $host = str_replace("www.", "", parse_url($row["url"])["host"]);
+      $trailers[] = "{$host} ({$row["quality"]})";
+    }
     $sections["trailers"] = [
       $i18n->t("Trailers"),
-      new Alert("Not implemented yet!"),
+      new Trailers(
+        $this->movie->getTrailers(),
+        $i18n->t("No trailers available, {0}add trailers{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ])
+      ),
     ];
 
     $sections["reviews"] = [

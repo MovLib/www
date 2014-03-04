@@ -228,6 +228,24 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
   }
 
   /**
+   * Get the mysqli result for the movie's languages.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @return \mysqli_result
+   *   The mysqli result for the movie's languages.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getLanguages() {
+    global $db;
+    return $db->query(
+      "SELECT `language_code` FROM `movies_languages` WHERE `movie_id` = ?",
+      "d",
+      [ $this->id ]
+    )->get_result();
+  }
+
+  /**
    * Get the mysqli result for the movie's trailers.
    *
    * @global \MovLib\Data\Database $db
@@ -239,9 +257,16 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
   public function getTrailers() {
     global $db, $i18n;
     return $db->query(
-      "SELECT `url` FROM `movies_trailers` WHERE `movie_id` = ? AND `language_code` IN(?, 'xx') ORDER BY `weight` DESC",
-      "ds",
-      [ $this->id, $i18n->languageCode ]
+      "SELECT
+        `id`,
+        `movie_id` AS `movieId`,
+        IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS BINARY), COLUMN_GET(`dyn_descriptions`, '{$i18n->defaultLanguageCode}' AS BINARY)) AS `description`,
+        `language_code` as `languageCode`,
+        `url`
+      FROM `movies_trailers`
+      WHERE `movie_id` = ? AND `language_code` IN(?, ?)",
+      "sdsss",
+      [ $i18n->languageCode, $this->id, $i18n->languageCode, "xx" ]
     )->get_result();
   }
 

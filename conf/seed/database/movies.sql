@@ -26,6 +26,7 @@
 
 TRUNCATE TABLE `movies_countries`;
 TRUNCATE TABLE `movies_directors`;
+TRUNCATE TABLE `movies_trailers`;
 -- TRUNCATE TABLE `movies_images`;
 TRUNCATE TABLE `movies`;
 TRUNCATE TABLE `persons`;
@@ -81,7 +82,16 @@ INSERT INTO `movies_original_titles` SET
 INSERT INTO `movies_countries` SET `movie_id` = @roundhay_garden_scene_id, `country_code` = 'GB';
 INSERT INTO `movies_languages` SET `movie_id` = @roundhay_garden_scene_id, `language_code` = 'xx';
 INSERT INTO `movies_genres` SET `movie_id` = @roundhay_garden_scene_id, `genre_id` = (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Short' LIMIT 1);
--- INSERT INTO `movies_trailers` SET `movie_id` = @roundhay_garden_scene_id, `id` = 1, `language_code` = 'xx', `country_code` = 'UK', `url` = 'nR2r__ZgO5g';
+INSERT INTO `movies_trailers` SET
+  `movie_id` = @roundhay_garden_scene_id,
+  `language_code` = 'xx',
+  `country_code` = 'UK',
+  `url` = 'http://www.youtube.com/watch?v=F1i40rnpOsA',
+  `dyn_descriptions` = COLUMN_CREATE(
+    'en', 'The whole film, since the copyright has already expired.',
+    'de', 'Der gesamte Film, da das Urheberrecht bereits abgelaufen ist.'
+  )
+;
 
 INSERT INTO `persons` SET
   `name`                   = 'Louis Le Prince',
