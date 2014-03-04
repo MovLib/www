@@ -34,6 +34,7 @@ class Crew extends \MovLib\Data\Job {
 
   /**
    * The crew's alias.
+   *
    * @var string
    */
   public $alias;

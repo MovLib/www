@@ -15,10 +15,9 @@
  *  You should have received a copy of the GNU Affero General Public License along with MovLib.
  *  If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-
 namespace MovLib\Presentation\Person;
 
-use \MovLib\Data\Person\FullPerson as FullPerson;
+use \MovLib\Data\Person\FullPerson;
 use \MovLib\Presentation\Error\Gone;
 
 /**
@@ -30,7 +29,7 @@ use \MovLib\Presentation\Error\Gone;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractBase extends \MovLib\Presentation\Page{
+abstract class AbstractBase extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitSidebar;
 
 
@@ -43,13 +42,6 @@ abstract class AbstractBase extends \MovLib\Presentation\Page{
    * @var \MovLib\Data\Person\FullPerson
    */
   protected $person;
-
-  /**
-   * The translated route to the person's edit page.
-   *
-   * @var string
-   */
-  protected $routeEdit;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -67,21 +59,26 @@ abstract class AbstractBase extends \MovLib\Presentation\Page{
     global $i18n, $kernel;
 
     // Try to load person data.
-    $this->person = new FullPerson($_SERVER["PERSON_ID"]);
+    $this->person = new FullPerson( (integer) $_SERVER["PERSON_ID"]);
+
+    // Load the styles specific for person presentations.
+    $kernel->stylesheets[] = "person";
 
     // Initialize the page title.
     $this->initPage($this->person->name);
 
-    // Initialize Breadcrumb already with the person route, since all presentations are subpages except for Show.
-    $this->initBreadcrumb([[ $i18n->rp("/persons"), $i18n->t("Persons") ], [ $this->person->route, $this->person->name ]]);
+    // Initialize Breadcrumb with the person route only if the person route wasn't requested.
+    $this->initBreadcrumb([[ $i18n->rp("/persons"), $i18n->t("Persons") ]]);
+    if ($this->person->route != $kernel->requestPath) {
+      $this->breadcrumb->menuitems[] = [ $this->person->route, $this->person->name ];
+    }
 
     // Initialize edit route, sidebar and schema.
     $routeArgs = [ $this->person->id ];
-    $this->routeEdit = $i18n->r("/person/{0}/edit", $routeArgs);
     $this->sidebarInit([
       [ $this->person->route, $i18n->t("View"), [ "class" => "ico ico-view" ] ],
       [ $i18n->r("/person/{0}/discussion", $routeArgs), $i18n->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
-      [ $this->routeEdit, $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
+      [ $i18n->r("/person/{0}/edit", $routeArgs), $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
       [ $i18n->r("/person/{0}/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history" ] ],
       [ $i18n->r("/person/{0}/delete", $routeArgs), $i18n->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
     ]);
@@ -92,6 +89,6 @@ abstract class AbstractBase extends \MovLib\Presentation\Page{
       // @todo Implement Gone presentation for persons instead of this generic one.
       throw new Gone;
     }
-    $kernel->stylesheets[] = "person";
   }
+
 }

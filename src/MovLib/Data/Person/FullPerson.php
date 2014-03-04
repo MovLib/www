@@ -36,14 +36,61 @@ class FullPerson extends \MovLib\Data\Person\Person {
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
+  /**
+   * The person's creation timestamp.
+   *
+   * @var integer
+   */
   public $created;
+
+  /**
+   * The person's translated biography.
+   *
+   * @var string
+   */
   public $biography;
+
+  /**
+   * The person's translated Wikipedia URL.
+   *
+   * @var string
+   */
   public $wikipedia;
-  public $aliases;
+
+  /**
+   * The person's aliases as numeric array.
+   *
+   * @var null|array
+   */
+  protected $aliases = false;
+
+  /**
+   * The person's place of birth.
+   *
+   * @var \MovLib\Data\Place
+   */
   public $birthplace;
+
+  /**
+   * The person's translated cause of death.
+   *
+   * @var string
+   */
   public $causeOfDeath;
+
+  /**
+   * The person's place of death.
+   *
+   * @var \MovLib\Data\Place
+   */
   public $deathplace;
-  public $links;
+
+  /**
+   * The person's external links as numeric array.
+   *
+   * @var array
+   */
+  protected $links = false;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -66,25 +113,25 @@ class FullPerson extends \MovLib\Data\Person\Person {
       $this->id = $id;
       $stmt = $db->query(
         "SELECT
-            `created`,
-            `deleted`,
-            COLUMN_GET(`dyn_biographies`, '{$i18n->languageCode}' AS BINARY),
-            COLUMN_GET(`dyn_wikipedia`, '{$i18n->languageCode}' AS BINARY),
-            `name`,
-            `sex`,
-            `birthdate` AS `birthDate`,
-            `birthplace_id`,
-            `born_name` AS `bornName`,
-            `cause_of_death_id`,
-            `deathdate` AS `deathDate`,
-            `deathplace_id`,
-            `nickname`
-          FROM `persons`
-          WHERE
-            `id` = ?
-          LIMIT 1",
-        "d",
-        [ $this->id ]
+          `created`,
+          `deleted`,
+          COLUMN_GET(`dyn_biographies`, ? AS BINARY),
+          COLUMN_GET(`dyn_wikipedia`, ? AS BINARY),
+          `name`,
+          `sex`,
+          `birthdate`,
+          `birthplace_id`,
+          `born_name`,
+          `cause_of_death_id`,
+          `deathdate`,
+          `deathplace_id`,
+          `nickname`
+        FROM `persons`
+        WHERE
+          `id` = ?
+        LIMIT 1",
+        "ssd",
+        [ $i18n->languageCode, $i18n->languageCode, $this->id ]
       );
       $stmt->bind_result(
         $this->created,
@@ -123,6 +170,7 @@ class FullPerson extends \MovLib\Data\Person\Person {
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @return $this
+   * @throws \MovLib\Exception\DatabaseException
    */
   public function create() {
     global $db, $i18n;
@@ -136,65 +184,130 @@ class FullPerson extends \MovLib\Data\Person\Person {
         `sex` = ?,
         `birthdate` = ?,
         `born_name` = ?,
-        `deathdate` = ?
-        ",
+        `deathdate` = ?"
+      ,
       "sssisss",
-      [
-        $this->biography,
-        $this->wikipedia,
-        $this->name,
-        $this->sex,
-        $this->birthDate,
-        $this->bornName,
-        $this->deathDate,
-      ]
+      [ $this->biography, $this->wikipedia, $this->name, $this->sex, $this->birthDate, $this->bornName, $this->deathDate ]
     )->insert_id;
 
     // Insert aliases.
     if ($this->aliases) {
-      $query = "INSERT INTO `persons_aliases` (`person_id`, `alias`) VALUES ";
+      $query = null;
       $types = null;
       $params = [];
       $c = count($this->aliases);
       for ($i = 0; $i < $c; ++$i) {
-        if ($i === 0) {
-          $query .= "(?, ?)";
+        if ($query) {
+          $query .= ", ";
         }
-        else {
-          $query .= ", (?, ?)";
-        }
+        $query .= "(?, ?)";
         $types .= "ds";
         $params[] = $this->id;
         $params[] = $this->aliases[$i];
       }
+      $query = "INSERT INTO `persons_aliases` (`person_id`, `alias`) VALUES {$query}";
       $db->query($query, $types, $params);
     }
 
     // Insert external links.
     if ($this->links) {
-      $query = "INSERT INTO `persons_links` (`person_id`, `language_code`, `url`) VALUES ";
+      $query = null;
       $types = null;
       $params = [];
       $c = count($this->links);
       for ($i = 0; $i < $c; ++$i) {
-        if ($i === 0) {
-          $query .= "(?, ?, ?)";
+        if ($query) {
+          $query .= ", ";
         }
-        else {
-          $query .= ", (?, ?, ?)";
-        }
+        $query .= "(?, ?, ?)";
         $types .= "dss";
         $params[] = $this->id;
         $params[] = $i18n->languageCode;
         $params[] = $this->links[$i];
       }
+      $query = "INSERT INTO `persons_links` (`person_id`, `language_code`, `url`) VALUES {$query}";
       $db->query($query, $types, $params);
     }
 
-    // Create a display photo.
-    parent::init();
-
     return $this;
+  }
+
+  /**
+   * Get the person's aliases as numeric array.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @return null|array
+   *  Numeric array containing the person's aliases or <code>NULL</code> if none were found.
+   */
+  public function getAliases() {
+    global $db, $i18n;
+    if ($this->aliases === false) {
+      $this->aliases = null;
+      $result = $db->query(
+        "SELECT
+          `alias`
+        FROM `persons_aliases`
+        WHERE `person_id` = ?
+        ORDER BY `alias` {$db->collations[$i18n->languageCode]}",
+        "d",
+        [ $this->id ]
+      )->get_result();
+      while ($row = $result->fetch_row()) {
+        $this->aliases[] = $row[0];
+      }
+    }
+    return $this->aliases;
+  }
+
+  /**
+   * Get the person's place of birth.
+   *
+   * @return null|\MovLib\Data\Place
+   *   The person's place of birth or <code>NULL</code> if none was found.
+   */
+  public function getBirthPlace() {
+    if (is_numeric($this->birthplace)) {
+      $this->birthplace = new Place($this->birthplace);
+    }
+    return $this->birthplace;
+  }
+
+  /**
+   * Get the person's place of death.
+   *
+   * @return null|\MovLib\Data\Place
+   *   The person's place of death or <code>NULL</code> if none was found.
+   */
+  public function getDeathPlace() {
+    if (is_numeric($this->deathplace)) {
+      $this->deathplace = new Place($this->deathplace);
+    }
+    return $this->deathplace;
+  }
+
+  /**
+   * Get the person's external links as numeric array.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @return null|array
+   *  Numeric array containing the person's external links or <code>NULL</code> if none were found.
+   */
+  public function getLinks() {
+    global $db, $i18n;
+    if ($this->links === false) {
+      $this->links = null;
+      $result = $db->query(
+        "SELECT `url` FROM `persons_links` WHERE `person_id` = ? AND `language_code` = ? ORDER BY `id` ASC",
+        "ds",
+        [ $this->id, $i18n->languageCode ]
+      )->get_result();
+      while ($row = $result->fetch_row()) {
+        $this->links[] = $row[0];
+      }
+    }
+    return $this->links;
   }
 
   /**
@@ -204,6 +317,7 @@ class FullPerson extends \MovLib\Data\Person\Person {
    * @global \MovLib\Data\I18n $i18n
    * @return \mysqli_result
    *   The movies with appearances of this person.
+   * @throws \MovLib\Exception\DatabaseException
    */
   public function getMovies() {
     global $db, $i18n;
@@ -263,15 +377,15 @@ class FullPerson extends \MovLib\Data\Person\Person {
     global $db, $i18n;
     return $db->query(
       "SELECT
-        `movies`.`id` AS `movie_id`,
-        COLUMN_GET(`movies_cast`.`roles`, '{$i18n->languageCode}' AS BINARY) AS `roles`
+        `movies`.`id`,
+        COLUMN_GET(`movies_cast`.`roles`, ? AS BINARY) AS `roles`
       FROM `movies_cast`
         INNER JOIN `movies` ON `movies`.`id` = `movies_cast`.`movie_id`
       WHERE `movies_cast`.`person_id` = ?
         AND `movies`.`deleted` = false
       ORDER BY `movies`. `year` DESC, `movies_cast`.`weight` DESC",
-      "d",
-      [ $this->id ]
+      "sd",
+      [ $i18n->languageCode, $this->id ]
     )->get_result();
   }
 
@@ -288,16 +402,16 @@ class FullPerson extends \MovLib\Data\Person\Person {
     global $db, $i18n;
     return $db->query(
       "SELECT
-        `movies`.`id` AS `movie_id`,
-        IFNULL(COLUMN_GET(`jobs`.`dyn_titles`, ? AS BINARY), COLUMN_GET(`jobs`.`dyn_titles`, ? AS BINARY)) AS `job_title`
+        `movies`.`id`,
+        IFNULL(COLUMN_GET(`jobs`.`dyn_titles`, ? AS BINARY), COLUMN_GET(`jobs`.`dyn_titles`, '{$i18n->defaultLanguageCode}' AS BINARY)) AS `job_title`
       FROM `movies_crew`
         INNER JOIN `movies` ON `movies`.`id` = `movies_crew`.`movie_id`
         INNER JOIN `jobs` ON `jobs`.`id` = `movies_crew`.`job_id`
       WHERE `movies_crew`.`person_id` = ?
         AND `movies`.`deleted` = false
       ORDER BY `movies`. `year` DESC, `job_title` ASC",
-      "ssd",
-      [ $i18n->languageCode, $i18n->defaultLanguageCode, $this->id ]
+      "sd",
+      [ $i18n->languageCode, $this->id ]
     )->get_result();
   }
 
@@ -313,7 +427,7 @@ class FullPerson extends \MovLib\Data\Person\Person {
     global $db;
     return $db->query(
       "SELECT
-        `movies`.`id` AS `movie_id`
+        `movies`.`id`
       FROM `movies_directors`
         INNER JOIN `movies` ON `movies`.`id` = `movies_directors`.`movie_id`
       WHERE `movies_directors`.`person_id` = ?
@@ -324,24 +438,4 @@ class FullPerson extends \MovLib\Data\Person\Person {
     )->get_result();
   }
 
-  /**
-   * @inheritdoc
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
-   */
-  protected function init() {
-    global $db, $i18n;
-    parent::init();
-    if ($this->birthplace) {
-      $this->birthplace = new Place($this->birthplace);
-    }
-    $result = $db->query("SELECT `alias` FROM `persons_aliases` WHERE `person_id` = ? ORDER BY `alias` {$db->collations[$i18n->languageCode]}", "d", [ $this->id ])->get_result();
-    while ($row = $result->fetch_array(MYSQLI_NUM)) {
-      $this->aliases[] = $row[0];
-    }
-    $result = $db->query("SELECT `url` FROM `persons_links` WHERE `person_id` = ? AND `language_code` = ? ORDER BY `id` ASC", "ds", [ $this->id, $i18n->languageCode ])->get_result();
-    while ($row = $result->fetch_array(MYSQLI_NUM)) {
-      $this->links[] = $row[0];
-    }
-  }
 }

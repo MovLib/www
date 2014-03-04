@@ -125,23 +125,21 @@ class Person {
     if ($id) {
       $stmt = $db->query(
         "SELECT
-            `id`,
-            `deleted`,
-            `name`,
-            `sex`,
-            `birthdate` AS `birthDate`,
-            `born_name` AS `bornName`,
-            `deathdate` AS `deathDate`,
-            `nickname`
-          FROM `persons`
-          WHERE
-            `id` = ?
-          LIMIT 1",
+          `deleted`,
+          `name`,
+          `sex`,
+          `birthdate`,
+          `born_name`,
+          `deathdate`,
+          `nickname`
+        FROM `persons`
+        WHERE
+          `id` = ?
+        LIMIT 1",
         "d",
         [ $id ]
       );
       $stmt->bind_result(
-        $this->id,
         $this->deleted,
         $this->name,
         $this->sex,
@@ -169,10 +167,11 @@ class Person {
 
 
   /**
-   * Get the count of all persons which haven't been deleted.
+   * Get the count of all persons who haven't been deleted.
    *
    * @global \MovLib\Data\Database $db
    * @staticvar null|integer $count
+   *   The count of all persons who haven't been deleted.
    * @return integer
    */
   public static function getTotalCount() {
@@ -199,19 +198,18 @@ class Person {
     global $db;
     return $db->query(
       "SELECT
-          `id`,
-          `deleted`,
-          `name`,
-          `sex`,
-          `birthdate` AS `birthDate`,
-          `born_name` AS `bornName`,
-          `deathdate` AS `deathDate`,
-          `nickname`
-        FROM `persons`
-        WHERE
-          `deleted` = false
-        ORDER BY `id` DESC
-        LIMIT ? OFFSET ?",
+        `id`,
+        `deleted`,
+        `name`,
+        `sex`,
+        `birthdate` AS `birthDate`,
+        `born_name` AS `bornName`,
+        `deathdate` AS `deathDate`,
+        `nickname`
+      FROM `persons`
+      WHERE `deleted` = false
+      ORDER BY `id` DESC
+      LIMIT ? OFFSET ?",
       "di",
       [ $rowCount, $offset ]
     )->get_result();
@@ -232,12 +230,18 @@ class Person {
     }
   }
 
+  /**
+   * Initialize the person with their image, deleted flag and translate their route.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global type $i18n
+   */
   protected function init() {
     global $db, $i18n;
     $this->deleted = (boolean) $this->deleted;
     $this->displayPhoto = new PersonImage($this->id, $this->name);
-
     $this->route = $i18n->r("/person/{0}", [ $this->id ]);
+    return $this;
   }
 
 }

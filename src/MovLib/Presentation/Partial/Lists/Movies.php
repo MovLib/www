@@ -30,12 +30,13 @@ use \MovLib\Presentation\Partial\Alert;
  * @since 0.0.1-dev
  */
 class Movies extends \MovLib\Presentation\Partial\Lists\AbstractList {
+  use \MovLib\Presentation\TraitMovie;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
   /**
-   * The span size for a single person's description.
+   * The span size for a single movie's description.
    *
    * @var integer
    */
@@ -47,15 +48,6 @@ class Movies extends \MovLib\Presentation\Partial\Lists\AbstractList {
    * @var array
    */
   public $listItemsAttributes;
-
-
-
-  /**
-   * The entity to perform the listing for.
-   *
-   * @var stdClass
-   */
-  protected $entity;
 
   /**
    * Display global rating, user rating or no rating at all.
@@ -109,52 +101,6 @@ class Movies extends \MovLib\Presentation\Partial\Lists\AbstractList {
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-  /**
-   * Construct movie title information for display.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @param \MovLib\Data\Movie\Movie $movie
-   *   The movie to display the title information for. Can also be <code>\\MovLib\\Data\\Movie\\FullMovie</code>.
-   * @param array $attributes [optional]
-   *   Additional attributes to apply to the wrapper.
-   * @param string $wrap
-   *   The enclosing tag.
-   * @return string
-   *   The formatted title information.
-   * @throws \LogicException
-   */
-  protected function getTitleInfo($movie, $attributes = null, $wrap = "p") {
-    global $i18n;
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (!isset($movie) || !isset($movie->displayTitle)) {
-      throw new \LogicException("You have to pass a valid movie object to get title information!");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
-    // We have to use different micro-data if display and original title differ.
-    if ($movie->displayTitle != $movie->originalTitle) {
-      $displayTitleItemprop = "alternateName";
-      $originalTitle = "<br><span class='small'>{$i18n->t("{0} ({1})", [
-        "<span itemprop='name'{$this->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>",
-        "<i>{$i18n->t("original title")}</i>",
-      ])}</span>";
-    }
-    // Simply clear the original title if it's the same as the display title.
-    else {
-      $displayTitleItemprop = "name";
-      $originalTitle = null;
-    }
-    $displayTitle = "<span class='link-color' itemprop='{$displayTitleItemprop}'{$this->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}</span>";
-
-    // Append year enclosed in micro-data to display title if available.
-    if (isset($movie->year)) {
-      $displayTitle = $i18n->t("{title} ({year})", [ "title" => $displayTitle, "year" => "<span itemprop='datePublished'>{$movie->year}</span>" ]);
-    }
-
-    return "<{$wrap}{$this->expandTagAttributes($attributes)}>{$displayTitle}{$originalTitle}</{$wrap}>";
-  }
 
   /**
    * @inheritdoc

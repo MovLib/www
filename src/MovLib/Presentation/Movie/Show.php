@@ -3,7 +3,7 @@
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
- * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
+ * Copyright Â© 2013-present {@link https://movlib.org/ MovLib}.
  *
  * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
  * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
@@ -31,7 +31,7 @@ use \MovLib\Presentation\Partial\Lists\Cast as CastPartial;
  * Single movie presentation page.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright Â© 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
@@ -211,7 +211,7 @@ class Show extends \MovLib\Presentation\Page {
       $ratingSummary = $i18n->t("No one has rated this movie so far, be the first.");
     }
     elseif ($this->movie->votes === 1 && $userRating) {
-      $ratingSummary = $i18n->t("You’re the only one who rated this movie (yet).");
+      $ratingSummary = $i18n->t("Youâ€™re the only one who rated this movie (yet).");
     }
     else {
       $rating = "<span itemprop='ratingValue'>{$i18n->format("{0,number}", [ $this->movie->ratingMean ])}</span>";
@@ -298,7 +298,11 @@ class Show extends \MovLib\Presentation\Page {
       $trailers = "<ul>{$trailers}</ul>";
     }
     else {
-      $trailers = new Alert($i18n->t("No trailers available, {0}add trailers{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]), $i18n->t("No trailers."), Alert::SEVERITY_INFO);
+      $trailers = new Alert(
+        $i18n->t("No trailers available, {0}add trailers{1}?",[ "<a href='{$this->routeEdit}'>", "</a>" ]),
+        null,
+        Alert::SEVERITY_INFO
+      );
     }
     $sections["trailers"] = [
       $i18n->t("Trailers"),
@@ -348,7 +352,7 @@ class Show extends \MovLib\Presentation\Page {
         $this->movie->rate($rating);
       }
       else {
-        $this->checkErrors($i18n->t("The submitted rating isn’t valid. Valid ratings range from: {min} to {max}", [ "min" => 1, "max" => 5 ]));
+        $this->checkErrors($i18n->t("The submitted rating isnâ€™t valid. Valid ratings range from: {min} to {max}", [ "min" => 1, "max" => 5 ]));
       }
     }
 

@@ -130,14 +130,20 @@ class Persons extends \MovLib\Presentation\Partial\Lists\AbstractList {
         $lifeDates = null;
         if ($person->birthDate || $person->deathDate) {
           if ($person->birthDate) {
-            $lifeDates .= (new Date($person->birthDate))->format([ "itemprop" => "birthDate", "title" => $i18n->t("Date of Birth") ]);
+            $birthDate = (new Date($person->birthDate))->format([ "itemprop" => "birthDate", "title" => $i18n->t("Date of Birth") ]);
           }
           else {
-            $lifeDates .= $i18n->t("{0}unknown{1}", [ "<em title='{$i18n->t("Date of Birth")}'>", "</em>" ]);
+            $birthDate = "<em title='{$i18n->t("Date of Birth")}'>{$i18n->t("unknown")}</em>";
           }
 
           if ($person->deathDate) {
-            $lifeDates .= " – " . (new Date($person->deathDate))->format([ "itemprop" => "deathDate", "title" => $i18n->t("Date of Death") ]);
+            $lifeDates = $i18n->t("{0}–{1}", [
+              $birthDate,
+              (new Date($person->deathDate))->format([ "itemprop" => "deathDate", "title" => $i18n->t("Date of Death") ])
+            ]);
+          }
+          else {
+            $lifeDates = $birthDate;
           }
 
           $lifeDates = "<br>{$lifeDates}";

@@ -79,7 +79,8 @@ class Cast {
 
   /**
    * The cast's role (with their own person entry).
-   * Contains either <code>NULL</code>, an object of type <code>\MovLib\Data\Person\Person</code> or <code>TRUE</code>
+   *
+   * Contains either <code>NULL</code>, an object of type {@see \MovLib\Data\Person\Person} or <code>TRUE</code>
    * if the person is the same as the role (plays himself/herself).
    *
    * @var boolean|\MovLib\Data\Person\Person
