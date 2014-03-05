@@ -18,25 +18,20 @@
 namespace MovLib\Data;
 
 /**
- * Represents a single job.
+ * Represents one ore more jobs.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Job {
+class Job extends \MovLib\Data\Database {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-  /**
-   * The job's unique ID.
-   *
-   * @var integer
-   */
-  public $id;
 
   /**
    * The job's creation timestamp.
@@ -51,6 +46,20 @@ class Job {
    * @var string
    */
   public $description;
+
+  /**
+   * The job's unique ID.
+   *
+   * @var integer
+   */
+  public $id;
+
+  /**
+   * The translated route of this job.
+   *
+   * @var string
+   */
+  public $route;
 
   /**
    * The job's translated title.
@@ -68,36 +77,187 @@ class Job {
    *
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
-   * @param integer $crewId [optional]
-   *   The unique crew's identifier to load, omit to create empty instance.
+   * @param integer $id [optional]
+   *   The job's unique identifier, omit to create empty instance.
    * @throws \MovLib\Presentation\Error\NotFound
    */
-  public function __construct($jobId = null) {
+  public function __construct($id = null) {
     global $db, $i18n;
-
-    // Try to load the cast for the given identifier.
-    if ($jobId) {
-      $stmt = $db->query(
-        "SELECT
-          `created`,
-          COLUMN_GET(`dyn_descriptions`, ? AS BINARY),
-          IFNULL(COLUMN_GET(`dyn_titles`, ? AS BINARY), COLUMN_GET(`dyn_titles`, ? AS BINARY))
-          FROM `jobs`
-          WHERE `id` = ?",
-        "ssssd",
-        [ $i18n->languageCode, $i18n->languageCode, $i18n->defaultLanguageCode, $jobId ]
+    if ($id) {
+      $query = self::getQuery();
+      $stmt = $db->query("
+        {$query}
+        WHERE
+          `id` = ?
+        LIMIT 1",
+        "ssd",
+        [ $i18n->languageCode, $i18n->languageCode, $id ]
       );
       $stmt->bind_result(
-        $this->created,
-        $this->description,
-        $this->title
+        $this->id,
+        $this->title,
+        $this->description
       );
       if (!$stmt->fetch()) {
         throw new NotFound;
       }
       $stmt->close();
-      $this->id = $jobId;
+
+      $this->init();
     }
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Get the count of all jobs.
+   *
+   * @global \MovLib\Data\Database $db
+   * @staticvar null|integer $count
+   *   The amount of all jobs.
+   * @return integer
+   *   The amount of all jobs.
+   */
+  public static function getTotalCount() {
+    global $db;
+    static $count = null;
+    if (!$count) {
+      $count = $db->query("SELECT COUNT(`id`) FROM `jobs` LIMIT 1")->get_result()->fetch_row()[0];
+    }
+    return $count;
+  }
+
+  /**
+   * Get all jobs matching the offset and row count.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @param integer $offset
+   *   The offset in the result.
+   * @param integer $rowCount
+   *   The number of rows to retrieve.
+   * @return \mysqli_result
+   *   The query result.
+   */
+  public static function getJobs($offset, $rowCount) {
+    global $db, $i18n;
+    $query = self::getQuery();
+    return $db->query("
+      {$query}
+      ORDER BY `title` ASC
+      LIMIT ? OFFSET ?",
+      "ssdd",
+      [ $i18n->languageCode, $i18n->languageCode, $rowCount, $offset ]
+    )->get_result();
+  }
+
+  /**
+   * The count of movies connected with this job.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return integer
+   *   The count.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getMovieCount() {
+    global $db;
+    return $db->query(
+      "SELECT count(DISTINCT `movie_id`) as `count` FROM `movies_crew` WHERE `job_id` = ?", "d", [ $this->id ]
+    )->get_result()->fetch_assoc()["count"];
+  }
+
+ /**
+   * Get the mysqli result for all movies that are connected with this job.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @return \mysqli_result
+   *   The mysqli result for all movies that are connected with this job.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getMovieResult() {
+    global $db, $i18n;
+    return $db->query(
+      "SELECT
+        `movies`.`id` AS `id`,
+        `movies`.`year` AS `year`,
+        IFNULL(`dt`.`title`, `ot`.`title`) AS `displayTitle`,
+        IFNULL(`dt`.`language_code`, `ot`.`language_code`) AS `displayTitleLanguageCode`,
+        `ot`.`title` AS `originalTitle`,
+        `ot`.`language_code` AS `originalTitleLanguageCode`,
+        `p`.`poster_id` AS `displayPoster`
+      FROM `movies`
+        LEFT JOIN `movies_jobs`
+          ON `movies`.`id` = `movies_jobs`.`movie_id`
+        LEFT JOIN `movies_display_titles` AS `mdt`
+          ON `mdt`.`movie_id` = `movies`.`id`
+          AND `mdt`.`language_code` = ?
+        LEFT JOIN `movies_titles` AS `dt`
+          ON `dt`.`id` = `mdt`.`title_id`
+        LEFT JOIN `movies_original_titles` AS `mot`
+          ON `mot`.`movie_id` = `movies`.`id`
+        LEFT JOIN `movies_titles` AS `ot`
+          ON `ot`.`id` = `mot`.`title_id`
+        LEFT JOIN `display_posters` AS `p`
+          ON `p`.`movie_id` = `movies`.`id`
+          AND `p`.`language_code` = ?
+      WHERE `movies_jobs`.`job_id` = ?
+      ORDER BY `displayTitle` DESC",
+      "ssi",
+      [ $i18n->languageCode, $i18n->languageCode, $this->id ]
+    )->get_result();
+  }
+
+  /**
+   * The count of series connected with this job.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return integer
+   *   The count.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getSeriesCount() {
+    global $db;
+    return $db->query(
+      "SELECT count(DISTINCT `series_id`) as `count` FROM `episodes_crew` WHERE `job_id` = ?", "d", [ $this->id ]
+    )->get_result()->fetch_assoc()["count"];
+  }
+
+  /**
+   * Get the default query.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @staticvar string $query
+   *   Used to cache the default query.
+   * @return string
+   *   The default query.
+   */
+  protected static function getQuery() {
+    global $i18n;
+    static $query = null;
+    if (!$query) {
+      $query =
+        "SELECT
+          `id`,
+          IFNULL(COLUMN_GET(`dyn_titles`, ? AS CHAR), COLUMN_GET(`dyn_titles`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `title`,
+          IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS CHAR), COLUMN_GET(`dyn_descriptions`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `description`
+        FROM `jobs`"
+      ;
+    }
+    return $query;
+  }
+
+  /**
+   * Initialize job.
+   *
+   * @global type $i18n
+   */
+  protected function init() {
+    global $i18n;
+
+    $this->route = $i18n->r("/job/{0}", [ $this->id ]);
   }
 
 }
