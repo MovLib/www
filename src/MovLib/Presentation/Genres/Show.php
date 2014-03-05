@@ -51,7 +51,9 @@ class Show extends \MovLib\Presentation\Page {
     $this->initLanguageLinks("/genres", null, true);
     $this->paginationInit(Genre::getTotalCount());
     $this->sidebarInit([
-      [ $kernel->requestPath, $this->title ],
+      [ $kernel->requestPath, $this->title, [ "class" => "ico ico-genre" ] ],
+      [ $i18n->rp("/awards"), $i18n->t("Awards"), [ "class" => "ico ico-award" ] ],
+      [ $i18n->rp("/jobs"), $i18n->t("Jobs"), [ "class" => "ico ico-job" ] ],
     ]);
     $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/genre/create")}'>{$i18n->t("Create New Genre")}</a>";
   }
