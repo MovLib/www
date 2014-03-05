@@ -19,8 +19,6 @@ namespace MovLib\Presentation\Person;
 
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Data\Image\PersonImage;
-use \MovLib\Data\Movie\Cast;
-use \MovLib\Data\Movie\Crew;
 use \MovLib\Presentation\Partial\Place;
 use \MovLib\Presentation\Partial\Date;
 use \MovLib\Presentation\Partial\Lists\Ordered;
@@ -32,7 +30,7 @@ use \MovLib\Presentation\Partial\Listing\Movie\MoviePersonListing;
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @copyright Â© 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
@@ -50,8 +48,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
    */
   public function __construct() {
     parent::__construct();
-    $routeArgs = [ $this->person->id ];
-    $this->initLanguageLinks("/person/{0}", $routeArgs);
+    $this->initLanguageLinks("/person/{0}", [ $this->person->id ]);
 
     // Enhance the page title with microdata.
     $this->pageTitle = "<span property='name'>{$this->person->name}</span>";
@@ -217,12 +214,6 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
       $biography,
     ];
 
-    // Movies section.
-    $sections["movies"] = [
-      $i18n->t("Movies"),
-      $this->getMoviesSection()
-    ];
-
     // Additional names section.
     $sections["aliases"] = [
       $i18n->t("Also Known As"),
@@ -267,87 +258,6 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
       $content .= "</div>";
     }
     return $content;
-  }
-
-  /**
-   * Construct the movies section with all appearances of this person.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @return string
-   *   The movies section.
-   */
-  protected function getMoviesSection() {
-    global $i18n;
-
-    $listing = new MoviePersonListing($this->person->getMovies());
-    if (!($movies = $listing->getListing())) {
-      return new Alert($i18n->t("Seems like {person_name} hasn’t worked on any movies."), null, Alert::SEVERITY_INFO);
-    }
-
-
-    // ----------------------------------------------------------------------------------------------------------------- Fetch cast information
-
-
-    $castResult = $this->person->getMovieCast();
-    switch ($this->person->sex) {
-      case InputSex::MALE:
-        $job  = $i18n->t("Actor");
-        $role = $i18n->t("Himself");
-        break;
-
-      case InputSex::FEMALE:
-        $job  = $i18n->t("Actress");
-        $role = $i18n->t("Herself");
-        break;
-
-      default:
-        $job  = $i18n->t("Actor/Actress");
-        $role = $i18n->t("Self");
-        break;
-    }
-
-    /* @var $cast \MovLib\Data\Movie\Cast */
-    while ($cast = $castResult->fetch_object("\\MovLib\\Data\\Movie\\Cast")) {
-      $job = $this->a($i18n->r("/job/{0}", [ $cast->jobId ]), $job);
-
-      if ($cast->roleName) {
-        $role = $cast->roleName;
-      }
-      elseif ($cast->role) {
-        if ($cast->role === true) {
-          $role = $this->a($this->person->route, $role);
-        }
-        else {
-          $role = $this->a($cast->role->route, $cast->role->name);
-        }
-      }
-
-      if ($role) {
-        $job = $i18n->t("{0} ({1})", [ $job, $role ]);
-      }
-
-      $movies[$cast->movieId]["#jobs"] .= "<li property='actor' resource='#'>{$job}</li>";
-    }
-
-
-    // ----------------------------------------------------------------------------------------------------------------- Fetch crew information
-
-
-    $crewResult = $this->person->getMovieCrew();
-    /* @var $crew \MovLib\Data\Movie\Crew */
-    while ($crew = $crewResult->fetch_object("\\MovLib\\Data\\Movie\\Crew")) {
-      $movies[$crew->movieId]["#jobs"] .= "<li>{$this->a($i18n->r("/job/{0}", [ $crew->jobId ]), $crew->jobTitle)}</li>";
-    }
-
-
-    // ----------------------------------------------------------------------------------------------------------------- Build the listing
-
-
-    $list = null;
-    foreach ($movies as $id => $html) {
-      $list .= "<li class='li s r' typeof='Movie'>{$html["#movie"]}<ul class='no-list jobs s s4 tar'>{$html["#jobs"]}</ul></li>";
-    }
-    return "<ol class='hover-list no-list'>{$list}</ol>";
   }
 
 }

@@ -672,6 +672,24 @@ location ^~ <?= $r("/person") ?> {
     try_files $movlib_cache @php;
   }
 
+  location ~* "^<?= $rp("/person/{0}/movies", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Person\\Movies";
+    set $movlib_person_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $rp("/person/{0}/serials", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Person\\Serials";
+    set $movlib_person_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $rp("/person/{0}/releases", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Person\\Releases";
+    set $movlib_person_id $1;
+    try_files $movlib_cache @php;
+  }
+
   #
   # ---------------------------------------- Person Photo
   #

@@ -337,6 +337,35 @@ class FullPerson extends \MovLib\Data\Person\Person {
   }
 
   /**
+   * Get the total number of the movies this person has appeared in.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return integer
+   *   The count of the person's unique movies.
+   */
+  public function getMoviesCount() {
+    global $db;
+    return $db->query(
+      "SELECT DISTINCT
+        COUNT(`movies`.`id`)
+      FROM `movies`
+        LEFT JOIN `movies_directors` AS `md`
+          ON `md`.`movie_id` = `movies`.`id`
+          AND `md`.`person_id` = ?
+        LEFT JOIN `movies_cast` AS `mc`
+          ON `mc`.`movie_id` = `movies`.`id`
+          AND `mc`.`person_id` = ?
+        LEFT JOIN `movies_crew` AS `mcr`
+          ON `mcr`.`movie_id` = `movies`.`id`
+          AND `mcr`.`person_id` = ?
+      WHERE `movies`.`deleted` = false
+        AND NOT (`md`.`person_id` IS NULL AND `mc`.`person_id` IS NULL AND `mcr`.`person_id` IS NULL)",
+      "ddd",
+      [ $this->id, $this->id, $this->id ]
+    )->get_result()->fetch_row()[0];
+  }
+
+  /**
    * Get the mysqli result for the person's movie crew.
    *
    * @global \MovLib\Data\Database $db
@@ -418,77 +447,27 @@ class FullPerson extends \MovLib\Data\Person\Person {
   }
 
   /**
-   * Get the mysqli result for all movie IDs this person has played in.
+   * Get the total number of the releases this person has worked on.
    *
+   * @todo Implement when releases are implemented.
    * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
-   * @return \mysqli_result
-   *   The mysqli result for all acted movie IDs.
-   * @throws \MovLib\Exception\DatabaseException
+   * @return integer
+   *   The count of the person's unique releases.
    */
-  public function getMovieCastIdsResult() {
-    global $db, $i18n;
-    return $db->query(
-      "SELECT
-        `movies`.`id`,
-        COLUMN_GET(`movies_cast`.`roles`, ? AS BINARY) AS `roles`
-      FROM `movies_cast`
-        INNER JOIN `movies` ON `movies`.`id` = `movies_cast`.`movie_id`
-      WHERE `movies_cast`.`person_id` = ?
-        AND `movies`.`deleted` = false
-      ORDER BY `movies`. `year` DESC, `movies_cast`.`weight` DESC",
-      "sd",
-      [ $i18n->languageCode, $this->id ]
-    )->get_result();
+  public function getReleasesCount() {
+    return 0;
   }
 
   /**
-   * Get the mysqli result for all movie IDs this person has worked behind the scenes.
+   * Get the total number of the series this person has appeared in.
    *
+   * @todo Implement when series are implemented.
    * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
-   * @return \mysqli_result
-   *   The mysqli result for all movie IDs and job titles the person has worked on.
-   * @throws \MovLib\Exception\DatabaseException
+   * @return integer
+   *   The count of the person's unique series.
    */
-  public function getMovieCrewIdsResult() {
-    global $db, $i18n;
-    return $db->query(
-      "SELECT
-        `movies`.`id`,
-        IFNULL(COLUMN_GET(`jobs`.`dyn_titles`, ? AS BINARY), COLUMN_GET(`jobs`.`dyn_titles`, '{$i18n->defaultLanguageCode}' AS BINARY)) AS `job_title`
-      FROM `movies_crew`
-        INNER JOIN `movies` ON `movies`.`id` = `movies_crew`.`movie_id`
-        INNER JOIN `jobs` ON `jobs`.`id` = `movies_crew`.`job_id`
-      WHERE `movies_crew`.`person_id` = ?
-        AND `movies`.`deleted` = false
-      ORDER BY `movies`. `year` DESC, `job_title` ASC",
-      "sd",
-      [ $i18n->languageCode, $this->id ]
-    )->get_result();
-  }
-
-  /**
-   * Get the mysqli result for all movie IDs this person has directed.
-   *
-   * @global \MovLib\Data\Database $db
-   * @return \mysqli_result
-   *   The mysqli result for all directed movie IDs.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getMovieDirectorIdsResult() {
-    global $db;
-    return $db->query(
-      "SELECT
-        `movies`.`id`
-      FROM `movies_directors`
-        INNER JOIN `movies` ON `movies`.`id` = `movies_directors`.`movie_id`
-      WHERE `movies_directors`.`person_id` = ?
-        AND `movies`.`deleted` = false
-      ORDER BY `movies`. `year` DESC",
-      "d",
-      [ $this->id ]
-    )->get_result();
+  public function getSeriesCount() {
+    return 0;
   }
 
 }
