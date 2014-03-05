@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Person;
 
+use \MovLib\Data\Person\Person;
+
 /**
  * Allows editing of a person's information.
  *
@@ -35,15 +37,12 @@ class Edit extends \MovLib\Presentation\Person\AbstractBase {
    */
   public function __construct() {
     global $i18n;
-
-    parent::__construct();
-
-    $this->breadcrumbTitle = $i18n->t("Edit");
-
-    $title  = $i18n->t("Edit {person_name}");
-    $search = "{person_name}";
-    $this->initPage(str_replace($search, $this->person->name, $title));
-    $this->pageTitle = str_replace($search, "<a href='{$this->person->route}'>{$this->person->name}</a>", $title);
+    $this->person = new Person((integer) $_SERVER["PERSON_ID"]);
+    $this->initPage($i18n->t("Edit"));
+    $this->pageTitle        = $i18n->t("Edit {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
+    $this->initLanguageLinks($i18n->r("/person/{0}/edit"), [ $this->person->id ]);
+    $this->initPersonBreadcrumb();
+    $this->sidebarInit();
   }
 
   protected function getPageContent() {

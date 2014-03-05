@@ -30,7 +30,12 @@ use \MovLib\Presentation\Error\Gone;
  * @since 0.0.1-dev
  */
 abstract class AbstractBase extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitSidebar;
+  use \MovLib\Presentation\TraitGone {
+    goneGetContent as private traitGetGoneContent;
+  }
+  use \MovLib\Presentation\TraitSidebar {
+    sidebarInit as traitSidebarInit;
+  }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -44,38 +49,72 @@ abstract class AbstractBase extends \MovLib\Presentation\Page {
   protected $person;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+  // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
-  /**
-   * Instantiate new basic person presentation.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @throws \MovLib\Exception\DatabaseException
-   * @throws \MovLib\Presentation\Error\Gone
-   */
-  public function __construct() {
-    global $i18n, $kernel;
+  protected function goneGetContent() {
+    global $i18n;
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (!($this->person instanceof \MovLib\Data\Person\Person)) {
+      throw new \LogicException($i18n->t("\$this->person has to be a valid person object!"));
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
 
-    // Try to load person data.
-    $this->person = new FullPerson( (integer) $_SERVER["PERSON_ID"]);
+    $routeArgs = [ $this->person->id ];
 
-    // Load the styles specific for person presentations.
-    $kernel->stylesheets[] = "person";
+    $this->goneAlertMessage = $i18n->t(
+        "The person and all its content have been deleted. A look at the edit {0}history{2} or {1}discussion{2} " .
+        "will explain why that is the case. Please discuss with the person responsible for this deletion before " .
+        "you restore this entry from its {0}history{2}.",
+        [
+          "<a href='{$i18n->r("/person/{0}/history", $routeArgs)}'>",
+          "<a href='{$i18n->r("/person/{0}/discussion", $routeArgs)}'>",
+          "</a>"
+        ]
+      );
+    return $this->traitGetGoneContent();
+  }
 
-    // Initialize the page title.
-    $this->initPage($this->person->name);
+  protected function initPersonBreadcrumb() {
+    global $i18n;
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (!($this->person instanceof \MovLib\Data\Person\Person)) {
+      throw new \LogicException($i18n->t("\$this->person has to be a valid person object!"));
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
 
-    // Initialize Breadcrumb with the person route only if the person route wasn't requested.
-    $this->initBreadcrumb([[ $i18n->rp("/persons"), $i18n->t("Persons") ]]);
-    if ($this->person->route != $kernel->requestPath) {
-      $this->breadcrumb->menuitems[] = [ $this->person->route, $this->person->name ];
+    return $this->initBreadcrumb([
+      [ $i18n->rp("/persons"), $i18n->t("Persons") ],
+      [ $this->person->route, $this->person->name ]
+    ]);
+  }
+
+  protected function sidebarInit() {
+    global $i18n;
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (!($this->person instanceof \MovLib\Data\Person\Person)) {
+      throw new \LogicException($i18n->t("\$this->person has to be a valid person object!"));
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    // Compile array once.
+    $routeArgs = [ $this->person->id ];
+
+    // Reduce the sidebar if the person was deleted.
+    if ($this->person->deleted === true) {
+      return $this->traitSidebarInit([
+        [ $i18n->r("/person/{0}/discussion", $routeArgs), $i18n->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
+        [ $i18n->r("/person/{0}/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history" ] ]
+      ]);
     }
 
-    // Initialize edit route, sidebar and schema.
-    $routeArgs = [ $this->person->id ];
-    $this->sidebarInit([
+    return $this->traitSidebarInit([
       [ $this->person->route, $i18n->t("View"), [ "class" => "ico ico-view" ] ],
       [ $i18n->r("/person/{0}/discussion", $routeArgs), $i18n->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
       [ $i18n->r("/person/{0}/edit", $routeArgs), $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
@@ -86,13 +125,6 @@ abstract class AbstractBase extends \MovLib\Presentation\Page {
       [ $i18n->rp("/person/{0}/serials", $routeArgs), "{$i18n->t("Serials")} <span class='fr'>{$i18n->format("{0,number}", [ $this->person->getSeriesCount() ])}</span>", [ "class" => "ico ico-series" ] ],
       [ $i18n->rp("/person/{0}/releases", $routeArgs), "{$i18n->t("Releases")} <span class='fr'>{$i18n->format("{0,number}", [ $this->person->getReleasesCount() ])}</span>", [ "class" => "ico ico-release separator" ] ],
     ]);
-    $this->schemaType = "Person";
-
-    // Display Gone page if this person was deleted.
-    if ($this->person->deleted === true) {
-      // @todo Implement Gone presentation for persons instead of this generic one.
-      throw new Gone;
-    }
   }
 
 }

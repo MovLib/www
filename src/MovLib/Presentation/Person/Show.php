@@ -23,7 +23,7 @@ use \MovLib\Presentation\Partial\Place;
 use \MovLib\Presentation\Partial\Date;
 use \MovLib\Presentation\Partial\Lists\Ordered;
 use \MovLib\Presentation\Partial\FormElement\InputSex;
-use \MovLib\Presentation\Partial\Listing\Movie\MoviePersonListing;
+use \MovLib\Data\Person\FullPerson;
 
 /**
  * Presentation of a single person.
@@ -47,11 +47,12 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
-    parent::__construct();
-    $this->initLanguageLinks("/person/{0}", [ $this->person->id ]);
-
-    // Enhance the page title with microdata.
-    $this->pageTitle = "<span property='name'>{$this->person->name}</span>";
+    global $i18n;
+    $this->person = new FullPerson((integer) $_SERVER["PERSON_ID"]);
+    $this->initPage($this->person->name);
+    $this->initLanguageLinks("/person/{0}", [ $this->person->id]);
+    $this->initBreadcrumb([[ $i18n->rp("/persons"), $i18n->t("Persons") ]]);
+    $this->sidebarInit();
   }
 
 
@@ -64,6 +65,14 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
    */
   protected function getPageContent() {
     global $i18n;
+
+    // Enhance the page title with microdata.
+    $this->schemaType = "Person";
+    $this->pageTitle  = "<span property='name'>{$this->person->name}</span>";
+
+    if ($this->person->deleted === true) {
+      return $this->goneGetContent();
+    }
 
     $editLinkArgs = [ "<a href='{$i18n->r("/person/{0}/edit", [ $this->person->id ])}'>", "</a>" ];
 

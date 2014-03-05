@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Person;
 
 use \MovLib\Data\Image\PersonImage;
+use \MovLib\Data\Person\Person;
 use \MovLib\Data\User\User;
 use \MovLib\Presentation\Partial\DateTime;
 
@@ -42,34 +43,26 @@ class Photo extends \MovLib\Presentation\Person\AbstractBase {
    */
   public function __construct() {
     global $i18n, $kernel;
-    parent::__construct();
 
-    $routeArgs = [ $this->person->id ];
+
+    $this->person = new Person((integer) $_SERVER["PERSON_ID"]);
 
     // Redirect to person edit form, if there is no photo.
     if ($this->person->displayPhoto->imageExists === false) {
       throw new SeeOther($this->routeEdit);
     }
 
+    $routeArgs = [ $this->person->id ];
+
+    $this->initPage($i18n->t("Photo"));
+    $this->pageTitle        = $i18n->t("Photo of {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
+    $this->initLanguageLinks($i18n->r("/person/{0}/photo"), $routeArgs);
+    $this->initPersonBreadcrumb();
+    $this->sidebarInit();
+
     // Modify sidebar items.
     $this->sidebarNavigation->menuitems[0] = [ $this->person->route, $i18n->t("Back to Person"), [ "class" => "ico ico-person" ] ];
     $this->sidebarNavigation->menuitems[count($this->sidebarNavigation->menuitems) - 1] = [ $i18n->r("/person/{0}/photo/delete", $routeArgs), $i18n->t("Delete"), [ "class" => "ico ico-delete" ] ];
-
-    // Set correct breadcrumb title.
-    $this->breadcrumbTitle = $i18n->t("Photo");
-
-    // Initialize language links.
-    $this->initLanguageLinks("/person/{0}/photo", $routeArgs);
-
-    // Initialize page titles.
-    $title = $i18n->t("Photo of {person_name}");
-    $search = "{person_name}";
-    $this->initPage(str_replace($search, $this->person->name, $title));
-    $this->pageTitle = str_replace(
-      $search,
-      "<span itemscope itemtype='http://schema.org/Person'><a href='{$this->person->route}' itemprop='url'><span itemprop='name'>{$this->person->name}</span></a></span>",
-      $title
-    );
 
     // Initialize CSS class, schema and stylesheet.
     $this->bodyClasses    .= " imagedetails";

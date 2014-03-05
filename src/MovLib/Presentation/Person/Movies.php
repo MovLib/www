@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Person;
 
+use \MovLib\Data\Person\FullPerson;
 use \MovLib\Presentation\Partial\FormElement\InputSex;
 use \MovLib\Presentation\Partial\Listing\Movie\MoviePersonListing;
 
@@ -39,8 +40,12 @@ class Movies extends \MovLib\Presentation\Person\AbstractBase {
    */
   public function __construct() {
     global $i18n;
-    parent::__construct();
+    $this->person = new FullPerson((integer) $_SERVER["PERSON_ID"]);
+    $this->initPage($i18n->t("Movies"));
+    $this->pageTitle        = $i18n->t("Movies of {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
     $this->initLanguageLinks($i18n->rp("/person/{0}/movies"), [ $this->person->id ], true);
+    $this->initPersonBreadcrumb();
+    $this->sidebarInit();
   }
 
   /**

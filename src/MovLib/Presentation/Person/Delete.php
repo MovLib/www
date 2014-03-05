@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Person;
 
+use \MovLib\Data\Person\Person;
+
 /**
  * Allows editing of a person's information.
  *
@@ -35,15 +37,12 @@ class Delete extends \MovLib\Presentation\Person\AbstractBase {
    */
   public function __construct() {
     global $i18n;
-
-    parent::__construct();
-
-    $this->breadcrumbTitle = $i18n->t("Delete");
-
-    $title  = $i18n->t("Delete {person_name}");
-    $search = "{person_name}";
-    $this->initPage(str_replace($search, $this->person->name, $title));
-    $this->pageTitle = str_replace($search, "<a href='{$this->person->route}'>{$this->person->name}</a>", $title);
+  $this->person = new Person((integer) $_SERVER["PERSON_ID"]);
+    $this->initPage($i18n->t("Delete"));
+    $this->pageTitle        = $i18n->t("Delete {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
+    $this->initLanguageLinks($i18n->r("/person/{0}/delete"), [ $this->person->id ]);
+    $this->initPersonBreadcrumb();
+    $this->sidebarInit();
   }
 
   protected function getPageContent() {
