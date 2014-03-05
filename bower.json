@@ -1,0 +1,15 @@
+{
+  "name": "MovLib",
+  "version": "0.0.1-dev",
+  "homepage": "https://github.com/MovLib/www",
+  "authors": [
+    "Richard Fussenegger <richard@fussenegger.info>"
+  ],
+  "description": "The software that runs MovLib.",
+  "main": "index.php",
+  "license": "AGPL-3.0",
+  "private": true,
+  "dependencies": {
+    "open-sans-fontface": "~1.0.4"
+  }
+}
