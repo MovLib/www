@@ -204,7 +204,9 @@ CREATE TABLE IF NOT EXISTS `movlib`.`jobs` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The job’s unique ID.',
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this job was created.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The job’s description in various languages. Keys are ISO alpha-2 language codes.',
-  `dyn_titles` BLOB NOT NULL COMMENT 'The job’s title in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_names_sex0` BLOB NOT NULL COMMENT 'The job’s unisex name in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_names_sex1` BLOB NOT NULL COMMENT 'The job’s male name in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_names_sex2` BLOB NOT NULL COMMENT 'The job’s female name in various languages. Keys are ISO alpha-2 language codes.',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 COMMENT = 'Contains all jobs.'
