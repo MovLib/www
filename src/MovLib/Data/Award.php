@@ -54,25 +54,11 @@ class Award extends \MovLib\Data\Database {
   public $name;
 
   /**
-   * Amount of movies with this award.
-   *
-   * @var integer
-   */
-  public $moviesCount;
-
-  /**
    * The translated route of this award.
    *
    * @var string
    */
   public $route;
-
-  /**
-   * Amount of series with this award.
-   *
-   * @var integer
-   */
-  public $seriesCount;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -87,15 +73,13 @@ class Award extends \MovLib\Data\Database {
           WHERE
             `id` = ?
           LIMIT 1",
-        "ssssi",
-        [ $i18n->languageCode, $i18n->defaultLanguageCode, $i18n->languageCode, $i18n->defaultLanguageCode, $id ]
+        "ssd",
+        [ $i18n->languageCode, $i18n->languageCode, $id ]
       );
       $stmt->bind_result(
         $this->id,
         $this->name,
-        $this->description,
-        $this->moviesCount,
-        $this->seriesCount
+        $this->description
       );
       if (!$stmt->fetch()) {
         throw new NotFound;
@@ -115,7 +99,9 @@ class Award extends \MovLib\Data\Database {
    *
    * @global \MovLib\Data\Database $db
    * @staticvar null|integer $count
+   *   The total amount of awards.
    * @return integer
+   *   The total amount of awards.
    */
   public static function getTotalCount() {
     global $db;
@@ -145,14 +131,15 @@ class Award extends \MovLib\Data\Database {
         {$query}
         ORDER BY `name` ASC
         LIMIT ? OFFSET ?",
-      "ssssii",
-      [ $i18n->languageCode, $i18n->defaultLanguageCode, $i18n->languageCode, $i18n->defaultLanguageCode, $rowCount, $offset ]
+      "ssid",
+      [ $i18n->languageCode, $i18n->languageCode, $rowCount, $offset ]
     )->get_result();
   }
 
   /**
    * Get the mysqli result for all movies that have received this award.
    *
+   * @todo Implement
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @return \mysqli_result
@@ -160,54 +147,27 @@ class Award extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMovieResult() {
-    global $db, $i18n;
-    return $db->query(
-//      "SELECT
-//        `movies`.`year` AS `year`,
-//        IFNULL(`dt`.`title`, `ot`.`title`) AS `displayTitle`,
-//        IFNULL(`dt`.`language_code`, `ot`.`language_code`) AS `displayTitleLanguageCode`,
-//        `ot`.`title` AS `originalTitle`,
-//        `ot`.`language_code` AS `originalTitleLanguageCode`,
-//        `p`.`poster_id` AS `displayPoster`
-//      FROM `movies`
-//        LEFT JOIN `movies_genres`
-//          ON `movies`.`id` = `movies_genres`.`movie_id`
-//        LEFT JOIN `movies_display_titles` AS `mdt`
-//          ON `mdt`.`movie_id` = `movies`.`id`
-//          AND `mdt`.`language_code` = ?
-//        LEFT JOIN `movies_titles` AS `dt`
-//          ON `dt`.`id` = `mdt`.`title_id`
-//        LEFT JOIN `movies_original_titles` AS `mot`
-//          ON `mot`.`movie_id` = `movies`.`id`
-//        LEFT JOIN `movies_titles` AS `ot`
-//          ON `ot`.`id` = `mot`.`title_id`
-//        LEFT JOIN `display_posters` AS `p`
-//          ON `p`.`movie_id` = `movies`.`id`
-//          AND `p`.`language_code` = ?
-//      WHERE `movies_genres`.`genre_id` = ?
-//      ORDER BY `displayTitle` DESC",
-//      "ssi",
-//      [ $i18n->languageCode, $i18n->languageCode, $this->id ]
-    )->get_result();
+    return $this;
   }
 
   /**
    * Get the default query.
    *
-   * @staticvar string Used to cache the default query.
+   * @global \MovLib\Data\I18n $i18n
+   * @staticvar string $query
+   *   Used to cache the default query.
    * @return string
    *   The default query.
    */
   protected static function getQuery() {
+    global $i18n;
     static $query = null;
     if (!$query) {
       $query =
         "SELECT
           `id`,
-          IFNULL(COLUMN_GET(`dyn_names`, ? AS CHAR), COLUMN_GET(`dyn_names`, ? AS CHAR)) AS `name`,
-          IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS CHAR), COLUMN_GET(`dyn_descriptions`, ? AS CHAR)) AS `description`,
-          `movies_count` AS `moviesCount`,
-          `series_count` AS `seriesCount`
+          IFNULL(COLUMN_GET(`dyn_names`, ? AS CHAR), COLUMN_GET(`dyn_names`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `name`,
+          IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS CHAR), COLUMN_GET(`dyn_descriptions`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `description`
         FROM `awards`"
       ;
     }
@@ -215,13 +175,13 @@ class Award extends \MovLib\Data\Database {
   }
 
   /**
-   * Initialize genre.
+   * Initialize award.
    *
    * @global type $i18n
    */
   protected function init() {
     global $i18n;
 
-    $this->route = $i18n->r("/genre/{0}", [ $this->id ]);
+    $this->route = $i18n->r("/award/{0}", [ $this->id ]);
   }
 }
