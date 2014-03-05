@@ -61,6 +61,22 @@ ol ol {
   background-color: #e2f4fb;
 }
 
+.hover-list .no-padding {
+  padding: 0;
+}
+
+.hover-list .no-padding a {
+  line-height: 60px;
+}
+
+.hover-list .li .label {
+  margin-right: 15px;
+}
+
+.hover-list .li .small .label {
+  margin-right: 3px;
+}
+
 .hover-list .li .jobs {
   padding-right: 20px;
 }
@@ -82,16 +98,6 @@ ol ol {
   line-height: 63px;
   text-shadow: 0 0 5px #fff, 0 0 20px #fff;
   width: 60px;
-}
-
-.hover-list .no-padding {
-  padding-bottom: 0;
-  padding-top: 0;
-}
-
-.hover-list .li .big-item-text {
-  font-size: 15px;
-  line-height: 60px;
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------

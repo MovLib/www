@@ -26,7 +26,7 @@ namespace MovLib\Presentation\Partial\Lists;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Genres extends \MovLib\Presentation\Partial\Lists\Images {
+class Genres extends \MovLib\Presentation\Partial\Lists\AbstractList {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -54,7 +54,7 @@ class Genres extends \MovLib\Presentation\Partial\Lists\Images {
    * Instantiate new special genres listing.
    *
    * @param \mysqli_result $listItems
-   *   The mysqli result object containing the company.
+   *   The mysqli result object containing the genre.
    * @param string $noItemsText
    *   {@inheritdoc}
    * @param array $listItemsAttributes
@@ -68,13 +68,12 @@ class Genres extends \MovLib\Presentation\Partial\Lists\Images {
    */
   public function __construct($listItems, $noItemsText = "", array $listItemsAttributes = null, array $attributes = null, $spanSize = 5, $showAdditionalInfo = false) {
     parent::__construct($listItems, $noItemsText, $attributes);
-    $this->addClass("hover-list no-list r", $this->attributes);
-    $this->listItemsAttributes = $listItemsAttributes;
-    $this->addClass("s s{$spanSize}", $this->listItemsAttributes);
-    $this->listItemsAttributes[]           = "itemscope";
-    $this->listItemsAttributes["itemtype"] = "http://schema.org/Article";
-    $this->showAdditionalInfo              = $showAdditionalInfo;
-    $this->descriptionSpan                 = ($this->showAdditionalInfo === true) ? ($spanSize - 3) : $spanSize;
+    $this->addClass("hover-list no-list cf", $this->attributes);
+    $this->listItemsAttributes  = $listItemsAttributes;
+    $this->addClass("li r s no-padding", $this->listItemsAttributes);
+    $this->attributes["typeof"] = "ItemList";
+    $this->showAdditionalInfo   = $showAdditionalInfo;
+    $this->descriptionSpan      = ($this->showAdditionalInfo === true) ? ($spanSize - 3) : $spanSize;
   }
 
 
@@ -93,29 +92,22 @@ class Genres extends \MovLib\Presentation\Partial\Lists\Images {
         $additionalInfo = null;
         if ($this->showAdditionalInfo === true) {
           $additionalInfo =
-            "<ul class='no-list s3 li fr'>" .
-              "<li>" .
-                "<a href='{$i18n->r("/genre/{0}/movies", [ $genre->id ])}'>" .
-                  "<span class='small'>{$i18n->t("There are {0} movies with this genre.", [ $genre->moviesCount ])}</span>" .
-                "</a>" .
-              "</li>" .
-              "<li>" .
-                "<a href='{$i18n->r("/genre/{0}/series", [ $genre->id ])}'>" .
-                  "<span class='small'>{$i18n->t("There are {0} series with this genre.", [ $genre->seriesCount ])}</span>" .
-                "</a>" .
-              "</li>" .
-            "</ul>";
+            "<div class='s s3 tar'>" .
+              "<a class='label ico ico-movie' href='{$i18n->rp("/genre/{0}/movies", [ $genre->id ])}' title='{$i18n->t("Movies with this genre.")}'>" .
+                " &nbsp; {$genre->getMovieCount()}" .
+              "</a>" .
+              "<a class='label ico ico-series' href='{$i18n->rp("/genre/{0}/series", [ $genre->id ])}' title='{$i18n->t("Series with this genre.")}'>" .
+                " &nbsp; {$genre->getSeriesCount()}" .
+              "</a>" .
+            "</div>"
+          ;
         }
 
         $list .=
           "<li{$this->expandTagAttributes($this->listItemsAttributes)}>" .
-            "<div class='r li no-padding'>" .
-              "<a class='big-item-text' href='{$i18n->r("/genre/{0}", [ $genre->id ])}' itemprop='url'>" .
-                "<div class='s s{$this->descriptionSpan}'>" .
-                  "<span class='link-color' itemprop='genre'>{$genre->name}</span>" .
-                "</div>" .
-              "</a>{$additionalInfo}" .
-            "</div>" .
+            "<a class='img s s{$this->descriptionSpan}' href='{$i18n->r("/genre/{0}", [ $genre->id ])}'>" .
+              "<span class='link-color' property='itemListElement'>{$genre->name}</span>" .
+            "</a>{$additionalInfo}" .
           "</li>";
       }
       if (!$list) {

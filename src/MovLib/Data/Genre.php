@@ -67,6 +67,7 @@ class Genre extends \MovLib\Data\Database {
    * @var string
    */
   public $route;
+
   /**
    * Amount of series with this genre.
    *
@@ -78,6 +79,15 @@ class Genre extends \MovLib\Data\Database {
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
+  /**
+   * Instantiate new genre.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @param integer $id [optional]
+   *   The genre's unique identifier, omit to create empty instance.
+   * @throws \MovLib\Presentation\Error\NotFound
+   */
   public function __construct($id = null) {
     global $db, $i18n;
     if ($id) {
