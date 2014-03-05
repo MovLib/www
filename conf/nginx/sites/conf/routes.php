@@ -614,6 +614,18 @@ location ^~ <?= $r("/job") ?> {
     try_files $movlib_cache @php;
   }
 
+  location ~* "^<?= $rp("/job/{0}/movies", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Job\\Movies";
+    set $movlib_job_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $rp("/job/{0}/series", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Job\\Series";
+    set $movlib_job_id $1;
+    try_files $movlib_cache @php;
+  }
+
   rewrite .* /error/NotFound last;
 }
 

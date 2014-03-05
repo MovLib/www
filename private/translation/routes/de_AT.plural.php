@@ -94,6 +94,8 @@ return [
 
   // ------------------------------------------------------------------------------------------------------------------- Jobs
   "/jobs"           => "/tätigkeiten",
+  "/job/{0}/movies" => "/tätigkeit/{0}/filme",
+  "/job/{0}/series" => "/tätigkeit/{0}/serien",
 
 ];
 // @codeCoverageIgnoreEnd
