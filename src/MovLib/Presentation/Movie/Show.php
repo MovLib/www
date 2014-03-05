@@ -279,7 +279,7 @@ class Show extends \MovLib\Presentation\Page {
     $sections["cast"] = [
       $i18n->t("Cast"),
       new CastPartial(
-        Cast::getMovieCast($this->movie->id),
+        $this->movie->getCast(null),
         $i18n->t("No cast assigned yet, {0}add cast{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ])
       ),
     ];

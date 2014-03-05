@@ -90,15 +90,15 @@ class Crew extends \MovLib\Data\Job {
    *
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
-   * @param integer $crewId [optional]
+   * @param integer $id [optional]
    *   The unique crew's identifier to load, omit to create empty instance.
    * @throws \MovLib\Presentation\Error\NotFound
    */
-  public function __construct($crewId = null) {
+  public function __construct($id = null) {
     global $db, $i18n;
 
     // Try to load the cast for the given identifier.
-    if ($crewId) {
+    if ($id) {
       $stmt = $db->query(
         "SELECT
           `mc`.`id`,
@@ -113,7 +113,7 @@ class Crew extends \MovLib\Data\Job {
           ON `j`.`id` = `mc`.`job_id`
         WHERE `mc`.`id` = ?",
         "ssd",
-        [ $i18n->languageCode, $i18n->defaultLanguageCode, $crewId ]
+        [ $i18n->languageCode, $i18n->defaultLanguageCode, $id ]
       );
       $stmt->bind_result(
         $this->id,
@@ -128,41 +128,8 @@ class Crew extends \MovLib\Data\Job {
         throw new NotFound;
       }
       $stmt->close();
-      $this->id = $crewId;
+      $this->id = $id;
     }
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * Get all crew appearances of a person.
-   *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
-   * @param integer $personId
-   *   The person's unique ID.
-   * @return \mysqli_result
-   *   The person's crew appearances.
-   */
-  public static function getPersonCrew($personId) {
-    global $db, $i18n;
-    return $db->query(
-      "SELECT
-        `mc`.`id`,
-        `mc`.`movie_id` AS `movieId`,
-        `mc`.`job_id` AS `jobId`,
-        `mc`.`alias_id` AS `alias`,
-        `mc`.`person_id` AS `personId`,
-        IFNULL(COLUMN_GET(`j`.`dyn_titles`, ? AS BINARY), COLUMN_GET(`j`.`dyn_titles`, ? AS BINARY)) AS `jobTitle`
-      FROM `movies_crew` AS `mc`
-      INNER JOIN `jobs` AS `j`
-        ON `j`.`id` = `mc`.`job_id`
-      WHERE `mc`.`person_id` = ?",
-      "ssd",
-      [ $i18n->languageCode, $i18n->defaultLanguageCode, $personId ]
-    )->get_result();
   }
 
 }

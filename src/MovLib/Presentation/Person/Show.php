@@ -288,7 +288,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     // ----------------------------------------------------------------------------------------------------------------- Fetch cast information
 
 
-    $castResult = Cast::getPersonCast($this->person->id);
+    $castResult = $this->person->getMovieCast();
     switch ($this->person->sex) {
       case InputSex::MALE:
         $job  = $i18n->t("Actor");
@@ -333,7 +333,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     // ----------------------------------------------------------------------------------------------------------------- Fetch crew information
 
 
-    $crewResult = Crew::getPersonCrew($this->person->id);
+    $crewResult = $this->person->getMovieCrew();
     /* @var $crew \MovLib\Data\Movie\Crew */
     while ($crew = $crewResult->fetch_object("\\MovLib\\Data\\Movie\\Crew")) {
       $movies[$crew->movieId]["#jobs"] .= "<li>{$this->a($i18n->r("/job/{0}", [ $crew->jobId ]), $crew->jobTitle)}</li>";

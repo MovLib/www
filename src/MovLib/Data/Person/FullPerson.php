@@ -311,6 +311,59 @@ class FullPerson extends \MovLib\Data\Person\Person {
   }
 
   /**
+   * Get the mysqli result for the person's movie cast.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @return \mysqli_result
+   *   The result containing the {@see \MovLib\Data\Movie\Cast} objects.
+   */
+  public function getMovieCast() {
+    global $db, $i18n;
+    return $db->query(
+      "SELECT
+        `id`,
+        `movie_id` AS `movieId`,
+        `person_id` AS `personId`,
+        `job_id` AS `jobId`,
+        IFNULL(COLUMN_GET(`dyn_role`, ? AS BINARY), COLUMN_GET(`dyn_role`, ? AS BINARY)) AS `roleName`,
+        `alias_id` AS `alias`,
+        `role_id` AS `role`
+      FROM `movies_cast`
+      WHERE `person_id` = ?",
+      "ssd",
+      [ $i18n->languageCode, $i18n->defaultLanguageCode, $this->id ]
+    )->get_result();
+  }
+
+  /**
+   * Get the mysqli result for the person's movie crew.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @return \mysqli_result
+   *   The result containing the {@see \MovLib\Data\Movie\Crew} objects.
+   */
+  public function getMovieCrew() {
+    global $db, $i18n;
+    return $db->query(
+      "SELECT
+        `mc`.`id`,
+        `mc`.`movie_id` AS `movieId`,
+        `mc`.`job_id` AS `jobId`,
+        `mc`.`alias_id` AS `alias`,
+        `mc`.`person_id` AS `personId`,
+        IFNULL(COLUMN_GET(`j`.`dyn_titles`, ? AS BINARY), COLUMN_GET(`j`.`dyn_titles`, ? AS BINARY)) AS `jobTitle`
+      FROM `movies_crew` AS `mc`
+      INNER JOIN `jobs` AS `j`
+        ON `j`.`id` = `mc`.`job_id`
+      WHERE `mc`.`person_id` = ?",
+      "ssd",
+      [ $i18n->languageCode, $i18n->defaultLanguageCode, $this->id ]
+    )->get_result();
+  }
+
+  /**
    * Get the mysqli result for all movies this person has appeared in.
    *
    * @global \MovLib\Data\Database $db

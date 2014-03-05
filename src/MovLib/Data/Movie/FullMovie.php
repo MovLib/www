@@ -135,34 +135,46 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
   /**
    * Get the mysqli result for the movie's cast.
    *
-   * @todo Order cast by weight not by name!
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
-   * @param integer $limit [optional]
-   *   The amount of cast members to fetch.
+   * @param null|integer $limit
+   *   Limit of unique cast members to return, defaults to <code>8</code>. <code>NULL</code> means no limit.
    * @return \mysqli_result
-   *   The mysqli result for the movie's cast.
-   * @throws \MovLib\Exception\DatabaseException
+   *   The result containing the {@see \MovLib\Data\Movie\Cast} objects.
    */
   public function getCast($limit = 8) {
     global $db, $i18n;
-    return $db->query(
+    $query =
       "SELECT
-        `p`.`id` AS `id`,
-        `p`.`name` AS `name`,
-        `p`.`sex` AS `sex`,
-        `p`.`birthdate` AS `birthDate`,
-        `p`.`born_name` AS `bornName`,
-        `p`.`deathdate` AS `deathDate`,
-        `p`.`nickname` AS `nickname`
-      FROM `movies_cast` AS `mc`
-        INNER JOIN `persons` AS `p` ON `p`.`id` = `mc`.`person_id`
-      WHERE `mc`.`movie_id` = ? AND `p`.`deleted` = false
-      ORDER BY `p`.`name`{$db->collations[$i18n->languageCode]} ASC
-      LIMIT ?",
-      "di",
-      [ $this->id, $limit ]
-    )->get_result();
+        `movies_cast`.`id`,
+        `movie_id` AS `movieId`,
+        `person_id` AS `personId`,
+        `job_id` AS `jobId`,
+        IFNULL(COLUMN_GET(`dyn_role`, ? AS BINARY), COLUMN_GET(`dyn_role`, '{$i18n->defaultLanguageCode}' AS BINARY)) AS `roleName`,
+        `alias_id` AS `alias`,
+        `role_id` AS `role`
+      FROM `movies_cast`
+      INNER JOIN `persons` AS `p`
+        ON `movies_cast`.`person_id` = `p`.`id`
+      WHERE `movie_id` = ?"
+    ;
+    $types = "sd";
+    $params = [ $i18n->languageCode, $this->id ];
+
+    if ($limit) {
+      $query .= " AND `person_id` IN
+        (SELECT DISTINCT
+          `p`.`id`
+        FROM `movies_cast`
+        INNER JOIN `persons` AS `p`
+          ON `movies_cast`.`person_id` = `p`.`id`
+        ORDER BY `p`.`name`{$db->collations[$i18n->languageCode]} ASC
+        LIMIT ?)";
+      $types .= "d";
+      $params[] = $limit;
+    }
+
+    return $db->query("{$query} ORDER BY `p`.`name`{$db->collations[$i18n->languageCode]} ASC", $types, $params)->get_result();
   }
 
   /**
@@ -176,6 +188,41 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
   public function getCountries() {
     global $db;
     return $db->query("SELECT `country_code` FROM `movies_countries` WHERE `movie_id` = ?", "d", [ $this->id ])->get_result();
+  }
+
+  /**
+   * Get the mysqli result for the movie's crew.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @param null|integer $limit
+   *   Limit of unique crew members to return, defaults to <code>8</code>. <code>NULL</code> means no limit.
+   * @return \mysqli_result
+   *   The result containing the {@see \MovLib\Data\Movie\Crew} objects.
+   */
+  public function getCrew($limit = 8) {
+    global $db, $i18n;
+    $query =
+      "SELECT
+        `mc`.`id`,
+        `mc`.`movie_id` AS `movieId`,
+        `mc`.`job_id` AS `jobId`,
+        `mc`.`alias_id` AS `aliasId`,
+        `mc`.`person_id` AS `personId`,
+        IFNULL(COLUMN_GET(`j`.`dyn_titles`, ? AS BINARY), COLUMN_GET(`j`.`dyn_titles`, '{$i18n->defaultLanguageCode}' AS BINARY))
+      FROM `movies_crew` AS `mc`
+      INNER JOIN `jobs` AS `j`
+        ON `j`.`id` = `mc`.`job_id`
+      WHERE `mc`.`movie_id` = ?"
+    ;
+    $types = "sd";
+    $params = [ $i18n->languageCode, $this->id ];
+
+    if ($limit) {
+      // @todo implement limit.
+    }
+    // @todo implement ordering by name (person and company)!
+    return $db->query($query, $types, $params);
   }
 
   /**
