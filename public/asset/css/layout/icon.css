@@ -97,166 +97,178 @@
 	content: "\e605";
 }
 
-.ico-release:before {
+.ico-job:before {
 	content: "\e606";
 }
 
-.ico-movie:before {
+.ico-release:before {
 	content: "\e607";
 }
 
-.ico-company:before {
+.ico-movie:before {
 	content: "\e608";
 }
 
-.ico-star:before {
+.ico-company:before {
 	content: "\e609";
 }
 
-.ico-lock:before {
+.ico-star:before {
 	content: "\e60a";
 }
 
-.ico-upload:before {
+.ico-lock:before {
 	content: "\e60b";
 }
 
-.ico-align-left:before {
+.ico-upload:before {
 	content: "\e60c";
 }
 
-.ico-align-center:before {
+.ico-align-left:before {
 	content: "\e60d";
 }
 
-.ico-align-right:before {
+.ico-align-center:before {
 	content: "\e60e";
 }
 
-.ico-bold:before {
+.ico-align-right:before {
 	content: "\e60f";
 }
 
-.ico-italic:before {
+.ico-bold:before {
 	content: "\e610";
 }
 
-.ico-ul:before {
+.ico-italic:before {
 	content: "\e611";
 }
 
-.ico-ol:before {
+.ico-ul:before {
 	content: "\e612";
 }
 
-.ico-quotation:before {
+.ico-ol:before {
 	content: "\e613";
 }
 
-.ico-link:before {
+.ico-quotation:before {
 	content: "\e614";
 }
 
-.ico-unlink:before {
+.ico-link:before {
 	content: "\e615";
 }
 
-.ico-indent-left:before {
+.ico-unlink:before {
 	content: "\e616";
 }
 
-.ico-indent-right:before {
+.ico-indent-left:before {
 	content: "\e617";
 }
 
-.ico-heart:before {
+.ico-indent-right:before {
 	content: "\e618";
 }
 
-.ico-settings:before {
+.ico-heart:before {
 	content: "\e619";
 }
 
-.ico-languages:before {
+.ico-settings:before {
 	content: "\e61a";
 }
 
-.ico-like:before {
+.ico-languages:before {
 	content: "\e61b";
 }
 
-.ico-search:before {
+.ico-like:before {
 	content: "\e61c";
 }
 
-.ico-cc:before {
+.ico-award:before {
 	content: "\e61d";
 }
 
-.ico-cc-zero:before {
+.ico-genre:before {
 	content: "\e61e";
 }
 
-.ico-user:before {
+.ico-search:before {
 	content: "\e61f";
 }
 
-.ico-person:before {
+.ico-cc:before {
 	content: "\e620";
 }
 
-.ico-user-add:before {
+.ico-cc-zero:before {
 	content: "\e621";
 }
 
-.ico-notification:before {
+.ico-user:before {
 	content: "\e622";
 }
 
-.ico-email:before {
+.ico-person:before {
 	content: "\e623";
 }
 
-.ico-history:before {
+.ico-user-add:before {
 	content: "\e624";
 }
 
-.ico-alert:before {
+.ico-notification:before {
 	content: "\e625";
 }
 
-.ico-discussion:before {
+.ico-email:before {
 	content: "\e626";
 }
 
-.ico-help:before {
+.ico-history:before {
 	content: "\e627";
 }
 
-.ico-info:before {
+.ico-alert:before {
 	content: "\e628";
 }
 
-.ico-chevron-left:before {
+.ico-discussion:before {
 	content: "\e629";
 }
 
-.ico-chevron-right:before {
+.ico-help:before {
 	content: "\e62a";
 }
 
-.ico-view:before {
+.ico-info:before {
 	content: "\e62b";
 }
 
-.ico-edit:before {
+.ico-chevron-left:before {
 	content: "\e62c";
 }
 
-.ico-series:before {
+.ico-chevron-right:before {
 	content: "\e62d";
 }
 
-.ico-wikipedia:before {
+.ico-view:before {
 	content: "\e62e";
+}
+
+.ico-edit:before {
+	content: "\e62f";
+}
+
+.ico-series:before {
+	content: "\e630";
+}
+
+.ico-wikipedia:before {
+	content: "\e631";
 }
