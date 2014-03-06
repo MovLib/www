@@ -416,7 +416,9 @@ git submodule update --remote
 Write-Host
 Write-Host 'Installing and updating Vagrant plugins, this may take a few minutes...' -ForegroundColor 'Cyan'
 $installed = vagrant plugin list
-$plugins   = @('hostsupdater', 'vbguest', 'puppet-install')
+
+# 'vbguest' is buggy although it would be a nice to have.
+$plugins   = @('hostsupdater')
 foreach ($plugin in $plugins) {
   $found = 0
   foreach ($i in $installed) {
