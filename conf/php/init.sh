@@ -72,7 +72,7 @@ DAEMON="/usr/local/sbin/${NAME}"
 DAEMON_ARGS=""
 
 # The php-fpm group.
-GROUP="www-data"
+GROUP=<?= $group ?>
 
 # The php-fpm log directory.
 LOG_DIR="/var/log/php-fpm"
