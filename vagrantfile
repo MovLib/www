@@ -28,11 +28,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 Vagrant.require_plugin 'vagrant-hostsupdater'
-Vagrant.require_plugin 'vagrant-vbguest'
-Vagrant.require_plugin 'vagrant-puppet-install'
 
-# No Windows support, see: https://github.com/mhahn/vagrant-librarian-puppet/issues/5
-#Vagrant.require_plugin 'vagrant-librarian-puppet'
+# The vbguest plugin has bugs!
+#Vagrant.require_plugin 'vagrant-vbguest'
 
 Vagrant.configure("2") do |config|
 
@@ -81,23 +79,7 @@ Vagrant.configure("2") do |config|
     "en.movlib.local",
   ]
 
-  # Install the latest version of Puppet.
-  config.puppet_install.version = "*"
-
-  # The provisioner used to automatically install the software we need for development.
-  #
-  # LINK: http://docs.vagrantup.com/v2/provisioning/puppet_apply.html
-  config.vm.provision "puppet" do |pp|
-    pp.hiera_config_path = "conf/puppet/hiera.yaml"
-    pp.manifests_path    = "conf/puppet/manifest"
-    pp.manifest_file     = "development.pp"
-    pp.module_path       = "conf/puppet/module"
-    pp.options           = "--environment 'development'"
-  end
-
-  # Additional folders to share between the host and guest system.
-  #
-  # LINK: http://docs.vagrantup.com/v2/synced-folders/index.html
-  #config.vm.synced_folder "", ""
+  # Download, configure, and install everything.
+  config.vm.provision "shell", path: "bin/vagrant.sh"
 
 end
