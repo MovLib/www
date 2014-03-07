@@ -33,18 +33,11 @@ class Genres extends \MovLib\Presentation\Partial\Lists\AbstractList {
 
 
   /**
-   * The span size for a single genres's description.
+   * Absolute class name of the entitiy to fetch.
    *
-   * @var integer
+   * @var string
    */
-  protected $descriptionSpan;
-
-  /**
-   * Show additional information or not.
-   *
-   * @var boolean
-   */
-  protected $showAdditionalInfo;
+  protected $entity;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -53,27 +46,27 @@ class Genres extends \MovLib\Presentation\Partial\Lists\AbstractList {
   /**
    * Instantiate new special genres listing.
    *
-   * @param \mysqli_result $listItems
-   *   The mysqli result object containing the genre.
+   * @param \mysqli_result $result
+   *   The MySQLi result object containing the entities.
    * @param string $noItemsText
    *   {@inheritdoc}
-   * @param array $listItemsAttributes
-   *   {@inheritdoc}
-   * @param array $attributes
-   *   {@inheritdoc}
-   * @param integer $spanSize [optional]
-   *   The span size the list items should reserve, defaults to <code>5</code>
-   * @param boolean $showAdditionalInfo [optional]
-   *   Show additional information or not, defaults to <code>FALSE</code>.
+   * @param string $entityName
+   *   The name of the Data object to fetch (e.g. <code>"Genre"</code> which will lead to instantiation of
+   *   <code>"\\MovLib\\Data\\Genre"</code>).
    */
-  public function __construct($listItems, $noItemsText = "", array $listItemsAttributes = null, array $attributes = null, $spanSize = 5, $showAdditionalInfo = false) {
-    parent::__construct($listItems, $noItemsText, $attributes);
-    $this->addClass("hover-list no-list cf", $this->attributes);
-    $this->listItemsAttributes  = $listItemsAttributes;
-    $this->addClass("li r s no-padding", $this->listItemsAttributes);
-    $this->attributes["typeof"] = "ItemList";
-    $this->showAdditionalInfo   = $showAdditionalInfo;
-    $this->descriptionSpan      = ($this->showAdditionalInfo === true) ? ($spanSize - 3) : $spanSize;
+  public function __construct($result, $noItemsText, $entityName) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($entityName)) {
+      throw new \InvalidArgumentException("\$entityName cannot be empty");
+    }
+    if (class_exists("\\MovLib\\Data\\{$entityName}") === false) {
+      throw new \InvalidArgumentException("\$entityName must match an existing class");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    parent::__construct($result, $noItemsText);
+    $this->entity = "\\MovLib\\Data\\{$entityName}";
   }
 
 
@@ -81,43 +74,55 @@ class Genres extends \MovLib\Presentation\Partial\Lists\AbstractList {
 
 
   /**
-   * @inheritdoc
+   * Get the rendered listing.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return string
+   *   The rendered listing.
    */
-  protected function render() {
+  public function __toString() {
     global $i18n;
-    $list = null;
+    // @devStart
+    // @codeCoverageIgnoreStart
     try {
-      /* @var $genre \MovLib\Data\Genre */
-      while ($genre = $this->listItems->fetch_object("\\MovLib\\Data\\Genre")) {
-        $additionalInfo = null;
-        if ($this->showAdditionalInfo === true) {
-          $additionalInfo =
-            "<div class='s s3 tar'>" .
-              "<a class='label ico ico-movie' href='{$i18n->rp("/genre/{0}/movies", [ $genre->id ])}' title='{$i18n->t("Movies with this genre.")}'>" .
-                " &nbsp; {$genre->getMovieCount()}" .
-              "</a>" .
-              "<a class='label ico ico-series' href='{$i18n->rp("/genre/{0}/series", [ $genre->id ])}' title='{$i18n->t("Series with this genre.")}'>" .
-                " &nbsp; {$genre->getSeriesCount()}" .
-              "</a>" .
-            "</div>"
-          ;
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+      $list = null;
+      $moviesTitle = $i18n->t("Movies");
+      $seriesTitle = $i18n->t("Series");
+      $routeKey = $routeMovies = $routeSeries = $moviesRoute = $seriesRoute = null;
+      while ($entity = $this->listItems->fetch_object($this->entity)) {
+        if (!$routeKey) {
+          $routeKey = preg_replace("#/[0-9]+$#", "/{0}", $entity->route);
+          $routeMovies = $i18n->rp("{$routeKey}/movies");
+          $routeSeries = $i18n->rp("{$routeKey}/series");
         }
-
+        $moviesRoute = str_replace("{0}", $entity->id, $routeMovies);
+        $seriesRoute = str_replace("{0}", $entity->id, $routeSeries);
         $list .=
-          "<li{$this->expandTagAttributes($this->listItemsAttributes)}>" .
-            "<a class='img s s{$this->descriptionSpan}' href='{$i18n->r("/genre/{0}", [ $genre->id ])}'>" .
-              "<span class='link-color' property='itemListElement'>{$genre->name}</span>" .
-            "</a>{$additionalInfo}" .
-          "</li>";
+          "<li class='hover-item r s'>" .
+            "<a class='fr ico ico-movie label' href='{$moviesRoute}' title='{$moviesTitle}'> &nbsp; {$entity->getMovieCount()}</a>" .
+            "<a class='fr ico ico-series label' href='{$seriesRoute}' title='{$seriesTitle}'> &nbsp; {$entity->getSeriesCount()}</a>" .
+            "<a class='no-link link-color s' href='{$i18n->r("/genre/{0}", [ $entity->id ])}' property='itemListElement'>{$entity->name}</a>" .
+          "</li>"
+        ;
       }
-      if (!$list) {
-        return $this->noItemsText;
+      if ($list) {
+        return "<ol class='hover-list' typeof='ItemList'>{$list}</ol>";
       }
-      return "<ol{$this->expandTagAttributes($this->attributes)}>{$list}</ol>";
+      return $this->noItemsText;
+    // @devStart
+    // @codeCoverageIgnoreStart
     }
     catch (\Exception $e) {
-      return $e->getMessage();
+      return (string) new \MovLib\Presentation\Partial\Alert(
+        "<pre>{$e}</pre>",
+        $i18n->t("Error Rendering List"),
+        \MovLib\Presentation\Partial\Alert::SEVERITY_ERROR
+      );
     }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
   }
 
 }

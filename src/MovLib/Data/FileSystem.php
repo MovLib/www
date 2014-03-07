@@ -20,6 +20,7 @@ namespace MovLib\Data;
 /**
  * Provides various static methods related to file system actions.
  *
+ * @deprecated since version 0.0.1-dev
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -35,6 +36,7 @@ class FileSystem {
    * requiring special escaping to manipulate at the command line. Replaces spaces and consecutive dashes with a single
    * dash. Trims period, dash und underscore from beginning and end of filename.
    *
+   * @deprecated since version 0.0.1-dev
    * @param string $filename
    *   The filename to be sanitized.
    * @return string

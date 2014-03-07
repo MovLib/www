@@ -24,6 +24,7 @@ namespace MovLib\Data;
  * methods are mainly wrapper around the usual PHP functions and ensure that the command behave like normal function
  * calls by returning booleans that indicate success or failure.
  *
+ * @deprecated since version 0.0.1-dev
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -38,6 +39,7 @@ class UnixShell {
    * This method behaves the same as PHP's <code>exec()</code> function, the only difference is that it redirects
    * <code>stderr</code> to <code>stdout</code> and surpresses any output even upon error.
    *
+   * @deprecated since version 0.0.1-dev
    * @param string $command
    *   The external shell program to execute.
    * @param array $output [optional]
@@ -70,6 +72,7 @@ class UnixShell {
    * All file descriptors are directly closed instead of redirected to <code>/dev/null</code>.
    *
    * @link http://stackoverflow.com/questions/222414/asynchronous-shell-exec-in-php
+   * @deprecated since version 0.0.1-dev
    * @param string $command
    *   The external shell program to execute.
    */
@@ -82,6 +85,7 @@ class UnixShell {
    *
    * This method behaves the same as PHP's <code>system()</code> function.
    *
+   * @deprecated since version 0.0.1-dev
    * @param string $command
    *   The external shell program to execute.
    * @param int $status [optional]
@@ -97,6 +101,7 @@ class UnixShell {
   /**
    * Create a symboli link.
    *
+   * @deprecated since version 0.0.1-dev
    * @param string $target
    *   Absolute path to the target directory or file.
    * @param string $link

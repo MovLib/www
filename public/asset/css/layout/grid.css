@@ -51,15 +51,13 @@
   margin-left: -20px;
 }
 
+ol:after,
+ul:after,
 .cf:after,
 .r:after {
   display: table;
   line-height: 0;
   content: "";
-}
-
-.cf:after,
-.r:after {
   clear: both;
 }
 

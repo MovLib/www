@@ -105,9 +105,13 @@ abstract class AbstractList extends \MovLib\Presentation\AbstractBase {
   /**
    * Get string representation of concrete list.
    *
+   * @deprecated since version 0.0.1-dev
    * @return string
    *   String representation of concrete list.
    */
-  abstract protected function render();
+  protected function render() {
+    // Default implementation does nothing.
+    // Please migrate to using __toString() with proper @dev blocks.
+  }
 
 }

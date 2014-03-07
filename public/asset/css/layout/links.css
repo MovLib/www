@@ -71,7 +71,7 @@ a.active[href] {
  * Special styles for links wrapping images.
  * ------------------------------------------------------------------------------------------------------------------ */
 
-a.img {
+a.no-link {
   color: #656565;
   display: inline-block;
   border: 0;

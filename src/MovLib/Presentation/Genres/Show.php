@@ -55,7 +55,6 @@ class Show extends \MovLib\Presentation\Page {
       [ $i18n->rp("/awards"), $i18n->t("Awards"), [ "class" => "ico ico-award" ] ],
       [ $i18n->rp("/jobs"), $i18n->t("Jobs"), [ "class" => "ico ico-job" ] ],
     ]);
-    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/genre/create")}'>{$i18n->t("Create New Genre")}</a>";
   }
 
 
@@ -67,21 +66,19 @@ class Show extends \MovLib\Presentation\Page {
    */
   protected function getPageContent() {
     global $i18n;
-    $list = new GenresPartial(
-      Genre::getGenres($this->paginationOffset, $this->paginationLimit),
-      new Alert(
-        $i18n->t(
-          "We couldn’t find any genre matching your filter criteria, or there simply aren’t any genres available. Would you like to {0}create a new entry{1}?",
-          [ "<a href='{$i18n->r("/genre/create")}'>", "</a>" ]
-        ),
-        $i18n->t("No genres"),
-        Alert::SEVERITY_INFO
-      ),
-      null,
-      null,
-      10,
-      true
+
+    $this->headingBefore =
+      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/genre/create")}'>{$i18n->t("Create New Genre")}</a>"
+    ;
+    $result     = Genre::getGenres($this->paginationOffset, $this->paginationLimit);
+    $noItemText = new Alert(
+      $i18n->t(
+        "We couldn’t find any genres matching your filter criteria, or there simply aren’t any genres available. " .
+        "Would you like to {0}create a new entry{1}?", [ "<a href='{$i18n->r("/genre/create")}'>", "</a>" ]
+      ), $i18n->t("No Genres"), Alert::SEVERITY_INFO
     );
+    $list = new GenresPartial($result, $noItemText, "Genre");
+
     return "<div id='filter' class='tar'>{$i18n->t("Filter")}</div>{$list}";
   }
 }
