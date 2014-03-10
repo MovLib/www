@@ -79,7 +79,7 @@ class Kernel extends \MovLib\Kernel {
     // Get the global configuration if present.
     $configuration = "/etc/movlib/movlib.json";
     if (is_file($configuration)) {
-      $this->configuration = parse_ini_file($configuration, true);
+      $this->configuration = json_decode($this->fsGetContents($configuration));
     }
 
     // Transform ALL PHP errors to exceptions unless this is executed in composer context, too many vendor supplied

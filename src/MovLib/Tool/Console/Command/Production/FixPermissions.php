@@ -122,7 +122,7 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
     // Looks good so far, start fixing permissions in this directory.
     $this->write("Fixing permissions of all directories and files in <info>'{$directory}'</info> ...");
     foreach ($cmds as $cmd => $msg) {
-      $this->shellExecute($cmd);
+      $this->shExecute($cmd);
       $this->write($msg, self::MESSAGE_TYPE_INFO);
     }
 

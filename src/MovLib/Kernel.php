@@ -37,8 +37,6 @@ use \MovLib\Presentation\Stacktrace;
  * @since 0.0.1-dev
  */
 class Kernel {
-  use \MovLib\Data\TraitFileSystem;
-  use \MovLib\Data\TraitShell;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -490,8 +488,8 @@ class Kernel {
         if (is_file($cacheFile) === false) {
           // Try to create the directories if they aren't already present.
           try {
-            $this->fsCreateDirectory(dirname($cacheFile));
-            $this->fsPutContents($cacheFile, "{$presentation}<!--{$_SERVER["REQUEST_TIME_FLOAT"]}-->", LOCK_EX);
+            //$this->fsCreateDirectory(dirname($cacheFile));
+            //$this->fsPutContents($cacheFile, "{$presentation}<!--{$_SERVER["REQUEST_TIME_FLOAT"]}-->", LOCK_EX);
             $this->compress($cacheFile);
           }
           catch (\Exception $e) {
