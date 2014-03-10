@@ -17,7 +17,6 @@
  */
 namespace MovLib\Tool\Console\Command\Production;
 
-use \MovLib\Data\UnixShell as sh;
 use \MovLib\Tool\Console\Command\Production\FixPermissions;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -32,13 +31,8 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @since 0.0.1-dev
  */
 class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
-
-  /**
-   * @inheritdoc
-   */
-  public function __construct() {
-    parent::__construct("nginx-routes");
-  }
+  use \MovLib\Data\TraitFileSystem;
+  use \MovLib\Data\TraitShell;
 
   /**
    * Compiles and translates nginx routes for all servers.
@@ -206,9 +200,7 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
       }
     }
 
-    if (sh::executeDisplayOutput("service nginx reload") === false) {
-      throw new \RuntimeException("Couldn't reload nginx!");
-    }
+    $this->shellExecuteDisplayOutput("service nginx reload");
 
     // Make sure all files have the correct permissions.
     (new FixPermissions())->fixPermissions("{$kernel->documentRoot}/conf/nginx");
@@ -220,6 +212,7 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @inheritdoc
    */
   protected function configure() {
+    $this->setName("nginx-routes");
     $this->setDescription("Translate and compile nginx routes for all servers.");
   }
 

@@ -36,12 +36,12 @@ abstract class AbstractDevelopmentCommand extends \MovLib\Tool\Console\Command\A
    *   The command name.
    * @throws \DomainException
    */
-  public function __construct($name) {
+  public function __construct($name = null) {
     global $kernel;
-    parent::__construct($name);
     if ($kernel->production === true) {
       throw new \DomainException("This command is only available in development environments!");
     }
+    parent::__construct($name);
   }
 
 }

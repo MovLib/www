@@ -18,7 +18,6 @@
 namespace MovLib\Tool\Console\Command\Production;
 
 use \MovLib\Data\Temporary;
-use \MovLib\Data\UnixShell as sh;
 use \MovLib\Exception\DatabaseException;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -36,18 +35,13 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @since 0.0.1-dev
  */
 class CronDaily extends \MovLib\Tool\Console\Command\AbstractCommand {
-
-  /**
-   * @inheritdoc
-   */
-  public function __construct() {
-    parent::__construct("cron-daily");
-  }
+  use \MovLib\Data\TraitShell;
 
   /**
    * @inheritdoc
    */
   protected function configure() {
+    $this->setName("cron-daily");
     $this->setDescription("Cron jobs that should run on a daily basis.");
   }
 
@@ -86,7 +80,7 @@ class CronDaily extends \MovLib\Tool\Console\Command\AbstractCommand {
    */
   public function purgeTemporaryUploads() {
     $directory = ini_get("upload_tmp_dir");
-    sh::execute("find '{$directory}' -type f -mtime +1 -exec rm -f {} \\;");
+    $this->shellExecute("find '{$directory}' -type f -mtime +1 -exec rm -f {} \\;");
     return $this;
   }
 

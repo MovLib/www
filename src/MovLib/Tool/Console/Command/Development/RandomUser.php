@@ -17,7 +17,6 @@
  */
 namespace MovLib\Tool\Console\Command\Development;
 
-use \MovLib\Data\UnixShell as sh;
 use \MovLib\Data\User\FullUser;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
@@ -33,6 +32,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @since 0.0.1-dev
  */
 class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelopmentCommand {
+  use \MovLib\Data\TraitShell;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -89,20 +89,6 @@ class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
   protected $usernames = [];
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-
-  /**
-   * Instantiate new random user generator.
-   *
-   * @throws \DomainException
-   */
-  public function __construct() {
-    parent::__construct("create-random-users");
-  }
-
-
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
@@ -110,6 +96,7 @@ class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @inheritdoc
    */
   public function configure() {
+    $this->setName("create-random-users");
     $this->setDescription("Create one or more random users.");
     $this->addArgument("amount", InputArgument::OPTIONAL, "The amount of random users to create, defaults to " . self::DEFAULT_AMOUNT . ".", self::DEFAULT_AMOUNT);
     return $this;
@@ -176,9 +163,7 @@ class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
       $this->write("Generating avatar images (every 6th user has none) ...");
       $dim    = FullUser::STYLE_SPAN_02;
       $tmp    = ini_get("upload_tmp_dir") . "/movdev-command-create-users.jpg";
-      if (sh::execute("convert -size {$dim}x{$dim} xc: +noise Random {$tmp}") === false) {
-        throw new \RuntimeException("Couldn't create random image with ImageMagick!");
-      }
+      $this->shellExecute("convert -size {$dim}x{$dim} xc: +noise Random {$tmp}");
       $this->setProperty($user, "imageExtension", "jpg");
       $this->progress->start($this->output, $c);
       $in     = rtrim(str_repeat("?,", $c), ",");

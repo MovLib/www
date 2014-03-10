@@ -17,9 +17,9 @@
  */
 namespace MovLib\Tool\Console\Command\Production;
 
-use \MovLib\Data\UnixShell as sh;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
+use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -32,25 +32,27 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @since 0.0.1-dev
  */
 class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
-
-  /**
-   * @inheritdoc
-   */
-  public function __construct() {
-    parent::__construct("fix-permissions");
-  }
+  use \MovLib\Data\TraitFileSystem;
+  use \MovLib\Data\TraitShell;
 
   /**
    * @inheritdoc
    */
   protected function configure() {
+    global $kernel;
+
+    $this->setName("fix-permissions");
     $this->setDescription("Fix permissions on a directory and its contents.");
+
     $this->addArgument(
       "directory",
       InputArgument::OPTIONAL,
       "Specify the directory in which the permissions should be fixed (relative to the document root).",
       ""
     );
+
+    $this->addOption("user", "u", InputOption::VALUE_REQUIRED, "Set the files owning user.");
+    $this->addOption("group", "g", InputOption::VALUE_REQUIRED, "Set the files owning group.");
   }
 
   /**
@@ -58,8 +60,7 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $options = parent::execute($input, $output);
-    $this->checkPrivileges();
-    $this->fixPermissions($input->getArgument("directory"));
+    $this->fixPermissions($input->getArgument("directory"), $options["user"], $options["group"]);
     return $options;
   }
 
@@ -70,16 +71,15 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @param string $directory [optional]
    *   If given only the directories and files in that directory will be fixed, defaults to empty string which fixes the
    *   permissions on all directories and files in the document root.
+   * @param string $user [optional]
+   *   The files owner, defaults to <code>NULL</code> (ownership won't be changed).
+   * @param string $group [optional]
+   *   The files group, defaults to <code>NULL</code> (ownership won't be changed).
    * @return this
    * @throws \InvalidArgumentException
    */
-  public function fixPermissions($directory = null) {
+  public function fixPermissions($directory = null, $user = null, $group = null) {
     global $kernel;
-
-    // No need to fix permissions under Windows.
-    if ($kernel->isWindows === true) {
-      return $this;
-    }
 
     // No directory? No problem!
     if (!isset($directory)) {
@@ -92,29 +92,32 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
     }
 
     // If this isn't a valid directory abort.
-    if (!is_dir($directory)) {
+    if (is_dir($directory) === false) {
       throw new \InvalidArgumentException("Given directory '{$directory}' doesn't exist!");
     }
 
     // Create paths to binary execution files.
-    $binPaths = "{$kernel->documentRoot}/bin/movlib.php {$kernel->documentRoot}/bin/*.sh {$kernel->documentRoot}/conf/install-scripts/*.sh";
+    $binPaths = "{$kernel->documentRoot}/bin/movlib.php {$kernel->documentRoot}/bin/*.sh {$kernel->documentRoot}/conf/*/*.sh";
 
     // Only attempt to update vendor binaries if there are any.
-    if (is_dir("{$kernel->documentRoot}/vendor/bin")) {
+    if (is_dir("{$kernel->documentRoot}/vendor/bin") === true) {
       $binPaths .= " {$kernel->documentRoot}/vendor/bin/*";
     }
 
+    $cmds = [
+      "find '{$directory}' -follow -type d -exec chmod 2770 {} \;" => "Directory permissions fixed!",
+      "find '{$directory}' -follow -type f -exec chmod 2660 {} \;" => "File permissions fixed!",
+      "chmod -R 2770 {$binPaths}"                                  => "Executable permissions fixed!",
+    ];
+
+    if ($user && $group) {
+      $cmds["chown -R {$user}:{$group} '{$directory}'"] = "Owernship changed!";
+    }
+
     // Looks good so far, start fixing permissions in this directory.
-    $this->write("Fixing permissions on all directories and files in <info>'{$directory}'</info> ...");
-    foreach ([
-      "chown -R {$kernel->phpUser}:{$kernel->phpGroup} '{$directory}'" => "User and group ownership fixed!",
-      "find '{$directory}' -follow -type d -exec chmod 2770 {} \;"     => "Directory permissions fixed!",
-      "find '{$directory}' -follow -type f -exec chmod 2660 {} \;"     => "File permissions fixed!",
-      "chmod 2770 -R {$binPaths}"                                      => "Executable permissions fixed!",
-    ] as $cmd => $msg) {
-      if (sh::execute($cmd) === false) {
-        throw new \RuntimeException("Failed to execute '{$cmd}'!");
-      }
+    $this->write("Fixing permissions of all directories and files in <info>'{$directory}'</info> ...");
+    foreach ($cmds as $cmd => $msg) {
+      $this->shellExecute($cmd);
       $this->write($msg, self::MESSAGE_TYPE_INFO);
     }
 

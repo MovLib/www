@@ -20,7 +20,6 @@ namespace MovLib\Tool\Console\Command\Production;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
-use \Symfony\Component\Console\Output\Output;
 use \Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -33,6 +32,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @since 0.0.1-dev
  */
 class Provision extends \MovLib\Tool\Console\Command\AbstractCommand {
+  use \MovLib\Data\TraitFileSystem;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -43,7 +43,7 @@ class Provision extends \MovLib\Tool\Console\Command\AbstractCommand {
    *
    * @var string
    */
-  const ENV_DEFAULT = "production";
+  const ENV_DISTRIBUTION = "dist";
 
   /**
    * The special vagrant environment identifier.
@@ -111,7 +111,7 @@ class Provision extends \MovLib\Tool\Console\Command\AbstractCommand {
       "e",
       InputOption::VALUE_REQUIRED,
       "The environment to provision for, possible values are: " . implode(", ", $this->environments),
-      static::ENV_DEFAULT
+      static::ENV_DISTRIBUTION
     );
 
     $this->addOption(
@@ -152,22 +152,21 @@ class Provision extends \MovLib\Tool\Console\Command\AbstractCommand {
     // Ensure the user has the proper privileges to install software on this machine.
     $this->checkPrivileges();
 
-    // Read the configuration and allow the environment to override any default settings.
-    //
-    // @todo Write validator for configuration file!
-    $config = parse_ini_file("{$kernel->documentRoot}/conf/env.ini", true);
-    $envConfig = "{$kernel->documentRoot}/conf/env.{$environment}.ini";
-    if (is_file($envConfig)) {
-      $config = array_merge($config, parse_ini_file($envConfig, true));
+    // If no configuration is present create it now.
+    // @todo Create configuration command to manage the currently in use configuration file and force regenration. This
+    //       code should also be moved to that command and simply called from here.
+    if (empty($kernel->configuration)) {
+      $configuration = json_decode($this->fsGetContents("{$kernel->documentRoot}{$kernel->configuration->directory->etc}/movlib.dist.json"), true);
+      $envConfiguration = "{$kernel->documentRoot}{$kernel->configuration->directory->etc}/movlib.{$environment}.json";
+      if ($environment != self::ENV_DISTRIBUTION && is_file($envConfiguration)) {
+        $configuration = array_replace_recursive($configuration, json_decode($this->fsGetContents($envConfiguration), true));
+      }
+      $configuration = json_encode($configuration, JSON_FORCE_OBJECT | JSON_UNESCAPED_UNICODE);
+      $kernel->configuration = json_decode($configuration);
+      $etcDirectory = "{$kernel->configuration->directory->etc}/movlib";
+      $this->fsCreateDirectory($etcDirectory, 0774);
+      $this->fsPutContents("{$etcDirectory}/movlib.json", $configuration);
     }
-    if ($output->isDebug()) {
-      $output->writeln(print_r($config, true), Output::OUTPUT_RAW);
-    }
-    $config = (object) $config;
-
-    // Export global configuration options to the kernel.
-    $kernel->systemGroup = $config->group;
-    $kernel->systemUser  = $config->user;
 
     $force = $input->getOption("force");
 
@@ -179,17 +178,7 @@ class Provision extends \MovLib\Tool\Console\Command\AbstractCommand {
     }
 
     if (!empty($software)) {
-      foreach ($software as $softwareName) {
-        $class = "\\MovLib\\Tool\\Console\\Command\\Provision\\{$softwareName}";
-        if (class_exists($class)) {
-          $output->writeln("Provisioning {$softwareName}, this may take a few minutes...");
-          new $class($config, $environment, $force, $output);
-          $output->writeln("<info>Successfully provisioned {$softwareName}!</info>");
-        }
-        else {
-          $output->writeln("<error>Software '{$softwareName}' doesn't exist!</error>");
-        }
-      }
+      $this->provision($software, $force, $output);
     }
     else {
       $output->writeln("<error>Nothing to do, use --help for usage information.</error>");
@@ -217,6 +206,44 @@ class Provision extends \MovLib\Tool\Console\Command\AbstractCommand {
       }
     }
     return $software;
+  }
+
+  /**
+   * Provision given software.
+   *
+   * @staticvar array $installed
+   *   Used to keep track of already installed software.
+   * @param string|array $software
+   *   Either a string with a single name or a numeric array of software names.
+   * @param boolean $force
+   *   Whether to ignore already installed software or not.
+   * @param \Symfony\Component\Console\Output\OutputInterface $output
+   *   The current output instance.
+   * @return $this
+   */
+  protected function provision($software, $force, OutputInterface $output) {
+    static $installed = [];
+    $software = (array) $software;
+    $c = count($software);
+    for ($i = 0; $i < $c; ++$i) {
+      if (isset($installed[$software[$i]])) {
+        continue;
+      }
+      $class = "\\MovLib\\Tool\\Console\\Command\\Provision\\{$software[$i]}";
+      if (class_exists($class)) {
+        $output->writeln("Provisioning {$software[$i]}, this may take a few minutes...");
+        /* @var $provisioner \MovLib\Tool\Console\Command\Provision\AbstractProvision */
+        $provisioner = new $class($force, $output);
+        $this->provision($provisioner->dependencies(), $force, $output);
+        $provisioner->provision();
+        $installed[$software[$i]] = true;
+        $output->writeln("<info>Successfully provisioned {$software[$i]}!</info>");
+      }
+      else {
+        $output->writeln("<error>Software '{$software[$i]}' doesn't exist!</error>");
+      }
+    }
+    return $this;
   }
 
 }

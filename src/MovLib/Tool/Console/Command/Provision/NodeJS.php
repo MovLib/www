@@ -32,26 +32,30 @@ class NodeJS extends \MovLib\Tool\Console\Command\Provision\AbstractProvision {
 
   /**
    * @inheritdoc
+   * @global \MovLib\Tool\Kernel $kernel
    */
-  protected function provision() {
+  public function provision() {
+    global $kernel;
     $this->aptInstall("nodejs-legacy npm", "testing");
-    if (!empty($this->config->nodejs->npm)) {
-      $npm = implode(" ", (array) $this->config->nodejs->npm);
+    if (!empty($kernel->configuration->nodejs->npm)) {
+      $npm = implode(" ", (array) $kernel->configuration->nodejs->npm);
       $this->write("Installing npm packages: {$npm}");
-      $this->execute("npm install --global --no-optional {$npm}");
+      $this->shellExecute("npm install --global --no-optional {$npm}");
     }
     return $this;
   }
 
   /**
    * @inheritdoc
+   * @global \MovLib\Tool\Kernel $kernel
    */
-  protected function validate() {
-    if (isset($this->config->nodejs->npm)) {
-      $this->write($this->config->nodejs->npm, true, Output::VERBOSITY_DEBUG);
-      if (!empty($this->config->nodejs->npm)) {
-        if (!is_string($this->config->nodejs->npm) || !is_array($this->config->nodejs->npm)) {
-          throw new \InvalidArgumentException("npm packages must be given as string or array");
+  public function validate() {
+    global $kernel;
+    if (isset($kernel->configuration->nodejs->npm)) {
+      $this->write($kernel->configuration->nodejs->npm, true, Output::VERBOSITY_DEBUG);
+      if (!empty($kernel->configuration->nodejs->npm)) {
+        if (!is_string($kernel->configuration->nodejs->npm) || !is_array($kernel->configuration->nodejs->npm)) {
+          throw new \LogicException("npm packages must be given as string or array");
         }
       }
     }

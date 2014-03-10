@@ -86,17 +86,6 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
   protected $skeletonsNew = [];
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * @inheritdoc
-   */
-  public function __construct() {
-    parent::__construct("skeleton-generator");
-  }
-
-
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
@@ -104,6 +93,7 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
    * @inheritdoc
    */
   protected function configure() {
+    $this->setName("skeleton-generator");
     $this->setDescription("Generate unit test skeletons for one or more classes from the source.");
   }
 

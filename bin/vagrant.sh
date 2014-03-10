@@ -29,26 +29,25 @@
 # Exit on all errors.
 set -e
 
+# Make sure bash is installed on our system. We need bash for INI parsing.
+apt-get install --yes bash
+
+# Export the current environment, this is important for INI parsing.
 export MOVLIB_ENVIRONMENT=vagrant
 
-# Change to the document root.
-cd /vagrant
-
 # Install PHP, otherwise we can't do anything.
-sh bin/install-php.sh
-
-# Make sure that the vendor directory is empty (remember that this is a shared folder between host and guest).
-if [ -d vendor ]; then
-  rm -rf vendor
-fi
+bash /vagrant/bin/install-php.sh
 
 # Now we can install Composer and all dependencies.
-sh bin/install-composer.sh
+bash /vagrant/bin/install-composer.sh
 
 # We need Symfony console to start our provisioning command.
-composer update
+composer update --no-interaction --prefer-source --working-dir=/vagrant
 
 # Install everything else.
-php bin/movlib.php provision --all --environment=${MOVLIB_ENVIRONMENT}
+php /vagrant/bin/movlib.php provision --all --environment=${MOVLIB_ENVIRONMENT}
+
+# Fix permissions of all files.
+php /vagrant/bin/movlib.php fix-permissions
 
 exit 0

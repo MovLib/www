@@ -30,24 +30,28 @@ class TimeZone extends \MovLib\Tool\Console\Command\Provision\AbstractProvision 
 
   /**
    * @inheritdoc
+   * @global \MovLib\Tool\Kernel $kernel
    */
-  protected function provision() {
+  public function provision() {
+    global $kernel;
     $this->aptInstall([ "ntp", "tzdata" ]);
-    $this->filePutContents("/etc/timezone", $this->config->timezone, LOCK_EX, 0644, "root", "root");
-    $this->symlink("/usr/share/zoneinfo/{$this->config->timezone}", "/etc/localtime", true);
-    $this->execute("service ntp start");
+    $this->fsPutContents("/etc/timezone", $kernel->configuration->timezone, LOCK_EX, 0644, "root", "root");
+    $this->fsSymlink("/usr/share/zoneinfo/{$kernel->configuration->timezone}", "/etc/localtime", true);
+    $this->serviceStart("ntp");
     return $this;
   }
 
   /**
    * @inheritdoc
+   * @global \MovLib\Tool\Kernel $kernel
    */
-  protected function validate() {
-    if (empty($this->config->timezone)) {
-      throw new \InvalidArgumentException("The 'timezone' must be set in the global environment configuration file");
+  public function validate() {
+    global $kernel;
+    if (empty($kernel->configuration->timezone)) {
+      throw new \LogicException("The 'timezone' must be set in the global environment configuration file");
     }
-    if (file_exists("/usr/share/zoneinfo/{$this->config->timezone}") === false) {
-      throw new \InvalidArgumentException("The 'timezone' configuration value must contain a valid timezone");
+    if (file_exists("/usr/share/zoneinfo/{$kernel->configuration->timezone}") === false) {
+      throw new \LogicException("The 'timezone' configuration value must contain a valid timezone");
     }
     return $this;
   }

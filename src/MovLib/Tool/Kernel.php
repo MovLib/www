@@ -35,18 +35,11 @@ class Kernel extends \MovLib\Kernel {
 
 
   /**
-   * Flag indicating if we're running under Windows or not.
+   * The global configuration.
    *
-   * @var boolean
+   * @var \MovLib\Stub\Configuration
    */
-  public $isWindows = false;
-
-  /**
-   * Absolute path to the directory where user binaries are linked.
-   *
-   * @var string
-   */
-  public $usrBinaryPath = "/usr/local/bin";
+  public $configuration;
 
   /**
    * Flag indicating if the website is in production mode or not.
@@ -80,9 +73,14 @@ class Kernel extends \MovLib\Kernel {
     // tampering with any super global (which might destroy other software).
     $this->documentRoot     = dirname(dirname(dirname(__DIR__)));
     $this->fastCGI          = isset($_SERVER["FCGI_ROLE"]);
-    $this->isWindows        = defined("PHP_WINDOWS_VERSION_MAJOR");
     $this->pathTranslations = "{$this->documentRoot}{$this->pathTranslations}";
     $this->production       = !is_dir("{$this->documentRoot}/.git");
+
+    // Get the global configuration if present.
+    $configuration = "/etc/movlib/movlib.json";
+    if (is_file($configuration)) {
+      $this->configuration = parse_ini_file($configuration, true);
+    }
 
     // Transform ALL PHP errors to exceptions unless this is executed in composer context, too many vendor supplied
     // software is casting various deprecated or strict errors.
