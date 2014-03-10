@@ -27,6 +27,7 @@ namespace MovLib\Data;
  * @since 0.0.1-dev
  */
 trait TraitFileSystem {
+  use \MovLib\Data\TraitShell;
 
   /**
    * Delete given file or directory.
@@ -41,13 +42,7 @@ trait TraitFileSystem {
     if (!empty($flags) && $flags[0] != "-") {
       $flags = "-{$flags}";
     }
-    $this->fsRealpath($path);
-    exec("rm {$flags} '{$path}'", $output, $status);
-    if ($status !== 0) {
-      $output = str_replace("\t", "    ", implode("\n", $output));
-      throw new \RuntimeException("{$output}\n\nCouldn't delete '{$path}'");
-    }
-    return $this;
+    return $this->fsRealpath($path)->shExecute("rm {$flags} '{$path}'");
   }
 
   /**
@@ -100,18 +95,12 @@ trait TraitFileSystem {
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    $this->fsRealpath($path);
-    if (chmod($path, $mode) === false) {
-      throw new \RuntimeException("Couldn't update file mode of '{$path}'");
-    }
+    $this->fsRealpath($path)->shExecute("chmod {$mode} '{$path}'");
     if ($kernel->fastCGI === false) {
       $this->fsGetSystemUserAndGroup($user, $group);
     }
-    if (isset($user) && chown($path, $user) === false) {
-      throw new \RuntimeException("Couldn't update user of '{$path}'");
-    }
-    if (isset($group) && chgrp($path, $group) === false) {
-      throw new \RuntimeException("Couldn't update group of '{$path}'");
+    if ($user && $group) {
+      $this->shExecute("chown {$user}:{$group} '{$path}'");
     }
     return $this;
   }
@@ -141,21 +130,13 @@ trait TraitFileSystem {
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    $this->fsRealpath($directory);
     if (is_dir($directory) === false) {
-      exec("mkdir --mode={$mode} --parents --verbose '{$directory}", $output, $status);
-    }
-    if ($status !== 0) {
-      $output = str_replace("\t", "    ", $output);
-      throw new \RuntimeException("{$output}\n\nCouldn't create directory '{$directory}'");
+      $this->shExecute("mkdir --parents --verbose '{$directory}'");
     }
     if ($kernel->fastCGI === false) {
       $this->fsGetSystemUserAndGroup($user, $group);
     }
-    if ($user && $group) {
-      $this->fsChangeMode($directory, $mode, $user, $group);
-    }
-    return $this;
+    return $this->fsChangeMode($directory, $mode, $user, $group);
   }
 
   /**
@@ -222,7 +203,6 @@ trait TraitFileSystem {
    * @throws \RuntimeException
    */
   protected final function fsPutContents($path, $data, $flags = 0, $mode = 2664, $user = null, $group = null) {
-    $this->fsRealpath($path);
     if (file_put_contents($path, $data, $flags) === false) {
       throw new \RuntimeException;
     }
@@ -304,13 +284,7 @@ trait TraitFileSystem {
     // @codeCoverageIgnoreEnd
     // @devEnd
     $force = $force === true ? "f" : null;
-    $this->fsRealpath($target);
-    exec("ln -{$force}s '{$target}' '{$link}'", $output, $status);
-    if ($status !== 0) {
-      $output = str_replace("\t", "    ", implode("\n", $output));
-      throw new \RuntimeException("{$output}\n\nCouldn't create symbolic link from '{$target}' to '{$link}'");
-    }
-    return $this;
+    return $this->fsRealpath($target)->shExecute("ln -{$force}s '{$target}' '{$link}'");
   }
 
 }

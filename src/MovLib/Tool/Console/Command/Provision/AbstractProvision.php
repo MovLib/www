@@ -30,7 +30,6 @@ use \Symfony\Component\Console\Output\Output;
  * @since 0.0.1-dev
  */
 abstract class AbstractProvision {
-  use \MovLib\Data\TraitShell;
   use \MovLib\Data\TraitFileSystem;
 
 
@@ -287,15 +286,14 @@ abstract class AbstractProvision {
    */
   final protected function configure($path, $arguments = null) {
     $configureCommand = null;
-    foreach ([ "cflags", "cxxflags" ] as $flag) {
-      $configureCommand .= strtoupper($flag) . "='";
-      if (empty($arguments->{$flag})) {
-        $configureCommand .= "-O3 -m64 -march=native";
-      }
-      else {
-        $configureCommand .= $arguments->{$flag};
-      }
-      $configureCommand .= "' ";
+    if (empty($arguments->cflags)) {
+      $configureCommand .= "CFLAGS='-O3 -m64 -march=native' ";
+    }
+    else {
+      $configureCommand .= $arguments->cflags;
+    }
+    if (empty($arguments->cxxflags)) {
+      $configureCommand .= "CXXFLAGS='-O3 -m64 -march=native CPPFLAGS='-O3 -m64 -march=native'";
     }
     if (!empty($arguments->ldflags)) {
       $configureCommand .= "LDFLAGS='{$arguments->ldflags}' ";

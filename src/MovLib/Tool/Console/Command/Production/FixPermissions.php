@@ -33,10 +33,10 @@ use \Symfony\Component\Console\Output\OutputInterface;
  */
 class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
   use \MovLib\Data\TraitFileSystem;
-  use \MovLib\Data\TraitShell;
 
   /**
    * @inheritdoc
+   * @global \MovLib\Tool\Kernel $kernel
    */
   protected function configure() {
     global $kernel;
@@ -51,8 +51,13 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
       ""
     );
 
-    $this->addOption("user", "u", InputOption::VALUE_REQUIRED, "Set the files owning user.");
-    $this->addOption("group", "g", InputOption::VALUE_REQUIRED, "Set the files owning group.");
+    $user = isset($kernel->configuration->user) ? $kernel->configuration->user : null;
+    $mode = $user ? InputOption::VALUE_OPTIONAL : InputOption::VALUE_REQUIRED;
+    $this->addOption("user", "u", $mode, "Set the files owning user.", $user);
+
+    $group = isset($kernel->configuration->group) ? $kernel->configuration->group : null;
+    $mode  = $group ? InputOption::VALUE_OPTIONAL : InputOption::VALUE_REQUIRED;
+    $this->addOption("group", "g", $mode, "Set the files owning group.", $group);
   }
 
   /**
