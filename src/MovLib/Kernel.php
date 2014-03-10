@@ -355,7 +355,7 @@ class Kernel {
       $this->cacheable        = $_SERVER["REQUEST_METHOD"] == "GET";
       $this->documentRoot     = $documentRoot;
       $this->hostname         = $_SERVER["SERVER_NAME"];
-      $this->https            = (boolean) $_SERVER["HTTPS"];
+      $this->https            = isset($_SERVER["HTTPS"]);
       $this->pathCache        = "{$this->documentRoot}{$this->pathCache}/{$_SERVER["LANGUAGE_CODE"]}";
       $this->pathTranslations = "{$this->documentRoot}{$this->pathTranslations}";
       $this->protocol         = $_SERVER["SERVER_PROTOCOL"];
