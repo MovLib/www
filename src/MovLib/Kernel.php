@@ -20,7 +20,6 @@ namespace MovLib;
 use \MovLib\Data\Database;
 use \MovLib\Data\I18n;
 use \MovLib\Data\Mailer;
-use \MovLib\Data\UnixShell as sh;
 use \MovLib\Data\User\Session;
 use \MovLib\Exception\AbstractClientException;
 use \MovLib\Presentation\Email\FatalErrorEmail;
@@ -38,6 +37,8 @@ use \MovLib\Presentation\Stacktrace;
  * @since 0.0.1-dev
  */
 class Kernel {
+  use \MovLib\Data\TraitFileSystem;
+  use \MovLib\Data\TraitShell;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -214,20 +215,6 @@ class Kernel {
    * @var string
    */
   public $pathTranslations = "/private/translation";
-
-  /**
-   * The user name (for file permissions etc.).
-   *
-   * @var string
-   */
-  public $phpUser = "movdev";
-
-  /**
-   * The group name (for file permissions etc.).
-   *
-   * @var string
-   */
-  public $phpGroup = "www-data";
 
   /**
    * The current request's protocol (either <code>"HTTP/1.0"</code> or <code>"HTTP/1.1"</code>).
@@ -500,23 +487,15 @@ class Kernel {
         }
 
         // Only continue if no cache entry is already present.
-        if (!is_file($cacheFile)) {
-          // Build absolute path to cache directory.
-          $cacheDirectory = dirname($cacheFile);
-
+        if (is_file($cacheFile) === false) {
           // Try to create the directories if they aren't already present.
-          if (!is_dir($cacheDirectory) && sh::execute("mkdir -p '{$cacheDirectory}'") === false) {
-            error_log("Couldn't create cache directory '{$cacheDirectory}'");
-          }
-
-          // Make sure that we can really write to this location and file (if already present).
-          if (!is_writable($cacheDirectory) || (file_exists($cacheFile) && !is_writable($cacheFile))) {
-            error_log("Couldn't create cache file '{$cacheFile}'");
-          }
-          else {
-            $presentation .= "<!--{$_SERVER["REQUEST_TIME_FLOAT"]}-->";
-            file_put_contents($cacheFile, $presentation);
+          try {
+            $this->fsCreateDirectory(dirname($cacheFile));
+            $this->fsPutContents($cacheFile, "{$presentation}<!--{$_SERVER["REQUEST_TIME_FLOAT"]}-->", LOCK_EX);
             $this->compress($cacheFile);
+          }
+          catch (\Exception $e) {
+            error_log($e);
           }
         }
       }
@@ -524,7 +503,12 @@ class Kernel {
       // Execute each delayed method.
       if ($this->delayedMethods) {
         foreach ($this->delayedMethods as list($callable, $params)) {
-          $params ? call_user_func_array($callable, $params) : call_user_func($callable);
+          if ($params) {
+            call_user_func_array($callable, $params);
+          }
+          else {
+            call_user_func($callable);
+          }
         }
       }
 
@@ -567,20 +551,20 @@ class Kernel {
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-    // Try to compress the file.
-    if (sh::execute("zopfli --gzip --ext 'gz' {$source}") === false) {
-      $error = "Couldn't compress '{$source}' with zopfli";
-      if ($this->fastCGI === true) {
-        error_log($error);
-      }
-      else {
-        throw new \RuntimeException($error);
-      }
-      return $this;
-    }
+    try {
+      // Try to compress the file.
+      $this->shellExecute("zopfli --gzip --ext 'gz' {$source}");
 
-    // Make sure that the modification time is exactly the same (as recommended in the nginx docs).
-    touch("{$source}.gz", filemtime($source));
+      // Make sure that the modification time is exactly the same (as recommended in the nginx docs).
+      touch("{$source}.gz", filemtime($source));
+    }
+    catch (\RuntimeException $e) {
+      // This method is used in CLI programs as well, we actually want to throw the exception in that context.
+      if ($this->fastCGI === false) {
+        throw $e;
+      }
+      error_log($e);
+    }
 
     return $this;
   }
