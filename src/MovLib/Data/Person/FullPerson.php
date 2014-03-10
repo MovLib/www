@@ -373,13 +373,15 @@ class FullPerson extends \MovLib\Data\Person\Person {
         `mc`.`job_id` AS `jobId`,
         `mc`.`alias_id` AS `alias`,
         `mc`.`person_id` AS `personId`,
-        IFNULL(COLUMN_GET(`j`.`dyn_titles`, ? AS BINARY), COLUMN_GET(`j`.`dyn_titles`, ? AS BINARY)) AS `jobTitle`
+        IFNULL(COLUMN_GET(`j`.`dyn_names_sex0`, ? AS BINARY), COLUMN_GET(`j`.`dyn_names_sex0`, ? AS BINARY)) AS `jobNameSex0`,
+        IFNULL(COLUMN_GET(`j`.`dyn_names_sex1`, ? AS BINARY), COLUMN_GET(`j`.`dyn_names_sex1`, ? AS BINARY)) AS `jobNameSex1`,
+        IFNULL(COLUMN_GET(`j`.`dyn_names_sex2`, ? AS BINARY), COLUMN_GET(`j`.`dyn_names_sex2`, ? AS BINARY)) AS `jobNameSex2`
       FROM `movies_crew` AS `mc`
       INNER JOIN `jobs` AS `j`
         ON `j`.`id` = `mc`.`job_id`
       WHERE `mc`.`person_id` = ?",
-      "ssd",
-      [ $i18n->languageCode, $i18n->defaultLanguageCode, $this->id ]
+      "ssssssd",
+      [ $i18n->languageCode, $i18n->defaultLanguageCode, $i18n->languageCode, $i18n->defaultLanguageCode, $i18n->languageCode, $i18n->defaultLanguageCode, $this->id ]
     )->get_result();
   }
 

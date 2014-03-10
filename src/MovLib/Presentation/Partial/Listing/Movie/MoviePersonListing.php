@@ -52,14 +52,12 @@ class MoviePersonListing extends \MovLib\Presentation\Partial\Listing\Movie\Abst
 
     // Format the movie.
     $list[$movie->id]["#movie"] =
-      "<a class='img fl' href='{$movie->route}' property='url'>" .
-        "<div class='s s1 tac'>{$this->getImage(
+      "{$this->getImage(
           $movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01),
-          false,
-          [ "property" => "image" ]
-        )}</div>" .
-        "<div class='s s5'>{$this->formatTitle($movie)}{$this->formatGenres($movie)}</div>" .
-      "</a>"
+          $movie->route,
+          [ "property" => "image" ],
+          [ "class" => "s s1 tac" ]
+        )}<div class='s s5'>{$this->formatTitle($movie)}{$this->formatGenres($movie)}</div>"
     ;
 
     // Prepare jobs array.

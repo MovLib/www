@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Genre;
 
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Lists\Movies as MoviesPartial;
+use \MovLib\Presentation\Partial\Listing\Movies as MoviesPartial;
 
 /**
  * Movies with a certain genre.
@@ -52,7 +52,7 @@ class Movies extends \MovLib\Presentation\Genre\AbstractBase {
 
   /**
    * @global \MovLib\Data\I18n $i18n
-   * @return \MovLib\Presentation\Partial\Lists\Movies
+   * @return \MovLib\Presentation\Partial\Listing\Movies
    */
   protected function getPageContent() {
     global $i18n;

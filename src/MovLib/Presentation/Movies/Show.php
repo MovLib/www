@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Movies;
 
 use \MovLib\Data\Movie\Movie;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Lists\Movies as MoviesPartial;
+use \MovLib\Presentation\Partial\Listing\Movies as MoviesPartial;
 
 /**
  * The listing for the latest movie additions.

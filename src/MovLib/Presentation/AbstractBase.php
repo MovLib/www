@@ -254,7 +254,7 @@ abstract class AbstractBase {
     $image                = "<img{$this->expandTagAttributes($attributes)}>";
 
     if ($route !== false) {
-      $this->addClass("img", $anchorAttributes);
+      $this->addClass("no-link", $anchorAttributes);
       return $this->a(($route === true ? $style->route : $route), $image, $anchorAttributes);
     }
     return $image;

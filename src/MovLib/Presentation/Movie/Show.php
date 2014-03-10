@@ -24,8 +24,8 @@ use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Duration;
 use \MovLib\Presentation\Partial\Form;
-use \MovLib\Presentation\Partial\Lists\Persons;
-use \MovLib\Presentation\Partial\Lists\Cast as CastPartial;
+use \MovLib\Presentation\Partial\Listing\Persons;
+use \MovLib\Presentation\Partial\Listing\Cast as CastPartial;
 
 /**
  * Single movie presentation page.

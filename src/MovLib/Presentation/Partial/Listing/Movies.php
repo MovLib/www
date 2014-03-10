@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Partial\Lists;
+namespace MovLib\Presentation\Partial\Listing;
 
 use \MovLib\Data\Image\MoviePoster;
 use \MovLib\Presentation\Partial\Alert;
@@ -29,7 +29,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Movies extends \MovLib\Presentation\Partial\Lists\AbstractList {
+class Movies extends \MovLib\Presentation\Partial\Listing\AbstractListing {
   use \MovLib\Presentation\TraitMovie;
 
 
@@ -86,12 +86,11 @@ class Movies extends \MovLib\Presentation\Partial\Lists\AbstractList {
 
     parent::__construct($listItems, $noItemsText, $attributes);
     $kernel->stylesheets[] = "movie";
-    $this->addClass("hover-list no-list r", $this->attributes);
+    $this->addClass("hover-list no-list", $this->attributes);
     $this->listItemsAttributes = $listItemsAttributes;
-    $this->addClass("s s{$spanSize}", $this->listItemsAttributes);
+    $this->addClass("hover-item r", $this->listItemsAttributes);
     $this->descriptionSpan                 = --$spanSize;
-    $this->listItemsAttributes[]           = "itemscope";
-    $this->listItemsAttributes["itemtype"] = "http://schema.org/Movie";
+    $this->listItemsAttributes["typeof"] = "http://schema.org/Movie";
     $this->showRating = $showRating;
     if ($showRating === true) {
       $this->descriptionSpan--;
@@ -115,14 +114,14 @@ class Movies extends \MovLib\Presentation\Partial\Lists\AbstractList {
       $ratingInfo = null;
       if ($this->showRating !== false && $movie->ratingMean > 0) {
         $rating = \NumberFormatter::create($i18n->locale, \NumberFormatter::DECIMAL)->format($movie->ratingMean);
-        $ratingInfo = "<span class='rating-mean tac'>{$rating}</span>";
+        $ratingInfo = "<span class='s s1 rating-mean tac'>{$rating}</span>";
       }
 
       $genres = null;
       $result = $movie->getGenres();
       while ($row = $result->fetch_assoc()) {
         if ($genres) {
-          $genres .= "&nbsp;";
+          $genres .= " ";
         }
         $genres      .= "<span class='label'>{$row["name"]}</span>";
       }
@@ -133,13 +132,14 @@ class Movies extends \MovLib\Presentation\Partial\Lists\AbstractList {
       // Put the movie list entry together.
       $list .=
         "<li{$this->expandTagAttributes($this->listItemsAttributes)}>" .
-          "<a class='img li r' href='{$movie->route}' itemprop='url'>" .
-            "<div class='s s1 tac'>" .
-              $this->getImage($movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01), false, [ "itemprop" => "image" ]) .
-            "</div>" .
-            $ratingInfo .
-            "<div class='s s{$this->descriptionSpan}'>{$this->getTitleInfo($movie)}{$genres}</div>" .
-          "</a>" .
+          $this->getImage(
+            $movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01),
+            $movie->route,
+            [ "property" => "image" ],
+            [ "class" => "s s1 tac" ]
+          ) .
+          "<div class='s s{$this->descriptionSpan}'>{$this->getTitleInfo($movie)}{$genres}</div>" .
+          $ratingInfo .
         "</li>";
     }
 

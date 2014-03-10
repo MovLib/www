@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Persons;
 
 use \MovLib\Data\Person\Person;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Lists\Persons as PersonsPartial;
+use \MovLib\Presentation\Partial\Listing\Persons as PersonsPartial;
 
 /**
  * The listing for the latest person additions.

@@ -51,7 +51,7 @@ class Movies extends \MovLib\Presentation\Company\AbstractBase {
   }
 
   /**
-   * @return \MovLib\Presentation\Partial\Lists\Movies
+   * @return string
    */
   protected function getPageContent() {
     global $i18n;

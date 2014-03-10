@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Partial\Lists;
+namespace MovLib\Presentation\Partial\Listing;
 
 use \MovLib\Data\Person\Person;
 use \MovLib\Presentation\Partial\Alert;
@@ -30,7 +30,7 @@ use \MovLib\Presentation\Partial\Lists\Unordered;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Cast extends \MovLib\Presentation\Partial\Lists\AbstractList {
+class Cast extends \MovLib\Presentation\Partial\Listing\AbstractListing {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -92,9 +92,8 @@ class Cast extends \MovLib\Presentation\Partial\Lists\AbstractList {
     parent::__construct($listItems, $noItemsText, $attributes);
     $this->addClass("hover-list no-list", $this->attributes);
     $this->listItemsAttributes = $listItemsAttributes;
-    $this->addClass("li s r", $this->listItemsAttributes);
-    $this->listItemsAttributes[]           = "itemscope";
-    $this->listItemsAttributes["itemtype"] = "http://schema.org/Person";
+    $this->addClass("hover-item s r", $this->listItemsAttributes);
+    $this->listItemsAttributes["typeof"] = "http://schema.org/Person";
     $spanHalf = ($spanSize - 1) / 2;
     $this->descriptionSpan = ceil($spanHalf);
     $this->roleSpan = $spanSize - $this->descriptionSpan - 1;
@@ -162,13 +161,8 @@ class Cast extends \MovLib\Presentation\Partial\Lists\AbstractList {
       $info["roles"] = new Unordered($info["roles"], "", [ "class" => "no-list jobs s s{$this->roleSpan} tar"]);
       $list .=
         "<li{$this->expandTagAttributes($this->listItemsAttributes)}>" .
-          $this->a(
-            $info["person"]->route,
-            "<div class='s s1 tac'>" .
-            $this->getImage($info["person"]->getStyle($this->imageStyle), false, [ "itemprop" => "image" ]) .
-            "</div><div class='link-color s s{$descriptionSpan}' itemprop='name'><p>{$info["person"]->name}</p></div>",
-            [ "class" => "img fl", "itemprop" => "url" ]
-          ) .
+          $this->getImage($info["person"]->getStyle($this->imageStyle), $info["person"]->route, [ "property" => "image" ], [ "class" => "s s1 tac" ]) .
+          "<div class='s s{$descriptionSpan}'><a href='{$info["person"]->route}' property='name url'>{$info["person"]->name}</a></div>" .
         "{$info["roles"]}</li>"
       ;
     }

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Partial\Lists;
+namespace MovLib\Presentation\Partial\Listing;
 
 use \MovLib\Data\Person\Person;
 use \MovLib\Presentation\Partial\Alert;
@@ -31,7 +31,7 @@ use \MovLib\Presentation\Partial\Date;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Persons extends \MovLib\Presentation\Partial\Lists\AbstractList {
+class Persons extends \MovLib\Presentation\Partial\Listing\AbstractListing {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -91,8 +91,7 @@ class Persons extends \MovLib\Presentation\Partial\Lists\AbstractList {
     $this->listItemsAttributes = $listItemsAttributes;
     $this->addClass("s s{$spanSize}", $this->listItemsAttributes);
     $this->descriptionSpan                 = --$spanSize;
-    $this->listItemsAttributes[]           = "itemscope";
-    $this->listItemsAttributes["itemtype"] = "http://schema.org/Person";
+    $this->listItemsAttributes["typeof"] = "http://schema.org/Person";
     $this->showAdditionalInfo              = $showAdditionalInfo;
   }
 
@@ -113,7 +112,7 @@ class Persons extends \MovLib\Presentation\Partial\Lists\AbstractList {
         $additionalNames = null;
         if ($person->bornName) {
           $additionalNames .= $i18n->t("{0} ({1})", [
-            "<span itemprop='additionalName'>{$person->bornName}</span>",
+            "<span property='additionalName'>{$person->bornName}</span>",
             "<i>{$i18n->t("born name")}</i>",
           ]);
         }
@@ -121,7 +120,7 @@ class Persons extends \MovLib\Presentation\Partial\Lists\AbstractList {
           if ($additionalNames) {
             $additionalNames .= " ";
           }
-          $additionalNames .= $i18n->t("aka “{0}”", [ "<span itemprop='additionalName'>{$person->nickname}</span>" ]);
+          $additionalNames .= $i18n->t("aka “{0}”", [ "<span property='additionalName'>{$person->nickname}</span>" ]);
         }
         if ($additionalNames) {
           $additionalNames = "<br>{$additionalNames}";
@@ -130,7 +129,7 @@ class Persons extends \MovLib\Presentation\Partial\Lists\AbstractList {
         $lifeDates = null;
         if ($person->birthDate || $person->deathDate) {
           if ($person->birthDate) {
-            $birthDate = (new Date($person->birthDate))->format([ "itemprop" => "birthDate", "title" => $i18n->t("Date of Birth") ]);
+            $birthDate = (new Date($person->birthDate))->format([ "property" => "birthDate", "title" => $i18n->t("Date of Birth") ]);
           }
           else {
             $birthDate = "<em title='{$i18n->t("Date of Birth")}'>{$i18n->t("unknown")}</em>";
@@ -139,7 +138,7 @@ class Persons extends \MovLib\Presentation\Partial\Lists\AbstractList {
           if ($person->deathDate) {
             $lifeDates = $i18n->t("{0}–{1}", [
               $birthDate,
-              (new Date($person->deathDate))->format([ "itemprop" => "deathDate", "title" => $i18n->t("Date of Death") ])
+              (new Date($person->deathDate))->format([ "property" => "deathDate", "title" => $i18n->t("Date of Death") ])
             ]);
           }
           else {
@@ -161,10 +160,10 @@ class Persons extends \MovLib\Presentation\Partial\Lists\AbstractList {
 
       $list .=
         "<li{$this->expandTagAttributes($this->listItemsAttributes)}>" .
-          "<a class='img li r' href='{$i18n->r("/person/{0}", [ $person->id ])}' itemprop='url'>" .
-            $this->getImage($person->getStyle($this->imageStyle), false, [ "class" => "s s1", "itemprop" => "image" ]) .
-            "<span class='s s{$this->descriptionSpan}'><span class='link-color' itemprop='name'>{$person->name}</span>{$additionalInfo}</span>" .
-          "</a>" .
+          "<div class='hover-item r'>" .
+            $this->getImage($person->getStyle($this->imageStyle), $person->route, [ "property" => "image" ], [ "class" => "s s1 tac" ]) .
+            "<span class='s s{$this->descriptionSpan}'><a href='{$person->route}' property='name url'>{$person->name}</a>{$additionalInfo}</span>" .
+          "</div>" .
         "</li>"
       ;
     }

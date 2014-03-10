@@ -138,11 +138,14 @@ abstract class AbstractListing extends \MovLib\Presentation\AbstractBase {
     }
 
     // Put the title together.
-    $title = "<span class='link-color' property='{$property}'{$this->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}</span>";
+    $title = "<a href='{$movie->route}' property='url'><span property='{$property}'{$this->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}</span>{0}</a>";
 
     // Append year with structured data if available.
     if ($movie->year) {
-      $title = $i18n->t("{0} ({1})", [ $title, "<span property='datePublished'>{$movie->year}</span>" ]);
+      $title = str_replace("{0}", " (<span property='datePublished'>{$movie->year}</span>)", $title);
+    }
+    else {
+      $title = str_replace("{0}", "", $title);
     }
 
     // Put it all together and we're done. Note that we always need the <span> element around the title, even if the

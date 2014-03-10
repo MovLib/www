@@ -239,10 +239,10 @@ class Page extends \MovLib\Presentation\AbstractBase {
           "</section>" .
           "<section id='f-logos' class='s s12 tac'>" .
             "<h3 class='vh'>{$i18n->t("Sponsors and external resources")}</h3>" .
-            "<a class='img' href='http://www.fh-salzburg.ac.at/' target='_blank'>" .
+            "<a class='no-link' href='http://www.fh-salzburg.ac.at/' target='_blank'>" .
               "<img alt='Fachhochschule Salzburg' height='30' src='{$kernel->getAssetURL("footer/fachhochschule-salzburg", "svg")}' width='48'>" .
             "</a>" .
-            "<a class='img' href='https://github.com/MovLib' target='_blank'>" .
+            "<a class='no-link' href='https://github.com/MovLib' target='_blank'>" .
               "<img alt='GitHub' height='30' src='{$kernel->getAssetURL("footer/github", "svg")}' width='48'>" .
             "</a>" .
           "</section>" .

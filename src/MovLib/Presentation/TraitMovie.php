@@ -69,11 +69,14 @@ trait TraitMovie {
       $displayTitleItemprop = "name";
       $originalTitle = null;
     }
-    $displayTitle = "<span class='link-color' itemprop='{$displayTitleItemprop}'{$this->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}</span>";
+    $displayTitle = "<a href='{$movie->route}' property='{$displayTitleItemprop} url'{$this->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}{0}</a>";
 
     // Append year enclosed in micro-data to display title if available.
     if (isset($movie->year)) {
-      $displayTitle = $i18n->t("{title} ({year})", [ "title" => $displayTitle, "year" => "<span itemprop='datePublished'>{$movie->year}</span>" ]);
+      $displayTitle = str_replace("{0}", " (<span property='datePublished'>{$movie->year}</span>)", $displayTitle);
+    }
+    else {
+      $displayTitle = str_replace("{0}", "", $displayTitle);
     }
 
     return "<{$wrap}{$this->expandTagAttributes($attributes)}>{$displayTitle}{$originalTitle}</{$wrap}>";

@@ -61,11 +61,25 @@ class Crew extends \MovLib\Data\Job {
   public $jobId;
 
   /**
-   * The crew's translated job title.
+   * The crew's translated job title for the neutral sex.
    *
    * @var string
    */
-  public $jobTitle;
+  public $jobNameSex0;
+
+  /**
+   * The crew's translated job title for the male sex.
+   *
+   * @var string
+   */
+  public $jobNameSex1;
+
+  /**
+   * The crew's translated job title for the female sex.
+   *
+   * @var string
+   */
+  public $jobNameSex2;
 
   /**
    * The movie's unique ID this crew has worked on.

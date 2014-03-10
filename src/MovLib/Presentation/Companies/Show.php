@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Companies;
 
 use \MovLib\Data\Company\Company;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Lists\Companies as CompaniesPartial;
+use \MovLib\Presentation\Partial\Listing\Companies as CompaniesPartial;
 
 /**
  * The latest companies.

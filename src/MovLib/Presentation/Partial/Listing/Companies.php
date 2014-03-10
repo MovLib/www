@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Partial\Lists;
+namespace MovLib\Presentation\Partial\Listing;
 
 use \MovLib\Data\Company\Company;
 use \MovLib\Presentation\Partial\Date;
@@ -29,7 +29,7 @@ use \MovLib\Presentation\Partial\Date;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Companies extends \MovLib\Presentation\Partial\Lists\Images {
+class Companies extends \MovLib\Presentation\Partial\Listing\AbstractListing {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -78,12 +78,11 @@ class Companies extends \MovLib\Presentation\Partial\Lists\Images {
    */
   public function __construct($listItems, $noItemsText = "", array $listItemsAttributes = null, array $attributes = null, $spanSize = 5, $showAdditionalInfo = false) {
     parent::__construct($listItems, $noItemsText, $attributes);
-    $this->addClass("hover-list no-list r", $this->attributes);
+    $this->addClass("hover-list no-list", $this->attributes);
     $this->listItemsAttributes = $listItemsAttributes;
-    $this->addClass("s s{$spanSize}", $this->listItemsAttributes);
+    $this->addClass("hover-item r", $this->listItemsAttributes);
     $this->descriptionSpan                 = --$spanSize;
-    $this->listItemsAttributes[]           = "itemscope";
-    $this->listItemsAttributes["itemtype"] = "http://schema.org/Corporation";
+    $this->listItemsAttributes["typeof"] = "http://schema.org/Corporation";
     $this->showAdditionalInfo              = $showAdditionalInfo;
   }
 
@@ -105,7 +104,7 @@ class Companies extends \MovLib\Presentation\Partial\Lists\Images {
           $companyDates = null;
           if ($company->foundingDate || $company->defunctDate) {
             if ($company->foundingDate) {
-              $companyDates .= (new Date($company->foundingDate))->format([ "itemprop" => "foundingDate", "title" => $i18n->t("Founding Date") ]);
+              $companyDates .= (new Date($company->foundingDate))->format([ "property" => "foundingDate", "title" => $i18n->t("Founding Date") ]);
             }
             else {
               $companyDates .= $i18n->t("{0}unknown{1}", [ "<em title='{$i18n->t("Founding Date")}'>", "</em>" ]);
@@ -125,10 +124,8 @@ class Companies extends \MovLib\Presentation\Partial\Lists\Images {
 
         $list .=
           "<li{$this->expandTagAttributes($this->listItemsAttributes)}>" .
-            "<a class='img li r' href='{$i18n->r("/company/{0}", [ $company->id ])}' itemprop='url'>" .
-              $this->getImage($company->getStyle($this->imageStyle), false, [ "class" => "s s1", "itemprop" => "image" ]) .
-              "<span class='s s{$this->descriptionSpan}'><span class='link-color' itemprop='name'>{$company->name}</span>{$additionalInfo}</span>" .
-            "</a>" .
+            $this->getImage($company->getStyle($this->imageStyle), $company->route, [ "property" => "image" ], [ "class" => "s s1" ]) .
+            "<span class='s s{$this->descriptionSpan}'><a href='{$company->route}' property='name url'>{$company->name}</a>{$additionalInfo}</span>" .
           "</li>"
         ;
       }
