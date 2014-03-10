@@ -32,7 +32,6 @@ use \Symfony\Component\Console\Output\OutputInterface;
  */
 class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
   use \MovLib\Data\TraitFileSystem;
-  use \MovLib\Data\TraitShell;
 
   /**
    * Compiles and translates nginx routes for all servers.

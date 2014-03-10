@@ -156,16 +156,15 @@ class Provision extends \MovLib\Tool\Console\Command\AbstractCommand {
     // @todo Create configuration command to manage the currently in use configuration file and force regenration. This
     //       code should also be moved to that command and simply called from here.
     if (empty($kernel->configuration)) {
-      $configuration = json_decode($this->fsGetContents("{$kernel->documentRoot}{$kernel->configuration->directory->etc}/movlib.dist.json"), true);
-      $envConfiguration = "{$kernel->documentRoot}{$kernel->configuration->directory->etc}/movlib.{$environment}.json";
+      $configuration = json_decode($this->fsGetContents("{$kernel->documentRoot}/etc/movlib.dist.json"), true);
+      $envConfiguration = "{$kernel->documentRoot}/etc/movlib.{$environment}.json";
       if ($environment != self::ENV_DISTRIBUTION && is_file($envConfiguration)) {
         $configuration = array_replace_recursive($configuration, json_decode($this->fsGetContents($envConfiguration), true));
       }
       $configuration = json_encode($configuration, JSON_FORCE_OBJECT | JSON_UNESCAPED_UNICODE);
       $kernel->configuration = json_decode($configuration);
-      $etcDirectory = "{$kernel->configuration->directory->etc}/movlib";
-      $this->fsCreateDirectory($etcDirectory, 0774);
-      $this->fsPutContents("{$etcDirectory}/movlib.json", $configuration);
+      $this->fsCreateDirectory("/etc/movlib", 0774);
+      $this->fsPutContents("/etc/movlib/movlib.json", $configuration);
     }
 
     $force = $input->getOption("force");
