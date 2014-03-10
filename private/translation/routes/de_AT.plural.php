@@ -53,7 +53,10 @@ return [
   "/company/{0}/releases"  => "/unternehmen/{0}/veröffentlichungen",
 
   // ------------------------------------------------------------------------------------------------------------------- Persons
-  "/persons"           => "/personen",
+  "/persons"              => "/personen",
+  "/person/{0}/movies"    => "/person/{0}/filme",
+  "/person/{0}/serials"   => "/person/{0}/serien",
+  "/person/{0}/releases"  => "/person/{0}/veröffentlichungen",
 
   // ------------------------------------------------------------------------------------------------------------------- Users
   "/users" => "/benutzer",
