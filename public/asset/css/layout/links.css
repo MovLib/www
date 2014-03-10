@@ -77,6 +77,10 @@ a.no-link {
   border: 0;
 }
 
+a.link-color {
+  color: #09c;
+}
+
 a.danger {
   color: #da4f49;
 }

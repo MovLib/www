@@ -111,7 +111,8 @@ class Genre extends \MovLib\Data\Database {
         throw new NotFound;
       }
       $stmt->close();
-
+    }
+    if ($this->id) {
       $this->init();
     }
   }

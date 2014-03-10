@@ -62,15 +62,6 @@ ol ol {
   background-color: #e2f4fb;
 }
 
-.hover-list .hover-item > .fl,
-.hover-list .hover-item > .s {
-  line-height: 60px;
-}
-
-.hover-list .hover-item .jobs {
-  padding-right: 20px;
-}
-
 .hover-list .hover-item .rating-user,
 .hover-list .hover-item .rating-mean {
   float: right;

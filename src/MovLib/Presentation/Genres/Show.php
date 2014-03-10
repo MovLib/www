@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Genres;
 
 use \MovLib\Data\Genre;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Lists\Genres as GenresPartial;
+use \MovLib\Presentation\Partial\Listing\Entity as EntityPartial;
 
 /**
  * List of all genres.
@@ -77,7 +77,7 @@ class Show extends \MovLib\Presentation\Page {
         "Would you like to {0}create a new entry{1}?", [ "<a href='{$i18n->r("/genre/create")}'>", "</a>" ]
       ), $i18n->t("No Genres"), Alert::SEVERITY_INFO
     );
-    $list = new GenresPartial($result, $noItemText, "Genre");
+    $list = new EntityPartial($result, $noItemText, "Genre");
 
     return "<div id='filter' class='tar'>{$i18n->t("Filter")}</div>{$list}";
   }

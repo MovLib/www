@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Partial\Lists;
+namespace MovLib\Presentation\Partial\Listing;
 
 /**
- * Special list for genre instances.
+ * List to display Awards, Genres or Jobs.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -26,7 +26,7 @@ namespace MovLib\Presentation\Partial\Lists;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Genres extends \MovLib\Presentation\Partial\Lists\AbstractList {
+class Entity extends \MovLib\Presentation\Partial\Listing\AbstractListing {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -44,7 +44,7 @@ class Genres extends \MovLib\Presentation\Partial\Lists\AbstractList {
 
 
   /**
-   * Instantiate new special genres listing.
+   * Instantiate new listing.
    *
    * @param \mysqli_result $result
    *   The MySQLi result object containing the entities.
@@ -58,10 +58,16 @@ class Genres extends \MovLib\Presentation\Partial\Lists\AbstractList {
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($entityName)) {
-      throw new \InvalidArgumentException("\$entityName cannot be empty");
+      throw new \InvalidArgumentException("{$entityName} cannot be empty");
     }
     if (class_exists("\\MovLib\\Data\\{$entityName}") === false) {
-      throw new \InvalidArgumentException("\$entityName must match an existing class");
+      throw new \InvalidArgumentException("\\MovLib\\Data\\{$entityName} must match an existing class");
+    }
+    if (method_exists("\\MovLib\\Data\\{$entityName}", "getMovieCount") === false) {
+      throw new \InvalidArgumentException("\\MovLib\\Data\\{$entityName} must implement method 'getMovieCount()'.");
+    }
+    if (method_exists("\\MovLib\\Data\\{$entityName}", "getSeriesCount") === false) {
+      throw new \InvalidArgumentException("\\MovLib\\Data\\{$entityName} must implement method 'getSeriesCount()'.");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -100,10 +106,14 @@ class Genres extends \MovLib\Presentation\Partial\Lists\AbstractList {
         $moviesRoute = str_replace("{0}", $entity->id, $routeMovies);
         $seriesRoute = str_replace("{0}", $entity->id, $routeSeries);
         $list .=
-          "<li class='hover-item r s'>" .
-            "<a class='fr ico ico-movie label' href='{$moviesRoute}' title='{$moviesTitle}'> &nbsp; {$entity->getMovieCount()}</a>" .
-            "<a class='fr ico ico-series label' href='{$seriesRoute}' title='{$seriesTitle}'> &nbsp; {$entity->getSeriesCount()}</a>" .
-            "<a class='no-link link-color s' href='{$i18n->r("/genre/{0}", [ $entity->id ])}' property='itemListElement'>{$entity->name}</a>" .
+          "<li class='hover-item r'>" .
+            "<div class='s s10'>" .
+              "<span class='fr'>" .
+                "<a class='ico ico-movie label' href='{$moviesRoute}' title='{$moviesTitle}'> &nbsp; {$entity->getMovieCount()}</a>" .
+                "<a class='ico ico-series label' href='{$seriesRoute}' title='{$seriesTitle}'> &nbsp; {$entity->getSeriesCount()}</a>" .
+              "</span>" .
+              "<a href='{$i18n->r("/genre/{0}", [ $entity->id ])}' property='itemListElement'>{$entity->name}</a>" .
+            "</div>" .
           "</li>"
         ;
       }
