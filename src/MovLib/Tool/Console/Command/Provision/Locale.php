@@ -30,24 +30,28 @@ class Locale extends \MovLib\Tool\Console\Command\Provision\AbstractProvision {
 
   /**
    * @inheritdoc
+   * @global \MovLib\Tool\Kernel $kernel
    */
-  protected function provision() {
+  public function provision() {
+    global $kernel;
     $this->aptInstall("locales");
-    $this->filePutContents("/etc/locale.gen", "{$this->config->locale}.UTF-8 UTF-8", LOCK_EX, 0644, "root", "root");
-    $this->filePutContents("/etc/default/locale", "LANG={$this->config->locale}.UTF-8 UTF-8", LOCK_EX, 0644, "root", "root");
-    $this->execute("locale-gen && update-locale");
+    $this->fsPutContents("/etc/locale.gen", "{$kernel->configuration->locale}.UTF-8 UTF-8", LOCK_EX, 0644, "root", "root");
+    $this->fsPutContents("/etc/default/locale", "LANG={$kernel->configuration->locale}.UTF-8 UTF-8", LOCK_EX, 0644, "root", "root");
+    $this->shellExecute("locale-gen && update-locale");
     return $this;
   }
 
   /**
    * @inheritdoc
+   * @global \MovLib\Tool\Kernel $kernel
    */
-  protected function validate() {
-    if (empty($this->config->locale)) {
-      throw new \InvalidArgumentException("The 'locale' must be set in the global environment configuration file");
+  public function validate() {
+    global $kernel;
+    if (empty($kernel->configuration->locale)) {
+      throw new \LogicException("The 'locale' must be set in the global environment configuration file");
     }
-    if (preg_match("/{$this->config->locale}\.UTF-8 UTF-8/", $this->fileGetContents("/usr/share/i18n/SUPPORTED")) !== 1) {
-      throw new \InvalidArgumentException("The 'locale' configuration value must contain a valid locale");
+    if (preg_match("/{$kernel->configuration->locale}\.UTF-8 UTF-8/", $this->fsGetContents("/usr/share/i18n/SUPPORTED")) !== 1) {
+      throw new \LogicException("The 'locale' configuration value must contain a valid locale");
     }
     return $this;
   }

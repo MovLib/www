@@ -55,28 +55,18 @@ class Database extends \MovLib\Tool\Console\Command\AbstractCommand {
   protected $pathMigration = "/conf/migration";
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * @inheritdoc
-   */
-  public function __construct(){
-    global $kernel;
-    parent::__construct("database");
-    $this->setAliases([ "db" ]);
-    $this->pathBackup    = "{$kernel->documentRoot}{$this->pathBackup}";
-    $this->pathMigration = "{$kernel->documentRoot}{$this->pathMigration}";
-  }
-
-
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
    * @inheritdoc
+   * @global \MovLib\Tool\Kernel $kernel
    */
   protected function configure() {
+    global $kernel;
+    $this->setName("database");
+    $this->pathBackup    = "{$kernel->documentRoot}{$this->pathBackup}";
+    $this->pathMigration = "{$kernel->documentRoot}{$this->pathMigration}";
     $this->setDescription("Perform various database related tasks.");
     $this->addInputOption("backup", InputOption::VALUE_NONE, "Create backup of the complete database.");
     $this->addInputOption("migration", InputOption::VALUE_NONE, "Run all migration scripts.");

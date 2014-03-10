@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # ----------------------------------------------------------------------------------------------------------------------
 # This file is part of {@link https://github.com/MovLib MovLib}.
@@ -81,8 +81,8 @@ apt-get install --yes   \
   libssl-dev            \
   libtidy-dev           \
   libxml2-dev           \
+  python                \
   re2c                  \
-  sed                   \
   tar                   \
   wget                  \
 
@@ -93,36 +93,44 @@ set +e
 dpkg --purge movlib-php
 set -e
 
-DIR="$(dirname "$(dirname "$(readlink -f "${0}")")")"
-ini_get() {
-  echo $(sed -n 's/.*'${1}' *= *\([^ ]*.*\)/\1/p' < "${DIR}/conf/env.ini")
+DIR="$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")"
+
+json_get() {
+  local ENV='dist'
+  if [[ "${2}" ]]; then
+    local ENV=${2}
+  fi
+  echo $(python -c "import json; print json.load(open('${DIR}/etc/movlib.${ENV}.json'))${1}")
 }
 
-if [ -z "${MOVLIB_ENVIRONMENT}" ]; then
-  USER=$(sed -n 's/.*user *= *\([^ ]*.*\)/\1/p' < "${DIR}/conf/env.${MOVLIB_ENVIRONMENT}.ini")
-  GROUP=$(sed -n 's/.*group *= *\([^ ]*.*\)/\1/p' < "${DIR}/conf/env.${MOVLIB_ENVIRONMENT}.ini")
+if [[ "${MOVLIB_ENVIRONMENT}" ]]; then
+  USER=$(json_get "['user']" ${MOVLIB_ENVIRONMENT})
+  GROUP=$(json_get "['group']" ${MOVLIB_ENVIRONMENT})
 else
-  USER=$(ini_get 'user')
-  GROUP=$(ini_get 'group')
+  USER=$(json_get "['user']")
+  GROUP=$(json_get "['group']")
 fi
-
-CHECKSUM=$(ini_get 'php.install_checksum')
-VERSION=$(ini_get 'php.install_version')
-
-CFG_DIR=$(ini_get 'cfg_dir')
-SRC_DIR=$(ini_get 'src_dir')
+ETC_DIR=$(json_get "['directory']['etc']")
+RUN_DIR=$(json_get "['directory']['run']")
+SRC_DIR=$(json_get "['directory']['src']")
+VERSION=$(json_get "['php']['version']")
+CHECKSUM=$(json_get "['php']['checksum']")
+WEBMASTER=$(json_get "['webmaster']")
 
 cd ${SRC_DIR}
 
-wget --timestamping "http://at1.php.net/distributions/php-${VERSION}.tar.gz"
+wget "http://at1.php.net/distributions/php-${VERSION}.tar.gz"
 
-if [ $(echo "${CHECKSUM}  php-${VERSION}.tar.gz" | md5sum --check -) -ne 0]; then
+if [[ $(echo "${CHECKSUM}  php-${VERSION}.tar.gz" | md5sum --check -) -ne 0 ]]; then
   rm "php-${VERSION}.tar.gz"
   exit 1
 fi
 
-tar --extract --gzip --file "php-${VERSION}.tar.gz" --owner root --group root
+tar --extract --gzip --file "php-${VERSION}.tar.gz"
+
 rm "php-${VERSION}.tar.gz"
+
+chown --recursive root:root "php-${VERSION}/*"
 
 cd "php-${VERSION}"
 
@@ -145,8 +153,8 @@ CXXFLAGS='-O3 -m64 -march=native' \
   --enable-xml \
   --enable-zend-signals \
   --enable-zip \
-  --sysconfdir="${CFG_DIR}" \
-  --with-config-file-path="${CFG_DIR}" \
+  --sysconfdir="${ETC_DIR}/php" \
+  --with-config-file-path="${ETC_DIR}/php" \
   --with-curl \
   --with-fpm-group="${GROUP}" \
   --with-fpm-user="${USER}" \
@@ -163,7 +171,7 @@ CXXFLAGS='-O3 -m64 -march=native' \
 checkinstall \
   --default \
   --install \
-  --maintainer=$(ini_get webmaster) \
+  --maintainer="${WEBMASTER}" \
   --nodoc \
   --pkgname='movlib-php' \
   --pkgrelease='1' \

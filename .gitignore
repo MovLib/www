@@ -10,7 +10,6 @@ Desktop.ini
 !/bin/
 /composer.lock
 /conf/mariadb/movlib.mwb.bak
-/conf/movlib.ini
 /private/sandbox/
 /private/subscriptions.txt
 /public/bower/

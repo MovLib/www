@@ -32,6 +32,7 @@ use \Composer\Script\Event;
  * @since 0.0.1-dev
  */
 class Composer {
+  use \MovLib\Data\TraitFileSystem;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -87,16 +88,14 @@ class Composer {
     global $kernel;
 
     // Create symbolic link for global access.
-    if ($kernel->isWindows === false) {
-      $this->symlink("{$this->vendorPath}/bin/apigen.php", "{$kernel->usrBinaryPath}/apigen");
-    }
+    $this->fsSymlink("{$this->vendorPath}/bin/apigen.php", "{$kernel->configuration->directory->bin}/apigen");
 
     // @see https://github.com/apigen/apigen/issues/252
     $patch = "{$this->vendorPath}/{$fullName}/ApiGen/Template.php";
-    file_put_contents($patch, str_replace(
+    $this->fsPutContents($patch, str_replace(
       "return \TexyHtml::el('code', \$fshl->highlight(\$matches[1]));",
       "\$content = \$parser->getTexy()->protect(\$fshl->highlight(\$matches[1]), \Texy::CONTENT_MARKUP);\n         return \TexyHtml::el('code', \$content);",
-      file_get_contents($patch)
+      $this->fsGetContents($patch)
     ));
 
     return $this;
@@ -108,7 +107,11 @@ class Composer {
    * @return this
    */
   public function fixPermissions() {
-    (new FixPermissions())->fixPermissions($this->vendorPath);
+    static $fixPermissions = null;
+    if (!$fixPermissions) {
+      $fixPermissions = new FixPermissions();
+    }
+    $fixPermissions->fixPermissions($this->vendorPath);
     return $this;
   }
 
@@ -125,12 +128,13 @@ class Composer {
     global $kernel, $db;
 
     // Create symbolic link to our phpMyAdmin configuration.
-    if ($kernel->isWindows === false) {
-      $this->symlink("{$kernel->documentRoot}/conf/phpmyadmin/config.inc.php", "{$this->vendorPath}/{$fullName}/config.inc.php");
+    $this->fsSymlink(
+      "{$kernel->documentRoot}{$kernel->configuration->directory->etc}/phpmyadmin/config.inc.php",
+      "{$this->vendorPath}/{$fullName}/config.inc.php"
+    );
 
-      // Create all tables for the advanced phpMyAdmin features.
-      $db->queries(file_get_contents("{$this->vendorPath}/{$fullName}/examples/create_tables.sql"));
-    }
+    // Create all tables for the advanced phpMyAdmin features.
+    $db->queries($this->fsGetContents("{$this->vendorPath}/{$fullName}/examples/create_tables.sql"));
 
     return $this;
   }
@@ -143,41 +147,7 @@ class Composer {
    */
   public function phpunit() {
     global $kernel;
-    if ($kernel->isWindows === false) {
-      $this->symlink("{$this->vendorPath}/bin/phpunit", "{$kernel->usrBinaryPath}/phpunit");
-    }
-    return $this;
-  }
-
-  /**
-   * Check if symbolic link exists, if not create it.
-   *
-   * @param string $target
-   *   Absolute path to the symbolic links target.
-   * @param string $link
-   *   Absolute path to the symbolic link.
-   * @return this
-   */
-  protected function symlink($target, $link) {
-    if (!is_link($link)) {
-      symlink($target, $link);
-    }
-    return $this;
-  }
-
-  /**
-   * Install VisualPHPUnit.
-   *
-   * @global \MovLib\Tool\Kernel $kernel
-   * @return this
-   */
-  public function visualphpunit() {
-    global $kernel;
-
-    // Replace some vendor files with custom ones.
-    copy("{$kernel->documentRoot}/conf/visualphpunit/index.php", "{$path}/public/index.php");
-    copy("{$kernel->documentRoot}/conf/visualphpunit/bootstrap.php", "{$path}/config/bootstrap.php");
-
+    $this->fsSymlink("{$this->vendorPath}/bin/phpunit", "{$kernel->configuration->directory->bin}/phpunit");
     return $this;
   }
 

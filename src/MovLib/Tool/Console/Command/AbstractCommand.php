@@ -128,22 +128,6 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
   protected $quiet = true;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new CLI command.
-   *
-   * @internal No clue why the Symfony guys made <var>$name</var> optional, just to throw an exception?
-   * @param string $name
-   *   The command name.
-   */
-  public function __construct($name) {
-    parent::__construct($name);
-    $this->setAliases([ $this->getShortcut($name) ]);
-  }
-
-
   // ------------------------------------------------------------------------------------------------------------------- Magic Property Getters
 
 

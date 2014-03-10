@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # ----------------------------------------------------------------------------------------------------------------------
 # This file is part of {@link https://github.com/MovLib MovLib}.
@@ -28,13 +28,13 @@
 
 set +e
 which php > /dev/null
-if [ ${?} -ne 0 ]; then
+if [[ ${?} != 0 ]]; then
   echo 'PHP must be installed on your system!'
   exit 1
 fi
 
 which composer > /dev/null
-if [ ${?} -eq 0 ]; then
+if [[ ${?} = 0 ]]; then
   set -e
   composer self-update
 else
@@ -42,7 +42,6 @@ else
   wget --output-document=/tmp/getcomposer-installer https://getcomposer.org/installer
   php /tmp/getcomposer-installer
   mv composer.phar /usr/local/bin/composer
-  set +e
   rm /tmp/getcomposer-installer
 fi
 

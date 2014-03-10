@@ -17,7 +17,6 @@
  */
 namespace MovLib\Tool\Console\Command\Development;
 
-use \MovLib\Data\UnixShell as sh;
 use \Symfony\Component\Console\Input\InputOption;
 
 /**
@@ -31,6 +30,7 @@ use \Symfony\Component\Console\Input\InputOption;
  * @since 0.0.1-dev
  */
 class CacheInspector extends \MovLib\Tool\Console\Command\Production\CacheInspector {
+  use \MovLib\Data\TraitShell;
 
   /**
    * @inheritdoc
@@ -55,9 +55,7 @@ class CacheInspector extends \MovLib\Tool\Console\Command\Production\CacheInspec
     if (!is_file($file)) {
       throw new \RuntimeException("Couldn't find '{$file}'!");
     }
-    if (sh::execute("echo 3 | tee /proc/sys/vm/drop_caches") === false) {
-      throw new \RuntimeException("Couldn't purge disk cache!");
-    }
+    $this->shellExecute("echo 3 | tee /proc/sys/vm/drop_caches");
     $this->write("Purged disk cache!", self::MESSAGE_TYPE_INFO);
     return $this;
   }

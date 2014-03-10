@@ -35,14 +35,8 @@ class PasswordBenchmark extends \MovLib\Tool\Console\Command\AbstractCommand {
   /**
    * @inheritdoc
    */
-  public function __construct() {
-    parent::__construct("password-benchmark");
-  }
-
-  /**
-   * @inheritdoc
-   */
   public function configure() {
+    $this->setName("password-benchmark");
     $this->setDescription("Run password cost benchmark.");
     $this->addArgument("time-target", InputArgument::OPTIONAL, "The desired time target.", 0.5);
   }

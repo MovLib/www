@@ -17,7 +17,6 @@
  */
 namespace MovLib\Tool\Console\Command\Production;
 
-use \MovLib\Data\UnixShell as sh;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -37,6 +36,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  */
 class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
   use \MovLib\Data\Image\TraitOptimizeImage;
+  use \MovLib\Data\TraitFileSystem;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -102,23 +102,6 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @var string
    */
   protected $pathUploads = "/var/lib/uploads";
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * @inheritdoc
-   */
-  public function __construct() {
-    parent::__construct("deploy");
-    $this->setAliases([ "dp" ]);
-    $this->pathRepository = "{$this->pathRepository}/{$_SERVER["REQUEST_TIME"]}";
-    foreach ([ "Public", "Kernel" ] as $path) {
-      $path = "path{$path}";
-      $this->$path = "{$this->pathRepository}{$this->$path}";
-    }
-  }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -192,10 +175,10 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     global $kernel;
 
     $this->write("Attempting to find symbolic link...");
-    sh::execute("find / -not -path '/proc*' -type l -xtype d -lname '{$kernel->documentRoot}'", $output);
+    $this->shellExecute("find / -not -path '/proc*' -type l -xtype d -lname '{$kernel->documentRoot}'", $output);
     if (empty($output)) {
       throw new \RuntimeException("Couldn't find any existing symbolic link to the current document root '{$kernel->documentRoot}'");
-      // @todo Might be a new instllation, what should we do?
+      // @todo Might be a new installation, what should we do?
     }
     elseif (count($output) > 1) {
       throw new \RuntimeException("Multiple symbolic links found\n\n" . implode("\n", $output));
@@ -208,27 +191,11 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     }
 
     // Try to create the new symbolic link.
-    if (symlink($this->pathRepository, $sym) === false) {
-      throw new \RuntimeException("Couldn't change repository from '{$sym}' to '{$this->pathRepository}'");
-    }
+    $this->fsSymlink($this->pathRepository, $sym);
 
     // Create symbolic links to upload folders.
     foreach ([ "private", "public" ] as $directory) {
-      if (symlink("{$this->pathUploads}/{$directory}", "{$this->pathRepository}/{$directory}/upload") === false) {
-        throw new \RuntimeException("Couldn't create symbolic link for {$directory} upload directory");
-      }
-    }
-
-    // Just making sure...
-    if (sh::executeDisplayOutput("movlib fix-permissions") === false) {
-      $this->write("Couldn't fix permissions... trying to recover...", self::MESSAGE_TYPE_ERROR);
-      if (unlink($sym) === false) {
-        throw new \RuntimeException("Couldn't delete just created symbolic link '{$sym}'");
-      }
-      if (symlink($kernel->documentRoot, $sym) === false) {
-        throw new \RuntimeException("Couldn't change back to old repository '{$kernel->documentRoot}'");
-      }
-      throw new \RuntimeException("Couldn't fix permissions");
+      $this->fsSymlink("{$this->pathUploads}/{$directory}", "{$this->pathRepository}/{$directory}/upload");
     }
 
     // Looks good :)
@@ -264,7 +231,8 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
   /**
    * @inheritdoc
    */
-  public function configure() {
+  protected function configure() {
+    $this->setName("deploy");
     $this->setDescription("Deploy GitHub master branch on production server.");
   }
 
@@ -282,6 +250,12 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
 
     // Only root (sudo) can deploy!
     $this->checkPrivileges();
+
+    $this->pathRepository = "{$this->pathRepository}/{$_SERVER["REQUEST_TIME"]}";
+    foreach ([ "Public", "Kernel" ] as $path) {
+      $path = "path{$path}";
+      $this->$path = "{$this->pathRepository}{$this->$path}";
+    }
 
     // Just making sure...
     $this->write(""); // Space things out or it might look off in some edge cases.
@@ -326,7 +300,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
         "",
         "Run `movlib deploy` again (if you want to give it another shot)!",
       ], self::MESSAGE_TYPE_ERROR);
-      sh::executeDisplayOutput("rm -rf {$this->pathRepository}");
+      $this->shellExecuteDisplayOutput("rm -rf {$this->pathRepository}");
       throw $e;
     }
     $this->write("Successfully deployed MovLib.", self::MESSAGE_TYPE_INFO);
@@ -369,9 +343,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
         return;
       }
 
-      if (sh::executeDisplayOutput("{$bowerClosure} --js {$realPath} --js_output_file {$realPath}") === false) {
-        throw new \RuntimeException("Couldn't minify '{$realPath}'");
-      }
+      $this->shellExecuteDisplayOutput("{$bowerClosure} --js {$realPath} --js_output_file {$realPath}");
       $this->removeComments($realPath);
     }, "js");
 
@@ -388,9 +360,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     }
 
     // Put the arguments together and let closure compile them.
-    if (sh::executeDisplayOutput($closure . implode(" --", $args)) === false) {
-      throw new \RuntimeException("Couldn't minify JavaScript");
-    }
+    $this->shellExecuteDisplayOutput($closure . implode(" --", $args));
 
     // Move all files from the build folder back to their initial position and remove absolutely all comments.
     $this->removeComments($movlib, $movlib);
@@ -399,7 +369,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     }
 
     // Remove the build folder, otherwise we'd generate cache busters for these files later on.
-    sh::execute("rm -rf {$this->pathPublic}/asset/js/build");
+    $this->shellExecute("rm -rf {$this->pathPublic}/asset/js/build");
 
     return $this;
   }
@@ -428,10 +398,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     foreach ($matches[1] as $layout) {
       $realPath = "{$this->pathPublic}/asset/css/{$layout}";
       $this->write("Optimizing {$realPath}");
-      if (sh::execute("csso --input {$realPath} --output {$realPath}", $output) === false) {
-        $output = implode("\n", $output);
-        throw new \RuntimeException("Couldn't minify '{$realPath}'\n\n{$output}");
-      }
+      $this->shellExecute("csso --input {$realPath} --output {$realPath}", $output);
       fwrite($fh, $this->removeComments($realPath));
 
       // Delete the original layout CSS file, otherwise we'd generate cache busters for them later on.
@@ -443,26 +410,19 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     $modules = glob("{$this->pathPublic}/asset/css/module/*.css");
     foreach ($modules as $module) {
       $this->write("Optimizing {$module}");
-      if (sh::execute("csso --input {$module} --output {$module}", $output) === false) {
-        $output = implode("\n", $output);
-        throw new \RuntimeException("Couldn't minify '{$module}'\n\n{$output}");
-      }
+      $this->shellExecute("csso --input {$module} --output {$module}", $output);
       $this->removeComments($module, $module);
     }
 
     // Update the autoprefixer definitions.
     $this->write("Updating autoprefixer definitions...");
-    if (sh::executeDisplayOutput("autoprefixer --update") === false) {
-      throw new \RuntimeException("Couldn't update autoprefixer definitions");
-    }
+    $this->shellExecuteDisplayOutput("autoprefixer --update");
 
     // Autoprefix all CSS files.
     $browsers = "'last 2 versions','Firefox ESR','Explorer 9','BlackBerry 10','Android 4'";
     $this->write("CSS autoprefixing for browser definition: {$browsers}");
     $modules  = implode(" ", $modules);
-    if (sh::executeDisplayOutput("autoprefixer --browsers {$browsers} {$movlib} {$modules}") === false) {
-      throw new \RuntimeException("Couldn't autoprefix CSS files");
-    }
+    $this->shellExecuteDisplayOutput("autoprefixer --browsers {$browsers} {$movlib} {$modules}");
 
     return $this->write("Successfully minified all CSS files.", self::MESSAGE_TYPE_INFO);
   }
@@ -623,10 +583,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
       "php {$this->pathRepository}/bin/movlib.php fix-permissions {$this->pathRepository}",
     ];
 
-    if (sh::executeDisplayOutput(implode(" && ", $commands)) === false) {
-      throw new \RuntimeException("Preparation of repository failed");
-    }
-
+    $this->shellExecuteDisplayOutput(implode(" && ", $commands));
     $this->write("Removing makefile from root directory (too dangerous).", self::MESSAGE_TYPE_COMMENT);
     unlink("{$this->pathRepository}/makefile");
 
@@ -668,7 +625,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
 
     // Make sure that the target directory exists.
     $directory = dirname($target);
-    sh::execute("mkdir -p {$directory}");
+    exec("mkdir -p {$directory}");
     if (!is_dir($directory)) {
       throw new \RuntimeException("Couldn't create directory for \$target");
     }
@@ -695,9 +652,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
       }
 
       $this->write("Optimizing {$realPath}...");
-      if (sh::execute("uglifyjs --compress --mangle --output {$realPath} --screw-ie8 {$realPath}") === false) {
-        throw new \RuntimeException("Couldn't optimize '{$realPath}'");
-      }
+      $this->shellExecute("uglifyjs --compress --mangle --output {$realPath} --screw-ie8 {$realPath}");
     }, "js");
   }
 

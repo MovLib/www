@@ -18,7 +18,6 @@
 namespace MovLib\Tool\Console\Command\Development;
 
 use \Elasticsearch\Client as ElasticClient;
-use \MovLib\Data\UnixShell as sh;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Tool\Console\Command\Production\FixPermissions;
 use \Symfony\Component\Console\Input\InputInterface;
@@ -122,32 +121,10 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
 
 
   /**
-   * Instantiate new seed import command.
-   *
-   * @global \MovLib\Tool\Kernel $kernel
-   */
-  public function __construct() {
-    global $kernel;
-    parent::__construct("seed-import");
-    $this->seedPath = "{$kernel->documentRoot}{$this->seedPath}";
-    foreach (glob("{$this->seedPath}/" . self::OPTION_DATABASE . "/*.sql") as $seedScript) {
-      $this->databaseScripts[basename($seedScript, ".sql")] = $seedScript;
-    }
-
-    // Only go through the public directory, the user images don't have private files.
-    foreach (glob("{$this->seedPath}/" . self::OPTION_UPLOAD . "/public/*", GLOB_ONLYDIR) as $uploadDirectory) {
-      $this->uploadDirectories[basename($uploadDirectory)] = $uploadDirectory;
-    }
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
    * @inheritdoc
    */
   protected function configure() {
+    $this->setName("seed-import");
     $this->setDescription("Import the complete seed data or only specific data via options.");
     // History needs a custom shortcut because '-h' is already defined by Symfony.
     $this->addOption(self::OPTION_HISTORY, "hi", InputOption::VALUE_NONE, "Create all history repositories.");
@@ -255,9 +232,22 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
 
   /**
    * @inheritdoc
+   * @global \MovLib\Tool\Kernel $kernel
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
+    global $kernel;
     $options = parent::execute($input, $output);
+
+    $this->seedPath = "{$kernel->documentRoot}{$this->seedPath}";
+    foreach (glob("{$this->seedPath}/" . self::OPTION_DATABASE . "/*.sql") as $seedScript) {
+      $this->databaseScripts[basename($seedScript, ".sql")] = $seedScript;
+    }
+
+    // Only go through the public directory, the user images don't have private files.
+    foreach (glob("{$this->seedPath}/" . self::OPTION_UPLOAD . "/public/*", GLOB_ONLYDIR) as $uploadDirectory) {
+      $this->uploadDirectories[basename($uploadDirectory)] = $uploadDirectory;
+    }
+
     $all     = true;
     foreach ([ self::OPTION_DATABASE, self::OPTION_ELASTIC, self::OPTION_HISTORY, self::OPTION_ICU, self::OPTION_UPLOAD ] as $option) {
       if ($options[$option]) {
@@ -288,7 +278,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
       // Remove complete history repository if it's present in the file system.
       $path = "{$kernel->documentRoot}/private/history/{$typeSingular}";
       if (is_dir($path)) {
-        sh::execute("rm -rf '{$path}'");
+        $this->shellExecute("rm -rf '{$path}'");
       }
 
       // Creat new repository for each database entry we have.
@@ -317,9 +307,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
     $this->write("Importing ICU translations ...");
 
     // Prepare ICU environment variables.
-    if (sh::execute("icu-config --version", $version) === false) {
-      throw new \LogicException("Couldn't execute `icu-config`, is ICU installed?");
-    }
+    $this->shellExecute("icu-config --version", $version);
     $version = trim(strtr($version[0], ".", "-"));
     $source  = "/usr/local/src/icu-{$version}/source/data";
 
@@ -350,13 +338,11 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
 
     // Generate the resource bundle for this locale.
     $destination = sys_get_temp_dir();
-    if (sh::execute("genrb -R -e UTF-8 -d {$destination} {$src}") === false) {
-      throw new \RuntimeException("Couldn't compile resource bundle for system locale '{$locale}'.");
-    }
+    $this->shellExecute("genrb -R -e UTF-8 -d {$destination} {$src}");
 
     // Load the generated resource bundle and delete the resource bundle files.
     $rb = new \ResourceBundle($locale, $destination, true);
-    sh::execute("rm {$destination}/*.res");
+    $this->shellExecute("rm {$destination}/*.res");
     return $rb;
   }
 
@@ -599,9 +585,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
     $this->progressAdvance();
     // We have to execute this in the shell directly, because our database object always tries to connect to the default
     // database, which might not exist yet!
-    if (sh::execute("mysql < {$kernel->documentRoot}/conf/mariadb/movlib.sql", $output) === false) {
-      throw new \LogicException("Couldn't import database schema: " . trim($output[0]));
-    }
+    $this->shellExecute("mysql < {$kernel->documentRoot}/conf/mariadb/movlib.sql", $output);
     $this->progressAdvance();
     foreach ($tasks as $task) {
       $this->$task()->progressAdvance();
@@ -663,8 +647,8 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    */
   protected function uploadMoveImages($from, $to) {
     if (is_dir($from)) {
-      sh::execute("rm -rf {$to}/*");
-      sh::execute("cp -R {$from}/* {$to}");
+      $this->shellExecute("rm -rf {$to}/*");
+      $this->shellExecute("cp -R {$from}/* {$to}");
     }
     return $this;
   }
