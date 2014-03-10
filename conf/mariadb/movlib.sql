@@ -1021,12 +1021,12 @@ SHOW WARNINGS;
 -- Table `movlib`.`awards_categories`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`awards_categories` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The award category’s ID within the award.',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The award category’s unique ID.',
   `award_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award’s unique ID.',
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp on which this award category was created.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The award categorie’s description in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_names` BLOB NOT NULL COMMENT 'The award categorie’s name in various languages. Keys are ISO alpha-2 language codes.',
-  PRIMARY KEY (`id`, `award_id`),
+  PRIMARY KEY (`id`),
   INDEX `fk_awards_categories_awards_idx` (`award_id` ASC),
   CONSTRAINT `fk_awards_categories_awards`
     FOREIGN KEY (`award_id`)
