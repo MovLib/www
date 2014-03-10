@@ -30,7 +30,6 @@ use \Symfony\Component\Console\Input\InputOption;
  * @since 0.0.1-dev
  */
 class CacheInspector extends \MovLib\Tool\Console\Command\Production\CacheInspector {
-  use \MovLib\Data\TraitShell;
 
   /**
    * @inheritdoc
