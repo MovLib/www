@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presentation\Person;
 
-use \MovLib\Data\Image\PersonImage;
 use \MovLib\Data\Person\Person;
 use \MovLib\Data\User\User;
 use \MovLib\Presentation\Partial\DateTime;
@@ -48,8 +47,8 @@ class Photo extends \MovLib\Presentation\Person\AbstractBase {
     $this->person = new Person((integer) $_SERVER["PERSON_ID"]);
 
     // Redirect to person edit form, if there is no photo.
-    if ($this->person->displayPhoto->imageExists === false) {
-      throw new SeeOther($this->routeEdit);
+    if ($this->person->imageExists === false) {
+      throw new SeeOther($i18n->r("/person/{0}/edit", [ $this->person->id ]));
     }
 
     $routeArgs = [ $this->person->id ];
@@ -75,14 +74,17 @@ class Photo extends \MovLib\Presentation\Person\AbstractBase {
    */
   protected function getPageContent() {
     global $i18n, $kernel;
-    $uploader    = new User(User::FROM_ID, $this->person->displayPhoto->uploaderId);
-    $dateTime    = new DateTime($this->person->displayPhoto->changed, [ "itemprop" => "uploadDate" ]);
+    $uploader    = new User(User::FROM_ID, $this->person->uploaderId);
+    $dateTime    = new DateTime($this->person->changed, [ "itemprop" => "uploadDate" ]);
     $description = "<dt>{$i18n->t("Description")}</dt>";
-    if ($this->person->displayPhoto->description) {
-      $description .= "<dd itemprop='description'>{$this->htmlDecode($this->person->displayPhoto->description)}</dd>";
+    if ($this->person->description) {
+      $description .= "<dd itemprop='description'>{$this->htmlDecode($this->person->description)}</dd>";
     }
     else {
-      $description .= "<dd>{$i18n->t("No description available, {0}add one{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ])}</dd>";
+      $description .= "<dd>{$i18n->t(
+        "No description available, {0}add one{1}?",
+        [ "<a href='{$i18n->r("/person/{0}/edit", [ $this->person->id ])}'>", "</a>" ]
+      )}</dd>";
     }
     return
     "<meta itemprop='representativeOfPage' content='true'>" .
@@ -92,14 +94,14 @@ class Photo extends \MovLib\Presentation\Person\AbstractBase {
             $description .
             "<dt>{$i18n->t("Provided by")}</dt><dd><a href='{$uploader->route}' itemprop='accountablePerson'>{$uploader->name}</a></dd>" .
             "<dt>{$i18n->t("Dimensions")}</dt><dd>{$i18n->t("{width} × {height}", [
-              "width"  => "<span itemprop='width'>{$this->person->displayPhoto->width}&nbsp;<abbr title='{$i18n->t("Pixel")}'>px</abbr></span>",
-              "height" => "<span itemprop='height'>{$this->person->displayPhoto->height}&nbsp;<abbr title='{$i18n->t("Pixel")}'>px</abbr></span>",
+              "width"  => "<span itemprop='width'>{$this->person->width}&nbsp;<abbr title='{$i18n->t("Pixel")}'>px</abbr></span>",
+              "height" => "<span itemprop='height'>{$this->person->height}&nbsp;<abbr title='{$i18n->t("Pixel")}'>px</abbr></span>",
             ])}</dd>" .
-            "<dt>{$i18n->t("File size")}</dt><dd itemprop='contentSize'>{$i18n->t("{0,number} {1}", $this->formatBytes($this->person->displayPhoto->filesize))}</dd>" .
+            "<dt>{$i18n->t("File size")}</dt><dd itemprop='contentSize'>{$i18n->t("{0,number} {1}", $this->formatBytes($this->person->filesize))}</dd>" .
             "<dt>{$i18n->t("Upload on")}</dt><dd>{$dateTime}</dd>" .
           "</dl>" .
           "<div class='s s3 tac image'>{$this->getImage(
-            $this->person->displayPhoto->getStyle(PersonImage::STYLE_SPAN_03),
+            $this->person->getStyle(Person::STYLE_SPAN_03),
             false,
             [ "itemprop" => "thumbnailUrl" ]
           )}</div>" .

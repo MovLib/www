@@ -85,6 +85,7 @@ class Movies extends \MovLib\Presentation\Person\AbstractBase {
     while ($cast = $castResult->fetch_object("\\MovLib\\Data\\Movie\\Cast")) {
       $job = $this->a($i18n->r("/job/{0}", [ $cast->jobId ]), $jobName);
 
+      $role = null;
       if ($cast->roleName) {
         $role = $cast->roleName;
       }

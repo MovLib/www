@@ -21,7 +21,7 @@ use \MovLib\Data\Image\PersonImage;
 use \MovLib\Presentation\Error\NotFound;
 
 /**
- * Represents a single person.
+ * Represents a single person including their photo.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
@@ -30,7 +30,19 @@ use \MovLib\Presentation\Error\NotFound;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Person {
+class Person extends \MovLib\Data\Image\AbstractImage {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+  /**
+   * 220x220>
+   *
+   * Image style used on the show page to display the person photo.
+   *
+   * @var integer
+   */
+  const STYLE_SPAN_03 = \MovLib\Data\Image\SPAN_03;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -65,11 +77,12 @@ class Person {
   public $deleted;
 
   /**
-   * The person's display photo.
+   * The photo's path within the upload directory.
    *
-   * @var \MovLib\Data\Image\PersonImage
+   * @see PersonImage::__construct()
+   * @var string
    */
-  public $displayPhoto;
+  protected $directory = "person";
 
   /**
    * The person's unique identifier.
@@ -131,7 +144,13 @@ class Person {
           `birthdate`,
           `born_name`,
           `deathdate`,
-          `nickname`
+          `nickname`,
+          `image_uploader_id`,
+          `image_width`,
+          `image_height`,
+          `image_filesize`,
+          `image_extension`,
+          `image_styles`
         FROM `persons`
         WHERE
           `id` = ?
@@ -146,7 +165,13 @@ class Person {
         $this->birthDate,
         $this->bornName,
         $this->deathDate,
-        $this->nickname
+        $this->nickname,
+        $this->uploaderId,
+        $this->width,
+        $this->height,
+        $this->filesize,
+        $this->extension,
+        $this->styles
       );
       if (!$stmt->fetch()) {
         throw new NotFound;
@@ -154,6 +179,10 @@ class Person {
       $stmt->close();
       $this->id = $id;
     }
+
+
+    // The person's photo name is always the person's identifier, so set it here.
+    $this->filename = &$this->id;
 
     // If we have an identifier, either from the above query or directly set via PHP's fetch_object() method, try to
     // load the photo for this person.
@@ -217,6 +246,7 @@ class Person {
    * Get all movies matching the offset and row count.
    *
    * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
    * @param integer $offset
    *   The offset in the result.
    * @param integer $rowCount
@@ -225,7 +255,7 @@ class Person {
    *   The query result.
    */
   public static function getPersons($offset, $rowCount) {
-    global $db;
+    global $db, $i18n;
     return $db->query(
       "SELECT
         `id`,
@@ -235,13 +265,21 @@ class Person {
         `birthdate` AS `birthDate`,
         `born_name` AS `bornName`,
         `deathdate` AS `deathDate`,
-        `nickname`
+        `nickname`,
+        `image_uploader_id` AS `uploaderId`,
+        `image_width` AS `width`,
+        `image_height` AS `height`,
+        `image_filesize` AS `filesize`,
+        `image_extension` AS `extension`,
+        UNIX_TIMESTAMP(`image_changed`) AS `changed`,
+        COLUMN_GET(`dyn_image_descriptions`, ? AS BINARY) AS `description`,
+        `image_styles` AS `styles`
       FROM `persons`
       WHERE `deleted` = false
       ORDER BY `id` DESC
       LIMIT ? OFFSET ?",
-      "di",
-      [ $rowCount, $offset ]
+      "sdi",
+      [ $i18n->languageCode, $rowCount, $offset ]
     )->get_result();
   }
 
@@ -287,14 +325,105 @@ class Person {
   /**
    * Initialize the person with their image, deleted flag and translate their route.
    *
-   * @global \MovLib\Data\Database $db
-   * @global type $i18n
+   * @global \MovLib\Data\I18n $i18n
    */
   protected function init() {
-    global $db, $i18n;
+    global $i18n;
+
     $this->deleted = (boolean) $this->deleted;
-    $this->displayPhoto = new PersonImage($this->id, $this->name);
-    $this->route = $i18n->r("/person/{0}", [ $this->id ]);
+    $this->route   = $i18n->r("/person/{0}", [ $this->id]);
+    $key           = "edit";
+    if ($this->uploaderId) {
+      $this->imageExists = true;
+      $key               = "photo";
+      $this->styles      = unserialize($this->styles);
+    }
+    $this->imageRoute = $i18n->r("/person/{0}/{$key}", [ $this->id ]);
+
+    return $this;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Image Methods
+
+
+  /**
+   * Generate all supported image styles.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @param string $source
+   *   Absolute path to the uploaded image.
+   * @param boolean $regenerate [optional]
+   *   Whether to regenerate existing styles.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  protected function generateStyles($source, $regenerate = false) {
+    global $db, $i18n;
+
+    // Generate the various image's styles and always go from best quality down to worst quality.
+    $this->convert($source, self::STYLE_SPAN_03, self::STYLE_SPAN_03, self::STYLE_SPAN_03, true);
+    $this->convert($source, self::STYLE_SPAN_02, self::STYLE_SPAN_02, self::STYLE_SPAN_02, true);
+    $this->convert($source, self::STYLE_SPAN_01, self::STYLE_SPAN_01, self::STYLE_SPAN_01, true);
+
+    if ($regenerate === true) {
+      $query  = "UPDATE `persons` SET `image_styles` = ? WHERE `id` = ?";
+      $types  = "sd";
+      $params = [ serialize($this->styles), $this->id ];
+    }
+    else {
+      $this->changed = time();
+      $query =
+        "UPDATE `persons` SET
+          `image_changed`          = FROM_UNIXTIME(?),
+          `dyn_image_descriptions` = COLUMN_ADD(`dyn_image_descriptions`, ?, ?),
+          `image_extension`        = ?,
+          `image_filesize`         = ?,
+          `image_height`           = ?,
+          `image_styles`           = ?,
+          `image_uploader_id`      = ?,
+          `image_width`            = ?
+        WHERE `id` = ?"
+      ;
+      $types  = "isssiisdid";
+      $params = [
+        $this->changed,
+        $i18n->languageCode,
+        $this->description,
+        $this->extension,
+        $this->filesize,
+        $this->height,
+        serialize($this->styles),
+        $this->uploaderId,
+        $this->width,
+        $this->id,
+      ];
+    }
+    $db->query($query, $types, $params)->close();
+
+    return $this;
+  }
+
+  /**
+   * Delete the image.
+   *
+   * @return this
+   */
+  public function delete() {
+    return $this;
+  }
+
+  /**
+   * Set deletion request identifier.
+   *
+   * @global \MovLib\Data\Database $db
+   * @param integer $id
+   *   The deletion request's unique identifier to set.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function setDeletionRequest($id) {
     return $this;
   }
 

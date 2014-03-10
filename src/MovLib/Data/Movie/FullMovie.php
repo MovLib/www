@@ -152,7 +152,13 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
         `job_id` AS `jobId`,
         IFNULL(COLUMN_GET(`dyn_role`, ? AS BINARY), COLUMN_GET(`dyn_role`, '{$i18n->defaultLanguageCode}' AS BINARY)) AS `roleName`,
         `alias_id` AS `alias`,
-        `role_id` AS `role`
+        `role_id` AS `role`,
+        `image_uploader_id` AS `uploaderId`,
+        `image_width` AS `width`,
+        `image_height` AS `height`,
+        `image_filesize` AS `filesize`,
+        `image_extension` AS `extension`,
+        `image_styles` AS `styles`
       FROM `movies_cast`
       INNER JOIN `persons` AS `p`
         ON `movies_cast`.`person_id` = `p`.`id`
@@ -209,7 +215,13 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
         `mc`.`job_id` AS `jobId`,
         `mc`.`alias_id` AS `aliasId`,
         `mc`.`person_id` AS `personId`,
-        IFNULL(COLUMN_GET(`j`.`dyn_titles`, ? AS BINARY), COLUMN_GET(`j`.`dyn_titles`, '{$i18n->defaultLanguageCode}' AS BINARY))
+        IFNULL(COLUMN_GET(`j`.`dyn_titles`, ? AS BINARY), COLUMN_GET(`j`.`dyn_titles`, '{$i18n->defaultLanguageCode}' AS BINARY)),
+        `image_uploader_id` AS `uploaderId`,
+        `image_width` AS `width`,
+        `image_height` AS `height`,
+        `image_filesize` AS `filesize`,
+        `image_extension` AS `extension`,
+        `image_styles` AS `styles`
       FROM `movies_crew` AS `mc`
       INNER JOIN `jobs` AS `j`
         ON `j`.`id` = `mc`.`job_id`
@@ -240,7 +252,13 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
     return $db->query(
       "SELECT
         `persons`.`id`,
-        `persons`.`name`
+        `persons`.`name`,
+        `image_uploader_id` AS `uploaderId`,
+        `image_width` AS `width`,
+        `image_height` AS `height`,
+        `image_filesize` AS `filesize`,
+        `image_extension` AS `extension`,
+        `image_styles` AS `styles`
       FROM `movies_directors`
         INNER JOIN `persons` ON `persons`.`id` = `movies_directors`.`person_id`
       WHERE `movies_directors`.`movie_id` = ?

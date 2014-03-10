@@ -190,7 +190,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
 
     // Put all header information together after the closing title.
     $personPhoto         = $this->getImage(
-      $this->person->displayPhoto->getStyle(PersonImage::STYLE_SPAN_02),
+      $this->person->getStyle(FullPerson::STYLE_SPAN_02),
       true,
       [ "property" => "image" ]
     );

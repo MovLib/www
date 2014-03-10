@@ -17,9 +17,6 @@
  */
 namespace MovLib\Presentation\Person;
 
-use \MovLib\Data\Person\FullPerson;
-use \MovLib\Presentation\Error\Gone;
-
 /**
  * Base presenation of person pages.
  *

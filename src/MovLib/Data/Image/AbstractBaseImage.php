@@ -118,6 +118,13 @@ abstract class AbstractBaseImage {
   public $imageExists = false;
 
   /**
+   * The image's localized route.
+   *
+   * @var string
+   */
+  public $imageRoute;
+
+  /**
    * The image's extension.
    *
    * @var string
@@ -302,6 +309,8 @@ abstract class AbstractBaseImage {
    */
   protected function getPath($style = null) {
     global $kernel;
+
+    \FB::send($this);
 
     // We always have to generate the absolute path to the image within our persistent storage, doesn't matter if it
     // exists or not, as it may be requested to move or convert an image that was just uploaded. Of course we need the

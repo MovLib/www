@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Partial\Lists;
 
-use \MovLib\Data\Image\PersonImage;
+use \MovLib\Data\Person\Person;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Date;
 
@@ -49,7 +49,7 @@ class Persons extends \MovLib\Presentation\Partial\Lists\AbstractList {
    *
    * @var integer
    */
-  public $imageStyle = PersonImage::STYLE_SPAN_01;
+  public $imageStyle = Person::STYLE_SPAN_01;
 
   /**
    * The attributes of the list's items.
@@ -162,7 +162,7 @@ class Persons extends \MovLib\Presentation\Partial\Lists\AbstractList {
       $list .=
         "<li{$this->expandTagAttributes($this->listItemsAttributes)}>" .
           "<a class='img li r' href='{$i18n->r("/person/{0}", [ $person->id ])}' itemprop='url'>" .
-            $this->getImage($person->displayPhoto->getStyle($this->imageStyle), false, [ "class" => "s s1", "itemprop" => "image" ]) .
+            $this->getImage($person->getStyle($this->imageStyle), false, [ "class" => "s s1", "itemprop" => "image" ]) .
             "<span class='s s{$this->descriptionSpan}'><span class='link-color' itemprop='name'>{$person->name}</span>{$additionalInfo}</span>" .
           "</a>" .
         "</li>"

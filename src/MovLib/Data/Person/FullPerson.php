@@ -125,13 +125,21 @@ class FullPerson extends \MovLib\Data\Person\Person {
           `cause_of_death_id`,
           `deathdate`,
           `deathplace_id`,
-          `nickname`
+          `nickname`,
+          `image_uploader_id`,
+          `image_width`,
+          `image_height`,
+          `image_filesize`,
+          `image_extension`,
+          UNIX_TIMESTAMP(`image_changed`),
+          COLUMN_GET(`dyn_image_descriptions`, ? AS BINARY),
+          `image_styles`
         FROM `persons`
         WHERE
           `id` = ?
         LIMIT 1",
-        "ssd",
-        [ $i18n->languageCode, $i18n->languageCode, $this->id ]
+        "sssd",
+        [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $id ]
       );
       $stmt->bind_result(
         $this->created,
@@ -146,13 +154,25 @@ class FullPerson extends \MovLib\Data\Person\Person {
         $this->causeOfDeath,
         $this->deathDate,
         $this->deathplace,
-        $this->nickname
+        $this->nickname,
+        $this->uploaderId,
+        $this->width,
+        $this->height,
+        $this->filesize,
+        $this->extension,
+        $this->changed,
+        $this->description,
+        $this->styles
       );
       if (!$stmt->fetch()) {
         throw new NotFound;
       }
       $stmt->close();
+      $this->id = $id;
     }
+
+    // The person's photo name is always the person's identifier, so set it here.
+    $this->filename = &$this->id;
 
     if ($this->id) {
       $this->init();

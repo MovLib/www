@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Partial\Lists;
 
-use \MovLib\Data\Image\PersonImage;
+use \MovLib\Data\Person\Person;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Lists\Unordered;
 
@@ -55,7 +55,7 @@ class Cast extends \MovLib\Presentation\Partial\Lists\AbstractList {
    *
    * @var integer
    */
-  public $imageStyle = PersonImage::STYLE_SPAN_01;
+  public $imageStyle = Person::STYLE_SPAN_01;
 
   /**
    * The attributes of the list's items.
@@ -165,7 +165,7 @@ class Cast extends \MovLib\Presentation\Partial\Lists\AbstractList {
           $this->a(
             $info["person"]->route,
             "<div class='s s1 tac'>" .
-            $this->getImage($info["person"]->displayPhoto->getStyle($this->imageStyle), false, [ "itemprop" => "image" ]) .
+            $this->getImage($info["person"]->getStyle($this->imageStyle), false, [ "itemprop" => "image" ]) .
             "</div><div class='link-color s s{$descriptionSpan}' itemprop='name'><p>{$info["person"]->name}</p></div>",
             [ "class" => "img fl", "itemprop" => "url" ]
           ) .
