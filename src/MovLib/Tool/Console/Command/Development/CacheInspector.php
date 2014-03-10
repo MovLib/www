@@ -55,7 +55,7 @@ class CacheInspector extends \MovLib\Tool\Console\Command\Production\CacheInspec
     if (!is_file($file)) {
       throw new \RuntimeException("Couldn't find '{$file}'!");
     }
-    $this->shellExecute("echo 3 | tee /proc/sys/vm/drop_caches");
+    $this->shExecute("echo 3 | tee /proc/sys/vm/drop_caches");
     $this->write("Purged disk cache!", self::MESSAGE_TYPE_INFO);
     return $this;
   }

@@ -18,7 +18,6 @@
 namespace MovLib\Tool\Console\Command\Production;
 
 use \MovLib\Tool\Console\Command\Production\FixPermissions;
-use \MovLib\Data\UnixShell as sh;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
