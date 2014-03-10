@@ -32,21 +32,6 @@ namespace MovLib\Data;
  */
 trait TraitShell {
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * Whether a {@see \RuntimeException should be thrown on execution error or not.
-   *
-   * @var boolean
-   */
-  protected $shellThrowExceptions = false;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
   /**
    * Execute an external program.
    *
@@ -62,18 +47,16 @@ trait TraitShell {
    *   append elements, call unset on the array before passing it to exec.
    * @param int $status [optional]
    *   If present the return status of the executed command will be written to this variable.
-   * @return boolean
-   *   <code>TRUE</code> if the program exited with <code>0</code>, otherwise <code>FALSE</code>
+   * @return $this
    * @throws \RuntimeException
    */
-  public final function execute($command, &$output = null, &$status = null) {
+  protected final function shExecute($command, &$output = null, &$status = null) {
     exec("{$command} 2>&1", $output, $status);
-    $return = $status === 0;
-    if ($this->shellThrowExceptions === true && $return === false) {
+    if ($status !== 0) {
       $log = str_replace("\t", "    ", implode("\n", $output));
       throw new \RuntimeException("{$log}\n\nCouldn't execute command: {$command}");
     }
-    return $return;
+    return $this;
   }
 
   /**
@@ -94,7 +77,7 @@ trait TraitShell {
    * @param string $command
    *   The external shell program to execute.
    */
-  public final function executeDetached($command) {
+  protected final function shExecuteDetached($command) {
     exec("{$command} <&- 1<&- 2<&- &");
   }
 
@@ -107,49 +90,15 @@ trait TraitShell {
    *   The external shell program to execute.
    * @param int $status [optional]
    *   If present the return status of the executed command will be written to this variable.
-   * @return boolean
-   *   <code>TRUE</code> if the program exited with <code>0</code>, otherwise <code>FALSE</code>.
+   * @return $this
    * @throws \RuntimeException
    */
-  public final function executeDisplayOutput($command, &$status = null) {
+  protected final function shExecuteDisplayOutput($command, &$status = null) {
     system($command, $status);
-    $return = $status === 0;
-    if ($this->shellThrowExceptions === true && $return === false) {
+    if ($status !== 0) {
       throw new \RuntimeException("Couldn't execute command: {$command}");
     }
-    return $return;
-  }
-
-  /**
-   * Create a symboli link.
-   *
-   * @param string $target
-   *   Absolute path to the target directory or file.
-   * @param string $link
-   *   Absolute path to the symbolic link.
-   * @param boolean $force [optional]
-   *   Whether to override existing destination or not, defaults to <code>TRUE</code> (override).
-   * @return boolean
-   *   <code>TRUE</code> on success, otherwise <code>FALSE</code>.
-   * @throws \RuntimeException
-   */
-  public final function symlink($target, $link, $force = true) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (!is_string($target) || !is_string($link)) {
-      throw new \InvalidArgumentException("\$target and \$link must be of type string");
-    }
-    if (empty($target) || empty($link)) {
-      throw new \InvalidArgumentException("\$target and \$link cannot be empty");
-    }
-    if (!file_exists($target)) {
-      throw new \InvalidArgumentException("\$target must be a valid path: '{$target}'");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    $force = $force === true ? "f" : null;
-    $target = realpath($target);
-    return $this->execute("ln -{$force}s '{$target}' '{$link}'");
+    return $this;
   }
 
 }
