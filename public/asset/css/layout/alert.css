@@ -65,15 +65,6 @@
   color: #3a87ad;
 }
 
-.alert-info a {
-  color: #656565;
-}
-
-.alert-info a:focus,
-.alert-info a:hover {
-  border-bottom-color: #656565;
-}
-
 .alert-success {
   background-color: #dff0d8;
 }
