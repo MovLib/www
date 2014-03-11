@@ -114,6 +114,7 @@
 
 #h .expander {
   float: left;
+  position: relative;
 }
 
 #h .clicker {
@@ -178,7 +179,6 @@
   position: absolute;
   top: 0;
   right: 0;
-  left: 0;
   z-index: -2;
   padding: 20px 0;
   margin-right: -20px;
@@ -206,7 +206,7 @@
 }
 
 #h .concealed h3,
-#user-nav .no-list {
+.main-nav .no-list {
   margin-top: 0;
 }
 
@@ -222,12 +222,12 @@
   margin-left: 50px;
 }
 
-#user-nav .concealed {
+.main-nav .concealed {
   left: auto;
   overflow: hidden;
 }
 
-#user-nav .separator {
+.main-nav .separator {
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px solid rgba(0, 0, 0, 0.2);
@@ -263,15 +263,15 @@
   opacity: 1;
 }
 
-#user-nav.focus .btn-inverse,
-#user-nav:hover .btn-inverse {
+.main-nav.focus .btn-inverse,
+.main-nav:hover .btn-inverse {
   color: #fff;
   background-color: #09c;
 }
 
 .authenticated #user-nav .concealed:before,
 .authenticated #user-nav .concealed:after,
-#user-nav .concealed .img {
+#user-nav .concealed .no-link {
   position: absolute;
   bottom: 20px;
   left: 20px;
@@ -295,19 +295,19 @@
   z-index: -1;
 }
 
-#user-nav .sm2 {
+.main-nav .sm2 {
   min-width: 140px;
 }
 
-#user-nav .sm3 {
+.main-nav .sm3 {
   min-width: 220px;
 }
 
-#user-nav .no-list {
+.main-nav .no-list {
   margin-bottom: 0;
 }
 
-#user-nav .no-list a {
+.main-nav .no-list a {
   margin-left: -10px;
   padding: 5px 10px;
   display: block;
@@ -316,18 +316,18 @@
   white-space: pre;
 }
 
-#user-nav .no-list a:focus,
-#user-nav .no-list a:hover {
+.main-nav .no-list a:focus,
+.main-nav .no-list a:hover {
   color: #fff;
   background-color: #09c;
 }
 
-#user-nav .no-list a.danger:focus,
-#user-nav .no-list a.danger:hover {
+.main-nav .no-list a.danger:focus,
+.main-nav .no-list a.danger:hover {
   background-color: #da4f49;
 }
 
-#user-nav .no-list .ico:before {
+.main-nav .no-list .ico:before {
   margin-right: 5px;
 }
 

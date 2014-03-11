@@ -273,53 +273,33 @@ class Page extends \MovLib\Presentation\AbstractBase {
   protected function getHeader() {
     global $i18n, $kernel, $session;
 
-    $subNavigations = [];
-    foreach ([
-      "explore" => [
-        "movies" => [ $i18n->t("Movies"), [
-          [ $i18n->rp("/movies"), $i18n->t("Latest Entries") ],
-          [ $i18n->rp("/movies/charts"), $i18n->t("Charts") ],
-          [ $i18n->r("/movie/create"), $i18n->t("Create New") ],
-          [ $i18n->r("/movie/random"), $i18n->t("Random Movie") ],
-        ]],
-        "series" => [ $i18n->t("Series"), [
-          [ $i18n->rp("/series"), $i18n->t("Latest Entries") ],
-          [ $i18n->rp("/series/charts"), $i18n->t("Charts") ],
-          [ $i18n->r("/series/create"), $i18n->t("Create New") ],
-          [ $i18n->r("/series/random"), $i18n->t("Random Series") ],
-        ]],
-        "persons" => [ $i18n->t("Persons"), [
-          [ $i18n->rp("/persons"), $i18n->t("Latest Entries") ],
-          [ $i18n->r("/person/create"), $i18n->t("Create New") ],
-          [ $i18n->r("/person/random"), $i18n->t("Random Person") ],
-        ]],
-        "companies" => [ $i18n->t("Companies"), [
-          [ $i18n->rp("/companies"), $i18n->t("Latest Entries") ],
-          [ $i18n->r("/company/create"), $i18n->t("Create New") ],
-          [ $i18n->r("/company/random"), $i18n->t("Random Company") ],
-        ]],
-        "more" => [ $i18n->t("More"), [
-          [ $i18n->rp("/genres"), $i18n->t("Explore all Genres") ],
-          [ $i18n->rp("/jobs"), $i18n->t("Explore all Jobs") ],
-          [ $i18n->rp("/awards"), $i18n->t("Explore all Awards") ],
-        ]],
-      ],
-      "community" => [
-        "users" => [ $i18n->t("Users"), [
-          [ $i18n->rp("/users"), $i18n->t("Latest Users") ],
-        ]],
-        "utilities" => [ $i18n->t("Utilities"), [
-          [ $i18n->rp("/deletion-requests"), $i18n->t("Deletion Requests") ],
-        ]],
-      ],
-    ] as $name => $subNavigation) {
-      foreach ($subNavigation as $subName => $subNav) {
-        $subNavigations[$name][$subName]                = new Navigation($subNav[0], $subNav[1], [ "class" => "s s3" ]);
-        $subNavigations[$name][$subName]->headingLevel  = "3";
-        $subNavigations[$name][$subName]->hideTitle     = false;
-        $subNavigations[$name][$subName]->unorderedList = true;
-      }
-    }
+    $exploreNavigation =
+      "<ul class='o1 sm2 no-list'>" .
+        "<li>{$this->a($i18n->rp("/movies"), $i18n->t("Movies"), [ "class" => "ico ico-movie" ])}</li>" .
+        "<li>{$this->a($i18n->rp("/series"), $i18n->t("Series"), [ "class" => "ico ico-series" ])}</li>" .
+        "<li>{$this->a($i18n->rp("/persons"), $i18n->t("Persons"), [ "class" => "ico ico-person" ])}</li>" .
+        "<li>{$this->a($i18n->rp("/releases"), $i18n->t("Releases"), [ "class" => "ico ico-release" ])}</li>" .
+        "<li>{$this->a($i18n->rp("/companies"), $i18n->t("Companies"), [ "class" => "ico ico-company" ])}</li>" .
+        "<li>{$this->a($i18n->rp("/awards"), $i18n->t("Awards"), [ "class" => "ico ico-award" ])}</li>" .
+        "<li>{$this->a($i18n->rp("/genres"), $i18n->t("Genres"), [ "class" => "ico ico-genre" ])}</li>" .
+        "<li>{$this->a($i18n->rp("/jobs"), $i18n->t("Jobs"), [ "class" => "ico ico-job" ])}</li>" .
+        "<li class='separator'>{$this->a($i18n->rp("/help"), $i18n->t("Help"), [ "class" => "ico ico-help" ])}</li>" .
+      "</ul>"
+    ;
+
+    $notImplemented = new Alert("coming soon!");
+    $marketplaceNavigation =
+      "<ul class='o1 sm2 no-list'>" .
+        "<li>{$notImplemented}</li>" .
+      "</ul>"
+    ;
+
+    $communityNavigation =
+      "<ul class='o1 sm2 no-list'>" .
+        "<li>{$this->a($i18n->rp("/users"), $i18n->t("Explore Users"), [ "class" => "ico ico-person" ])}</li>" .
+        "<li class='separator'>{$this->a($i18n->rp("/deletion-requests"), $i18n->t("Deletion Requests"), [ "class" => "ico ico-delete" ])}</li>" .
+      "</ul>"
+    ;
 
     if ($session->isAuthenticated === true) {
       $userIcon = "<div class='clicker ico ico-settings authenticated'>{$this->getImage($session->userAvatar, false)}<span class='badge'>2</span></div>";
@@ -348,8 +328,6 @@ class Page extends \MovLib\Presentation\AbstractBase {
       ;
     }
 
-    $notImplemented = new Alert("Not implemented yet!");
-
     $searchQuery = isset($_GET["q"]) ? $_GET["q"] : null;
 
     return
@@ -363,24 +341,22 @@ class Page extends \MovLib\Presentation\AbstractBase {
           [ "id" => "l", "title" => $i18n->t("Go back to the home page.") ]
         )}</h1>" .
         "<div class='s s9'>" .
-          "<nav aria-expanded='false' aria-haspopup='true' class='expander' id='explore-nav' role='navigation' tabindex='0'>" .
+          "<nav aria-expanded='false' aria-haspopup='true' class='expander main-nav' id='explore-nav' role='navigation' tabindex='0'>" .
             "<h2 class='visible clicker'>{$i18n->t("Explore")}</h2>" .
-            "<div class='concealed r'>" .
-              $subNavigations["explore"]["movies"] .
-              $subNavigations["explore"]["series"] .
-              "<div class='s s3'>{$subNavigations["explore"]["persons"]}{$subNavigations["explore"]["companies"]}</div>" .
-              $subNavigations["explore"]["more"] .
+            "<div class='concealed s sm3'>" .
+              $exploreNavigation .
             "</div>" .
           "</nav>" .
-          "<nav aria-expanded='false' aria-haspopup='true' class='expander' id='marketplace-nav' role='navigation' tabindex='0'>" .
+          "<nav aria-expanded='false' aria-haspopup='true' class='expander main-nav' id='marketplace-nav' role='navigation' tabindex='0'>" .
             "<h2 class='visible clicker'>{$i18n->t("Marketplace")}</h2>" .
-            "<div class='concealed r'><div class='s s12'>{$notImplemented}</div></div>" .
+            "<div class='concealed s sm3'>" .
+              $marketplaceNavigation .
+            "</div>" .
           "</nav>" .
-          "<nav aria-expanded='false' aria-haspopup='true' class='expander' id='community-nav' role='navigation' tabindex='0'>" .
+          "<nav aria-expanded='false' aria-haspopup='true' class='expander main-nav' id='community-nav' role='navigation' tabindex='0'>" .
             "<h2 class='visible clicker'>{$i18n->t("Community")}</h2>" .
-            "<div class='concealed r'>" .
-              $subNavigations["community"]["users"] .
-              $subNavigations["community"]["utilities"] .
+            "<div class='concealed s sm3'>" .
+              $communityNavigation .
             "</div>" .
           "</nav>" .
           "<form action='{$i18n->r("/search")}' class='s' id='s' method='get' role='search'>" .
@@ -391,7 +367,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
               "Enter the search term you wish to search for and hit enter."
             )}' type='search' value='{$searchQuery}'>" .
           "</form>" .
-          "<nav aria-expanded='false' aria-haspopup='true' class='expander' id='user-nav' role='navigation' tabindex='0'>" .
+          "<nav aria-expanded='false' aria-haspopup='true' class='expander main-nav' id='user-nav' role='navigation' tabindex='0'>" .
             "<h2 class='vh'>{$i18n->t("User Navigation")}</h2>{$userIcon}" .
             "<div class='concealed s sm3'>{$userNavigation}</div>" .
           "</nav>" .
