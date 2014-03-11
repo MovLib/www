@@ -40,7 +40,7 @@ class Edit extends \MovLib\Presentation\Person\AbstractBase {
     $this->person = new Person((integer) $_SERVER["PERSON_ID"]);
     $this->initPage($i18n->t("Edit"));
     $this->pageTitle        = $i18n->t("Edit {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
-    $this->initLanguageLinks($i18n->r("/person/{0}/edit"), [ $this->person->id ]);
+    $this->initLanguageLinks("/person/{0}/edit", [ $this->person->id ]);
     $this->initPersonBreadcrumb();
     $this->sidebarInit();
   }

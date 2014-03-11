@@ -39,8 +39,8 @@ class Releases extends \MovLib\Presentation\Person\AbstractBase {
   public function __construct() {
     global $i18n;
     $this->person = new FullPerson((integer) $_SERVER["PERSON_ID"]);
-    $this->initPage($i18n->t("Releases"));
-    $this->pageTitle        = $i18n->t("Releases of {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
+    $this->initPage($i18n->t("Releases with {0}", [ $this->person->name ]));
+    $this->pageTitle        = $i18n->t("Releases with {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
     $this->initLanguageLinks($i18n->rp("/person/{0}/releases"), [ $this->person->id ], true);
     $this->initPersonBreadcrumb();
     $this->sidebarInit();

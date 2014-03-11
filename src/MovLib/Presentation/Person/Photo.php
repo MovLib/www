@@ -55,7 +55,7 @@ class Photo extends \MovLib\Presentation\Person\AbstractBase {
 
     $this->initPage($i18n->t("Photo"));
     $this->pageTitle        = $i18n->t("Photo of {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
-    $this->initLanguageLinks($i18n->r("/person/{0}/photo"), $routeArgs);
+    $this->initLanguageLinks("/person/{0}/photo", $routeArgs);
     $this->initPersonBreadcrumb();
     $this->sidebarInit();
 
