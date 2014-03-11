@@ -61,9 +61,10 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
   /**
    * @inheritdoc
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    */
   protected function getPageContent() {
-    global $i18n;
+    global $i18n, $kernel;
 
     // Enhance the page title with microdata.
     $this->schemaType = "Person";
@@ -72,8 +73,6 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     if ($this->person->deleted === true) {
       return $this->goneGetContent();
     }
-
-    $editLinkArgs = [ "<a href='{$i18n->r("/person/{0}/edit", [ $this->person->id ])}'>", "</a>" ];
 
     // ----------------------------------------------------------------------------------------------------------------- Build page header.
     // Append sex information to name.
@@ -206,66 +205,66 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     // ----------------------------------------------------------------------------------------------------------------- Build page sections.
 
 
+    $content = null;
+
     // Biography section.
     if ($this->person->biography) {
-      $biography = $this->htmlDecode($this->person->biography);
+      $content .= $this->getSection("biography", $i18n->t("Biography"), $this->htmlDecode($this->person->biography));
     }
-    else {
-      $biography = new Alert(
-        $i18n->t("No biography available, {0}write one{1}?", $editLinkArgs),
-        null,
-        Alert::SEVERITY_INFO
-      );
-    }
-    $sections["biography"] = [
-      $i18n->t("Biography"),
-      $biography,
-    ];
 
     // Additional names section.
-    $sections["aliases"] = [
-      $i18n->t("Also Known As"),
-      new Ordered($this->person->getAliases(), $i18n->t("No additional names available, {0}add some{1}?", $editLinkArgs), [ "class" => "grid-list no-list r" ], [ "class" => "mb10 s s3", "property" => "additionalName" ]),
-    ];
+    if (($personAliases = $this->person->getAliases())) {
+      $aliases = null;
+      $c       = count($personAliases);
+      for ($i = 0; $i < $c; ++$i) {
+        $aliases .= "<li class='mb10 s s3' property='additionalName'>{$personAliases[$i]}</li>";
+      }
+      $content .= $this->getSection("aliases", $i18n->t("Also Known As"), "<ol class='grid-list no-list r'>{$aliases}</ol>");
+    }
 
     // External links section.
-    $links = null;
     $personLinks = $this->person->getLinks();
     if ($personLinks) {
-      $links .= "<ul class='grid-list no-list r'>";
-      $c = count($personLinks);
+      $links = null;
+      $c     = count($personLinks);
       for ($i = 0; $i < $c; ++$i) {
         $hostname = str_replace("www.", "", parse_url($personLinks[$i], PHP_URL_HOST));
         $links .= "<li class='mb10 s s3'><a href='{$personLinks[$i]}' property='url' rel='nofollow' target='_blank'>{$hostname}</a></li>";
       }
-      $links .= "</ul>";
+      $content .= $this->getSection("links", $i18n->t("External Links"), "<ul class='grid-list no-list r'>{$links}</ul>");
     }
-    else {
-      $links = $i18n->t("No links available, {0}add some{1}?", $editLinkArgs);
-    }
-    $sections["links"] = [
-      $i18n->t("External Links"),
-      $links,
-    ];
 
-    // Construct content and sidebar.
-    $content = null;
-    foreach ($sections as $id => $section) {
-      $this->sidebarNavigation->menuitems[] = [ "#{$id}", $section[0] ];
-      $content .= "<div id='{$id}'><h2>{$section[0]}</h2>";
-      if (is_array($section[1])) {
-        foreach ($section[1] as $subId => $subSection) {
-          $this->sidebarNavigation->menuitems[] = [ "#{$id}-{$subId}", $subSection[0] ];
-          $attributes = isset($subSection[2]) ? $this->expandTagAttributes($subSection[2]) : null;
-          $content .= "<div id='{$id}-{$subId}'><h3{$attributes}>{$subSection[0]}</h3>{$subSection[1]}</div>";
-        }
-      }
-      else {
-        $content .= $section[1];
-      }
-      $content .= "</div>";
+    if ($content) {
+      return $content;
     }
-    return $content;
+
+    return new Alert(
+      $i18n->t(
+        "{sitename} has no further details about {person_name}.",
+        [ "sitename"    => $kernel->siteName, "person_name" => $this->person->name ]
+      ),
+      $i18n->t("No Data Available"),
+      Alert::SEVERITY_INFO
+    );
+  }
+
+  /**
+   * Construct a section in the main content and add it to the sidebar.
+   *
+   * @param string $id
+   *   The section's unique identifier.
+   * @param string $title
+   *   The section's translated title.
+   * @param string $content
+   *   The section's content.
+   * @return string
+   *   The section ready for display.
+   */
+  protected function getSection($id, $title, $content) {
+    // Add the section to the sidebar as anchor.
+    $this->sidebarNavigation->menuitems[] = [ "#{$id}", $title ];
+
+    return "<div id='{$id}'><h2>{$title}</h2>{$content}</div>";
   }
 
 }

@@ -255,6 +255,8 @@ INSERT INTO `messages` (`message`, `dyn_translations`) VALUES
 ('Successfully Edited', COLUMN_CREATE('de', 'Erfolgreich Bearbeitet')),
 ('previous', COLUMN_CREATE('de', 'zurück')),
 ('next', COLUMN_CREATE('de', 'weiter')),
+('No Data Available', COLUMN_CREATE('de', 'Keine Daten Verfügbar')),
+('{sitename} has no further details about {person_name}.', COLUMN_CREATE('de', '{sitename} hat keine weiteren Details zu {person_name}.')),
 ('Biography', COLUMN_CREATE('de', 'Biographie')),
 ('Filmography', COLUMN_CREATE('de', 'Filmographie')),
 ('Director', COLUMN_CREATE('de', 'Regisseur')),
