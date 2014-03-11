@@ -42,6 +42,11 @@ ol ol {
   list-style: none;
 }
 
+.sidebar .page-content > ol,
+.sidebar .page-content > ul {
+  margin-top: 0;
+}
+
 /* ---------------------------------------------------------------------------------------------------------------------
  * Hover lists (`ul` and `ol`).
  * ------------------------------------------------------------------------------------------------------------------ */
@@ -53,6 +58,7 @@ ol ol {
   padding-bottom: 10px;
   color: #656565;
   transition: background-color 0.4s ease-out;
+  width: calc(100% + 40px);
 }
 
 .hover-list .hover-item:hover,
