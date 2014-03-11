@@ -78,22 +78,26 @@ abstract class AbstractListing extends \MovLib\Presentation\AbstractBase {
   /**
    * Get the full movie's formatted genres.
    *
+   * @global \MovLib\Data\I18n $i18n
    * @param \MovLib\Data\Movie\FullMovie $movie
    *   The full movie for which the genres should be formatted.
    * @return string
    *   The full movie's formatted genres.
    */
   protected function formatGenres($movie) {
-    $result = $movie->getGenres();
-    $genres = null;
+    global $i18n;
+    $genreRoute = $i18n->r("/genre/{0}");
+    $result     = $movie->getGenres();
+    $genres     = null;
     while ($genre = $result->fetch_assoc()) {
       if ($genres) {
         $genres .= " ";
       }
-      $genres .= "<span class='label' property='genre'>{$genre["name"]}</span>";
+      $route   = str_replace("{0}", $genre["id"], $genreRoute);
+      $genres .= "<a class='label' href='{$route}' property='genre'>{$genre["name"]}</a>";
     }
     if ($genres) {
-      return "<small>{$genres}</small>";
+      return "<small><span class='vh'>{$i18n->t("Genres: ")}</span>{$genres}</small>";
     }
   }
 

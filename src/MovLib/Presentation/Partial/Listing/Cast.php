@@ -94,9 +94,7 @@ class Cast extends \MovLib\Presentation\Partial\Listing\AbstractListing {
     $this->listItemsAttributes = $listItemsAttributes;
     $this->addClass("hover-item s r", $this->listItemsAttributes);
     $this->listItemsAttributes["typeof"] = "http://schema.org/Person";
-    $spanHalf = ($spanSize - 1) / 2;
-    $this->descriptionSpan = ceil($spanHalf);
-    $this->roleSpan = $spanSize - $this->descriptionSpan - 1;
+    $this->descriptionSpan = --$spanSize;
   }
 
 
@@ -152,18 +150,22 @@ class Cast extends \MovLib\Presentation\Partial\Listing\AbstractListing {
     // Construct the cast list.
     $list = null;
     foreach ($personRoles as $id => $info) {
-      if (empty($info["roles"])) {
-        $descriptionSpan = $this->descriptionSpan + $this->roleSpan;
+      $roles = null;
+      if (!empty($info["roles"])) {
+        $roles = implode(", ", $info["roles"]);
+        $roles = "<small>{$i18n->t(
+          "{begin_emphasize}as{end_emphasize} {roles}",
+          [ "roles" => $roles, "begin_emphasize" => "<em>", "end_emphasize" => "</em>" ]
+        )}</small>";
       }
-      else {
-        $descriptionSpan = $this->descriptionSpan;
-      }
-      $info["roles"] = new Unordered($info["roles"], "", [ "class" => "no-list jobs s s{$this->roleSpan} tar"]);
+
       $list .=
         "<li{$this->expandTagAttributes($this->listItemsAttributes)}>" .
           $this->getImage($info["person"]->getStyle($this->imageStyle), $info["person"]->route, [ "property" => "image" ], [ "class" => "s s1 tac" ]) .
-          "<div class='s s{$descriptionSpan}'><a href='{$info["person"]->route}' property='name url'>{$info["person"]->name}</a></div>" .
-        "{$info["roles"]}</li>"
+          "<div class='s s{$this->descriptionSpan}'>" .
+            "<p><a href='{$info["person"]->route}' property='name url'>{$info["person"]->name}</a></p>{$roles}" .
+          "</div>" .
+        "</li>"
       ;
     }
     return "<ol{$this->expandTagAttributes($this->attributes)}>{$list}</ol>";

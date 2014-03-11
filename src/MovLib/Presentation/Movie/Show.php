@@ -18,12 +18,10 @@
 namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Image\MoviePoster;
-use \MovLib\Data\Movie\Cast;
 use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Duration;
-use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\Listing\Persons;
 use \MovLib\Presentation\Partial\Listing\Cast as CastPartial;
 
@@ -270,9 +268,7 @@ class Show extends \MovLib\Presentation\Page {
       new Persons(
         $this->movie->getDirectors(),
         $i18n->t("No directors assigned yet, {0}add directors{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]),
-        [ "itemprop" => "director" ],
-        null,
-        5
+        [ "itemprop" => "director" ]
       ),
     ];
 

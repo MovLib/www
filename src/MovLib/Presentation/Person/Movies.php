@@ -102,7 +102,7 @@ class Movies extends \MovLib\Presentation\Person\AbstractBase {
         $job = $i18n->t("{0} ({1})", [ $jobName, $role ]);
       }
 
-      $movies[$cast->movieId]["#jobs"] .= "<li property='actor' resource='#'>{$job}</li>";
+      $movies[$cast->movieId]["#jobs"] .= "<li property='actor' resource='{$this->person->route}'>{$job}</li>";
     }
 
 

@@ -118,15 +118,17 @@ class Movies extends \MovLib\Presentation\Partial\Listing\AbstractListing {
       }
 
       $genres = null;
+      $genreRoute = $i18n->r("/genre/{0}");
       $result = $movie->getGenres();
       while ($row = $result->fetch_assoc()) {
         if ($genres) {
           $genres .= " ";
         }
-        $genres      .= "<span class='label'>{$row["name"]}</span>";
+        $route   = str_replace("{0}", $row["id"], $genreRoute);
+        $genres .= "<a class='label' href='{$route}' property='genre'>{$row["name"]}</a>";
       }
       if ($genres) {
-        $genres = "<p class='small'>{$genres}</p>";
+        $genres = "<small><span class='vh'>{$i18n->t("Genres: ")}</span>{$genres}</small>";
       }
 
       // Put the movie list entry together.
