@@ -15,13 +15,13 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Users;
+namespace MovLib\Presentation\User;
 
 use \MovLib\Data\User\User;
 use \MovLib\Data\User\Users;
 
 /**
- * @todo Description of Show
+ * Latest users.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -29,7 +29,7 @@ use \MovLib\Data\User\Users;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\Page {
+class Index extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitPagination;
   use \MovLib\Presentation\TraitSidebar;
 

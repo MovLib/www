@@ -49,12 +49,12 @@ location = / {
 
 
 location = <?= $rp("/movies") ?> {
-  set $movlib_presenter "Movies\\Show";
+  set $movlib_presenter "Movie\\Index";
   try_files $movlib_cache @php;
 }
 
 location = <?= $rp("/movies/charts") ?> {
-  set $movlib_presenter "Movies\\Charts";
+  set $movlib_presenter "Movie\\Charts";
   try_files $movlib_cache @php;
 }
 
@@ -314,7 +314,7 @@ location ^~ <?= $r("/movie") ?> {
 
 
 location = <?= $rp("/releases") ?> {
-  set $movlib_presenter "Releases\\Show";
+  set $movlib_presenter "Release\\Index";
   try_files $movlib_cache @php;
 }
 
@@ -323,7 +323,7 @@ location = <?= $rp("/releases") ?> {
 
 
 location = <?= $rp("/companies") ?> {
-  set $movlib_presenter "Companies\\Show";
+  set $movlib_presenter "Company\\Index";
   try_files $movlib_cache @php;
 }
 
@@ -439,7 +439,7 @@ location = <?= $r("/series/random") ?> {
 
 
 location = <?= $rp("/genres") ?> {
-  set $movlib_presenter "Genres\\Show";
+  set $movlib_presenter "Genre\\Index";
   try_files $movlib_cache @php;
 }
 
@@ -509,7 +509,7 @@ location ^~ <?= $r("/genre") ?> {
 
 
 location = <?= $rp("/awards") ?> {
-  set $movlib_presenter "Awards\\Show";
+  set $movlib_presenter "Award\\Index";
   try_files $movlib_cache @php;
 }
 
@@ -579,7 +579,7 @@ location ^~ <?= $r("/award") ?> {
 
 
 location = <?= $rp("/jobs") ?> {
-  set $movlib_presenter "Jobs\\Show";
+  set $movlib_presenter "Job\\Index";
   try_files $movlib_cache @php;
 }
 
@@ -649,7 +649,7 @@ location ^~ <?= $r("/job") ?> {
 
 
 location = <?= $rp("/persons") ?> {
-  set $movlib_presenter "Persons\\Show";
+  set $movlib_presenter "Person\\Index";
   try_files $movlib_cache @php;
 }
 
@@ -821,7 +821,7 @@ location = <?= $r("/profile/watchlist") ?> {
 
 
 location = <?= $rp("/users") ?> {
-  set $movlib_presenter "Users\\Show";
+  set $movlib_presenter "User\\Index";
   try_files $movlib_cache @php;
 }
 
@@ -950,7 +950,7 @@ $stmt->close();
 
 
 location = <?= $rp("/countries") ?> {
-  set $movlib_presenter "Countries\\Show";
+  set $movlib_presenter "Country\\Index";
   try_files $movlib_cache @php;
 }
 
@@ -975,11 +975,11 @@ location ^~ <?= $r("/country") ?> {
 }
 
 
-# ---------------------------------------------------------------------------------------------------------------------- Country(ies)
+# ---------------------------------------------------------------------------------------------------------------------- Year(s)
 
 
 location = <?= $rp("/years") ?> {
-  set $movlib_presenter "Countries\\Show";
+  set $movlib_presenter "Year\\Index";
   try_files $movlib_cache @php;
 }
 

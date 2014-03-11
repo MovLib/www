@@ -15,44 +15,44 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Awards;
+namespace MovLib\Presentation\Job;
 
-use \MovLib\Data\Award;
+use \MovLib\Data\Job;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Listing\Entity as EntityPartial;
 
 /**
- * The latest Awards.
+ * List of all jobs.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2014 MovLib
+ * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitSidebar;
+class Index extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitPagination;
+  use \MovLib\Presentation\TraitSidebar;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new latest awards presentation.
+   * Instantiate new jobs show presentation.
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
     global $i18n, $kernel;
-    $this->initPage($i18n->t("Awards"));
+    $this->initPage($i18n->t("Jobs"));
     $this->initBreadcrumb();
-    $this->initLanguageLinks("/awards", null, true);
-    $this->paginationInit(Award::getTotalCount());
+    $this->initLanguageLinks("/jobs", null, true);
+    $this->paginationInit(Job::getTotalCount());
     $this->sidebarInit([
-      [ $kernel->requestPath, $this->title, [ "class" => "ico ico-award" ] ],
-      [ $i18n->r("/award/random"), $i18n->t("Random") ],
+      [ $kernel->requestPath, $this->title, [ "class" => "ico ico-job" ] ],
+      [ $i18n->r("/job/random"), $i18n->t("Random") ],
     ]);
   }
 
@@ -67,19 +67,18 @@ class Show extends \MovLib\Presentation\Page {
     global $i18n;
 
     $this->headingBefore =
-      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/award/create")}'>{$i18n->t("Create New Award")}</a>"
+      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/job/create")}'>{$i18n->t("Create New Job")}</a>"
     ;
 
-    $result      = Award::getAwards($this->paginationOffset, $this->paginationLimit);
+    $result      = Job::getJobs($this->paginationOffset, $this->paginationLimit);
     $noItemText  = new Alert(
       $i18n->t(
-        "We couldn’t find any awards matching your filter criteria, or there simply aren’t any awards available."
-      ), $i18n->t("No Awards"), Alert::SEVERITY_INFO
+        "We couldn’t find any job matching your filter criteria, or there simply aren’t any jobs available."
+      ), $i18n->t("No Jobs"), Alert::SEVERITY_INFO
     );
     $noItemText .=
-      $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/award/create")}'>", "</a>" ]);
+      $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/job/create")}'>", "</a>" ]);
 
-    return new EntityPartial($result, $noItemText, "Award");
+    return new EntityPartial($result, $noItemText, "Job");
   }
-
 }

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Companies;
+namespace MovLib\Presentation\Company;
 
 use \MovLib\Data\Company\Company;
 use \MovLib\Presentation\Partial\Alert;
@@ -31,7 +31,7 @@ use \MovLib\Presentation\Partial\Listing\Companies as CompaniesPartial;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\Page {
+class Index extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitSidebar;
   use \MovLib\Presentation\TraitPagination;
 

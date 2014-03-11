@@ -277,8 +277,8 @@ class Page extends \MovLib\Presentation\AbstractBase {
       "<ul class='o1 sm2 no-list'>" .
         "<li>{$this->a($i18n->rp("/movies"), $i18n->t("Movies"), [ "class" => "ico ico-movie" ])}</li>" .
         "<li>{$this->a($i18n->rp("/series"), $i18n->t("Series"), [ "class" => "ico ico-series" ])}</li>" .
-        "<li>{$this->a($i18n->rp("/persons"), $i18n->t("Persons"), [ "class" => "ico ico-person" ])}</li>" .
         "<li>{$this->a($i18n->rp("/releases"), $i18n->t("Releases"), [ "class" => "ico ico-release" ])}</li>" .
+        "<li>{$this->a($i18n->rp("/persons"), $i18n->t("Persons"), [ "class" => "ico ico-person" ])}</li>" .
         "<li>{$this->a($i18n->rp("/companies"), $i18n->t("Companies"), [ "class" => "ico ico-company" ])}</li>" .
         "<li>{$this->a($i18n->rp("/awards"), $i18n->t("Awards"), [ "class" => "ico ico-award" ])}</li>" .
         "<li>{$this->a($i18n->rp("/genres"), $i18n->t("Genres"), [ "class" => "ico ico-genre" ])}</li>" .

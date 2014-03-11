@@ -15,44 +15,44 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Genres;
+namespace MovLib\Presentation\Award;
 
-use \MovLib\Data\Genre;
+use \MovLib\Data\Award;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Listing\Entity as EntityPartial;
 
 /**
- * List of all genres.
+ * The latest Awards.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitPagination;
+class Index extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitSidebar;
+  use \MovLib\Presentation\TraitPagination;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new genres show presentation.
+   * Instantiate new latest awards presentation.
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
     global $i18n, $kernel;
-    $this->initPage($i18n->t("Genres"));
+    $this->initPage($i18n->t("Awards"));
     $this->initBreadcrumb();
-    $this->initLanguageLinks("/genres", null, true);
-    $this->paginationInit(Genre::getTotalCount());
+    $this->initLanguageLinks("/awards", null, true);
+    $this->paginationInit(Award::getTotalCount());
     $this->sidebarInit([
-      [ $kernel->requestPath, $this->title, [ "class" => "ico ico-genre" ] ],
-      [ $i18n->r("/genre/random"), $i18n->t("Random") ],
+      [ $kernel->requestPath, $this->title, [ "class" => "ico ico-award" ] ],
+      [ $i18n->r("/award/random"), $i18n->t("Random") ],
     ]);
   }
 
@@ -67,17 +67,19 @@ class Show extends \MovLib\Presentation\Page {
     global $i18n;
 
     $this->headingBefore =
-      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/genre/create")}'>{$i18n->t("Create New Genre")}</a>"
+      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/award/create")}'>{$i18n->t("Create New Award")}</a>"
     ;
-    $result      = Genre::getGenres($this->paginationOffset, $this->paginationLimit);
+
+    $result      = Award::getAwards($this->paginationOffset, $this->paginationLimit);
     $noItemText  = new Alert(
       $i18n->t(
-        "We couldn’t find any genres matching your filter criteria, or there simply aren’t any genres available."
-      ), $i18n->t("No Genres"), Alert::SEVERITY_INFO
+        "We couldn’t find any awards matching your filter criteria, or there simply aren’t any awards available."
+      ), $i18n->t("No Awards"), Alert::SEVERITY_INFO
     );
     $noItemText .=
-      $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/genre/create")}'>", "</a>" ]);
+      $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/award/create")}'>", "</a>" ]);
 
-    return new EntityPartial($result, $noItemText, "Genre");
+    return new EntityPartial($result, $noItemText, "Award");
   }
+
 }

@@ -15,14 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Jobs;
+namespace MovLib\Presentation\Genre;
 
-use \MovLib\Data\Job;
+use \MovLib\Data\Genre;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Listing\Entity as EntityPartial;
 
 /**
- * List of all jobs.
+ * List of all genres.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -30,7 +30,7 @@ use \MovLib\Presentation\Partial\Listing\Entity as EntityPartial;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\Page {
+class Index extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitPagination;
   use \MovLib\Presentation\TraitSidebar;
 
@@ -39,20 +39,20 @@ class Show extends \MovLib\Presentation\Page {
 
 
   /**
-   * Instantiate new jobs show presentation.
+   * Instantiate new genres show presentation.
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
     global $i18n, $kernel;
-    $this->initPage($i18n->t("Jobs"));
+    $this->initPage($i18n->t("Genres"));
     $this->initBreadcrumb();
-    $this->initLanguageLinks("/jobs", null, true);
-    $this->paginationInit(Job::getTotalCount());
+    $this->initLanguageLinks("/genres", null, true);
+    $this->paginationInit(Genre::getTotalCount());
     $this->sidebarInit([
-      [ $kernel->requestPath, $this->title, [ "class" => "ico ico-job" ] ],
-      [ $i18n->r("/job/random"), $i18n->t("Random") ],
+      [ $kernel->requestPath, $this->title, [ "class" => "ico ico-genre" ] ],
+      [ $i18n->r("/genre/random"), $i18n->t("Random") ],
     ]);
   }
 
@@ -67,18 +67,17 @@ class Show extends \MovLib\Presentation\Page {
     global $i18n;
 
     $this->headingBefore =
-      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/job/create")}'>{$i18n->t("Create New Job")}</a>"
+      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/genre/create")}'>{$i18n->t("Create New Genre")}</a>"
     ;
-
-    $result      = Job::getJobs($this->paginationOffset, $this->paginationLimit);
+    $result      = Genre::getGenres($this->paginationOffset, $this->paginationLimit);
     $noItemText  = new Alert(
       $i18n->t(
-        "We couldn’t find any job matching your filter criteria, or there simply aren’t any jobs available."
-      ), $i18n->t("No Jobs"), Alert::SEVERITY_INFO
+        "We couldn’t find any genres matching your filter criteria, or there simply aren’t any genres available."
+      ), $i18n->t("No Genres"), Alert::SEVERITY_INFO
     );
     $noItemText .=
-      $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/job/create")}'>", "</a>" ]);
+      $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/genre/create")}'>", "</a>" ]);
 
-    return new EntityPartial($result, $noItemText, "Job");
+    return new EntityPartial($result, $noItemText, "Genre");
   }
 }

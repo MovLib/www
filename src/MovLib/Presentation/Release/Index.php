@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movies;
+namespace MovLib\Presentation\Release;
 
 use \MovLib\Presentation\Partial\Alert;
 
 /**
- * @todo Description of Show
+ * Latest releases.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -28,15 +28,28 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Charts extends \MovLib\Presentation\Page {
+class Index extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\TraitSidebar;
 
   public function __construct() {
     global $i18n;
-    $this->initPage($i18n->t("Movies Charts"));
-    $this->initLanguageLinks("/movies/charts");
+    $this->initPage($i18n->t("Releases"));
+    $this->initLanguageLinks("/releases", null, true);
     $this->initBreadcrumb();
-    $this->alerts .= new Alert(
-      $i18n->t("The movies charts feature isn’t implemented yet."),
+    $this->sidebarInit([
+      [ $this->languageLinks[$i18n->languageCode], $i18n->t("Releases"), [ "class" => "ico ico-release" ] ],
+      [ $i18n->rp("/movies"), $i18n->t("Movies"), [ "class" => "ico ico-movie" ] ],
+      [ $i18n->rp("/serials"), $i18n->t("Serials"), [ "class" => "ico ico-series" ] ],
+      [ $i18n->rp("/persons"), $i18n->t("Persons"), [ "class" => "ico ico-person" ] ],
+      [ $i18n->rp("/companies"), $i18n->t("Companies"), [ "class" => "ico ico-company" ] ],
+      [ $i18n->rp("/help"), $i18n->t("Help"), [ "class" => "ico ico-help" ] ],
+    ]);
+  }
+
+  protected function getPageContent() {
+    global $i18n;
+    return new Alert(
+      $i18n->t("The releases feature isn’t implemented yet."),
       $i18n->t("Check back later"),
       Alert::SEVERITY_INFO
     );
