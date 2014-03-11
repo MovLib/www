@@ -49,12 +49,8 @@ class Index extends \MovLib\Presentation\Page {
     $this->initBreadcrumb();
     $this->initLanguageLinks("/persons", null, true);
     $this->sidebarInit([
-      [ $this->languageLinks[$i18n->languageCode], $i18n->t("Persons"), [ "class" => "ico ico-person" ] ],
-      [ $i18n->rp("/movies"), $i18n->t("Movies"), [ "class" => "ico ico-movie" ] ],
-      [ $i18n->rp("/serials"), $i18n->t("Serials"), [ "class" => "ico ico-series" ] ],
-      [ $i18n->rp("/releases"), $i18n->t("Releases"), [ "class" => "ico ico-release" ] ],
-      [ $i18n->rp("/companies"), $i18n->t("Companies"), [ "class" => "ico ico-company" ] ],
-      [ $i18n->rp("/help"), $i18n->t("Help"), [ "class" => "ico ico-help" ] ],
+      [ $i18n->rp("/persons"), $i18n->t("Persons"), [ "class" => "ico ico-person" ] ],
+      [ $i18n->rp("/person/random"), $i18n->t("Random") ],
     ]);
     $this->paginationInit(Person::getTotalCount());
     $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/person/create")}'>{$i18n->t("Create New Person")}</a>";
@@ -70,7 +66,7 @@ class Index extends \MovLib\Presentation\Page {
    */
   protected function getPageContent() {
     global $i18n;
-    $persons = new PersonsPartial(
+    return new PersonsPartial(
       Person::getPersons($this->paginationOffset, $this->paginationLimit),
       new Alert(
         $i18n->t(
@@ -85,7 +81,6 @@ class Index extends \MovLib\Presentation\Page {
       10,
       true
     );
-    return "<div id='filter' class='tar'>Filter</div>{$persons}";
   }
 
 }

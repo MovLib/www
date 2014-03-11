@@ -37,17 +37,17 @@ class Index extends \MovLib\Presentation\Page {
     $this->initLanguageLinks("/series", null, true);
     $this->initBreadcrumb();
     $this->sidebarInit([
-      [ $this->languageLinks[$i18n->languageCode], $i18n->t("Series"), [ "class" => "ico ico-series" ] ],
-      [ $i18n->rp("/movies"), $i18n->t("Movies"), [ "class" => "ico ico-movie" ] ],
-      [ $i18n->rp("/releases"), $i18n->t("Releases"), [ "class" => "ico ico-release" ] ],
-      [ $i18n->rp("/persons"), $i18n->t("Persons"), [ "class" => "ico ico-person" ] ],
-      [ $i18n->rp("/companies"), $i18n->t("Companies"), [ "class" => "ico ico-company" ] ],
-      [ $i18n->rp("/help"), $i18n->t("Help"), [ "class" => "ico ico-help" ] ],
+      [ $i18n->rp("/series"), $i18n->t("Series"), [ "class" => "ico ico-series" ] ],
+      [ $i18n->rp("/series/charts"), $i18n->t("Charts") ],
+      [ $i18n->r("/series/random"), $i18n->t("Random") ],
     ]);
   }
 
   protected function getPageContent() {
     global $i18n;
+    $this->headingBefore =
+      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/series/create")}'>{$i18n->t("Create New Series")}</a>"
+    ;
     return new Alert(
       $i18n->t("The serials feature isn’t implemented yet."),
       $i18n->t("Check back later"),

@@ -60,10 +60,9 @@ class Index extends \MovLib\Presentation\Page {
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\User\Session $session
    */
   public function __construct() {
-    global $i18n, $kernel, $session;
+    global $i18n, $kernel;
     $this->users = new Users();
     $this->initPage($i18n->t("Users"));
     $this->initBreadcrumb();
@@ -71,10 +70,8 @@ class Index extends \MovLib\Presentation\Page {
     $this->paginationInit($this->users->getTotalCount());
     $this->sidebarInit([
       [ $kernel->requestPath, $this->title ],
+      [ $i18n->r("/user/random/"), $i18n->t("Random")]
     ]);
-    if ($session->isAuthenticated === false) {
-      $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/profile/join")}'>{$i18n->t("Join {sitename}", [ "sitename" => $kernel->siteName ])}</a>";
-    }
   }
 
 
@@ -83,9 +80,13 @@ class Index extends \MovLib\Presentation\Page {
 
   /**
    * @inheritdoc
+   * @global \MovLib\Data\User\Session $session
    */
   protected function getPageContent() {
-    global $i18n;
+    global $i18n, $session;
+    if ($session->isAuthenticated === false) {
+      $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/profile/join")}'>{$i18n->t("Join {sitename}", [ "sitename" => $kernel->siteName ])}</a>";
+    }
     $list  = null;
     $users = $this->users->getOrderedByCreatedResult($this->paginationOffset, $this->paginationLimit);
     /* @var $user \MovLib\Data\User\User */
@@ -99,7 +100,7 @@ class Index extends \MovLib\Presentation\Page {
         "</li>"
       ;
     }
-    return "<div id='filter'>filter filter filter</div><ol class='hover-list no-list r'>{$list}</ol>";
+    return "<ol class='hover-list no-list r'>{$list}</ol>";
   }
 
 }

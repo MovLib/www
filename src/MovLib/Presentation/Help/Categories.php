@@ -38,11 +38,6 @@ class Categories extends \MovLib\Presentation\Page {
     $this->initBreadcrumb();
     $this->sidebarInit([
       [ $this->languageLinks[$i18n->languageCode], $i18n->t("Help"), [ "class" => "ico ico-help" ] ],
-      [ $i18n->rp("/movies"), $i18n->t("Movies"), [ "class" => "ico ico-movie" ] ],
-      [ $i18n->rp("/serials"), $i18n->t("Serials"), [ "class" => "ico ico-series" ] ],
-      [ $i18n->rp("/persons"), $i18n->t("Persons"), [ "class" => "ico ico-person" ] ],
-      [ $i18n->rp("/releases"), $i18n->t("Releases"), [ "class" => "ico ico-release" ] ],
-      [ $i18n->rp("/companies"), $i18n->t("Companies"), [ "class" => "ico ico-company" ] ],
     ]);
   }
 

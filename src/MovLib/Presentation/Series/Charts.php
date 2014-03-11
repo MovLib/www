@@ -29,14 +29,40 @@ use \MovLib\Presentation\Partial\Alert;
  * @since 0.0.1-dev
  */
 class Charts extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\TraitSidebar;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   public function __construct() {
-    global $i18n;
+   global $i18n;
     $this->initPage($i18n->t("Series Charts"));
-    $this->initLanguageLinks("/series/charts");
-    $this->initBreadcrumb();
-    $this->alerts .= new Alert(
-      $i18n->t("The serials charts feature isn’t implemented yet."),
+    $this->initBreadcrumb([ [ $i18n->rp("/series"), $i18n->t("Series") ] ]);
+    $this->breadcrumbTitle = $i18n->t("Charts");
+    $this->initLanguageLinks("/series/charts", null, true);
+    $this->sidebarInit([
+      [ $i18n->rp("/series"), $i18n->t("Series"), [ "class" => "ico ico-series" ] ],
+      [ $i18n->rp("/series/charts"), $i18n->t("Charts") ],
+      [ $i18n->r("/series/random"), $i18n->t("Random") ],
+    ]);
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Get the presentation's page content.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return string
+   *   The presentation's page content.
+   */
+  protected function getPageContent() {
+    global $i18n;
+    return new Alert(
+      $i18n->t("The series charts feature isn’t implemented yet."),
       $i18n->t("Check back later"),
       Alert::SEVERITY_INFO
     );

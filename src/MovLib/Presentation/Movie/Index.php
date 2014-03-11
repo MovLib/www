@@ -49,12 +49,9 @@ class Index extends \MovLib\Presentation\Page {
     $this->initBreadcrumb();
     $this->initLanguageLinks("/movies", null, true);
     $this->sidebarInit([
-      [ $this->languageLinks[$i18n->languageCode], $i18n->t("Movies"), [ "class" => "ico ico-movie" ] ],
-      [ $i18n->rp("/serials"), $i18n->t("Serials"), [ "class" => "ico ico-series" ] ],
-      [ $i18n->rp("/releases"), $i18n->t("Releases"), [ "class" => "ico ico-release" ] ],
-      [ $i18n->rp("/persons"), $i18n->t("Persons"), [ "class" => "ico ico-person" ] ],
-      [ $i18n->rp("/companies"), $i18n->t("Companies"), [ "class" => "ico ico-company" ] ],
-      [ $i18n->rp("/help"), $i18n->t("Help"), [ "class" => "ico ico-help" ] ],
+      [ $i18n->rp("/movies"), $i18n->t("Movies"), [ "class" => "ico ico-movie" ] ],
+      [ $i18n->rp("/movies/charts"), $i18n->t("Charts") ],
+      [ $i18n->r("/movie/random"), $i18n->t("Random") ],
     ]);
     $this->paginationInit(Movie::getMoviesCount());
   }
@@ -75,7 +72,7 @@ class Index extends \MovLib\Presentation\Page {
     // Ensure it's easy for users to find the page where the can create new movies.
     $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/movie/create")}'>{$i18n->t("Create New Movie")}</a>";
 
-    $partial = new MoviesPartial(
+    return new MoviesPartial(
       Movie::getMovies($this->paginationOffset, $this->paginationLimit),
       new Alert($i18n->t("No movies match your search criteria."), null, Alert::SEVERITY_INFO),
       null,
@@ -83,8 +80,6 @@ class Index extends \MovLib\Presentation\Page {
       10,
       true
     );
-
-    return "<div id='filter' class='tar'>Filter</div>{$partial}";
   }
 
 }

@@ -51,11 +51,7 @@ class Index extends \MovLib\Presentation\Page {
     $this->initLanguageLinks("/companies", null, true);
     $this->sidebarInit([
       [ $this->languageLinks[$i18n->languageCode], $i18n->t("Companies"), [ "class" => "ico ico-company" ] ],
-      [ $i18n->rp("/movies"), $i18n->t("Movies"), [ "class" => "ico ico-movie" ] ],
-      [ $i18n->rp("/serials"), $i18n->t("Serials"), [ "class" => "ico ico-series" ] ],
-      [ $i18n->rp("/releases"), $i18n->t("Releases"), [ "class" => "ico ico-release" ] ],
-      [ $i18n->rp("/persons"), $i18n->t("Persons"), [ "class" => "ico ico-person" ] ],
-      [ $i18n->rp("/help"), $i18n->t("Help"), [ "class" => "ico ico-help" ] ],
+      [ $i18n->r("/company/random"), $i18n->t("Random") ],
     ]);
     $this->paginationInit(Company::getTotalCount());
     $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/company/create")}'>{$i18n->t("Create New Company")}</a>";
@@ -71,7 +67,7 @@ class Index extends \MovLib\Presentation\Page {
    */
   protected function getPageContent() {
     global $i18n;
-    $companies = new CompaniesPartial(
+    return new CompaniesPartial(
       Company::getCompanies($this->paginationOffset, $this->paginationLimit),
       new Alert(
         $i18n->t(
@@ -86,7 +82,6 @@ class Index extends \MovLib\Presentation\Page {
       10,
       true
     );
-    return "<div id='filter' class='tar'>{$i18n->t("Filter")}</div>{$companies}";
   }
 
 }
