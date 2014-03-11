@@ -142,7 +142,7 @@ class Show extends \MovLib\Presentation\Page {
           }
           $movie->displayTitle = "<span class='link-color' itemprop='{$displayTitleItemprop}'{$this->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}</span>";
           $movies .=
-            "<li itemscope itemtype='http://schema.org/Movie'><a class='img li r' href='{$movie->route}' itemprop='url'>" .
+            "<li itemscope itemtype='http://schema.org/Movie'><a class='hover-item no-link r' href='{$movie->route}' itemprop='url'>" .
               $this->getImage($movie->displayPoster->getStyle(AbstractImage::STYLE_SPAN_01), false, [ "class" => "s s1", "itemprop" => "image" ]) .
               "<span class='s s9'>{$movie->displayTitle}{$movie->originalTitle}</span>" .
             "</a></li>"
@@ -152,7 +152,7 @@ class Show extends \MovLib\Presentation\Page {
         case "person":
           $person   = new Person($entity["_id"]);
           $persons .=
-            "<li itemscope itemtype='http://schema.org/Person'><a class='img li r' href='{$person->route}' itemprop='url'>" .
+            "<li itemscope itemtype='http://schema.org/Person'><a class='hover-item no-link r' href='{$person->route}' itemprop='url'>" .
               $this->getImage($person->displayPhoto->getStyle(AbstractImage::STYLE_SPAN_01), false, [ "class" => "s s1", "itemprop" => "image" ]) .
               "<span class='s s9'>{$person->name}</span>" .
             "</a></li>"

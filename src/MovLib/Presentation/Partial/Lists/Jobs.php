@@ -93,7 +93,7 @@ class Jobs extends \MovLib\Presentation\Partial\Lists\AbstractList {
         $additionalInfo = null;
         if ($this->showAdditionalInfo === true) {
           $additionalInfo =
-            "<ul class='no-list s2 li fr'>" .
+            "<ul class='no-list s2 hover-item fr'>" .
               "<li>" .
                 "<a href='{$i18n->r("/job/{0}/movies", [ $job->id ])}'>" .
                   "<span class='small'>{$i18n->t("{0} Movies", [ $job->getMovieCount() ])}</span>" .
@@ -109,7 +109,7 @@ class Jobs extends \MovLib\Presentation\Partial\Lists\AbstractList {
 
         $list .=
           "<li{$this->expandTagAttributes($this->listItemsAttributes)}>" .
-            "<div class='r li no-padding'>" .
+            "<div class='r hover-list no-padding'>" .
               "<a class='big-item-text' href='{$i18n->r("/job/{0}", [ $job->id ])}' itemprop='url'>" .
                 "<div class='s s{$this->descriptionSpan}'>" .
                   "<span class='link-color' itemprop='jobTitle'>{$job->title}</span>" .

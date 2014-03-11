@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Person;
 
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Data\Image\PersonImage;
 use \MovLib\Presentation\Partial\Place;
 use \MovLib\Presentation\Partial\Date;
 use \MovLib\Presentation\Partial\Lists\Ordered;

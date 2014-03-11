@@ -63,7 +63,7 @@ class Movies extends \MovLib\Presentation\Company\AbstractBase {
 
     $list = null;
     foreach ($movies as $id => $html) {
-      $list .= "<li class='li s r' typeof='Movie'>{$html["#movie"]}<ul class='no-list jobs s s4 tar'>{$html["#jobs"]}</ul></li>";
+      $list .= "<li class='hover-item s r' typeof='Movie'>{$html["#movie"]}<ul class='no-list jobs s s4 tar'>{$html["#jobs"]}</ul></li>";
     }
     return "<ol class='hover-list no-list'>{$list}</ol>";
   }

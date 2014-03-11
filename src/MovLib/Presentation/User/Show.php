@@ -230,7 +230,7 @@ class Show extends \MovLib\Presentation\Page {
       // Put the movie list entry together.
       $ratingStream .=
         "<li class='r s s10' itemtype='http://schema.org/Movie' itemscope>" .
-          "<div class='img li r'>" .
+          "<div class='hover-item no-link r'>" .
             "<div class='s s1 tac'>" .
               $this->getImage($movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01), false, [ "itemprop" => "image" ]) .
             "</div>" .
