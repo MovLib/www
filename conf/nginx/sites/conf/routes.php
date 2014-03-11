@@ -411,26 +411,26 @@ location ^~ <?= $r("/company") ?> {
 }
 
 
-# ---------------------------------------------------------------------------------------------------------------------- serials(s)
+# ---------------------------------------------------------------------------------------------------------------------- series
 
 
-location = <?= $rp("/serials") ?> {
-  set $movlib_presenter "Serials\\Show";
+location = <?= $rp("/series") ?> {
+  set $movlib_presenter "Series\\Index";
   try_files $movlib_cache @php;
 }
 
-location = <?= $rp("/serials/charts") ?> {
-  set $movlib_presenter "Serials\\Charts";
+location = <?= $rp("/series/charts") ?> {
+  set $movlib_presenter "Series\\Charts";
   try_files $movlib_cache @php;
 }
 
-location = <?= $r("/serial/create") ?> {
-  set $movlib_presenter "Serial\\Create";
+location = <?= $r("/series/create") ?> {
+  set $movlib_presenter "Series\\Create";
   try_files $movlib_cache @php;
 }
 
-location = <?= $r("/serial/random") ?> {
-  set $movlib_presenter "Serial\\Random";
+location = <?= $r("/series/random") ?> {
+  set $movlib_presenter "Series\\Random";
   try_files $movlib_cache @php;
 }
 

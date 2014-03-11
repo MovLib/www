@@ -282,11 +282,11 @@ class Page extends \MovLib\Presentation\AbstractBase {
           [ $i18n->r("/movie/create"), $i18n->t("Create New") ],
           [ $i18n->r("/movie/random"), $i18n->t("Random Movie") ],
         ]],
-        "serials" => [ $i18n->t("Serials"), [
-          [ $i18n->rp("/serials"), $i18n->t("Latest Entries") ],
-          [ $i18n->rp("/serials/charts"), $i18n->t("Charts") ],
-          [ $i18n->r("/serial/create"), $i18n->t("Create New") ],
-          [ $i18n->r("/serial/random"), $i18n->t("Random Serial") ],
+        "series" => [ $i18n->t("Series"), [
+          [ $i18n->rp("/series"), $i18n->t("Latest Entries") ],
+          [ $i18n->rp("/series/charts"), $i18n->t("Charts") ],
+          [ $i18n->r("/series/create"), $i18n->t("Create New") ],
+          [ $i18n->r("/series/random"), $i18n->t("Random Series") ],
         ]],
         "persons" => [ $i18n->t("Persons"), [
           [ $i18n->rp("/persons"), $i18n->t("Latest Entries") ],
@@ -367,7 +367,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
             "<h2 class='visible clicker'>{$i18n->t("Explore")}</h2>" .
             "<div class='concealed r'>" .
               $subNavigations["explore"]["movies"] .
-              $subNavigations["explore"]["serials"] .
+              $subNavigations["explore"]["series"] .
               "<div class='s s3'>{$subNavigations["explore"]["persons"]}{$subNavigations["explore"]["companies"]}</div>" .
               $subNavigations["explore"]["more"] .
             "</div>" .

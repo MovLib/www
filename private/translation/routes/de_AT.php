@@ -65,9 +65,9 @@ return [
   "/movie/{0}/release/{1}/edit"       => "/film/{0}/veröffentlichung/{1}/bearbeiten",
   "/movie/{0}/release/{1}/delete"     => "/film/{0}/veröffentlichung/{1}/löschen",
 
-  // ------------------------------------------------------------------------------------------------------------------- Serials
-  "/serial/create" => "/serie/erstellen",
-  "/serial/random" => "/serie/zufällig",
+  // ------------------------------------------------------------------------------------------------------------------- Series
+  "/series/create" => "/serie/erstellen",
+  "/series/random" => "/serie/zufällig",
 
   // ------------------------------------------------------------------------------------------------------------------- Company
   "/company"                  => "/unternehmen",

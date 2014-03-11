@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Serial;
+namespace MovLib\Presentation\Series;
 
 use \MovLib\Presentation\Partial\Alert;
 
 /**
- * @todo Description of Show
+ * Series charts presentation.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -28,15 +28,15 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Create extends \MovLib\Presentation\Page {
+class Charts extends \MovLib\Presentation\Page {
 
   public function __construct() {
     global $i18n;
-    $this->initPage($i18n->t("Create Serial"));
-    $this->initLanguageLinks("/serial/create");
+    $this->initPage($i18n->t("Series Charts"));
+    $this->initLanguageLinks("/series/charts");
     $this->initBreadcrumb();
     $this->alerts .= new Alert(
-      $i18n->t("The create serial feature isn’t implemented yet."),
+      $i18n->t("The serials charts feature isn’t implemented yet."),
       $i18n->t("Check back later"),
       Alert::SEVERITY_INFO
     );

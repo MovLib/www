@@ -15,30 +15,44 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Serial;
+namespace MovLib\Presentation\Series;
 
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Redirect\SeeOther;
 
 /**
- * Random company presentation.
+ * The latest series.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Random {
+class Index extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\TraitSidebar;
 
   public function __construct() {
-    global $i18n, $kernel;
-    $kernel->alerts .= new Alert(
-      $i18n->t("There is currently no serial in our database"),
+    global $i18n;
+    $this->initPage($i18n->t("Series"));
+    $this->initLanguageLinks("/series", null, true);
+    $this->initBreadcrumb();
+    $this->sidebarInit([
+      [ $this->languageLinks[$i18n->languageCode], $i18n->t("Series"), [ "class" => "ico ico-series" ] ],
+      [ $i18n->rp("/movies"), $i18n->t("Movies"), [ "class" => "ico ico-movie" ] ],
+      [ $i18n->rp("/releases"), $i18n->t("Releases"), [ "class" => "ico ico-release" ] ],
+      [ $i18n->rp("/persons"), $i18n->t("Persons"), [ "class" => "ico ico-person" ] ],
+      [ $i18n->rp("/companies"), $i18n->t("Companies"), [ "class" => "ico ico-company" ] ],
+      [ $i18n->rp("/help"), $i18n->t("Help"), [ "class" => "ico ico-help" ] ],
+    ]);
+  }
+
+  protected function getPageContent() {
+    global $i18n;
+    return new Alert(
+      $i18n->t("The serials feature isn’t implemented yet."),
       $i18n->t("Check back later"),
       Alert::SEVERITY_INFO
     );
-    throw new SeeOther("/");
   }
 
 }
