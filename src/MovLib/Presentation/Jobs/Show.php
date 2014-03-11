@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Jobs;
 
 use \MovLib\Data\Job;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Lists\Jobs as JobsPartial;
+use \MovLib\Presentation\Partial\Listing\Entity as EntityPartial;
 
 /**
  * List of all jobs.
@@ -52,10 +52,8 @@ class Show extends \MovLib\Presentation\Page {
     $this->paginationInit(Job::getTotalCount());
     $this->sidebarInit([
       [ $kernel->requestPath, $this->title, [ "class" => "ico ico-job" ] ],
-      [ $i18n->rp("/awards"), $i18n->t("Awards"), [ "class" => "ico ico-award" ] ],
-      [ $i18n->rp("/genres"), $i18n->t("Genres"), [ "class" => "ico ico-genre" ] ],
+      [ $i18n->r("/job/random"), $i18n->t("Random") ],
     ]);
-    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/job/create")}'>{$i18n->t("Create New Job")}</a>";
   }
 
 
@@ -67,21 +65,20 @@ class Show extends \MovLib\Presentation\Page {
    */
   protected function getPageContent() {
     global $i18n;
-    $list = new JobsPartial(
-      Job::getJobs($this->paginationOffset, $this->paginationLimit),
-      new Alert(
-        $i18n->t(
-          "We couldn’t find any job matching your filter criteria, or there simply aren’t any jobs available. Would you like to {0}create a new entry{1}?",
-          [ "<a href='{$i18n->r("/job/create")}'>", "</a>" ]
-        ),
-        $i18n->t("No Jobs"),
-        Alert::SEVERITY_INFO
-      ),
-      null,
-      null,
-      10,
-      true
+
+    $this->headingBefore =
+      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/job/create")}'>{$i18n->t("Create New Job")}</a>"
+    ;
+
+    $result      = Job::getJobs($this->paginationOffset, $this->paginationLimit);
+    $noItemText  = new Alert(
+      $i18n->t(
+        "We couldn’t find any job matching your filter criteria, or there simply aren’t any jobs available."
+      ), $i18n->t("No Jobs"), Alert::SEVERITY_INFO
     );
-    return "<div id='filter' class='tar'>{$i18n->t("Filter")}</div>{$list}";
+    $noItemText .=
+      $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/job/create")}'>", "</a>" ]);
+
+    return new EntityPartial($result, $noItemText, "Job");
   }
 }

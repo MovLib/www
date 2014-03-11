@@ -52,8 +52,7 @@ class Show extends \MovLib\Presentation\Page {
     $this->paginationInit(Genre::getTotalCount());
     $this->sidebarInit([
       [ $kernel->requestPath, $this->title, [ "class" => "ico ico-genre" ] ],
-      [ $i18n->rp("/awards"), $i18n->t("Awards"), [ "class" => "ico ico-award" ] ],
-      [ $i18n->rp("/jobs"), $i18n->t("Jobs"), [ "class" => "ico ico-job" ] ],
+      [ $i18n->r("/genre/random"), $i18n->t("Random") ],
     ]);
   }
 
@@ -70,15 +69,15 @@ class Show extends \MovLib\Presentation\Page {
     $this->headingBefore =
       "<a class='btn btn-large btn-success fr' href='{$i18n->r("/genre/create")}'>{$i18n->t("Create New Genre")}</a>"
     ;
-    $result     = Genre::getGenres($this->paginationOffset, $this->paginationLimit);
-    $noItemText = new Alert(
+    $result      = Genre::getGenres($this->paginationOffset, $this->paginationLimit);
+    $noItemText  = new Alert(
       $i18n->t(
-        "We couldn’t find any genres matching your filter criteria, or there simply aren’t any genres available. " .
-        "Would you like to {0}create a new entry{1}?", [ "<a href='{$i18n->r("/genre/create")}'>", "</a>" ]
+        "We couldn’t find any genres matching your filter criteria, or there simply aren’t any genres available."
       ), $i18n->t("No Genres"), Alert::SEVERITY_INFO
     );
-    $list = new EntityPartial($result, $noItemText, "Genre");
+    $noItemText .=
+      $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/genre/create")}'>", "</a>" ]);
 
-    return "<div id='filter' class='tar'>{$i18n->t("Filter")}</div>{$list}";
+    return new EntityPartial($result, $noItemText, "Genre");
   }
 }

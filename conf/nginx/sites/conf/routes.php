@@ -448,6 +448,11 @@ location = <?= $r("/genre/create") ?> {
   try_files $movlib_cache @php;
 }
 
+location = <?= $r("/genre/random") ?> {
+  set $movlib_presenter "Genre\\Random";
+  try_files $movlib_cache @php;
+}
+
 location ^~ <?= $r("/genre") ?> {
 
   #
@@ -513,6 +518,11 @@ location = <?= $r("/award/create") ?> {
   try_files $movlib_cache @php;
 }
 
+location = <?= $r("/award/random") ?> {
+  set $movlib_presenter "Award\\Random";
+  try_files $movlib_cache @php;
+}
+
 location ^~ <?= $r("/award") ?> {
 
   #
@@ -575,6 +585,11 @@ location = <?= $rp("/jobs") ?> {
 
 location = <?= $r("/job/create") ?> {
   set $movlib_presenter "Job\\Create";
+  try_files $movlib_cache @php;
+}
+
+location = <?= $r("/job/random") ?> {
+  set $movlib_presenter "Job\\Random";
   try_files $movlib_cache @php;
 }
 
@@ -856,7 +871,7 @@ location = <?= $rp("/help") ?> {
 $stmt           = $db->query("SELECT `id`, COLUMN_GET(`dyn_titles`, ? AS CHAR(255)) AS `title` FROM `help_categories`", "s", [ $i18n->defaultLanguageCode ]);
 $helpCategories = $stmt->get_result();
 while ($helpCategory = $helpCategories->fetch_assoc()):
-  $helpCategory["title"] = $this->fsSanitizeName($helpCategory["title"]);
+  $helpCategory["title"] = \MovLib\Data\FileSystem::sanitizeFilename($helpCategory["title"]);
 ?>
 
 location = <?= $r("/help/{$helpCategory["title"]}") ?> {
@@ -882,8 +897,8 @@ $stmt = $db->query(
 );
 $helpArticles = $stmt->get_result();
 while ($helpArticle = $helpArticles->fetch_assoc()):
-  $helpArticle["category_title"] = $this->fsSanitizeName($helpArticle["category_title"]);
-  $helpArticle["article_title"]  = $this->fsSanitizeName($helpArticle["article_title"]);
+  $helpArticle["category_title"] = \MovLib\Data\FileSystem::sanitizeFilename($helpArticle["category_title"]);
+  $helpArticle["article_title"]  = \MovLib\Data\FileSystem::sanitizeFilename($helpArticle["article_title"]);
 ?>
 
 location = <?= $r("/help/{$helpArticle["category_title"]}/{$helpArticle["article_title"]}") ?> {
@@ -911,7 +926,7 @@ $stmt->close();
 $stmt        = $db->query("SELECT `id`, COLUMN_GET(`dyn_titles`, ? AS CHAR(255)) AS `title`, `presenter` FROM `system_pages`", "s", [ $i18n->defaultLanguageCode ]);
 $systemPages = $stmt->get_result();
 while ($systemPage = $systemPages->fetch_assoc()):
-  $systemPage["title"] = $this->fsSanitizeName($systemPage["title"]);
+  $systemPage["title"] = \MovLib\Data\FileSystem::sanitizeFilename($systemPage["title"]);
 ?>
 
 location = <?= $r("/{$systemPage["title"]}") ?> {

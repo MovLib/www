@@ -122,23 +122,6 @@ class Genre extends \MovLib\Data\Database {
 
 
   /**
-   * Get the count of all genres.
-   *
-   * @global \MovLib\Data\Database $db
-   * @staticvar null|integer $count
-   *   The genre's count.
-   * @return integer
-   */
-  public static function getTotalCount() {
-    global $db;
-    static $count = null;
-    if (!$count) {
-      $count = $db->query("SELECT COUNT(`id`) FROM `genres` LIMIT 1")->get_result()->fetch_row()[0];
-    }
-    return $count;
-  }
-
-  /**
    * Get all genres matching the offset and row count.
    *
    * @global \MovLib\Data\Database $db
@@ -219,20 +202,6 @@ class Genre extends \MovLib\Data\Database {
   }
 
   /**
-   * The count of series with this genre.
-   *
-   * @global \MovLib\Data\Database $db
-   * @return integer
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getSeriesCount() {
-    global $db;
-    return $db->query(
-      "SELECT count(DISTINCT `series_id`) as `count` FROM `series_genres` WHERE `genre_id` = ?", "d", [ $this->id ]
-    )->get_result()->fetch_assoc()["count"];
-  }
-
-  /**
    * Get the default query.
    *
    * @global \MovLib\Data\I18n $i18n
@@ -256,6 +225,53 @@ class Genre extends \MovLib\Data\Database {
       ;
     }
     return $query;
+  }
+
+  /**
+   * Get random genre identifier.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return integer|null
+   *   Random genre identifier, or <code>NULL</code> on failure.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public static function getRandomGenreId() {
+    global $db;
+    $result = $db->query("SELECT `id` FROM `genres` ORDER BY RAND() LIMIT 1")->get_result()->fetch_row();
+    if (isset($result[0])) {
+      return $result[0];
+    }
+  }
+
+  /**
+   * The count of series with this genre.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return integer
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getSeriesCount() {
+    global $db;
+    return $db->query(
+      "SELECT count(DISTINCT `series_id`) as `count` FROM `series_genres` WHERE `genre_id` = ?", "d", [ $this->id ]
+    )->get_result()->fetch_assoc()["count"];
+  }
+
+  /**
+   * Get the count of all genres.
+   *
+   * @global \MovLib\Data\Database $db
+   * @staticvar null|integer $count
+   *   The genre's count.
+   * @return integer
+   */
+  public static function getTotalCount() {
+    global $db;
+    static $count = null;
+    if (!$count) {
+      $count = $db->query("SELECT COUNT(`id`) FROM `genres` LIMIT 1")->get_result()->fetch_row()[0];
+    }
+    return $count;
   }
 
   /**

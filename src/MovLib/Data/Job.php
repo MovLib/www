@@ -62,11 +62,25 @@ class Job extends \MovLib\Data\Database {
   public $route;
 
   /**
-   * The job's translated title.
+   * The job's translated unisex name.
    *
    * @var string
    */
-  public $title;
+  public $name;
+
+  /**
+   * The job's translated male name.
+   *
+   * @var string
+   */
+  public $maleName;
+
+  /**
+   * The job's translated female name.
+   *
+   * @var string
+   */
+  public $femaleName;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -90,19 +104,22 @@ class Job extends \MovLib\Data\Database {
         WHERE
           `id` = ?
         LIMIT 1",
-        "ssd",
-        [ $i18n->languageCode, $i18n->languageCode, $id ]
+        "ssssd",
+        [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $id ]
       );
       $stmt->bind_result(
         $this->id,
-        $this->title,
+        $this->name,
+        $this->maleName,
+        $this->femaleName,
         $this->description
       );
       if (!$stmt->fetch()) {
         throw new NotFound;
       }
       $stmt->close();
-
+    }
+    if ($this->id) {
       $this->init();
     }
   }
@@ -110,24 +127,6 @@ class Job extends \MovLib\Data\Database {
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-
-  /**
-   * Get the count of all jobs.
-   *
-   * @global \MovLib\Data\Database $db
-   * @staticvar null|integer $count
-   *   The amount of all jobs.
-   * @return integer
-   *   The amount of all jobs.
-   */
-  public static function getTotalCount() {
-    global $db;
-    static $count = null;
-    if (!$count) {
-      $count = $db->query("SELECT COUNT(`id`) FROM `jobs` LIMIT 1")->get_result()->fetch_row()[0];
-    }
-    return $count;
-  }
 
   /**
    * Get all jobs matching the offset and row count.
@@ -146,10 +145,10 @@ class Job extends \MovLib\Data\Database {
     $query = self::getQuery();
     return $db->query("
       {$query}
-      ORDER BY `title` ASC
+      ORDER BY `name` ASC
       LIMIT ? OFFSET ?",
-      "ssdd",
-      [ $i18n->languageCode, $i18n->languageCode, $rowCount, $offset ]
+      "ssssdd",
+      [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $rowCount, $offset ]
     )->get_result();
   }
 
@@ -205,24 +204,9 @@ class Job extends \MovLib\Data\Database {
           AND `p`.`language_code` = ?
       WHERE `movies_jobs`.`job_id` = ?
       ORDER BY `displayTitle` DESC",
-      "ssi",
-      [ $i18n->languageCode, $i18n->languageCode, $this->id ]
+      "ssssd",
+      [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $this->id ]
     )->get_result();
-  }
-
-  /**
-   * The count of series connected with this job.
-   *
-   * @global \MovLib\Data\Database $db
-   * @return integer
-   *   The count.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getSeriesCount() {
-    global $db;
-    return $db->query(
-      "SELECT count(DISTINCT `series_id`) as `count` FROM `episodes_crew` WHERE `job_id` = ?", "d", [ $this->id ]
-    )->get_result()->fetch_assoc()["count"];
   }
 
   /**
@@ -241,12 +225,63 @@ class Job extends \MovLib\Data\Database {
       $query =
         "SELECT
           `id`,
-          IFNULL(COLUMN_GET(`dyn_titles`, ? AS CHAR), COLUMN_GET(`dyn_titles`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `title`,
+          IFNULL(COLUMN_GET(`dyn_names_sex0`, ? AS CHAR), COLUMN_GET(`dyn_names_sex0`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `name`,
+          IFNULL(COLUMN_GET(`dyn_names_sex1`, ? AS CHAR), COLUMN_GET(`dyn_names_sex1`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `maleName`,
+          IFNULL(COLUMN_GET(`dyn_names_sex2`, ? AS CHAR), COLUMN_GET(`dyn_names_sex2`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `femaleName`,
           IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS CHAR), COLUMN_GET(`dyn_descriptions`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `description`
         FROM `jobs`"
       ;
     }
     return $query;
+  }
+
+  /**
+   * Get random job identifier.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return integer|null
+   *   Random job identifier, or <code>NULL</code> on failure.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public static function getRandomJobId() {
+    global $db;
+    $result = $db->query("SELECT `id` FROM `jobs` ORDER BY RAND() LIMIT 1")->get_result()->fetch_row();
+    if (isset($result[0])) {
+      return $result[0];
+    }
+  }
+
+  /**
+   * The count of series connected with this job.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return integer
+   *   The count.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getSeriesCount() {
+    global $db;
+    return $db->query(
+      "SELECT count(DISTINCT `series_id`) as `count` FROM `episodes_crew` WHERE `job_id` = ?", "d", [ $this->id ]
+    )->get_result()->fetch_assoc()["count"];
+  }
+
+  /**
+   * Get the count of all jobs.
+   *
+   * @global \MovLib\Data\Database $db
+   * @staticvar null|integer $count
+   *   The amount of all jobs.
+   * @return integer
+   *   The amount of all jobs.
+   */
+  public static function getTotalCount() {
+    global $db;
+    static $count = null;
+    if (!$count) {
+      $count = $db->query("SELECT COUNT(`id`) FROM `jobs` LIMIT 1")->get_result()->fetch_row()[0];
+    }
+    return $count;
   }
 
   /**

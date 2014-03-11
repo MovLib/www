@@ -19,6 +19,7 @@ namespace MovLib\Presentation\Awards;
 
 use \MovLib\Data\Award;
 use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Presentation\Partial\Listing\Entity as EntityPartial;
 
 /**
  * The latest Awards.
@@ -51,10 +52,8 @@ class Show extends \MovLib\Presentation\Page {
     $this->paginationInit(Award::getTotalCount());
     $this->sidebarInit([
       [ $kernel->requestPath, $this->title, [ "class" => "ico ico-award" ] ],
-      [ $i18n->rp("/genres"), $i18n->t("Genres"), [ "class" => "ico ico-genre" ] ],
-      [ $i18n->rp("/jobs"), $i18n->t("Jobs"), [ "class" => "ico ico-job" ] ],
+      [ $i18n->r("/award/random"), $i18n->t("Random") ],
     ]);
-    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/award/create")}'>{$i18n->t("Create New Award")}</a>";
   }
 
 
@@ -66,8 +65,21 @@ class Show extends \MovLib\Presentation\Page {
    */
   protected function getPageContent() {
     global $i18n;
-    return
-      "<div id='filter' class='tar'>{$i18n->t("Filter")}</div>" .
-      new Alert($i18n->t("Not implemented"), null, Alert::SEVERITY_INFO);
+
+    $this->headingBefore =
+      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/award/create")}'>{$i18n->t("Create New Award")}</a>"
+    ;
+
+    $result      = Award::getAwards($this->paginationOffset, $this->paginationLimit);
+    $noItemText  = new Alert(
+      $i18n->t(
+        "We couldn’t find any awards matching your filter criteria, or there simply aren’t any awards available."
+      ), $i18n->t("No Awards"), Alert::SEVERITY_INFO
+    );
+    $noItemText .=
+      $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/award/create")}'>", "</a>" ]);
+
+    return new EntityPartial($result, $noItemText, "Award");
   }
+
 }

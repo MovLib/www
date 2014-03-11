@@ -142,6 +142,7 @@ return [
   // ------------------------------------------------------------------------------------------------------------------- Genre
   "/genre"                => "/genre",
   "/genre/create"         => "/genre/erstellen",
+  "/genre/random"         => "/genre/zufällig",
   "/genre/{0}"            => "/genre/{0}",
   "/genre/{0}/discussion" => "/genre/{0}/diskussion",
   "/genre/{0}/edit"       => "/genre/{0}/bearbeiten",
@@ -151,6 +152,7 @@ return [
   // ------------------------------------------------------------------------------------------------------------------- Job
   "/job"                => "/tätigkeit",
   "/job/create"         => "/tätigkeit/erstellen",
+  "/job/random"         => "/tätigkeit/zufällig",
   "/job/{0}"            => "/tätigkeit/{0}",
   "/job/{0}/discussion" => "/tätigkeit/{0}/diskussion",
   "/job/{0}/edit"       => "/tätigkeit/{0}/bearbeiten",
@@ -160,6 +162,7 @@ return [
   // ------------------------------------------------------------------------------------------------------------------- Award
   "/award"                => "/auszeichnung",
   "/award/create"         => "/auszeichnung/erstellen",
+  "/award/random"         => "/award/zufällig",
   "/award/{0}"            => "/auszeichnung/{0}",
   "/award/{0}/discussion" => "/auszeichnung/{0}/diskussion",
   "/award/{0}/edit"       => "/auszeichnung/{0}/bearbeiten",

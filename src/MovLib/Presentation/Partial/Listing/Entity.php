@@ -120,7 +120,7 @@ class Entity extends \MovLib\Presentation\Partial\Listing\AbstractListing {
       if ($list) {
         return "<ol class='hover-list' typeof='ItemList'>{$list}</ol>";
       }
-      return $this->noItemsText;
+      return (string) $this->noItemsText;
     // @devStart
     // @codeCoverageIgnoreStart
     }
