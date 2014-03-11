@@ -197,8 +197,8 @@ INSERT INTO `genres` (`dyn_names`, `dyn_descriptions`) VALUES
 ),
 (
   COLUMN_CREATE(
-    'en', 'Short',
-    'de', 'Kurz'
+    'en', 'Short Film',
+    'de', 'Kurzfilm'
   ),
   COLUMN_CREATE(
     'en', '&lt;p&gt;A short film is any film not long enough to be considered a feature film. No consensus exists as to where that boundary is drawn: the Academy of Motion Picture Arts and Sciences defines a short film as &quot;an original motion picture that has a running time of 40 minutes or less, including all credits&quot;. The term featurette originally applied to a film longer than a short subject, but shorter than a standard feature film.&lt;/p&gt;',

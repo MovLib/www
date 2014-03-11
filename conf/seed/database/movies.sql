@@ -108,7 +108,7 @@ INSERT INTO `movies_original_titles` SET
 
 INSERT INTO `movies_countries` SET `movie_id` = @roundhay_garden_scene_id, `country_code` = 'GB';
 INSERT INTO `movies_languages` SET `movie_id` = @roundhay_garden_scene_id, `language_code` = 'xx';
-INSERT INTO `movies_genres` SET `movie_id` = @roundhay_garden_scene_id, `genre_id` = (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Short' LIMIT 1);
+INSERT INTO `movies_genres` SET `movie_id` = @roundhay_garden_scene_id, `genre_id` = (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Short Film' LIMIT 1);
 INSERT INTO `movies_trailers` SET
   `movie_id` = @roundhay_garden_scene_id,
   `video_quality_id`  = @quality_240,
@@ -232,7 +232,7 @@ SET @sacha_goedegebure_id = LAST_INSERT_ID();
 INSERT INTO `movies_directors` SET `movie_id` = @big_buck_bunny_id, `person_id` = @sacha_goedegebure_id, `job_id` = @job_director;
 INSERT INTO `movies_countries` SET `movie_id` = @big_buck_bunny_id, `country_code` = 'US';
 INSERT INTO `movies_languages` SET `movie_id` = @big_buck_bunny_id, `language_code` = 'xx';
-INSERT INTO `movies_genres` SET `movie_id` = @big_buck_bunny_id, `genre_id` = (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Short' LIMIT 1);
+INSERT INTO `movies_genres` SET `movie_id` = @big_buck_bunny_id, `genre_id` = (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Short Film' LIMIT 1);
 INSERT INTO `movies_genres` SET `movie_id` = @big_buck_bunny_id, `genre_id` = (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Animation' LIMIT 1);
 
 -- INSERT INTO `movies_images` SET
