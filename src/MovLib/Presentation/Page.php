@@ -457,7 +457,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
         "<link href='{$kernel->getAssetURL("logo/32", "png")}' rel='icon' sizes='32x32' type='image/png'>" .
         "<link href='{$kernel->getAssetURL("logo/24", "png")}' rel='icon' sizes='24x24' type='image/png'>" .
         "<link href='{$kernel->getAssetURL("logo/16", "png")}' rel='icon' sizes='16x16' type='image/png'>" .
-        "<link href='https://plus.google.com/115387876584819891316' rel='publisher'>" .
+        "<link href='https://plus.google.com/115387876584819891316?rel=publisher' property='publisher'>" .
         "<meta property='og:description' content='{$i18n->t("The free online movie database that anyone can edit.")}'>" .
         "<meta property='og:image' content='{$kernel->scheme}:{$logo256}'>" .
         "<meta property='og:site_name' content='{$kernel->siteName}'>" .
