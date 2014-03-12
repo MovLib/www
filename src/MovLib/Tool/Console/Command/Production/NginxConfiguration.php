@@ -34,7 +34,7 @@ class NginxConfiguration extends \MovLib\Tool\Console\Command\AbstractCommand {
    */
   protected function configure() {
     $this->setName("nginx-configuration");
-    $this->setDescription($description);
+    $this->setDescription("");
   }
 
 }

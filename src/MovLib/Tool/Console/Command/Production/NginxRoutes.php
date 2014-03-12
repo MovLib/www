@@ -31,7 +31,6 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @since 0.0.1-dev
  */
 class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
-  use \MovLib\Data\TraitFileSystem;
 
   /**
    * Compiles and translates nginx routes for all servers.
@@ -199,7 +198,7 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
       }
     }
 
-    $this->shellExecuteDisplayOutput("service nginx reload");
+    system("service nginx reload");
 
     // Make sure all files have the correct permissions.
     (new FixPermissions())->fixPermissions("{$kernel->documentRoot}/conf/nginx");

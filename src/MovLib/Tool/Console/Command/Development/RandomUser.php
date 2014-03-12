@@ -17,6 +17,7 @@
  */
 namespace MovLib\Tool\Console\Command\Development;
 
+use \MovLib\Data\Shell;
 use \MovLib\Data\User\FullUser;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
@@ -32,7 +33,6 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @since 0.0.1-dev
  */
 class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelopmentCommand {
-  use \MovLib\Data\TraitShell;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -109,6 +109,7 @@ class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @global \MovLib\Tool\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @return this
+   * @throws \RuntimeException
    * @throws \MovLib\Exception\DatabaseException
    */
   public function generateRandomUsers($amount = self::DEFAULT_AMOUNT) {
@@ -161,12 +162,12 @@ class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
 
     if (($c = count($usersWithAvatar))) {
       $this->write("Generating avatar images (every 6th user has none) ...");
-      $dim    = FullUser::STYLE_SPAN_02;
-      $tmp    = ini_get("upload_tmp_dir") . "/movdev-command-create-users.jpg";
-      $this->shellExecute("convert -size {$dim}x{$dim} xc: +noise Random {$tmp}");
+      $dim = FullUser::STYLE_SPAN_02;
+      $tmp = ini_get("upload_tmp_dir") . "/movdev-command-create-users.jpg";
+      Shell::execute("convert -size {$dim}x{$dim} xc: +noise Random {$tmp}");
       $this->setProperty($user, "imageExtension", "jpg");
       $this->progress->start($this->output, $c);
-      $in     = rtrim(str_repeat("?,", $c), ",");
+      $in = rtrim(str_repeat("?,", $c), ",");
       $result = $db->query("SELECT `user_id`, `name` FROM `users` WHERE `name` IN ({$in})", str_repeat("s", $c), $usersWithAvatar)->get_result();
       while ($row = $result->fetch_assoc()) {
         $this->setProperty($user, "imageName", $row["name"]);

@@ -18,6 +18,7 @@
 namespace MovLib\Tool\Console\Command\Development;
 
 use \Elasticsearch\Client as ElasticClient;
+use \MovLib\Data\Shell;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Tool\Console\Command\Production\FixPermissions;
 use \Symfony\Component\Console\Input\InputInterface;
@@ -36,7 +37,6 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @since 0.0.1-dev
  */
 class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelopmentCommand {
-  use \MovLib\Data\TraitShell;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -279,7 +279,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
       // Remove complete history repository if it's present in the file system.
       $path = "{$kernel->documentRoot}/private/history/{$typeSingular}";
       if (is_dir($path)) {
-        $this->shExecute("rm -rf '{$path}'");
+        Shell::execute("rm -rf '{$path}'");
       }
 
       // Creat new repository for each database entry we have.
@@ -308,7 +308,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
     $this->write("Importing ICU translations ...");
 
     // Prepare ICU environment variables.
-    $this->shExecute("icu-config --version", $version);
+    Shell::execute("icu-config --version", $version);
     $version = trim(strtr($version[0], ".", "-"));
     $source  = "/usr/local/src/icu-{$version}/source/data";
 
@@ -339,11 +339,11 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
 
     // Generate the resource bundle for this locale.
     $destination = sys_get_temp_dir();
-    $this->shExecute("genrb -R -e UTF-8 -d {$destination} {$src}");
+    Shell::execute("genrb -R -e UTF-8 -d {$destination} {$src}");
 
     // Load the generated resource bundle and delete the resource bundle files.
     $rb = new \ResourceBundle($locale, $destination, true);
-    $this->shExecute("rm {$destination}/*.res");
+    Shell::execute("rm {$destination}/*.res");
     return $rb;
   }
 
@@ -586,7 +586,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
     $this->progressAdvance();
     // We have to execute this in the shell directly, because our database object always tries to connect to the default
     // database, which might not exist yet!
-    $this->shExecute("mysql < {$kernel->documentRoot}/conf/mariadb/movlib.sql", $output);
+    Shell::execute("mysql < {$kernel->documentRoot}/conf/mariadb/movlib.sql", $output);
     $this->progressAdvance();
     foreach ($tasks as $task) {
       $this->$task()->progressAdvance();
@@ -648,9 +648,9 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    */
   protected function uploadMoveImages($from, $to) {
     if (is_dir($from)) {
-      $this->shExecute("mkdir -p {$to}");
-      $this->shExecute("rm -rf {$to}/*");
-      $this->shExecute("cp -R {$from}/* {$to}");
+      Shell::execute("mkdir -p {$to}");
+      Shell::execute("rm -rf {$to}/*");
+      Shell::execute("cp -R {$from}/* {$to}");
     }
     return $this;
   }
