@@ -112,7 +112,7 @@ class Entity extends \MovLib\Presentation\Partial\Listing\AbstractListing {
                 "<a class='ico ico-movie label' href='{$moviesRoute}' title='{$moviesTitle}'> &nbsp; {$entity->getMovieCount()}</a>" .
                 "<a class='ico ico-series label' href='{$seriesRoute}' title='{$seriesTitle}'> &nbsp; {$entity->getSeriesCount()}</a>" .
               "</span>" .
-              "<a href='{$i18n->r("/genre/{0}", [ $entity->id ])}' property='itemListElement'>{$entity->name}</a>" .
+              "<a href='{$entity->route}' property='itemListElement'>{$entity->name}</a>" .
             "</div>" .
           "</li>"
         ;

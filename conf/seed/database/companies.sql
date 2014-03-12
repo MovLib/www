@@ -15,7 +15,7 @@
 -- ---------------------------------------------------------------------------------------------------------------------
 
 -- ---------------------------------------------------------------------------------------------------------------------
--- Movie seed data.
+-- Company seed data.
 --
 -- @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
 -- @copyright © 2013 MovLib
@@ -106,34 +106,6 @@ INSERT INTO `companies` SET
   `aliases`                = 'a:0:{}',
   `founding_date`          = '1994-00-00',
   `dyn_image_descriptions` = ''
-;
-
-INSERT INTO `jobs` SET
-  `created`                = CURRENT_TIMESTAMP,
-  `dyn_descriptions`       = COLUMN_CREATE(
-    'en', '&lt;p&gt;A production company provides the physical basis for works in the realms of the performing arts, new media art, film, television, radio, and video.&lt;/p&gt;&lt;p&gt;The production company may be directly responsible for fundraising for the production or may accomplish this through a parent company, partner, or private investor. It handles budgeting, scheduling, scripting, the supply with talent and resources, the organization of staff, the production itself, post-production, distribution, and marketing. Production companies are often either owned or under contract with a media conglomerate, film studio, entertainment company, or Motion Picture Company, who act as the production company&#039;s partner or parent company. This has become known as the &quot;studio system&quot;. They can also be mainstream independent (see Lucasfilms) or completely independent (see Lionsgate). In the case of TV, a TV production company would serve under a television network. Production companies can work together in co-productions.&lt;/p&gt;',
-    'de', '&lt;p&gt;Unter einer Filmproduktionsgesellschaft versteht man ein Unternehmen, das seine Einnahmen überwiegend aus der Produktion von Filmen erwirtschaftet.&lt;/p&gt;&lt;p&gt;Das Arbeitsgebiet einer Filmproduktionsgesellschaft umfasst dabei alle Phasen der Filmproduktion, von der Stoffentwicklung und Filmfinanzierung über die Produktionsvorbereitung und die Dreharbeiten bis hin zur Postproduktion. Kleinere Unternehmen, die keinen eigenen Verleihbetrieb haben und fertige Produktionen zur Kinoauswertung einem externen Filmverleih anvertrauen, erledigen in der Übergangszeit, bis ein Verleih gefunden ist, auch Aufgaben der Filmherausbringung (Launch) wie die Anmeldung des Films bei der FSK und der Filmbewertungsstelle (beides nur in Deutschland), Öffentlichkeitsarbeit und Werbung, Festivalbewerbungen und die Organisation einer - oft groß aufgezogenen - Kinopremiere, einschließlich der Einwerbung von Sponsoren- und Fördergeldern zur Finanzierung dieser Arbeiten.&lt;/p&gt;'
-  ),
-  `dyn_names_sex0`         = COLUMN_CREATE(
-    'en', 'Production',
-    'de', 'Filmproduktion'
-  ),
-  `dyn_names_sex1`         = COLUMN_CREATE(
-    'en', 'Producer',
-    'de', 'Produzent'
-  ),
-  `dyn_names_sex2`         = COLUMN_CREATE(
-    'en', 'Producer',
-    'de', 'Produzentin'
-  )
-;
-
-SET @production_company_id = LAST_INSERT_ID();
-
-INSERT INTO `movies_crew` SET
-  `movie_id`    = 3,
-  `company_id`  = 3,
-  `job_id`      = @production_company_id
 ;
 
 -- END "Castle Rock Entertainment"
