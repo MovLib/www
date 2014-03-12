@@ -71,8 +71,7 @@ class Country extends \MovLib\Presentation\AbstractBase {
    */
   public function __construct($code, array $attributes = null, $tag = "span") {
     $this->attributes             = $attributes;
-    $this->attributes[]           = "itemscope";
-    $this->attributes["itemtype"] = "http://schema.org/Country";
+    $this->attributes["typeof"] = "http://schema.org/Country";
     $this->country                = new \MovLib\Data\Country($code);
     $this->tag                    = $tag;
   }
@@ -83,7 +82,7 @@ class Country extends \MovLib\Presentation\AbstractBase {
    * @return string
    */
   public function __toString() {
-    return "<{$this->tag}{$this->expandTagAttributes($this->attributes)}><span itemprop='name'>{$this->country->name}</span></{$this->tag}>";
+    return "<{$this->tag}{$this->expandTagAttributes($this->attributes)}><span property='name'>{$this->country->name}</span></{$this->tag}>";
   }
 
 
@@ -103,12 +102,12 @@ class Country extends \MovLib\Presentation\AbstractBase {
   public function getFlag($nameVisible = false) {
     global $kernel;
     $name = $nameVisible === true
-      ? " <span itemprop='name'>{$this->country->name}</span>"
-      : "<meta itemprop='name' content='{$this->country->name}'>"
+      ? " <span property='name'>{$this->country->name}</span>"
+      : "<meta property='name' content='{$this->country->name}'>"
     ;
     return
       "<{$this->tag}{$this->expandTagAttributes($this->attributes)}>" .
-        "<img alt='' class='inline' height='11' itemprop='image' src='{$kernel->getAssetURL("flag/{$this->country->code}", "png")}' width='16'>{$name}" .
+        "<img alt='' class='inline' height='11' property='image' src='{$kernel->getAssetURL("flag/{$this->country->code}", "png")}' width='16'>{$name}" .
       "</{$this->tag}>"
     ;
   }

@@ -22,8 +22,6 @@ use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Duration;
-use \MovLib\Presentation\Partial\Listing\Persons;
-use \MovLib\Presentation\Partial\Listing\Cast as CastPartial;
 
 /**
  * Single movie presentation page.
@@ -85,7 +83,7 @@ class Show extends \MovLib\Presentation\Page {
     $this->routeEdit = $i18n->r("/movie/{0}/edit", $routeArgs);
     $this->sidebarInit([
       [ $this->movie->route, $i18n->t("View"), [ "class" => "ico ico-view" ] ],
-      [ $i18n->r("/movie/{0}/discussion", $routeArgs), $i18n->t("Discuss"), [ "class" => "ico ico-discussion", "itemprop" => "discussionUrl" ] ],
+      [ $i18n->r("/movie/{0}/discussion", $routeArgs), $i18n->t("Discuss"), [ "class" => "ico ico-discussion", "property" => "discussionUrl" ] ],
       [ $this->routeEdit, $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
       [ $i18n->r("/movie/{0}/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history separator" ] ],
     ]);
@@ -111,7 +109,7 @@ class Show extends \MovLib\Presentation\Page {
       if ($countries) {
         $countries .= ", ";
       }
-      $countries .= new Country($row[0], [ "itemprop" => "contentLocation"]);
+      $countries .= new Country($row[0], [ "property" => "contentLocation"]);
     }
     if (!$countries) {
       $countries = $i18n->t("No countries assigned yet, {0}add countries{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]);
@@ -137,7 +135,7 @@ class Show extends \MovLib\Presentation\Page {
         $genres .= ", ";
       }
       $row["route"] = str_replace("{0}", $row["id"], $route);
-      $genres      .= "<a href='{$row["route"]}' itemprop='genre'>{$row["name"]}</a>";
+      $genres      .= "<a href='{$row["route"]}' property='genre'>{$row["name"]}</a>";
     }
     if (!$genres) {
       return $i18n->t("No genres assigned yet, {0}add genres{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]);
@@ -160,17 +158,17 @@ class Show extends \MovLib\Presentation\Page {
 
     // Enhance the page's title with microdata.
     if ($this->movie->displayTitle == $this->movie->originalTitle) {
-      $this->pageTitle            = "<span itemprop='name'{$this->lang($this->movie->displayTitleLanguageCode)}>{$this->movie->displayTitle}</span>";
+      $this->pageTitle            = "<span property='name'{$this->lang($this->movie->displayTitleLanguageCode)}>{$this->movie->displayTitle}</span>";
       $this->movie->originalTitle = null;
     }
     else {
-      $this->pageTitle = "<span itemprop='alternateName'>{$this->movie->displayTitle}</span>";
+      $this->pageTitle = "<span property='alternateName'>{$this->movie->displayTitle}</span>";
     }
     if ($this->movie->year) {
       $this->pageTitle = $i18n->t("{0} ({1})", [
         $this->pageTitle,
         // @todo Add full publishing date to content attribute.
-        "<a content='{$this->movie->year}-00-00' itemprop='datePublished' href='{$i18n->rp("/year/{0}/movies", [ $this->movie->year ])}'>{$this->movie->year}</a>",
+        "<a content='{$this->movie->year}-00-00' property='datePublished' href='{$i18n->rp("/year/{0}/movies", [ $this->movie->year ])}'>{$this->movie->year}</a>",
       ]);
     }
 
@@ -216,8 +214,8 @@ class Show extends \MovLib\Presentation\Page {
       $ratingSummary = $i18n->t("You’re the only one who rated this movie (yet).");
     }
     else {
-      $rating = "<span itemprop='ratingValue'>{$i18n->format("{0,number}", [ $this->movie->ratingMean ])}</span>";
-      $votes  = "<span itemprop='ratingCount'>{$this->movie->votes}</span>";
+      $rating = "<span property='ratingValue'>{$i18n->format("{0,number}", [ $this->movie->ratingMean ])}</span>";
+      $votes  = "<span property='ratingCount'>{$this->movie->votes}</span>";
       if ($this->movie->votes === 1) {
         $ratingSummary = $i18n->t("Rated by {votes} user with {rating}.", [ "rating" => $rating, "votes" => $votes ]);
       }
@@ -239,7 +237,9 @@ class Show extends \MovLib\Presentation\Page {
       if ($directors) {
         $directors .= ", ";
       }
-      $directors .= "<a href='{$i18n->r("/person/{0}", [ $directorsResult[$i]["id"]])}' property='director'>{$directorsResult[$i]["name"]}</a>";
+      $directors .= "<span property='director' typeof='http://schema.org/Person'>" .
+                      "<a href='{$i18n->r("/person/{0}", [ $directorsResult[$i]["id"]])}' property='name'>{$directorsResult[$i]["name"]}</a>" .
+                    "</span>";
     }
     if ($directors) {
       if ($c > 1) {
@@ -259,19 +259,21 @@ class Show extends \MovLib\Presentation\Page {
       if ($cast) {
         $cast .= ", ";
       }
-      $cast .= "<a href='{$i18n->r("/person/{0}", [ $castResult[$i]["id"]])}' property='actor'>{$castResult[$i]["name"]}</a>";
+      $cast .= "<span property='actor' typeof='http://schema.org/Person'>" .
+                 "<a href='{$i18n->r("/person/{0}", [ $castResult[$i]["id"]])}' property='name'>{$castResult[$i]["name"]}</a>" .
+               "</span>";
     }
     if ($cast) {
       $cast = "<small class='dtr'><span class='dtc'>{$i18n->t("{0}:", [ $i18n->t("Cast") ])}</span><span class='dtc'>{$cast}</span></small>";
     }
 
     // Format the movie's duration and enhance it with microdata.
-    $runtime = new Duration($this->movie->runtime, [ "itemprop" => "duration" ], Duration::MINUTES);
+    $runtime = new Duration($this->movie->runtime, [ "property" => "duration" ], Duration::MINUTES);
 
     // But it all together after the closing title.
     if ($this->movie->originalTitle) {
       $this->headingAfter .= "<p>{$i18n->t("{0} ({1})", [
-        "<span itemprop='name'{$this->lang($this->movie->originalTitleLanguageCode)}>{$this->movie->originalTitle}</span>",
+        "<span property='name'{$this->lang($this->movie->originalTitleLanguageCode)}>{$this->movie->originalTitle}</span>",
         "<i>{$i18n->t("original title")}</i>",
       ])}</p>";
     }
@@ -281,7 +283,7 @@ class Show extends \MovLib\Presentation\Page {
           "<div aria-hidden='true' class='back'><span></span><span></span><span></span><span></span><span></span></div>" .
           "<div class='front'>{$stars}</div>" .
         "</fieldset>{$this->formClose()}" .
-        "<small itemprop='aggregateRating' itemscope itemtype='http://schema.org/AggregateRating'>{$ratingSummary}</small>" .
+        "<small property='aggregateRating' typeof='http://schema.org/AggregateRating'>{$ratingSummary}</small>" .
         "<div class='dt'>" .
         $directors .
         $cast .
@@ -291,7 +293,7 @@ class Show extends \MovLib\Presentation\Page {
         "</div>" .
       "</div>" . // close .span
       "<div id='movie-poster' class='s s3 tac'>" .
-        $this->getImage($this->movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_03), true, [ "itemprop" => "image" ]) .
+        $this->getImage($this->movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_03), true, [ "property" => "image" ]) .
         "<div id='movie-rating-mean'>" .
           \NumberFormatter::create($i18n->locale, \NumberFormatter::DECIMAL)->format($this->movie->ratingMean) .
         "</div>" .
