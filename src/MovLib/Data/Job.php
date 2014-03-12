@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data;
 
+use \MovLib\Presentation\Error\NotFound;
+
 /**
  * Represents one ore more jobs.
  *
@@ -153,6 +155,7 @@ class Job extends \MovLib\Data\Database {
     $query = self::getQuery();
     return $db->query("
       {$query}
+      WHERE `deleted` = false
       ORDER BY `name` ASC
       LIMIT ? OFFSET ?",
       "ssssdd",
@@ -196,8 +199,8 @@ class Job extends \MovLib\Data\Database {
         `ot`.`language_code` AS `originalTitleLanguageCode`,
         `p`.`poster_id` AS `displayPoster`
       FROM `movies`
-        LEFT JOIN `movies_jobs`
-          ON `movies`.`id` = `movies_jobs`.`movie_id`
+        LEFT JOIN `movies_crew`
+          ON `movies`.`id` = `movies_crew`.`movie_id`
         LEFT JOIN `movies_display_titles` AS `mdt`
           ON `mdt`.`movie_id` = `movies`.`id`
           AND `mdt`.`language_code` = ?
@@ -210,10 +213,10 @@ class Job extends \MovLib\Data\Database {
         LEFT JOIN `display_posters` AS `p`
           ON `p`.`movie_id` = `movies`.`id`
           AND `p`.`language_code` = ?
-      WHERE `movies_jobs`.`job_id` = ?
+      WHERE `movies_crew`.`job_id` = ?
       ORDER BY `displayTitle` DESC",
-      "ssssd",
-      [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $this->id ]
+      "ssd",
+      [ $i18n->languageCode, $i18n->languageCode, $this->id ]
     )->get_result();
   }
 
@@ -301,7 +304,8 @@ class Job extends \MovLib\Data\Database {
   protected function init() {
     global $i18n;
 
-    $this->route = $i18n->r("/job/{0}", [ $this->id ]);
+    $this->deleted = (boolean) $this->deleted;
+    $this->route   = $i18n->r("/job/{0}", [ $this->id ]);
   }
 
 }
