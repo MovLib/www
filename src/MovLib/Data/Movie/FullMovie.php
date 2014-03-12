@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\Movie;
 
+use \MovLib\Data\Person\Person;
 use \MovLib\Presentation\Error\NotFound;
 
 /**
@@ -133,54 +134,66 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
 
 
   /**
-   * Get the mysqli result for the movie's cast.
+   * Get the movie's cast.
    *
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
-   * @param null|integer $limit
-   *   Limit of unique cast members to return, defaults to <code>8</code>. <code>NULL</code> means no limit.
-   * @return \mysqli_result
-   *   The result containing the {@see \MovLib\Data\Movie\Cast} objects.
+   * @return null|array
+   *   Associative array containing the cast or <code>NULL</code> if no cast was found.
+   *
+   *   The array contains person's id as key and the {@see \MovLib\Data\Person\Person} as value.
    */
-  public function getCast($limit = 8) {
+  public function getCast() {
     global $db, $i18n;
     $query =
       "SELECT
-        `movies_cast`.`id`,
-        `movie_id` AS `movieId`,
-        `person_id` AS `personId`,
-        `job_id` AS `jobId`,
-        IFNULL(COLUMN_GET(`dyn_role`, ? AS BINARY), COLUMN_GET(`dyn_role`, '{$i18n->defaultLanguageCode}' AS BINARY)) AS `roleName`,
-        `alias_id` AS `alias`,
-        `role_id` AS `role`,
-        `image_uploader_id` AS `uploaderId`,
-        `image_width` AS `width`,
-        `image_height` AS `height`,
-        `image_filesize` AS `filesize`,
-        `image_extension` AS `extension`,
-        `image_styles` AS `styles`
+        `movies_cast`.`person_id`,
+        `persons`.`name` AS `person_name`,
+        `persons`.`nickname` AS `person_nickname`,
+        `persons`.`sex` AS `person_sex`,
+        `persons`.`image_uploader_id` AS `person_uploader_id`,
+        `persons`.`image_width` AS `person_width`,
+        `persons`.`image_height` AS `person_height`,
+        `persons`.`image_filesize` AS `person_filesize`,
+        `persons`.`image_extension` AS `person_extension`,
+        `persons`.`image_styles` AS `person_styles`,
+        `movies_cast`.`role_id`,
+        IFNULL(
+          `role`.`name`,
+          IFNULL(COLUMN_GET(`movies_cast`.`dyn_role`, ? AS BINARY), COLUMN_GET(`movies_cast`.`dyn_role`, '{$i18n->defaultLanguageCode}' AS BINARY))
+        ) AS `role_name`
       FROM `movies_cast`
-      INNER JOIN `persons` AS `p`
-        ON `movies_cast`.`person_id` = `p`.`id`
-      WHERE `movie_id` = ?"
+      INNER JOIN `persons`
+        ON `movies_cast`.`person_id` = `persons`.`id`
+      LEFT JOIN `persons` AS `role`
+        ON `movies_cast`.`role_id` = `role`.`id`
+      WHERE `movies_cast`.`movie_id` = ? AND `persons`.`deleted` = FALSE"
     ;
     $types = "sd";
     $params = [ $i18n->languageCode, $this->id ];
 
-    if ($limit) {
-      $query .= " AND `person_id` IN
-        (SELECT DISTINCT
-          `p`.`id`
-        FROM `movies_cast`
-        INNER JOIN `persons` AS `p`
-          ON `movies_cast`.`person_id` = `p`.`id`
-        ORDER BY `p`.`name`{$db->collations[$i18n->languageCode]} ASC
-        LIMIT ?)";
-      $types .= "d";
-      $params[] = $limit;
+    $persons = null;
+    $result = $db->query("{$query} ORDER BY `persons`.`name`{$db->collations[$i18n->languageCode]} ASC", $types, $params)->get_result();
+    while ($row = $result->fetch_assoc()) {
+      // Instantiate and initialize a Person if it is not present yet.
+      if (!isset($persons[$row["person_id"]])) {
+        $persons[$row["person_id"]]             = new Person();
+        $persons[$row["person_id"]]->id         = $row["person_id"];
+        $persons[$row["person_id"]]->name       = $row["person_name"];
+        $persons[$row["person_id"]]->nickname   = $row["person_nickname"];
+        $persons[$row["person_id"]]->sex        = $row["person_sex"];
+        $persons[$row["person_id"]]->uploaderId = $row["person_uploader_id"];
+        $persons[$row["person_id"]]->width      = $row["person_width"];
+        $persons[$row["person_id"]]->height     = $row["person_height"];
+        $persons[$row["person_id"]]->filesize   = $row["person_filesize"];
+        $persons[$row["person_id"]]->extension  = $row["person_extension"];
+        $persons[$row["person_id"]]->styles     = $row["person_styles"];
+        $persons[$row["person_id"]]->init();
+      }
+      // Always append the roles.
+      $persons[$row["person_id"]]->roles[] = [ "id" => $row["role_id"], "name" => $row["role_name"] ];
     }
-
-    return $db->query("{$query} ORDER BY `p`.`name`{$db->collations[$i18n->languageCode]} ASC", $types, $params)->get_result();
+    return $persons;
   }
 
   /**
@@ -194,6 +207,39 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
   public function getCountries() {
     global $db;
     return $db->query("SELECT `country_code` FROM `movies_countries` WHERE `movie_id` = ?", "d", [ $this->id ])->get_result();
+  }
+
+  /**
+   * Get only the most basic information about the movie's cast.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @param integer $limit [optional]
+   *   The number of cast members to retrieve.
+   * @return null|array
+   *   Numeric array containing the cast or <code>NULL</code> if no cast was found.
+   *
+   *   Every entry contains the offset "id", "name" and "nickname" for the corresponding properties of a person.
+   */
+  public function getCastLimited($limit = 5) {
+    global $db, $i18n;
+    $result = $db->query(
+      "SELECT DISTINCT
+        `persons`.`id`,
+        `persons`.`name`,
+        `persons`.`nickname`
+      FROM `movies_cast`
+      INNER JOIN `persons`
+        ON `movies_cast`.`person_id` = `persons`.`id`
+      WHERE `movies_cast`.`movie_id` = ? AND `persons`.`deleted` = FALSE
+      ORDER BY `persons`.`name`{$db->collations[$i18n->languageCode]} ASC
+      LIMIT ?",
+      "dd",
+      [ $this->id, $limit ]
+    )->get_result();
+    $cast = null;
+    $cast = $result->fetch_all(MYSQLI_ASSOC);
+    return $cast;
   }
 
   /**
@@ -269,6 +315,50 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
   }
 
   /**
+   * Get only the most basic information about the movie's directors.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @return null|array
+   *   The sorted numeric array of the movie's directors or <code>NULL</code> if there are no directors.
+   *
+   *   Every entry contains the offset "id", "name" and "nickname" for the corresponding properties of a person.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getDirectorsLimited() {
+    global $db, $i18n;
+    return $db->query(
+      "SELECT
+        `persons`.`id`,
+        `persons`.`name`,
+        `persons`.`nickname`,
+        CASE `persons`.`sex`
+          WHEN 1 THEN IFNULL(
+            COLUMN_GET(`jobs`.`dyn_names_sex1`, ? AS BINARY),
+            COLUMN_GET(`jobs`.`dyn_names_sex1`, '{$i18n->defaultLanguageCode}' AS BINARY)
+          )
+          WHEN 2 THEN IFNULL(
+            COLUMN_GET(`jobs`.`dyn_names_sex2`, ? AS BINARY),
+            COLUMN_GET(`jobs`.`dyn_names_sex2`, '{$i18n->defaultLanguageCode}' AS BINARY)
+          )
+          ELSE IFNULL(
+            COLUMN_GET(`jobs`.`dyn_names_sex0`, ? AS BINARY),
+            COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$i18n->defaultLanguageCode}' AS BINARY)
+          )
+        END AS `job_name`
+      FROM `movies_directors`
+      INNER JOIN `persons`
+        ON `persons`.`id` = `movies_directors`.`person_id`
+      INNER JOIN `jobs`
+        ON `jobs`.`id` = `movies_directors`.`job_id`
+      WHERE `movies_directors`.`movie_id` = ?
+      ORDER BY `persons`.`name`{$db->collations[$i18n->languageCode]} ASC",
+      "sssd",
+      [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $this->id ]
+    )->get_result()->fetch_all(MYSQLI_ASSOC);
+  }
+
+  /**
    * Get the translated and sorted movie's genres.
    *
    * @global \MovLib\Data\Database $db
@@ -338,7 +428,6 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
     )->get_result();
     $trailers = null;
     while ($row = $result->fetch_assoc()) {
-      \FB::send($row);
       $host = str_replace("www.", "", parse_url($row["url"])["host"]);
       if ($row["description"]) {
         $trailers[$i18n->t("{0} – {1} ({2})", [ $row["description"], $host, $row["quality"] ])] = $row["url"];

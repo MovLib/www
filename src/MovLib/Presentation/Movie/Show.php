@@ -154,6 +154,10 @@ class Show extends \MovLib\Presentation\Page {
     global $i18n, $session;
     $this->schemaType = "Movie";
 
+
+    //------------------------------------------------------------------------------------------------------------------ Header
+
+
     // Enhance the page's title with microdata.
     if ($this->movie->displayTitle == $this->movie->originalTitle) {
       $this->pageTitle            = "<span itemprop='name'{$this->lang($this->movie->displayTitleLanguageCode)}>{$this->movie->displayTitle}</span>";
@@ -209,7 +213,7 @@ class Show extends \MovLib\Presentation\Page {
       $ratingSummary = $i18n->t("No one has rated this movie so far, be the first.");
     }
     elseif ($this->movie->votes === 1 && $userRating) {
-      $ratingSummary = $i18n->t("Youâ€™re the only one who rated this movie (yet).");
+      $ratingSummary = $i18n->t("You’re the only one who rated this movie (yet).");
     }
     else {
       $rating = "<span itemprop='ratingValue'>{$i18n->format("{0,number}", [ $this->movie->ratingMean ])}</span>";
@@ -225,6 +229,40 @@ class Show extends \MovLib\Presentation\Page {
           "votes"  => $votes,
         ]);
       }
+    }
+
+    // Format the directors.
+    $directors       = null;
+    $directorsResult = $this->movie->getDirectorsLimited();
+    $c               = count($directorsResult);
+    for ($i = 0; $i < $c; ++$i) {
+      if ($directors) {
+        $directors .= ", ";
+      }
+      $directors .= "<a href='{$i18n->r("/person/{0}", [ $directorsResult[$i]["id"]])}' property='director'>{$directorsResult[$i]["name"]}</a>";
+    }
+    if ($directors) {
+      if ($c > 1) {
+        $directorLabel = $i18n->t("{0}:", [ $i18n->t("Directors") ]);
+      }
+      else {
+        $directorLabel = $i18n->t("{0}:", [ $directorsResult[0]["job_name"] ]);
+      }
+      $directors = "<small class='dtr'><span class='dtc'>{$directorLabel}</span><span class='dtc'>{$directors}</span></small>";
+    }
+
+    // Format first five cast members.
+    $cast       = null;
+    $castResult = $this->movie->getCastLimited();
+    $c          = count($castResult);
+    for ($i = 0; $i < $c; ++$i) {
+      if ($cast) {
+        $cast .= ", ";
+      }
+      $cast .= "<a href='{$i18n->r("/person/{0}", [ $castResult[$i]["id"]])}' property='actor'>{$castResult[$i]["name"]}</a>";
+    }
+    if ($cast) {
+      $cast = "<small class='dtr'><span class='dtc'>{$i18n->t("{0}:", [ $i18n->t("Cast") ])}</span><span class='dtc'>{$cast}</span></small>";
     }
 
     // Format the movie's duration and enhance it with microdata.
@@ -244,8 +282,13 @@ class Show extends \MovLib\Presentation\Page {
           "<div class='front'>{$stars}</div>" .
         "</fieldset>{$this->formClose()}" .
         "<small itemprop='aggregateRating' itemscope itemtype='http://schema.org/AggregateRating'>{$ratingSummary}</small>" .
-        "<small><span class='vh'>{$i18n->t("{0}:", [ $i18n->t("Runtime") ])} </span>{$runtime} | <span class='vh'>{$i18n->t("{0}:", [ $i18n->t("Countries") ])} </span>{$this->getCountries()}</small>" .
-        "<small><span class='vh'>{$i18n->t("{0}:", [ $i18n->t("Genres") ])} </span>{$this->getGenres()}</small>" .
+        "<div class='dt'>" .
+        $directors .
+        $cast .
+        "<small class='dtr'><span class='dtc'>{$i18n->t("{0}:", [ $i18n->t("Runtime") ])}</span><span class='dtc'>{$runtime}</span></small>" .
+        "<small class='dtr'><span class='dtc'>{$i18n->t("{0}:", [ $i18n->t("Countries") ])}</span><span class='dtc'>{$this->getCountries()}</span></small>" .
+        "<small class='dtr'><span class='dtc'>{$i18n->t("{0}:", [ $i18n->t("Genres") ])}</span><span class='dtc'>{$this->getGenres()}</span></small>" .
+        "</div>" .
       "</div>" . // close .span
       "<div id='movie-poster' class='s s3 tac'>" .
         $this->getImage($this->movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_03), true, [ "itemprop" => "image" ]) .
@@ -255,29 +298,16 @@ class Show extends \MovLib\Presentation\Page {
       "</div>" .
     "</div>"; // close .row
 
+
+    //------------------------------------------------------------------------------------------------------------------ Content sections
+
+
     $sections["synopsis"] = [
       $i18n->t("Synopsis"),
       empty($this->movie->synopsis)
         ? $i18n->t("No synopsis available, {0}write synopsis{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ])
         : $this->htmlDecode($this->movie->synopsis)
       ,
-    ];
-
-    $sections["directors"] = [
-      $i18n->t("Directors"),
-      new Persons(
-        $this->movie->getDirectors(),
-        $i18n->t("No directors assigned yet, {0}add directors{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]),
-        [ "itemprop" => "director" ]
-      ),
-    ];
-
-    $sections["cast"] = [
-      $i18n->t("Cast"),
-      new CastPartial(
-        $this->movie->getCast(null),
-        $i18n->t("No cast assigned yet, {0}add cast{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ])
-      ),
     ];
 
     $sections["releases"] = [

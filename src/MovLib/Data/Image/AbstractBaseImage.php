@@ -129,7 +129,7 @@ abstract class AbstractBaseImage {
    *
    * @var string
    */
-  protected $extension;
+  public $extension;
 
   /**
    * The image's filename without extension (and the leading dot of the extension).
@@ -179,7 +179,7 @@ abstract class AbstractBaseImage {
    *
    * @var array
    */
-  protected $styles;
+  public $styles;
 
   /**
    * All available styles inofrmation, including dynamic data (translations).

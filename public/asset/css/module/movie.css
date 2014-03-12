@@ -39,9 +39,14 @@
 }
 
 #movie-rating {
+  margin-bottom: 5px;
   width: 138px;
   height: 20px;
   position: relative;
+}
+
+#movie-show form + small {
+  margin-bottom: 20px;
 }
 
 #movie-rating > div {
@@ -105,4 +110,12 @@
   text-shadow: 0 0 5px #fff, 0 0 20px #fff;
   width: 140px;
   z-index: 1;
+}
+
+#movie-show #header .dtc {
+  padding-bottom: 5px;
+}
+
+#movie-show #header .dtc:nth-child(odd) {
+  padding-right: 10px;
 }

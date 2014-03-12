@@ -106,6 +106,16 @@ class Person extends \MovLib\Data\Image\AbstractImage {
   public $nickname;
 
   /**
+   * Numeric array containing person's roles in a movie.
+   *
+   * Every entry consists of the offsets <code>"id"</code> and <code>"name"</code>. If id is not set, the role has
+   * no own person page and thus will never be linked.
+   *
+   * @var array
+   */
+  public $roles;
+
+  /**
    * The person's translated route.
    *
    * @var string
@@ -327,7 +337,7 @@ class Person extends \MovLib\Data\Image\AbstractImage {
    *
    * @global \MovLib\Data\I18n $i18n
    */
-  protected function init() {
+  public function init() {
     global $i18n;
 
     $this->deleted = (boolean) $this->deleted;
