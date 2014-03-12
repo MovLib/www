@@ -710,8 +710,8 @@ location ^~ <?= $r("/person") ?> {
     try_files $movlib_cache @php;
   }
 
-  location ~* "^<?= $rp("/person/{0}/serials", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Person\\Serials";
+  location ~* "^<?= $rp("/person/{0}/series", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Person\\Series";
     set $movlib_person_id $1;
     try_files $movlib_cache @php;
   }

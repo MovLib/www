@@ -49,7 +49,7 @@ class Index extends \MovLib\Presentation\Page {
       "<a class='btn btn-large btn-success fr' href='{$i18n->r("/series/create")}'>{$i18n->t("Create New Series")}</a>"
     ;
     return new Alert(
-      $i18n->t("The serials feature isn’t implemented yet."),
+      $i18n->t("The series feature isn’t implemented yet."),
       $i18n->t("Check back later"),
       Alert::SEVERITY_INFO
     );

@@ -36,7 +36,7 @@ class Create extends \MovLib\Presentation\Page {
     $this->initLanguageLinks("/series/create");
     $this->initBreadcrumb();
     $this->alerts .= new Alert(
-      $i18n->t("The create serial feature isn’t implemented yet."),
+      $i18n->t("The create series feature isn’t implemented yet."),
       $i18n->t("Check back later"),
       Alert::SEVERITY_INFO
     );
