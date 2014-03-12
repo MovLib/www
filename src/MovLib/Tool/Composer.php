@@ -17,7 +17,7 @@
  */
 namespace MovLib\Tool;
 
-use \MovLib\Tool\Console\Command\Production\FixPermissions;
+use \MovLib\Data\FileSystem;
 use \Composer\Script\Event;
 
 /**
@@ -32,7 +32,6 @@ use \Composer\Script\Event;
  * @since 0.0.1-dev
  */
 class Composer {
-  use \MovLib\Data\TraitFileSystem;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -81,37 +80,27 @@ class Composer {
    *
    * @global \MovLib\Tool\Kernel $kernel
    * @param string $fullName
-   *   The packages full name including the name and slash.
+   *   The package's full name including name and slash.
    * @return this
    */
   public function apigen($fullName) {
     global $kernel;
 
-    // Create symbolic link for global access.
-    $this->fsSymlink("{$this->vendorPath}/bin/apigen.php", "{$kernel->configuration->directory->bin}/apigen");
+    if ($kernel->isWindows === false) {
+      FileSystem::createSymbolicLink("{$this->vendorPath}/{$fullName}/apigen.php", "/usr/local/bin/apigen", true);
+    }
 
     // @see https://github.com/apigen/apigen/issues/252
-    $patch = "{$this->vendorPath}/{$fullName}/ApiGen/Template.php";
-    $this->fsPutContents($patch, str_replace(
-      "return \TexyHtml::el('code', \$fshl->highlight(\$matches[1]));",
-      "\$content = \$parser->getTexy()->protect(\$fshl->highlight(\$matches[1]), \Texy::CONTENT_MARKUP);\n         return \TexyHtml::el('code', \$content);",
-      $this->fsGetContents($patch)
-    ));
-
-    return $this;
-  }
-
-  /**
-   * Fix vendor directory permissions.
-   *
-   * @return this
-   */
-  public function fixPermissions() {
-    static $fixPermissions = null;
-    if (!$fixPermissions) {
-      $fixPermissions = new FixPermissions();
+    $path = "{$this->vendorPath}/{$fullName}/ApiGen/Template.php";
+    $content = FileSystem::getContent($path);
+    if (strpos($content, "return \TexyHtml::el('code', \$fshl->highlight(\$matches[1]));") === false) {
+      FileSystem::putContent($path, str_replace(
+        "return \TexyHtml::el('code', \$fshl->highlight(\$matches[1]));",
+        "\$content = \$parser->getTexy()->protect(\$fshl->highlight(\$matches[1]), \Texy::CONTENT_MARKUP);\n         return \TexyHtml::el('code', \$content);",
+        $content
+      ));
     }
-    $fixPermissions->fixPermissions($this->vendorPath);
+
     return $this;
   }
 
@@ -128,13 +117,16 @@ class Composer {
     global $kernel, $db;
 
     // Create symbolic link to our phpMyAdmin configuration.
-    $this->fsSymlink(
-      "{$kernel->documentRoot}{$kernel->configuration->directory->etc}/phpmyadmin/config.inc.php",
-      "{$this->vendorPath}/{$fullName}/config.inc.php"
-    );
+    if ($kernel->isWindows === false) {
+      FileSystem::createSymbolicLink(
+        "{$kernel->documentRoot}/etc/phpmyadmin/config.inc.php",
+        "{$this->vendorPath}/{$fullName}config.inc.php",
+        true
+      );
+    }
 
     // Create all tables for the advanced phpMyAdmin features.
-    $db->queries($this->fsGetContents("{$this->vendorPath}/{$fullName}/examples/create_tables.sql"));
+    $db->queries(FileSystem::getContent("{$this->vendorPath}/{$fullName}/examples/create_tables.sql"));
 
     return $this;
   }
@@ -143,11 +135,15 @@ class Composer {
    * Create symbolic link for phpunit executable.
    *
    * @global \MovLib\Tool\Kernel $kernel
+   * @param string $fullName
+   *   The packages full name including the name and slash.
    * @return this
    */
-  public function phpunit() {
+  public function phpunit($fullName) {
     global $kernel;
-    $this->fsSymlink("{$this->vendorPath}/bin/phpunit", "{$kernel->configuration->directory->bin}/phpunit");
+    if ($kernel->isWindows === false) {
+      FileSystem::createSymbolicLink("{$this->vendorPath}/{$fullName}/phpunit.php", "/usr/local/bin/phpunit", true);
+    }
     return $this;
   }
 
@@ -161,9 +157,7 @@ class Composer {
    * @param \Composer\Script\Event $event
    *   The event fired by composer.
    */
-  public static function postInstall(Event $event) {
-    (new Composer($event))->fixPermissions();
-  }
+  public static function postInstall(Event $event) {}
 
   /**
    * Automatically called after composer installed a package.
@@ -199,8 +193,6 @@ class Composer {
    * @param \Composer\Script\Event $event
    *   The event fired by composer.
    */
-  public static function postUpdate(Event $event) {
-    self::postInstall($event);
-  }
+  public static function postUpdate(Event $event) {}
 
 }
