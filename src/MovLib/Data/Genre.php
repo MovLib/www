@@ -291,7 +291,8 @@ class Genre extends \MovLib\Data\Database {
   protected function init() {
     global $i18n;
 
-    $this->route = $i18n->r("/genre/{0}", [ $this->id ]);
+    $this->deleted = (boolean) $this->deleted;
+    $this->route   = $i18n->r("/genre/{0}", [ $this->id ]);
   }
 
 }

@@ -39,7 +39,7 @@ class Index extends \MovLib\Presentation\Page {
 
 
   /**
-   * Instantiate new genres show presentation.
+   * Instantiate new genre index presentation.
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
@@ -69,10 +69,11 @@ class Index extends \MovLib\Presentation\Page {
     $this->headingBefore =
       "<a class='btn btn-large btn-success fr' href='{$i18n->r("/genre/create")}'>{$i18n->t("Create New Genre")}</a>"
     ;
+
     $result      = Genre::getGenres($this->paginationOffset, $this->paginationLimit);
     $noItemText  = new Alert(
       $i18n->t(
-        "We couldn’t find any genres matching your filter criteria, or there simply aren’t any genres available."
+        "We couldn’t find any genre matching your filter criteria, or there simply aren’t any genres available."
       ), $i18n->t("No Genres"), Alert::SEVERITY_INFO
     );
     $noItemText .=

@@ -20,7 +20,7 @@ namespace MovLib\Presentation\Genre;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
- * Create genre presentation
+ * Allows the creation of a new genre.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -29,17 +29,50 @@ use \MovLib\Presentation\Partial\Alert;
  * @since 0.0.1-dev
  */
 class Create extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\TraitForm;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new genre create presentation.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   */
   public function __construct() {
-    global $i18n;
+    global $i18n, $kernel;
+
     $this->initPage($i18n->t("Create Genre"));
+    $this->initBreadcrumb([ [ $i18n->rp("/genres"), $i18n->t("Genres") ] ]);
     $this->initLanguageLinks("/genre/create");
-    $this->initBreadcrumb();
-    $this->alerts .= new Alert(
+
+    $kernel->stylesheets[] = "genre";
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   */
+  protected function getContent() {
+    global $i18n;
+    return new Alert(
       $i18n->t("The create genre feature isn’t implemented yet."),
       $i18n->t("Check back later"),
       Alert::SEVERITY_INFO
     );
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected function formValid() {
+    return $this;
   }
 
 }

@@ -261,9 +261,20 @@ INSERT INTO `genres` (`dyn_names`, `dyn_descriptions`) VALUES
     'de', 'Erotik'
   ),
   COLUMN_CREATE(
-    'en', '&lt;p&gt;Sex in film refers to the presentation in motion pictures of sexuality or eroticism and sex acts, including love scenes.&lt;/p&gt;&lt;p&gt;
-Erotic sex scenes have been presented in films since the silent era of cinematography. Many actors and actresses have exposed at least parts of their bodies or dressed and behaved in ways considered sexually provocative by contemporary standards at some point in their careers. Some films containing sex scenes have been criticized by religious groups or banned by governments, or both.&lt;/p&gt;&lt;p&gt;Sex scenes have been presented in many genres of film; while in some genres sexuality is rarely depicted.&lt;/p&gt;',
+    'en', '&lt;p&gt;Sex in film refers to the presentation in motion pictures of sexuality or eroticism and sex acts, including love scenes.&lt;/p&gt;&lt;p&gt;Erotic sex scenes have been presented in films since the silent era of cinematography. Many actors and actresses have exposed at least parts of their bodies or dressed and behaved in ways considered sexually provocative by contemporary standards at some point in their careers. Some films containing sex scenes have been criticized by religious groups or banned by governments, or both.&lt;/p&gt;&lt;p&gt;Sex scenes have been presented in many genres of film; while in some genres sexuality is rarely depicted.&lt;/p&gt;',
     'de', '&lt;p&gt;Als Erotikfilm oder Softporno werden Spiel- oder Fernsehfilme bezeichnet, die hauptsächlich erotische Inhalte zeigen. Üblicherweise in Spielfilm-Länge ist ihre Handlung von periodischen Darstellungen simulierten, nicht explizit gezeigten Geschlechtsverkehrs durchsetzt. Das Softcore-Genre wird oft als Middlebrow, also für den Ottonormalverbraucher zugängliche Kunst, bezeichnet.&lt;/p&gt;'
   )
 )
+;
+
+INSERT INTO `genres` SET
+  `deleted`          = true,
+  `dyn_descriptions` = COLUMN_CREATE(
+    'en', '',
+    'de', ''
+  ),
+  `dyn_names`        = COLUMN_CREATE(
+    'en', 'Random',
+    'de', 'Irgendwas'
+  )
 ;

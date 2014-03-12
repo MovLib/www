@@ -17,8 +17,10 @@
  */
 namespace MovLib\Presentation\Genre;
 
+use \MovLib\Data\Genre;
+
 /**
- * Allows deleting a genre
+ * Allows deleting a genre.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -28,27 +30,40 @@ namespace MovLib\Presentation\Genre;
  */
 class Delete extends \MovLib\Presentation\Genre\AbstractBase {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
   /**
-   * Instantiate new delete genre presentation.
+   * Instantiate new genre delete presentation.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n;
-
-    parent::__construct();
-
+    global $i18n, $kernel;
+    $this->genre = new Genre((integer) $_SERVER["GENRE_ID"]);
+    $this->initPage($i18n->t("Delete"));
+    $this->pageTitle = $i18n->t("Delete {0}", [ "<a href='{$this->genre->route}'>{$this->genre->name}</a>" ]);
     $this->initLanguageLinks("/genre/{0}/delete", [ $this->genre->id ]);
-    $this->breadcrumbTitle = $i18n->t("Delete");
+    $this->initGenreBreadcrumb();
+    $this->sidebarInit();
 
-    $title  = $i18n->t("Delete {genre_name}");
-    $search = "{genre_name}";
-    $this->initPage(str_replace($search, $this->genre->name, $title));
-    $this->pageTitle = str_replace($search, "<a href='{$this->genre->route}'>{$this->genre->name}</a>", $title);
+    $kernel->stylesheets[] = "genre";
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   * @return \MovLib\Presentation\Partial\Alert
+   */
   protected function getPageContent() {
     global $i18n;
     return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("delete genre") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
   }
+
 }

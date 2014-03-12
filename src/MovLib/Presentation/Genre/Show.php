@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Genre;
 
+use \MovLib\Data\Genre;
+
 /**
  * Presentation of a single genre.
  *
@@ -35,16 +37,19 @@ class Show extends \MovLib\Presentation\Genre\AbstractBase {
   /**
    * Instantiate new genre presentation.
    *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @throws \MovLib\Presentation\Error\NotFound
-   * @throws \LogicException
    */
   public function __construct() {
-    parent::__construct();
+    global $i18n, $kernel;
+    $this->genre = new Genre((integer) $_SERVER["GENRE_ID"]);
     $this->initPage($this->genre->name);
-    $this->initLanguageLinks("/genre/{0}", [ $this->genre->id ]);
+    $this->initLanguageLinks("/genre/{0}", [ $this->genre->id]);
+    $this->initBreadcrumb([[ $i18n->rp("/genres"), $i18n->t("Genres") ]]);
+    $this->sidebarInit();
 
-    // Enhance the page title with microdata.
-    $this->pageTitle = "<span itemprop='genre'>{$this->genre->name}</span>";
+    $kernel->stylesheets[] = "genre";
   }
 
 
@@ -56,19 +61,58 @@ class Show extends \MovLib\Presentation\Genre\AbstractBase {
    * @global \MovLib\Data\I18n $i18n
    */
   protected function getPageContent() {
-    global $i18n;
+    global $i18n, $kernel;
 
-    $editLinkOpen = [ "<a href='{$this->routeEdit}'>", "</a>" ];
+    // Enhance the page title with microdata.
+    $this->schemaType = "Intangible";
+    $this->pageTitle  = "<span property='name'>{$this->genre->name}</span>";
+
+    if ($this->genre->deleted === true) {
+      return $this->goneGetContent();
+    }
+
+
+    // ----------------------------------------------------------------------------------------------------------------- Build page sections.
+
 
     $content = null;
 
-    // Description section.
-    $description = empty($this->genre->description)
-      ? $i18n->t("No description available, {0}write one{1}?", $editLinkOpen)
-      : $this->htmlDecode($this->genre->description);
-    $content .= $this->getSection("description", $i18n->t("Description"), $description);
+    // Biography section.
+    if ($this->genre->description) {
+      $content .= $this->getSection("description", $i18n->t("Description"), $this->htmlDecode($this->genre->description));
+    }
 
-    return $content;
+    if ($content) {
+      return $content;
+    }
+
+    return new Alert(
+      $i18n->t(
+        "{sitename} has no further details about this genre.",
+        [ "sitename"    => $kernel->siteName ]
+      ),
+      $i18n->t("No Data Available"),
+      Alert::SEVERITY_INFO
+    );
+  }
+
+  /**
+   * Construct a section in the main content and add it to the sidebar.
+   *
+   * @param string $id
+   *   The section's unique identifier.
+   * @param string $title
+   *   The section's translated title.
+   * @param string $content
+   *   The section's content.
+   * @return string
+   *   The section ready for display.
+   */
+  protected function getSection($id, $title, $content) {
+    // Add the section to the sidebar as anchor.
+    $this->sidebarNavigation->menuitems[] = [ "#{$id}", $title ];
+
+    return "<div id='{$id}'><h2>{$title}</h2>{$content}</div>";
   }
 
 }
