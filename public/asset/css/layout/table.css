@@ -31,6 +31,7 @@ table {
   background-color: transparent;
   border-collapse: collapse;
   border-spacing: 0;
+  color: inherit;
 }
 
 caption {
@@ -118,4 +119,16 @@ tbody .info {
 
 .table-hover tbody .info:hover {
   background-color: #c4e3f3;
+}
+
+.dt {
+  display: table;
+}
+
+.dtc {
+  display: table-cell;
+}
+
+.dtr {
+  display: table-row;
 }

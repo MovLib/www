@@ -113,6 +113,10 @@ small {
   margin: 0 0 10px;
 }
 
+small {
+  margin-bottom: 5px;
+}
+
 #b a,
 .small,
 small,
