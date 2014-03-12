@@ -20,7 +20,6 @@ namespace MovLib\Presentation\Person;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Place;
 use \MovLib\Presentation\Partial\Date;
-use \MovLib\Presentation\Partial\Lists\Ordered;
 use \MovLib\Presentation\Partial\FormElement\InputSex;
 use \MovLib\Data\Person\FullPerson;
 
@@ -83,7 +82,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
       elseif ($this->person->sex === InputSex::FEMALE) {
         $title = $i18n->t("Female");
       }
-      $this->pageTitle .= " <sup class='ico ico-sex{$this->person->sex} sex sex-{$this->person->sex}' title='{$title}'></sup>";
+      $this->pageTitle .= " <sup class='ico ico-sex{$this->person->sex} sex sex-{$this->person->sex}' content='{$title}' property='gender' title='{$title}'></sup>";
     }
 
     // Put the personal information together.
@@ -99,7 +98,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     $birth = $birthDate = $birthDateFormatted = $birthAge = $birthPlace = null;
     if ($this->person->birthDate) {
       $birthDate          = new Date($this->person->birthDate);
-      $birthDateFormatted = "<a href='{$i18n->rp("/year/{0}/persons", [ $birthDate->dateInfo["year"] ])}'>{$birthDate->format([ "property" => "birthDate" ])}</a>";
+      $birthDateFormatted = $birthDate->format([ "property" => "birthDate" ], $i18n->rp("/year/{0}/persons", [ $birthDate->dateInfo["year"] ]));
       $birthAge           = $birthDate->getAge();
     }
     $birthPlace = $this->person->getBirthPlace();

@@ -21,6 +21,7 @@ use \MovLib\Data\Image\MoviePoster;
 use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Country;
+use \MovLib\Presentation\Partial\Date;
 use \MovLib\Presentation\Partial\Duration;
 
 /**
@@ -83,7 +84,10 @@ class Show extends \MovLib\Presentation\Page {
     $this->routeEdit = $i18n->r("/movie/{0}/edit", $routeArgs);
     $this->sidebarInit([
       [ $this->movie->route, $i18n->t("View"), [ "class" => "ico ico-view" ] ],
-      [ $i18n->r("/movie/{0}/discussion", $routeArgs), $i18n->t("Discuss"), [ "class" => "ico ico-discussion", "property" => "discussionUrl" ] ],
+      [ $i18n->r("/movie/{0}/discussion", $routeArgs), $i18n->t("Discuss"), [
+        "class" => "ico ico-discussion",
+        "property" => "discussionUrl"
+      ] ],
       [ $this->routeEdit, $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
       [ $i18n->r("/movie/{0}/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history separator" ] ],
     ]);
@@ -112,7 +116,10 @@ class Show extends \MovLib\Presentation\Page {
       $countries .= new Country($row[0], [ "property" => "contentLocation"]);
     }
     if (!$countries) {
-      $countries = $i18n->t("No countries assigned yet, {0}add countries{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]);
+      $countries = $i18n->t(
+        "No countries assigned yet, {0}add countries{1}?",
+        [ "<a href='{$this->routeEdit}'>", "</a>" ]
+      );
     }
     return $countries;
   }
@@ -158,7 +165,9 @@ class Show extends \MovLib\Presentation\Page {
 
     // Enhance the page's title with microdata.
     if ($this->movie->displayTitle == $this->movie->originalTitle) {
-      $this->pageTitle            = "<span property='name'{$this->lang($this->movie->displayTitleLanguageCode)}>{$this->movie->displayTitle}</span>";
+      $this->pageTitle = "<span property='name'{$this->lang(
+        $this->movie->displayTitleLanguageCode
+      )}>{$this->movie->displayTitle}</span>";
       $this->movie->originalTitle = null;
     }
     else {
@@ -168,8 +177,10 @@ class Show extends \MovLib\Presentation\Page {
       $this->pageTitle = $i18n->t("{0} ({1})", [
         $this->pageTitle,
         // @todo Add full publishing date to content attribute.
-        "<a content='{$this->movie->year}-00-00' property='datePublished' href='{$i18n->rp("/year/{0}/movies", [ $this->movie->year ])}'>{$this->movie->year}</a>",
-      ]);
+        (new Date("{$this->movie->year}-00-00"))->format(
+          [ "property" => "datePublished"],
+          $i18n->rp("/year/{0}/movies", [ $this->movie->year ]))
+       ]);
     }
 
     // Display gone page if this movie was deleted.
@@ -221,7 +232,10 @@ class Show extends \MovLib\Presentation\Page {
       }
       else {
         $ratingSummary = $i18n->t("Rated by {votes} users with a {0}mean rating{1} of {rating}.", [
-          "<a href='{$i18n->r("/movie/{0}/rating-demographics", [ $this->movie->id ])}' title='{$i18n->t("View the rating demographics.")}'>",
+          "<a href='{$i18n->r(
+            "/movie/{0}/rating-demographics",
+            [ $this->movie->id ]
+          )}' title='{$i18n->t("View the rating demographics.")}'>",
           "</a>",
           "rating" => $rating,
           "votes"  => $votes,
@@ -237,9 +251,10 @@ class Show extends \MovLib\Presentation\Page {
       if ($directors) {
         $directors .= ", ";
       }
-      $directors .= "<span property='director' typeof='http://schema.org/Person'>" .
-                      "<a href='{$i18n->r("/person/{0}", [ $directorsResult[$i]["id"]])}' property='name'>{$directorsResult[$i]["name"]}</a>" .
-                    "</span>";
+      $directors .= "<span property='director' typeof='Person'><a href='{$i18n->r(
+        "/person/{0}",
+        [ $directorsResult[$i]["id"]]
+      )}' property='name'>{$directorsResult[$i]["name"]}</a></span>";
     }
     if ($directors) {
       if ($c > 1) {
@@ -248,7 +263,9 @@ class Show extends \MovLib\Presentation\Page {
       else {
         $directorLabel = $i18n->t("{0}:", [ $directorsResult[0]["job_name"] ]);
       }
-      $directors = "<small class='dtr'><span class='dtc'>{$directorLabel}</span><span class='dtc'>{$directors}</span></small>";
+      $directors =
+        "<small class='dtr'><span class='dtc'>{$directorLabel}</span><span class='dtc'>{$directors}</span></small>"
+      ;
     }
 
     // Format first five cast members.
@@ -259,12 +276,16 @@ class Show extends \MovLib\Presentation\Page {
       if ($cast) {
         $cast .= ", ";
       }
-      $cast .= "<span property='actor' typeof='http://schema.org/Person'>" .
-                 "<a href='{$i18n->r("/person/{0}", [ $castResult[$i]["id"]])}' property='name'>{$castResult[$i]["name"]}</a>" .
-               "</span>";
+      $cast .= "<span property='actor' typeof='Person'><a href='{$i18n->r(
+        "/person/{0}",
+        [ $castResult[$i]["id"]]
+      )}' property='url'><span property='name'>{$castResult[$i]["name"]}</span></a></span>";
     }
     if ($cast) {
-      $cast = "<small class='dtr'><span class='dtc'>{$i18n->t("{0}:", [ $i18n->t("Cast") ])}</span><span class='dtc'>{$cast}</span></small>";
+      $cast = "<small class='dtr'><span class='dtc'>{$i18n->t(
+        "{0}:",
+        [ $i18n->t("Cast") ]
+      )}</span><span class='dtc'>{$cast}</span></small>";
     }
 
     // Format the movie's duration and enhance it with microdata.
@@ -277,28 +298,37 @@ class Show extends \MovLib\Presentation\Page {
         "<i>{$i18n->t("original title")}</i>",
       ])}</p>";
     }
+
+    $ratingMean = \NumberFormatter::create($i18n->locale, \NumberFormatter::DECIMAL)->format($this->movie->ratingMean);
     $this->headingAfter .=
-        "{$this->formOpen()}<fieldset id='movie-rating'>" .
-          "<legend class='vh'>{$i18n->t("Rate this movie")}</legend> " .
-          "<div aria-hidden='true' class='back'><span></span><span></span><span></span><span></span><span></span></div>" .
-          "<div class='front'>{$stars}</div>" .
-        "</fieldset>{$this->formClose()}" .
-        "<small property='aggregateRating' typeof='http://schema.org/AggregateRating'>{$ratingSummary}</small>" .
-        "<div class='dt'>" .
-        $directors .
-        $cast .
-        "<small class='dtr'><span class='dtc'>{$i18n->t("{0}:", [ $i18n->t("Runtime") ])}</span><span class='dtc'>{$runtime}</span></small>" .
-        "<small class='dtr'><span class='dtc'>{$i18n->t("{0}:", [ $i18n->t("Countries") ])}</span><span class='dtc'>{$this->getCountries()}</span></small>" .
-        "<small class='dtr'><span class='dtc'>{$i18n->t("{0}:", [ $i18n->t("Genres") ])}</span><span class='dtc'>{$this->getGenres()}</span></small>" .
-        "</div>" .
-      "</div>" . // close .span
+      "{$this->formOpen()}<fieldset id='movie-rating'>" .
+        "<legend class='vh'>{$i18n->t("Rate this movie")}</legend> " .
+        "<div aria-hidden='true' class='back'><span></span><span></span><span></span><span></span><span></span></div>" .
+        "<div class='front'>{$stars}</div>" .
+      "</fieldset>{$this->formClose()}" .
+      "<small property='aggregateRating' typeof='AggregateRating'>{$ratingSummary}</small>" .
+      "<div class='dt'>" .
+        "{$directors}{$cast}" .
+        "<small class='dtr'>" .
+          "<span class='dtc'>{$i18n->t("{0}:", [ $i18n->t("Runtime") ])}</span>" .
+          "<span class='dtc'>{$runtime}</span>" .
+        "</small>" .
+        "<small class='dtr'>" .
+          "<span class='dtc'>{$i18n->t("{0}:", [ $i18n->t("Countries") ])}</span>" .
+          "<span class='dtc'>{$this->getCountries()}</span>" .
+        "</small>" .
+        "<small class='dtr'>" .
+          "<span class='dtc'>{$i18n->t("{0}:", [ $i18n->t("Genres") ])}</span>" .
+          "<span class='dtc'>{$this->getGenres()}</span>" .
+        "</small>" .
+      "</div></div>" . // close .span (@see headingBefore)
       "<div id='movie-poster' class='s s3 tac'>" .
-        $this->getImage($this->movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_03), true, [ "property" => "image" ]) .
-        "<div id='movie-rating-mean'>" .
-          \NumberFormatter::create($i18n->locale, \NumberFormatter::DECIMAL)->format($this->movie->ratingMean) .
-        "</div>" .
-      "</div>" .
-    "</div>"; // close .row
+        $this->getImage($this->movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_03), true, [
+          "property" => "image"
+        ]) .
+        "<div id='movie-rating-mean'>{$ratingMean}</div>" .
+      "</div></div>" // close .row (@see headingBefore)
+    ;
 
 
     //------------------------------------------------------------------------------------------------------------------ Content sections
@@ -321,7 +351,9 @@ class Show extends \MovLib\Presentation\Page {
     $trailers       = null;
     if ($trailersResult) {
       foreach ($trailersResult as $text => $url) {
-        $trailers .= "<li><a href='{$url}' rel='nofollow' target='_blank'>{$text}</a></li>";
+        $trailers .=
+          "<li property='trailer' typeof='VideoObject'><a href='{$url}' rel='nofollow' target='_blank'>{$text}</a></li>"
+        ;
       }
       $trailers = "<ul>{$trailers}</ul>";
     }
@@ -365,7 +397,10 @@ class Show extends \MovLib\Presentation\Page {
       $this->alerts .= new Alert(
         $i18n->t("Please {sign_in} or {join} to rate this movie.", [
           "sign_in" => "<a href='{$i18n->r("/profile/sign-in")}'>{$i18n->t("Sign In")}</a>",
-          "join"    => "<a href='{$i18n->r("/profile/join")}'>{$i18n->t("Join {sitename}", [ "sitename" => $kernel->siteName ])}</a>",
+          "join"    => "<a href='{$i18n->r("/profile/join")}'>{$i18n->t(
+            "Join {sitename}",
+            [ "sitename" => $kernel->siteName ]
+          )}</a>",
         ]),
         null,
         Alert::SEVERITY_INFO
@@ -380,7 +415,10 @@ class Show extends \MovLib\Presentation\Page {
         $this->movie->rate($rating);
       }
       else {
-        $this->checkErrors($i18n->t("The submitted rating isnâ€™t valid. Valid ratings range from: {min} to {max}", [ "min" => 1, "max" => 5 ]));
+        $this->checkErrors($i18n->t(
+          "The submitted rating isn’t valid. Valid ratings range from: {min} to {max}",
+          [ "min" => 1, "max" => 5 ]
+        ));
       }
     }
 

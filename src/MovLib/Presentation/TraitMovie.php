@@ -60,7 +60,7 @@ trait TraitMovie {
     if ($movie->displayTitle != $movie->originalTitle) {
       $displayTitleItemprop = "alternateName";
       $originalTitle = "<br><span class='small'>{$i18n->t("{0} ({1})", [
-        "<span itemprop='name'{$this->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>",
+        "<span property='name'{$this->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>",
         "<i>{$i18n->t("original title")}</i>",
       ])}</span>";
     }
@@ -69,7 +69,7 @@ trait TraitMovie {
       $displayTitleItemprop = "name";
       $originalTitle = null;
     }
-    $displayTitle = "<a href='{$movie->route}' property='{$displayTitleItemprop} url'{$this->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}{0}</a>";
+    $displayTitle = "<a href='{$movie->route}' property='url'><span property='{$displayTitleItemprop}'{$this->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}</span></a>{0}";
 
     // Append year enclosed in micro-data to display title if available.
     if (isset($movie->year)) {

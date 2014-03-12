@@ -130,9 +130,13 @@ class Date extends \MovLib\Presentation\AbstractBase {
    * @return string
    *   Formatted date as <code><time></code> tag with additional attributes.
    */
-  public function format(array $attributes = []) {
+  public function format(array $attributes = [], $url = null) {
     $attributes["datetime"] = $this->iso8601Format();
-    return "<time{$this->expandTagAttributes($attributes)}>{$this->intlFormat()}</time>";
+    $formatted = $this->intlFormat();
+    if ($url) {
+      $formatted = "<a href='{$url}'>{$formatted}</a>";
+    }
+    return "<time{$this->expandTagAttributes($attributes)}>{$formatted}</time>";
   }
 
   /**

@@ -91,7 +91,7 @@ class Persons extends \MovLib\Presentation\Partial\Listing\AbstractListing {
     $this->listItemsAttributes = $listItemsAttributes;
     $this->addClass("s s{$spanSize}", $this->listItemsAttributes);
     $this->descriptionSpan                 = --$spanSize;
-    $this->listItemsAttributes["typeof"] = "http://schema.org/Person";
+    $this->listItemsAttributes["typeof"] = "Person";
     $this->showAdditionalInfo              = $showAdditionalInfo;
   }
 
@@ -159,10 +159,10 @@ class Persons extends \MovLib\Presentation\Partial\Listing\AbstractListing {
       }
 
       $list .=
-        "<li{$this->expandTagAttributes($this->listItemsAttributes)}>" .
+        "<li{$this->expandTagAttributes($this->listItemsAttributes)} resource='{$person->route}'>" .
           "<div class='hover-item r'>" .
             $this->getImage($person->getStyle($this->imageStyle), $person->route, [ "property" => "image" ], [ "class" => "s s1 tac" ]) .
-            "<span class='s s{$this->descriptionSpan}'><a href='{$person->route}' property='name url'>{$person->name}</a>{$additionalInfo}</span>" .
+            "<span class='s s{$this->descriptionSpan}'><a href='{$person->route}' property='url'><span property='name'>{$person->name}</span></a>{$additionalInfo}</span>" .
           "</div>" .
         "</li>"
       ;

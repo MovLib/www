@@ -90,7 +90,7 @@ class Movies extends \MovLib\Presentation\Partial\Listing\AbstractListing {
     $this->listItemsAttributes = $listItemsAttributes;
     $this->addClass("hover-item r", $this->listItemsAttributes);
     $this->descriptionSpan                 = --$spanSize;
-    $this->listItemsAttributes["typeof"] = "http://schema.org/Movie";
+    $this->listItemsAttributes["typeof"] = "Movie";
     $this->showRating = $showRating;
     if ($showRating === true) {
       $this->descriptionSpan--;
