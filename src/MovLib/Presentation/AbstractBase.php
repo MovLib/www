@@ -167,8 +167,9 @@ abstract class AbstractBase {
           // @devEnd
           $expanded .= " {$value}";
         }
-        // All other attributes are treated equally, but only if they have a value.
-        elseif (!empty($value)) {
+        // All other attributes are treated equally, but only if they have a value. But beware that the alt attribute
+        // is an exception to this rule.
+        elseif ($name == "alt" || !empty($value)) {
           // @devStart
           // @codeCoverageIgnoreStart
           if (empty($name)) {
