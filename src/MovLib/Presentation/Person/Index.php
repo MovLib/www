@@ -50,7 +50,7 @@ class Index extends \MovLib\Presentation\Page {
     $this->initLanguageLinks("/persons", null, true);
     $this->sidebarInit([
       [ $i18n->rp("/persons"), $i18n->t("Persons"), [ "class" => "ico ico-person" ] ],
-      [ $i18n->rp("/person/random"), $i18n->t("Random") ],
+      [ $i18n->r("/person/random"), $i18n->t("Random") ],
     ]);
     $this->paginationInit(Person::getTotalCount());
     $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/person/create")}'>{$i18n->t("Create New Person")}</a>";

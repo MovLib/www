@@ -15,43 +15,47 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Release;
+namespace MovLib\Presentation\User;
 
+use \MovLib\Data\User\User;
 use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Presentation\Redirect\SeeOther;
 
 /**
- * Latest releases.
+ * Random user presentation.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2014 MovLib
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitSidebar;
+class Random {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Redirect to random movie presentation.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @throws \MovLib\Presentation\Redirect\SeeOther
+   */
   public function __construct() {
-    global $i18n;
-    $this->initPage($i18n->t("Releases"));
-    $this->initLanguageLinks("/releases", null, true);
-    $this->initBreadcrumb();
-    $this->sidebarInit([
-      [ $i18n->rp("/releases"), $i18n->t("Releases"), [ "class" => "ico ico-release" ] ],
-      [ $i18n->r("/release/random"), $i18n->t("Random") ],
-    ]);
-  }
-
-  protected function getPageContent() {
-    global $i18n;
-    $this->headingBefore =
-      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/release/create")}'>{$i18n->t("Create New Release")}</a>"
-    ;
-    return new Alert(
-      $i18n->t("The releases feature isn’t implemented yet."),
+    global $i18n, $kernel;
+    $name = User::getRandomUserName();
+    if (isset($name)) {
+      throw new SeeOther($i18n->r("/user/{0}", [ $name ]));
+    }
+    $kernel->alerts .= new Alert(
+      $i18n->t("There is currently no user in our database"),
       $i18n->t("Check back later"),
       Alert::SEVERITY_INFO
     );
+    throw new SeeOther($i18n->rp("/users"));
   }
 
 }

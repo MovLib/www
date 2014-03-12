@@ -70,7 +70,7 @@ class Index extends \MovLib\Presentation\Page {
     $this->paginationInit($this->users->getTotalCount());
     $this->sidebarInit([
       [ $kernel->requestPath, $this->title ],
-      [ $i18n->r("/user/random/"), $i18n->t("Random")]
+      [ $i18n->r("/user/random"), $i18n->t("Random")],
     ]);
   }
 

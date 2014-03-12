@@ -318,6 +318,11 @@ location = <?= $rp("/releases") ?> {
   try_files $movlib_cache @php;
 }
 
+location = <?= $r("/release/random") ?> {
+  set $movlib_presenter "Release\\Random";
+  try_files $movlib_cache @php;
+}
+
 
 # ---------------------------------------------------------------------------------------------------------------------- company/companies
 
@@ -822,6 +827,11 @@ location = <?= $r("/profile/watchlist") ?> {
 
 location = <?= $rp("/users") ?> {
   set $movlib_presenter "User\\Index";
+  try_files $movlib_cache @php;
+}
+
+location = <?= $r("/user/random") ?> {
+  set $movlib_presenter "User\\Random";
   try_files $movlib_cache @php;
 }
 

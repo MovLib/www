@@ -203,6 +203,22 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
   }
 
   /**
+   * Get random user name.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return integer|null
+   *   Random user name or null in case of failure.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public static function getRandomUserName() {
+    global $db;
+    $query = "SELECT `name` FROM `users` ORDER BY RAND() LIMIT 1";
+    if ($result = $db->query($query)->get_result()) {
+      return $result->fetch_assoc()["name"];
+    }
+  }
+
+  /**
    * Get the <var>$style</var> for this image.
    *
    * @param mixed $style
@@ -261,7 +277,7 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
     $this->imageExists = true;
     $this->extension   = $extension;
     $this->stylesCache = null;
-    
+
     $this->convert($source, self::STYLE_SPAN_02, self::STYLE_SPAN_02, self::STYLE_SPAN_02, true);
     // Generate the small ones based on the span2 result, this will give us best results.
     $this->convert($this->getPath(self::STYLE_SPAN_02), self::STYLE_SPAN_01);

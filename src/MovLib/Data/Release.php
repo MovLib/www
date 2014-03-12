@@ -38,14 +38,14 @@ class Release extends \MovLib\Data\Database {
    * @var integer
    */
   public $id;
-  
+
   /**
    * The master release's unique identifier.
    *
    * @var integer
    */
   public $masterReleaseId;
-  
+
   /**
    * Whether it is a cuted version or not.
    *
@@ -59,72 +59,91 @@ class Release extends \MovLib\Data\Database {
    * @var null|string
    */
   public $ean;
-  
+
   /**
    * The length of this release without the credits.
    *
    * @var null|string
    */
   public $length;
-  
+
   /**
    * The length of this release with the credits.
    *
    * @var null|string
    */
   public $lengthCredits;
-  
+
   /**
    * The length of this release's bonus material.
    *
    * @var null|string
    */
   public $lengthBonus;
-  
+
   /**
    * The release´s translatable extras free text field.
    *
    * @var string
    */
   public $dynExtras;
-  
+
   /**
    * The translatable release notes for this release, if there is more than one release in the master release.
    *
    * @var string
    */
   public $dynNotes;
-  
+
   /**
    * The unique ID of the release´s aspect ratio.
    *
    * @var integer
    */
   public $aspectRatioId;
-  
+
   /**
    * The packaging´s unique ID this release is boxed in.
    *
    * @var integer
    */
   public $packagingId;
-  
+
   /**
    * The release´s type in lowercase letters, e.g. dvd or bluray.
    *
    * @var string
    */
   public $type;
-  
+
   /**
    * The release´s type specific fields in serialized igbinary format.
    *
    * @var string
    */
   public $binTypeData;
-  
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+  
 
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Get random release identifier.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return integer|null
+   *   Random release identifier, or <code>NULL</code> on failure.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public static function getRandomReleaseId() {
+    global $db;
+    $result = $db->query("SELECT `id` FROM `master_releases` ORDER BY RAND() LIMIT 1")->get_result()->fetch_row();
+    if (isset($result[0])) {
+      return $result[0];
+    }
+  }
 
 }

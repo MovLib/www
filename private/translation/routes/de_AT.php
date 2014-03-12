@@ -59,6 +59,7 @@ return [
   "/movie/{0}/lobby-card/{1}/delete" => "/film/{0}/aushangbild/{1}/löschen",
 
   // ------------------------------------------------------------------------------------------------------------------- Movie Release
+  "/release/random"                   => "/veröffentlichung/zufällig",
   "/movie/{0}/release/create"         => "/film/{0}/veröffentlichung/erstellen",
   "/movie/{0}/release/{1}"            => "/film/{0}/veröffentlichung/{1}",
   "/movie/{0}/release/{1}/discussion" => "/film/{0}/veröffentlichung/{1}/diskussion",
@@ -119,6 +120,7 @@ return [
 
   // ------------------------------------------------------------------------------------------------------------------- User
   "/user"                => "/benutzer",
+  "/user/random"         => "/benutzer/zufällig",
   "/user/{0}"            => "/benutzer/{0}",
   "/user/{0}/contact"    => "/benutzer/{0}/kontakt",
   "/user/{0}/collection" => "/benutzer/{0}/sammlung",
@@ -162,7 +164,7 @@ return [
   // ------------------------------------------------------------------------------------------------------------------- Award
   "/award"                => "/auszeichnung",
   "/award/create"         => "/auszeichnung/erstellen",
-  "/award/random"         => "/award/zufällig",
+  "/award/random"         => "/auszeichnung/zufällig",
   "/award/{0}"            => "/auszeichnung/{0}",
   "/award/{0}/discussion" => "/auszeichnung/{0}/diskussion",
   "/award/{0}/edit"       => "/auszeichnung/{0}/bearbeiten",
