@@ -88,8 +88,9 @@ final class SignIn extends \MovLib\Presentation\Page {
     $kernel->requestURI = $kernel->requestPath = $this->languageLinks[$i18n->languageCode];
 
     // Append the URL to the action attribute of our form.
-    if (isset($_GET["redirect_to"])) {
-      $kernel->requestURI .= "?redirect_to={$_GET["redirect_to"]}";
+    $redirectToKey = $i18n->r("redirect_to");
+    if (!empty($_GET[$redirectToKey]) && $_GET[$redirectToKey] != $this->languageLinks[$i18n->languageCode]) {
+      $kernel->requestURI .= "?{$redirectToKey}={$_GET[$redirectToKey]}";
     }
 
     // Start rendering the page.
