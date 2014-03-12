@@ -41,6 +41,13 @@ class Job extends \MovLib\Data\Database {
   public $created;
 
   /**
+   * The job's deletion state.
+   *
+   * @var boolean
+   */
+  public $deleted;
+
+  /**
    * The job's translated description.
    *
    * @var string
@@ -109,6 +116,7 @@ class Job extends \MovLib\Data\Database {
       );
       $stmt->bind_result(
         $this->id,
+        $this->deleted,
         $this->name,
         $this->maleName,
         $this->femaleName,
@@ -225,6 +233,7 @@ class Job extends \MovLib\Data\Database {
       $query =
         "SELECT
           `id`,
+          `deleted`,
           IFNULL(COLUMN_GET(`dyn_names_sex0`, ? AS CHAR), COLUMN_GET(`dyn_names_sex0`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `name`,
           IFNULL(COLUMN_GET(`dyn_names_sex1`, ? AS CHAR), COLUMN_GET(`dyn_names_sex1`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `maleName`,
           IFNULL(COLUMN_GET(`dyn_names_sex2`, ? AS CHAR), COLUMN_GET(`dyn_names_sex2`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `femaleName`,
@@ -245,7 +254,7 @@ class Job extends \MovLib\Data\Database {
    */
   public static function getRandomJobId() {
     global $db;
-    $result = $db->query("SELECT `id` FROM `jobs` ORDER BY RAND() LIMIT 1")->get_result()->fetch_row();
+    $result = $db->query("SELECT `id` FROM `jobs` WHERE `jobs`.`deleted` = false ORDER BY RAND() LIMIT 1")->get_result()->fetch_row();
     if (isset($result[0])) {
       return $result[0];
     }
@@ -279,7 +288,7 @@ class Job extends \MovLib\Data\Database {
     global $db;
     static $count = null;
     if (!$count) {
-      $count = $db->query("SELECT COUNT(`id`) FROM `jobs` LIMIT 1")->get_result()->fetch_row()[0];
+      $count = $db->query("SELECT COUNT(`id`) FROM `jobs` WHERE `deleted` = false LIMIT 1")->get_result()->fetch_row()[0];
     }
     return $count;
   }

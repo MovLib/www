@@ -38,6 +38,7 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`genres` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The genre’s unique ID.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the genre was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The genre’s description in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_names` BLOB NOT NULL COMMENT 'The genre’s name in various languages. Keys are ISO alpha-2 language codes.',
   `movies_count` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Amount of movies with this genre.',
@@ -203,6 +204,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`jobs` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The job’s unique ID.',
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this job was created.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the job was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The job’s description in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_names_sex0` BLOB NOT NULL COMMENT 'The job’s unisex name in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_names_sex1` BLOB NOT NULL COMMENT 'The job’s male name in various languages. Keys are ISO alpha-2 language codes.',
@@ -480,6 +482,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`awards` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The award’s unique ID.',
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp on which this award was created.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the award was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The award’s description in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_names` BLOB NOT NULL COMMENT 'The award’s name in various languages. Keys are ISO alpha-2 language codes.',
   PRIMARY KEY (`id`))
@@ -1024,6 +1027,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`awards_categories` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The award category’s unique ID.',
   `award_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award’s unique ID.',
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp on which this award category was created.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the award category was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The award categorie’s description in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_names` BLOB NOT NULL COMMENT 'The award categorie’s name in various languages. Keys are ISO alpha-2 language codes.',
   PRIMARY KEY (`id`),

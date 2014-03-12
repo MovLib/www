@@ -34,6 +34,13 @@ class Genre extends \MovLib\Data\Database {
 
 
   /**
+   * The genre's deletion state.
+   *
+   * @var boolean
+   */
+  public $deleted;
+
+  /**
    * The genre's description in the current display language.
    *
    * @var string
@@ -102,6 +109,7 @@ class Genre extends \MovLib\Data\Database {
       );
       $stmt->bind_result(
         $this->id,
+        $this->deleted,
         $this->name,
         $this->description,
         $this->moviesCount,
@@ -217,6 +225,7 @@ class Genre extends \MovLib\Data\Database {
       $query =
         "SELECT
           `id`,
+          `deleted`,
           IFNULL(COLUMN_GET(`dyn_names`, ? AS CHAR), COLUMN_GET(`dyn_names`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `name`,
           IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS CHAR), COLUMN_GET(`dyn_descriptions`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `description`,
           `movies_count` AS `moviesCount`,
@@ -237,7 +246,7 @@ class Genre extends \MovLib\Data\Database {
    */
   public static function getRandomGenreId() {
     global $db;
-    $result = $db->query("SELECT `id` FROM `genres` ORDER BY RAND() LIMIT 1")->get_result()->fetch_row();
+    $result = $db->query("SELECT `id` FROM `genres` WHERE `genres`.`deleted` = false ORDER BY RAND() LIMIT 1")->get_result()->fetch_row();
     if (isset($result[0])) {
       return $result[0];
     }
@@ -269,7 +278,7 @@ class Genre extends \MovLib\Data\Database {
     global $db;
     static $count = null;
     if (!$count) {
-      $count = $db->query("SELECT COUNT(`id`) FROM `genres` LIMIT 1")->get_result()->fetch_row()[0];
+      $count = $db->query("SELECT COUNT(`id`) FROM `genres` WHERE `deleted` = false LIMIT 1")->get_result()->fetch_row()[0];
     }
     return $count;
   }

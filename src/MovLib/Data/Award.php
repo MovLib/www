@@ -33,6 +33,13 @@ class Award extends \MovLib\Data\Database {
 
 
   /**
+   * The award's deletion state.
+   *
+   * @var boolean
+   */
+  public $deleted;
+
+  /**
    * The award's description in the current display language.
    *
    * @var string
@@ -78,6 +85,7 @@ class Award extends \MovLib\Data\Database {
       );
       $stmt->bind_result(
         $this->id,
+        $this->deleted,
         $this->name,
         $this->description
       );
@@ -171,6 +179,7 @@ class Award extends \MovLib\Data\Database {
       $query =
         "SELECT
           `id`,
+          `deleted`,
           IFNULL(COLUMN_GET(`dyn_names`, ? AS CHAR), COLUMN_GET(`dyn_names`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `name`,
           IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS CHAR), COLUMN_GET(`dyn_descriptions`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `description`
         FROM `awards`"
@@ -189,7 +198,7 @@ class Award extends \MovLib\Data\Database {
    */
   public static function getRandomAwardId() {
     global $db;
-    $result = $db->query("SELECT `id` FROM `awards` ORDER BY RAND() LIMIT 1")->get_result()->fetch_row();
+    $result = $db->query("SELECT `id` FROM `awards` WHERE `awards`.`deleted` = false ORDER BY RAND() LIMIT 1")->get_result()->fetch_row();
     if (isset($result[0])) {
       return $result[0];
     }
@@ -235,7 +244,7 @@ class Award extends \MovLib\Data\Database {
     global $db;
     static $count = null;
     if (!$count) {
-      $count = $db->query("SELECT COUNT(`id`) FROM `awards` LIMIT 1")->get_result()->fetch_row()[0];
+      $count = $db->query("SELECT COUNT(`id`) FROM `awards` WHERE `deleted` = false LIMIT 1")->get_result()->fetch_row()[0];
     }
     return $count;
   }
@@ -250,5 +259,5 @@ class Award extends \MovLib\Data\Database {
 
     $this->route = $i18n->r("/award/{0}", [ $this->id ]);
   }
-  
+
 }
