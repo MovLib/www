@@ -17,6 +17,8 @@
  */
 namespace MovLib\Tool;
 
+use \MovLib\Data\FileSystem;
+
 /**
  * The tool kernel extends the default kernel and is targeted towards console, PHPUnit, or mixed execution.
  *
@@ -42,11 +44,11 @@ class Kernel extends \MovLib\Kernel {
   public $configuration;
 
   /**
-   * Flag indicating if the website is in production mode or not.
+   * Whether we're running under Windows or not.
    *
    * @var boolean
    */
-  public $production;
+  public $isWindows;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -75,11 +77,14 @@ class Kernel extends \MovLib\Kernel {
     $this->fastCGI          = isset($_SERVER["FCGI_ROLE"]);
     $this->pathTranslations = "{$this->documentRoot}{$this->pathTranslations}";
     $this->production       = !is_dir("{$this->documentRoot}/.git");
+    $this->isWindows        = defined("PHP_WINDOWS_VERSION_MAJOR");
 
     // Get the global configuration if present.
     $configuration = "/etc/movlib/movlib.json";
-    if (is_file($configuration)) {
-      $this->configuration = json_decode($this->fsGetContents($configuration));
+    if (file_exists($configuration) === true) {
+      $this->configuration = FileSystem::getJSON($configuration);
+      $this->systemUser   =& $this->configuration->user;
+      $this->systemGroup  =& $this->configuration->group;
     }
 
     // Transform ALL PHP errors to exceptions unless this is executed in composer context, too many vendor supplied

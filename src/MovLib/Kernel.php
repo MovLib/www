@@ -17,6 +17,7 @@
  */
 namespace MovLib;
 
+use \MovLib\Data\Cache;
 use \MovLib\Data\Database;
 use \MovLib\Data\I18n;
 use \MovLib\Data\Mailer;
@@ -215,6 +216,13 @@ class Kernel {
   public $pathTranslations = "/private/translation";
 
   /**
+   * Flag indicating if the website is in production mode or not.
+   *
+   * @var boolean
+   */
+  public $production;
+
+  /**
    * The current request's protocol (either <code>"HTTP/1.0"</code> or <code>"HTTP/1.1"</code>).
    *
    * @var string
@@ -307,6 +315,20 @@ class Kernel {
   public $systemLanguages = [ "de" => "de_AT", "en" => "en_US" ];
 
   /**
+   * PHP's POSIX group name.
+   *
+   * @var string
+   */
+  public $systemGroup;
+
+  /**
+   * PHP's POSIX user name.
+   *
+   * @var string
+   */
+  public $systemUser;
+
+  /**
    * The HTTP user agent string.
    *
    * @var string
@@ -356,6 +378,7 @@ class Kernel {
       $this->https            = isset($_SERVER["HTTPS"]);
       $this->pathCache        = "{$this->documentRoot}{$this->pathCache}/{$_SERVER["LANGUAGE_CODE"]}";
       $this->pathTranslations = "{$this->documentRoot}{$this->pathTranslations}";
+      $this->production       = (boolean) $_ENV["PRODUCTION"];
       $this->protocol         = $_SERVER["SERVER_PROTOCOL"];
       // @todo If we're ever going to use proxy servers this code has to be changed!
       //       https://github.com/komola/ZendFramework/blob/master/Controller/Request/Http.php#L1054
@@ -364,6 +387,8 @@ class Kernel {
       $this->requestPath      = $_SERVER["REQUEST_PATH"];
       $this->requestURI       = $_SERVER["REQUEST_URI"];
       $this->scheme           = $_SERVER["SCHEME"];
+      $this->systemGroup      = $_ENV["SYSTEM_GROUP"];
+      $this->systemUser       = $_ENV["SYSTEM_USER"];
       $this->userAgent        = filter_var($_SERVER["HTTP_USER_AGENT"], FILTER_SANITIZE_STRING, FILTER_REQUIRE_SCALAR | FILTER_FLAG_STRIP_LOW);
 
       // Configure fast autoloader.
@@ -476,26 +501,7 @@ class Kernel {
 
       // Can we cache this presentation?
       if ($this->cacheable === true && $session->isAuthenticated === false) {
-        // Build absolute path to cache file.
-        $cacheFile = "{$this->pathCache}{$this->requestPath}";
-
-        // Ensure that we actually have a filename.
-        if ($this->requestPath == "/") {
-          $cacheFile .= $_SERVER["PRESENTER"];
-        }
-
-        // Only continue if no cache entry is already present.
-        if (is_file($cacheFile) === false) {
-          // Try to create the directories if they aren't already present.
-          try {
-            //$this->fsCreateDirectory(dirname($cacheFile));
-            //$this->fsPutContents($cacheFile, "{$presentation}<!--{$_SERVER["REQUEST_TIME_FLOAT"]}-->", LOCK_EX);
-            $this->compress($cacheFile);
-          }
-          catch (\Exception $e) {
-            error_log($e);
-          }
-        }
+        //(new Cache())->save($presentation);
       }
 
       // Execute each delayed method.
