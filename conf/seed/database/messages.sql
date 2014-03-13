@@ -270,6 +270,7 @@ INSERT INTO `messages` (`message`, `dyn_translations`) VALUES
 ('Delete {0}', COLUMN_CREATE('de', '{0} löschen')),
 ('Movies with {0}', COLUMN_CREATE('de', 'Filme mit {0}')),
 ('Series with {0}', COLUMN_CREATE('de', 'Serien mit {0}')),
+('Releases with {0}', COLUMN_CREATE('de', 'Veröffentlichungen mit {0}')),
 
 -- Coming Soon Page (must be last)
 

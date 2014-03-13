@@ -35,6 +35,7 @@ class Person extends \MovLib\Data\Image\AbstractImage {
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
+
   /**
    * 220x220>
    *
@@ -139,6 +140,7 @@ class Person extends \MovLib\Data\Image\AbstractImage {
    * @global \MovLib\Data\Database $db
    * @param integer $id [optional]
    *   The unique person's identifier to load, leave empty to create empty instance.
+   * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct($id = null) {
@@ -190,7 +192,6 @@ class Person extends \MovLib\Data\Image\AbstractImage {
       $this->id = $id;
     }
 
-
     // The person's photo name is always the person's identifier, so set it here.
     $this->filename = &$this->id;
 
@@ -204,23 +205,6 @@ class Person extends \MovLib\Data\Image\AbstractImage {
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-
-  /**
-   * Get the count of all persons who haven't been deleted.
-   *
-   * @global \MovLib\Data\Database $db
-   * @staticvar null|integer $count
-   *   The count of all persons who haven't been deleted.
-   * @return integer
-   */
-  public static function getTotalCount() {
-    global $db;
-    static $count = null;
-    if (!$count) {
-      $count = $db->query("SELECT COUNT(`id`) FROM `persons` WHERE `deleted` = false LIMIT 1")->get_result()->fetch_row()[0];
-    }
-    return $count;
-  }
 
   /**
    * Get the total number of the movies this person has appeared in.
@@ -333,6 +317,23 @@ class Person extends \MovLib\Data\Image\AbstractImage {
   }
 
   /**
+   * Get the count of all persons who haven't been deleted.
+   *
+   * @global \MovLib\Data\Database $db
+   * @staticvar null|integer $count
+   *   The count of all persons who haven't been deleted.
+   * @return integer
+   */
+  public static function getTotalCount() {
+    global $db;
+    static $count = null;
+    if (!$count) {
+      $count = $db->query("SELECT COUNT(`id`) FROM `persons` WHERE `deleted` = false LIMIT 1")->get_result()->fetch_row()[0];
+    }
+    return $count;
+  }
+
+  /**
    * Initialize the person with their image, deleted flag and translate their route.
    *
    * @global \MovLib\Data\I18n $i18n
@@ -356,6 +357,16 @@ class Person extends \MovLib\Data\Image\AbstractImage {
 
   // ------------------------------------------------------------------------------------------------------------------- Image Methods
 
+
+  /**
+   * Delete the image.
+   *
+   * @todo Implement
+   * @return this
+   */
+  public function delete() {
+    return $this;
+  }
 
   /**
    * Generate all supported image styles.
@@ -416,17 +427,9 @@ class Person extends \MovLib\Data\Image\AbstractImage {
   }
 
   /**
-   * Delete the image.
-   *
-   * @return this
-   */
-  public function delete() {
-    return $this;
-  }
-
-  /**
    * Set deletion request identifier.
    *
+   * @todo Implement
    * @global \MovLib\Data\Database $db
    * @param integer $id
    *   The deletion request's unique identifier to set.

@@ -174,6 +174,8 @@ class FullPerson extends \MovLib\Data\Person\Person {
     // The person's photo name is always the person's identifier, so set it here.
     $this->filename = &$this->id;
 
+    // If we have an identifier, either from the above query or directly set via PHP's fetch_object() method, try to
+    // load the photo for this person.
     if ($this->id) {
       $this->init();
     }
@@ -258,7 +260,8 @@ class FullPerson extends \MovLib\Data\Person\Person {
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @return null|array
-   *  Numeric array containing the person's aliases or <code>NULL</code> if none were found.
+   *   Numeric array containing the person's aliases or <code>NULL</code> if none were found.
+   * @throws \MovLib\Exception\DatabaseException
    */
   public function getAliases() {
     global $db, $i18n;
@@ -312,7 +315,8 @@ class FullPerson extends \MovLib\Data\Person\Person {
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @return null|array
-   *  Numeric array containing the person's external links or <code>NULL</code> if none were found.
+   *   Numeric array containing the person's external links or <code>NULL</code> if none were found.
+   * @throws \MovLib\Exception\DatabaseException
    */
   public function getLinks() {
     global $db, $i18n;
@@ -337,6 +341,7 @@ class FullPerson extends \MovLib\Data\Person\Person {
    * @global \MovLib\Data\I18n $i18n
    * @return \mysqli_result
    *   The result containing the {@see \MovLib\Data\Movie\Cast} objects.
+   * @throws \MovLib\Exception\DatabaseException
    */
   public function getMovieCast() {
     global $db, $i18n;
@@ -363,6 +368,7 @@ class FullPerson extends \MovLib\Data\Person\Person {
    * @global \MovLib\Data\I18n $i18n
    * @return \mysqli_result
    *   The result containing the {@see \MovLib\Data\Movie\Crew} objects.
+   * @throws \MovLib\Exception\DatabaseException
    */
   public function getMovieCrew() {
     global $db, $i18n;

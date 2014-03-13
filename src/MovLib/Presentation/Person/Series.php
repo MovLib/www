@@ -41,6 +41,7 @@ class Series extends \MovLib\Presentation\Person\AbstractBase {
     $this->person = new FullPerson((integer) $_SERVER["PERSON_ID"]);
     $this->initPage($i18n->t("Series with {0}", [ $this->person->name ]));
     $this->pageTitle        = $i18n->t("Series with {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
+    $this->breadcrumbTitle  = $i18n->t("Series");
     $this->initLanguageLinks("/person/{0}/series", [ $this->person->id ], true);
     $this->initPersonBreadcrumb();
     $this->sidebarInit();
