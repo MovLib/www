@@ -28,7 +28,7 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class I18n {
+final class I18n {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -318,7 +318,7 @@ class I18n {
   }
 
   /**
-   * Format and translate the given message.
+   * Format and translate given message.
    *
    * @global \MovLib\Data\Database $db
    * @staticvar array $messages
@@ -355,6 +355,52 @@ class I18n {
       return \MessageFormatter::formatMessage($this->locale, $message, $args);
     }
     return $message;
+  }
+
+  /**
+   * Get the translated and formatted plural message.
+   *
+   * <b>NOTE</b><br>
+   * You can use this method to auto-translate any simple plural form that has one English translation for 1 and one
+   * translation for 0 and >= 2. Other languages may have more plural forms (e.g. Russian where e.g. 1, 21, 61 share
+   * singular form). If you have to translate a complicated plural form that has more than the two aformentioned English
+   * translations use the default translation method {@see I18n::t} by writing the full Intl ICU string.
+   *
+   * @param string $plural
+   *   The message's plural form to format and translate.
+   * @param string $singular [optional]
+   *   The message's singular form to format and translate, defaults to <code>NULL</code> which means that the given
+   *   <var>$plural</var> is also used for the singular form (e.g. the English word <i>Series</i> has no singular form).
+   * @param integer|float $count [optional]
+   *   The message's count, defaults to <code>1</code>.
+   * @param array $args [optional]
+   *   The message's arguments to insert into placeholder in <var>$plural</var> or <var>$singular</var>. Defaults to
+   *   <code>NULL</code> (no replacements).
+   * @return string
+   *   The translated and formatted plural message.
+   */
+  public function tp($plural, $singular = null, $count = 1, array $args = null) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($plural) || is_string($plural) === false) {
+      throw new \LogicException("\$plural cannot be empty and must be of type string");
+    }
+    if (isset($singular) && (empty($singular) || is_string($singular) === false)) {
+      throw new \LogicException("\$singular cannot be empty and must be of type string");
+    }
+    if (is_numeric($count) === false) {
+      throw new \LogicException("\$count must be numeric");
+    }
+    if (isset($args["@count"])) {
+      throw new \LogicException("You cannot have a '#count' key in the arguments passed to I18n::tp() method");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    if (!isset($singular)) {
+      $singular = $plural;
+    }
+    $args["@count"] = $count;
+    return $this->t("{@count, plural, one{{$singular}} other{{$plural}}}", $args);
   }
 
 }
