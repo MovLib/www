@@ -81,17 +81,19 @@ class Home extends \MovLib\Presentation\Tool\Page {
       ]];
     };
 
+    // Generate single developer report links if there are any.
     $devs    = null;
     $reports = glob("{$kernel->documentRoot}/public/coverage/devs/*", GLOB_ONLYDIR);
-    if (count($reports) > 0) {
-      $devs = new GlueSeparated(glob("{$kernel->documentRoot}/public/coverage/devs/*", GLOB_ONLYDIR));
-      $devs->closure = function ($listitem) {
-        global $kernel;
-        $route = str_replace($kernel->documentRoot, "", $listitem);
-        $text  = basename($listitem);
-        return "<a href='{$route}'>{$text}</a>";
-      };
-      $devs = "<small>{$i18n->t("Developer specific coverage reports:")} {$devs}</small>";
+    foreach ($reports as $directory) {
+      $route = str_replace("{$kernel->documentRoot}/public", "", $directory);
+      $text  = basename($route);
+      if ($devs) {
+        $devs .= ", ";
+      }
+      $devs .= "<a href='{$route}'>{$text}</a>";
+    }
+    if ($devs) {
+      $devs = "<small>{$i18n->t("Developer specific coverage reports:")}</small> {$devs}</small>";
     }
 
     return "<div class='c'>{$tools}{$devs}</div>";
