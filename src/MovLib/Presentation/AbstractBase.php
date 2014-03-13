@@ -245,8 +245,8 @@ abstract class AbstractBase {
       $this->addClass("placeholder", $attributes);
 
       // Ensure we don't declare any of our placeholder images as being an image for anything.
-      if (isset($attributes["itemprop"])) {
-        unset($attributes["itemprop"]);
+      if (isset($attributes["property"])) {
+        unset($attributes["property"]);
       }
     }
     $attributes["src"]    = $style->src;
