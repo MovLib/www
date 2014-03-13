@@ -29,7 +29,9 @@ use \MovLib\Presentation\Partial\Alert;
  * @since 0.0.1-dev
  */
 abstract class AbstractBase extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitSidebar;
+  use \MovLib\Presentation\TraitSidebar {
+    sidebarInit as traitSidebarInit;
+  }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -70,11 +72,15 @@ abstract class AbstractBase extends \MovLib\Presentation\Page {
   protected function initSidebar() {
     global $i18n;
     $routeArgs = [ $this->movie->id ];
-    return $this->sidebarInit([
+    return $this->traitSidebarInit([
       [ $this->movie->route, $i18n->t("View"), [ "class" => "ico ico-view" ] ],
-      [ $i18n->r("/movie/{0}/discussion", $routeArgs), $i18n->t("Discuss"), [ "class" => "ico ico-discussion", "itemprop" => "discussionUrl" ] ],
+      [ $i18n->r("/movie/{0}/discussion", $routeArgs), $i18n->t("Discuss"), [ "class" => "ico ico-discussion", "property" => "discussionUrl" ] ],
       [ $i18n->r("/movie/{0}/edit", $routeArgs), $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
-      [ $i18n->r("/movie/{0}/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history separator" ] ],
+      [ $i18n->r("/movie/{0}/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history" ] ],
+      [ $i18n->r("/movie/{0}/delete", $routeArgs), $i18n->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
+
+      [ $i18n->r("/movie/{0}/cast", $routeArgs), $i18n->t("Cast"), [ "class" => "ico ico-person" ] ],
+      [ $i18n->r("/movie/{0}/crew", $routeArgs), $i18n->t("Crew"), [ "class" => "ico ico-company separator" ] ],
     ]);
   }
 

@@ -145,11 +145,12 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
    */
   public function getCast() {
     global $db, $i18n;
-    $query =
+
+    $persons = null;
+    $result = $db->query(
       "SELECT
         `movies_cast`.`person_id`,
         `persons`.`name` AS `person_name`,
-        `persons`.`nickname` AS `person_nickname`,
         `persons`.`sex` AS `person_sex`,
         `persons`.`image_uploader_id` AS `person_uploader_id`,
         `persons`.`image_width` AS `person_width`,
@@ -160,27 +161,27 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
         `movies_cast`.`role_id`,
         IFNULL(
           `role`.`name`,
-          IFNULL(COLUMN_GET(`movies_cast`.`dyn_role`, ? AS BINARY), COLUMN_GET(`movies_cast`.`dyn_role`, '{$i18n->defaultLanguageCode}' AS BINARY))
+          IFNULL(
+            COLUMN_GET(`movies_cast`.`dyn_role`, ? AS BINARY),
+            COLUMN_GET(`movies_cast`.`dyn_role`, '{$i18n->defaultLanguageCode}' AS BINARY)
+          )
         ) AS `role_name`
       FROM `movies_cast`
       INNER JOIN `persons`
         ON `movies_cast`.`person_id` = `persons`.`id`
       LEFT JOIN `persons` AS `role`
         ON `movies_cast`.`role_id` = `role`.`id`
-      WHERE `movies_cast`.`movie_id` = ? AND `persons`.`deleted` = FALSE"
-    ;
-    $types = "sd";
-    $params = [ $i18n->languageCode, $this->id ];
-
-    $persons = null;
-    $result = $db->query("{$query} ORDER BY `persons`.`name`{$db->collations[$i18n->languageCode]} ASC", $types, $params)->get_result();
+      WHERE `movies_cast`.`movie_id` = ? AND `persons`.`deleted` = FALSE
+      ORDER BY `persons`.`name`{$db->collations[$i18n->languageCode]} ASC",
+      "sd",
+      [ $i18n->languageCode, $this->id ]
+    )->get_result();
     while ($row = $result->fetch_assoc()) {
       // Instantiate and initialize a Person if it is not present yet.
       if (!isset($persons[$row["person_id"]])) {
         $persons[$row["person_id"]]             = new Person();
         $persons[$row["person_id"]]->id         = $row["person_id"];
         $persons[$row["person_id"]]->name       = $row["person_name"];
-        $persons[$row["person_id"]]->nickname   = $row["person_nickname"];
         $persons[$row["person_id"]]->sex        = $row["person_sex"];
         $persons[$row["person_id"]]->uploaderId = $row["person_uploader_id"];
         $persons[$row["person_id"]]->width      = $row["person_width"];

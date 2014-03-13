@@ -89,7 +89,11 @@ class Show extends \MovLib\Presentation\Page {
         "property" => "discussionUrl"
       ] ],
       [ $this->routeEdit, $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
-      [ $i18n->r("/movie/{0}/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history separator" ] ],
+      [ $i18n->r("/movie/{0}/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history" ] ],
+      [ $i18n->r("/movie/{0}/delete", $routeArgs), $i18n->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
+
+      [ $i18n->r("/movie/{0}/cast", $routeArgs), $i18n->t("Cast"), [ "class" => "ico ico-person" ] ],
+      [ $i18n->r("/movie/{0}/crew", $routeArgs), $i18n->t("Crew"), [ "class" => "ico ico-company separator" ] ],
     ]);
   }
 
@@ -267,6 +271,12 @@ class Show extends \MovLib\Presentation\Page {
         "<small class='dtr'><span class='dtc'>{$directorLabel}</span><span class='dtc'>{$directors}</span></small>"
       ;
     }
+    else {
+      $directors = $i18n->t("No directors assigned yet, {0}add directors{1}?", [
+        "<a href='{$this->routeEdit}'>",
+        "</a>"
+      ]);
+    }
 
     // Format first five cast members.
     $cast       = null;
@@ -285,7 +295,13 @@ class Show extends \MovLib\Presentation\Page {
       $cast = "<small class='dtr'><span class='dtc'>{$i18n->t(
         "{0}:",
         [ $i18n->t("Cast") ]
-      )}</span><span class='dtc'>{$cast}</span></small>";
+      )}</span><span class='dtc'>{$cast}, …</span></small>";
+    }
+    else {
+      $cast = $i18n->t("No cast assigned yet, {0}add cast{1}?", [
+        "<a href='{$this->routeEdit}'>",
+        "</a>"
+      ]);
     }
 
     // Format the movie's duration and enhance it with microdata.
