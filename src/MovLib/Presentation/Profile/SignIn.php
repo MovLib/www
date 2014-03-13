@@ -76,7 +76,7 @@ final class SignIn extends \MovLib\Presentation\Page {
     // want to enable ourself to redirect the user after successful sign in to the page she or he requested.
     if ($kernel->requestURI != $this->languageLinks[$i18n->languageCode]) {
       if (empty($_GET["redirect_to"])) {
-        $_GET["redirect_to"] = rawurlencode($kernel->requestURI);
+        $_GET["redirect_to"] = $kernel->requestURI;
       }
     }
     // If the user is logged in, but didn't request to be signed out, redirect her or him to the personal dashboard.
@@ -90,7 +90,8 @@ final class SignIn extends \MovLib\Presentation\Page {
     // Append the URL to the action attribute of our form.
     $redirectToKey = $i18n->r("redirect_to");
     if (!empty($_GET[$redirectToKey]) && $_GET[$redirectToKey] != $this->languageLinks[$i18n->languageCode]) {
-      $kernel->requestURI .= "?{$redirectToKey}={$_GET[$redirectToKey]}";
+      $redirectTo          = rawurlencode(rawurldecode($_GET[$redirectToKey]));
+      $kernel->requestURI .= "?{$redirectToKey}={$redirectTo}";
     }
 
     // Start rendering the page.
@@ -98,7 +99,10 @@ final class SignIn extends \MovLib\Presentation\Page {
     $this->initBreadcrumb([[ $i18n->rp("/users"), $i18n->t("Users") ]]);
     $this->breadcrumb->ignoreQuery = true;
 
-    $this->headingBefore = "<a class='btn btn-large btn-primary fr' href='{$i18n->r("/profile/join")}'>{$i18n->t("Join {sitename}", [ "sitename" => $kernel->siteName ])}</a>";
+    $this->headingBefore = "<a class='btn btn-large btn-primary fr' href='{$i18n->r("/profile/join")}'>{$i18n->t(
+      "Join {sitename}",
+      [ "sitename" => $kernel->siteName ]
+    )}</a>";
 
     $this->formAddElement(new InputEmail("email", $i18n->t("Email Address"), $this->email, [
       "#help-text"  => "<a href='{$i18n->r("/profile/reset-password")}'>{$i18n->t("Forgot your password?")}</a>",
