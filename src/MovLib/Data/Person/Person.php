@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data\Person;
 
-use \MovLib\Data\Image\PersonImage;
 use \MovLib\Presentation\Error\NotFound;
 
 /**
@@ -80,7 +79,6 @@ class Person extends \MovLib\Data\Image\AbstractImage {
   /**
    * The photo's path within the upload directory.
    *
-   * @see PersonImage::__construct()
    * @var string
    */
   protected $directory = "person";
@@ -212,6 +210,7 @@ class Person extends \MovLib\Data\Image\AbstractImage {
    * @global \MovLib\Data\Database $db
    * @return integer
    *   The count of the person's unique movies.
+   * @throws \MovLib\Exception\DatabaseException
    */
   public function getMoviesCount() {
     global $db;
@@ -247,6 +246,7 @@ class Person extends \MovLib\Data\Image\AbstractImage {
    *   The number of rows to retrieve.
    * @return \mysqli_result
    *   The query result.
+   * @throws \MovLib\Exception\DatabaseException
    */
   public static function getPersons($offset, $rowCount) {
     global $db, $i18n;
@@ -283,6 +283,7 @@ class Person extends \MovLib\Data\Image\AbstractImage {
    * @global \MovLib\Data\Database $db
    * @return integer|null
    *   Random person id or null in case of failure.
+   * @throws \MovLib\Exception\DatabaseException
    */
   public static function getRandomPersonId() {
     global $db;
@@ -323,6 +324,8 @@ class Person extends \MovLib\Data\Image\AbstractImage {
    * @staticvar null|integer $count
    *   The count of all persons who haven't been deleted.
    * @return integer
+   *   The count of all persons who haven't been deleted.
+   * @throws \MovLib\Exception\DatabaseException
    */
   public static function getTotalCount() {
     global $db;
@@ -361,7 +364,7 @@ class Person extends \MovLib\Data\Image\AbstractImage {
   /**
    * Delete the image.
    *
-   * @todo Implement
+   * @todo Implement delete person image
    * @return this
    */
   public function delete() {
@@ -429,7 +432,7 @@ class Person extends \MovLib\Data\Image\AbstractImage {
   /**
    * Set deletion request identifier.
    *
-   * @todo Implement
+   * @todo Implement deletion request
    * @global \MovLib\Data\Database $db
    * @param integer $id
    *   The deletion request's unique identifier to set.

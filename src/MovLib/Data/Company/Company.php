@@ -17,11 +17,10 @@
  */
 namespace MovLib\Data\Company;
 
-use \MovLib\Data\Image\CompanyImage;
 use \MovLib\Presentation\Error\NotFound;
 
 /**
- * Represents a single company.
+ * Represents a single company including its logo.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -65,7 +64,6 @@ class Company extends \MovLib\Data\Image\AbstractImage {
   /**
    * The logo's path within the upload directory.
    *
-   * @see CompanyImage::__construct()
    * @var string
    */
   protected $directory = "company";
@@ -83,13 +81,6 @@ class Company extends \MovLib\Data\Image\AbstractImage {
    * @var integer
    */
   public $id;
-
-  /**
-   * The company logo's translated route.
-   *
-   * @var string
-   */
-  public $imageRoute;
 
   /**
    * The company's name.
@@ -165,6 +156,11 @@ class Company extends \MovLib\Data\Image\AbstractImage {
       $this->id = $id;
     }
 
+    // The company's logo name is always the company's identifier.
+    $this->filename = &$this->id;
+
+    // If we have an identifier, either from the above query or directly set via PHP's fetch_object() method, try to
+    // load the logo for this company.
     if ($this->id) {
       $this->init();
     }
@@ -175,8 +171,152 @@ class Company extends \MovLib\Data\Image\AbstractImage {
 
 
   /**
+   * Get all companies matching the offset and row count.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @param integer $offset
+   *   The offset in the result.
+   * @param integer $rowCount
+   *   The number of rows to retrieve.
+   * @return \mysqli_result
+   *   The query result.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public static function getCompanies($offset, $rowCount) {
+    global $db, $i18n;
+    return $db->query("
+      SELECT
+        `id`,
+        `deleted`,
+        `name`,
+        `founding_date` AS `foundingDate`,
+        `defunct_date` AS `defunctDate`,
+        `image_uploader_id` AS `uploaderId`,
+        `image_width` AS `width`,
+        `image_height` AS `height`,
+        `image_filesize` AS `filesize`,
+        `image_extension` AS `extension`,
+        UNIX_TIMESTAMP(`image_changed`) AS `changed`,
+        COLUMN_GET(`dyn_image_descriptions`, ? AS BINARY) AS `description`,
+        `image_styles` AS `styles`
+      FROM `companies`
+      WHERE
+        `deleted` = false
+      ORDER BY `id` DESC
+      LIMIT ? OFFSET ?",
+      "sdi",
+      [ $i18n->languageCode, $rowCount, $offset ]
+    )->get_result();
+  }
+
+  /**
+   * Get the total number of the movies this company was involved.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return integer
+   *   The count of the company's unique movies.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getMoviesCount() {
+    global $db;
+    return $db->query(
+      "SELECT count(DISTINCT `movie_id`) as `count` FROM `movies_crew` WHERE `company_id` = ?", "d", [ $this->id ]
+    )->get_result()->fetch_assoc()["count"];
+  }
+
+  /**
+   * Get random company id.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return integer|null
+   *   Random company id or null in case of failure.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public static function getRandomCompanyId() {
+    global $db;
+    $query = "SELECT `id` FROM `companies` WHERE `companies`.`deleted` = false ORDER BY RAND() LIMIT 1";
+    if ($result = $db->query($query)->get_result()) {
+      return $result->fetch_assoc()["id"];
+    }
+  }
+
+  /**
+   * Get the total number of the releases this company was involved.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return integer
+   *   The count of the company's unique releases.
+   */
+  public function getReleasesCount() {
+    global $db;
+    return $db->query(
+      "SELECT count(*) as `count` FROM `master_releases_labels` WHERE `company_id` = ?", "d", [ $this->id ]
+    )->get_result()->fetch_assoc()["count"];
+  }
+
+  /**
+   * Get the total number of the series this company was involved.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return integer
+   *   The count of the company's unique series.
+   */
+  public function getSeriesCount() {
+    global $db;
+    return $db->query(
+      "SELECT count(DISTINCT `series_id`) as `count` FROM `episodes_crew` WHERE `company_id` = ?", "d", [ $this->id ]
+    )->get_result()->fetch_assoc()["count"];
+  }
+
+  /**
+   * Get the count of all companies which haven't been deleted.
+   *
+   * @global \MovLib\Data\Database $db
+   * @staticvar null|integer $count
+   *   The count of all companies which haven't been deleted.
+   * @return integer
+   *   The count of all companies which haven't been deleted.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public static function getTotalCount() {
+    global $db;
+    static $count = null;
+    if (!$count) {
+      $count = $db->query("SELECT COUNT(`id`) FROM `companies` WHERE `deleted` = false LIMIT 1")->get_result()->fetch_row()[0];
+    }
+    return $count;
+  }
+
+  /**
+   * Initialize the company with its image, deleted flag and translate the route.
+   *
+   * @global type $i18n
+   */
+  protected function init() {
+    global $i18n;
+
+    $this->deleted = (boolean) $this->deleted;
+    $this->route   = $i18n->r("/company/{0}", [ $this->id]);
+    $key           = "edit";
+    if ($this->uploaderId) {
+      $this->imageExists = true;
+      $key               = "photo";
+      $this->styles      = unserialize($this->styles);
+    }
+    $this->imageRoute = $i18n->r("/company/{0}/{$key}", [ $this->id ]);
+
+    return $this;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Image Methods
+
+
+  /**
    * Delete the company logo.
    *
+   * @todo Implement delete company logo
    * @return this
    */
   public function delete() {
@@ -242,100 +382,9 @@ class Company extends \MovLib\Data\Image\AbstractImage {
   }
 
   /**
-   * Get the count of all companies which haven't been deleted.
-   *
-   * @global \MovLib\Data\Database $db
-   * @staticvar null|integer $count
-   *   The companies count.
-   * @return integer
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public static function getTotalCount() {
-    global $db;
-    static $count = null;
-    if (!$count) {
-      $count = $db->query("SELECT COUNT(`id`) FROM `companies` WHERE `deleted` = false LIMIT 1")->get_result()->fetch_row()[0];
-    }
-    return $count;
-  }
-
-  /**
-   * Get all companies matching the offset and row count.
-   *
-   * @global \MovLib\Data\Database $db
-   * @param integer $offset
-   *   The offset in the result.
-   * @param integer $rowCount
-   *   The number of rows to retrieve.
-   * @return \mysqli_result
-   *   The query result.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public static function getCompanies($offset, $rowCount) {
-    global $db;
-    return $db->query("
-      SELECT
-        `id`,
-        `deleted`,
-        `name`,
-        `founding_date` AS `foundingDate`,
-        `defunct_date` AS `defunctDate`,
-        `image_uploader_id` AS `uploaderId`,
-        `image_width` AS `width`,
-        `image_height` AS `height`,
-        `image_filesize` AS `filesize`,
-        `image_extension` AS `extension`,
-        UNIX_TIMESTAMP(`image_changed`) AS `changed`,
-        `image_styles` AS `styles`
-      FROM `companies`
-      WHERE
-        `deleted` = false
-      ORDER BY `id` DESC
-      LIMIT ? OFFSET ?",
-      "di",
-      [ $rowCount, $offset ]
-    )->get_result();
-  }
-
-  /**
-   * Get random company id.
-   *
-   * @global \MovLib\Data\Database $db
-   * @return integer|null
-   *   Random company id or null in case of failure.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public static function getRandomCompanyId() {
-    global $db;
-    $query = "SELECT `id` FROM `companies` WHERE `companies`.`deleted` = false ORDER BY RAND() LIMIT 1";
-    if ($result = $db->query($query)->get_result()) {
-      return $result->fetch_assoc()["id"];
-    }
-  }
-
-  /**
-   * Initialize company.
-   *
-   * @global type $i18n
-   */
-  protected function init() {
-    global $i18n;
-    $this->deleted = (boolean) $this->deleted;
-    $this->route   = $i18n->r("/company/{0}", [ $this->id ]);
-
-    if ($this->uploaderId) {
-      $this->imageExists = true;
-    }
-
-    $this->alternativeText = $i18n->t("Logo of {company_name}.", [ "company_name" => $this->name ]);
-    $this->filename        = $this->id;
-    $key                   = $this->imageExists === true ? "photo" : "edit";
-    $this->imageRoute      = $i18n->r("/company/{0}/{$key}", [ $this->id ]);
-  }
-
-  /**
    * Set deletion request identifier.
    *
+   * @todo Implement deletion request
    * @global \MovLib\Data\Database $db
    * @param integer $id
    *   The deletion request's unique identifier to set.

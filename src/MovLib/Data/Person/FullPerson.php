@@ -115,8 +115,8 @@ class FullPerson extends \MovLib\Data\Person\Person {
         "SELECT
           `created`,
           `deleted`,
-          COLUMN_GET(`dyn_biographies`, ? AS BINARY),
-          COLUMN_GET(`dyn_wikipedia`, ? AS BINARY),
+          IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS BINARY), COLUMN_GET(`dyn_descriptions`, '{$i18n->defaultLanguageCode}' AS BINARY)),
+          IFNULL(COLUMN_GET(`dyn_wikipedia`, ? AS BINARY), COLUMN_GET(`dyn_wikipedia`, '{$i18n->defaultLanguageCode}' AS BINARY)),
           `name`,
           `sex`,
           `birthdate`,
@@ -132,7 +132,7 @@ class FullPerson extends \MovLib\Data\Person\Person {
           `image_filesize`,
           `image_extension`,
           UNIX_TIMESTAMP(`image_changed`),
-          COLUMN_GET(`dyn_image_descriptions`, ? AS BINARY),
+          IFNULL(COLUMN_GET(`dyn_image_descriptions`, ? AS BINARY), COLUMN_GET(`dyn_image_descriptions`, '{$i18n->defaultLanguageCode}' AS BINARY)),
           `image_styles`
         FROM `persons`
         WHERE

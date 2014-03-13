@@ -21,7 +21,7 @@ use \MovLib\Data\Place;
 use \MovLib\Presentation\Error\NotFound;
 
 /**
- * Contains all available information about a person.
+ * Contains all available information about a company.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -154,8 +154,14 @@ class FullCompany extends \MovLib\Data\Company\Company {
         throw new NotFound;
       }
       $stmt->close();
+      $this->id = $id;
     }
 
+    // The company's logo name is always the company's identifier.
+    $this->filename = &$this->id;
+
+    // If we have an identifier, either from the above query or directly set via PHP's fetch_object() method, try to
+    // load the logo for this company.
     if ($this->id) {
       $this->init();
     }
@@ -202,24 +208,7 @@ class FullCompany extends \MovLib\Data\Company\Company {
       ]
     )->insert_id;
 
-    // Create a display photo.
-    parent::init();
-
     return $this;
-  }
-
-  /**
-   * The count of movies this company was involved.
-   *
-   * @global \MovLib\Data\Database $db
-   * @return integer
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getMovieCount() {
-    global $db;
-    return $db->query(
-      "SELECT count(DISTINCT `movie_id`) as `count` FROM `movies_crew` WHERE `company_id` = ?", "d", [ $this->id ]
-    )->get_result()->fetch_assoc()["count"];
   }
 
   /**
@@ -268,20 +257,6 @@ class FullCompany extends \MovLib\Data\Company\Company {
   }
 
   /**
-   * The count of master releases of this company.
-   *
-   * @global \MovLib\Data\Database $db
-   * @return integer
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getReleasesCount() {
-    global $db;
-    return $db->query(
-      "SELECT count(*) as `count` FROM `master_releases_labels` WHERE `company_id` = ?", "d", [ $this->id ]
-    )->get_result()->fetch_assoc()["count"];
-  }
-
-  /**
    * Get the mysqli result for all releases this company was involved.
    *
    * @global \MovLib\Data\Database $db
@@ -305,23 +280,9 @@ class FullCompany extends \MovLib\Data\Company\Company {
   }
 
   /**
-   * The count of series this company was involved.
-   *
-   * @global \MovLib\Data\Database $db
-   * @return integer
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getSeriesCount() {
-    global $db;
-    return $db->query(
-      "SELECT count(DISTINCT `series_id`) as `count` FROM `episodes_crew` WHERE `company_id` = ?", "d", [ $this->id ]
-    )->get_result()->fetch_assoc()["count"];
-  }
-
-  /**
    * Get the mysqli result for all series this company was involved.
    *
-   * @todo Implement
+   * @todo Implement when series are implemented
    * @global \MovLib\Data\Database $db
    * @return \mysqli_result
    *   The mysqli result for all series of this company.
@@ -343,4 +304,5 @@ class FullCompany extends \MovLib\Data\Company\Company {
     $this->aliases = $this->aliases ? unserialize($this->aliases) : [];
     $this->links   = $this->links ? unserialize($this->links) : [];
   }
+
 }
