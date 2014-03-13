@@ -104,6 +104,18 @@ location ^~ <?= $r("/movie") ?> {
     try_files $movlib_cache @php;
   }
 
+  location ~* "^<?= $r("/movie/{0}/cast", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Movie\\Cast";
+    set $movlib_movie_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $r("/movie/{0}/crew", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Movie\\Crew";
+    set $movlib_movie_id $1;
+    try_files $movlib_cache @php;
+  }
+
   #
   # ---------------------------------------- Movie Backdrop(s)
   #

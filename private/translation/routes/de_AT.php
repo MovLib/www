@@ -39,6 +39,8 @@ return [
   "/movie/{0}/discussion" => "/film/{0}/diskussion",
   "/movie/{0}/edit"       => "/film/{0}/bearbeiten",
   "/movie/{0}/delete"     => "/film/{0}/löschen",
+  "/movie/{0}/cast"       => "/film/{0}/darsteller",
+  "/movie/{0}/crew"       => "/film/{0}/crew",
 
   // ------------------------------------------------------------------------------------------------------------------- Movie Photo
   "/movie/{0}/backdrop/upload"     => "/film/{0}/hintergrund/hochladen",
