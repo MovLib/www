@@ -87,19 +87,27 @@ class I18nTest extends \MovLib\TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Data Providers
 
 
+  /**
+   * @global \MovLib\Kernel $kernel
+   */
   public function dataProviderTestConstructAcceptLanguageHeaderValid() {
+    global $kernel;
     $args = [];
-    foreach (new SystemLanguages() as $languageCode => $systemLanguage) {
-      $args[] = [ $systemLanguage->locale, $systemLanguage->locale, $languageCode ];
-      $args[] = [ $languageCode, $systemLanguage->locale, $languageCode ];
+    foreach ($kernel->systemLanguages as $code => $locale) {
+      $args[] = [ $locale, $locale, $code ];
+      $args[] = [ $code, $locale, $code ];
     }
     return $args;
   }
 
+  /**
+   * @global \MovLib\Kernel $kernel
+   */
   public function dataProviderTestConstructLanguageCodeValid() {
+    global $kernel;
     $args = [];
-    foreach (new SystemLanguages() as $languageCode => $systemLanguage) {
-      $args[] = [ $languageCode, $systemLanguage->locale, $languageCode ];
+    foreach ($kernel->systemLanguages as $code => $locale) {
+      $args[] = [ $code, $locale, $code ];
     }
     return $args;
   }
@@ -220,98 +228,6 @@ class I18nTest extends \MovLib\TestCase {
     $_SERVER["HTTP_ACCEPT_LANGUAGE"] = $acceptLanguage;
   }
 
-  /**
-   * @covers ::formatDate
-   * @dataProvider dataProviderTestFormatDateInvalidTimestamp
-   * @expectedException \IntlException
-   */
-  public function testFormatDateInvalidTimestamp($timestamp) {
-    $this->i18n->formatDate($timestamp);
-  }
-
-  /**
-   * @covers ::formatDate
-   * @expectedException \Exception
-   */
-  public function testFormatDateInvalidTimeZone() {
-    $this->i18n->formatDate(time(), "PHPUnit");
-  }
-
-  /**
-   * @covers ::formatDate
-   */
-  public function testFormatDateValid() {
-    $timestamp = time();
-
-    // No timezone supplied.
-    $formatter = new \IntlDateFormatter($this->i18n->locale, \IntlDateFormatter::LONG, \IntlDateFormatter::LONG, new \DateTimeZone(ini_get("date.timezone")));
-    $this->assertEquals($formatter->format($timestamp), $this->i18n->formatDate($timestamp));
-
-    // Valid timezone supplied.
-    $formatter = new \IntlDateFormatter($this->i18n->locale, \IntlDateFormatter::LONG, \IntlDateFormatter::LONG, new \DateTimeZone("Europe/Vienna"));
-    $this->assertEquals($formatter->format($timestamp), $this->i18n->formatDate($timestamp, "Europe/Vienna"));
-  }
-
-  /**
-   * @covers ::formatMessage
-   * @expectedException \IntlException
-   */
-  public function testFormatMessageInvalidArgumentsFormat() {
-    $this->i18n->formatMessage("message", "PHPUnit {0} PHPUnit {1}", "wrong args format");
-  }
-
-  /**
-   * @covers ::formatMessage
-   * @expectedException \MovLib\Exception\DatabaseException
-   */
-  public function testFormatMessageInvalidContext() {
-    $this->i18n->languageCode = "xx";
-    $this->i18n->formatMessage("PHPUnit", "PHPUnit {0} PHPUnit {1}", null);
-  }
-
-  /**
-   * @covers ::formatMessage
-   */
-  public function testFormatMessageValidNonExistentPattern() {
-    $patternNonExistent = "PHPUnit non-existent";
-    $options            = [ "language_code" => "xx" ];
-    $this->assertEquals($patternNonExistent, $this->i18n->formatMessage("message", $patternNonExistent, null, $options));
-
-    $stack = $this->getStaticProperty("\\MovLib\\Data\\Delayed\\MethodCalls", "stack");
-    $c     = count($stack);
-    for ($i = 0; $i < $c; ++$i) {
-      if ($stack[$i][0][0] instanceof I18n && $stack[$i][0][1] == "insertMessage") {
-        $this->assertEquals($patternNonExistent, $stack[$i][1][0]);
-        $this->assertEquals($options, $stack[$i][1][1]);
-        $stack = true;
-      }
-    }
-    $this->assertTrue($stack, "insertMessage() not found on DelayedMethodCalls stack!");
-  }
-
-  /**
-   * @covers ::formatMessage
-   */
-  public function testFormatMessageValidWithArguments() {
-    $this->helperInsertTestMessages();
-    // Set language code to German.
-    $this->i18n->languageCode = "de";
-    $this->assertEquals($this->patternTestLanguageFormatted, $this->i18n->formatMessage("message", $this->pattern, $this->args, [ "language_code" => "xx" ]));
-    $this->assertEquals($this->patternFormatted, $this->i18n->formatMessage("message", $this->pattern, $this->args, [ "language_code" => $this->i18n->defaultLanguageCode ]));
-    $this->assertEquals($this->patternGermanFormatted, $this->i18n->formatMessage("message", $this->pattern, $this->args));
-  }
-
-  /**
-   * @covers ::formatMessage
-   */
-  public function testFormatMessageValidWithoutArguments() {
-    $this->helperInsertTestMessages();
-    // Set language code to German.
-    $this->i18n->languageCode = "de";
-    $this->assertEquals($this->patternTestLanguage, $this->i18n->formatMessage("message", $this->pattern, null, [ "language_code" => "xx" ]));
-    $this->assertEquals($this->pattern, $this->i18n->formatMessage("message", $this->pattern, null, [ "language_code" => $this->i18n->defaultLanguageCode ]));
-    $this->assertEquals($this->patternGerman, $this->i18n->formatMessage("message", $this->pattern, null));
-  }
 
   /**
    * @covers ::getCollator
@@ -357,72 +273,6 @@ class I18nTest extends \MovLib\TestCase {
         ->query("SELECT `message`, `comment` FROM `messages` WHERE `message` = ? AND `comment` IS NULL LIMIT 1", "s", [ $message ])
         ->get_result()->fetch_all()
     );
-  }
-
-  /**
-   * @covers ::insertOrUpdateTranslation
-   * @expectedException \MovLib\Exception\DatabaseException
-   */
-  public function testInsertOrUpdateTranslationInvalidContext() {
-    $this->i18n->insertOrUpdateTranslation("PHPUnit", 1, "xx", "PHPUnit {0} PHPUnit {1} insertOrUpdate translated");
-  }
-
-  /**
-   * @covers ::insertOrUpdateTranslation
-   */
-  public function testInsertOrUpdateTranslationValid() {
-    global $db;
-    $pattern           = "PHPUnit {0} PHPUnit {1}";
-    $languageCode      = "xx";
-    $patternTranslated = "{$pattern} insertOrUpdate translated";
-
-    // Message context.
-    $id = $db->query("SELECT `message_id` FROM `messages` WHERE `message` = ? LIMIT 1", "s", [ $pattern ])->get_result()->fetch_row()[0];
-    $this->i18n->insertOrUpdateTranslation("message", $id, $languageCode, $patternTranslated);
-    $this->assertEquals($patternTranslated, $db
-        ->query("SELECT COLUMN_GET(`dyn_translations`, ? AS CHAR(255)) AS `translation` FROM `messages` WHERE `message_id` = ? LIMIT 1", "si", [ $languageCode, $id ])
-        ->get_result()->fetch_row()[0]
-    );
-
-    // Route context.
-    $id = $db->query("SELECT `route_id` FROM `routes` WHERE `route` = ? LIMIT 1", "s", [ $pattern ])->get_result()->fetch_row()[0];
-    $this->i18n->insertOrUpdateTranslation("route", $id, $languageCode, $patternTranslated);
-    $this->assertEquals($patternTranslated, $db
-        ->query("SELECT COLUMN_GET(`dyn_translations`, ? AS CHAR(255)) AS `translation` FROM `routes` WHERE `route_id` = ? LIMIT 1", "si", [ $languageCode, $id ])
-        ->get_result()->fetch_row()[0]
-    );
-  }
-
-  /**
-   * @covers ::insertRoute
-   */
-  public function testInsertRoute() {
-    global $db;
-    $route = "PHPUnit test route";
-    $this->i18n->insertRoute($route);
-    $this->assertNotNull($db->query("SELECT `route` FROM `routes` WHERE `route` = ? LIMIT 1", "s", [ $route ])->get_result()->fetch_all());
-  }
-
-  /**
-   * @covers ::r
-   */
-  public function testR() {
-    $options = [ "language_code" => "xx" ];
-    $this->assertEquals($this->i18n->formatMessage("route", $this->pattern, $this->args, $options), $this->i18n->r($this->pattern, $this->args, $options));
-    $this->assertEquals($this->i18n->formatMessage("route", $this->pattern, $this->args), $this->i18n->r($this->pattern, $this->args));
-    $this->assertEquals($this->i18n->formatMessage("route", $this->pattern, null, $options), $this->i18n->r($this->pattern, null, $options));
-    $this->assertEquals($this->i18n->formatMessage("route", $this->pattern, null), $this->i18n->r($this->pattern, null));
-  }
-
-  /**
-   * @covers ::t
-   */
-  public function testT() {
-    $options = [ "language_code" => "xx" ];
-    $this->assertEquals($this->i18n->formatMessage("message", $this->pattern, $this->args, $options), $this->i18n->t($this->pattern, $this->args, $options));
-    $this->assertEquals($this->i18n->formatMessage("message", $this->pattern, $this->args), $this->i18n->t($this->pattern, $this->args));
-    $this->assertEquals($this->i18n->formatMessage("message", $this->pattern, null, $options), $this->i18n->t($this->pattern, null, $options));
-    $this->assertEquals($this->i18n->formatMessage("message", $this->pattern, null), $this->i18n->t($this->pattern, null));
   }
 
 }

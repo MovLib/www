@@ -17,7 +17,8 @@
  */
 namespace MovLib\Data\History;
 
-use \MovLib\Data\UnixShell as sh;
+use \MovLib\Data\FileSystem;
+use \MovLib\Data\Shell;
 
 /**
  * @coversDefaultClass \MovLib\Data\History\AbstractHistory
@@ -42,7 +43,7 @@ class AbstractHistoryTest extends \MovLib\TestCase {
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
 
-  
+
   /**
    * Called before each test.
    *
@@ -52,10 +53,7 @@ class AbstractHistoryTest extends \MovLib\TestCase {
   protected function setUp() {
     global $db, $kernel;
 
-    $path = "{$kernel->documentRoot}/private/phpunitrepos";
-    if (is_dir($path)) {
-      sh::execute("rm -rf '{$path}'");
-    }
+    FileSystem::delete("{$kernel->documentRoot}/private/phpunitrepos", true, true);
 
     $this->abstractHistory = $this->getMockForAbstractClass("\\MovLib\\Data\\History\\AbstractHistory", [ 2, "phpunitrepos" ], "Movie");
     $this->commitHash      = $this->abstractHistory->createRepository();
@@ -91,10 +89,7 @@ class AbstractHistoryTest extends \MovLib\TestCase {
    */
   protected function tearDown() {
     global $kernel;
-    $path = "{$kernel->documentRoot}/private/phpunitrepos";
-    if (is_dir($path)) {
-      sh::execute("rm -rf '{$path}'");
-    }
+    FileSystem::delete("{$kernel->documentRoot}/private/phpunitrepos", true, true);
   }
 
 
@@ -170,7 +165,7 @@ class AbstractHistoryTest extends \MovLib\TestCase {
 
     $this->assertEquals(1, $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["added"][0]["id"]);
     $this->assertEquals(4, $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["added"][1]["id"]);
-    
+
     $this->assertEquals(2, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["added"]));
     $this->assertEquals(0, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["removed"]));
     $this->assertEquals(0, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"]));
@@ -209,7 +204,7 @@ class AbstractHistoryTest extends \MovLib\TestCase {
       ] ] ]);
     $this->invoke($this->abstractHistory, "stageAllFiles");
     $this->invoke($this->abstractHistory, "commitFiles", [ "edited cast with id 2" ]);
-    
+
     $this->assertEquals(0, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["added"]));
     $this->assertEquals(0, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["removed"]));
     $this->assertEquals(1, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"]));
@@ -227,7 +222,7 @@ class AbstractHistoryTest extends \MovLib\TestCase {
       ] ] ]);
     $this->invoke($this->abstractHistory, "stageAllFiles");
     $this->invoke($this->abstractHistory, "commitFiles", [ "edited cast with id 2" ]);
-    
+
     $this->assertEquals(1, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["added"]));
     $this->assertEquals(1, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["removed"]));
     $this->assertEquals(1, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"]));
@@ -236,7 +231,7 @@ class AbstractHistoryTest extends \MovLib\TestCase {
     $this->assertEquals("markus", $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"][0]["old"]["roles"]);
     $this->assertEquals("franz", $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"][0]["roles"]);
     $this->assertEquals(4, $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["removed"][0]["id"]);
-    $this->assertEquals(5, $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["added"][0]["id"]); 
+    $this->assertEquals(5, $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["added"][0]["id"]);
   }
 
   /**
@@ -527,23 +522,23 @@ class AbstractHistoryTest extends \MovLib\TestCase {
     $this->invoke($this->abstractHistory, "writeFiles", [ ["genres" => [ 1,2,3 ] ] ]);
     $this->invoke($this->abstractHistory, "stageAllFiles");
     $this->invoke($this->abstractHistory, "commitFiles", [ "genres with id 1,2,3 are added" ]);
-    
+
     $this->assertEquals(1, $this->abstractHistory->getIdDiff("HEAD", "HEAD~1", "genres")["added"][0]);
     $this->assertEquals(2, $this->abstractHistory->getIdDiff("HEAD", "HEAD~1", "genres")["added"][1]);
     $this->assertEquals(3, $this->abstractHistory->getIdDiff("HEAD", "HEAD~1", "genres")["added"][2]);
-    
+
     $this->assertEquals(3, count($this->abstractHistory->getIdDiff("HEAD", "HEAD~1", "genres")["added"]));
     $this->assertEquals(0, count($this->abstractHistory->getIdDiff("HEAD", "HEAD~1", "genres")["removed"]));
-    
+
     // genres with id 2 is removed, 4 and 6 are added
     $this->invoke($this->abstractHistory, "writeFiles", [ ["genres" => [ 1,3,4,6 ] ] ]);
     $this->invoke($this->abstractHistory, "stageAllFiles");
     $this->invoke($this->abstractHistory, "commitFiles", [ "genres with id 2 is removed, 4 and 6 are added" ]);
-    
+
     $this->assertEquals(2, $this->abstractHistory->getIdDiff("HEAD", "HEAD~1", "genres")["removed"][0]);
     $this->assertEquals(4, $this->abstractHistory->getIdDiff("HEAD", "HEAD~1", "genres")["added"][0]);
     $this->assertEquals(6, $this->abstractHistory->getIdDiff("HEAD", "HEAD~1", "genres")["added"][1]);
-    
+
     $this->assertEquals(2, count($this->abstractHistory->getIdDiff("HEAD", "HEAD~1", "genres")["added"]));
     $this->assertEquals(1, count($this->abstractHistory->getIdDiff("HEAD", "HEAD~1", "genres")["removed"]));
   }

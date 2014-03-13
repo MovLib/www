@@ -17,7 +17,8 @@
  */
 namespace MovLib\Data\Image;
 
-use \MovLib\Data\UnixShell as sh;
+use \MovLib\Data\FileSystem;
+use \MovLib\Data\Shell;
 use \MovLib\Data\Image\AbstractBaseImage as Image;
 
 /**
@@ -53,8 +54,8 @@ class AbstractImageTest extends \MovLib\TestCase {
     self::$dirOriginal = "{$kernel->documentRoot}/uploads/originals/phpunit/";
     self::$dirStyles = "{$kernel->documentRoot}/uploads/phpunit/";
     self::$tmpImage = tempnam(ini_get("upload_tmp_dir"), "phpunit") . ".jpg";
-    sh::execute("convert -size 500x500 xc: +noise Random " . self::$tmpImage);
-    sh::execute("mkdir -p '" . self::$dirOriginal . "' '" . self::$dirStyles . "'");
+    Shell::execute("convert -size 500x500 xc: +noise Random " . self::$tmpImage);
+    Shell::execute("mkdir -p '" . self::$dirOriginal . "' '" . self::$dirStyles . "'");
   }
 
   protected function setUp() {
@@ -65,11 +66,12 @@ class AbstractImageTest extends \MovLib\TestCase {
   }
 
   protected function tearDown() {
-    sh::execute("rm -r '" . self::$dirOriginal . "*' '" . self::$dirStyles . "*'");
+    self::tearDownAfterClass();
   }
 
   public static function tearDownAfterClass() {
-    sh::executeDetached("rm -r '" . self::$dirOriginal . "' '" . self::$dirStyles . "'");
+    FileSystem::delete(self::$dirOriginal, true);
+    FileSystem::delete(self::$dirStyles, true);
   }
 
 

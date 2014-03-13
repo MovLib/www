@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\Temporary;
-use \MovLib\Data\UnixShell as sh;
+use \MovLib\Data\Shell;
 use \MovLib\Presentation\Email\User\PasswordChange as PasswordChangeEmail;
 use \MovLib\Presentation\Error\Unauthorized;
 use \MovLib\Presentation\Partial\Alert;
@@ -124,18 +124,29 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
     global $i18n;
 
     // Generate a KeePass like random password for the user.
-    sh::execute("pwgen -cnBv 20 1", $randomPassword);
-    $randomPassword = trim($randomPassword[0]);
+    $randomPassword = `pwgen -cnBv 20 1`;
+    if (empty($randomPassword)) {
+      $passwordInfo = null;
+      // @todo Log that pwgen isn't available.
+    }
+    else {
+      $passwordInfo = new Alert(
+        "<p>{$i18n->t("Choose a strong password to secure your account.")}</p>" .
+        "<p>{$i18n->t(
+          "A password must contain lowercase and uppercase letters, numbers, and must be at least " .
+          "{0,number,integer} characters long.",
+          [ $this->newPassword->minimumPasswordLength ]
+        )}</p>" .
+        "<p>{$i18n->t(
+          "As little help we generated the following password for you: {random_password}",
+          [ "random_password" => "<code>{$randomPassword}</code>" ]
+        )}</p>",
+        $i18n->t("Tip"),
+        Alert::SEVERITY_INFO
+      );
+    }
 
-    $info = new Alert(
-      "<p>{$i18n->t("Choose a strong password to secure your account.")} {$i18n->t("A password must contain lowercase and uppercase letters, numbers, and must be at least {0,number,integer} characters long.", [
-        $this->newPassword->minimumPasswordLength
-      ])} {$i18n->t("As little help we generated the following password for you:")} <code>{$randomPassword}</code></p>",
-      $i18n->t("Tip"),
-      Alert::SEVERITY_INFO
-    );
-
-    return "{$info}{$this->form}";
+    return "{$passwordInfo}{$this->form}";
   }
 
   /**

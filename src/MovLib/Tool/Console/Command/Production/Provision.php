@@ -17,6 +17,7 @@
  */
 namespace MovLib\Tool\Console\Command\Production;
 
+use \MovLib\Data\FileSystem;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
@@ -32,7 +33,6 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @since 0.0.1-dev
  */
 class Provision extends \MovLib\Tool\Console\Command\AbstractCommand {
-  use \MovLib\Data\TraitFileSystem;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -156,15 +156,20 @@ class Provision extends \MovLib\Tool\Console\Command\AbstractCommand {
     // @todo Create configuration command to manage the currently in use configuration file and force regenration. This
     //       code should also be moved to that command and simply called from here.
     if (empty($kernel->configuration)) {
-      $configuration = json_decode($this->fsGetContents("{$kernel->documentRoot}/etc/movlib.dist.json"), true);
+      // Get the default distribution configuration.
+      $configuration = FileSystem::getJSON("{$kernel->documentRoot}/etc/movlib.dist.json", true);
+
+      // Get the environment specific configuration.
       $envConfiguration = "{$kernel->documentRoot}/etc/movlib.{$environment}.json";
-      if ($environment != self::ENV_DISTRIBUTION && is_file($envConfiguration)) {
-        $configuration = array_replace_recursive($configuration, json_decode($this->fsGetContents($envConfiguration), true));
+      if ($environment != self::ENV_DISTRIBUTION && file_exists($envConfiguration)) {
+        $configuration = array_replace_recursive($configuration, FileSystem::getJSON($envConfiguration, true));
       }
-      $configuration = json_encode($configuration, JSON_FORCE_OBJECT | JSON_UNESCAPED_UNICODE);
-      $kernel->configuration = json_decode($configuration);
-      $this->fsCreateDirectory("/etc/movlib", 0774);
-      $this->fsPutContents("/etc/movlib/movlib.json", $configuration);
+
+      $globalConfiguration = "/etc/movlib/movlib.json";
+      FileSystem::createDirectory(dirname($globalConfiguration), true, "0775", "root", "root");
+      $kernel->configuration = FileSystem::putJSON($globalConfiguration, $configuration, LOCK_EX);
+      FileSystem::changeMode($globalConfiguration);
+      FileSystem::changeOwner($globalConfiguration);
     }
 
     $force = $input->getOption("force");
@@ -197,7 +202,7 @@ class Provision extends \MovLib\Tool\Console\Command\AbstractCommand {
   protected function getSoftware() {
     static $software = null;
     if (!$software) {
-      foreach (glob(dirname(__DIR__) . "/Provision/*.php") as $filename) {
+      foreach (FileSystem::glob(dirname(__DIR__) . "/Provision", "php") as $filename) {
         $basename = basename($filename, ".php");
         if ((new \ReflectionClass("\\MovLib\\Tool\\Console\\Command\\Provision\\{$basename}"))->isInstantiable()) {
           $software[] = strtolower($basename);

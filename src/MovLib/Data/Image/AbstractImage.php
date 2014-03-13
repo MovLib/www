@@ -17,7 +17,8 @@
  */
 namespace MovLib\Data\Image;
 
-use \MovLib\Data\UnixShell as sh;
+use \MovLib\Data\Shell;
+use \MovLib\Data\FileSystem;
 use \MovLib\Data\Image\Style;
 
 /**
@@ -161,7 +162,8 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
    */
   protected function createDirectories() {
     global $kernel;
-    sh::execute("mkdir -p '{$kernel->documentRoot}/private/upload/{$this->directory}' '{$kernel->documentRoot}/public/upload/{$this->directory}'");
+    FileSystem::createDirectory("{$kernel->documentRoot}/private/upload/{$this->directory}", true);
+    FileSystem::createDirectory("{$kernel->documentRoot}/public/upload/{$this->directory}", true);
     return $this;
   }
 
@@ -175,7 +177,7 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
     global $kernel;
 
     // Unserialize the styles if they are still serialized.
-    if (!is_array($this->styles)) {
+    if ($this->style !== (array) $this->styles) {
       $this->styles = unserialize($this->styles);
     }
 
@@ -184,13 +186,17 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
 
     // Remove all generated image styles from persistent storage, we can easily regenerate them if we have to recover
     // the record from the original upload.
-    if (sh::execute("rm --force --recursive '{$directoryPath}/*'") === false) {
-      error_log(new \RuntimeException("Couldn't delete image styles for: '{$this->directory}'"));
+    try {
+      FileSystem::delete($directoryPath, true, true);
+    }
+    catch (\RuntimeException $e) {
+      // @todo Log error
+      throw $e;
     }
 
     // Delete all empty directories within the complete path to the deleted image styles. This silently fails upon the
     // first directory that's non empty.
-    sh::execute("rmdir --ignore-fail-on-non-empty --parent '{$directoryPath}'");
+    FileSystem::deleteDiretories($directoryPath);
 
     // Update the instance properties as well.
     $this->imageExists = false;
@@ -210,12 +216,12 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
   public function getStyle($style = self::STYLE_SPAN_02) {
     // Use the style itself for width and height if this image doesn't exist.
     if ($this->imageExists === false && !isset($this->styles[$style])) {
-      if (!is_array($this->styles)) {
+      if ($this->styles !== (array) $this->styles) {
         $this->styles = [];
       }
       $this->styles[$style] = [ "width" => $style, "height" => $style ];
     }
-    elseif (!is_array($this->styles)) {
+    elseif ($this->styles !== (array) $this->styles) {
       $this->styles = unserialize($this->styles);
 
       // If this style is missing, assume that the styles have changed and regenerate them.
@@ -248,26 +254,6 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
   }
 
   /**
-   * Move the originally uploaded file from the system temporary folder to the persistent storage.
-   *
-   * @delayed
-   * @param string $source
-   *   Absolute path to the uploaded image (already stripped and repaged).
-   * @return $this
-   */
-  public function moveOriginal($source) {
-    if (sh::execute("mv '{$source}' '{$this->getPath()}' && rm '{$source}'") === false) {
-      error_log(__FILE__ . "(" . __LINE__ . "): Couldn't move uploaded image from temporary folder to persistent storage.");
-      // @devStart
-      // @codeCoverageIgnoreStart
-      throw new \LogicException("Couldn't move uploaded image from temporary folder to persistent storage.");
-      // @codeCoverageIgnoreEnd
-      // @devEnd
-    }
-    return $this;
-  }
-
-  /**
    * Upload the <var>$source</var>, overriding any existing image.
    *
    * @global \MovLib\Kernel $kernel
@@ -290,8 +276,7 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
     $this->extension = $extension;
 
     // Clean the uploaded image, ImageMagick needs the extension to determine the algorithm.
-    sh::execute("convert '{$source}' +profile 'icm' -strip +repage -units PixelsPerInch image -density '72' '{$source}.{$extension}'");
-    sh::executeDetached("rm '{$source}'");
+    Shell::execute("convert '{$source}' +profile 'icm' -strip +repage -units PixelsPerInch image -density '72' '{$source}.{$extension}'");
     $source .= ".{$extension}";
 
     // Collect all data we want to know about the newly uploaded image.
