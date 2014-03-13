@@ -17,6 +17,8 @@
  */
 namespace MovLib\Tool\Console\Command\Production;
 
+use \MovLib\Data\FileSystem;
+use \MovLib\Data\Shell;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
@@ -32,7 +34,6 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @since 0.0.1-dev
  */
 class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
-  use \MovLib\Data\TraitFileSystem;
 
   /**
    * @inheritdoc
@@ -65,6 +66,7 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $options = parent::execute($input, $output);
+    $this->checkPrivileges();
     $this->fixPermissions($input->getArgument("directory"), $options["user"], $options["group"]);
     return $options;
   }
@@ -101,29 +103,27 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
       throw new \InvalidArgumentException("Given directory '{$directory}' doesn't exist!");
     }
 
-    // Create paths to binary execution files.
-    $binPaths = "{$kernel->documentRoot}/bin/movlib.php {$kernel->documentRoot}/bin/*.sh {$kernel->documentRoot}/conf/*/*.sh";
+    FileSystem::changeOwner($directory, $kernel->systemUser, $kernel->systemGroup, true);
+    $this->write("Fixed file ownership!", self::MESSAGE_TYPE_INFO);
 
-    // Only attempt to update vendor binaries if there are any.
-    if (is_dir("{$kernel->documentRoot}/vendor/bin") === true) {
-      $binPaths .= " {$kernel->documentRoot}/vendor/bin/*";
-    }
+    FileSystem::changeModeRecursive($directory);
+    $this->write("Fixed file permissions!", self::MESSAGE_TYPE_INFO);
 
-    $cmds = [
-      "find '{$directory}' -follow -type d -exec chmod 2770 {} \;" => "Directory permissions fixed!",
-      "find '{$directory}' -follow -type f -exec chmod 2660 {} \;" => "File permissions fixed!",
-      "chmod -R 2770 {$binPaths}"                                  => "Executable permissions fixed!",
-    ];
+    // Only attempt to fix the permissions of our executables if we're working with the document root.
+    if ($directory == $kernel->documentRoot) {
+      // Create paths to binary execution files.
+      $binPaths = "{$kernel->documentRoot}/bin/movlib.php {$kernel->documentRoot}/bin/*.sh";
 
-    if ($user && $group) {
-      $cmds["chown -R {$user}:{$group} '{$directory}'"] = "Owernship changed!";
-    }
+      foreach ([ "/conf" => "/*/*.sh", "/etc" => "/*/*.sh", "/vendor/bin" => "/*" ] as $dir => $pattern) {
+        $dir = "{$kernel->documentRoot}{$dir}";
+        if (is_dir($dir)) {
+          $binPaths .= " {$dir}{$pattern}";
+        }
+      }
 
-    // Looks good so far, start fixing permissions in this directory.
-    $this->write("Fixing permissions of all directories and files in <info>'{$directory}'</info> ...");
-    foreach ($cmds as $cmd => $msg) {
-      $this->shExecute($cmd);
-      $this->write($msg, self::MESSAGE_TYPE_INFO);
+      $dir = escapeshellarg($binPaths);
+      Shell::execute("chmod -R 0775 {$dir}");
+      $this->write("Executable permissions fixed!", self::MESSAGE_TYPE_INFO);
     }
 
     return $this;

@@ -27,7 +27,6 @@ namespace MovLib\Tool\Console\Command\Production;
  * @since 0.0.1-dev
  */
 class NginxConfiguration extends \MovLib\Tool\Console\Command\AbstractCommand {
-  use \MovLib\Data\TraitFileSystem;
 
   /**
    * @inheritdoc

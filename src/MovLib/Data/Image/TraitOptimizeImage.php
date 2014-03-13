@@ -17,7 +17,7 @@
  */
 namespace MovLib\Data\Image;
 
-use \MovLib\Data\UnixShell as sh;
+use \MovLib\Data\Shell;
 
 /**
  * Methods for image optimization.
@@ -80,12 +80,8 @@ trait TraitOptimizeImage {
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    if (sh::execute("pngquant --ext '.png' --force --speed 1 {$png}") === false) {
-      throw new \RuntimeException("Couldn't optimize '{$png}' with pngquant");
-    }
-    if (sh::execute("zopflipng {$png} {$png}") === false) {
-      throw new \RuntimeException("Couldn't optimize '{$png}' with zopflipng");
-    }
+    Shell::execute("pngquant --ext '.png' --force --speed 1 {$png}");
+    Shell::execute("zopflipng {$png} {$png}");
     return $this;
   }
 
@@ -117,9 +113,7 @@ trait TraitOptimizeImage {
    */
   protected function optimizeSVG($svg) {
     global $kernel;
-    if (sh::execute("svgo --input {$svg} --output {$svg}") === false) {
-      throw new \RuntimeException("Couldn't minify '{$svg}'");
-    }
+    Shell::execute("svgo --input {$svg} --output {$svg}");
     $kernel->compress($svg);
     return $this;
   }

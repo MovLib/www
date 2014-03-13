@@ -42,7 +42,7 @@ const SPAN_11 = 860;
 const SPAN_12 = 940;
 // @codeCoverageIgnoreEnd
 
-use \MovLib\Data\UnixShell as sh;
+use \MovLib\Data\Shell;
 
 /**
  * Minimum image implementation.
@@ -272,13 +272,14 @@ abstract class AbstractBaseImage {
 
     // Generate the desired image style with ImageMagick. We directly call the binary instead of using some kind of
     // abstraction layer, we don't need any fancy object just to resize an image.
-    if (sh::execute("convert '{$source}' -filter Lanczos -resize {$resizeArg} -quality 75 '{$destination}'", $output) === false) {
-      // No need to check for this exception, this only happens if the file system is full or ImageMagick is missing
-      // on the server. Both situations are so terrible that we don't need to cover these situations.
-      // @codeCoverageIgnoreStart
-      $output = implode("\n", $output);
-      throw new \RuntimeException("Couldn't convert '{$source}' to '{$style}', {$output}");
-      // @codeCoverageIgnoreEnd
+    try {
+      $source      = escapeshellarg($source);
+      $destination = escapeshellarg($destination);
+      Shell::execute("convert {$source} -filter Lanczos -resize {$resizeArg} -quality 75 {$destination}");
+    }
+    catch (\RuntimeException $e) {
+      // @todo Log error, convert command isn't available!
+      throw $e;
     }
 
     // Store width and height of the generated image in the database. This allows us to set the width and height
@@ -309,8 +310,6 @@ abstract class AbstractBaseImage {
    */
   protected function getPath($style = null) {
     global $kernel;
-
-    \FB::send($this);
 
     // We always have to generate the absolute path to the image within our persistent storage, doesn't matter if it
     // exists or not, as it may be requested to move or convert an image that was just uploaded. Of course we need the

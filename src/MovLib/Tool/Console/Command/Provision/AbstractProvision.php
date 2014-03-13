@@ -17,6 +17,8 @@
  */
 namespace MovLib\Tool\Console\Command\Provision;
 
+use \MovLib\Data\FileSystem;
+use \MovLib\Data\Shell;
 use \Symfony\Component\Console\Output\OutputInterface;
 use \Symfony\Component\Console\Output\Output;
 
@@ -30,7 +32,6 @@ use \Symfony\Component\Console\Output\Output;
  * @since 0.0.1-dev
  */
 abstract class AbstractProvision {
-  use \MovLib\Data\TraitFileSystem;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -103,7 +104,7 @@ abstract class AbstractProvision {
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    $this->shellExecute("DEBIAN_FRONTEND=noninteractive && apt-get {$arguments}");
+    Shell::execute("DEBIAN_FRONTEND=noninteractive && apt-get {$arguments}");
     return $this;
   }
 
@@ -149,11 +150,11 @@ abstract class AbstractProvision {
    */
   final protected function aptPreseed($answers, $search) {
     try {
-      $this->shExecute("debconf-get-selections | grep {$search}");
+      Shell::execute("debconf-get-selections | grep {$search}");
     }
     catch (\RuntimeException $e) {
       foreach (explode("\n", $answers) as $answer) {
-        $this->shExecute("echo '{$answer}' | debconf-set-selections");
+        Shell::execute("echo '{$answer}' | debconf-set-selections");
       }
     }
     return $this;
@@ -170,7 +171,7 @@ abstract class AbstractProvision {
    */
   final protected function aptPurge($package) {
     $package = implode(" ", (array) $package);
-    exec("DEBIAN_FRONTEND=noninteractive && apt-get purge --yes {$package} && apt-get autoremove --purge --yes");
+    Shell::execute("DEBIAN_FRONTEND=noninteractive && apt-get purge --yes {$package} && apt-get autoremove --purge --yes");
     return $this;
   }
 
@@ -202,9 +203,9 @@ abstract class AbstractProvision {
     $source   = "/etc/apt/sources.d/{$hostname}.list";
 
     if (file_exists($source) === false) {
-      $this->fsPutContents($source, "# {$source}\n\ndeb {$location} {$release} {$repos}\n");
+      FileSystem::putContent($source, "# {$source}\n\ndeb {$location} {$release} {$repos}\n");
       if ($key) {
-        $this->shellExecute("DEBIAN_FRONTEND=noninteractive && apt-key adv --keyserver {$keyServer} --recv-keys {$key}");
+        Shell::execute("DEBIAN_FRONTEND=noninteractive && apt-key adv --keyserver {$keyServer} --recv-keys {$key}");
       }
       $this->aptUpdate(true);
     }
@@ -262,7 +263,7 @@ abstract class AbstractProvision {
     if (chdir($path) === false) {
       throw new \RuntimeException("Couldn't change to directory '{$path}'");
     }
-    $this->shExecute("checkinstall --" . implode(" --", array_merge([
+    Shell::execute("checkinstall --" . implode(" --", array_merge([
       "default",
       "install",
       "maintainer='{$kernel->configuration->webmaster}'",
@@ -305,7 +306,7 @@ abstract class AbstractProvision {
     if (chdir($path) === false) {
       throw new \RuntimeException("Couldn't change to directory '{$path}'");
     }
-    $this->shExecute($configureCommand);
+    Shell::execute($configureCommand);
     return $this;
   }
 
@@ -355,7 +356,7 @@ abstract class AbstractProvision {
           throw new \LogicException("Unknown scheme {$scheme}");
       }
     }
-    $this->shExecute("chown --recursive root:root '{$filename}'");
+    FileSystem::changeOwner($filename, "root", "root", true);
     return $filename;
   }
 
@@ -372,12 +373,14 @@ abstract class AbstractProvision {
    */
   final private function downloadGit($url, $filename) {
     try {
-      $this->shExecute("which git");
+      Shell::execute("which git");
     }
     catch (\RuntimeException $e) {
       $this->aptInstall("git");
     }
-    $this->shExecute("git clone '{$url}' '{$filename}'");
+    $url      = escapeshellarg($url);
+    $filename = escapeshellarg($filename);
+    Shell::execute("git clone {$url} {$filename}");
     return $this;
   }
 
@@ -426,7 +429,7 @@ abstract class AbstractProvision {
     $archive = new \PharData($source);
     $archive->extractTo($target);
     unset($archive);
-    $this->shExecute("chown --recursive --silent root:root '{$target}'");
+    FileSystem::changeOwner($target, "root", "root", true);
     return $this;
   }
 
@@ -459,7 +462,9 @@ abstract class AbstractProvision {
    */
   final protected function versionCompare($package, $version) {
     if ($this->force === false) {
-      exec("dpkg --status {$package}", $output);
+      // Ignore errors and don't redirect stderr to stdin, that's also the reason why we don't use Shell::execute()
+      exec("dpkg --status " . escapeshellarg($package), $output);
+
       if (!empty($output)) {
         $installed = preg_replace("/.*Version: ([a-z0-9\.-_]+).*/i", "$1", implode(" ", $output));
         if (version_compare($installed, $version) < 1) {
@@ -496,19 +501,22 @@ abstract class AbstractProvision {
     if (file_exists($initScript) === false) {
       throw new \LogicException("Couldn't find init script for {$name} in /etc/init.d");
     }
-    $this->fsRealpath($initScript);
+    $initScript = FileSystem::getRealPath($initScript);
     if (is_executable($initScript) === false) {
-      $this->fsChangeMode($initScript, 0755, "root", "root");
+      FileSystem::changeMode($initScript, "0755");
+      FileSystem::changeOwner($initScript, "root", "root");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-    $action = $this->shellExecute("service {$name} status") === 0 ? "restart" : "start";
-    $this->shellExecute("service {$name} {$action}");
+    $name = escapeshellarg($name);
+
+    $action = exec("service {$name} status") === 0 ? "restart" : "start";
+    Shell::execute("service {$name} {$action}");
 
     if ($startOnBoot !== false) {
       $args = is_string($startOnBoot) === true ? $startOnBoot : null;
-      $this->shellExecute("update-rc.d {$name} defaults {$args}");
+      Shell::execute("update-rc.d {$name} defaults {$args}");
     }
 
     return $this;
