@@ -83,6 +83,13 @@ class Company extends \MovLib\Data\Image\AbstractImage {
   public $id;
 
   /**
+   * The company's translated logo route.
+   *
+   * @var string
+   */
+  public $imageRoute;
+
+  /**
    * The company's name.
    *
    * @var string
@@ -301,7 +308,7 @@ class Company extends \MovLib\Data\Image\AbstractImage {
     $key           = "edit";
     if ($this->uploaderId) {
       $this->imageExists = true;
-      $key               = "photo";
+      $key               = "logo";
       $this->styles      = unserialize($this->styles);
     }
     $this->imageRoute = $i18n->r("/company/{0}/{$key}", [ $this->id ]);

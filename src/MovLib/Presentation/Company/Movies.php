@@ -1,27 +1,28 @@
 <?php
 
 /*!
- *  This file is part of {@link https://github.com/MovLib MovLib}.
+ * This file is part of {@link https://github.com/MovLib MovLib}.
  *
- *  Copyright © 2013-present {@link http://movlib.org/ MovLib}.
+ * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
  *
- *  MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
- *  License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- *  version.
+ * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  *
- *  MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
- *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ * MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License along with MovLib.
- *  If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
+ * You should have received a copy of the GNU Affero General Public License along with MovLib.
+ * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
 namespace MovLib\Presentation\Company;
 
+use \MovLib\Data\Company\FullCompany;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Listing\Movie\MoviePersonListing;
+use \MovLib\Presentation\Partial\Listing\Movies as MoviesPartial;
 
 /**
- * Movies of a company.
+ * Movies with a certain company associated.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -31,40 +32,41 @@ use \MovLib\Presentation\Partial\Listing\Movie\MoviePersonListing;
  */
 class Movies extends \MovLib\Presentation\Company\AbstractBase {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
   /**
-   * Instantiate new movies presentation of a company.
+   * Instantiate new company movie presentation.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n;
-
-    parent::__construct();
-
-    $this->initLanguageLinks("/company/{0}/movies", [ $this->company->id ], true);
+    global $i18n, $kernel;
+    $this->company = new FullCompany((integer) $_SERVER["COMPANY_ID"]);
+    $this->initPage($i18n->t("Movies from {0}", [ $this->company->name ]));
+    $this->pageTitle       = $i18n->t("Movies from {0}", [ "<a href='{$this->company->route}'>{$this->company->name}</a>" ]);
     $this->breadcrumbTitle = $i18n->t("Movies");
+    $this->initLanguageLinks("/company/{0}/movies", [ $this->company->id ], true);
+    $this->initCompanyBreadcrumb();
+    $this->sidebarInit();
 
-    $title  = $i18n->t("Movies of {company_name}");
-    $search = "{company_name}";
-    $this->initPage(str_replace($search, $this->company->name, $title));
-    $this->pageTitle = str_replace($search, "<a href='{$this->company->route}'>{$this->company->name}</a>", $title);
+    $kernel->stylesheets[] = "company";
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
-   * @return string
+   * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   * @return \MovLib\Presentation\Partial\Listing\Movies
    */
   protected function getPageContent() {
     global $i18n;
-    $movies = (new MoviePersonListing($this->company->getMovieResult()))->getListing();
-
-    if (empty($movies)) {
-      return new Alert($i18n->t("There are no movies this company was involved!"), $i18n->t("No Movies"), Alert::SEVERITY_INFO);
-    }
-
-    $list = null;
-    foreach ($movies as $id => $html) {
-      $list .= "<li class='hover-item s r' typeof='Movie'>{$html["#movie"]}<ul class='no-list jobs s s4 tar'>{$html["#jobs"]}</ul></li>";
-    }
-    return "<ol class='hover-list no-list'>{$list}</ol>";
+    return new MoviesPartial($this->company->getMovieResult(), (new Alert($i18n->t("Check back later"), $i18n->t("No movies found."), Alert::SEVERITY_INFO))->__toString());
   }
+
 }

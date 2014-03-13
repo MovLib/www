@@ -63,7 +63,7 @@ INSERT INTO `companies` SET
     'en', '&lt;p&gt;The Synapse Films logo.&lt;/p&gt;',
     'de', '&lt;p&gt;Das Synapse Films Logo.&lt;/p&gt;'
   ),
-  `image_styles`           = 'a:2:{i:140;a:3:{s:6:"height";i:52;s:5:"width";i:140;s:9:"resizeArg";s:8:"140x140>";}i:60;a:3:{s:6:"height";i:22;s:5:"width";i:60;s:9:"resizeArg";s:4:"60x>";}}',
+  `image_styles`           = 'a:3:{i:220;a:3:{s:6:"height";i:82;s:5:"width";i:220;s:9:"resizeArg";s:8:"220x220>";}i:140;a:3:{s:6:"height";i:52;s:5:"width";i:140;s:9:"resizeArg";s:8:"140x140>";}i:60;a:3:{s:6:"height";i:22;s:5:"width";i:60;s:9:"resizeArg";s:4:"60x>";}}',
   `image_uploader_id`      = 1
 ;
 

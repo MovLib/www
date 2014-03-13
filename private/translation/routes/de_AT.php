@@ -81,10 +81,7 @@ return [
   "/company/{0}/discussion"   => "/unternehmen/{0}/diskussion",
   "/company/{0}/history"      => "/unternehmen/{0}/geschichte",
   "/company/{0}/delete"       => "/unternehmen/{0}/löschen",
-
-  // ------------------------------------------------------------------------------------------------------------------- Company Photo
-  "/company/{0}/photo"        => "/unternehmen/{0}/foto",
-  "/company/{0}/photo/delete" => "/unternehmen/{0}/foto/löschen" ,
+  "/company/{0}/logo"         => "/unternehmen/{0}/logo",
 
   // ------------------------------------------------------------------------------------------------------------------- Person
   "/person"                => "/person",

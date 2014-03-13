@@ -408,18 +408,8 @@ location ^~ <?= $r("/company") ?> {
     try_files $movlib_cache @php;
   }
 
-  #
-  # ---------------------------------------- Company Photo
-  #
-
-  location ~* "^<?= $r("/company/{0}/photo", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Company\\Photo";
-    set $movlib_company_id $1;
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/company/{0}/photo/delete", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Company\\PhotoDelete";
+  location ~* "^<?= $r("/company/{0}/logo", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Company\\Logo";
     set $movlib_company_id $1;
     try_files $movlib_cache @php;
   }

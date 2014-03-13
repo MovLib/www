@@ -43,20 +43,19 @@ class Index extends \MovLib\Presentation\Page {
    * Instantiate new latest companies presentation.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n;
-    $this->initPage($i18n->t("Companies"));
+    global $i18n, $kernel;
+    $this->initPage($i18n->t("Companys"));
     $this->initBreadcrumb();
-    $this->initLanguageLinks("/companies", null, true);
+    $this->initLanguageLinks("/companys", null, true);
+    $this->paginationInit(Company::getTotalCount());
     $this->sidebarInit([
-      [ $this->languageLinks[$i18n->languageCode], $i18n->t("Companies"), [ "class" => "ico ico-company" ] ],
+      [ $kernel->requestPath, $this->title, [ "class" => "ico ico-company" ] ],
       [ $i18n->r("/company/random"), $i18n->t("Random") ],
     ]);
-    $this->paginationInit(Company::getTotalCount());
-    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/company/create")}'>{$i18n->t("Create New Company")}</a>";
   }
-
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
@@ -67,21 +66,21 @@ class Index extends \MovLib\Presentation\Page {
    */
   protected function getPageContent() {
     global $i18n;
-    return new CompaniesPartial(
-      Company::getCompanies($this->paginationOffset, $this->paginationLimit),
-      new Alert(
-        $i18n->t(
-          "We couldn’t find any company matching your filter criteria, or there simply aren’t any companies available. Would you like to {0}create a new entry{1}?",
-          [ "<a href='{$i18n->r("/company/create")}'>", "</a>" ]
-        ),
-        $i18n->t("No Companies"),
-        Alert::SEVERITY_INFO
-      ),
-      null,
-      null,
-      10,
-      true
+
+    $this->headingBefore =
+      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/company/create")}'>{$i18n->t("Create New Company")}</a>"
+    ;
+
+    $result      = Company::getCompanies($this->paginationOffset, $this->paginationLimit);
+    $noItemText  = new Alert(
+      $i18n->t(
+        "We couldn’t find any company matching your filter criteria, or there simply aren’t any companies available."
+      ), $i18n->t("No Companies"), Alert::SEVERITY_INFO
     );
+    $noItemText .=
+      $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/company/create")}'>", "</a>" ]);
+
+    return new CompaniesPartial($result, $noItemText);
   }
 
 }

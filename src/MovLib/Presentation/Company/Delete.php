@@ -17,8 +17,10 @@
  */
 namespace MovLib\Presentation\Company;
 
+use \MovLib\Data\Company\Company;
+
 /**
- * Allows deleting a company
+ * Allows deleting a company.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -28,27 +30,40 @@ namespace MovLib\Presentation\Company;
  */
 class Delete extends \MovLib\Presentation\Company\AbstractBase {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
   /**
-   * Instantiate new delete company presentation.
+   * Instantiate new company delete presentation.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n;
-
-    parent::__construct();
-
+    global $i18n, $kernel;
+    $this->company = new Company((integer) $_SERVER["COMPANY_ID"]);
+    $this->initPage($i18n->t("Delete"));
+    $this->pageTitle = $i18n->t("Delete {0}", [ "<a href='{$this->company->route}'>{$this->company->name}</a>" ]);
     $this->initLanguageLinks("/company/{0}/delete", [ $this->company->id ]);
-    $this->breadcrumbTitle = $i18n->t("Delete");
+    $this->initCompanyBreadcrumb();
+    $this->sidebarInit();
 
-    $title  = $i18n->t("Delete {company_name}");
-    $search = "{company_name}";
-    $this->initPage(str_replace($search, $this->company->name, $title));
-    $this->pageTitle = str_replace($search, "<a href='{$this->company->route}'>{$this->company->name}</a>", $title);
+    $kernel->stylesheets[] = "company";
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   * @return \MovLib\Presentation\Partial\Alert
+   */
   protected function getPageContent() {
     global $i18n;
     return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("delete company") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
   }
+
 }
