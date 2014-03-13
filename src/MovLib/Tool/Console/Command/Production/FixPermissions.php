@@ -21,7 +21,6 @@ use \MovLib\Data\FileSystem;
 use \MovLib\Data\Shell;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
-use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -41,24 +40,14 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
    */
   protected function configure() {
     global $kernel;
-
     $this->setName("fix-permissions");
     $this->setDescription("Fix permissions on a directory and its contents.");
-
     $this->addArgument(
       "directory",
       InputArgument::OPTIONAL,
       "Specify the directory in which the permissions should be fixed (relative to the document root).",
-      ""
+      $kernel->documentRoot
     );
-
-    $user = isset($kernel->configuration->user) ? $kernel->configuration->user : null;
-    $mode = $user ? InputOption::VALUE_OPTIONAL : InputOption::VALUE_REQUIRED;
-    $this->addOption("user", "u", $mode, "Set the files owning user.", $user);
-
-    $group = isset($kernel->configuration->group) ? $kernel->configuration->group : null;
-    $mode  = $group ? InputOption::VALUE_OPTIONAL : InputOption::VALUE_REQUIRED;
-    $this->addOption("group", "g", $mode, "Set the files owning group.", $group);
   }
 
   /**
@@ -67,7 +56,7 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
   protected function execute(InputInterface $input, OutputInterface $output) {
     $options = parent::execute($input, $output);
     $this->checkPrivileges();
-    $this->fixPermissions($input->getArgument("directory"), $options["user"], $options["group"]);
+    $this->fixPermissions($input->getArgument("directory"));
     return $options;
   }
 
@@ -78,14 +67,10 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @param string $directory [optional]
    *   If given only the directories and files in that directory will be fixed, defaults to empty string which fixes the
    *   permissions on all directories and files in the document root.
-   * @param string $user [optional]
-   *   The files owner, defaults to <code>NULL</code> (ownership won't be changed).
-   * @param string $group [optional]
-   *   The files group, defaults to <code>NULL</code> (ownership won't be changed).
    * @return this
    * @throws \InvalidArgumentException
    */
-  public function fixPermissions($directory = null, $user = null, $group = null) {
+  public function fixPermissions($directory = null) {
     global $kernel;
 
     // No directory? No problem!
@@ -97,11 +82,13 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
     elseif (strpos($directory, $kernel->documentRoot) === false) {
       $directory = "{$kernel->documentRoot}/{$directory}";
     }
+    $directory = rtrim($directory, "/");
 
     // If this isn't a valid directory abort.
     if (is_dir($directory) === false) {
       throw new \InvalidArgumentException("Given directory '{$directory}' doesn't exist!");
     }
+    $this->write("Fixing permissions in '{$directory}' ...");
 
     FileSystem::changeOwner($directory, $kernel->systemUser, $kernel->systemGroup, true);
     $this->write("Fixed file ownership!", self::MESSAGE_TYPE_INFO);
@@ -111,18 +98,17 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
 
     // Only attempt to fix the permissions of our executables if we're working with the document root.
     if ($directory == $kernel->documentRoot) {
-      // Create paths to binary execution files.
-      $binPaths = "{$kernel->documentRoot}/bin/movlib.php {$kernel->documentRoot}/bin/*.sh";
+      $bin[] = "{$kernel->documentRoot}/bin/movlib.php";
+      $bin[] = "{$kernel->documentRoot}/bin/*.sh";
 
       foreach ([ "/conf" => "/*/*.sh", "/etc" => "/*/*.sh", "/vendor/bin" => "/*" ] as $dir => $pattern) {
         $dir = "{$kernel->documentRoot}{$dir}";
         if (is_dir($dir)) {
-          $binPaths .= " {$dir}{$pattern}";
+          $bin[] = "{$dir}{$pattern}";
         }
       }
 
-      $dir = escapeshellarg($binPaths);
-      Shell::execute("chmod -R 0775 {$dir}");
+      Shell::execute("chmod -R 0775 " . implode(" ", $bin));
       $this->write("Executable permissions fixed!", self::MESSAGE_TYPE_INFO);
     }
 
