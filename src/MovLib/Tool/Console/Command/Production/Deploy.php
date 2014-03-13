@@ -17,6 +17,7 @@
  */
 namespace MovLib\Tool\Console\Command\Production;
 
+use \MovLib\Data\FileSystem;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -36,7 +37,6 @@ use \Symfony\Component\Console\Output\OutputInterface;
  */
 class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
   use \MovLib\Data\Image\TraitOptimizeImage;
-  use \MovLib\Data\TraitFileSystem;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants

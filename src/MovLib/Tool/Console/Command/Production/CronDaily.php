@@ -17,6 +17,7 @@
  */
 namespace MovLib\Tool\Console\Command\Production;
 
+use \MovLib\Data\Shell;
 use \MovLib\Data\Temporary;
 use \MovLib\Exception\DatabaseException;
 use \Symfony\Component\Console\Input\InputInterface;
@@ -35,7 +36,6 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @since 0.0.1-dev
  */
 class CronDaily extends \MovLib\Tool\Console\Command\AbstractCommand {
-  use \MovLib\Data\TraitShell;
 
   /**
    * @inheritdoc
@@ -80,7 +80,7 @@ class CronDaily extends \MovLib\Tool\Console\Command\AbstractCommand {
    */
   public function purgeTemporaryUploads() {
     $directory = ini_get("upload_tmp_dir");
-    $this->shellExecute("find '{$directory}' -type f -mtime +1 -exec rm -f {} \\;");
+    Shell::execute("find '{$directory}' -type f -mtime +1 -exec rm -f {} \\;");
     return $this;
   }
 

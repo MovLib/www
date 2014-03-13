@@ -17,6 +17,7 @@
  */
 namespace MovLib\Tool\Console\Command\Production;
 
+use \MovLib\Data\FileSystem;
 use \MovLib\Tool\Console\Command\Production\FixPermissions;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
@@ -33,7 +34,6 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @since 0.0.1-dev
  */
 class CacheInspector extends \MovLib\Tool\Console\Command\AbstractCommand {
-  use \MovLib\Data\TraitShell;
 
   /**
    * @inheritdoc
@@ -56,7 +56,7 @@ class CacheInspector extends \MovLib\Tool\Console\Command\AbstractCommand {
     $this->checkPrivileges();
     $this->write("Purging presentation cache...");
     (new FixPermissions())->fixPermissions();
-    $this->shellExecute("rm -rf {$kernel->documentRoot}/cache/*");
+    FileSystem::delete("{$kernel->documentRoot}/cache/*", true, true);
     $this->write("Successfuly purge the presentation cache!", self::MESSAGE_TYPE_INFO);
 
     return $this;
