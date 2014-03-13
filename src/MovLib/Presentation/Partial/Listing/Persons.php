@@ -87,9 +87,9 @@ class Persons extends \MovLib\Presentation\Partial\Listing\AbstractListing {
    */
   public function __construct($listItems, $noItemsText = "", array $listItemsAttributes = null, array $attributes = null, $spanSize = 10, $showAdditionalInfo = false) {
     parent::__construct($listItems, $noItemsText, $attributes);
-    $this->addClass("hover-list no-list r", $this->attributes);
+    $this->addClass("hover-list no-list", $this->attributes);
     $this->listItemsAttributes = $listItemsAttributes;
-    $this->addClass("s s{$spanSize}", $this->listItemsAttributes);
+    $this->addClass("hover-item r s", $this->listItemsAttributes);
     $this->descriptionSpan                 = --$spanSize;
     $this->listItemsAttributes["typeof"] = "Person";
     $this->showAdditionalInfo              = $showAdditionalInfo;
@@ -112,15 +112,9 @@ class Persons extends \MovLib\Presentation\Partial\Listing\AbstractListing {
         $additionalNames = null;
         if ($person->bornName) {
           $additionalNames .= $i18n->t("{0} ({1})", [
-            "<span property='additionalName'>{$person->bornName}</span>",
+            "<span>{$person->bornName}</span>",
             "<i>{$i18n->t("born name")}</i>",
           ]);
-        }
-        if ($person->nickname) {
-          if ($additionalNames) {
-            $additionalNames .= " ";
-          }
-          $additionalNames .= $i18n->t("aka “{0}”", [ "<span property='additionalName'>{$person->nickname}</span>" ]);
         }
         if ($additionalNames) {
           $additionalNames = "<br>{$additionalNames}";
@@ -129,7 +123,7 @@ class Persons extends \MovLib\Presentation\Partial\Listing\AbstractListing {
         $lifeDates = null;
         if ($person->birthDate || $person->deathDate) {
           if ($person->birthDate) {
-            $birthDate = (new Date($person->birthDate))->format([ "property" => "birthDate", "title" => $i18n->t("Date of Birth") ]);
+            $birthDate = (new Date($person->birthDate))->format([ "title" => $i18n->t("Date of Birth") ]);
           }
           else {
             $birthDate = "<em title='{$i18n->t("Date of Birth")}'>{$i18n->t("unknown")}</em>";
@@ -138,7 +132,7 @@ class Persons extends \MovLib\Presentation\Partial\Listing\AbstractListing {
           if ($person->deathDate) {
             $lifeDates = $i18n->t("{0}–{1}", [
               $birthDate,
-              (new Date($person->deathDate))->format([ "property" => "deathDate", "title" => $i18n->t("Date of Death") ])
+              (new Date($person->deathDate))->format([ "title" => $i18n->t("Date of Death") ])
             ]);
           }
           else {
@@ -159,11 +153,9 @@ class Persons extends \MovLib\Presentation\Partial\Listing\AbstractListing {
       }
 
       $list .=
-        "<li{$this->expandTagAttributes($this->listItemsAttributes)} resource='{$person->route}'>" .
-          "<div class='hover-item r'>" .
-            $this->getImage($person->getStyle($this->imageStyle), $person->route, [ "property" => "image" ], [ "class" => "s s1 tac" ]) .
-            "<span class='s s{$this->descriptionSpan}'><a href='{$person->route}' property='url'><span property='name'>{$person->name}</span></a>{$additionalInfo}</span>" .
-          "</div>" .
+        "<li{$this->expandTagAttributes($this->listItemsAttributes)}>" .
+          $this->getImage($person->getStyle($this->imageStyle), $person->route, null, [ "class" => "s s1 tac" ]) .
+          "<span class='s s{$this->descriptionSpan}'><a href='{$person->route}' property='url'><span property='name'>{$person->name}</span></a>{$additionalInfo}</span>" .
         "</li>"
       ;
     }

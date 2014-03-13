@@ -73,7 +73,7 @@ trait TraitMovie {
 
     // Append year enclosed in micro-data to display title if available.
     if (isset($movie->year)) {
-      $displayTitle = str_replace("{0}", " (<span property='datePublished'>{$movie->year}</span>)", $displayTitle);
+      $displayTitle = str_replace("{0}", " (<span>{$movie->year}</span>)", $displayTitle);
     }
     else {
       $displayTitle = str_replace("{0}", "", $displayTitle);

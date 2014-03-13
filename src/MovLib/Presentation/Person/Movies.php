@@ -42,11 +42,15 @@ class Movies extends \MovLib\Presentation\Person\AbstractBase {
     global $i18n;
     $this->person = new FullPerson((integer) $_SERVER["PERSON_ID"]);
     $this->initPage($i18n->t("Movies with {0}", [ $this->person->name ]));
-    $this->pageTitle        = $i18n->t("Movies with {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
+    $this->pageTitle        = $i18n->t(
+      "Movies with {0}",
+      [ "<a href='{$this->person->route}' property='url'><span property='name'>{$this->person->name}</span></a>" ]
+    );
     $this->breadcrumbTitle  = $i18n->t("Movies");
     $this->initLanguageLinks("/person/{0}/movies", [ $this->person->id ], true);
     $this->initPersonBreadcrumb();
     $this->sidebarInit();
+    $this->schemaType = "Person";
   }
 
   /**
@@ -103,7 +107,7 @@ class Movies extends \MovLib\Presentation\Person\AbstractBase {
         $job = $i18n->t("{0} ({1})", [ $jobName, $role ]);
       }
 
-      $movies[$cast->movieId]["#jobs"] .= "<li property='actor' resource='{$this->person->route}'>{$job}</li>";
+      $movies[$cast->movieId]["#jobs"] .= "<li>{$job}</li>";
     }
 
 

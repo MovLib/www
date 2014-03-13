@@ -55,7 +55,7 @@ class MoviePersonListing extends \MovLib\Presentation\Partial\Listing\Movie\Abst
       "{$this->getImage(
           $movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01),
           $movie->route,
-          [ "property" => "image" ],
+          null,
           [ "class" => "s s1 tac" ]
         )}<div class='s s5'>{$this->formatTitle($movie)}{$this->formatGenres($movie)}</div>"
     ;
@@ -66,7 +66,7 @@ class MoviePersonListing extends \MovLib\Presentation\Partial\Listing\Movie\Abst
     // Directly add the director if this person directed this movie (this can't happen multiple times).
     if (isset($movie->director)) {
       $list[$movie->id]["#jobs"] .=
-        "<li property='director' resource='#'>" .
+        "<li>" .
           "<a href='{$i18n->r("/job/{0}", [ $movie->director ])}'>{$i18n->t("Director")}</a>" .
         "</li>"
       ;

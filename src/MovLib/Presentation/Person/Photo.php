@@ -54,7 +54,11 @@ class Photo extends \MovLib\Presentation\Person\AbstractBase {
     $routeArgs = [ $this->person->id ];
 
     $this->initPage($i18n->t("Photo"));
-    $this->pageTitle        = $i18n->t("Photo of {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
+    $this->pageTitle        = $i18n->t("Photo of {0}", [
+      "<span property='about' typeof='Person'><a href='{$this->person->route}' property='url'>" .
+        "<span property='name'>{$this->person->name}</span>" .
+      "</a></span>"
+    ]);
     $this->initLanguageLinks("/person/{0}/photo", $routeArgs);
     $this->initPersonBreadcrumb();
     $this->sidebarInit();
@@ -75,10 +79,10 @@ class Photo extends \MovLib\Presentation\Person\AbstractBase {
   protected function getPageContent() {
     global $i18n, $kernel;
     $uploader    = new User(User::FROM_ID, $this->person->uploaderId);
-    $dateTime    = new DateTime($this->person->changed, [ "itemprop" => "uploadDate" ]);
+    $dateTime    = new DateTime($this->person->changed, [ "property" => "uploadDate" ]);
     $description = "<dt>{$i18n->t("Description")}</dt>";
     if ($this->person->description) {
-      $description .= "<dd itemprop='description'>{$this->htmlDecode($this->person->description)}</dd>";
+      $description .= "<dd property='description'>{$this->htmlDecode($this->person->description)}</dd>";
     }
     else {
       $description .= "<dd>{$i18n->t(
@@ -87,23 +91,23 @@ class Photo extends \MovLib\Presentation\Person\AbstractBase {
       )}</dd>";
     }
     return
-    "<meta itemprop='representativeOfPage' content='true'>" .
+    "<meta property='representativeOfPage' content='true'>" .
         // TraitDeletionRequest::getDeletionRequestedAlert($this->image->deletionId) .
         "<div class='r wrapper'>" .
           "<dl class='s s7 description'>" .
             $description .
-            "<dt>{$i18n->t("Provided by")}</dt><dd><a href='{$uploader->route}' itemprop='accountablePerson'>{$uploader->name}</a></dd>" .
+            "<dt>{$i18n->t("Provided by")}</dt><dd><a href='{$uploader->route}' property='accountablePerson'>{$uploader->name}</a></dd>" .
             "<dt>{$i18n->t("Dimensions")}</dt><dd>{$i18n->t("{width} × {height}", [
-              "width"  => "<span itemprop='width'>{$this->person->width}&nbsp;<abbr title='{$i18n->t("Pixel")}'>px</abbr></span>",
-              "height" => "<span itemprop='height'>{$this->person->height}&nbsp;<abbr title='{$i18n->t("Pixel")}'>px</abbr></span>",
+              "width"  => "<span property='width'>{$this->person->width}&nbsp;<abbr title='{$i18n->t("Pixel")}'>px</abbr></span>",
+              "height" => "<span property='height'>{$this->person->height}&nbsp;<abbr title='{$i18n->t("Pixel")}'>px</abbr></span>",
             ])}</dd>" .
-            "<dt>{$i18n->t("File size")}</dt><dd itemprop='contentSize'>{$i18n->t("{0,number} {1}", $this->formatBytes($this->person->filesize))}</dd>" .
+            "<dt>{$i18n->t("File size")}</dt><dd property='contentSize'>{$i18n->t("{0,number} {1}", $this->formatBytes($this->person->filesize))}</dd>" .
             "<dt>{$i18n->t("Upload on")}</dt><dd>{$dateTime}</dd>" .
           "</dl>" .
           "<div class='s s3 tac image'>{$this->getImage(
-            $this->person->getStyle(Person::STYLE_SPAN_03),
+            $this->person->getStyle(Person::STYLE_SPAN_02),
             false,
-            [ "itemprop" => "thumbnailUrl" ]
+            [ "property" => "thumbnailUrl" ]
           )}</div>" .
         "</div>" .
       "</div>"

@@ -125,7 +125,7 @@ class Movies extends \MovLib\Presentation\Partial\Listing\AbstractListing {
           $genres .= " ";
         }
         $route   = str_replace("{0}", $row["id"], $genreRoute);
-        $genres .= "<a class='label' href='{$route}' property='genre'>{$row["name"]}</a>";
+        $genres .= "<a class='label' href='{$route}'>{$row["name"]}</a>";
       }
       if ($genres) {
         $genres = "<small><span class='vh'>{$i18n->t("Genres: ")}</span>{$genres}</small>";
@@ -137,7 +137,7 @@ class Movies extends \MovLib\Presentation\Partial\Listing\AbstractListing {
           $this->getImage(
             $movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01),
             $movie->route,
-            [ "property" => "image" ],
+            null,
             [ "class" => "s s1 tac" ]
           ) .
           "<div class='s s{$this->descriptionSpan}'>{$this->getTitleInfo($movie)}{$genres}</div>" .

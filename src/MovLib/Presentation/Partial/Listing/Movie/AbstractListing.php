@@ -94,7 +94,7 @@ abstract class AbstractListing extends \MovLib\Presentation\AbstractBase {
         $genres .= " ";
       }
       $route   = str_replace("{0}", $genre["id"], $genreRoute);
-      $genres .= "<a class='label' href='{$route}' property='genre'>{$genre["name"]}</a>";
+      $genres .= "<a class='label' href='{$route}'>{$genre["name"]}</a>";
     }
     if ($genres) {
       return "<small><span class='vh'>{$i18n->t("Genres: ")}</span>{$genres}</small>";
@@ -146,7 +146,7 @@ abstract class AbstractListing extends \MovLib\Presentation\AbstractBase {
 
     // Append year with structured data if available.
     if ($movie->year) {
-      $title = str_replace("{0}", " (<span property='datePublished'>{$movie->year}</span>)", $title);
+      $title = str_replace("{0}", " (<span>{$movie->year}</span>)", $title);
     }
     else {
       $title = str_replace("{0}", "", $title);

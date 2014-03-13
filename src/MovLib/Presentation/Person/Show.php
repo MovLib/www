@@ -189,6 +189,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     $personPhoto         = $this->getImage(
       $this->person->getStyle(FullPerson::STYLE_SPAN_02),
       true,
+      null,
       [ "property" => "image" ]
     );
     // Enhance the header, insert row and span before the title.
