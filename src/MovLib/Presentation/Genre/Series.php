@@ -43,7 +43,7 @@ class Series extends \MovLib\Presentation\Genre\AbstractBase {
    */
   public function __construct() {
     global $i18n, $kernel;
-    $this->genre = new Genre((integer) $_SERVER["JOB_ID"]);
+    $this->genre = new Genre((integer) $_SERVER["GENRE_ID"]);
     $this->initPage($i18n->t("Series with {0}", [ $this->genre->name ]));
     $this->pageTitle = $i18n->t("Series with {0}", [ "<a href='{$this->genre->route}'>{$this->genre->name}</a>" ]);
     $this->breadcrumbTitle = $i18n->t("Series");
