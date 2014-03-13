@@ -15,14 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Company;
+namespace MovLib\Presentation\Job;
 
-use \MovLib\Data\Company\Company;
+use \MovLib\Data\Job;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
 /**
- * Random company presentation.
+ * Random job presentation.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -37,18 +37,18 @@ class Random {
 
 
   /**
-   * A random company ID.
+   * A random job identifier.
    *
    * @var integer
    */
-  private $companyId;
+  private $jobId;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Redirect to random company presentation.
+   * Redirect to random job presentation.
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
@@ -56,13 +56,13 @@ class Random {
    */
   public function __construct() {
     global $i18n, $kernel;
-    $this->companyId = Company::getRandomCompanyId();
-    if (isset($this->companyId)) {
-      throw new SeeOtherRedirect($i18n->r("/company/{0}", [ $this->companyId ]));
+    $this->jobId = Job::getRandomJobId();
+    if (isset($this->jobId)) {
+      throw new SeeOtherRedirect($i18n->r("/job/{0}", [ $this->jobId ]));
     }
     else {
       $kernel->alerts .= new Alert(
-        $i18n->t("There is currently no company in our database"),
+        $i18n->t("There is currently no job in our database."),
         $i18n->t("Check back later"),
         Alert::SEVERITY_INFO
       );

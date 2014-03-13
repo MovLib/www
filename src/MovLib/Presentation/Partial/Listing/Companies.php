@@ -36,107 +36,78 @@ class Companies extends \MovLib\Presentation\Partial\Listing\AbstractListing {
 
 
   /**
-   * The span size for a single company's description.
-   *
-   * @var integer
-   */
-  protected $descriptionSpan;
-
-  /**
    * The company photo's style.
    *
    * @var integer
    */
   public $imageStyle = Company::STYLE_SPAN_01;
 
-  /**
-   * Show additional information or not.
-   *
-   * @var boolean
-   */
-  protected $showAdditionalInfo;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new special companies listing.
-   *
-   * @param \mysqli_result $listItems
-   *   The mysqli result object containing the company.
-   * @param string $noItemsText
-   *   {@inheritdoc}
-   * @param array $listItemsAttributes
-   *   {@inheritdoc}
-   * @param array $attributes
-   *   {@inheritdoc}
-   * @param integer $spanSize [optional]
-   *   The span size the list items should reserve, defaults to <code>5</code>
-   * @param boolean $showAdditionalInfo [optional]
-   *   Show additional information or not, defaults to <code>FALSE</code>.
-   */
-  public function __construct($listItems, $noItemsText = "", array $listItemsAttributes = null, array $attributes = null, $spanSize = 5, $showAdditionalInfo = false) {
-    parent::__construct($listItems, $noItemsText, $attributes);
-    $this->addClass("hover-list no-list", $this->attributes);
-    $this->listItemsAttributes = $listItemsAttributes;
-    $this->addClass("hover-item r", $this->listItemsAttributes);
-    $this->descriptionSpan                 = --$spanSize;
-    $this->listItemsAttributes["typeof"] = "http://schema.org/Corporation";
-    $this->showAdditionalInfo              = $showAdditionalInfo;
-  }
-
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * @inheritdoc
+   * Get the rendered listing.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return string
+   *   The rendered listing.
    */
-  protected function render() {
+  public function __toString() {
     global $i18n;
-    $list = null;
+    // @devStart
+    // @codeCoverageIgnoreStart
     try {
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+      $list = null;
       /* @var $company \MovLib\Data\Company\Company */
       while ($company = $this->listItems->fetch_object("\\MovLib\\Data\\Company\\Company")) {
+        // @devStart
+        // @codeCoverageIgnoreStart
+        if (!($company instanceof \MovLib\Data\Company\Company)) {
+          throw new \LogicException($i18n->t("\$company has to be a valid company object!"));
+        }
+        // @codeCoverageIgnoreEnd
+        // @devEnd
         $additionalInfo = null;
-        if ($this->showAdditionalInfo === true) {
-          $companyDates = null;
-          if ($company->foundingDate || $company->defunctDate) {
-            if ($company->foundingDate) {
-              $companyDates .= (new Date($company->foundingDate))->format([ "property" => "foundingDate", "title" => $i18n->t("Founding Date") ]);
-            }
-            else {
-              $companyDates .= $i18n->t("{0}unknown{1}", [ "<em title='{$i18n->t("Founding Date")}'>", "</em>" ]);
-            }
-
-            if ($company->defunctDate) {
-              $companyDates .= " – " . (new Date($company->defunctDate))->format([ "title" => $i18n->t("Defunct Date") ]);
-            }
-
-            $companyDates = "<br>{$companyDates}";
+        if ($company->foundingDate || $company->defunctDate) {
+          $additionalInfo    = "<br><span class='small'>";
+          if ($company->foundingDate) {
+            $additionalInfo .= (new Date($company->foundingDate))->format([ "property" => "foundingDate", "title" => $i18n->t("Founding Date") ]);
           }
-
-          if ($companyDates) {
-            $additionalInfo = "<span class='small'>{$companyDates}</span>";
+          else {
+            $additionalInfo .= $i18n->t("{0}unknown{1}", [ "<em title='{$i18n->t("Founding Date")}'>", "</em>" ]);
           }
+          if ($company->defunctDate) {
+            $additionalInfo .= " – " . (new Date($company->defunctDate))->format([ "title" => $i18n->t("Defunct Date") ]);
+          }
+          $additionalInfo   .= "</span>";
         }
 
         $list .=
-          "<li{$this->expandTagAttributes($this->listItemsAttributes)}>" .
+          "<li class='hover-item r' typeof='Corporation'>" .
             $this->getImage($company->getStyle($this->imageStyle), $company->route, [ "property" => "image" ], [ "class" => "s s1" ]) .
-            "<span class='s s{$this->descriptionSpan}'><a href='{$company->route}' property='name url'>{$company->name}</a>{$additionalInfo}</span>" .
+            "<span class='s'><a href='{$company->route}' property='url'><span property='name'>{$company->name}</span></a>{$additionalInfo}</span>" .
           "</li>"
         ;
       }
-      if (!$list) {
-        return $this->noItemsText;
+      if ($list) {
+        return "<ol class='hover-list no-list'>{$list}</ol>";
       }
-      return "<ol{$this->expandTagAttributes($this->attributes)}>{$list}</ol>";
+      return (string) $this->noItemsText;
+    // @devStart
+    // @codeCoverageIgnoreStart
     }
     catch (\Exception $e) {
-      return $e->getMessage();
+      return (string) new \MovLib\Presentation\Partial\Alert(
+        "<pre>{$e}</pre>",
+        $i18n->t("Error Rendering List"),
+        \MovLib\Presentation\Partial\Alert::SEVERITY_ERROR
+      );
     }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
   }
 
 }

@@ -226,7 +226,7 @@ class FullCompany extends \MovLib\Data\Company\Company {
       "SELECT
         `movies_crew`.`movie_id` AS `id`,
         `jobs`.`id` AS `jobId`,
-        IFNULL(COLUMN_GET(`jobs`.`dyn_titles`, ? AS CHAR), COLUMN_GET(`jobs`.`dyn_titles`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `jobTitle`,
+        IFNULL(COLUMN_GET(`jobs`.`dyn_names_sex0`, ? AS CHAR), COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `jobTitle`,
         `movies`.`year` AS `year`,
         IFNULL(`dt`.`title`, `ot`.`title`) AS `displayTitle`,
         IFNULL(`dt`.`language_code`, `ot`.`language_code`) AS `displayTitleLanguageCode`,

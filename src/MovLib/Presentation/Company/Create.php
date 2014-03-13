@@ -20,26 +20,59 @@ namespace MovLib\Presentation\Company;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
- * @todo Description of Show
+ * Allows the creation of a new company.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
 class Create extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\TraitForm;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new company create presentation.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   */
   public function __construct() {
-    global $i18n;
+    global $i18n, $kernel;
+
     $this->initPage($i18n->t("Create Company"));
+    $this->initBreadcrumb([ [ $i18n->rp("/companys"), $i18n->t("Companys") ] ]);
     $this->initLanguageLinks("/company/create");
-    $this->initBreadcrumb();
-    $this->alerts .= new Alert(
+
+    $kernel->stylesheets[] = "company";
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   */
+  protected function getContent() {
+    global $i18n;
+    return new Alert(
       $i18n->t("The create company feature isn’t implemented yet."),
       $i18n->t("Check back later"),
       Alert::SEVERITY_INFO
     );
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected function formValid() {
+    return $this;
   }
 
 }
