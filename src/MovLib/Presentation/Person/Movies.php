@@ -59,6 +59,9 @@ class Movies extends \MovLib\Presentation\Person\AbstractBase {
   protected function getPageContent() {
     global $i18n;
 
+    $this->person->getMovies();
+    return "Under test";
+
     $listing = new MoviePersonListing($this->person->getMovies());
     if (!($movies = $listing->getListing())) {
       return new Alert($i18n->t("Seems like {person_name} hasn’t worked on any movies."), null, Alert::SEVERITY_INFO);

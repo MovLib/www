@@ -161,6 +161,11 @@ class Movie {
    */
   public $year;
 
+  public $directorTitle;
+  public $castTitle;
+  public $roles;
+  public $jobs;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -354,7 +359,7 @@ class Movie {
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected function init() {
+  public function init() {
     global $db, $i18n;
 
     // Build the route to the movie.
