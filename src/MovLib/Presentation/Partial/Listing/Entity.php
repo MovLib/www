@@ -112,13 +112,13 @@ class Entity extends \MovLib\Presentation\Partial\Listing\AbstractListing {
                 "<a class='ico ico-movie label' href='{$moviesRoute}' title='{$moviesTitle}'> &nbsp; {$entity->getMovieCount()}</a>" .
                 "<a class='ico ico-series label' href='{$seriesRoute}' title='{$seriesTitle}'> &nbsp; {$entity->getSeriesCount()}</a>" .
               "</span>" .
-              "<a href='{$entity->route}' property='itemListElement'>{$entity->name}</a>" .
+              "<a href='{$entity->route}'>{$entity->name}</a>" .
             "</div>" .
           "</li>"
         ;
       }
       if ($list) {
-        return "<ol class='hover-list' typeof='ItemList'>{$list}</ol>";
+        return "<ol class='hover-list'>{$list}</ol>";
       }
       return (string) $this->noItemsText;
     // @devStart
