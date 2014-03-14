@@ -485,6 +485,17 @@ CREATE TABLE IF NOT EXISTS `movlib`.`awards` (
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the award was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The award’s description in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_names` BLOB NOT NULL COMMENT 'The award’s name in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_image_descriptions` BLOB NOT NULL COMMENT 'The award’s translated logo description.',
+  `dyn_wikipedia` BLOB NOT NULL COMMENT 'The award’s translated Wikipedia links.',
+  `image_changed` TIMESTAMP NULL COMMENT 'The award’s image changed timestamp.',
+  `image_extension` CHAR(3) NULL COMMENT 'The award’s image extension.',
+  `image_filesize` INT NULL COMMENT 'The award’s image filesize.',
+  `image_height` SMALLINT NULL COMMENT 'The award’s image height.',
+  `image_styles` BLOB NULL COMMENT 'The award’s image styles.',
+  `image_uploader_id` BIGINT UNSIGNED NULL COMMENT 'The  award’s image unique uploader identifier.',
+  `image_width` SMALLINT NULL COMMENT 'The award’s image width.',
+  `links` BLOB NULL COMMENT 'The company’s weblinks as serialized PHP array.',
+  `place_id` BIGINT UNSIGNED NULL COMMENT 'The  award’s location.',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 COMMENT = 'Contains all awards.'
