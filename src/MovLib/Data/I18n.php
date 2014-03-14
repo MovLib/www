@@ -250,7 +250,7 @@ final class I18n {
     if ($locale != $this->defaultLocale) {
       // Check if we already have the route translations for this locale cached.
       if (!isset($routes[$locale])) {
-        $routes[$locale] = require "{$kernel->pathTranslations}/routes/{$locale}.php";
+        $routes[$locale] = require "{$kernel->pathTranslations}/routes/{$locale}.singular.php";
       }
 
       // Check if we have a translation for this route and use it if we do.

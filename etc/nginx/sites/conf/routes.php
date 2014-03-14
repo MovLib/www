@@ -1,320 +1,44 @@
-# ----------------------------------------------------------------------------------------------------------------------
-# This file is part of {@link https://github.com/MovLib MovLib}.
-#
-# Copyright © 2013-present {@link https://movlib.org/ MovLib}.
-#
-# MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
-# License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
-# version.
-#
-# MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY# without even the implied warranty
-# of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License along with MovLib.
-# If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
-# ----------------------------------------------------------------------------------------------------------------------
+<?php
 
-# ----------------------------------------------------------------------------------------------------------------------
-# The routes file that will be translated for each subdomain. Everything within this file has to be in English!
-#
-# LINK:       https://github.com/MovLib/www/wiki/How-to-create-a-multipart-form
-# AUTHOR:     Richard Fussenegger <richard@fussenegger.info>
-# AUTHOR:     Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
-# AUTHOR:     Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
-# COPYRIGHT:  © 2013 MovLib
-# LICENSE:    http://www.gnu.org/licenses/agpl.html AGPL-3.0
-# LINK:       https://movlib.org/
-# SINCE:      0.0.1-dev
-# ----------------------------------------------------------------------------------------------------------------------
+/*!
+ * This file is part of {@link https://github.com/MovLib MovLib}.
+ *
+ * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
+ *
+ * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with MovLib.
+ * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
+ */
 
-# The route /my is the same for all languages! "My MovLib"
-location = /my {
-  set $movlib_presenter "Home";
-  include sites/conf/fastcgi_params.conf;
-}
+/**
+ * Route configuration for the
+ *
+ * @author Richard Fussenegger <richard@fussenegger.info>
+ * @copyright © 2014 MovLib
+ * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
+ * @link https://movlib.org/
+ * @since 0.0.1-dev
+ */
 
-location = / {
-  # If the user is logged in, redirect to the dashboard.
-  if ($http_cookie ~ "MOVSID") {
-    return 302 /my;
-  }
-
-  # Otherwise file from cache or ask PHP.
-  set $movlib_presenter "Home";
-  try_files $movlib_cache/$movlib_presenter @php;
-}
-
-
-# ---------------------------------------------------------------------------------------------------------------------- movie(s)
-
-
-location = <?= $rp("/movies") ?> {
-  set $movlib_presenter "Movies\\Show";
-  try_files $movlib_cache @php;
-}
-
-location = <?= $rp("/movies/charts") ?> {
-  set $movlib_presenter "Movies\\Charts";
-  try_files $movlib_cache @php;
-}
-
-location = <?= $r("/movie/create") ?> {
-  set $movlib_presenter "Movie\\Create";
-  try_files $movlib_cache @php;
-}
-
-location = <?= $r("/movie/random") ?> {
-  set $movlib_presenter "Movie\\Random";
-  try_files $movlib_cache @php;
-}
-
-location ^~ <?= $r("/movie") ?> {
-
-  #
-  # ---------------------------------------- Movie
-  #
-
-  location ~* "^<?= $r("/movie/{0}", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Show";
-    set $movlib_movie_id $1;
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/movie/{0}/history", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\History";
-    set $movlib_movie_id $1;
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/movie/{0}/discussion", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Discussion";
-    set $movlib_movie_id $1;
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/movie/{0}/edit", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Edit";
-    set $movlib_movie_id $1;
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/movie/{0}/delete", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Delete";
-    set $movlib_movie_id $1;
-    try_files $movlib_cache @php;
-  }
-
-  #
-  # ---------------------------------------- Movie Backdrop(s)
-  #
-
-  location ~* "^<?= $rp("/movie/{0}/backdrops", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Images\\Backdrops";
-    set $movlib_movie_id $1;
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/movie/{0}/backdrop/upload", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\ImageUpload";
-    set $movlib_movie_id $1;
-    set $movlib_image_class "Backdrop";
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/movie/{0}/backdrop/{1}", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Image";
-    set $movlib_movie_id $1;
-    set $movlib_image_id $2;
-    set $movlib_image_class "Backdrop";
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/movie/{0}/backdrop/{1}/edit", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\ImageEdit";
-    set $movlib_movie_id $1;
-    set $movlib_image_id $2;
-    set $movlib_image_class "Backdrop";
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/movie/{0}/backdrop/{1}/delete", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\ImageDelete";
-    set $movlib_movie_id $1;
-    set $movlib_image_id $2;
-    set $movlib_image_class "Backdrop";
-    try_files $movlib_cache @php;
-  }
-
-  #
-  # ---------------------------------------- Movie Poster(s)
-  #
-
-  location ~* "^<?= $rp("/movie/{0}/posters", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Images\\Posters";
-    set $movlib_movie_id $1;
-    set $movlib_image_class "Poster";
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/movie/{0}/poster/upload", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\ImageUpload";
-    set $movlib_movie_id $1;
-    set $movlib_image_class "Poster";
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/movie/{0}/poster/{1}", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Image";
-    set $movlib_movie_id $1;
-    set $movlib_image_id $2;
-    set $movlib_image_class "Poster";
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/movie/{0}/poster/{1}/edit", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\ImageEdit";
-    set $movlib_movie_id $1;
-    set $movlib_image_id $2;
-    set $movlib_image_class "Poster";
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/movie/{0}/poster/{1}/delete", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\ImageDelete";
-    set $movlib_movie_id $1;
-    set $movlib_image_id $2;
-    set $movlib_image_class "Poster";
-    try_files $movlib_cache @php;
-  }
-
-  #
-  # ---------------------------------------- Movie Lobby Card(s)
-  #
-
-  location ~* "^<?= $rp("/movie/{0}/lobby-cards", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Images\\LobbyCards";
-    set $movlib_movie_id $1;
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/movie/{0}/lobby-card/upload", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\ImageUpload";
-    set $movlib_movie_id $1;
-    set $movlib_image_class "LobbyCard";
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/movie/{0}/lobby-card/{1}", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Image";
-    set $movlib_movie_id $1;
-    set $movlib_image_id $2;
-    set $movlib_image_class "LobbyCard";
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/movie/{0}/lobby-card/{1}/edit", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\ImageEdit";
-    set $movlib_movie_id $1;
-    set $movlib_image_id $2;
-    set $movlib_image_class "LobbyCard";
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/movie/{0}/lobby-card/{1}/delete", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\ImageDelete";
-    set $movlib_movie_id $1;
-    set $movlib_image_id $2;
-    set $movlib_image_class "LobbyCard";
-    try_files $movlib_cache @php;
-  }
-
-  #
-  # ---------------------------------------- Release(s)
-  #
-
-  location ~* "^<?= $r("/movie/{0}/release/create", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Release\\Create";
-    set $movlib_movie_id $1;
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/movie/{0}/release/{1}", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Release\\Show";
-    set $movlib_movie_id $1;
-    set $movlib_release_id $2;
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/movie/{0}/release/{1}/discussion", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Release\\Discussion";
-    set $movlib_movie_id $1;
-    set $movlib_release_id $2;
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/movie/{0}/release/{1}/edit", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Release\\Edit";
-    set $movlib_movie_id $1;
-    set $movlib_release_id $2;
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/movie/{0}/release/{1}/delete", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Release\\Delete";
-    set $movlib_movie_id $1;
-    set $movlib_release_id $2;
-    try_files $movlib_cache @php;
-  }
-
-  #
-  # ---------------------------------------- Movie Title(s)
-  #
-
-  location ~* "^<?= $rp("/movie/{0}/titles", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Titles";
-    set $movlib_movie_id $1;
-    try_files $movlib_cache @php;
-  }
-
-  #
-  # ---------------------------------------- History
-  #
-
-  location ~* "^<?= $r("/movie/{0}/history", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "History\\Movie\\MovieRevisions";
-    set $movlib_movie_id $1;
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/movie/{0}/diff/{1}", [ $idRegExp, "([a-f0-9]{40})" ]) ?>$" {
-    set $movlib_presenter "History\\Movie\\MovieDiff";
-    set $movlib_movie_id $1;
-    set $movlib_revision_hash $2;
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/movie/{0}/titles/history", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "History\\Movie\\MovieTitlesRevisions";
-    set $movlib_movie_id $1;
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/movie/{0}/titles/diff/{1}", [ $idRegExp, "([a-f0-9]{40})" ]) ?>$" {
-    set $movlib_presenter "History\\Movie\\MovieTitlesDiff";
-    set $movlib_movie_id $1;
-    set $movlib_revision_hash $2;
-    try_files $movlib_cache @php;
-  }
-
-  rewrite .* /error/NotFound last;
-}
+?>
 
 
 # ---------------------------------------------------------------------------------------------------------------------- releases
 
 
 location = <?= $rp("/releases") ?> {
-  set $movlib_presenter "Releases\\Show";
+  set $movlib_presenter "Release\\Index";
+  try_files $movlib_cache @php;
+}
+
+location = <?= $r("/release/random") ?> {
+  set $movlib_presenter "Release\\Random";
   try_files $movlib_cache @php;
 }
 
@@ -323,7 +47,7 @@ location = <?= $rp("/releases") ?> {
 
 
 location = <?= $rp("/companies") ?> {
-  set $movlib_presenter "Companies\\Show";
+  set $movlib_presenter "Company\\Index";
   try_files $movlib_cache @php;
 }
 
@@ -411,26 +135,26 @@ location ^~ <?= $r("/company") ?> {
 }
 
 
-# ---------------------------------------------------------------------------------------------------------------------- serials(s)
+# ---------------------------------------------------------------------------------------------------------------------- series
 
 
-location = <?= $rp("/serials") ?> {
-  set $movlib_presenter "Serials\\Show";
+location = <?= $rp("/series") ?> {
+  set $movlib_presenter "Series\\Index";
   try_files $movlib_cache @php;
 }
 
-location = <?= $rp("/serials/charts") ?> {
-  set $movlib_presenter "Serials\\Charts";
+location = <?= $rp("/series/charts") ?> {
+  set $movlib_presenter "Series\\Charts";
   try_files $movlib_cache @php;
 }
 
-location = <?= $r("/serial/create") ?> {
-  set $movlib_presenter "Serial\\Create";
+location = <?= $r("/series/create") ?> {
+  set $movlib_presenter "Series\\Create";
   try_files $movlib_cache @php;
 }
 
-location = <?= $r("/serial/random") ?> {
-  set $movlib_presenter "Serial\\Random";
+location = <?= $r("/series/random") ?> {
+  set $movlib_presenter "Series\\Random";
   try_files $movlib_cache @php;
 }
 
@@ -439,12 +163,17 @@ location = <?= $r("/serial/random") ?> {
 
 
 location = <?= $rp("/genres") ?> {
-  set $movlib_presenter "Genres\\Show";
+  set $movlib_presenter "Genre\\Index";
   try_files $movlib_cache @php;
 }
 
 location = <?= $r("/genre/create") ?> {
   set $movlib_presenter "Genre\\Create";
+  try_files $movlib_cache @php;
+}
+
+location = <?= $r("/genre/random") ?> {
+  set $movlib_presenter "Genre\\Random";
   try_files $movlib_cache @php;
 }
 
@@ -504,12 +233,17 @@ location ^~ <?= $r("/genre") ?> {
 
 
 location = <?= $rp("/awards") ?> {
-  set $movlib_presenter "Awards\\Show";
+  set $movlib_presenter "Award\\Index";
   try_files $movlib_cache @php;
 }
 
 location = <?= $r("/award/create") ?> {
   set $movlib_presenter "Award\\Create";
+  try_files $movlib_cache @php;
+}
+
+location = <?= $r("/award/random") ?> {
+  set $movlib_presenter "Award\\Random";
   try_files $movlib_cache @php;
 }
 
@@ -569,12 +303,17 @@ location ^~ <?= $r("/award") ?> {
 
 
 location = <?= $rp("/jobs") ?> {
-  set $movlib_presenter "Jobs\\Show";
+  set $movlib_presenter "Job\\Index";
   try_files $movlib_cache @php;
 }
 
 location = <?= $r("/job/create") ?> {
   set $movlib_presenter "Job\\Create";
+  try_files $movlib_cache @php;
+}
+
+location = <?= $r("/job/random") ?> {
+  set $movlib_presenter "Job\\Random";
   try_files $movlib_cache @php;
 }
 
@@ -634,7 +373,7 @@ location ^~ <?= $r("/job") ?> {
 
 
 location = <?= $rp("/persons") ?> {
-  set $movlib_presenter "Persons\\Show";
+  set $movlib_presenter "Person\\Index";
   try_files $movlib_cache @php;
 }
 
@@ -690,8 +429,8 @@ location ^~ <?= $r("/person") ?> {
     try_files $movlib_cache @php;
   }
 
-  location ~* "^<?= $rp("/person/{0}/serials", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Person\\Serials";
+  location ~* "^<?= $rp("/person/{0}/series", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Person\\Series";
     set $movlib_person_id $1;
     try_files $movlib_cache @php;
   }
@@ -806,7 +545,12 @@ location = <?= $r("/profile/watchlist") ?> {
 
 
 location = <?= $rp("/users") ?> {
-  set $movlib_presenter "Users\\Show";
+  set $movlib_presenter "User\\Index";
+  try_files $movlib_cache @php;
+}
+
+location = <?= $r("/user/random") ?> {
+  set $movlib_presenter "User\\Random";
   try_files $movlib_cache @php;
 }
 
@@ -856,7 +600,7 @@ location = <?= $rp("/help") ?> {
 $stmt           = $db->query("SELECT `id`, COLUMN_GET(`dyn_titles`, ? AS CHAR(255)) AS `title` FROM `help_categories`", "s", [ $i18n->defaultLanguageCode ]);
 $helpCategories = $stmt->get_result();
 while ($helpCategory = $helpCategories->fetch_assoc()):
-  $helpCategory["title"] = $this->fsSanitizeName($helpCategory["title"]);
+  $helpCategory["title"] = \MovLib\Data\FileSystem::sanitizeFilename($helpCategory["title"]);
 ?>
 
 location = <?= $r("/help/{$helpCategory["title"]}") ?> {
@@ -882,8 +626,8 @@ $stmt = $db->query(
 );
 $helpArticles = $stmt->get_result();
 while ($helpArticle = $helpArticles->fetch_assoc()):
-  $helpArticle["category_title"] = $this->fsSanitizeName($helpArticle["category_title"]);
-  $helpArticle["article_title"]  = $this->fsSanitizeName($helpArticle["article_title"]);
+  $helpArticle["category_title"] = \MovLib\Data\FileSystem::sanitizeFilename($helpArticle["category_title"]);
+  $helpArticle["article_title"]  = \MovLib\Data\FileSystem::sanitizeFilename($helpArticle["article_title"]);
 ?>
 
 location = <?= $r("/help/{$helpArticle["category_title"]}/{$helpArticle["article_title"]}") ?> {
@@ -911,7 +655,7 @@ $stmt->close();
 $stmt        = $db->query("SELECT `id`, COLUMN_GET(`dyn_titles`, ? AS CHAR(255)) AS `title`, `presenter` FROM `system_pages`", "s", [ $i18n->defaultLanguageCode ]);
 $systemPages = $stmt->get_result();
 while ($systemPage = $systemPages->fetch_assoc()):
-  $systemPage["title"] = $this->fsSanitizeName($systemPage["title"]);
+  $systemPage["title"] = \MovLib\Data\FileSystem::sanitizeFilename($systemPage["title"]);
 ?>
 
 location = <?= $r("/{$systemPage["title"]}") ?> {
@@ -935,7 +679,7 @@ $stmt->close();
 
 
 location = <?= $rp("/countries") ?> {
-  set $movlib_presenter "Countries\\Show";
+  set $movlib_presenter "Country\\Index";
   try_files $movlib_cache @php;
 }
 
@@ -960,11 +704,11 @@ location ^~ <?= $r("/country") ?> {
 }
 
 
-# ---------------------------------------------------------------------------------------------------------------------- Country(ies)
+# ---------------------------------------------------------------------------------------------------------------------- Year(s)
 
 
 location = <?= $rp("/years") ?> {
-  set $movlib_presenter "Countries\\Show";
+  set $movlib_presenter "Year\\Index";
   try_files $movlib_cache @php;
 }
 
