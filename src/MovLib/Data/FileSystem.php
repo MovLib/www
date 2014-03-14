@@ -235,6 +235,8 @@ final class FileSystem {
    *
    *   If no group name is passed and the current process isn't running via php-fpm the group from the global
    *   configuration will be applied to the directory.
+   * @return string
+   *   <var>$path</var>
    * @throws \ErrorException
    */
   public static function createDirectory($path, $parents = true, $mode = FileSystem::DIRECTORY_MODE, $user = null, $group = null) {
@@ -249,7 +251,12 @@ final class FileSystem {
     self::validateMode($mode);
     // @codeCoverageIgnoreEnd
     // @devEnd
+
     self::withinDocumentRoot($path);
+
+    // We want the call to mkdir() fail if the path already exists but isn't a directory to make sure that the caller
+    // doesn't assume working with a directory while it is a file or link in reality. We don't want the call to this
+    // method to fail if the directory already exists, that's why we check with is_dir().
     if (is_dir($path) === false && mkdir($path, self::validateMode($mode), $parents) === false) {
       // @codeCoverageIgnoreStart
       // mkdir() may emit E_ERROR which is automatically transformed to \ErrorException, this is only to make sure that
@@ -258,6 +265,8 @@ final class FileSystem {
       // @codeCoverageIgnoreEnd
     }
     self::changeOwner($path, $user, $group);
+
+    return $path;
   }
 
   /**

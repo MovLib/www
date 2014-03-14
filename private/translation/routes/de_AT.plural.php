@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -29,76 +29,65 @@
  */
 // @codeCoverageIgnoreStart
 return [
-
   // ------------------------------------------------------------------------------------------------------------------- Movies
-  "/movies"                => "/filme",
-  "/movies/charts"         => "/filme/charts",
-  "/movie/{0}/backdrops"   => "/film/{0}/hintergründe",
-  "/movie/{0}/posters"     => "/film/{0}/poster",
-  "/movie/{0}/lobby-cards" => "/film/{0}/aushangbilder",
-  "/movie/{0}/releases"    => "/film/{0}/veröffentlichungen",
-  "/movie/{0}/titles"      => "/film/{0}/titel",
-
+  "/movies"                       => "/filme",
+  "/movie/charts"                 => "/film/charts",
+  "/movie/{0}/backdrops"          => "/film/{0}/hintergründe",
+  "/movie/{0}/posters"            => "/film/{0}/poster",
+  "/movie/{0}/lobby-cards"        => "/film/{0}/aushangbilder",
+  "/movie/{0}/releases"           => "/film/{0}/veröffentlichungen",
+  "/movie/{0}/titles"             => "/film/{0}/titel",
+  // ------------------------------------------------------------------------------------------------------------------- Movie Releases
+  "/movie/{0}/release/{1}/images" => "/film/{0}/veröffentlichung/{1}/bilder",
   // ------------------------------------------------------------------------------------------------------------------- Series
-  "/series"        => "/serien",
-  "/series/charts" => "/serien/charts",
-
+  "/series"                       => "/serien",
+  "/series/charts"                => "/serien/charts",
+  "/series/{0}/seasons"           => "/serie/{0}/staffeln",
   // ------------------------------------------------------------------------------------------------------------------- Releases
-  "/releases" => "/veröffentlichungen",
-
+  "/releases"                     => "/veröffentlichungen",
   // ------------------------------------------------------------------------------------------------------------------- Companies
-  "/companies"             => "/unternehmen",
-  "/company/{0}/movies"    => "/unternehmen/{0}/filme",
-  "/company/{0}/series"    => "/unternehmen/{0}/serien",
-  "/company/{0}/releases"  => "/unternehmen/{0}/veröffentlichungen",
-
+  "/companies"                    => "/unternehmen",
+  "/company/{0}/movies"           => "/unternehmen/{0}/filme",
+  "/company/{0}/series"           => "/unternehmen/{0}/serien",
+  "/company/{0}/releases"         => "/unternehmen/{0}/veröffentlichungen",
   // ------------------------------------------------------------------------------------------------------------------- Persons
-  "/persons"              => "/personen",
-  "/person/{0}/movies"    => "/person/{0}/filme",
-  "/person/{0}/series"    => "/person/{0}/serien",
-  "/person/{0}/releases"  => "/person/{0}/veröffentlichungen",
-
+  "/persons"                      => "/personen",
+  "/person/{0}/movies"            => "/person/{0}/filme",
+  "/person/{0}/series"            => "/person/{0}/serien",
+  "/person/{0}/releases"          => "/person/{0}/veröffentlichungen",
   // ------------------------------------------------------------------------------------------------------------------- Users
-  "/users" => "/benutzer",
-
+  "/users"                        => "/benutzer",
   // ------------------------------------------------------------------------------------------------------------------- Help
-  "/help" => "/hilfen",
-
+  "/help"                         => "/hilfen",
   // ------------------------------------------------------------------------------------------------------------------- Countries
   // Countries are created with Intl ICU data and aren"t editable.
-  "/countries"             => "/länder",
-  "/country/{0}/movies"    => "/land/{0}/filme",
-  "/country/{0}/series"    => "/land/{0}/serien",
-  "/country/{0}/releases"  => "/land/{0}/veröffentlichungen",
-  "/country/{0}/persons"   => "/land/{0}/personen",
-  "/country/{0}/companies" => "/land/{0}/unternehmen",
-
+  "/countries"                    => "/länder",
+  "/country/{0}/movies"           => "/land/{0}/filme",
+  "/country/{0}/series"           => "/land/{0}/serien",
+  "/country/{0}/releases"         => "/land/{0}/veröffentlichungen",
+  "/country/{0}/persons"          => "/land/{0}/personen",
+  "/country/{0}/companies"        => "/land/{0}/unternehmen",
   // ------------------------------------------------------------------------------------------------------------------- Years
   // Years are generated dynamically and aren"t editable.
-  "/years"              => "/jahre",
-  "/year/{0}/movies"    => "/jahr/{0}/filme",
-  "/year/{0}/series"    => "/jahr/{0}/serien",
-  "/year/{0}/releases"  => "/jahr/{0}/veröffentlichungen",
-  "/year/{0}/persons"   => "/jahr/{0}/personen",
-  "/year/{0}/companies" => "/jahr/{0}/unternehmen",
-
+  "/years"                        => "/jahre",
+  "/year/{0}/movies"              => "/jahr/{0}/filme",
+  "/year/{0}/series"              => "/jahr/{0}/serien",
+  "/year/{0}/releases"            => "/jahr/{0}/veröffentlichungen",
+  "/year/{0}/persons"             => "/jahr/{0}/personen",
+  "/year/{0}/companies"           => "/jahr/{0}/unternehmen",
   // ------------------------------------------------------------------------------------------------------------------- Deletion
-  "/deletion-requests" => "/löschanträge",
-
+  "/deletion-requests"            => "/löschanträge",
   // ------------------------------------------------------------------------------------------------------------------- Genres
-  "/genres"           => "/genres",
-  "/genre/{0}/movies" => "/genre/{0}/filme",
-  "/genre/{0}/series" => "/genre/{0}/serien",
-
+  "/genres"                       => "/genres",
+  "/genre/{0}/movies"             => "/genre/{0}/filme",
+  "/genre/{0}/series"             => "/genre/{0}/serien",
   // ------------------------------------------------------------------------------------------------------------------- Awards
-  "/awards"           => "/auszeichnungen",
-  "/award/{0}/movies" => "/auszeichnung/{0}/filme",
-  "/award/{0}/series" => "/auszeichnung/{0}/serien",
-
+  "/awards"                       => "/auszeichnungen",
+  "/award/{0}/movies"             => "/auszeichnung/{0}/filme",
+  "/award/{0}/series"             => "/auszeichnung/{0}/serien",
   // ------------------------------------------------------------------------------------------------------------------- Jobs
-  "/jobs"           => "/tätigkeiten",
-  "/job/{0}/movies" => "/tätigkeit/{0}/filme",
-  "/job/{0}/series" => "/tätigkeit/{0}/serien",
-
+  "/jobs"                         => "/tätigkeiten",
+  "/job/{0}/movies"               => "/tätigkeit/{0}/filme",
+  "/job/{0}/series"               => "/tätigkeit/{0}/serien",
 ];
 // @codeCoverageIgnoreEnd
