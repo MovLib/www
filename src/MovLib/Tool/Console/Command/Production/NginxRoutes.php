@@ -370,7 +370,7 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
     // @devStart
     // @codeCoverageIgnoreStart
     foreach ([ "value", "key" ] as $param) {
-      if (empty(${$param}) || !is_string(${$param})) {
+      if (empty(${$param})) {
         throw new \InvalidArgumentException("\${$param} cannot be empty and must be of type string");
       }
     }

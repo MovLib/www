@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presentation\SystemPage;
 
-use \MovLib\Data\FileSystem;
 use \MovLib\Data\SystemPage;
 
 /**
@@ -56,7 +55,7 @@ class Show extends \MovLib\Presentation\Page {
   public function __construct() {
     global $i18n;
 
-    $this->systemPage = new SystemPage($_SERVER["ID"]);
+    $this->systemPage = new SystemPage((integer) $_SERVER["SYSTEM_PAGE_ID"]);
     $this->initPage($this->systemPage->title);
     $this->initLanguageLinks($this->systemPage->route);
     $this->initBreadcrumb();
