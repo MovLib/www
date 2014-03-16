@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data;
 
+use \MovLib\Data\Log;
+
 /**
  * Represents connection to memcached server.
  *
@@ -92,7 +94,9 @@ class Memcached {
       self::$memcached = new \Memcached("_");
       if (self::$memcached->setOptions(self::$options) === false || self::$memcached->addServers(self::$servers) === false) {
         // @codeCoverageIgnoreStart
-        throw new \MemcachedException(self::$memcached->getResultMessage(), self::$memcached->getResultCode());
+        $e = new \MemcachedException(self::$memcached->getResultMessage(), self::$memcached->getResultCode());
+        Log::critical("Couldn't connect to Memcached server.", [ "exception" => $e ]);
+        throw $e;
         // @codeCoverageIgnoreEnd
       }
     }
@@ -113,7 +117,9 @@ class Memcached {
   public function delete($key) {
     if (self::$memcached->delete($key) === false && ($code = self::$memcached->getResultCode()) !== \Memcached::RES_NOTFOUND) {
       // @codeCoverageIgnoreStart
-      throw new \MemcachedException(self::$memcached->getResultMessage(), $code);
+      $e = new \MemcachedException(self::$memcached->getResultMessage(), $code);
+      Log::critical("Couldn't delete Memcached value.", [ "exception" => $e ]);
+      throw $e;
       // @codeCoverageIgnoreEnd
     }
     return $this;
@@ -133,7 +139,9 @@ class Memcached {
     $value = self::$memcached->get($key);
     if ($value === false && ($code = self::$memcached->getResultCode()) !== \Memcached::RES_NOTFOUND) {
       // @codeCoverageIgnoreStart
-      throw new \MemcachedException(self::$memcached->getResultMessage(), $code);
+      $e = new \MemcachedException(self::$memcached->getResultMessage(), $code);
+      Log::critical("Couldn't get Memcached value.", [ "exception" => $e ]);
+      throw $e;
       // @codeCoverageIgnoreEnd
     }
     return $value;
@@ -158,7 +166,9 @@ class Memcached {
     $value = self::$memcached->increment($key, $incrementBy, $initialValue, $expiration);
     if ($value === false) {
       // @codeCoverageIgnoreStart
-      throw new \MemcachedException(self::$memcached->getResultMessage(), self::$memcached->getResultCode());
+      $e = new \MemcachedException(self::$memcached->getResultMessage(), self::$memcached->getResultCode());
+      Log::critical("Couldn't increment Memcached value.", [ "exception" => $e ]);
+      throw $e;
       // @codeCoverageIgnoreEnd
     }
     return $value;
@@ -178,7 +188,7 @@ class Memcached {
    * @throws \MemcachedException
    */
   public function isFlooding($key, $max, $expiration = self::DEFAULT_EXPIRATION) {
-    return $this->increment($key, 1, $expiration) > $max;
+    return ($this->increment($key, 1, $expiration) > $max);
   }
 
   /**
@@ -192,11 +202,13 @@ class Memcached {
    */
   public function isRemoteAddressFlooding($event) {
     global $kernel;
-    $return = $this->isFlooding("{$event}{$kernel->remoteAddress}", self::FLOODING_IP_MAX);
-    if ($return === true) {
-      error_log("IP FLOODING: Too many attempts from remote address '{$kernel->remoteAddress}' to invoke event '{$event}'.");
+    if ($this->isFlooding("{$event}{$kernel->remoteAddress}", self::FLOODING_IP_MAX) === true) {
+      $message = "Flooding: too many attempts to invoke event from remote address.";
+      $e       = new \MemcachedException($message);
+      Log::warning($message, [ "event" => $event, "exception" => $e, "remote address" => $kernel->remoteAddress ]);
+      throw $e;
     }
-    return $return;
+    return $this;
   }
 
   /**
@@ -214,7 +226,9 @@ class Memcached {
   public function set($key, $value, $expiration = self::DEFAULT_EXPIRATION) {
     if (self::$memcached->set($key, $value, $expiration) === false) {
       // @codeCoverageIgnoreStart
-      throw new \MemcachedException(self::$memcached->getResultMessage(), self::$memcached->getResultCode());
+      $e = new \MemcachedException(self::$memcached->getResultMessage(), self::$memcached->getResultCode());
+      Log::critical("Couldn't set Memcached value.", [ "exception" => $e ]);
+      throw $e;
       // @codeCoverageIgnoreEnd
     }
     return $this;

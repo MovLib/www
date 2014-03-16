@@ -18,6 +18,8 @@
 namespace MovLib\Data\User;
 
 use \MovLib\Data\Currency;
+use \MovLib\Data\FileSystem;
+use \MovLib\Data\Log;
 use \MovLib\Presentation\Error\NotFound;
 
 /**
@@ -377,14 +379,13 @@ class FullUser extends \MovLib\Data\User\User {
     if ($this->imageExists == true) {
       foreach ([ self::STYLE_SPAN_02, self::STYLE_SPAN_01, self::STYLE_HEADER_USER_NAVIGATION ] as $style) {
         try {
-          $path = $this->getPath($style);
-          unlink($path);
+          FileSystem::delete($this->getPath($style));
         }
-        catch (\ErrorException $e) {
-          error_log("Couldn't delete '{$path}'.");
+        catch (\RuntimeException $e) {
+          // Do nothing, this exception was already logged.
         }
       }
-      $this->imageExists        = false;
+      $this->imageExists   = false;
       $this->changed       = $this->extension = null;
       $session->userAvatar = $this->getStyle(self::STYLE_HEADER_USER_NAVIGATION);
     }

@@ -68,7 +68,7 @@ final class FileSystem {
    * @param null|string $mode [optional]
    *   The file's new mode. If <code>NULL</code> is passed (default) {@see FileSystem::DIRECTORY_MODE} or
    *   {@see FileSystem::FILE_MODE} are applied.
-   * @throws \ErrorException
+   * @throws \RuntimeException
    */
   public static function changeMode($path, $mode = null) {
     // @devStart
@@ -90,17 +90,17 @@ final class FileSystem {
       }
     }
 
-    if (file_exists($path) === true) {
-      try {
-        if (chmod($path, self::validateMode($mode)) === false) {
-          // @codeCoverageIgnoreStart
-          throw new \RuntimeException("Couldn't change mode of '{$path}'");
-          // @codeCoverageIgnoreEnd
-        }
+    try {
+      if (file_exists($path) === true && chmod($path, self::validateMode($mode)) === false) {
+        // @codeCoverageIgnoreStart
+        throw new \Exception;
+        // @codeCoverageIgnoreEnd
       }
-      catch (\Exception $e) {
-        throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
-      }
+    }
+    catch (\Exception $e) {
+      $e = new \RuntimeException("Couldn't change mode of '{$path}'", null, $e);
+      Log::error($e);
+      throw $e;
     }
   }
 
@@ -148,7 +148,9 @@ final class FileSystem {
       Shell::execute("find '{$path}' -follow -type d -exec chmod {$directoryMode} {} \;");
     }
     catch (\Exception $e) {
-      throw new \RuntimeException("Couldn't change modes of '{$path}'", null, $e);
+      $e = new \RuntimeException("Couldn't change modes of '{$path}'", null, $e);
+      Log::error($e);
+      throw $e;
     }
   }
 
@@ -164,7 +166,7 @@ final class FileSystem {
    *   The file's new owning group name, defaults to <code>NULL</code> which will apply the kernel group.
    * @param boolean $recursive [optional]
    *   Whether to change owernship recursively, only makes sense with directories.
-   * @throws \ErrorException
+   * @throws \RuntimeException
    */
   public static function changeOwner($path, $user = null, $group = null, $recursive = false) {
     global $kernel;
@@ -199,20 +201,20 @@ final class FileSystem {
     if (!isset($group)) {
       $group = $kernel->systemGroup;
     }
-    if ($recursive === true) {
-      try {
+    try {
+      if ($recursive === true) {
         Shell::execute("chown --preserve-root --recursive --verbose {$user}:{$group} '{$path}'");
       }
-      catch (\Exception $e) {
-        throw new \ErrorException("Couldn' change ownership of '{$path}' and its childs", null, $e);
+      elseif (chown($path, $user) === false || chgrp($path, $group) === false) {
+        // @codeCoverageIgnoreStart
+        throw \Exception;
+        // @codeCoverageIgnoreEnd
       }
     }
-    elseif (chown($path, $user) === false || chgrp($path, $group) === false) {
-      // @codeCoverageIgnoreStart
-      // chown() and/or chgrp() may emit E_ERROR which is automatically transformed to \ErrorException, this is only to
-      // make sure that an \ErrorException is always thrown if chown() and/or chgrp() return FALSE.
-      throw new \ErrorException("Couldn't change ownership of '{$path}'");
-      // @codeCoverageIgnoreEnd
+    catch (\Exception $e) {
+      $e = new \RuntimeException("Couldn't change ownership of '{$path}'", null, $e);
+      Log::error($e);
+      throw $e;
     }
   }
 
@@ -237,7 +239,7 @@ final class FileSystem {
    *   configuration will be applied to the directory.
    * @return string
    *   <var>$path</var>
-   * @throws \ErrorException
+   * @throws \RuntimeException
    */
   public static function createDirectory($path, $parents = true, $mode = FileSystem::DIRECTORY_MODE, $user = null, $group = null) {
     // @devStart
@@ -257,15 +259,20 @@ final class FileSystem {
     // We want the call to mkdir() fail if the path already exists but isn't a directory to make sure that the caller
     // doesn't assume working with a directory while it is a file or link in reality. We don't want the call to this
     // method to fail if the directory already exists, that's why we check with is_dir().
-    if (is_dir($path) === false && mkdir($path, self::validateMode($mode), $parents) === false) {
-      // @codeCoverageIgnoreStart
-      // mkdir() may emit E_ERROR which is automatically transformed to \ErrorException, this is only to make sure that
-      // an \ErrorException is always thrown if mkdir() returns FALSE.
-      throw new \ErrorException("Couldn't create directory '{$path}'");
-      // @codeCoverageIgnoreEnd
+    try {
+      if (is_dir($path) === false && mkdir($path, self::validateMode($mode), $parents) === false) {
+        // @codeCoverageIgnoreStart
+        throw new \Exception;
+        // @codeCoverageIgnoreEnd
+      }
     }
-    self::changeOwner($path, $user, $group);
+    catch (\Exception $e) {
+      $e = new \RuntimeException("Couldn't create directory '{$path}'", null, $e);
+      Log::error($e);
+      throw $e;
+    }
 
+    self::changeOwner($path, $user, $group);
     return $path;
   }
 
@@ -278,7 +285,7 @@ final class FileSystem {
    *   The symoblic link's absolute path.
    * @param boolean $force [optional]
    *   Whether to override existing destination or not, defaults to <code>FALSE</code> (do not override).
-   * @throws \ErrorException
+   * @throws \RuntimeException
    */
   public static function createSymbolicLink($target, $link, $force = false) {
     // @devStart
@@ -298,15 +305,21 @@ final class FileSystem {
     // @devEnd
     self::withinDocumentRoot($target);
     self::withinDocumentRoot($link);
-    if ($force === true) {
-      Shell::execute("ln --force --symbolic --verbose '{$target}' '{$link}'");
+
+    try {
+      if ($force === true) {
+        Shell::execute("ln --force --symbolic --verbose '{$target}' '{$link}'");
+      }
+      elseif (symlink($target, $link) === false) {
+        // @codeCoverageIgnoreStart
+        throw new \Exception;
+        // @codeCoverageIgnoreEnd
+      }
     }
-    elseif (symlink($target, $link) === false) {
-      // @codeCoverageIgnoreStart
-      // symlink() sometimes emits and E_ERROR which is automatically translated to an \ErrorException, therefore we
-      // throw an \ErrorException as well at this point and allow callers to catch a single exception type.
-      throw new \ErrorException("Couldn't create symbolic link from {$target} to {$link}");
-      // @codeCoverageIgnoreEnd
+    catch (\Exception $e) {
+      $e = new \RuntimeException("Couldn't create symbolic link from '{$target}' to '{$link}'", null, $e);
+      Log::error($e);
+      throw $e;
     }
   }
 
@@ -324,7 +337,6 @@ final class FileSystem {
    * @param boolean $force [optional]
    *   Whether to force deletion, only makes sense if the file is a directory and should be deleted even if is non-empty.
    *   Defaults to <code>FALSE</code>.
-   * @throws \Exception
    * @throws \RuntimeException
    */
   public static function delete($path, $recursive = false, $force = false) {
@@ -342,19 +354,30 @@ final class FileSystem {
     // @devEnd
     self::withinDocumentRoot($path);
     if (file_exists($path) === true) {
-      if ($recursive === false) {
-        if (is_dir($path) === true) {
-          if (rmdir($path) === false) {
-            throw new \RuntimeException("Couldn't delete '{$path}'");
+      try {
+        if ($recursive === false) {
+          if (is_dir($path) === true) {
+            if (rmdir($path) === false) {
+              // @codeCoverageIgnoreStart
+              throw new \Exception;
+              // @codeCoverageIgnoreEnd
+            }
+          }
+          elseif (unlink($path) === false) {
+            // @codeCoverageIgnoreStart
+            throw new \Exception;
+            // @codeCoverageIgnoreEnd
           }
         }
-        elseif (unlink($path) === false) {
-          throw new \RuntimeException("Couldn't delete '{$path}'");
+        else {
+          $force = ($force === true) ? "--force" : null;
+          Shell::execute("rm --recursive {$force} '{$path}'");
         }
       }
-      else {
-        $force = ($force === true) ? "--force" : null;
-        Shell::execute("rm --recursive {$force} '{$path}'");
+      catch (\Exception $e) {
+        $e = new \RuntimeException("Couldn't delete '{$path}'", null, $e);
+        Log::error($e);
+        throw $e;
       }
     }
   }
@@ -367,7 +390,13 @@ final class FileSystem {
    * @throws \RuntimeException
    */
   public static function deleteDirectories($directory) {
-    Shell::execute("rmdir --ignore-fail-on-non-empty --parent '{$directory}'");
+    try {
+      Shell::execute("rmdir --ignore-fail-on-non-empty --parent '{$directory}'");
+    }
+    catch (\RuntimeException $e) {
+      Log::error($e);
+      throw $e;
+    }
   }
 
   /**
@@ -390,16 +419,19 @@ final class FileSystem {
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-
     self::withinDocumentRoot($path);
+
     try {
-      $content = file_get_contents($path);
+      if (($content = file_get_contents($path)) === false) {
+        // @codeCoverageIgnoreStart
+        throw new \Exception;
+        // @codeCoverageIgnoreEnd
+      }
     }
     catch (\Exception $e) {
-      throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
-    }
-    if ($content === false) {
-      throw new \RuntimeException("Couldn't get content of '{$path}'");
+      $e = new \RuntimeException("Couldn't get content of '{$path}'", null, $e);
+      Log::error($e);
+      throw $e;
     }
 
     return $content;
@@ -453,7 +485,9 @@ final class FileSystem {
   public static function getJSON($path, $assoc = false, $depth = 512, $options = 0) {
     $json = json_decode(self::getContent($path), $assoc, $depth, $options);
     if (json_last_error() !== JSON_ERROR_NONE) {
-      throw new \RuntimeException(json_last_error_msg());
+      $e = new \RuntimeException(json_last_error_msg());
+      Log::warning($e);
+      throw $e;
     }
     return $json;
   }
@@ -483,7 +517,9 @@ final class FileSystem {
       // to check if the file really doesn't exist, this on the other hand means that some other error occurred and we
       // throw an exception in this case.
       if (file_exists($path) === true) {
-        throw new \RuntimeException("Path is invalid: {$path}");
+        $e = new \RuntimeException("Path '{$path}' seems to be invalid");
+        Log::warning($e);
+        throw $e;
       }
       // @todo Should we attempt to canonicalize the path ourselfs at this point?
     }
@@ -542,21 +578,25 @@ final class FileSystem {
       if (isset($extension)) {
         if ($extension === (array) $extension) {
           $extensions = implode(",", $extension);
-          $path   .= "/*.{{$extensions}}";
+          $path      .= "/*.{{$extensions}}";
           $flags     |= GLOB_BRACE;
         }
         else {
           $path .= "/*.{$extension}";
         }
       }
-      $matches = glob($path, $flags);
+      if (($matches = glob($path, $flags)) === false) {
+        // @codeCoverageIgnoreStart
+        throw new \Exception;
+        // @codeCoverageIgnoreEnd
+      }
     }
     catch (\Exception $e) {
-      throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
+      $e = new \RuntimeException("Globbing with pattern '{$path}' failed", null, $e);
+      Log::error($e);
+      throw $e;
     }
-    if ($matches === false) {
-      throw new \RuntimeException("Globbing with pattern '{$path}' failed");
-    }
+
     return (array) $matches;
   }
 
@@ -574,13 +614,16 @@ final class FileSystem {
    */
   public static function move($from, $to) {
     try {
-      $status = rename(rtrim($from, "/"), rtrim($to, "/"));
+      if (($status = rename(rtrim($from, "/"), rtrim($to, "/"))) === false) {
+        // @codeCoverageIgnoreStart
+        throw new \Exception;
+        // @codeCoverageIgnoreEnd
+      }
     }
     catch (\Exception $e) {
-      throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
-    }
-    if ($status === false) {
-      throw new \RuntimeExcepiton("Couldn't move file from '{$from}' to '{$to}'");
+      $e = new \RuntimeException("Couldn't move file from '{$from}' to '{$to}'", null, $e);
+      Log::error($e);
+      throw $e;
     }
   }
 
@@ -614,10 +657,14 @@ final class FileSystem {
     // @devEnd
     self::withinDocumentRoot($path);
     if (file_put_contents($path, "{$content}", $flags) === false) {
-      throw new \RuntimeException("Couldn't create and/or write to file {$path}");
+      $e = new \RuntimeException("Couldn't create and/or write to file {$path}");
     }
-    if ($modificationTime && touch($path, $modificationTime, $accessTime ?: $modificationTime) === false) {
-      throw new \RuntimeException("Couldn't change modification and/or access time of tile {$path}");
+    elseif ($modificationTime && touch($path, $modificationTime, $accessTime ?: $modificationTime) === false) {
+      $e = new \RuntimeException("Couldn't change modification and/or access time of tile {$path}");
+    }
+    if ($e) {
+      Log::error($e);
+      throw $e;
     }
   }
 
@@ -649,7 +696,9 @@ final class FileSystem {
   public static function putJSON($path, $data, $flags = 0, $options = JSON_UNESCAPED_UNICODE, $modificationTime = null, $accessTime = null) {
     $json = json_encode($data, $options);
     if (json_last_error() !== JSON_ERROR_NONE) {
-      throw new \RuntimeException(json_last_error_msg());
+      $e = new \RuntimeException(json_last_error_msg());
+      Log::warning($e);
+      throw $e;
     }
     self::putContent($path, $json, $flags, $modificationTime, $accessTime);
     return $json;
@@ -736,7 +785,9 @@ final class FileSystem {
   public static function withinDocumentRoot($path) {
     global $kernel;
     if ($kernel->fastCGI === true && strpos($path, $kernel->documentRoot) === false) {
-      throw new \LogicException("\$path cannot be outside document root");
+      $e = new \LogicException("\$path cannot be outside document root");
+      Log::warning($e);
+      throw $e;
     }
   }
 

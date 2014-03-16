@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\User;
 
+use \MovLib\Data\Log;
 use \MovLib\Data\User\FullUser;
 use \MovLib\Data\User\User;
 use \MovLib\Presentation\Error\Forbidden;
@@ -159,14 +160,23 @@ class Session implements \ArrayAccess {
             $this->regenerate();
           }
           // Well, this is akward, we have a valid session but no valid user, destroy session and log this error.
-          catch (\OutOfBoundsException $e) {
+          catch (\Exception $e) {
+            Log::error(
+              new \RuntimeException("Non-existent user ID from persistent session storage", null, $e),
+              [ "remote address" => $kernel->remoteAddress, "session ID" => $_COOKIE[$this->name] ]
+            );
             $this->destroy();
-            error_log("Non-existent user ID from persistent session storage, IP was: {$kernel->remoteAddress} (Session ID: {$_COOKIE[$this->name]})");
           }
         }
       }
       // Session data was loaded from Memcached.
       elseif (!empty($_SESSION["id"])) {
+        // @devStart
+        // @codeCoverageIgnoreStart
+        Log::debug("Loaded Session from Memached");
+        // @codeCoverageIgnoreEnd
+        // @devEnd
+
         $this->authentication  = $_SESSION["auth"];
         $this->userAvatar      = $_SESSION["avatar"];
         $this->userId          = $_SESSION["id"];
@@ -495,7 +505,7 @@ class Session implements \ArrayAccess {
     global $kernel;
 
     // Do nothing if this method isn't called via nginx!
-    if (isset($_SERVER["FCGI_ROLE"])) {
+    if ($kernel->fastCGI === true) {
       session_regenerate_id(true);
       if ($this->userId > 0) {
         $kernel->delayMethodCall([ $this, "update" ], [ $this->id ]);
@@ -552,25 +562,44 @@ class Session implements \ArrayAccess {
   /**
    * Forcefully start new or resume session and keep previously set session data (if any).
    *
+   * @global \MovLib\Kernel $kernel
    * @return this
    * @throws \MemcachedException
    */
   protected function start() {
-    // Create backup of existing session data (if any).
-    $sessionData = isset($_SESSION) ? $_SESSION : null;
+    global $kernel;
+    // Only attempt to start a new session if we're operating via php-fpm.
+    if ($kernel->fastCGI === true) {
+      // Create backup of existing session data (if any).
+      $sessionData = isset($_SESSION) ? $_SESSION : null;
 
-    // Start new session (if exeution was started by nginx).
-    if (isset($_SERVER["FCGI_ROLE"]) && ($this->active = session_start()) === false) {
-      throw new \MemcachedException("Couldn't start session (may be Memcached is down?)");
+      // Start new session (if exeution was started by nginx).
+      if (($this->active = session_start()) === false) {
+        $e = new \MemcachedException("Couldn't start session (may be Memcached is down?)");
+        Log::critical($e);
+        throw $e;
+      }
+
+      $this->id = session_id();
+
+      // @devStart
+      // @codeCoverageIgnoreStart
+      Log::debug("Started Session");
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+
+      // Restore session data.
+      if ($sessionData) {
+        $_SESSION += $sessionData;
+      }
     }
-
-    $this->id = session_id();
-
-    // Restore session data.
-    if ($sessionData) {
-      $_SESSION += $sessionData;
+    // @devStart
+    // @codeCoverageIgnoreStart
+    else {
+      Log::debug("Not starting new session, no in cookie supporting environment");
     }
-
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     return $this;
   }
 
