@@ -17,9 +17,13 @@
  */
 namespace MovLib\Data;
 
-use \Monolog\Logger;
+use \Monolog\Formatter\LineFormatter;
 use \Monolog\Handler\ErrorLogHandler;
-use \Monolog\Handler\BrowserConsoleHandler;
+use \Monolog\Handler\FingersCrossedHandler;
+use \Monolog\Handler\FirePHPHandler;
+use \Monolog\Handler\NativeMailerHandler;
+use \Monolog\Logger;
+use \Monolog\Processor\IntrospectionProcessor;
 
 /**
  * PSR-3 compatible static logger class.
@@ -31,7 +35,7 @@ use \Monolog\Handler\BrowserConsoleHandler;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Logger {
+final class Log {
 
   /**
    * Action must be taken immediately.
@@ -44,9 +48,11 @@ final class Logger {
    * @param array $context [optional]
    *   The context array can contain arbitrary data, the only thing that is important is, that you put possibly thrown
    *   exceptions into the <code>"exception"</code> key.
+   * @return boolean
+   *   Whether the record has been processed.
    */
   public static function alert($message, array $context = []) {
-    $this->log(LOG_ALERT, $message, $context);
+    return self::log(Logger::ALERT, $message, $context);
   }
 
   /**
@@ -60,9 +66,11 @@ final class Logger {
    * @param array $context [optional]
    *   The context array can contain arbitrary data, the only thing that is important is, that you put possibly thrown
    *   exceptions into the <code>"exception"</code> key.
+   * @return boolean
+   *   Whether the record has been processed.
    */
   public static function critical($message, array $context = []) {
-    $this->log(LOG_CRIT, $message, $context);
+    return self::log(Logger::CRITICAL, $message, $context);
   }
 
   /**
@@ -73,9 +81,11 @@ final class Logger {
    * @param array $context [optional]
    *   The context array can contain arbitrary data, the only thing that is important is, that you put possibly thrown
    *   exceptions into the <code>"exception"</code> key.
+   * @return boolean
+   *   Whether the record has been processed.
    */
   public static function debug($message, array $context = []) {
-    $this->log(LOG_DEBUG, $message, $context);
+    return self::log(Logger::DEBUG, $message, $context);
   }
 
   /**
@@ -86,9 +96,11 @@ final class Logger {
    * @param array $context [optional]
    *   The context array can contain arbitrary data, the only thing that is important is, that you put possibly thrown
    *   exceptions into the <code>"exception"</code> key.
+   * @return boolean
+   *   Whether the record has been processed.
    */
   public static function emergency($message, array $context = []) {
-    $this->log(LOG_EMERG, $message, $context);
+    return self::log(Logger::EMERGENCY, $message, $context);
   }
 
   /**
@@ -99,9 +111,11 @@ final class Logger {
    * @param array $context [optional]
    *   The context array can contain arbitrary data, the only thing that is important is, that you put possibly thrown
    *   exceptions into the <code>"exception"</code> key.
+   * @return boolean
+   *   Whether the record has been processed.
    */
   public static function error($message, array $context = []) {
-    $this->log(LOG_ERR, $message, $context);
+    return self::log(Logger::ERROR, $message, $context);
   }
 
   /**
@@ -115,9 +129,11 @@ final class Logger {
    * @param array $context [optional]
    *   The context array can contain arbitrary data, the only thing that is important is, that you put possibly thrown
    *   exceptions into the <code>"exception"</code> key.
+   * @return boolean
+   *   Whether the record has been processed.
    */
   public static function info($message, array $context = []) {
-    $this->log(LOG_INFO, $message, $context);
+    return self::log(Logger::INFO, $message, $context);
   }
 
   /**
@@ -134,25 +150,37 @@ final class Logger {
    * @param array $context [optional]
    *   The context array can contain arbitrary data, the only thing that is important is, that you put possibly thrown
    *   exceptions into the <code>"exception"</code> key.
+   * @return boolean
+   *   Whether the record has been processed.
    */
   public static function log($level, $message, array $context = []) {
     global $kernel;
     static $logger = null;
+
+    // Instantiate logger if we have no instance yet.
     if (!$logger) {
-      $logger = new Logger($kernel->hostname, [ new ErrorLogHandler($messageType, $level) ]);
-    }
-    static $monolog = null;
-    if (!$monolog) {
-      $monolog = new Logger($kernel->hostname, [ new ErrorLogHandler() ]);
-      if ($kernel->production === true && $kernel->fastCGI === true) {
-        $monolog->pushHandler(new BrowserConsoleHandler());
+
+      // CRITICAL, ALERT, and EMERGENCY always trigger sending of email.
+      $handlers = [
+        new NativeMailerHandler(
+          $kernel->emailDevelopers, "IMPORTANT! {$kernel->siteName} is experiencing problems!", $kernel->emailFrom, Logger::CRITICAL
+        ),
+        new FingersCrossedHandler((new ErrorLogHandler())
+          ->setFormatter(new LineFormatter("%channel% %level_name%: %message% %context% %extra%\n", null, true))
+        )
+      ];
+
+      // DEBUG, INFO, and NOTICE are sent to the client's browser if not in production and executed via php-fpm.
+      if ($kernel->production === false && $kernel->fastCGI === true) {
+        $handlers[] = new FirePHPHandler(Logger::DEBUG, false);
       }
+
+      // Instantiate the new logger and store it in the static variable of this method for later usage.
+      $logger = new Logger($kernel->hostname, $handlers, [ new IntrospectionProcessor(Logger::WARNING) ]);
     }
-    $message .= "\n";
-    foreach ($context as $key => $value) {
-      $message .= "    {$key}: {$value}\n";
-    }
-    error_log($message);
+
+    // Log the message as requested.
+    return $logger->log($level, $message, $context);
   }
 
   /**
@@ -163,9 +191,11 @@ final class Logger {
    * @param array $context [optional]
    *   The context array can contain arbitrary data, the only thing that is important is, that you put possibly thrown
    *   exceptions into the <code>"exception"</code> key.
+   * @return boolean
+   *   Whether the record has been processed.
    */
   public static function notice($message, array $context = []) {
-    $this->log(LOG_NOTICE, $message, $context);
+    return self::log(Logger::NOTICE, $message, $context);
   }
 
   /**
@@ -179,9 +209,11 @@ final class Logger {
    * @param array $context [optional]
    *   The context array can contain arbitrary data, the only thing that is important is, that you put possibly thrown
    *   exceptions into the <code>"exception"</code> key.
+   * @return boolean
+   *   Whether the record has been processed.
    */
   public static function warning($message, array $context = []) {
-    $this->log(LOG_WARNING, $message, $context);
+    return self::log(Logger::WARNING, $message, $context);
   }
 
 }
