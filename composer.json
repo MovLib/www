@@ -29,7 +29,8 @@
   "require": {
     "php": ">=5.5.0",
     "elasticsearch/elasticsearch": "dev-master",
-    "symfony/console": "dev-master"
+    "symfony/console": "dev-master",
+    "monolog/monolog": "dev-master"
   },
   "require-dev": {
     "apigen/apigen": "dev-master",
