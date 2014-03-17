@@ -52,17 +52,18 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
   /**
    * Instantiate new user account settings presentation.
    *
+   * @global \MovLib\Data\Cache $cache
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\Session $session
    * @throws \MovLib\Presentation\Error\Unauthorized
    */
   public function __construct() {
-    global $i18n, $kernel, $session;
+    global $cache, $i18n, $kernel, $session;
 
     // Disallow caching of account settings.
     session_cache_limiter("nocache");
-    $kernel->cacheable = false;
+    $cache->cacheable = false;
 
     $session->checkAuthorization($i18n->t("You need to sign in to access this page."));
     $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));

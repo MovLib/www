@@ -20,6 +20,7 @@ namespace MovLib\Data\User;
 use \MovLib\Data\Log;
 use \MovLib\Data\User\FullUser;
 use \MovLib\Data\User\User;
+use \MovLib\Exception\DatabaseException;
 use \MovLib\Presentation\Error\Forbidden;
 use \MovLib\Presentation\Error\Unauthorized;
 
@@ -40,7 +41,68 @@ use \MovLib\Presentation\Error\Unauthorized;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Session implements \ArrayAccess {
+final class Session implements \ArrayAccess {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * Session array key for the authentication (sing in) time of the session.
+   *
+   * @var integer
+   */
+  const AUTHENTICATION = 0;
+
+  /**
+   * Session array key for the time the session identifier was last regenerated.
+   *
+   * @var integer
+   */
+  const INIT_TIME = 1;
+
+  /**
+   * Time after which a user cannot access any protected pages (e.g. change password).
+   *
+   * @var integer
+   */
+  const PROTECTION_GRACE_TIME = 3600; // 3600 seconds = 60 minutes
+
+  /**
+   * Time after which a session's identifier has to be regenerated.
+   *
+   * @var integer
+   */
+  const REGENERATION_GRACE_TIME = 1200; // 1200 seconds = 20 minutes
+
+  /**
+   * Session array key for the user's avatar.
+   *
+   * @var integer
+   */
+  const USER_AVATAR = 2;
+
+  /**
+   * Session array key for the user's identifier.
+   *
+   * @var integer
+   */
+  const USER_ID = 3;
+
+  /**
+   * Session array key for the user's name.
+   *
+   * @var integer
+   */
+  const USER_NAME = 4;
+
+  /**
+   * Session array key for the user's time zone.
+   *
+   * @var integer
+   */
+  const USER_TIME_ZONE = 5;
+
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -66,6 +128,13 @@ class Session implements \ArrayAccess {
    * @var string
    */
   public $id;
+
+  /**
+   * The time this session's identifier was last regenerated.
+   *
+   * @var integer
+   */
+  protected $initTime;
 
   /**
    * The user's authentication status.
@@ -110,7 +179,7 @@ class Session implements \ArrayAccess {
    * @see Session::__construct()
    * @var string
    */
-  public $userTimeZoneId;
+  public $userTimeZone;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -137,26 +206,34 @@ class Session implements \ArrayAccess {
       // session ID and have no data stored for it.
       if (empty($_SESSION)) {
         // Load session data from persistent session storage.
-        $stmt = $db->query("SELECT UNIX_TIMESTAMP(`authentication`), `user_id` FROM `sessions` WHERE `id` = ? LIMIT 1", "s", [ $_COOKIE[$this->name ]]);
+        /* @var $stmt \mysqli_stmt */
+        $stmt = $db->query(
+          "SELECT UNIX_TIMESTAMP(`authentication`), `user_id` FROM `sessions` WHERE `id` = ? LIMIT 1",
+          "s",
+          [ $_COOKIE[$this->name] ]
+        );
         $stmt->bind_result($this->authentication, $this->userId);
 
         // We couldn't find a valid session and we have no data, invalid session.
-        if (!$stmt->fetch()) {
-          $this->destroy();
-        }
-        else {
-          $stmt->close();
+        if ($stmt->fetch()) {
           try {
-            $user = new User(User::FROM_ID, $this->userId);
-
-            // Everything looks good, valid session and valid user, export and update persistent storage.
-            $_SESSION["auth"]      = $this->authentication;
-            $_SESSION["id"]        = $this->userId;
-            $_SESSION["avatar"]    = $this->userAvatar     = $user->getStyle(User::STYLE_HEADER_USER_NAVIGATION);
-            $_SESSION["name"]      = $this->userName       = $user->name;
-            $_SESSION["tz"]        = $this->userTimeZoneId = $user->timeZoneIdentifier;
-            $this->isAuthenticated = true;
-
+            $user                           = new User(User::FROM_ID, $this->userId);
+            $this->initTime                 = $_SERVER["REQUEST_TIME"];
+            $this->userAvatar               = $user->getStyle(User::STYLE_HEADER_USER_NAVIGATION);
+            $this->userName                 = $user->name;
+            $this->userTimeZone             = $user->timeZoneIdentifier;
+            $_SESSION[self::AUTHENTICATION] =& $this->authentication;
+            $_SESSION[self::INIT_TIME]      =& $this->initTime;
+            $_SESSION[self::USER_ID]        =& $this->userId;
+            $_SESSION[self::USER_AVATAR]    =& $this->userAvatar;
+            $_SESSION[self::USER_NAME]      =& $this->userName;
+            $_SESSION[self::USER_TIME_ZONE] =& $this->userTimeZone;
+            $this->isAuthenticated          = true;
+            // @devStart
+            // @codeCoverageIgnoreStart
+            Log::debug("Loaded Session from Database");
+            // @codeCoverageIgnoreEnd
+            // @devEnd
             $this->regenerate();
           }
           // Well, this is akward, we have a valid session but no valid user, destroy session and log this error.
@@ -168,24 +245,31 @@ class Session implements \ArrayAccess {
             $this->destroy();
           }
         }
+        else {
+          // @devStart
+          // @codeCoverageIgnoreStart
+          Log::debug("Couldn't Restore Session from Database");
+          // @codeCoverageIgnoreEnd
+          // @devEnd
+          $this->destroy();
+        }
+        $stmt->close();
       }
       // Session data was loaded from Memcached.
-      elseif (!empty($_SESSION["id"])) {
+      elseif (!empty($_SESSION[self::USER_ID])) {
+        $this->authentication  =& $_SESSION[self::AUTHENTICATION];
+        $this->initTime        =& $_SESSION[self::INIT_TIME];
+        $this->userAvatar      =& $_SESSION[self::USER_AVATAR];
+        $this->userId          =& $_SESSION[self::USER_ID];
+        $this->userName        =& $_SESSION[self::USER_NAME];
+        $this->userTimeZone    =& $_SESSION[self::USER_TIME_ZONE];
+        $this->isAuthenticated = true;
         // @devStart
         // @codeCoverageIgnoreStart
-        Log::debug("Loaded Session from Memached");
+        Log::debug("Loaded Session from Memcached");
         // @codeCoverageIgnoreEnd
         // @devEnd
-
-        $this->authentication  = $_SESSION["auth"];
-        $this->userAvatar      = $_SESSION["avatar"];
-        $this->userId          = $_SESSION["id"];
-        $this->userName        = $_SESSION["name"];
-        $this->userTimeZoneId  = $_SESSION["tz"];
-        $this->isAuthenticated = true;
-
-        // Regenerate the session ID at least every 20 minutes (OWASP recommendation).
-        if ($this->authentication + 1200 < $_SERVER["REQUEST_TIME"]) {
+        if (($this->initTime + self::REGENERATION_GRACE_TIME) < $_SERVER["REQUEST_TIME"]) {
           $this->regenerate();
         }
       }
@@ -194,7 +278,7 @@ class Session implements \ArrayAccess {
     // This is an anonymous user if we have no user name at this point.
     if (!$this->userName) {
       $this->userName       = $kernel->remoteAddress;
-      $this->userTimeZoneId = ini_get("date.timezone");
+      $this->userTimeZone = date_default_timezone_get();
     }
   }
 
@@ -228,11 +312,20 @@ class Session implements \ArrayAccess {
 
     // Only create a session if we're serving this request via nginx.
     if ($kernel->fastCGI === true) {
-      $_SESSION["auth"]   = $this->authentication = $_SERVER["REQUEST_TIME"];
-      $_SESSION["avatar"] = $this->userAvatar     = $user->getStyle(User::STYLE_HEADER_USER_NAVIGATION);
-      $_SESSION["id"]     = $this->userId         = $user->id;
-      $_SESSION["name"]   = $this->userName       = $user->name;
-      $_SESSION["tz"]     = $this->userTimeZoneId = $user->timeZoneIdentifier;
+      // Export to class scope.
+      $this->authentication           = $this->initTime = $_SERVER["REQUEST_TIME"];
+      $this->userAvatar               = $user->getStyle(User::STYLE_HEADER_USER_NAVIGATION);
+      $this->userId                   = $user->id;
+      $this->userName                 = $user->name;
+      $this->userTimeZone           = $user->timeZoneIdentifier;
+
+      // Export to session storage.
+      $_SESSION[self::AUTHENTICATION] =& $this->authentication;
+      $_SESSION[self::INIT_TIME]      =& $this->initTime;
+      $_SESSION[self::USER_AVATAR]    =& $this->userAvatar;
+      $_SESSION[self::USER_ID]        =& $this->userId;
+      $_SESSION[self::USER_NAME]      =& $this->userName;
+      $_SESSION[self::USER_TIME_ZONE] =& $this->userTimeZone;
 
       // Maybe the user was doing some work as anonymous user and already has a session active. If so generate new session
       // ID and if not generate a completely new session.
@@ -288,7 +381,7 @@ class Session implements \ArrayAccess {
   }
 
   /**
-   * Check if the user is authenticated and if the she or he authenticated recently.
+   * Check if the user is authenticated and if she or he authenticated recently.
    *
    * @param string $message
    *   The already translated message that should be passed to the exception as reason for the 401.
@@ -296,7 +389,7 @@ class Session implements \ArrayAccess {
    * @throws \MovLib\Presentation\Error\Unauthorized
    */
   public function checkAuthorizationTimestamp($message) {
-    if ($this->isAuthenticated === false || $this->authentication + 3600 < $_SERVER["REQUEST_TIME"]) {
+    if ($this->isAuthenticated === false || ($this->authentication + self::PROTECTION_GRACE_TIME) < $_SERVER["REQUEST_TIME"]) {
       throw new Unauthorized($message);
     }
     return $this;
@@ -311,49 +404,54 @@ class Session implements \ArrayAccess {
    *   The unique session ID(s) that should be deleted. If no ID is passed along the current session ID of this instance
    *   will be used. If a numeric array is passed all values are treated as session IDs and deleted.
    * @return this
-   * @throws \MemcachedException
-   * @throws \MovLib\Exception\DatabaseException
    */
   public function delete($sessionId = null) {
     global $db;
-
-    if (!$sessionId) {
-      $sessionId = $db->query("SELECT `id` FROM `sessions` WHERE `user_id` = ?", "d", [ $this->userId ])->get_result()->fetch_all();
-      if (empty($sessionId)) {
-        return $this;
+    try {
+      if (!isset($sessionId)) {
+        $result = $db
+          ->query("SELECT `id` FROM `sessions` WHERE `user_id` = ?", "d", [ $this->userId ])
+          ->get_result()
+          ->fetch_all()
+        ;
+        if (!isset($result[0])) {
+          return $this;
+        }
+        $sessionId = $result[0];
       }
-      $sessionId = array_column($sessionId, 0);
-    }
 
-    // Fetch all configured Memcached servers from the PHP configuration and split them by the delimiter.
-    $sessionPrefix = ini_get("memcached.sess_prefix");
-    $servers       = explode(",", ini_get("session.save_path"));
+      // Fetch all configured Memcached servers from the PHP configuration and split them by the delimiter.
+      $sessionPrefix = ini_get("memcached.sess_prefix");
+      $servers       = explode(",", ini_get("session.save_path"));
 
-    // Build the array as expected by Memcached::addServers().
-    $c = count($servers);
-    for ($i = 0; $i < $c; ++$i) {
-      $servers[$i] = explode(":", $servers[$i]);
-      // The port is mandatory!
-      if (!isset($servers[$i][1])) {
-        $servers[$i][1] = 0;
-      }
-    }
-
-    $memcached = new \Memcached();
-    $memcached->addServers($servers);
-    if (is_array($sessionId) && ($c = count($sessionId)) > 0) {
-      $clause = rtrim(str_repeat("?,", $c), ",");
-      $db->query("DELETE FROM `sessions` WHERE `id` IN ({$clause})", str_repeat("s", $c), $sessionId);
+      // Build the array as expected by Memcached::addServers().
+      $c = count($servers);
       for ($i = 0; $i < $c; ++$i) {
-        $sessionId[$i] = "{$sessionPrefix}{$sessionId[$i]}";
+        $servers[$i] = explode(":", $servers[$i]);
+        // The port is mandatory!
+        if (!isset($servers[$i][1])) {
+          $servers[$i][1] = 0;
+        }
       }
-      $memcached->deleteMulti($sessionId);
-    }
-    else {
-      $db->query("DELETE FROM `sessions` WHERE `id` = ?", "s", [ $sessionId ]);
-      $memcached->delete("{$sessionPrefix}{$sessionId}");
-    }
 
+      $memcached = new \Memcached();
+      $memcached->addServers($servers);
+      if (is_array($sessionId) && ($c = count($sessionId)) > 0) {
+        $clause = rtrim(str_repeat("?,", $c), ",");
+        $db->query("DELETE FROM `sessions` WHERE `id` IN ({$clause})", str_repeat("s", $c), $sessionId);
+        for ($i = 0; $i < $c; ++$i) {
+          $sessionId[$i] = "{$sessionPrefix}{$sessionId[$i]}";
+        }
+        $memcached->deleteMulti($sessionId);
+      }
+      else {
+        $db->query("DELETE FROM `sessions` WHERE `id` = ?", "s", [ $sessionId ]);
+        $memcached->delete("{$sessionPrefix}{$sessionId}");
+      }
+    }
+    catch (\Exception $e) {
+      Log::critical($e);
+    }
     return $this;
   }
 
@@ -382,15 +480,24 @@ class Session implements \ArrayAccess {
       }
 
       // Remove the session and language cookie.
-      $kernel->cookieDelete($this->name);
-      $kernel->cookieDelete("lang");
+      $kernel->cookieDelete([ $this->name, "lang" ]);
 
       // Delete all sessions if the flag is set.
       if ($deleteAllSessions === true) {
+        // @devStart
+        // @codeCoverageIgnoreStart
+        Log::debug("Deleting all Sessions");
+        // @codeCoverageIgnoreEnd
+        // @devEnd
         $this->delete();
       }
       // Otherwise only delete the current session.
       else {
+        // @devStart
+        // @codeCoverageIgnoreStart
+        Log::debug("Deleting Session", [ "id" => $this->id ]);
+        // @codeCoverageIgnoreEnd
+        // @devEnd
         $this->delete($this->id);
       }
     }
@@ -402,7 +509,7 @@ class Session implements \ArrayAccess {
     $this->userAvatar      = null;
     $this->userId          = 0;
     $this->userName        = $kernel->remoteAddress;
-    $this->userTimeZoneId  = ini_get("date.timezone");
+    $this->userTimeZone    = date_default_timezone_get();
 
     return $this;
   }
@@ -438,15 +545,19 @@ class Session implements \ArrayAccess {
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Kernel $kernel
    * @return this
-   * @throws \MovLib\Exception\DatabaseException
    */
   public function insert() {
     global $db, $kernel;
-    $db->query(
-      "INSERT INTO `sessions` (`id`, `user_id`, `user_agent`, `ip_address`, `authentication`) VALUES (?, ?, ?, ?, FROM_UNIXTIME(?))",
-      "sdssi",
-      [ $this->id, $this->userId, $kernel->userAgent, inet_pton($kernel->remoteAddress), $this->authentication ]
-    );
+    try {
+      $db->query(
+        "INSERT INTO `sessions` (`id`, `user_id`, `user_agent`, `ip_address`, `authentication`) VALUES (?, ?, ?, ?, FROM_UNIXTIME(?))",
+        "sdssi",
+        [ $this->id, $this->userId, $kernel->userAgent, inet_pton($kernel->remoteAddress), $this->authentication ]
+      );
+    }
+    catch (DatabaseException $e) {
+      Log::critical($e);
+    }
     return $this;
   }
 
@@ -462,10 +573,20 @@ class Session implements \ArrayAccess {
   public function isAdmin() {
     global $db;
     static $isAdmin = null;
-    if ($this->isAuthenticated === true) {
+    if ($this->isAuthenticated === false) {
       if (!$isAdmin) {
-        $result  = $db->query("SELECT `admin` FROM `users` WHERE `id` = ? LIMIT 1", "d", [ $this->userId ])->get_result()->fetch_row();
-        $isAdmin = (!empty($result[0]) && (boolean) $result[0] === true);
+        try {
+          $result = $db
+            ->query("SELECT `admin` FROM `users` WHERE `id` = ? LIMIT 1", "d", [ $this->userId ])
+            ->get_result()
+            ->fetch_row()
+          ;
+          $isAdmin = (!empty($result[0]) && $result[0] === 1);
+        }
+        catch (DatabaseException $e) {
+          Log::critical($e);
+          $isAdmin = false;
+        }
       }
       return $isAdmin;
     }
@@ -488,9 +609,14 @@ class Session implements \ArrayAccess {
   public function passwordNeedsRehash($password, $rawPassword) {
     global $kernel;
     if (password_needs_rehash($password, PASSWORD_DEFAULT, $kernel->passwordOptions) === true) {
-      $user     = new FullUser(FullUser::FROM_ID, $this->userId);
-      $password = $user->hashPassword($rawPassword);
-      $user->updatePassword($password);
+      try {
+        $user     = new FullUser(FullUser::FROM_ID, $this->userId);
+        $password = $user->hashPassword($rawPassword);
+        $user->updatePassword($password);
+      }
+      catch (\Exception $e) {
+        Log::critical($e);
+      }
     }
     return $this;
   }
@@ -503,16 +629,23 @@ class Session implements \ArrayAccess {
    */
   protected function regenerate() {
     global $kernel;
-
-    // Do nothing if this method isn't called via nginx!
+    // @devStart
+    // @codeCoverageIgnoreStart
+    Log::debug("Regenerating Session ID");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     if ($kernel->fastCGI === true) {
-      session_regenerate_id(true);
-      if ($this->userId > 0) {
-        $kernel->delayMethodCall([ $this, "update" ], [ $this->id ]);
+      if (session_regenerate_id(true) === true) {
+        if ($this->userId > 0) {
+          $kernel->delayMethodCall([ $this, "update" ], [ $this->id ]);
+        }
+        $this->id = session_id();
       }
-      $this->id = session_id();
+      else {
+        Log::critical("Couldn't regenerate session identifier", [ "session" => $this ]);
+        $this->destroy();
+      }
     }
-
     return $this;
   }
 
@@ -539,11 +672,6 @@ class Session implements \ArrayAccess {
       // If this session belongs to an authenticated user, update the last access time.
       if ($this->isAuthenticated === true) {
         $kernel->delayMethodCall([ $this, "updateUserAccess" ]);
-        $_SESSION["auth"]   = $this->authentication;
-        $_SESSION["id"]     = $this->userId;
-        $_SESSION["avatar"] = $this->userAvatar;
-        $_SESSION["name"]   = $this->userName;
-        $_SESSION["tz"]     = $this->userTimeZoneId;
       }
 
       // Commit session to memcached and release session lock.
@@ -596,7 +724,7 @@ class Session implements \ArrayAccess {
     // @devStart
     // @codeCoverageIgnoreStart
     else {
-      Log::debug("Not starting new session, no in cookie supporting environment");
+      Log::debug("Not starting new session, not in cookie supporting environment");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -612,15 +740,19 @@ class Session implements \ArrayAccess {
    * @param string $oldId
    *   The old session ID that should be updated.
    * @return this
-   * @throws \MovLib\Exception\DatabaseException
    */
   public function update($oldId) {
     global $db, $kernel;
-    $db->query(
-      "UPDATE `sessions` SET `id` = ?, `ip_address` = ?, `user_agent` = ? WHERE `id` = ? AND `user_id` = ?",
-      "ssssd",
-      [ $this->id, inet_pton($kernel->remoteAddress), $kernel->userAgent, $oldId, $this->userId ]
-    );
+    try {
+      $db->query(
+        "UPDATE `sessions` SET `id` = ?, `ip_address` = ?, `user_agent` = ? WHERE `id` = ? AND `user_id` = ?",
+        "ssssd",
+        [ $this->id, inet_pton($kernel->remoteAddress), $kernel->userAgent, $oldId, $this->userId ]
+      );
+    }
+    catch (DatabaseException $e) {
+      Log::critical($e);
+    }
     return $this;
   }
 
@@ -632,7 +764,12 @@ class Session implements \ArrayAccess {
    */
   public function updateUserAccess() {
     global $db;
-    $db->query("UPDATE `users` SET `access` = CURRENT_TIMESTAMP WHERE `id` = ?", "d", [ $this->userId ]);
+    try {
+      $db->query("UPDATE `users` SET `access` = CURRENT_TIMESTAMP WHERE `id` = ?", "d", [ $this->userId ]);
+    }
+    catch (DatabaseException $e) {
+      Log::critical($e);
+    }
     return $this;
   }
 

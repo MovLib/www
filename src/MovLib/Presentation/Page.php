@@ -595,12 +595,14 @@ class Page extends \MovLib\Presentation\AbstractBase {
   /**
    * Initialize the page.
    *
+   * @global \MovLib\Data\Cache $cache
+   * @global \MovLib\Kernel $kernel
    * @param string $title
    *   The already translated title of this page.
    * @return this
    */
   final protected function initPage($title) {
-    global $kernel;
+    global $cache, $kernel;
 
     // The substr() removes the \MovLib\Presentation\ part!
     $className         = strtolower(substr(get_class($this), 20));
@@ -614,8 +616,8 @@ class Page extends \MovLib\Presentation\AbstractBase {
     // anymore because we're displaying alert messages, we also remove the cookie directly after displaying the alerts
     // to ensure that subsequent requests can be cached.
     if (isset($_COOKIE["alerts"])) {
-      $kernel->cacheable = false;
-      $this->alerts     .= $_COOKIE["alerts"];
+      $cache->cacheable = false;
+      $this->alerts    .= $_COOKIE["alerts"];
       $kernel->cookieDelete("alerts");
     }
 

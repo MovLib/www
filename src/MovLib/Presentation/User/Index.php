@@ -80,12 +80,19 @@ class Index extends \MovLib\Presentation\Page {
 
   /**
    * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Data\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
    */
   protected function getPageContent() {
-    global $i18n, $session;
+    global $i18n, $kernel, $session;
     if ($session->isAuthenticated === false) {
-      $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/profile/join")}'>{$i18n->t("Join {sitename}", [ "sitename" => $kernel->siteName ])}</a>";
+      $this->headingBefore =
+        "<a class='btn btn-large btn-success fr' href='{$i18n->r("/profile/join")}'>{$i18n->t(
+          "Join {sitename}",
+          [ "sitename" => $kernel->siteName ]
+        )}</a>"
+      ;
     }
     $list  = null;
     $users = $this->users->getOrderedByCreatedResult($this->paginationOffset, $this->paginationLimit);

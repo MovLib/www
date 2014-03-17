@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\Image;
 
+use \MovLib\Data\FileSystem;
 use \MovLib\Data\Shell;
 
 /**
@@ -105,16 +106,14 @@ trait TraitOptimizeImage {
   /**
    * Optimize SVG image.
    *
-   * @global \MovLib\Kernel $kernel
    * @param string $svg
    *   Absolute path to the SVG image.
    * @return this
    * @throws \RuntimeException
    */
   protected function optimizeSVG($svg) {
-    global $kernel;
     Shell::execute("svgo --input {$svg} --output {$svg}");
-    $kernel->compress($svg);
+    FileSystem::compress($svg);
     return $this;
   }
 

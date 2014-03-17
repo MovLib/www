@@ -220,10 +220,9 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
   protected function compressAssets() {
     $this->write("Compressing all assets...");
     $this->globRecursive($this->pathPublic, function ($splFileInfo) {
-      global $kernel;
       $realPath = $splFileInfo->getRealPath();
       $this->write("Compressing {$realPath}");
-      $kernel->compress($realPath);
+      FileSystem::compress($realPath);
     }, [ "css", "eot", "ico", "js", "ttf", "txt", "xml" ]);
     return $this->write("Successfully compressed all assets.");
   }

@@ -219,6 +219,49 @@ final class FileSystem {
   }
 
   /**
+   * Compress file with GZIP.
+   *
+   * @param string $path
+   *   Absolute path to the file that should be compressed.
+   * @return this
+   * @throws \RuntimeException
+   */
+  public static function compress($path) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($path) || !is_string($path)) {
+      throw new \InvalidArgumentException("\$source cannot be empty and must be of type string");
+    }
+    if (!is_file($path) || !is_readable($path)) {
+      throw new \LogicException("'{$path}' file is not readable for compression");
+    }
+    if (!is_writable(dirname($path))) {
+      throw new \LogicException("Cannot write to '{$path}' directory for compression");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    try {
+      // Try to compress the file.
+      Shell::execute("zopfli --gzip --ext 'gz' {$path}");
+
+      // Make sure that the modification time is exactly the same (as recommended in the nginx docs).
+      if (touch("{$path}.gz", filemtime($path)) === false) {
+        // @codeCoverageIgnoreStart
+        throw new \Exception;
+        // @codeCoverageIgnoreEnd
+      }
+    }
+    catch (\Exception $e) {
+      $e = new \RuntimeException("Couldn't compress '{$path}'", null, $e);
+      Log::error($e);
+      throw $e;
+    }
+
+    return $this;
+  }
+
+  /**
    * Create local directory.
    *
    * @param string $path
@@ -641,13 +684,11 @@ final class FileSystem {
    *     <tr><td><code>FILE_APPEND</code></td>Append content to file rather than overwriting existing file content.<td></td>
    *     <tr><td><code>LOCK_EX</code></td>Acquire an exclusive lock on the file while writing<td></td>
    *   </table>
-   * @param null|integer $modificationTime [optional]
-   *   The file's modification time, defaults to <code>NULL</code> (current time).
-   * @param null|integer $accessTime [optional]
-   *   The file's access time, defaults to <code>NULL</code> (<var>$modificationTime</var> or current time).
+   * @return string
+   *   <var>$path</var>
    * @throws \RuntimeException
    */
-  public static function putContent($path, $content = null, $flags = 0, $modificationTime = null, $accessTime = null) {
+  public static function putContent($path, $content = null, $flags = 0) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($path) || is_string($path) === false) {
@@ -656,16 +697,19 @@ final class FileSystem {
     // @codeCoverageIgnoreEnd
     // @devEnd
     self::withinDocumentRoot($path);
-    if (file_put_contents($path, "{$content}", $flags) === false) {
+    try {
+      if (file_put_contents($path, "{$content}", $flags) === false) {
+        // @codeCoverageIgnoreStart
+        throw new \Exception;
+        // @codeCoverageIgnoreEnd
+      }
+    }
+    catch (\Exception $e) {
       $e = new \RuntimeException("Couldn't create and/or write to file {$path}");
-    }
-    elseif ($modificationTime && touch($path, $modificationTime, $accessTime ?: $modificationTime) === false) {
-      $e = new \RuntimeException("Couldn't change modification and/or access time of tile {$path}");
-    }
-    if ($e) {
       Log::error($e);
       throw $e;
     }
+    return $path;
   }
 
   /**
@@ -736,6 +780,35 @@ final class FileSystem {
 
     // Always lowercase all filenames for better compatibility.
     return mb_strtolower($filename);
+  }
+
+  /**
+   * Set modification and access time of a file.
+   *
+   * @param string $path
+   *   The file's absolute path.
+   * @param null|integer $modificationTime [optional]
+   *   The file's modification time, defaults to <code>NULL</code> (current time).
+   * @param null|integer $accessTime [optional]
+   *   The file's access time, defaults to <code>NULL</code> (<var>$modificationTime</var> or current time).
+   * @return string
+   *   <var>$path</var>
+   * @throws \RuntimeException
+   */
+  public static function touch($path, $modificationTime = null, $accessTime = null) {
+    try {
+      if (touch($path, $modificationTime, $accessTime) === false) {
+        // @codeCoverageIgnoreStart
+        throw new \Exception;
+        // @codeCoverageIgnoreEnd
+      }
+    }
+    catch (\Exception $e) {
+      $e = new \RuntimeException("Couldn't touch '{$path}'");
+      Log::error($e);
+      throw $e;
+    }
+    return $path;
   }
 
   /**

@@ -60,6 +60,7 @@ abstract class AbstractRedirect extends \MovLib\Exception\AbstractClientExceptio
   /**
    * Instantiate new redirect exception.
    *
+   * @global \MovLib\Data\Cache $cache
    * @global \MovLib\Kernel $kernel
    * @param int $httpResponseCode
    *   The redirect's status code.
@@ -69,8 +70,8 @@ abstract class AbstractRedirect extends \MovLib\Exception\AbstractClientExceptio
    *   The redirect's translated payload title.
    */
   public function __construct($httpResponseCode, $route, $title) {
-    global $kernel;
-    $kernel->cacheable = false;
+    global $cache, $kernel;
+    $cache->cacheable = false;
     if (strpos($route, "http") === false) {
       $route = "{$kernel->scheme}://{$kernel->hostname}{$route}";
     }

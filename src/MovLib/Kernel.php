@@ -20,10 +20,10 @@ namespace MovLib;
 use \MovLib\Data\Cache;
 use \MovLib\Data\Database;
 use \MovLib\Data\I18n;
+use \MovLib\Data\Log;
 use \MovLib\Data\Mailer;
 use \MovLib\Data\User\Session;
 use \MovLib\Exception\AbstractClientException;
-use \MovLib\Presentation\Email\FatalErrorEmail;
 use \MovLib\Presentation\Error\Forbidden;
 use \MovLib\Presentation\Error\Unauthorized;
 use \MovLib\Presentation\Stacktrace;
@@ -49,15 +49,6 @@ class Kernel {
    * @var string
    */
   public $alerts;
-
-  /**
-   * Indicates whether this request is cacheable or not.
-   *
-   * POST request aren't cacheable by default.
-   *
-   * @var boolean
-   */
-  public $cacheable;
 
   /**
    * Associative array containing the cache buster strings for the various assets.
@@ -98,63 +89,63 @@ class Kernel {
    *
    * @var string
    */
-  public $domainAPI = "api.movlib.org";
+  public $domainAPI = "api";
 
   /**
    * The default domain, without scheme or trailing slash, e.g. <code>"movlib.org"</code>.
    *
    * @var string
    */
-  public $domainDefault = "alpha.movlib.org";
+  public $domainDefault;
 
   /**
    * The localize domain, without scheme or trailing slash, e.g. <code>"localize.movlib.org"</code>.
    *
    * @var string
    */
-  public $domainLocalize = "localize.movlib.org";
+  public $domainLocalize = "localize";
 
   /**
    * The secure tools domain, without scheme or trailing slash, e.g. <code>"secure.tools.movlib.org"</code>.
    *
    * @var string
    */
-  public $domainSecureTools = "secure.tools.movlib.org";
+  public $domainSecureTools = "secure.tools";
 
   /**
    * The static domain, without scheme or trailing slash, e.g. <code>"static.movlib.org"</code>.
    *
    * @var string
    */
-  public $domainStatic = "alpha.movlib.org";
+  public $domainStatic;
 
   /**
    * The tools domain, without scheme or trailing slash, e.g. <code>"tools.movlib.org"</code>.
    *
    * @var string
    */
-  public $domainTools = "tools.movlib.org";
+  public $domainTools = "tools";
 
   /**
    * The developer mailinglist email address.
    *
    * @var string
    */
-  public $emailDevelopers = "developers@movlib.org";
+  public $emailDevelopers;
 
   /**
    * The default from address for emails.
    *
    * @var string
    */
-  public $emailFrom = "noreply@movlib.org";
+  public $emailFrom;
 
   /**
    * The webmaster email address.
    *
    * @var string
    */
-  public $emailWebmaster = "webmaster@movlib.org";
+  public $emailWebmaster;
 
   /**
    * Whether this request is handled via FastCGI or not.
@@ -168,7 +159,7 @@ class Kernel {
    *
    * @var string
    */
-  public $hostname = "movlib.org";
+  public $hostname;
 
   /**
    * Whether this request is secure or not.
@@ -349,6 +340,7 @@ class Kernel {
   /**
    * Instantiate new Bootstrap process.
    *
+   * @global \MovLib\Data\Cache $cache
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
@@ -357,7 +349,7 @@ class Kernel {
    *   The absolute path to the current working directory (not the symbolic link).
    */
   public function __construct($documentRoot) {
-    global $db, $i18n, $kernel, $session;
+    global $cache, $db, $i18n, $kernel, $session;
 
     // Export ourself to global scope and allow any layer to access the kernel's public properties.
     $kernel = $this;
@@ -366,30 +358,45 @@ class Kernel {
     set_error_handler([ $this, "errorHandler" ], -1);
 
     // Catch fatal errors and ensure that something is displayed to the client.
-    if (isset($_SERVER["FCGI_ROLE"])) {
+    $this->fastCGI = isset($_SERVER["FCGI_ROLE"]);
+    if ($this->fastCGI === true) {
       register_shutdown_function([ $this, "fatalErrorHandler" ]);
     }
 
     try {
       // Initialize environment properties based on variables passed in by nginx.
-      $this->cacheable        = $_SERVER["REQUEST_METHOD"] == "GET";
-      $this->documentRoot     = $documentRoot;
-      $this->hostname         = $_SERVER["SERVER_NAME"];
-      $this->https            = isset($_SERVER["HTTPS"]);
-      $this->pathCache        = "{$this->documentRoot}{$this->pathCache}/{$_SERVER["LANGUAGE_CODE"]}";
-      $this->pathTranslations = "{$this->documentRoot}{$this->pathTranslations}";
-      $this->production       = (boolean) $_ENV["PRODUCTION"];
-      $this->protocol         = $_SERVER["SERVER_PROTOCOL"];
+      $this->documentRoot      = $documentRoot;
+      $this->domainDefault     = $_ENV["DOMAIN_DEFAULT"];
+      $this->domainAPI         = "{$this->domainAPI}.{$this->domainDefault}";
+      $this->domainLocalize    = "{$this->domainLocalize}.{$this->domainDefault}";
+      $this->domainSecureTools = "{$this->domainSecureTools}.{$this->domainDefault}";
+      $this->domainStatic      = $_ENV["DOMAIN_STATIC"];
+      $this->domainTools       = "{$this->domainTools}.{$this->domainDefault}";
+      $this->emailDevelopers   = $_ENV["EMAIL_DEVELOPERS"];
+      $this->emailFrom         = $_ENV["EMAIL_FROM"];
+      $this->emailWebmaster    = $_ENV["EMAIL_WEBMASTER"];
+      $this->hostname          = $_SERVER["SERVER_NAME"];
+      $this->https             = isset($_SERVER["HTTPS"]);
+      $this->pathCache         = "{$this->documentRoot}{$this->pathCache}/{$_SERVER["LANGUAGE_CODE"]}";
+      $this->pathTranslations  = "{$this->documentRoot}{$this->pathTranslations}";
+      $this->production        = (boolean) $_ENV["PRODUCTION"];
+      $this->protocol          = $_SERVER["SERVER_PROTOCOL"];
       // @todo If we're ever going to use proxy servers this code has to be changed!
       //       https://github.com/komola/ZendFramework/blob/master/Controller/Request/Http.php#L1054
-      $this->remoteAddress    = filter_var($_SERVER["REMOTE_ADDR"], FILTER_VALIDATE_IP, FILTER_REQUIRE_SCALAR);
-      $this->requestMethod    = $_SERVER["REQUEST_METHOD"];
-      $this->requestPath      = $_SERVER["REQUEST_PATH"];
-      $this->requestURI       = $_SERVER["REQUEST_URI"];
-      $this->scheme           = $_SERVER["SCHEME"];
-      $this->systemGroup      = $_ENV["SYSTEM_GROUP"];
-      $this->systemUser       = $_ENV["SYSTEM_USER"];
-      $this->userAgent        = filter_var($_SERVER["HTTP_USER_AGENT"], FILTER_SANITIZE_STRING, FILTER_REQUIRE_SCALAR | FILTER_FLAG_STRIP_LOW);
+      $this->remoteAddress     = filter_var($_SERVER["REMOTE_ADDR"], FILTER_VALIDATE_IP, FILTER_REQUIRE_SCALAR);
+      $this->requestMethod     = $_SERVER["REQUEST_METHOD"];
+      $this->requestPath       = $_SERVER["REQUEST_PATH"];
+      $this->requestURI        = $_SERVER["REQUEST_URI"];
+      $this->scheme            = $_SERVER["SCHEME"];
+      $this->systemGroup       = $_ENV["SYSTEM_GROUP"];
+      $this->systemUser        = $_ENV["SYSTEM_USER"];
+      $this->userAgent         = filter_var($_SERVER["HTTP_USER_AGENT"], FILTER_SANITIZE_STRING, FILTER_REQUIRE_SCALAR | FILTER_FLAG_STRIP_LOW);
+
+      // @devStart
+      // @codeCoverageIgnoreStart
+      $this->domainDefault = "alpha.{$this->domainDefault}";
+      // @codeCoverageIgnoreEnd
+      // @devEnd
 
       // Configure fast autoloader.
       //spl_autoload_register([ $this, "autoload" ], true);
@@ -421,7 +428,7 @@ class Kernel {
 
       // If either the client's IP address or user agent string are invalid or empty abort execution.
       if ($this->remoteAddress === false || $this->userAgent === false) {
-        throw new Forbidden(
+        $e = new Forbidden(
           "<p>{$i18n->t("IP address or user agent string is invalid or empty.")}</p>" .
           "<p>{$i18n->t(
             "Please note that you have to submit your IP address and user agent string to identify yourself as being " .
@@ -429,6 +436,8 @@ class Kernel {
             [ "privacy_policy" => "<a href='{$i18n->r("/privacy-policy")}'>{$i18n->t("Privacy Policy")}</a>" ]
           )}</p>"
         );
+        Log::warning($e);
+        throw $e;
       }
 
       // If we have a valid IP address and user agent string initialize a session for the client.
@@ -454,20 +463,28 @@ class Kernel {
         throw new Unauthorized;
       }
 
+      // Instantiate the cache if we are serving a presentation.
+      $cache            = new Cache();
+      $cache->cacheable = $_SERVER[ "REQUEST_METHOD" ] == "GET";
+
       // Try to get the presentation.
       $presentation = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
       $presentation = (new $presentation())->getPresentation();
     }
     catch (AbstractClientException $clientException) {
+      Log::notice($clientException);
       $presentation = $clientException->getPresentation();
     }
-    catch (\Exception $exception) {
-      error_log($exception);
+    catch (\Exception $e) {
       try {
-        $presentation = (new Stacktrace($exception))->getPresentation();
+        $presentation = (new Stacktrace($e))->getPresentation();
+        // Log after trying to fetch the exception, if above code results in an exception things are worse than we
+        // thought.
+        Log::alert($e);
       }
       catch (\Exception $e) {
-        header("content-type: text/plain");
+        Log::emergency($e);
+        header("Content-Type: text/plain; charset=utf-8");
         exit("==== FATAL ERROR ====\n\n{$e}");
       }
     }
@@ -484,47 +501,69 @@ class Kernel {
         $session->shutdown();
       }
 
+      // @devStart
+      // @codeCoverageIgnoreStart
+      Log::debug("Response Time: " . (microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"]));
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+
+      // @devStart
+      // @codeCoverageIgnoreStart
+      if (empty($presentation)) {
+        header("Content-Type: test/plain; charset=utf-8");
+        echo "==== PRESENTATION IS EMPTY ====";
+      }
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+
       // Render the presentation.
       echo $presentation;
 
       // Special function that is only available with php-fpm, this sends the previously rendered presentation to the
       // client but execution of this script will continue below this function call.
-      if (isset($_SERVER["FCGI_ROLE"])) {
+      if ($this->fastCGI === true) {
         fastcgi_finish_request();
       }
 
       // Calculate execution time for response generation and log if it took too long.
-      $responseEnd = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"];
-      if ($responseEnd > 0.75) {
-        error_log("SLOW: Response took too long to generate with {$responseEnd} seconds for URI {$this->scheme}://{$this->hostname}{$this->requestURI}");
+      if (($responseEnd = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"]) > 0.75) {
+        Log::notice("Slow Response", [
+          "time" => $responseEnd,
+          "uri"  => "{$this->scheme}://{$this->hostname}{$this->requestURI}",
+        ]);
       }
 
       // Can we cache this presentation?
-      if ($this->cacheable === true && $session->isAuthenticated === false) {
-        //(new Cache())->save($presentation);
-      }
+      $cache->save($presentation);
 
       // Execute each delayed method.
       if ($this->delayedMethods) {
         foreach ($this->delayedMethods as list($callable, $params)) {
-          if ($params) {
-            call_user_func_array($callable, $params);
+          try {
+            call_user_func_array($callable, (array) $params);
           }
-          else {
-            call_user_func($callable);
+          catch (\Exception $e) {
+            Log::error($e);
           }
         }
       }
 
       // Send all delayed emails.
       if ($this->delayedEmails) {
-        new Mailer($this->delayedEmails);
+        try {
+          new Mailer($this->delayedEmails);
+        }
+        catch (\Exception $e) {
+          Log::critical($e);
+        }
       }
 
       // Calculate time for response and delayed generation and log if it took too long.
-      $delayedEnd = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"];
-      if ($delayedEnd > 5.0) {
-        error_log("SLOW: Delayed took too long to execute with {$delayedEnd} seconds for URI {$this->scheme}://{$this->hostname}{$this->requestURI}");
+      if (($delayedEnd = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"]) > 5.0) {
+        Log::info("Slow Delayed", [
+          "time" => $delayedEnd,
+          "uri"  => "{$this->scheme}://{$this->hostname}{$this->requestURI}",
+        ]);
       }
     }
   }
@@ -532,46 +571,6 @@ class Kernel {
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-
-  /**
-   * Compress given file with GZIP for nginx.
-   *
-   * @param string $source
-   *   Absolute path to the file that should be compressed.
-   * @return this
-   */
-  public function compress($source) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (empty($source)) {
-      throw new \InvalidArgumentException("\$source cannot be empty for compression");
-    }
-    if (!is_file($source) || !is_readable($source)) {
-      throw new \RuntimeException("'{$source}' file is not readable for compression");
-    }
-    if (!is_writable(dirname($source))) {
-      throw new \RuntimeException("Cannot write to '{$source}' directory for compression");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
-    try {
-      // Try to compress the file.
-      $this->shellExecute("zopfli --gzip --ext 'gz' {$source}");
-
-      // Make sure that the modification time is exactly the same (as recommended in the nginx docs).
-      touch("{$source}.gz", filemtime($source));
-    }
-    catch (\RuntimeException $e) {
-      // This method is used in CLI programs as well, we actually want to throw the exception in that context.
-      if ($this->fastCGI === false) {
-        throw $e;
-      }
-      error_log($e);
-    }
-
-    return $this;
-  }
 
   /**
    * Get absolute URL for an asset file.
@@ -648,21 +647,46 @@ class Kernel {
    * @param boolean $httpOnly [optional]
    *   Whether this cookie should be http only (not accessible for JavaScript) or not.
    * @return this
+   * @throws \LogicException
    */
   public function cookieCreate($id, $value, $expire = 0, $httpOnly = false) {
-    setcookie($id, $value, $expire, "/", $this->domainDefault, $this->https, $httpOnly);
+    // @devStart
+    // @codeCoverageIgnoreStart
+    Log::debug("Creating Cookie", [ "id" => $id, "value" => $value ]);
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    try {
+      if (setcookie($id, $value, $expire, "/", $this->domainDefault, $this->https, $httpOnly) === false) {
+        // @codeCoverageIgnoreStart
+        throw new \Exception;
+        // @codeCoverageIgnoreEnd
+      }
+    }
+    catch (\Exception $e) {
+      $e = new \LogicException("Couldn't create cookie", null, $e);
+      Log::error($e);
+      throw $e;
+    }
     return $this;
   }
 
   /**
-   * Delete cookie.
+   * Delete cookie(s).
    *
-   * @param string $id
-   *   The cookie's unique identifier.
+   * @param string|array $ids
+   *   The cookie's unique identifier(s).
    * @return this
+   * @throws \LogicException
    */
-  public function cookieDelete($id) {
-    setcookie($id, "", 1, "/", $this->domainDefault, $this->https, false);
+  public function cookieDelete($ids) {
+    foreach ((array) $ids as $id) {
+      // @devStart
+      // @codeCoverageIgnoreStart
+      Log::debug("Deleting Cookie", [ "id" => $id ]);
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+      $this->cookieCreate($id, "", 1);
+    }
     return $this;
   }
 
@@ -676,6 +700,16 @@ class Kernel {
    * @return this
    */
   public function delayMethodCall($callable, array $params = null) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (is_callable($callable) === false) {
+      throw new \InvalidArgumentException("\$callable cannot be empty and must be of type callable");
+    }
+    if (isset($params) && !is_array($params)) {
+      throw new \InvalidArgumentException("\$params cannot be empty and must be of type array");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     $this->delayedMethods[] = [ $callable, $params ];
     return $this;
   }
@@ -719,37 +753,44 @@ class Kernel {
    */
   public function fatalErrorHandler() {
     if (($error = error_get_last())) {
-      $line = __LINE__ - 2;
+      try {
+        $line = __LINE__ - 2;
 
-      // Let xdebug provide the stack if available (not the best, but better than none).
-      if (function_exists("xdebug_get_function_stack")) {
-        $error["trace"]            = array_reverse(xdebug_get_function_stack());
-        $error["trace"][0]["line"] = $line;
+        // Let xdebug provide the stack if available (not the best, but better than none).
+        if (function_exists("xdebug_get_function_stack")) {
+          $error["trace"]            = array_reverse(xdebug_get_function_stack());
+          $error["trace"][0]["line"] = $line;
+        }
+        // We have to build our own trace, well, at least we can try with the available information.
+        else {
+          $error["trace"] = [
+            [ "function" => __FUNCTION__, "line" => $line, "file" => __FILE__ ],
+            [ "function" => "<em>unknown</em>", "line" => $error["line"], "file" => $error["file"] ],
+          ];
+        }
+
+        // Please note that we HAVE TO use PHP's base exception class at this point, otherwise we can't set our own trace!
+        $exception       = new \Exception($error["message"], $error["type"]);
+        $reflectionClass = new \ReflectionClass($exception);
+        $properties      = [ "file", "line", "trace" ];
+        $i               = 3;
+        while ($i--) {
+          $reflectionProperty = $reflectionClass->getProperty($properties[$i]);
+          $reflectionProperty->setAccessible(true);
+          $reflectionProperty->setValue($exception, $error[$properties[$i]]);
+        }
+
+        // Display internal server error page to client.
+        $presentation = (new Stacktrace($exception, true))->getPresentation();
       }
-      // We have to build our own trace, well, at least we can try with the available information.
-      else {
-        $error["trace"] = [
-          [ "function" => __FUNCTION__, "line" => $line, "file" => __FILE__ ],
-          [ "function" => "<em>unknown</em>", "line" => $error["line"], "file" => $error["file"] ],
-        ];
+      catch (\Exception $e) {
+        header("Content-Type: text/plain; charset=utf-8");
+        $presentation = (string) $e;
       }
 
-      // Please note that we HAVE TO use PHP's base exception class at this point, otherwise we can't set our own trace!
-      $exception       = new \Exception($error["message"], $error["type"]);
-      $reflectionClass = new \ReflectionClass($exception);
-      $properties      = [ "file", "line", "trace" ];
-      $i               = 3;
-      while ($i--) {
-        $reflectionProperty = $reflectionClass->getProperty($properties[$i]);
-        $reflectionProperty->setAccessible(true);
-        $reflectionProperty->setValue($exception, $error[$properties[$i]]);
-      }
-
-      // Send an email to all developers.
-      (new Mailer())->send(new FatalErrorEmail($exception));
-
-      // Display internal server error page to client.
-      exit((new Stacktrace($exception, true))->getPresentation());
+      // Log this error, send an email to all developers, and display the error to the user.
+      Log::emergency($exception);
+      exit($presentation);
     }
   }
 
@@ -761,6 +802,13 @@ class Kernel {
    * @return this
    */
   public function sendEmail($email) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($email) || !($email instanceof \MovLib\Presentation\Email\AbstractEmail)) {
+      throw new \InvalidArgumentException("\$email cannot be empty and must be of type \\MovLib\\Presentation\\Email\\AbstractEmail");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     $this->delayedEmails[] = $email;
     return $this;
   }

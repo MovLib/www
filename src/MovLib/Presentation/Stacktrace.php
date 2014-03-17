@@ -59,6 +59,7 @@ class Stacktrace extends \MovLib\Presentation\Page {
   /**
    * Instantiate new stacktrace presentation page.
    *
+   * @global \MovLib\Data\Cache $cache
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    * @param \Exception $exception
@@ -68,11 +69,11 @@ class Stacktrace extends \MovLib\Presentation\Page {
    *   <code>FALSE</code>.
    */
   public function __construct($exception, $fatal = false) {
-    global $i18n, $kernel;
+    global $cache, $i18n, $kernel;
     http_response_code(500);
     $this->initPage($i18n->t("Internal Server Error"));
     $this->initBreadcrumb();
-    $kernel->cacheable     = false;
+    $cache->cacheable      = false;
     $kernel->stylesheets[] = "stacktrace";
     $this->exception       = $exception;
     $this->fatal           = $fatal;

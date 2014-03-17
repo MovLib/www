@@ -51,6 +51,7 @@ class Unauthorized extends \MovLib\Exception\AbstractClientException {
   /**
    * Instantiate new unauthorized exception.
    *
+   * @global \MovLib\Data\Cache $cache
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
@@ -66,10 +67,10 @@ class Unauthorized extends \MovLib\Exception\AbstractClientException {
    *   Defaults to <code>FALSE</code>.
    */
   public function __construct($message = null, $title = null, $severity = Alert::SEVERITY_ERROR, $destroySession = false) {
-    global $i18n, $kernel, $session;
+    global $cache, $i18n, $kernel, $session;
 
     // Ensure that the sign in form won't be cached for this location and won't auto-validate any POST data.
-    $kernel->cacheable     = false;
+    $cache->cacheable      = false;
     $kernel->requestMethod = "GET";
 
     // Use translated defaults if nothing else is provided.

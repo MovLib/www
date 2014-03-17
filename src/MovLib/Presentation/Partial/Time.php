@@ -84,7 +84,7 @@ class Time extends \MovLib\Presentation\AbstractBase {
    */
   public function __toString() {
     global $i18n, $session;
-    $time = new \IntlDateFormatter($i18n->locale, \IntlDateFormatter::NONE, $this->timeFormat, $session->userTimeZoneId);
+    $time = new \IntlDateFormatter($i18n->locale, \IntlDateFormatter::NONE, $this->timeFormat, $session->userTimeZone);
     return "<time>{$time->format($this->time)}</time>";
   }
 

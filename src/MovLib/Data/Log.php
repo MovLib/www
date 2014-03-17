@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data;
 
+use \Monolog\Formatter\HtmlFormatter;
 use \Monolog\Formatter\LineFormatter;
 use \Monolog\Handler\ErrorLogHandler;
 use \Monolog\Handler\FingersCrossedHandler;
@@ -159,20 +160,32 @@ final class Log {
 
     // Instantiate logger if we have no instance yet.
     if (!$logger) {
+      // CRITICAL upwards triggers sending of email.
+      $mailer = new NativeMailerHandler(
+        $kernel->emailDevelopers,
+        "IMPORTANT! {$kernel->siteName} is experiencing problems!",
+        $kernel->emailFrom,
+        Logger::CRITICAL,
+        true,
+        2048
+      );
+      $mailer->setContentType("text/html");
+      $mailer->setFormatter(new HtmlFormatter());
 
-      // CRITICAL, ALERT, and EMERGENCY always trigger sending of email.
+      // DEBUG upwards will be logged to the error log.
+      $errorLog = new ErrorLogHandler();
+      $errorLog->setFormatter(new LineFormatter("%channel% %level_name%: %message% %context% %extra%\n", null, true));
+
+      // Always use the fingers crossed handler to ensure that we have as much information as possible.
       $handlers = [
-        new NativeMailerHandler(
-          $kernel->emailDevelopers, "IMPORTANT! {$kernel->siteName} is experiencing problems!", $kernel->emailFrom, Logger::CRITICAL
-        ),
-        new FingersCrossedHandler((new ErrorLogHandler())
-          ->setFormatter(new LineFormatter("%channel% %level_name%: %message% %context% %extra%\n", null, true))
-        )
+        new FingersCrossedHandler($mailer, Logger::CRITICAL),
+        new FingersCrossedHandler($errorLog, Logger::ERROR),
       ];
 
       // DEBUG, INFO, and NOTICE are sent to the client's browser if not in production and executed via php-fpm.
       if ($kernel->production === false && $kernel->fastCGI === true) {
-        $handlers[] = new FirePHPHandler(Logger::DEBUG, false);
+        $handlers[] = new FirePHPHandler();
+        $errorLog->setLevel(Logger::WARNING);
       }
 
       // Instantiate the new logger and store it in the static variable of this method for later usage.

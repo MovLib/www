@@ -67,7 +67,7 @@ class SessionTest extends \MovLib\TestCase {
     $this->assertEquals($_SERVER["REQUEST_TIME"], $this->session->authentication);
     $this->assertEquals(1, $this->session->userId);
     $this->assertEquals("Fleshgrinder", $this->session->userName);
-    $this->assertEquals("Europe/Vienna", $this->session->userTimeZoneId);
+    $this->assertEquals("Europe/Vienna", $this->session->userTimeZone);
   }
 
   /**
