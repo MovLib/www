@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Company;
 
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Listing\Movie\MoviePersonListing;
+use \MovLib\Presentation\Partial\Listing\MovieListing as MoviesPartial;
 
 /**
  * Movies of a company.
@@ -51,7 +51,9 @@ class Movies extends \MovLib\Presentation\Company\AbstractBase {
   }
 
   /**
-   * @return string
+   * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   * @return \MovLib\Presentation\Partial\Listing\MovieListing
    */
   protected function getPageContent() {
     global $i18n;

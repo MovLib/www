@@ -91,6 +91,13 @@ class Person extends \MovLib\Data\Image\AbstractImage {
   public $id;
 
   /**
+   * Associative array containing gendered and translated job names with the job identifiers as keys.
+   *
+   * @var array
+   */
+  protected $jobTranslations;
+
+  /**
    * The person's name.
    *
    * @var string
@@ -334,6 +341,43 @@ class Person extends \MovLib\Data\Image\AbstractImage {
       $count = $db->query("SELECT COUNT(`id`) FROM `persons` WHERE `deleted` = false LIMIT 1")->get_result()->fetch_row()[0];
     }
     return $count;
+  }
+
+  /**
+   * Get the translated and gendered job title.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @param integer $id
+   *   The job's identifier.
+   * @return string
+   *   The translated and gendered job title.
+   */
+  public function getJobTitle($id) {
+    global $db, $i18n;
+    if (!isset($this->jobTranslations[$id])) {
+      $this->jobTranslations[$id] = $db->query(
+        "SELECT
+          IFNULL(
+            COLUMN_GET(`jobs`.`dyn_names_sex0`, ? AS BINARY),
+            COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$i18n->defaultLanguageCode}' AS BINARY)
+          ),
+          IFNULL(
+            COLUMN_GET(`jobs`.`dyn_names_sex1`, ? AS BINARY),
+            COLUMN_GET(`jobs`.`dyn_names_sex1`, '{$i18n->defaultLanguageCode}' AS BINARY)
+          ),
+          IFNULL(
+            COLUMN_GET(`jobs`.`dyn_names_sex2`, ? AS BINARY),
+            COLUMN_GET(`jobs`.`dyn_names_sex2`, '{$i18n->defaultLanguageCode}' AS BINARY)
+          )
+        FROM `jobs`
+        WHERE `id` = ?
+        LIMIT 1",
+        "sssd",
+        [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $id ]
+      )->get_result()->fetch_row()[$this->sex];
+    }
+    return $this->jobTranslations[$id];
   }
 
   /**
