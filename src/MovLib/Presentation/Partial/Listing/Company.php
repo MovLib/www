@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Partial\Listing;
 
-use \MovLib\Data\Company\Company;
+use \MovLib\Data\Company\Company as DataCompany;
 use \MovLib\Presentation\Partial\Date;
 
 /**
@@ -29,7 +29,7 @@ use \MovLib\Presentation\Partial\Date;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Companies extends \MovLib\Presentation\Partial\Listing\AbstractListing {
+class Company extends \MovLib\Presentation\Partial\Listing\AbstractListing {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -40,7 +40,7 @@ class Companies extends \MovLib\Presentation\Partial\Listing\AbstractListing {
    *
    * @var integer
    */
-  public $imageStyle = Company::STYLE_SPAN_01;
+  public $imageStyle = DataCompany::STYLE_SPAN_01;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
