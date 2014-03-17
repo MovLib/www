@@ -113,7 +113,7 @@ class Show extends \MovLib\Presentation\Company\AbstractBase {
       $aliases = null;
       $c       = count($companyAliases);
       for ($i = 0; $i < $c; ++$i) {
-        $aliases .= "<li class='mb10 s' property='additionalName'>{$companyAliases[$i]}</li>";
+        $aliases .= "<li class='mb10 s s10' property='additionalName'>{$companyAliases[$i]}</li>";
       }
       $content .= $this->getSection("aliases", $i18n->t("Also Known As"), "<ul class='grid-list r'>{$aliases}</ul>");
     }
@@ -125,7 +125,7 @@ class Show extends \MovLib\Presentation\Company\AbstractBase {
       $c     = count($companyLinks);
       for ($i = 0; $i < $c; ++$i) {
         $hostname = str_replace("www.", "", parse_url($companyLinks[$i], PHP_URL_HOST));
-        $links .= "<li class='mb10 s'><a href='{$companyLinks[$i]}' property='url' rel='nofollow' target='_blank'>{$hostname}</a></li>";
+        $links .= "<li class='mb10 s s10'><a href='{$companyLinks[$i]}' property='url' rel='nofollow' target='_blank'>{$hostname}</a></li>";
       }
       $content .= $this->getSection("links", $i18n->t("External Links"), "<ul class='grid-list r'>{$links}</ul>");
     }

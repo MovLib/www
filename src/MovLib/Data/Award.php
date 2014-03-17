@@ -240,7 +240,7 @@ class Award extends \MovLib\Data\Image\AbstractImage {
    *   The total count of movies.
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function getMovieCount() {
+  public function getMoviesCount() {
     global $db;
     return $db->query(
       "SELECT
@@ -266,7 +266,7 @@ class Award extends \MovLib\Data\Image\AbstractImage {
    *   The mysqli result for all movies that have received this award.
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function getMovieResult() {
+  public function getMoviesResult() {
     return $this;
   }
 

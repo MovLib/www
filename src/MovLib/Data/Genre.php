@@ -160,7 +160,7 @@ class Genre extends \MovLib\Data\Database {
    * @return integer
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function getMovieCount() {
+  public function getMoviesCount() {
     global $db;
     return $db->query(
       "SELECT count(DISTINCT `movie_id`) as `count` FROM `movies_genres` WHERE `genre_id` = ?", "d", [ $this->id ]
@@ -176,7 +176,7 @@ class Genre extends \MovLib\Data\Database {
    *   The mysqli result for all movies that are of this genre.
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function getMovieResult() {
+  public function getMoviesResult() {
     global $db, $i18n;
     return $db->query(
       "SELECT

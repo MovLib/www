@@ -78,7 +78,7 @@ class Award extends \MovLib\Presentation\Partial\Listing\AbstractListing {
               "<span class='s s9'>" .
                 "<span class='fr'>" .
                   "<a class='ico ico-movie label' href='{$i18n->rp("{$award->route}/movies")}' title='{$moviesTitle}'>" .
-                    " &nbsp; {$award->getMovieCount()}" .
+                    " &nbsp; {$award->getMoviesCount()}" .
                   "</a>" .
                   "<a class='ico ico-series label' href='{$i18n->rp("{$award->route}/series")}' title='{$seriesTitle}'>" .
                     " &nbsp; {$award->getSeriesCount()}" .

@@ -24,18 +24,3 @@
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-
-/* Show. */
-.company #header .ico-wikipedia {
-  margin-right: 5px;
-}
-
-.company #aliases .s {
-  word-break: break-all;
-}
-
-.company #links .grid-list a {
-  box-shadow: none;
-  display: inline-block;
-  transition-property: color, border-color;
-}

@@ -63,8 +63,8 @@ class Entity extends \MovLib\Presentation\Partial\Listing\AbstractListing {
     if (class_exists("\\MovLib\\Data\\{$entityName}") === false) {
       throw new \InvalidArgumentException("\\MovLib\\Data\\{$entityName} must match an existing class");
     }
-    if (method_exists("\\MovLib\\Data\\{$entityName}", "getMovieCount") === false) {
-      throw new \InvalidArgumentException("\\MovLib\\Data\\{$entityName} must implement method 'getMovieCount()'.");
+    if (method_exists("\\MovLib\\Data\\{$entityName}", "getMoviesCount") === false) {
+      throw new \InvalidArgumentException("\\MovLib\\Data\\{$entityName} must implement method 'getMoviesCount()'.");
     }
     if (method_exists("\\MovLib\\Data\\{$entityName}", "getSeriesCount") === false) {
       throw new \InvalidArgumentException("\\MovLib\\Data\\{$entityName} must implement method 'getSeriesCount()'.");
@@ -109,7 +109,7 @@ class Entity extends \MovLib\Presentation\Partial\Listing\AbstractListing {
           "<li class='hover-item r'>" .
             "<div class='s s10'>" .
               "<span class='fr'>" .
-                "<a class='ico ico-movie label' href='{$moviesRoute}' title='{$moviesTitle}'> &nbsp; {$entity->getMovieCount()}</a>" .
+                "<a class='ico ico-movie label' href='{$moviesRoute}' title='{$moviesTitle}'> &nbsp; {$entity->getMoviesCount()}</a>" .
                 "<a class='ico ico-series label' href='{$seriesRoute}' title='{$seriesTitle}'> &nbsp; {$entity->getSeriesCount()}</a>" .
               "</span>" .
               "<a href='{$entity->route}'>{$entity->name}</a>" .

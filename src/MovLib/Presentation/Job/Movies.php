@@ -66,7 +66,7 @@ class Movies extends \MovLib\Presentation\Job\AbstractBase {
    */
   protected function getPageContent() {
     global $i18n;
-    return new MoviesPartial($this->job->getMovieResult(), (new Alert($i18n->t("Check back later"), $i18n->t("No movies found."), Alert::SEVERITY_INFO))->__toString());
+    return new MoviesPartial($this->job->getMoviesResult(), (new Alert($i18n->t("Check back later"), $i18n->t("No movies found."), Alert::SEVERITY_INFO))->__toString());
   }
 
 }
