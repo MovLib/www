@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Company;
 
 use \MovLib\Data\Company\FullCompany;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Listing\Movies as MoviesPartial;
+use \MovLib\Presentation\Partial\Listing\MovieListing as MoviesPartial;
 
 /**
  * Movies with a certain company associated.
@@ -62,7 +62,7 @@ class Movies extends \MovLib\Presentation\Company\AbstractBase {
   /**
    * @inheritdoc
    * @global \MovLib\Data\I18n $i18n
-   * @return \MovLib\Presentation\Partial\Listing\Movies
+   * @return \MovLib\Presentation\Partial\Listing\MovieListing
    */
   protected function getPageContent() {
     global $i18n;

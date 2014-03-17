@@ -18,7 +18,7 @@
 namespace MovLib\Data\Person;
 
 use \MovLib\Data\Place;
-use \MovLib\Data\Movie\Movie;
+use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Presentation\Error\NotFound;
 
 /**
@@ -32,12 +32,6 @@ use \MovLib\Presentation\Error\NotFound;
  * @since 0.0.1-dev
  */
 class FullPerson extends \MovLib\Data\Person\Person {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
-  const ROLE_ID_UNDEFINED = -1;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -399,14 +393,14 @@ class FullPerson extends \MovLib\Data\Person\Person {
   }
 
   /**
-   * Get the mysqli result for all movies this person has appeared in.
+   * Get all movies this person has appeared in.
    *
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @return null|array
    *   The movies this person has worked on or <code>NULL</code> if none were found.
    *
-   *   Associative array containing the movie's identifier as key and the {@see \MovLib\Data\Movie\Movie} objects
+   *   Associative array containing the movie's identifier as key and the {@see \MovLib\Data\Movie\FullMovie} objects
    *   as values with the director job title, the roles (with job title) and the crew jobs already prefilled.
    * @throws \MovLib\Exception\DatabaseException
    */
@@ -425,54 +419,8 @@ class FullPerson extends \MovLib\Data\Person\Person {
         `ot`.`title` AS `movie_original_title`,
         `ot`.`language_code` AS `movie_original_title_language_code`,
         `p`.`poster_id` AS `movie_display_poster`,
-        IF (
-          `movies_directors`.`job_id` IS NOT NULL,
-          IFNULL(
-            COLUMN_GET(`job_director`.`dyn_names_sex0`, ? AS BINARY),
-            COLUMN_GET(`job_director`.`dyn_names_sex0`, '{$i18n->defaultLanguageCode}' AS BINARY)
-          ),
-          NULL
-        ) AS `job_title_director0`,
-        IF (
-          `movies_directors`.`job_id` IS NOT NULL,
-          IFNULL(
-            COLUMN_GET(`job_director`.`dyn_names_sex1`, ? AS BINARY),
-            COLUMN_GET(`job_director`.`dyn_names_sex1`, '{$i18n->defaultLanguageCode}' AS BINARY)
-          ),
-          NULL
-        ) AS `job_title_director1`,
-        IF (
-          `movies_directors`.`job_id` IS NOT NULL,
-          IFNULL(
-            COLUMN_GET(`job_director`.`dyn_names_sex2`, ? AS BINARY),
-            COLUMN_GET(`job_director`.`dyn_names_sex2`, '{$i18n->defaultLanguageCode}' AS BINARY)
-          ),
-          NULL
-        ) AS `job_title_director2`,
-        IF (
-          `movies_cast`.`job_id` IS NOT NULL,
-          IFNULL(
-            COLUMN_GET(`job_cast`.`dyn_names_sex0`, ? AS BINARY),
-            COLUMN_GET(`job_cast`.`dyn_names_sex0`, '{$i18n->defaultLanguageCode}' AS BINARY)
-          ),
-          NULL
-        ) AS `job_title_cast0`,
-        IF (
-          `movies_cast`.`job_id` IS NOT NULL,
-          IFNULL(
-            COLUMN_GET(`job_cast`.`dyn_names_sex1`, ? AS BINARY),
-            COLUMN_GET(`job_cast`.`dyn_names_sex1`, '{$i18n->defaultLanguageCode}' AS BINARY)
-          ),
-          NULL
-        ) AS `job_title_cast1`,
-        IF (
-          `movies_cast`.`job_id` IS NOT NULL,
-          IFNULL(
-            COLUMN_GET(`job_cast`.`dyn_names_sex2`, ? AS BINARY),
-            COLUMN_GET(`job_cast`.`dyn_names_sex2`, '{$i18n->defaultLanguageCode}' AS BINARY)
-          ),
-          NULL
-        ) AS `job_title_cast2`,
+        `movies_directors`.`job_id` AS `director_job_id`,
+        `movies_cast`.`job_id` AS `cast_job_id`,
         `movies_cast`.`role_id`,
         IF (
           `movies_cast`.`job_id` IS NOT NULL,
@@ -485,7 +433,7 @@ class FullPerson extends \MovLib\Data\Person\Person {
           ),
           NULL
         ) AS `role_name`,
-        `movies_crew`.`id` AS `crew_id`,
+        `job_crew`.`id` AS `crew_id`,
         IF (
           `movies_crew`.`job_id` IS NOT NULL,
           IFNULL(
@@ -514,13 +462,9 @@ class FullPerson extends \MovLib\Data\Person\Person {
         LEFT JOIN `movies_directors` AS `movies_directors`
           ON `movies_directors`.`movie_id` = `movies`.`id`
           AND `movies_directors`.`person_id` = ?
-        LEFT JOIN `jobs` AS `job_director`
-          ON `job_director`.`id` = `movies_directors`.`job_id`
         LEFT JOIN `movies_cast`
           ON `movies_cast`.`movie_id` = `movies`.`id`
           AND `movies_cast`.`person_id` = ?
-        LEFT JOIN `jobs` AS `job_cast`
-          ON `job_cast`.`id` = `movies_cast`.`job_id`
         LEFT JOIN `persons` AS `role`
           ON `role`.`id` = `movies_cast`.`role_id`
         LEFT JOIN `movies_crew`
@@ -545,14 +489,8 @@ class FullPerson extends \MovLib\Data\Person\Person {
       WHERE `movies`.`deleted` = false
         AND NOT (`movies_directors`.`person_id` IS NULL AND `movies_cast`.`person_id` IS NULL AND `movies_crew`.`person_id` IS NULL)
       ORDER BY `movies`.`year` DESC",
-      "ssssssssssdddss",
+      "ssssdddss",
       [
-        $i18n->languageCode,
-        $i18n->languageCode,
-        $i18n->languageCode,
-        $i18n->languageCode,
-        $i18n->languageCode,
-        $i18n->languageCode,
         $i18n->languageCode,
         $i18n->languageCode,
         $i18n->languageCode,
@@ -567,46 +505,47 @@ class FullPerson extends \MovLib\Data\Person\Person {
     while ($row = $result->fetch_assoc()) {
       // Instantiate and initialize a Movie if it is not present yet.
       if (!isset($movies[$row["movie_id"]])) {
-        $movies[$row["movie_id"]] = new Movie();
-        $movies[$row["movie_id"]]->id                        = $row["movie_id"];
-        $movies[$row["movie_id"]]->deleted                   = $row["movie_deleted"];
-        $movies[$row["movie_id"]]->year                      = $row["movie_year"];
-        $movies[$row["movie_id"]]->ratingMean                = $row["movie_rating_mean"];
-        $movies[$row["movie_id"]]->displayTitle              = $row["movie_display_title"];
-        $movies[$row["movie_id"]]->displayTitleLanguageCode  = $row["movie_display_title_language_code"];
-        $movies[$row["movie_id"]]->originalTitle             = $row["movie_original_title"];
-        $movies[$row["movie_id"]]->originalTitleLanguageCode = $row["movie_original_title_language_code"];
-        $movies[$row["movie_id"]]->displayPoster             = $row["movie_display_poster"];
-        $movies[$row["movie_id"]]->init();
+        $movies[$row["movie_id"]]["#object"] = new FullMovie();
+        $movies[$row["movie_id"]]["#object"]->id                        = $row["movie_id"];
+        $movies[$row["movie_id"]]["#object"]->deleted                   = $row["movie_deleted"];
+        $movies[$row["movie_id"]]["#object"]->year                      = $row["movie_year"];
+        $movies[$row["movie_id"]]["#object"]->ratingMean                = $row["movie_rating_mean"];
+        $movies[$row["movie_id"]]["#object"]->displayTitle              = $row["movie_display_title"];
+        $movies[$row["movie_id"]]["#object"]->displayTitleLanguageCode  = $row["movie_display_title_language_code"];
+        $movies[$row["movie_id"]]["#object"]->originalTitle             = $row["movie_original_title"];
+        $movies[$row["movie_id"]]["#object"]->originalTitleLanguageCode = $row["movie_original_title_language_code"];
+        $movies[$row["movie_id"]]["#object"]->displayPoster             = $row["movie_display_poster"];
+        $movies[$row["movie_id"]]["#object"]->init();
       }
 
       // Fill the translated and gendered title for the director job, if present.
-      if (!$movies[$row["movie_id"]]->directorTitle && $row["job_title_director{$this->sex}"]) {
-        $movies[$row["movie_id"]]->directorTitle = $row["job_title_director{$this->sex}"];
+      if ($row["director_job_id"] !== null && !isset($movies[$row["movie_id"]]["director_job_title"])) {
+        $movies[$row["movie_id"]]["director_job_title"] = $this->getJobTitle($row["director_job_id"]);
+        $movies[$row["movie_id"]]["director_job_id"]    = $row["director_job_id"];
       }
 
       // Fill the translated and gendered title for the actor job, if present.
-      if (!$movies[$row["movie_id"]]->castTitle && $row["job_title_cast{$this->sex}"]) {
-        $movies[$row["movie_id"]]->castTitle = $row["job_title_cast{$this->sex}"];
+      if ($row["cast_job_id"] !== null && !isset($movies[$row["movie_id"]]["cast_job_title"])) {
+        $movies[$row["movie_id"]]["cast_job_title"] = $this->getJobTitle($row["cast_job_id"]);
+        $movies[$row["movie_id"]]["cast_job_id"]    = $row["cast_job_id"];
       }
       // Add a role, if present.
       if ($row["role_name"]) {
         // Role with own person page.
         if ($row["role_id"]) {
-          $movies[$row["movie_id"]]->roles[$row["role_id"]] = $row["role_name"];
+          $movies[$row["movie_id"]]["roles"][$row["role_id"]] = $row["role_name"];
         }
         // Just a role name which will not be linked.
         else {
-          $movies[$row["movie_id"]]->roles[$row["role_name"]] = self::ROLE_ID_UNDEFINED;
+          $movies[$row["movie_id"]]["roles"][$row["role_name"]] = FullMovie::ROLE_UNDEFINED;
         }
       }
 
       // Add a crew job, if present.
-      if (!isset($movies[$row["movie_id"]]->jobs[$row["crew_id"]]) && $row["crew_id"]) {
-        $movies[$row["movie_id"]]->jobs[$row["crew_id"]] = $row["job_title_crew{$this->sex}"];
+      if (!isset($movies[$row["movie_id"]]["jobs"][$row["crew_id"]]) && $row["crew_id"]) {
+        $movies[$row["movie_id"]]["jobs"][$row["crew_id"]] = $row["job_title_crew{$this->sex}"];
       }
     }
-    \FB::send($movies[1]);
     return $movies;
   }
 

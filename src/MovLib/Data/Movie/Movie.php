@@ -24,12 +24,19 @@ use \MovLib\Presentation\Error\NotFound;
  * Represents a single movie.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
 class Movie {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  const ROLE_UNDEFINED = -1;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -160,11 +167,6 @@ class Movie {
    * @var integer
    */
   public $year;
-
-  public $directorTitle;
-  public $castTitle;
-  public $roles;
-  public $jobs;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
