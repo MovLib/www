@@ -53,18 +53,19 @@ INSERT INTO `awards` SET
     'en', 'Academy Awards',
     'de', 'Oscar'
   ),
+  `aliases`                = 'a:2:{i:0;s:5:"Oscar";i:1;s:14:"Academy Awards";}',
   `links`                  = 'a:1:{i:0;s:22:"http://www.oscars.org/";}',
   `place_id`               = 5368361,
-  `image_width`            = 1536,
-  `image_height`           = 2560,
-  `image_filesize`         = 3200007,
+  `image_width`            = 1875,
+  `image_height`           = 1968,
+  `image_filesize`         = 383689,
   `image_extension`        = 'jpg',
-  `image_changed`          = '2013-11-28 15:13:42',
+  `image_changed`          = '2014-03-17 11:59:18',
   `dyn_image_descriptions` = COLUMN_CREATE(
     'en', '&lt;p&gt;Cate Blanchett&#039;s Oscar for playing Katharine Hepburn in The Aviator in 2004. It is on permanent display at the Australian Centre for the Moving Image.&lt;/p&gt;',
     'de', '&lt;p&gt;Cate Blanchett Oscar für die Rolle von Katharine Hepburn in The Aviator im Jahr 2004, ausgestellt in Australiens Zentrum für bewegte Bilder.&lt;/p&gt;'
   ),
-  `image_styles`           = 'a:3:{i:220;a:3:{s:6:"height";i:132;s:5:"width";i:220;s:9:"resizeArg";s:8:"220x220>";}i:140;a:3:{s:6:"height";i:84;s:5:"width";i:140;s:9:"resizeArg";s:8:"140x140>";}i:60;a:3:{s:6:"height";i:36;s:5:"width";i:60;s:9:"resizeArg";s:6:"60x60>";}}',
+  `image_styles`           = 'a:3:{i:220;a:3:{s:6:"height";i:231;s:5:"width";i:220;s:9:"resizeArg";s:3:"220";}i:140;a:3:{s:6:"height";i:147;s:5:"width";i:140;s:9:"resizeArg";s:3:"140";}i:60;a:3:{s:6:"height";i:63;s:5:"width";i:60;s:9:"resizeArg";s:2:"60";}}',
   `image_uploader_id`      = 1
 ;
 

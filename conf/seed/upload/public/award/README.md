@@ -1,11 +1,13 @@
 # Licensing
-The images provided as seed data are provided under their respective license. Specific information is provided under the following headings.
+The images provided as seed data are provided under their respective license. Specific information is provided under the
+following headings.
 
 ## 1
-These images are in public domain. For more information see: [File on Wikipedia](http://commons.wikimedia.org/wiki/File:ACMI_14.jpg)
+Academy Awards Logo | oscars.org
 
-----
+The image has no threshold of originality according to Austrian-law.
 
-Creative Commons Attribution 3.0 Unported (CC BY 3.0)
+The image consists of a simple lettering and simplest forms and therefore has no threshold of originality according to
+international law.
 
-https://creativecommons.org/licenses/by/3.0/
+Can be a registered trade mark or design.
