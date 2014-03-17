@@ -217,24 +217,29 @@ final class Session implements \ArrayAccess {
         // We couldn't find a valid session and we have no data, invalid session.
         if ($stmt->fetch()) {
           try {
-            $user                           = new User(User::FROM_ID, $this->userId);
-            $this->initTime                 = $_SERVER["REQUEST_TIME"];
+            // Try to load the user and directly regenerate the session's identifier.
+            $user = new User(User::FROM_ID, $this->userId);
+            $this->regenerate();
+
+            // Export database result to class scope.
             $this->userAvatar               = $user->getStyle(User::STYLE_HEADER_USER_NAVIGATION);
             $this->userName                 = $user->name;
             $this->userTimeZone             = $user->timeZoneIdentifier;
+
+            // Export properties to session scope.
             $_SESSION[self::AUTHENTICATION] =& $this->authentication;
             $_SESSION[self::INIT_TIME]      =& $this->initTime;
             $_SESSION[self::USER_ID]        =& $this->userId;
             $_SESSION[self::USER_AVATAR]    =& $this->userAvatar;
             $_SESSION[self::USER_NAME]      =& $this->userName;
             $_SESSION[self::USER_TIME_ZONE] =& $this->userTimeZone;
-            $this->isAuthenticated          = true;
+
+            $this->isAuthenticated = true;
             // @devStart
             // @codeCoverageIgnoreStart
             Log::debug("Loaded Session from Database");
             // @codeCoverageIgnoreEnd
             // @devEnd
-            $this->regenerate();
           }
           // Well, this is akward, we have a valid session but no valid user, destroy session and log this error.
           catch (\Exception $e) {
@@ -639,7 +644,8 @@ final class Session implements \ArrayAccess {
         if ($this->userId > 0) {
           $kernel->delayMethodCall([ $this, "update" ], [ $this->id ]);
         }
-        $this->id = session_id();
+        $this->id       = session_id();
+        $this->initTime = $_SERVER["REQUEST_TIME"];
       }
       else {
         Log::critical("Couldn't regenerate session identifier", [ "session" => $this ]);
