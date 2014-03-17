@@ -263,6 +263,8 @@ INSERT INTO `messages` (`message`, `dyn_translations`) VALUES
 ('External Links', COLUMN_CREATE('de', 'Externe Links')),
 ('Jobs', COLUMN_CREATE('de', 'Tätigkeiten')),
 ('Job', COLUMN_CREATE('de', 'Tätigkeit')),
+('Awards', COLUMN_CREATE('de', 'Auszeichnungen')),
+('Award', COLUMN_CREATE('de', 'Auszeichnung')),
 ('Discussion', COLUMN_CREATE('de', 'Diskussion')),
 ('Discussion of {0}', COLUMN_CREATE('de', 'Diskussion über {0}')),
 ('Edit {0}', COLUMN_CREATE('de', '{0} bearbeiten')),

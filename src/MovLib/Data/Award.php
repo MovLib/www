@@ -317,7 +317,7 @@ class Award extends \MovLib\Data\Image\AbstractImage {
    */
   public static function getRandomAwardId() {
     global $db;
-    $result = $db->query("SELECT `id` FROM `awards` WHERE `awards`.`deleted` = false ORDER BY RAND() LIMIT 1");
+    $query = "SELECT `id` FROM `awards` WHERE `awards`.`deleted` = false ORDER BY RAND() LIMIT 1";
     if ($result = $db->query($query)->get_result()) {
       return $result->fetch_assoc()["id"];
     }
