@@ -283,7 +283,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
         "<li>{$this->a($i18n->rp("/awards"), $i18n->t("Awards"), [ "class" => "ico ico-award" ])}</li>" .
         "<li>{$this->a($i18n->rp("/genres"), $i18n->t("Genres"), [ "class" => "ico ico-genre" ])}</li>" .
         "<li>{$this->a($i18n->rp("/jobs"), $i18n->t("Jobs"), [ "class" => "ico ico-job" ])}</li>" .
-        "<li class='separator'>{$this->a($i18n->rp("/help"), $i18n->t("Help"), [ "class" => "ico ico-help" ])}</li>" .
+        "<li class='separator'>{$this->a($i18n->r("/help"), $i18n->t("Help"), [ "class" => "ico ico-help" ])}</li>" .
       "</ul>"
     ;
 

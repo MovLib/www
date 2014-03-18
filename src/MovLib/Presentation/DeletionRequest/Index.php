@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation;
+namespace MovLib\Presentation\DeletionRequest;
 
 use \MovLib\Data\DeletionRequest;
 use \MovLib\Presentation\Partial\Alert;
@@ -29,7 +29,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class DeletionRequests extends \MovLib\Presentation\Page {
+class Index extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitPagination;
   use \MovLib\Presentation\TraitSidebar;
 

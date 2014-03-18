@@ -33,11 +33,6 @@
 # ---------------------------------------------------------------------------------------------------------------------- help
 
 
-location = <?= $rp("/help") ?> {
-  set $movlib_presenter "Help\\Categories";
-  try_files $movlib_cache @php;
-}
-
 <?php
 $stmt           = $db->query("SELECT `id`, COLUMN_GET(`dyn_titles`, ? AS CHAR(255)) AS `title` FROM `help_categories`", "s", [ $i18n->defaultLanguageCode ]);
 $helpCategories = $stmt->get_result();
@@ -146,13 +141,4 @@ location ^~ <?= $r("/year") ?> {
   <?php endforeach ?>
 
   rewrite .* /error/NotFound last;
-}
-
-
-# ---------------------------------------------------------------------------------------------------------------------- Deletion(s)
-
-
-location = <?= $rp("/deletion-requests") ?> {
-  set $movlib_presenter "DeletionRequests";
-  try_files $movlib_cache @php;
 }

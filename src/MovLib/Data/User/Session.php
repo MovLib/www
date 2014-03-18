@@ -578,7 +578,7 @@ final class Session implements \ArrayAccess {
   public function isAdmin() {
     global $db;
     static $isAdmin = null;
-    if ($this->isAuthenticated === false) {
+    if ($this->isAuthenticated === true) {
       if (!$isAdmin) {
         try {
           $result = $db
