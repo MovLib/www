@@ -64,8 +64,8 @@ INSERT INTO `awards` SET
   `image_extension`        = 'jpg',
   `image_changed`          = '2014-03-17 11:59:18',
   `dyn_image_descriptions` = COLUMN_CREATE(
-    'en', '&lt;p&gt;Cate Blanchett&#039;s Oscar for playing Katharine Hepburn in The Aviator in 2004. It is on permanent display at the Australian Centre for the Moving Image.&lt;/p&gt;',
-    'de', '&lt;p&gt;Cate Blanchett Oscar für die Rolle von Katharine Hepburn in The Aviator im Jahr 2004, ausgestellt in Australiens Zentrum für bewegte Bilder.&lt;/p&gt;'
+    'en', '&lt;p&gt;Academy Awards Logo | oscars.org&lt;/p&gt;&lt;p&gt;The image has no threshold of originality according to Austrian-law.&lt;/p&gt;&lt;p&gt;The image consists of a simple lettering and simplest forms and therefore has no threshold of originality according to international law.&lt;/p&gt;&lt;p&gt;Can be a registered trade mark or design.&lt;/p&gt;',
+    'de', '&lt;p&gt;Academy Awards Logo | oscars.org&lt;/p&gt;&lt;p&gt;Das Logo besitzt nach deutschsprachigem Recht keine Schöpfungshöhe.&lt;/p&gt;&lt;p&gt;Das Logo besteht aus einem einfachen Schriftzug sowie ggf. einfachsten Formen und besitzt daher international keine Schöpfungshöhe.&lt;/p&gt;&lt;p&gt;Das Logo kann dem Marken- oder Gebrauchsmusterrecht unterliegen.&lt;/p&gt;'
   ),
   `image_styles`           = 'a:3:{i:220;a:3:{s:6:"height";i:231;s:5:"width";i:220;s:9:"resizeArg";s:3:"220";}i:140;a:3:{s:6:"height";i:147;s:5:"width";i:140;s:9:"resizeArg";s:3:"140";}i:60;a:3:{s:6:"height";i:63;s:5:"width";i:60;s:9:"resizeArg";s:2:"60";}}',
   `image_uploader_id`      = 1
