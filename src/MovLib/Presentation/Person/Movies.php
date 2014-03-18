@@ -18,8 +18,7 @@
 namespace MovLib\Presentation\Person;
 
 use \MovLib\Data\Person\FullPerson;
-use \MovLib\Presentation\Partial\FormElement\InputSex;
-use \MovLib\Presentation\Partial\Listing\Movie\MoviePersonListing;
+use \MovLib\Presentation\Partial\Listing\PersonMovieListing;
 
 /**
  * Presentation of a person's movies.
@@ -57,78 +56,7 @@ class Movies extends \MovLib\Presentation\Person\AbstractBase {
    * @inheritdoc
    */
   protected function getPageContent() {
-    global $i18n;
-
-    $listing = new MoviePersonListing($this->person->getMovies());
-    if (!($movies = $listing->getListing())) {
-      return new Alert($i18n->t("Seems like {person_name} hasn’t worked on any movies."), null, Alert::SEVERITY_INFO);
-    }
-
-
-    // ----------------------------------------------------------------------------------------------------------------- Fetch cast information
-
-
-    $castResult = $this->person->getMovieCast();
-    switch ($this->person->sex) {
-      case InputSex::MALE:
-        $jobName  = $i18n->t("Actor");
-        $roleSelf = $i18n->t("Himself");
-        break;
-
-      case InputSex::FEMALE:
-        $jobName  = $i18n->t("Actress");
-        $roleSelf = $i18n->t("Herself");
-        break;
-
-      default:
-        $jobName  = $i18n->t("Actor/Actress");
-        $roleSelf = $i18n->t("Self");
-        break;
-    }
-
-    /* @var $cast \MovLib\Data\Movie\Cast */
-    while ($cast = $castResult->fetch_object("\\MovLib\\Data\\Movie\\Cast")) {
-      $job = $this->a($i18n->r("/job/{0}", [ $cast->jobId ]), $jobName);
-
-      $role = null;
-      if ($cast->roleName) {
-        $role = $cast->roleName;
-      }
-      elseif ($cast->role) {
-        if ($cast->role === true) {
-          $role = $this->a($this->person->route, $roleSelf);
-        }
-        else {
-          $role = $this->a($cast->role->route, $cast->role->name);
-        }
-      }
-
-      if ($role) {
-        $job = $i18n->t("{0} ({1})", [ $jobName, $role ]);
-      }
-
-      $movies[$cast->movieId]["#jobs"] .= "<li>{$job}</li>";
-    }
-
-
-    // ----------------------------------------------------------------------------------------------------------------- Fetch crew information
-
-
-    $crewResult = $this->person->getMovieCrew();
-    /* @var $crew \MovLib\Data\Movie\Crew */
-    while ($crew = $crewResult->fetch_object("\\MovLib\\Data\\Movie\\Crew")) {
-      $movies[$crew->movieId]["#jobs"] .= "<li>{$this->a($i18n->r("/job/{0}", [ $crew->jobId ]), $crew->jobTitle)}</li>";
-    }
-
-
-    // ----------------------------------------------------------------------------------------------------------------- Build the listing
-
-
-    $list = null;
-    foreach ($movies as $id => $html) {
-      $list .= "<li class='hover-item s r' typeof='Movie'>{$html["#movie"]}<ul class='no-list jobs s s4 tar'>{$html["#jobs"]}</ul></li>";
-    }
-    return "<ol class='hover-list no-list'>{$list}</ol>";
+    return new PersonMovieListing($this->person->getMovies(), $this->person);
   }
 
 

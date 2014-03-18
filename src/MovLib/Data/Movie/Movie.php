@@ -24,6 +24,7 @@ use \MovLib\Presentation\Error\NotFound;
  * Represents a single movie.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -354,7 +355,7 @@ class Movie {
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected function init() {
+  public function init() {
     global $db, $i18n;
 
     // Build the route to the movie.
