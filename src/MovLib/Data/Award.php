@@ -20,7 +20,7 @@ namespace MovLib\Data;
 use \MovLib\Presentation\Error\NotFound;
 
 /**
- * Represents one or more awards including photos.
+ * Represents one or more awards including icons.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -67,7 +67,7 @@ class Award extends \MovLib\Data\Image\AbstractImage {
   public $description;
 
   /**
-   * The photo's path within the upload directory.
+   * The icon's path within the upload directory.
    *
    * @var string
    */
@@ -81,14 +81,14 @@ class Award extends \MovLib\Data\Image\AbstractImage {
   public $id;
 
  /**
-   * The photo's translated description.
+   * The icon's translated description.
    *
    * @var string
    */
   public $imageDescription;
 
   /**
-   * The photo's translated photo route.
+   * The icon's translated icon route.
    *
    * @var string
    */
@@ -196,11 +196,11 @@ class Award extends \MovLib\Data\Image\AbstractImage {
       $this->id = $id;
     }
 
-    // The award's photo name is always the award's identifier.
+    // The award's icon name is always the award's identifier.
     $this->filename = &$this->id;
 
     // If we have an identifier, either from the above query or directly set via PHP's fetch_object() method, try to
-    // load the photo for this award.
+    // load the icon for this award.
     if ($this->id) {
       $this->init();
     }
@@ -283,7 +283,39 @@ class Award extends \MovLib\Data\Image\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMoviesResult() {
-    return $this;
+    global $db, $i18n;
+    return $db->query(
+      "SELECT
+        `movies`.`year` AS `year`,
+        IFNULL(`dt`.`title`, `ot`.`title`) AS `displayTitle`,
+        IFNULL(`dt`.`language_code`, `ot`.`language_code`) AS `displayTitleLanguageCode`,
+        `ot`.`title` AS `originalTitle`,
+        `ot`.`language_code` AS `originalTitleLanguageCode`,
+        `p`.`poster_id` AS `displayPoster`
+        FROM `movies_awards` as `ma`
+        LEFT JOIN `awards_categories` as `mac`
+          ON `ma`.award_category_id = `mac`.`id`
+        LEFT JOIN `awards`
+          ON `mac`.`award_id` = `awards`.`id`
+        LEFT JOIN `movies` AS `movies`
+          ON `movies`.`id` = `movies`.`id`
+        LEFT JOIN `movies_display_titles` AS `mdt`
+          ON `mdt`.`movie_id` = `movies`.`id`
+          AND `mdt`.`language_code` = ?
+        LEFT JOIN `movies_titles` AS `dt`
+          ON `dt`.`id` = `mdt`.`title_id`
+        LEFT JOIN `movies_original_titles` AS `mot`
+          ON `mot`.`movie_id` = `movies`.`id`
+        LEFT JOIN `movies_titles` AS `ot`
+          ON `ot`.`id` = `mot`.`title_id`
+        LEFT JOIN `display_posters` AS `p`
+          ON `p`.`movie_id` = `movies`.`id`
+          AND `p`.`language_code` = ?
+      WHERE `awards`.`id` = ?
+      ORDER BY `movies`.`year` DESC",
+      "ssd",
+      [ $i18n->languageCode, $i18n->languageCode, $this->id ]
+    )->get_result();
   }
 
   /**
@@ -387,7 +419,7 @@ class Award extends \MovLib\Data\Image\AbstractImage {
   }
 
   /**
-   * Initialize the award with its photo, deleted flag and translate the route.
+   * Initialize the award with its icon, deleted flag and translate the route.
    *
    * @global type $i18n
    */
@@ -405,7 +437,7 @@ class Award extends \MovLib\Data\Image\AbstractImage {
     $key           = "edit";
     if ($this->uploaderId) {
       $this->imageExists = true;
-      $key               = "photo";
+      $key               = "icon";
       $this->styles      = unserialize($this->styles);
     }
     $this->imageRoute = $i18n->r("/award/{0}/{$key}", [ $this->id ]);
@@ -418,9 +450,9 @@ class Award extends \MovLib\Data\Image\AbstractImage {
 
 
   /**
-   * Delete the award photo.
+   * Delete the award icon.
    *
-   * @todo Implement delete award photo.
+   * @todo Implement delete award icon.
    * @return this
    */
   public function delete() {

@@ -141,7 +141,7 @@ abstract class AbstractBase extends \MovLib\Presentation\Page {
       [ $i18n->r("/award/{0}/delete", $routeArgs), $i18n->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
 
       [ $i18n->rp("/award/{0}/movies", $routeArgs), "{$i18n->t("Movies")} <span class='fr'>{$i18n->format("{0,number}", [ $this->award->getMoviesCount() ])}</span>", [ "class" => "ico ico-movie" ] ],
-      [ $i18n->rp("/award/{0}/series", $routeArgs), "{$i18n->t("Series")} <span class='fr'>{$i18n->format("{0,number}", [ $this->award->getSeriesCount() ])}</span>", [ "class" => "ico ico-series" ] ],
+      [ $i18n->rp("/award/{0}/series", $routeArgs), "{$i18n->t("Series")} <span class='fr'>{$i18n->format("{0,number}", [ $this->award->getSeriesCount() ])}</span>", [ "class" => "ico ico-series separator" ] ],
     ]);
   }
 

@@ -78,13 +78,24 @@ location ^~ <?= $this->r("/award") ?> {
     <?= $this->cache() ?>
   }
 
+  location ~* '^<?= $this->rp("/award/{0}/movies") ?>$' {
+    <?= $this->set("Movies") ?>
+    <?= $this->set('$1', "award_id") ?>
+    <?= $this->cache() ?>
+  }
+
+  location ~* '^<?= $this->rp("/award/{0}/series") ?>$' {
+    <?= $this->set("Series") ?>
+    <?= $this->set('$1', "award_id") ?>
+    <?= $this->cache() ?>
+  }
 
   # -------------------------------------------------------------------------------------------------------------------- Icon
   <?php $this->setRoutesNamespace("Award\\Icon") ?>
 
 
   location ~* '^<?= $this->r("/award/{0}/icon") ?>$' {
-    <?= $this->set("Show") ?>
+    <?= $this->set("Index") ?>
     <?= $this->set('$1', "award_id") ?>
     <?= $this->cache() ?>
   }
