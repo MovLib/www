@@ -78,6 +78,24 @@ location ^~ <?= $this->r("/company") ?> {
     <?= $this->cache() ?>
   }
 
+  location ~* '^<?= $this->rp("/company/{0}/movies") ?>$' {
+    <?= $this->set("Movies") ?>
+    <?= $this->set('$1', "company_id") ?>
+    <?= $this->cache() ?>
+  }
+
+  location ~* '^<?= $this->rp("/company/{0}/series") ?>$' {
+    <?= $this->set("Series") ?>
+    <?= $this->set('$1', "company_id") ?>
+    <?= $this->cache() ?>
+  }
+
+  location ~* '^<?= $this->rp("/company/{0}/releases") ?>$' {
+    <?= $this->set("Releases") ?>
+    <?= $this->set('$1', "company_id") ?>
+    <?= $this->cache() ?>
+  }
+
 
   # -------------------------------------------------------------------------------------------------------------------- Logo
   <?php $this->setRoutesNamespace("Company\\Logo") ?>
