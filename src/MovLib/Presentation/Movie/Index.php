@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Movie\Movie;
-use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Listing\MovieListing as MoviesPartial;
 
 /**
@@ -72,14 +71,7 @@ class Index extends \MovLib\Presentation\Page {
     // Ensure it's easy for users to find the page where the can create new movies.
     $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/movie/create")}'>{$i18n->t("Create New Movie")}</a>";
 
-    return new MoviesPartial(
-      Movie::getMovies($this->paginationOffset, $this->paginationLimit),
-      new Alert($i18n->t("No movies match your search criteria."), null, Alert::SEVERITY_INFO),
-      null,
-      null,
-      10,
-      true
-    );
+    return new MoviesPartial(Movie::getMovies($this->paginationOffset, $this->paginationLimit));
   }
 
 }

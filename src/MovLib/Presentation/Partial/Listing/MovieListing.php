@@ -43,6 +43,13 @@ class MovieListing extends \MovLib\Presentation\AbstractBase {
    */
   protected $listItems;
 
+  /**
+   * The text to display if there are no items.
+   *
+   * @var mixed
+   */
+  protected $noItemsText;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -50,11 +57,18 @@ class MovieListing extends \MovLib\Presentation\AbstractBase {
   /**
    * Instantiate new special movies listing.
    *
+   * @global \MovLib\Data\I18n $i18n
    * @param mixed $listItems
    *   The items to build the movie listing.
+   * @param mixed $noItemsText [optional]
+   *   The text to display if there are no items, defaults to a generic {@see \MovLib\Presentation\Partial\Alert}.
    */
-  public function __construct($listItems) {
+  public function __construct($listItems, $noItemsText = null) {
+    global $i18n;
     $this->listItems = $listItems;
+    if ($noItemsText) {
+      $this->noItemsText = $noItemsText;
+    }
   }
 
   /**
@@ -82,6 +96,9 @@ class MovieListing extends \MovLib\Presentation\AbstractBase {
         return "<ol class='hover-list no-list'>{$list}</ol>";
       }
 
+      if ($this->noItemsText) {
+        return (string) $this->noItemsText;
+      }
       return (string) new Alert(
         $i18n->t("No movies match your search criteria."),
         $i18n->t("No Movies"),

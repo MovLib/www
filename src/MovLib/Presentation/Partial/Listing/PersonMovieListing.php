@@ -51,6 +51,10 @@ class PersonMovieListing extends \MovLib\Presentation\Partial\Listing\MovieListi
         return "<ol class='hover-list no-list'>{$list}</ol>";
       }
 
+      if ($this->noItemsText) {
+        return (string) $this->noItemsText;
+      }
+      
       return (string) new Alert($i18n->t("This person hasn’t worked on any movies yet."), null, Alert::SEVERITY_INFO);
     // @devStart
     // @codeCoverageIgnoreStart
