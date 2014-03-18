@@ -497,6 +497,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`awards` (
   `image_width` SMALLINT NULL COMMENT 'The award’s image width.',
   `links` BLOB NULL COMMENT 'The company’s weblinks as serialized PHP array.',
   `place_id` BIGINT UNSIGNED NULL COMMENT 'The  award’s location.',
+  `first_awarding_year` SMALLINT(4) NULL COMMENT 'The first year this award was awarded.',
+  `last_awarding_year` SMALLINT(4) NULL COMMENT 'The last year this award was awarded.',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 COMMENT = 'Contains all awards.'
@@ -1042,6 +1044,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`awards_categories` (
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the award category was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The award categorie’s description in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_names` BLOB NOT NULL COMMENT 'The award categorie’s name in various languages. Keys are ISO alpha-2 language codes.',
+  `first_awarding_year` SMALLINT(4) NULL COMMENT 'The first year this award category existed.',
+  `last_awarding_year` SMALLINT(4) NULL COMMENT 'The last year this award category existed.',
   PRIMARY KEY (`id`),
   INDEX `fk_awards_categories_awards_idx` (`award_id` ASC),
   CONSTRAINT `fk_awards_categories_awards`
