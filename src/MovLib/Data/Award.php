@@ -236,16 +236,51 @@ class Award extends \MovLib\Data\Image\AbstractImage {
   }
 
   /**
-   * Get all categories of an award.
+   * The total count of award categories which are not deleted..
    *
-   * @todo Implement when award categories are implemented.
    * @global \MovLib\Data\Database $db
-   * @return \mysqli_result
-   *   The query result containing award categories.
+   * @staticvar null|integer $count
+   *   The total amount of award categories which haven't been deleted.
+   * @return integer
+   *   The total amount of award categories which haven't been deleted.
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function getCategories() {
-    return $this;
+  public function getCategoriesCount() {
+    global $db;
+    static $count = null;
+    if (!$count) {
+      $count = $db->query(
+        "SELECT count(DISTINCT `id`) as `count` FROM `awards_categories` WHERE `deleted` = false AND `award_id` = ?", "d", [ $this->id ]
+      )->get_result()->fetch_assoc()["count"];
+    }
+    return $count;
+  }
+
+  /**
+   * Get all award categories matching the offset and row count.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @return \mysqli_result
+   *   The query result.
+   */
+  public function getCategoriesResult() {
+    global $db, $i18n;
+    return $db->query(
+      "SELECT
+        `award_id` AS `awardId`,
+        `id`,
+        `deleted`,
+        IFNULL(COLUMN_GET(`dyn_names`, ? AS CHAR), COLUMN_GET(`dyn_names`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `name`,
+        IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS CHAR), COLUMN_GET(`dyn_descriptions`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `description`,
+        `first_awarding_year` AS `firstAwardingYear`,
+        `last_awarding_year` AS `lastAwardingYear`
+      FROM `awards_categories`
+      WHERE `award_id` = ?
+      ORDER BY `name` ASC",
+      "ssd",
+      [ $i18n->languageCode, $i18n->languageCode, $this->id ]
+    )->get_result();
   }
 
   /**

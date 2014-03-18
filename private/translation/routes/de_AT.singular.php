@@ -195,6 +195,7 @@ return [
   "/award/{0}/history"                         => "/auszeichnung/{0}/geschichte",
   "/award/{0}/icon"                            => "/auszeichnung/{0}/icon",
   "/award/{0}/icon/delete"                     => "/auszeichnung/{0}/icon/löschen",
+  "/award/{0}/category/{1}"                    => "/auszeichnung/{0}/kategorie/{1}",
   // ------------------------------------------------------------------------------------------------------------------- System Pages
   "/about-movlib"                              => "/über-movlib",
   "/about-movlib/edit"                         => "/über-movlib/bearbeiten",

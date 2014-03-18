@@ -15,14 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Award;
+namespace MovLib\Presentation\Award\Category;
 
 use \MovLib\Data\Award;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Listing\MovieListing as MoviesPartial;
+use \MovLib\Presentation\Partial\Listing\AwardCategory as CategoryPartial;
 
 /**
- * Movies with a certain award associated.
+ * A category of a certain award.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -30,14 +30,14 @@ use \MovLib\Presentation\Partial\Listing\MovieListing as MoviesPartial;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Movies extends \MovLib\Presentation\Award\AbstractBase {
+class Index extends \MovLib\Presentation\Award\AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new award movie presentation.
+   * Instantiate new award categories presentation.
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
@@ -45,10 +45,10 @@ class Movies extends \MovLib\Presentation\Award\AbstractBase {
   public function __construct() {
     global $i18n, $kernel;
     $this->award = new Award((integer) $_SERVER["AWARD_ID"]);
-    $this->initPage($i18n->t("Movies with {0}", [ $this->award->name ]));
-    $this->pageTitle       = $i18n->t("Movies with {0}", [ "<a href='{$this->award->route}'>{$this->award->name}</a>" ]);
-    $this->breadcrumbTitle = $i18n->t("Movies");
-    $this->initLanguageLinks("/award/{0}/movies", [ $this->award->id ], true);
+    $this->initPage($i18n->t("Categories of {0}", [ $this->award->name ]));
+    $this->pageTitle       = $i18n->t("Categories of {0}", [ "<a href='{$this->award->route}'>{$this->award->name}</a>" ]);
+    $this->breadcrumbTitle = $i18n->t("Categories");
+    $this->initLanguageLinks("/award/{0}/categories", [ $this->award->id ], true);
     $this->initAwardBreadcrumb();
     $this->sidebarInit();
 
@@ -66,7 +66,20 @@ class Movies extends \MovLib\Presentation\Award\AbstractBase {
    */
   protected function getPageContent() {
     global $i18n;
-    return new MoviesPartial($this->award->getMoviesResult(), (new Alert($i18n->t("Check back later"), $i18n->t("No movies found."), Alert::SEVERITY_INFO))->__toString());
+    $this->headingBefore =
+      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/award/{0}/category/create", [ $this->award->id ])}'>{$i18n->t("Create New Category")}</a>"
+    ;
+
+    $result      = $this->award->getCategoriesResult();
+    $noItemText  = new Alert(
+      $i18n->t(
+        "We couldn’t find any categories matching your filter criteria, or there simply aren’t any categories available."
+      ), $i18n->t("No Category"), Alert::SEVERITY_INFO
+    );
+    $noItemText .=
+      $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/award/{0}/category/creat", [ $this->award->id ])}'>", "</a>" ]);
+
+    return new CategoryPartial($result, $noItemText);
   }
 
 }

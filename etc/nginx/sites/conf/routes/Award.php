@@ -89,6 +89,18 @@ location ^~ <?= $this->r("/award") ?> {
     <?= $this->set('$1', "award_id") ?>
     <?= $this->cache() ?>
   }
+  
+
+  # -------------------------------------------------------------------------------------------------------------------- Categories
+  <?php $this->setRoutesNamespace("Award\\Category") ?>
+
+
+  location ~* '^<?= $this->rp("/award/{0}/categories") ?>$' {
+    <?= $this->set("Index") ?>
+    <?= $this->set('$1', "award_id") ?>
+    <?= $this->cache() ?>
+  }
+
 
   # -------------------------------------------------------------------------------------------------------------------- Icon
   <?php $this->setRoutesNamespace("Award\\Icon") ?>

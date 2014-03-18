@@ -44,8 +44,8 @@ class Series extends \MovLib\Presentation\Award\AbstractBase {
   public function __construct() {
     global $i18n, $kernel;
     $this->award = new Award((integer) $_SERVER["AWARD_ID"]);
-    $this->initPage($i18n->t("Series from {0}", [ $this->award->name ]));
-    $this->pageTitle       = $i18n->t("Series from {0}", [ "<a href='{$this->award->route}'>{$this->award->name}</a>" ]);
+    $this->initPage($i18n->t("Series with {0}", [ $this->award->name ]));
+    $this->pageTitle       = $i18n->t("Series with {0}", [ "<a href='{$this->award->route}'>{$this->award->name}</a>" ]);
     $this->breadcrumbTitle = $i18n->t("Series");
     $this->initLanguageLinks("/award/{0}/series", [ $this->award->id ], true);
     $this->initAwardBreadcrumb();
