@@ -11,7 +11,8 @@
 					"remove",
 					"delete"
 				],
-				"grid": 32
+				"grid": 32,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 1,
@@ -32,7 +33,8 @@
 				"tags": [
 					"cassette"
 				],
-				"grid": 16
+				"grid": 16,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 2,
@@ -56,7 +58,8 @@
 					"photo",
 					"frame"
 				],
-				"grid": 32
+				"grid": 32,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 3,
@@ -79,7 +82,8 @@
 					"images",
 					"photos"
 				],
-				"grid": 32
+				"grid": 32,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 4,
@@ -103,7 +107,8 @@
 					"photos",
 					"polaroid"
 				],
-				"grid": 32
+				"grid": 32,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 5,
@@ -127,7 +132,8 @@
 					"favorite",
 					"rate"
 				],
-				"grid": 14
+				"grid": 14,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 6,
@@ -154,7 +160,8 @@
 					"protected",
 					"encrypted"
 				],
-				"grid": 14
+				"grid": 14,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 7,
@@ -178,7 +185,8 @@
 					"load",
 					"open"
 				],
-				"grid": 14
+				"grid": 14,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 8,
@@ -202,7 +210,8 @@
 					"editor",
 					"format"
 				],
-				"grid": 14
+				"grid": 14,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 9,
@@ -226,7 +235,8 @@
 					"editor",
 					"format"
 				],
-				"grid": 14
+				"grid": 14,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 10,
@@ -250,7 +260,8 @@
 					"editor",
 					"format"
 				],
-				"grid": 14
+				"grid": 14,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 11,
@@ -274,7 +285,8 @@
 					"editor",
 					"format"
 				],
-				"grid": 14
+				"grid": 14,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 12,
@@ -298,7 +310,8 @@
 					"editor",
 					"format"
 				],
-				"grid": 14
+				"grid": 14,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 13,
@@ -320,7 +333,8 @@
 					"list-ul",
 					"bullets"
 				],
-				"grid": 14
+				"grid": 14,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 14,
@@ -342,7 +356,8 @@
 					"list-ol",
 					"numbered list"
 				],
-				"grid": 14
+				"grid": 14,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 15,
@@ -365,7 +380,8 @@
 					"quote-left",
 					"ldquo"
 				],
-				"grid": 14
+				"grid": 14,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 16,
@@ -389,7 +405,8 @@
 					"chain",
 					"anchor"
 				],
-				"grid": 14
+				"grid": 14,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 17,
@@ -412,7 +429,8 @@
 					"unlink",
 					"link"
 				],
-				"grid": 14
+				"grid": 14,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 18,
@@ -433,7 +451,8 @@
 				"tags": [
 					"indent-left"
 				],
-				"grid": 14
+				"grid": 14,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 19,
@@ -454,7 +473,8 @@
 				"tags": [
 					"indent-right"
 				],
-				"grid": 14
+				"grid": 14,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 20,
@@ -477,7 +497,8 @@
 					"love",
 					"like"
 				],
-				"grid": 14
+				"grid": 14,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 21,
@@ -503,7 +524,8 @@
 					"gear",
 					"preferences"
 				],
-				"grid": 14
+				"grid": 14,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 22,
@@ -529,7 +551,8 @@
 					"language",
 					"localization"
 				],
-				"grid": 14
+				"grid": 14,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 23,
@@ -553,13 +576,14 @@
 					"lookup",
 					"find"
 				],
-				"grid": 20
+				"grid": 20,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 24,
 				"id": 37,
 				"prevSize": 20,
-				"code": 58911,
+				"code": 58912,
 				"name": "search",
 				"ligatures": ""
 			},
@@ -575,13 +599,14 @@
 					"cc",
 					"creative commons"
 				],
-				"grid": 20
+				"grid": 20,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 25,
 				"id": 226,
 				"prevSize": 20,
-				"code": 58912,
+				"code": 58913,
 				"name": "cc",
 				"ligatures": ""
 			},
@@ -597,13 +622,14 @@
 					"cc-zero",
 					"creative commons"
 				],
-				"grid": 20
+				"grid": 20,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 26,
 				"id": 234,
 				"prevSize": 20,
-				"code": 58913,
+				"code": 58914,
 				"name": "cc-zero",
 				"ligatures": ""
 			},
@@ -622,13 +648,14 @@
 					"avatar",
 					"persona"
 				],
-				"grid": 20
+				"grid": 20,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 27,
 				"id": 14,
 				"prevSize": 20,
-				"code": 58914,
+				"code": 58915,
 				"name": "user",
 				"ligatures": ""
 			},
@@ -646,13 +673,14 @@
 					"team",
 					"people"
 				],
-				"grid": 20
+				"grid": 20,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 28,
 				"id": 15,
 				"prevSize": 20,
-				"code": 58915,
+				"code": 58916,
 				"name": "person",
 				"ligatures": ""
 			},
@@ -667,13 +695,14 @@
 				"tags": [
 					"user-add"
 				],
-				"grid": 20
+				"grid": 20,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 29,
 				"id": 16,
 				"prevSize": 20,
-				"code": 58916,
+				"code": 58917,
 				"name": "user-add",
 				"ligatures": ""
 			},
@@ -691,13 +720,14 @@
 					"alert",
 					"notification"
 				],
-				"grid": 20
+				"grid": 20,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 30,
 				"id": 40,
 				"prevSize": 20,
-				"code": 58917,
+				"code": 58918,
 				"name": "notification",
 				"ligatures": ""
 			},
@@ -717,13 +747,14 @@
 					"envelope",
 					"contact"
 				],
-				"grid": 20
+				"grid": 20,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 31,
 				"id": 5,
 				"prevSize": 20,
-				"code": 58918,
+				"code": 58919,
 				"name": "email",
 				"ligatures": ""
 			},
@@ -739,13 +770,14 @@
 					"history",
 					"time"
 				],
-				"grid": 20
+				"grid": 20,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 32,
 				"id": 145,
 				"prevSize": 20,
-				"code": 58919,
+				"code": 58920,
 				"name": "history",
 				"ligatures": ""
 			},
@@ -762,13 +794,14 @@
 					"exclamation",
 					"notification"
 				],
-				"grid": 20
+				"grid": 20,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 33,
 				"id": 54,
 				"prevSize": 20,
-				"code": 58920,
+				"code": 58921,
 				"name": "alert",
 				"ligatures": ""
 			},
@@ -788,13 +821,14 @@
 					"discussion",
 					"conversation"
 				],
-				"grid": 20
+				"grid": 20,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 34,
 				"id": 33,
 				"prevSize": 20,
-				"code": 58921,
+				"code": 58922,
 				"name": "discussion",
 				"ligatures": ""
 			},
@@ -810,13 +844,14 @@
 					"help",
 					"question"
 				],
-				"grid": 20
+				"grid": 20,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 35,
 				"id": 135,
 				"prevSize": 20,
-				"code": 58922,
+				"code": 58923,
 				"name": "help",
 				"ligatures": ""
 			},
@@ -832,13 +867,14 @@
 					"info",
 					"about"
 				],
-				"grid": 20
+				"grid": 20,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 36,
 				"id": 133,
 				"prevSize": 20,
-				"code": 58923,
+				"code": 58924,
 				"name": "info",
 				"ligatures": ""
 			},
@@ -855,13 +891,14 @@
 					"previous",
 					"left"
 				],
-				"grid": 20
+				"grid": 20,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 37,
 				"id": 214,
 				"prevSize": 20,
-				"code": 58924,
+				"code": 58925,
 				"name": "chevron-left",
 				"ligatures": ""
 			},
@@ -873,13 +910,14 @@
 				"paths": [
 					"M286.704 891.802c-13.722 13.875-13.722 36.25 0 50.125s35.891 13.875 49.613 0l400.896-404.838c13.722-13.875 13.722-36.301 0-50.125l-400.896-404.89c-13.722-13.875-35.891-13.875-49.613 0s-13.722 36.25 0 50.125l365.568 379.802-365.568 379.802z"
 				],
-				"grid": 20
+				"grid": 20,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 38,
 				"id": 217,
 				"prevSize": 20,
-				"code": 58925,
+				"code": 58926,
 				"name": "chevron-right",
 				"ligatures": ""
 			},
@@ -895,13 +933,14 @@
 					"eye",
 					"views"
 				],
-				"grid": 20
+				"grid": 20,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 39,
 				"id": 61,
 				"prevSize": 20,
-				"code": 58926,
+				"code": 58927,
 				"name": "view",
 				"ligatures": ""
 			},
@@ -920,13 +959,14 @@
 					"edit",
 					"save"
 				],
-				"grid": 20
+				"grid": 20,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 40,
 				"id": 7,
 				"prevSize": 20,
-				"code": 58927,
+				"code": 58928,
 				"name": "edit",
 				"ligatures": ""
 			},
@@ -943,13 +983,14 @@
 					"television",
 					"media"
 				],
-				"grid": 48
+				"grid": 48,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 41,
 				"id": 39,
 				"prevSize": 48,
-				"code": 58928,
+				"code": 58929,
 				"name": "series",
 				"ligatures": ""
 			},
@@ -965,7 +1006,8 @@
 					"videocamera"
 				],
 				"grid": 16,
-				"defaultCode": 58922
+				"defaultCode": 58922,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 42,
@@ -990,7 +1032,8 @@
 					"rate",
 					"like"
 				],
-				"grid": 14
+				"grid": 14,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 43,
@@ -1011,13 +1054,14 @@
 				"grid": 0,
 				"tags": [
 					"wikipedia"
-				]
+				],
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 44,
 				"id": 0,
 				"prevSize": 32,
-				"code": 58929,
+				"code": 58930,
 				"name": "wikipedia",
 				"ligatures": ""
 			},
@@ -1035,7 +1079,8 @@
 					"man",
 					"sex"
 				],
-				"grid": 32
+				"grid": 32,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 45,
@@ -1059,7 +1104,8 @@
 					"sex",
 					"woman"
 				],
-				"grid": 32
+				"grid": 32,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 46,
@@ -1084,7 +1130,8 @@
 					"work",
 					"building"
 				],
-				"grid": 16
+				"grid": 16,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 47,
@@ -1111,7 +1158,8 @@
 					"win",
 					"tournament"
 				],
-				"grid": 14
+				"grid": 14,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 48,
@@ -1133,7 +1181,8 @@
 					"suitcase",
 					"briefcase"
 				],
-				"grid": 32
+				"grid": 32,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 49,
@@ -1157,7 +1206,8 @@
 					"price",
 					"ecommerce"
 				],
-				"grid": 14
+				"grid": 14,
+				"matchesSearch": false
 			},
 			"properties": {
 				"order": 50,
@@ -1169,6 +1219,29 @@
 			},
 			"setIdx": 6,
 			"iconIdx": 40
+		},
+		{
+			"icon": {
+				"paths": [
+					"M1024 713.143v182.857q0 22.857-16 38.857t-38.857 16h-182.857q-22.857 0-38.857-16t-16-38.857v-182.857q0-22.857 16-38.857t38.857-16h54.857v-109.714h-292.571v109.714h54.857q22.857 0 38.857 16t16 38.857v182.857q0 22.857-16 38.857t-38.857 16h-182.857q-22.857 0-38.857-16t-16-38.857v-182.857q0-22.857 16-38.857t38.857-16h54.857v-109.714h-292.571v109.714h54.857q22.857 0 38.857 16t16 38.857v182.857q0 22.857-16 38.857t-38.857 16h-182.857q-22.857 0-38.857-16t-16-38.857v-182.857q0-22.857 16-38.857t38.857-16h54.857v-109.714q0-29.714 21.714-51.429t51.429-21.714h292.571v-109.714h-54.857q-22.857 0-38.857-16t-16-38.857v-182.857q0-22.857 16-38.857t38.857-16h182.857q22.857 0 38.857 16t16 38.857v182.857q0 22.857-16 38.857t-38.857 16h-54.857v109.714h292.571q29.714 0 51.429 21.714t21.714 51.429v109.714h54.857q22.857 0 38.857 16t16 38.857z"
+				],
+				"tags": [
+					"sitemap",
+					"tree"
+				],
+				"grid": 14,
+				"matchesSearch": true
+			},
+			"properties": {
+				"order": 51,
+				"id": 207,
+				"prevSize": 28,
+				"code": 58911,
+				"name": "category",
+				"ligatures": ""
+			},
+			"setIdx": 6,
+			"iconIdx": 206
 		}
 	],
 	"height": 1024,
