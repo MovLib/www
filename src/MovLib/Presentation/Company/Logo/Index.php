@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Company;
+namespace MovLib\Presentation\Company\Logo;
 
 use \MovLib\Data\Company\FullCompany;
 use \MovLib\Data\User\User;
@@ -31,7 +31,7 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Logo extends \MovLib\Presentation\Company\AbstractBase {
+class Index extends \MovLib\Presentation\Company\AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -69,7 +69,7 @@ class Logo extends \MovLib\Presentation\Company\AbstractBase {
 
     // Modify sidebar items.
     $this->sidebarNavigation->menuitems[0] = [ $this->company->route, $i18n->t("Back to Company"), [ "class" => "ico ico-company" ] ];
-    $this->sidebarNavigation->menuitems[count($this->sidebarNavigation->menuitems) - 1] = [ $i18n->r("/company/{0}/logo/delete", $routeArgs), $i18n->t("Delete"), [ "class" => "ico ico-delete" ] ];
+    $this->sidebarNavigation->menuitems[count($this->sidebarNavigation->menuitems)] = [ $i18n->r("/company/{0}/logo/delete", $routeArgs), $i18n->t("Delete Logo"), [ "class" => "ico ico-delete" ] ];
 
     // Initialize CSS class, schema and stylesheet.
     $this->bodyClasses    .= " imagedetails";

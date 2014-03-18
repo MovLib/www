@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU Affero General Public License along with MovLib.
  *  If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Person;
+namespace MovLib\Presentation\Person\Photo;
 
 use \MovLib\Data\Person\Person;
 use \MovLib\Data\User\User;
@@ -30,7 +30,7 @@ use \MovLib\Presentation\Partial\DateTime;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Photo extends \MovLib\Presentation\Person\AbstractBase {
+class Index extends \MovLib\Presentation\Person\AbstractBase {
 
   /**
    * Instantiate new Person Photo presentation.
@@ -65,7 +65,7 @@ class Photo extends \MovLib\Presentation\Person\AbstractBase {
 
     // Modify sidebar items.
     $this->sidebarNavigation->menuitems[0] = [ $this->person->route, $i18n->t("Back to Person"), [ "class" => "ico ico-person" ] ];
-    $this->sidebarNavigation->menuitems[count($this->sidebarNavigation->menuitems) - 1] = [ $i18n->r("/person/{0}/photo/delete", $routeArgs), $i18n->t("Delete"), [ "class" => "ico ico-delete" ] ];
+    $this->sidebarNavigation->menuitems[count($this->sidebarNavigation->menuitems)] = [ $i18n->r("/person/{0}/photo/delete", $routeArgs), $i18n->t("Delete Photo"), [ "class" => "ico ico-delete" ] ];
 
     // Initialize CSS class, schema and stylesheet.
     $this->bodyClasses    .= " imagedetails";
