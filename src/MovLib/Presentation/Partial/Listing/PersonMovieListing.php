@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -17,13 +17,12 @@
  */
 namespace MovLib\Presentation\Partial\Listing;
 
-use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\FormElement\InputSex;
 
 /**
  * List all movies a person has participated in.
  *
+ * @see \MovLib\Data\Person\FullPerson::getMovies()
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -32,38 +31,6 @@ use \MovLib\Presentation\Partial\FormElement\InputSex;
  * @since 0.0.1-dev
  */
 class PersonMovieListing extends \MovLib\Presentation\Partial\Listing\MovieListing {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The person this listing is for.
-   *
-   * @var \MovLib\Data\Person\Person
-   */
-  protected $person;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new movies listing for a person.
-   *
-   * @param array $listItems
-   *   The movies to display.
-   * @param integer $person
-   *   The person this listing is for.
-   */
-  public function __construct(array $listItems, $person) {
-    parent::__construct($listItems);
-    $this->person = $person;
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
 
   /**
    * @inheritdoc
@@ -78,17 +45,13 @@ class PersonMovieListing extends \MovLib\Presentation\Partial\Listing\MovieListi
     // @devEnd
       if ($this->listItems) {
         $list = null;
-        foreach ($this->listItems as $movieArray) {
-          $list .= $this->formatListItem($movieArray["#object"]);
+        foreach ($this->listItems as $personMovie) {
+          $list .= $this->formatListItem($personMovie->movie, $personMovie);
         }
         return "<ol class='hover-list no-list'>{$list}</ol>";
       }
 
-      return (string) new Alert(
-        $i18n->t("Seems like {person_name} hasn’t worked on any movies.", [ "person_name" => $this->person->name ]),
-        null,
-        Alert::SEVERITY_INFO
-      );
+      return (string) new Alert($i18n->t("This person hasn’t worked on any movies yet."), null, Alert::SEVERITY_INFO);
     // @devStart
     // @codeCoverageIgnoreStart
     } catch (\Exception $e) {
@@ -99,9 +62,13 @@ class PersonMovieListing extends \MovLib\Presentation\Partial\Listing\MovieListi
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
+   * @param \MovLib\Data\Movie\FullMovie $movie
+   *   {@inheritdoc}
+   * @param \MovLib\Stub\Data\Person\PersonMovie $personMovie
+   *
    */
-  protected function getAdditionalContent($movie) {
+  protected function getAdditionalContent($movie, $personMovie = null) {
     global $i18n;
     // @devStart
     // @codeCoverageIgnoreStart
@@ -111,74 +78,39 @@ class PersonMovieListing extends \MovLib\Presentation\Partial\Listing\MovieListi
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-    // Prepare jobs list.
-    $movieJobs = null;
-    // If the person has directed the movie, directly add translated and gendered director job.
-    if (isset($this->listItems[$movie->id]["director_job_id"])) {
-      $movieJobs .= "<li><a href='{$i18n->r(
-        "/job/{0}",
-        [ $this->listItems[$movie->id]["director_job_id"] ]
-      )}'>{$this->listItems[$movie->id]["director_job_title"]}</a></li>";
+    $jobs = null;
+
+    if (isset($personMovie->director)) {
+      $jobs .= "<li><a href='{$i18n->r("/job/{0}", [ $personMovie->director->id ])}'>{$personMovie->director->title}</a></li>";
     }
 
     // Construct cast info.
-    $roles = null;
-    if (isset($this->listItems[$movie->id]["roles"])) {
-      $roleSelf = null;
-      switch ($this->person->sex) {
-        case InputSex::MALE:
-          $roleSelf = $i18n->t("Himself");
-          break;
-
-        case InputSex::FEMALE:
-          $roleSelf = $i18n->t("Herself");
-          break;
-
-        default:
-          $roleSelf = $i18n->t("Self");
-          break;
-      }
-      foreach ($this->listItems[$movie->id]["roles"] as $roleId => $roleName) {
-        $role = null;
+    if (isset($personMovie->cast)) {
+      $roles = null;
+      foreach ($personMovie->roles as list($id, $name)) {
         if ($roles) {
-          $role .= ", ";
+          $roles .= ", ";
         }
-
-        // Role with no person associated.
-        if ($roleName === FullMovie::ROLE_UNDEFINED) {
-          $role .= $roleId;
+        if ($id) {
+          $roles .= "<a href='{$i18n->r("/person/{0}", [ $id ])}'>{$name}</a>";
         }
-        // This person plays another person.
         else {
-          // The person plays himself/herself, replace the role name by the correct gendered translation of "Self".
-          if ($roleId === $this->person->id) {
-            $roleName = $roleSelf;
-          }
-          $role .= "<a href='{$i18n->r("/person/{0}", [ $roleId ])}'>{$roleName}</a>";
+          $roles .= $name;
         }
-
-        $roles .= $role;
       }
-    }
-    if ($roles) {
-      $movieJobs .= "<li><a href='{$i18n->r(
-        "/job/{0}",
-        [ $this->listItems[$movie->id]["cast_job_id"] ]
-      )}'>{$this->listItems[$movie->id]["cast_job_title"]}</a> <em>{$i18n->t("as")}</em> {$roles}</li>";
-    }
-
-    // Construct crew info.
-    if (isset($this->listItems[$movie->id]["jobs"])) {
-      foreach ($this->listItems[$movie->id]["jobs"] as $jobId => $jobName) {
-        $movieJobs .= "<li><a href='{$i18n->r("/job/{0}", [ $jobId ])}'>{$jobName}</a></li>";
+      if ($roles) {
+        $roles = " <em>{$i18n->t("as")}</em> {$roles}";
       }
+      $jobs .= "<li><a href='{$i18n->r("/job/{0}", [ $personMovie->cast->id ])}'>{$personMovie->cast->title}</a>{$roles}</li>";
     }
 
-    if ($movieJobs) {
-      $movieJobs = "<ul class='no-list'>{$movieJobs}</ul>";
+    foreach ($personMovie->jobs as $id => $title) {
+      $jobs .= "<li><a href='{$i18n->r("/job/{0}", [ $id ])}'>{$title}</a></li>";
     }
 
-    return $movieJobs;
+    if ($jobs) {
+      return "<br><ul class='no-list small'>{$jobs}</ul>";
+    }
   }
 
 }

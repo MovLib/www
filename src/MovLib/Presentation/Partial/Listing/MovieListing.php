@@ -106,10 +106,12 @@ class MovieListing extends \MovLib\Presentation\AbstractBase {
    * @global \MovLib\Data\I18n $i18n
    * @param \MovLib\Data\Movie\FullMovie $movie
    *   The movie to format.
+   * @param mixed $listItem [optional]
+   *   The current list item if different from $movie.
    * @return string
    *   The formatted movie list item.
    */
-  final protected function formatListItem($movie) {
+  final protected function formatListItem($movie, $listItem = null) {
     global $i18n;
 
     // Format the genres.
@@ -136,7 +138,7 @@ class MovieListing extends \MovLib\Presentation\AbstractBase {
           null,
           [ "class" => "s s1 tac" ]
         ) .
-        "<div class='s s8'>{$this->getTitleInfo($movie)}{$genres}{$this->getAdditionalContent($movie)}</div>" .
+        "<div class='s s8'>{$this->getTitleInfo($movie)}{$genres}{$this->getAdditionalContent($movie, $listItem)}</div>" .
         $this->getRatingContent($movie) .
       "</li>"
     ;
