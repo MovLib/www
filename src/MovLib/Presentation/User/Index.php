@@ -24,6 +24,7 @@ use \MovLib\Data\User\Users;
  * Latest users.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -99,15 +100,13 @@ class Index extends \MovLib\Presentation\Page {
     /* @var $user \MovLib\Data\User\User */
     while ($user = $users->fetch_object("\\MovLib\\Data\\User\\User")) {
       $list .=
-        "<li class='s s5' itemscope itemtype='http://schema.org/Person'>" .
-          "<a class='no-link r' href='{$i18n->r("/user/{0}", [ $user->filename ])}' itemprop='url'>" .
-            $this->getImage($user->getStyle(User::STYLE_SPAN_01), false, [ "class" => "s s1", "itemprop" => "image" ]) .
-            "<span class='s s4' itemprop='name'>{$user->name}</span>" .
-          "</a>" .
+        "<li class='hover-item r' typeof='Person'>" .
+          $this->getImage($user->getStyle(User::STYLE_SPAN_01), $user->route, [ "property" => "image" ], [ "class" => "s s1" ]) .
+          "<span class='s'><a href='{$user->route}' property='url'><span property='name'>{$user->name}</span></a></span>" .
         "</li>"
       ;
     }
-    return "<ol class='hover-list no-list r'>{$list}</ol>";
+    return "<ol class='hover-list no-list'>{$list}</ol>";
   }
 
 }

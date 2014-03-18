@@ -229,7 +229,7 @@ class Show extends \MovLib\Presentation\Page {
 
       // Put the movie list entry together.
       $ratingStream .=
-        "<li class='r s s10' itemtype='http://schema.org/Movie' itemscope>" .
+        "<li class='s10' itemtype='http://schema.org/Movie' itemscope>" .
           "<div class='hover-item no-link r'>" .
             "<div class='s s1 tac'>" .
               $this->getImage($movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01), false, [ "itemprop" => "image" ]) .
@@ -242,7 +242,7 @@ class Show extends \MovLib\Presentation\Page {
     }
 
     if ($ratingStream) {
-      $publicProfile .= "<ol class='hover-list no-list r'>{$ratingStream}</ol>";
+      $publicProfile .= "<ol class='hover-list no-list'>{$ratingStream}</ol>";
     }
     else {
       $publicProfile .= $noRatingsText;
