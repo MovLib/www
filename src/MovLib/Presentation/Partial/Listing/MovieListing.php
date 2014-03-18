@@ -148,7 +148,7 @@ class MovieListing extends \MovLib\Presentation\AbstractBase {
 
     // Put the movie list entry together.
     return
-      "<li class='hover-item r'>" .
+      "<li class='hover-item r' typeof='Movie'>" .
         $this->getImage(
           $movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01),
           $movie->route,

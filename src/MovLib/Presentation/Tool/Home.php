@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Tool;
 
 use \MovLib\Presentation\Partial\Navigation;
-use \MovLib\Presentation\Partial\Lists\GlueSeparated;
 
 /**
  * @todo Description of Home
