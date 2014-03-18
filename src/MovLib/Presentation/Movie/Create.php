@@ -51,6 +51,7 @@ class Create extends \MovLib\Presentation\Movie\AbstractBase {
     $this->movie = new FullMovie();
     $this->initPage($i18n->t("Create New Movie"));
     $this->initLanguageLinks("/movie/create");
+    $this->breadcrumbTitle = $i18n->t("Create");
     $this->initBreadcrumb();
   }
 

@@ -45,7 +45,8 @@ class Create extends \MovLib\Presentation\Page {
     global $i18n, $kernel;
 
     $this->initPage($i18n->t("Create Company"));
-    $this->initBreadcrumb([ [ $i18n->rp("/companys"), $i18n->t("Companys") ] ]);
+    $this->initBreadcrumb([ [ $i18n->rp("/companies"), $i18n->t("Companies") ] ]);
+    $this->breadcrumbTitle = $i18n->t("Create");
     $this->initLanguageLinks("/company/create");
 
     $kernel->stylesheets[] = "company";

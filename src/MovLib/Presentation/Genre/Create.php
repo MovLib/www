@@ -46,6 +46,7 @@ class Create extends \MovLib\Presentation\Page {
 
     $this->initPage($i18n->t("Create Genre"));
     $this->initBreadcrumb([ [ $i18n->rp("/genres"), $i18n->t("Genres") ] ]);
+    $this->breadcrumbTitle = $i18n->t("Create");
     $this->initLanguageLinks("/genre/create");
 
     $kernel->stylesheets[] = "genre";

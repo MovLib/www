@@ -47,9 +47,9 @@ class Index extends \MovLib\Presentation\Page {
    */
   public function __construct() {
     global $i18n, $kernel;
-    $this->initPage($i18n->t("Companys"));
+    $this->initPage($i18n->t("Companies"));
     $this->initBreadcrumb();
-    $this->initLanguageLinks("/companys", null, true);
+    $this->initLanguageLinks("/companies", null, true);
     $this->paginationInit(Company::getTotalCount());
     $this->sidebarInit([
       [ $kernel->requestPath, $this->title, [ "class" => "ico ico-company" ] ],
