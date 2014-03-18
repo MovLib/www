@@ -276,6 +276,9 @@ INSERT INTO `messages` (`message`, `dyn_translations`) VALUES
 ('Series from {0}', COLUMN_CREATE('de', 'Serien von {0}')),
 ('Releases with {0}', COLUMN_CREATE('de', 'Veröffentlichungen mit {0}')),
 ('Releases from {0}', COLUMN_CREATE('de', 'Veröffentlichungen von {0}')),
+('from {0} to {1}', COLUMN_CREATE('de', 'von {0} bis {1}')),
+('since {0}', COLUMN_CREATE('de', 'seit {0}')),
+('until {0}', COLUMN_CREATE('de', 'bis {0}')),
 
 -- Coming Soon Page (must be last)
 

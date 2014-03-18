@@ -129,6 +129,20 @@ class Award extends \MovLib\Data\Image\AbstractImage {
    */
   public $wikipedia;
 
+  /**
+   * The first year this award was awarded.
+   *
+   * @var integer
+   */
+  public $firstAwardingYear;
+
+  /**
+   * The last year this award was awarded.
+   *
+   * @var integer
+   */
+  public  $lastAwardingYear;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -171,7 +185,9 @@ class Award extends \MovLib\Data\Image\AbstractImage {
         $this->styles,
         $this->place,
         $this->links,
-        $this->aliases
+        $this->aliases,
+        $this->firstAwardingYear,
+        $this->lastAwardingYear
       );
       if (!$stmt->fetch()) {
         throw new NotFound;
@@ -300,7 +316,9 @@ class Award extends \MovLib\Data\Image\AbstractImage {
           `image_styles` AS `styles`,
           `place_id` AS `place`,
           `links`,
-          `aliases`
+          `aliases`,
+          `first_awarding_year` AS `firstAwardingYear`,
+          `last_awarding_year` AS `lastAwardingYear`
         FROM `awards`"
       ;
     }

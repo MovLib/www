@@ -71,6 +71,22 @@ class Award extends \MovLib\Presentation\Partial\Listing\AbstractListing {
         }
         // @codeCoverageIgnoreEnd
         // @devEnd
+
+        $additionalInfo = null;
+        if ($award->firstAwardingYear || $award->lastAwardingYear) {
+          $additionalInfo    = "<br><span class='small'>";
+          if ($award->firstAwardingYear && $award->lastAwardingYear) {
+            $additionalInfo .= $i18n->t("from {0} to {1}", [ $award->firstAwardingYear, $award->lastAwardingYear ]);
+          }
+          else if ($award->firstAwardingYear) {
+            $additionalInfo .= $i18n->t("since {0}", [ $award->firstAwardingYear ]);
+          }
+          else if ($award->lastAwardingYear) {
+            $additionalInfo .= $i18n->t("until {0}", [ $award->lastAwardingYear ]);
+          }
+          $additionalInfo   .= "</span>";
+        }
+
         $list .=
           "<li class='hover-item r'>" .
             "<div class='s s10'>" .
@@ -84,7 +100,7 @@ class Award extends \MovLib\Presentation\Partial\Listing\AbstractListing {
                     " &nbsp; {$award->getSeriesCount()}" .
                   "</a>" .
                 "</span>" .
-                "<a href='{$award->route}'>{$award->name}</a>" .
+                "<a href='{$award->route}'>{$award->name}</a>{$additionalInfo}" .
               "</span>" .
             "</div>" .
           "</li>"

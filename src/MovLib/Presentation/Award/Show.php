@@ -19,7 +19,6 @@ namespace MovLib\Presentation\Award;
 
 use \MovLib\Data\Award;
 use \MovLib\Presentation\Partial\Place;
-use \MovLib\Presentation\Partial\Date;
 
 /**
  * Presentation of a single award.
@@ -74,7 +73,23 @@ class Show extends \MovLib\Presentation\Award\AbstractBase {
 
     // Put the award information together.
     $info = null;
+
+    if ($this->award->firstAwardingYear && $this->award->lastAwardingYear) {
+      $info .=
+        "<span>{$i18n->t("from {0} to {1}", [ $this->award->firstAwardingYear, $this->award->lastAwardingYear ])}</span>"
+      ;
+    }
+    else if ($this->award->firstAwardingYear) {
+      $info .= "<span>{$i18n->t("since {0}", [ $this->award->firstAwardingYear ])}</span>";
+    }
+    else if ($this->award->lastAwardingYear) {
+      $info .= "<span>{$i18n->t("until {0}", [ $this->award->lastAwardingYear ])}</span>";
+    }
+
     if ($this->award->place) {
+      if ($info) {
+        $info .= "<br>";
+      }
       $info .= "<span itemprop='location'>". new Place($this->award->place) . "</span>";
     }
 
