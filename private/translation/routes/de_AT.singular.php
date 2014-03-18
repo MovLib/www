@@ -75,6 +75,9 @@ return [
   "/movie/{0}/release/{1}/image/{2}/delete"    => "/film/{0}/veröffentlichung/{1}/bild/{2}/löschen",
   "/movie/{0}/release/{1}/image/{2}/edit"      => "/film/{0}/veröffentlichung/{1}/bild/{2}/bearbeiten",
   "/movie/{0}/release/{1}/image/{2}/history"   => "/film/{0}/veröffentlichung/{1}/bild/{2}/geschichte",
+  // ------------------------------------------------------------------------------------------------------------------- Releases
+  "/release"                                   => "/veröffentlichung",
+  "/release/random"                            => "/veröffentlichung/zufällig",
   // ------------------------------------------------------------------------------------------------------------------- Series
   "/series"                                    => "/serie",
   "/series/create"                             => "/serie/erstellen",
