@@ -18,8 +18,7 @@
 namespace MovLib\Presentation\Person;
 
 use \MovLib\Data\Person\Person;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Listing\Persons as PersonsPartial;
+use \MovLib\Presentation\Partial\Listing\PersonLifeDateListing;
 
 /**
  * The listing for the latest person additions.
@@ -62,25 +61,9 @@ class Index extends \MovLib\Presentation\Page {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function getPageContent() {
-    global $i18n;
-    return new PersonsPartial(
-      Person::getPersons($this->paginationOffset, $this->paginationLimit),
-      new Alert(
-        $i18n->t(
-          "We couldn’t find any persons matching your filter criteria, or there simply aren’t any persons available. Would you like to {0}create a new entry{1}?",
-          [ "<a href='{$i18n->r("/person/create")}'>", "</a>" ]
-        ),
-        $i18n->t("No Persons"),
-        Alert::SEVERITY_INFO
-      ),
-      null,
-      null,
-      10,
-      true
-    );
+    return new PersonLifeDateListing(Person::getPersons($this->paginationOffset, $this->paginationLimit));
   }
 
 }

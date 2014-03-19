@@ -17,9 +17,7 @@
  */
 namespace MovLib\Presentation\Partial\Listing;
 
-use \MovLib\Data\Person\Person;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Lists\Unordered;
 
 /**
  * Special images list for cast.
@@ -30,77 +28,91 @@ use \MovLib\Presentation\Partial\Lists\Unordered;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Cast extends \MovLib\Presentation\Partial\Listing\AbstractListing {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The class to use for fetch_object().
-   *
-   * @var stdClass
-   */
-  public $castClass = "\\MovLib\\Data\\Movie\\Cast";
-
-  /**
-   * The span size for a single person's description.
-   *
-   * @var integer
-   */
-  protected $descriptionSpan;
-
-  /**
-   * The person photo's style.
-   *
-   * @var integer
-   */
-  public $imageStyle = Person::STYLE_SPAN_01;
-
-  /**
-   * The attributes of the list's items.
-   *
-   * @var array
-   */
-  public $listItemsAttributes;
-
-  /**
-   * The span size for the roles listing.
-   *
-   * @var integer
-   */
-  protected $roleSpan;
+class PersonCastListing extends \MovLib\Presentation\Partial\Listing\PersonListing {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
-  /**
-   *
-   * @param \mysqli_result $listItems
-   *   The mysqli result object containing the cast.
-   * @param string $noItemsText
-   *   {@inheritdoc}
-   * @param array $listItemsAttributes
-   *   {@inheritdoc}
-   * @param array $attributes
-   *   {@inheritdoc}
-   * @param integer $spanSize [optional]
-   *   {@inheritdoc}
-   */
-  public function __construct($listItems, $noItemsText = "", array $listItemsAttributes = null, array $attributes = null, $spanSize = 10) {
-    parent::__construct($listItems, $noItemsText, $attributes);
-    $this->addClass("hover-list no-list", $this->attributes);
-    $this->listItemsAttributes = $listItemsAttributes;
-    $this->addClass("hover-item s r", $this->listItemsAttributes);
-    $this->listItemsAttributes["typeof"] = "http://schema.org/Person";
-    $this->descriptionSpan = --$spanSize;
+  public function __toString() {
+    global $i18n;
+
+    // @devStart
+    // @codeCoverageIgnoreStart
+    try {
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+      if ($this->listItems) {
+        $list = null;
+        /* @var $moviePerson \MovLib\Stub\Data\Movie\MoviePerson */
+        foreach ($this->listItems as $moviePerson) {
+          $list .= $this->formatListItem($moviePerson->person, $moviePerson);
+        }
+        return "<ol class='hover-list no-list'>{$list}</ol>";
+      }
+
+      if ($this->noItemsText) {
+        return (string) $this->noItemsText;
+      }
+      return new Alert(
+        $i18n->t("No cast assigned yet, please edit this page to provide this information."),
+        null,
+        Alert::SEVERITY_INFO
+      );
+    // @devStart
+    // @codeCoverageIgnoreStart
+    } catch (\Exception $e) {
+      return (string) new Alert("<pre>{$e}</pre>", "Error Rendering Movie Cast List", Alert::SEVERITY_ERROR);
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
   }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
+  /**
+   * Get additional content to display on a person list item.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @param \MovLib\Data\Person\FullPerson $person
+   *   {@inheritdoc}
+   * @param \MovLib\Stub\Data\Movie\MoviePerson $moviePerson [optional]
+   *   The list item containing all role information.
+   * @return string
+   *   {@inheritdoc}
+   */
+  protected function getAdditionalContent($person, $moviePerson = null) {
+    global $i18n;
+
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if(!($person instanceof \MovLib\Data\Person\Person)) {
+      throw new \InvalidArgumentException("\$person must be of type \\MovLib\\Data\\Person\\Person");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    $roles = null;
+    /* @var $role \MovLib\Stub\Data\Person\PersonRole */
+    foreach ($moviePerson->roles as $role) {
+      if ($roles) {
+        $roles .= ", ";
+      }
+
+      if ($role->id) {
+        $roles .= "<a href='{$i18n->r("/person/{0}", [ $role->id ])}'>{$role->name}</a>";
+      }
+      else {
+        $roles .= $role->name;
+      }
+    }
+
+    if ($roles) {
+      return "<small><em>{$i18n->t("as")}</em> {$roles}</small>";
+    }
+  }
   /**
    * @inheritdoc
    */

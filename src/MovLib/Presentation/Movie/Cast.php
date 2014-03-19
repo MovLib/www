@@ -18,10 +18,8 @@
 namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Movie\FullMovie;
-use \MovLib\Data\Person\Person;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\FormElement\InputSex;
-use \MovLib\Presentation\Partial\Listing\Persons;
+use \MovLib\Presentation\Partial\Listing\PersonListing;
+use \MovLib\Presentation\Partial\Listing\PersonCastListing;
 
 /**
  * Presentation of single movie's cast.
@@ -64,79 +62,15 @@ class Cast extends \MovLib\Presentation\Movie\AbstractBase {
 
     // Build the directors section.
     $this->sidebarNavigation->menuitems[] = [ "#directors", $i18n->t("Directors") ];
-    $directors = new Persons($this->movie->getDirectors(), $i18n->t(
+    $directors = new PersonListing($this->movie->getDirectors(), "director", $i18n->t(
       "No directors assigned yet, {0}add directors{1}?",
       [ "<a href='{$i18n->r("/movie{0}/edit", [ $this->movie->id ])}'>", "</a>" ]
-    ), [ "property" => "director" ]);
+    ));
     $content .= "<div id='directors'><h2>{$i18n->t("Directors")}</h2>{$directors}</div>";
 
     // Build the cast section.
     $this->sidebarNavigation->menuitems[] = [ "#cast", $i18n->t("Cast") ];
-    $cast                                 = null;
-    $castResult                           = $this->movie->getCast();
-    $personRoute                          = $i18n->r("/person/{0}");
-    $roleHimself                          = $i18n->t("Himself");
-    $roleHerself                          = $i18n->t("Herself");
-    $roleSelf                             = $i18n->t("Self");
-    /* @var $person \MovLib\Data\Person\Person */
-    foreach ($castResult as $id => $person) {
-      $roles = null;
-      $c = count($person->roles);
-      for ($i = 0; $i < $c; ++$i) {
-        if ($roles) {
-          $roles .= ", ";
-        }
-
-        $role = $person->roles[$i]["name"];
-        if ($person->roles[$i]["id"]) {
-          if ($person->roles[$i]["id"] === $person->id) {
-            switch ($person->sex) {
-              case InputSex::MALE:
-                $role = $roleHimself;
-                break;
-              case InputSex::FEMALE:
-                $role = $roleHerself;
-                break;
-              default:
-                $role = $roleSelf;
-                break;
-            }
-          }
-          $route = str_replace("{0}", $person->roles[$i]["id"], $personRoute);
-          $role  = "<a href='{$route}'>{$role}</a>";
-        }
-        $roles .= $role;
-      }
-      if ($roles) {
-        $roles = "<small>{$i18n->t(
-          "{begin_emphasize}as{end_emphasize} {roles}",
-          [ "roles" => $roles, "begin_emphasize" => "<em>", "end_emphasize" => "</em>" ]
-        )}</small>";
-      }
-
-      $cast .=
-        "<li class='hover-item r s' property='actor' typeof='Person'>" .
-          $this->getImage(
-            $person->getStyle(Person::STYLE_SPAN_01),
-            $person->route,
-            null,
-            [ "class" => "s s1 tac" ]
-          ) .
-          "<div class='s s9'>" .
-            "<p><a href='{$person->route}' property='url'><span property='name'>$person->name</span></a></p>{$roles}" .
-          "</div>" .
-        "</li>"
-      ;
-    }
-    if ($castResult) {
-      $cast = "<ol class='hover-list no-list'>{$cast}</ol>";
-    }
-    else {
-      $cast = new Alert($i18n->t("No cast assigned yet, {0}add cast{1}?", [
-        "<a href='{$i18n->r("/movie{0}/edit", [ $this->movie->id ])}'>",
-        "</a>" ]),
-      null, Alert::SEVERITY_INFO);
-    }
+    $cast                                 = new PersonCastListing($this->movie->getCast(), "actor");
     $content .= "<div id='cast'><h2>{$i18n->t("Cast")}</h2>{$cast}</div>";
 
     return $content;

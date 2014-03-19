@@ -17,8 +17,9 @@
  */
 namespace MovLib\Data\Movie;
 
-use \MovLib\Data\Person\Person;
+use \MovLib\Data\Person\FullPerson;
 use \MovLib\Presentation\Error\NotFound;
+use \MovLib\Presentation\Partial\FormElement\InputSex;
 
 /**
  * Represents a single movie containing all available properties.
@@ -141,16 +142,16 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
    * @return null|array
    *   Associative array containing the cast or <code>NULL</code> if no cast was found.
    *
-   *   The array contains person's id as key and the {@see \MovLib\Data\Person\Person} as value.
+   *   The array contains person's identifiers as keys and {@see \MovLib\Stub\Data\Movie\MoviePerson} objecs as values.
    */
   public function getCast() {
     global $db, $i18n;
 
-    $persons = null;
     $result = $db->query(
       "SELECT
         `movies_cast`.`person_id`,
         `persons`.`name` AS `person_name`,
+        `persons`.`born_name` AS `person_born_name`,
         `persons`.`sex` AS `person_sex`,
         `persons`.`image_uploader_id` AS `person_uploader_id`,
         `persons`.`image_width` AS `person_width`,
@@ -176,23 +177,37 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
       "sd",
       [ $i18n->languageCode, $this->id ]
     )->get_result();
+
+    $persons  = null;
+    $roleSelf = [
+      InputSex::MALE    => $i18n->t("Himself"),
+      InputSex::FEMALE  => $i18n->t("Herself"),
+      InputSex::UNKNOWN => $i18n->t("Self"),
+    ];
     while ($row = $result->fetch_assoc()) {
       // Instantiate and initialize a Person if it is not present yet.
       if (!isset($persons[$row["person_id"]])) {
-        $persons[$row["person_id"]]             = new Person();
-        $persons[$row["person_id"]]->id         = $row["person_id"];
-        $persons[$row["person_id"]]->name       = $row["person_name"];
-        $persons[$row["person_id"]]->sex        = $row["person_sex"];
-        $persons[$row["person_id"]]->uploaderId = $row["person_uploader_id"];
-        $persons[$row["person_id"]]->width      = $row["person_width"];
-        $persons[$row["person_id"]]->height     = $row["person_height"];
-        $persons[$row["person_id"]]->filesize   = $row["person_filesize"];
-        $persons[$row["person_id"]]->extension  = $row["person_extension"];
-        $persons[$row["person_id"]]->styles     = $row["person_styles"];
-        $persons[$row["person_id"]]->init();
+        $persons[$row["person_id"]] = (object) [
+          "person" => new FullPerson(),
+          "roles"  => [],
+        ];
+        $persons[$row["person_id"]]->person->id         = $row["person_id"];
+        $persons[$row["person_id"]]->person->bornName   = $row["person_born_name"];
+        $persons[$row["person_id"]]->person->name       = $row["person_name"];
+        $persons[$row["person_id"]]->person->sex        = $row["person_sex"];
+        $persons[$row["person_id"]]->person->uploaderId = $row["person_uploader_id"];
+        $persons[$row["person_id"]]->person->width      = $row["person_width"];
+        $persons[$row["person_id"]]->person->height     = $row["person_height"];
+        $persons[$row["person_id"]]->person->filesize   = $row["person_filesize"];
+        $persons[$row["person_id"]]->person->extension  = $row["person_extension"];
+        $persons[$row["person_id"]]->person->styles     = $row["person_styles"];
+        $persons[$row["person_id"]]->person->init();
       }
       // Always append the roles.
-      $persons[$row["person_id"]]->roles[] = [ "id" => $row["role_id"], "name" => $row["role_name"] ];
+      if ($row["role_id"] === $persons[$row["person_id"]]->person->id) {
+        $row["role_name"] = $roleSelf[$persons[$row["person_id"]]->person->sex];
+      }
+      $persons[$row["person_id"]]->roles[] = (object) [ "id" => $row["role_id"], "name" => $row["role_name"] ];
     }
     return $persons;
   }
@@ -300,6 +315,7 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
       "SELECT
         `persons`.`id`,
         `persons`.`name`,
+        `persons`.`born_name` AS `bornName`,
         `image_uploader_id` AS `uploaderId`,
         `image_width` AS `width`,
         `image_height` AS `height`,

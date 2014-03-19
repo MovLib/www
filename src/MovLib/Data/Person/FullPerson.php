@@ -401,8 +401,8 @@ class FullPerson extends \MovLib\Data\Person\Person {
    * @return null|array
    *   The movies this person has worked on or <code>NULL</code> if none were found.
    *
-   *   Associative array containing the movie's identifier as key and the {@see \MovLib\Data\Movie\FullMovie} objects
-   *   as values with the director job title, the roles (with job title) and the crew jobs already prefilled.
+   *   Associative array containing the movie's identifier as key and {@see \MovLib\Stub\Data\Person\PersonMovie}
+   *   objects as values.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMovies() {
