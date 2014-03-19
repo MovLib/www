@@ -45,14 +45,18 @@ class ListEnvironments extends \MovLib\Tool\Console\Command\AbstractCommand {
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     global $kernel;
+
     $this->write("Available environments:\n", self::MESSAGE_TYPE_COMMENT);
+
     foreach (new \DirectoryIterator("glob://{$kernel->documentRoot}/etc/movlib/*.json") as $file) {
       $basename = $file->getBasename(".json");
       if ($basename != "movlib") {
         $this->write("  {$basename}");
       }
     }
+
     $this->write("\nNote that all environments are merged with the dist environment configuration.");
+
     return 0;
   }
 

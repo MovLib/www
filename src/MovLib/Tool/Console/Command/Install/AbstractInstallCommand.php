@@ -298,6 +298,8 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
     $this->write("Installing {$name}, this may take several minutes...", self::MESSAGE_TYPE_COMMENT);
     $this->install($conf);
     $this->write("Successfully installed {$name}!", self::MESSAGE_TYPE_INFO);
+
+    return 0;
   }
 
   /**

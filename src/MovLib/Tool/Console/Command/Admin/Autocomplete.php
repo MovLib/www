@@ -82,6 +82,8 @@ class Autocomplete extends \MovLib\Tool\Console\Command\AbstractCommand {
 
     $this->write("Run the command <fg=black;bg=cyan>source ~/.bashrc</fg=black;bg=cyan> to enjoy auto-completion.");
     $this->writeVerbose("Successfully generated autocompletion for '{$app}'!", self::MESSAGE_TYPE_INFO);
+
+    return 0;
   }
 
 }

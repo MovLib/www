@@ -74,6 +74,8 @@ class Cache extends \MovLib\Tool\Console\Command\AbstractCommand {
     if ($foundOption === false) {
       $this->write("Use `movlib --help {$this->getName()}` to list all available options.", self::MESSAGE_TYPE_ERROR);
     }
+
+    return 0;
   }
 
 }

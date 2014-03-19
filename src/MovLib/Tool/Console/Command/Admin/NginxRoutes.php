@@ -194,6 +194,8 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
 
     // Let the user know that everything went fine.
     $this->writeVerbose("Successfully translated and compiled routes, plus reloaded nginx!", self::MESSAGE_TYPE_INFO);
+
+    return 0;
   }
 
   /**

@@ -107,6 +107,8 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
     }
 
     $this->writeVerbose("Fixed all file permissions in '{$directory}'!", self::MESSAGE_TYPE_INFO);
+
+    return 0;
   }
 
 }

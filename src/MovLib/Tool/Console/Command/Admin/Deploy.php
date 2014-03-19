@@ -237,16 +237,8 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
 
   /**
    * @inheritdoc
-   * @param \Symfony\Component\Console\Input\InputInterface $input
-   *   {@inheritdoc}
-   * @param \Symfony\Component\Console\Output\OutputInterface $output
-   *   {@inheritdoc}
-   * @return array
-   *   The passed options.
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    $options = parent::execute($input, $output);
-
     // Only root (sudo) can deploy!
     $this->checkPrivileges();
 
@@ -304,7 +296,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     }
     $this->write("Successfully deployed MovLib.", self::MESSAGE_TYPE_INFO);
 
-    return $options;
+    return 0;
   }
 
   /**

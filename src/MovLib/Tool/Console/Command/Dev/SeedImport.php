@@ -237,7 +237,6 @@ class SeedImport extends \MovLib\Tool\Console\Command\Dev\AbstractDevCommand {
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     global $kernel;
-    $options = parent::execute($input, $output);
 
     $this->seedPath = "{$kernel->documentRoot}{$this->seedPath}";
     foreach (glob("{$this->seedPath}/" . self::OPTION_DATABASE . "/*.sql") as $seedScript) {
@@ -259,6 +258,8 @@ class SeedImport extends \MovLib\Tool\Console\Command\Dev\AbstractDevCommand {
     if ($all === true) {
       $this->seedImport();
     }
+
+    return 0;
   }
 
   /**

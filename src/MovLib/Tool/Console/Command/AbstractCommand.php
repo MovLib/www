@@ -84,26 +84,11 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
 
 
   /**
-   * Symfony dialog helper.
-   *
-   * @see AbstractCommand::dialog()
-   * @var \Symfony\Component\Console\Helper\DialogHelper
-   */
-  private $dialog;
-
-  /**
    * Input interface to read from the console.
    *
    * @var \Symfony\Component\Console\Input\InputInterface
    */
   protected $input;
-
-  /**
-   * <code>FALSE</code> if the user requested no interaction, otherwise <code>TRUE</code>.
-   *
-   * @var boolean
-   */
-  protected $interaction = true;
 
   /**
    * Symfony progress helper.
@@ -185,9 +170,14 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   The answer or <var>$default</var> if user requested no interaction or quiet execution.
    */
   final protected function ask($question, $default = null, array $autocomplete = null) {
-    if ($this->output && $this->dialog && $this->interaction === true) {
+    if ($this->isInteractive() === true) {
       $defaultDisplay = $default ? " [default: {$default}]" : null;
-      return $this->dialog->ask($this->output, "<question>{$question}</question>{$defaultDisplay} ", $default, $autocomplete);
+      return $this->getHelperSet()->get('dialog')->ask(
+        $this->output,
+        "<question>{$question}</question>{$defaultDisplay} ",
+        $default,
+        $autocomplete
+      );
     }
     return $default;
   }
@@ -203,9 +193,13 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   The answer or <var>$default</var> if user requested no interaction or quiet execution.
    */
   final protected function askConfirmation($question, $default = true) {
-    if ($this->output && $this->dialog && $this->interaction === true) {
+    if ($this->isInteractive() === true) {
       $defaultDisplay = $default ? "y" : "n";
-      return $this->dialog->askConfirmation($this->output, "<question>{$question}</question> [default: {$defaultDisplay}] ", $default);
+      return $this->getHelperSet()->get('dialog')->askConfirmation(
+        $this->output,
+        "<question>{$question}</question> [default: {$defaultDisplay}] ",
+        $default
+      );
     }
     return $default;
   }
@@ -225,7 +219,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   The answer or <var>$default</var> if user requested no interaction or quiet execution.
    */
   final protected function askWithChoices($text, $default = null, array $choices = null, array $choiceExplanations = null) {
-    if ($this->output && $this->interaction === true) {
+    if ($this->isInteractive() === true) {
       $this->write($text, self::MESSAGE_TYPE_COMMENT)->write("Possible choices are:\n", self::MESSAGE_TYPE_COMMENT);
       if ($choices && $choiceExplanations){
         $c = count($choices);
@@ -287,6 +281,21 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
   }
 
   /**
+   * Check if current output is interactive.
+   *
+   * @staticvar boolean $interactive
+   * @return boolean
+   *   <code>TRUE</code> if current output is interactive, otherwise <code>FALSE</code>.
+   */
+  final protected function isInteractive() {
+    static $interactive = null;
+    if (!$interactive) {
+      $interactive = !$this->input->getOption("no-interaction");
+    }
+    return $interactive;
+  }
+
+  /**
    * Execute shell command, same as {@see Shell::execute} but output is displayed if output has verbosity level debug.
    *
    * @param string $command
@@ -300,7 +309,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
     if (isset($workingDirectory)) {
       $this->changeWorkingDirectory($workingDirectory);
     }
-    $this->writeDebug($command, self::MESSAGE_TYPE_COMMENT);
+    $this->writeVeryVerbose($command, self::MESSAGE_TYPE_COMMENT);
     if ($this->output->getVerbosity() >= Output::VERBOSITY_DEBUG) {
       Shell::executeDisplayOutput($command);
     }
@@ -326,8 +335,6 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
         $this->interaction = !$options["no-interaction"];
       }
     }
-    $this->output->setVerbosity(OutputInterface::VERBOSITY_DEBUG); // Always display exceptions!
-    return $options;
   }
 
   /**

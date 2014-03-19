@@ -63,6 +63,8 @@ class PasswordBenchmark extends \MovLib\Tool\Console\Command\Dev\AbstractDevComm
       "Optimal password cost setting for the desired time target of {$timeTarget} seconds would be " .
       "<info>{$cost}</info> (hashing will take ~{$actual} seconds).\n"
     );
+
+    return 0;
   }
 
 }

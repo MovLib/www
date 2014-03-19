@@ -205,6 +205,8 @@ class RandomUser extends AbstractDevCommand {
     }
 
     $this->write("Successfully created {$this->amount} of random users!", self::MESSAGE_TYPE_INFO);
+
+    return 0;
   }
 
   /**

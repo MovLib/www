@@ -47,6 +47,7 @@ class Cache extends \MovLib\Tool\Console\Command\Dev\AbstractDevCommand {
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $foundOption = false;
+
     foreach ($input->getOptions() as $option => $value) {
       $method = "purge{$option}Cache";
       if ($value === true && method_exists($this, $method)) {
@@ -54,9 +55,12 @@ class Cache extends \MovLib\Tool\Console\Command\Dev\AbstractDevCommand {
         $foundOption = true;
       }
     }
+
     if ($foundOption === false) {
       $this->write("Use `movlib --help {$this->getName()}` to list all available options.", self::MESSAGE_TYPE_ERROR);
     }
+
+    return 0;
   }
 
   /**

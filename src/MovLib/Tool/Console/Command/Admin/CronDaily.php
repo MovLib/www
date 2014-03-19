@@ -49,9 +49,9 @@ class CronDaily extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    $options = parent::execute($input, $output);
-    $this->purgeTemporaryTable()->purgeTemporaryUploads();
-    return $options;
+    $this->purgeTemporaryTable();
+    $this->purgeTemporaryUploads();
+    return 0;
   }
 
   /**

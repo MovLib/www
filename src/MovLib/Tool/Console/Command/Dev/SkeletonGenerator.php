@@ -159,6 +159,8 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Dev\AbstractDevComm
     if ($doneSomething === false) {
       $this->write("All tests are up-to-date, nothing was deleted, generated or extended!", self::MESSAGE_TYPE_COMMENT);
     }
+
+    return 0;
   }
 
   /**
