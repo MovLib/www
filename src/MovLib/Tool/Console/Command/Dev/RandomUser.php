@@ -98,24 +98,49 @@ class RandomUser extends AbstractDevCommand {
   public function configure() {
     $this->setName("create-random-users");
     $this->setDescription("Create one or more random users.");
-    $this->addArgument("amount", InputArgument::OPTIONAL, "The amount of random users to create, defaults to " . self::DEFAULT_AMOUNT . ".", self::DEFAULT_AMOUNT);
-    return $this;
+    $this->addArgument(
+      "amount",
+      InputArgument::OPTIONAL,
+      "The amount of random users to create, defaults to " . self::DEFAULT_AMOUNT . ".",
+      self::DEFAULT_AMOUNT
+    );
   }
 
   /**
-   * Generate the desired amount of random users.
+   * Get a randomly generated username.
    *
-   * @global \MovLib\Tool\Kernel $kernel
+   * @return string
+   *   The randomly generated username.
+   */
+  protected function getRandomUsername() {
+    $username = null;
+
+    do {
+      // 1 to NAME_MAXIMUM_LENGTH, all variations are valid!
+      $length   = mt_rand(1, FullUser::NAME_MAXIMUM_LENGTH);
+      for ($i = 0; $i < $length; ++$i) {
+        $username .= $this->characters[mt_rand(0, $this->charactersCount)];
+      }
+    }
+    // If this username is already in use generate another one.
+    while (in_array($username, $this->username));
+
+    $this->usernames[] = $username;
+    return $username;
+  }
+
+  /**
+   * @inheritdoc
    * @global \MovLib\Tool\Database $db
    * @global \MovLib\Data\I18n $i18n
-   * @return this
-   * @throws \RuntimeException
-   * @throws \MovLib\Exception\DatabaseException
+   * @global \MovLib\Tool\Kernel $kernel
    */
-  public function generateRandomUsers($amount = self::DEFAULT_AMOUNT) {
-    global $kernel, $db, $i18n;
+  protected function execute(InputInterface $input, OutputInterface $output) {
+    global $db, $i18n, $kernel;
+    $this->amount = (integer) $input->getArgument("amount");
+
+    $this->write("Preparing to generate <comment>{$this->amount}</comment> random users ...");
     $this->setUsernames();
-    $this->setAmount($amount);
     $values          = $params          = $usersWithAvatar = null;
     $this->progress->start($this->output, $this->amount);
     $user            = new FullUser();
@@ -179,57 +204,7 @@ class RandomUser extends AbstractDevCommand {
       $this->progress->finish();
     }
 
-    return $this;
-  }
-
-  /**
-   * Get a randomly generated username.
-   *
-   * @return string
-   *   The randomly generated username.
-   */
-  protected function getRandomUsername() {
-    $username = null;
-
-    do {
-      // 1 to NAME_MAXIMUM_LENGTH, all variations are valid!
-      $length   = mt_rand(1, FullUser::NAME_MAXIMUM_LENGTH);
-      for ($i = 0; $i < $length; ++$i) {
-        $username .= $this->characters[mt_rand(0, $this->charactersCount)];
-      }
-    }
-    // If this username is already in use generate another one.
-    while (in_array($username, $this->username));
-
-    $this->usernames[] = $username;
-    return $username;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function execute(InputInterface $input, OutputInterface $output) {
-    $options = parent::execute($input, $output);
-    $this->write("Preparing to generate <comment>{$this->amount}</comment> random users ...");
-    $this->generateRandomUsers($this->input->getArgument("amount"));
     $this->write("Successfully created {$this->amount} of random users!", self::MESSAGE_TYPE_INFO);
-    return $options;
-  }
-
-  /**
-   * Set the amount of random users to generate.
-   *
-   * @param integer $amount
-   *   The desired amount.
-   * @return this
-   */
-  protected function setAmount($amount) {
-    do {
-      $amount = $this->ask("You have to enter a positive integer value!", self::DEFAULT_AMOUNT);
-    }
-    while (!is_numeric($amount) || !is_integer($amount) || $amount < 1);
-    $this->amount = (integer) $amount;
-    return $this;
   }
 
   /**

@@ -29,16 +29,31 @@ use \Symfony\Component\Console\Input\InputOption;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class CacheInspector extends \MovLib\Tool\Console\Command\Production\CacheInspector {
+class Cache extends \MovLib\Tool\Console\Command\Dev\AbstractDevCommand {
 
   /**
    * @inheritdoc
    */
   protected function configure() {
-    global $kernel;
-    parent::configure();
-    if ($kernel->production === false) {
-      $this->addInputOption("disk", InputOption::VALUE_NONE, "Empty the server's disk cache (requires super user privileges).");
+    $this->setName("cache");
+    $this->setDescription("Various commands to interact with system caches.");
+    $this->addOption("disk", "d", InputOption::VALUE_NONE, "Empty the server's disk cache (requires super user privileges and is only for fun).");
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected function execute(InputInterface $input, OutputInterface $output) {
+    $foundOption = false;
+    foreach ($input->getOptions() as $option => $value) {
+      $method = "purge{$option}Cache";
+      if ($value === true && method_exists($this, $method)) {
+        $this->{$method}();
+        $foundOption = true;
+      }
+    }
+    if ($foundOption === false) {
+      $this->write("Use `movlib --help {$this->getName()}` to list all available options.", self::MESSAGE_TYPE_ERROR);
     }
   }
 
@@ -51,11 +66,11 @@ class CacheInspector extends \MovLib\Tool\Console\Command\Production\CacheInspec
   public function purgeDiskCache() {
     $this->checkPrivileges();
     $file = "/proc/sys/vm/drop_caches";
-    if (!is_file($file)) {
+    if (is_file($file) === false) {
       throw new \RuntimeException("Couldn't find '{$file}'!");
     }
-    $this->shExecute("echo 3 | tee /proc/sys/vm/drop_caches");
-    $this->write("Purged disk cache!", self::MESSAGE_TYPE_INFO);
+    $this->exec("echo 3 | tee /proc/sys/vm/drop_caches");
+    $this->writeVerbose("Purged disk cache!", self::MESSAGE_TYPE_INFO);
     return $this;
   }
 

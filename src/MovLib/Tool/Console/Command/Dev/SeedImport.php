@@ -61,14 +61,14 @@ class SeedImport extends \MovLib\Tool\Console\Command\Dev\AbstractDevCommand {
    *
    * @var string
    */
-  const OPTION_ELASTIC = "elastic";
+  const OPTION_ELASTICSEARCH = "elasticsearch";
 
   /**
    * Command option to import Intl ICU data.
    *
    * @var string
    */
-  const OPTION_ICU = "icu";
+  const OPTION_INTL_ICU = "intl-icu";
 
   /**
    * Command option to import upload data.
@@ -129,10 +129,10 @@ class SeedImport extends \MovLib\Tool\Console\Command\Dev\AbstractDevCommand {
     $this->setDescription("Import the complete seed data or only specific data via options.");
     // History needs a custom shortcut because '-h' is already defined by Symfony.
     $this->addOption(self::OPTION_HISTORY, "hi", InputOption::VALUE_NONE, "Create all history repositories.");
-    $this->addInputOption(self::OPTION_DATABASE, InputOption::VALUE_REQUIRED|InputOption::VALUE_IS_ARRAY, "Import specific database data.");
-    $this->addInputOption(self::OPTION_ELASTIC, InputOption::VALUE_NONE, "Create ElasticSearch index and types.");
-    $this->addInputOption(self::OPTION_ICU, InputOption::VALUE_NONE, "Import ICU data.");
-    $this->addInputOption(self::OPTION_UPLOAD, InputOption::VALUE_REQUIRED|InputOption::VALUE_IS_ARRAY, "Import specific upload data.");
+    $this->addOption(self::OPTION_DATABASE, "db", InputOption::VALUE_REQUIRED|InputOption::VALUE_IS_ARRAY, "Import specific database data.");
+    $this->addOption(self::OPTION_ELASTICSEARCH, "es", InputOption::VALUE_NONE, "Create Elasticsearch index and types.");
+    $this->addOption(self::OPTION_INTL_ICU, "ii", InputOption::VALUE_NONE, "Import ICU data.");
+    $this->addOption(self::OPTION_UPLOAD, "u", InputOption::VALUE_REQUIRED|InputOption::VALUE_IS_ARRAY, "Import specific upload data.");
   }
 
   /**
@@ -250,7 +250,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Dev\AbstractDevCommand {
     }
 
     $all     = true;
-    foreach ([ self::OPTION_DATABASE, self::OPTION_ELASTIC, self::OPTION_HISTORY, self::OPTION_ICU, self::OPTION_UPLOAD ] as $option) {
+    foreach ([ self::OPTION_DATABASE, self::OPTION_ELASTICSEARCH, self::OPTION_HISTORY, self::OPTION_INTL_ICU, self::OPTION_UPLOAD ] as $option) {
       if ($options[$option]) {
         $this->{"{$option}Import"}($options[$option]);
         $all = false;
