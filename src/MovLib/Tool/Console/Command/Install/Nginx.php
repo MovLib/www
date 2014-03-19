@@ -212,6 +212,7 @@ final class Nginx extends AbstractInstallCommand {
     }
     // We have to touch this file, otherwise OpenSSL complains about out of date makefiles.
     // @link https://rt.openssl.org/Ticket/Display.html?id=607&user=guest&pass=guest
+    sleep(1);
     touch("{$opensslPath}/Makefile.ssl");
     return $this;
   }
