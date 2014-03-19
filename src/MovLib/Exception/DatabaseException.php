@@ -17,6 +17,8 @@
  */
 namespace MovLib\Exception;
 
+use \MovLib\Data\Log;
+
 /**
  * A database exception might be thrown if any database action fails.
  *
@@ -26,7 +28,7 @@ namespace MovLib\Exception;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class DatabaseException extends \RuntimeException {
+class DatabaseException extends \mysqli_sql_exception {
 
   /**
    * Instantiate new DatabaseException.
@@ -44,6 +46,9 @@ class DatabaseException extends \RuntimeException {
    */
   public function __construct($message, $mysqliError = "none", $mysqliErrno = -1, $code = 0, $previous = null) {
     parent::__construct("{$message}: {$mysqliError} ({$mysqliErrno})", $code, $previous);
+
+    // Always log any database exception at warning level for the fingers crossed logger.
+    Log::warning($this);
   }
 
 }
