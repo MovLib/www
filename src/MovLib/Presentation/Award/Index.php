@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Award;
 
 use \MovLib\Data\Award;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Listing\Award as AwardPartial;
+use \MovLib\Presentation\Partial\Listing\AwardIndexListing;
 
 /**
  * The latest Awards.
@@ -79,7 +79,7 @@ class Index extends \MovLib\Presentation\Page {
     $noItemText .=
       $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/award/create")}'>", "</a>" ]);
 
-    return new AwardPartial($result, $noItemText);
+    return new AwardIndexListing($result, $noItemText);
   }
 
 }

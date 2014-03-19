@@ -17,12 +17,11 @@
  */
 namespace MovLib\Presentation\Partial\Listing;
 
-use \MovLib\Data\Company\Company;
-use \MovLib\Presentation\Partial\Date;
+use \MovLib\Data\Award;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
- * Images list for company instances.
+ * Images list for award instances.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -30,7 +29,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class CompanyListing extends \MovLib\Presentation\AbstractBase {
+class AwardListing extends \MovLib\Presentation\AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -55,10 +54,10 @@ class CompanyListing extends \MovLib\Presentation\AbstractBase {
 
 
   /**
-   * Instantiate new company listing.
+   * Instantiate new award listing.
    *
    * @param mixed $listItems
-   *   The items to build the company listing.
+   *   The items to build the award listing.
    * @param mixed $noItemsText [optional]
    *   The text to display if there are no items, defaults to a generic {@see \MovLib\Presentation\Partial\Alert}.
    */
@@ -84,16 +83,16 @@ class CompanyListing extends \MovLib\Presentation\AbstractBase {
     // @codeCoverageIgnoreEnd
     // @devEnd
       $list = null;
-      /* @var $company \MovLib\Data\Company\Company */
-      while ($company = $this->listItems->fetch_object("\\MovLib\\Data\\Company\\Company")) {
+      /* @var $award \MovLib\Data\Award*/
+      while ($award = $this->listItems->fetch_object("\\MovLib\\Data\\Award")) {
         // @devStart
         // @codeCoverageIgnoreStart
-        if (!($company instanceof \MovLib\Data\Company\Company)) {
-          throw new \LogicException($i18n->t("\$company has to be a valid company object!"));
+        if (!($award instanceof \MovLib\Data\Award)) {
+          throw new \LogicException($i18n->t("\$award has to be a valid award object!"));
         }
         // @codeCoverageIgnoreEnd
         // @devEnd
-        $list .= $this->formatListItem($company);
+        $list .= $this->formatListItem($award);
       }
 
       if ($list) {
@@ -103,9 +102,9 @@ class CompanyListing extends \MovLib\Presentation\AbstractBase {
       if (!$this->noItemsText) {
         $this->noItemsText = new Alert(
           $i18n->t(
-            "We couldn’t find any company matching your filter criteria, or there simply isn’t any company available." .
+            "We couldn’t find any award matching your filter criteria, or there simply isn’t any award available." .
             "Would you like to {0}create a new entry{1}?",
-            [ "<a href='{$i18n->r("/company/create")}'>", "</a>" ]
+            [ "<a href='{$i18n->r("/award/create")}'>", "</a>" ]
           ),
           $i18n->t("No Companies"),
           Alert::SEVERITY_INFO
@@ -116,7 +115,7 @@ class CompanyListing extends \MovLib\Presentation\AbstractBase {
     // @devStart
     // @codeCoverageIgnoreStart
     } catch (\Exception $e) {
-      return (string) new Alert("<pre>{$e}</pre>", "Error Rendering Company List", Alert::SEVERITY_ERROR);
+      return (string) new Alert("<pre>{$e}</pre>", "Error Rendering Award List", Alert::SEVERITY_ERROR);
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -126,53 +125,50 @@ class CompanyListing extends \MovLib\Presentation\AbstractBase {
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
   /**
-   * Format a company list item.
+   * Format a award list item.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @param \MovLib\Data\Company\FullCompany $company
-   *   The company to format.
+   * @param \MovLib\Data\Company\FullCompany $award
+   *   The award to format.
    * @param mixed $listItem [optional]
-   *   The current list item if different from $company.
+   *   The current list item if different from $award.
    * @return string
-   *   The formatted company list item.
+   *   The formatted award list item.
    */
-  final protected function formatListItem($company, $listItem = null) {
+  final protected function formatListItem($award, $listItem = null) {
     global $i18n;
 
-    // Put company dates together.
-    $companyDates = null;
-    if ($company->foundingDate || $company->defunctDate) {
-      $companyDates    = "<br><span class='small'>";
-      if ($company->foundingDate) {
-        $companyDates .= (new Date($company->foundingDate))->format([
-          "property" => "foundingDate",
-          "title" => $i18n->t("Founding Date")
-        ]);
+    // Put award dates together.
+    $awardDates = null;
+    if ($award->firstAwardingYear || $award->lastAwardingYear) {
+      $awardDates    = "<br><span class='small'>";
+      if ($award->firstAwardingYear && $award->lastAwardingYear) {
+        $awardDates .= $i18n->t("from {0} to {1}", [ $award->firstAwardingYear, $award->lastAwardingYear ]);
       }
-      else {
-        $companyDates .= $i18n->t("{0}unknown{1}", [ "<em title='{$i18n->t("Founding Date")}'>", "</em>" ]);
+      else if ($award->firstAwardingYear) {
+        $awardDates .= $i18n->t("since {0}", [ $award->firstAwardingYear ]);
       }
-      if ($company->defunctDate) {
-        $companyDates .= " – " . (new Date($company->defunctDate))->format([ "title" => $i18n->t("Defunct Date") ]);
+      else if ($award->lastAwardingYear) {
+        $awardDates .= $i18n->t("until {0}", [ $award->lastAwardingYear ]);
       }
-      $companyDates   .= "</span>";
+      $awardDates   .= "</span>";
     }
 
-    // Put the company list entry together.
+    // Put the award list entry together.
     return
       "<li class='hover-item r' typeof='Corporation'>" .
         "<div class='s s10'>" .
           $this->getImage(
-            $company->getStyle(Company::STYLE_SPAN_01),
-            $company->route,
+            $award->getStyle(Award::STYLE_SPAN_01),
+            $award->route,
             [ "property" => "image" ],
             [ "class" => "fl" ]
           ) .
           "<span class='s s9'>" .
-            $this->getAdditionalContent($company, $listItem) .
-            "<a href='{$company->route}' property='url'>" .
-              "<span property='name'>{$company->name}</span>" .
-            "</a>{$companyDates}" .
+            $this->getAdditionalContent($award, $listItem) .
+            "<a href='{$award->route}' property='url'>" .
+              "<span property='name'>{$award->name}</span>" .
+            "</a>{$awardDates}" .
           "</span>" .
         "</div>" .
       "</li>"
@@ -180,14 +176,14 @@ class CompanyListing extends \MovLib\Presentation\AbstractBase {
   }
 
   /**
-   * Get additional content to display on a company list item.
+   * Get additional content to display on a award list item.
    *
-   * @param \MovLib\Data\Company\FullCompany $company
-   *   The company providing the information.
+   * @param \MovLib\Data\Company\FullCompany $award
+   *   The award providing the information.
    * @return string
    *   The formatted additional content.
    */
-  protected function getAdditionalContent($company, $listItem) {
+  protected function getAdditionalContent($award, $listItem) {
     // The default implementation returns no additional content.
   }
 
