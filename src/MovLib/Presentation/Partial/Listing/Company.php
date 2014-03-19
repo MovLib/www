@@ -61,6 +61,9 @@ class Company extends \MovLib\Presentation\Partial\Listing\AbstractListing {
     // @codeCoverageIgnoreEnd
     // @devEnd
       $list = null;
+      $moviesTitle   = $i18n->t("Movies");
+      $seriesTitle   = $i18n->t("Series");
+      $releasesTitle = $i18n->t("Releases");
       /* @var $company \MovLib\Data\Company\Company */
       while ($company = $this->listItems->fetch_object("\\MovLib\\Data\\Company\\Company")) {
         // @devStart
@@ -87,8 +90,23 @@ class Company extends \MovLib\Presentation\Partial\Listing\AbstractListing {
 
         $list .=
           "<li class='hover-item r' typeof='Corporation'>" .
-            $this->getImage($company->getStyle($this->imageStyle), $company->route, [ "property" => "image" ], [ "class" => "s s1" ]) .
-            "<span class='s'><a href='{$company->route}' property='url'><span property='name'>{$company->name}</span></a>{$additionalInfo}</span>" .
+            "<div class='s s10'>" .
+              $this->getImage($company->getStyle($this->imageStyle), $company->route, [ "property" => "image" ], [ "class" => "fl" ]) .
+              "<span class='s s9'>" .
+                "<span class='fr'>" .
+                  "<a class='ico ico-movie label' href='{$i18n->rp("{$company->routeKey}/movies", [ $company->id ])}' title='{$moviesTitle}'>" .
+                    " &nbsp; {$company->getMoviesCount()}" .
+                  "</a>" .
+                  "<a class='ico ico-series label' href='{$i18n->rp("{$company->routeKey}/series", [ $company->id ])}' title='{$seriesTitle}'>" .
+                    " &nbsp; {$company->getSeriesCount()}" .
+                  "</a>" .
+                  "<a class='ico ico-release label' href='{$i18n->rp("{$company->routeKey}/releases", [ $company->id ])}' title='{$releasesTitle}'>" .
+                    " &nbsp; {$company->getSeriesCount()}" .
+                  "</a>" .
+                "</span>" .
+                "<a href='{$company->route}' property='url'><span property='name'>{$company->name}</span></a>{$additionalInfo}" .
+              "</span>" .
+            "</div>" .
           "</li>"
         ;
       }

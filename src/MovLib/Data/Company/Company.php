@@ -103,6 +103,13 @@ class Company extends \MovLib\Data\Image\AbstractImage {
    */
   public $route;
 
+  /**
+   * The route key of this award.
+   *
+   * @var string
+   */
+  public $routeKey;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -303,9 +310,10 @@ class Company extends \MovLib\Data\Image\AbstractImage {
   protected function init() {
     global $i18n;
 
-    $this->deleted = (boolean) $this->deleted;
-    $this->route   = $i18n->r("/company/{0}", [ $this->id]);
-    $key           = "edit";
+    $this->deleted  = (boolean) $this->deleted;
+    $this->routeKey = "/company/{0}";
+    $this->route    = $i18n->r($this->routeKey, [ $this->id]);
+    $key            = "edit";
     if ($this->uploaderId) {
       $this->imageExists = true;
       $key               = "logo";
