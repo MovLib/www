@@ -54,7 +54,7 @@ abstract class StreamWrapperFactory {
    */
   public static function create($uri) {
     /* @var $instance \MovLib\Data\StreamWrapper\AbstractLocalStreamWrapper */
-    $instance = static::$wrapper[parse_url($uri, PHP_URL_SCHEME)];
+    $instance = new static::$wrapper[parse_url($uri, PHP_URL_SCHEME)]();
     $instance->uri = $uri;
     return $instance;
   }
@@ -62,40 +62,48 @@ abstract class StreamWrapperFactory {
   /**
    * Register new stream wrapper.
    *
-   * @param string $scheme
-   *   The scheme the stream wrapper provides.
+   * @param string|array $schemes
+   *   The scheme(s) the stream wrapper(s) provides.
    * @throws \LogicException
    */
-  public static function register($scheme) {
-    $class = "\\MovLib\\Data\\StreamWrapper\\" . ucfirst($scheme) . "StreamWrapper";
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (class_exists($class) === false) {
-      throw new \LogicException("Couldn't find stream wrapper '{$class}'");
+  public static function register($schemes) {
+    $schemes = (array) $schemes;
+    $c       = count($schemes);
+    for ($i = 0; $i < $c; ++$i) {
+      $class = "\\MovLib\\Data\\StreamWrapper\\" . ucfirst($schemes[$i]) . "StreamWrapper";
+      // @devStart
+      // @codeCoverageIgnoreStart
+      if (class_exists($class) === false) {
+        throw new \LogicException("Couldn't find stream wrapper '{$class}'");
+      }
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+      if (stream_wrapper_register($schemes[$i], $class) === false) {
+        throw new \LogicException(
+          "Couldn't register {$class} for as stream wrapper for scheme {$schemes[$i]} because there's already another " .
+          "stream wrapper registered for this scheme."
+        );
+      }
+      static::$wrapper[$scheme] = $class;
     }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    if (stream_wrapper_register($scheme, $class) === false) {
-      throw new \LogicException(
-        "Couldn't register {$class} for as stream wrapper for scheme {$scheme} because there's already another " .
-        "stream wrapper registered for this scheme."
-      );
-    }
-    static::$wrapper[$scheme] = new $class();
   }
 
   /**
    * Unregister scheme wrapper.
    *
-   * @param string $scheme
-   *   The registered stream wrappers scheme.
+   * @param string|array $schemes
+   *   The registered stream wrapper(s)'s scheme(s).
    * @throws \UnexpectedValueException
    */
-  public static function unregister($scheme) {
-    if (stream_wrapper_unregister($scheme) === false) {
-      throw new \UnexpectedValueException("Couldn't unregister stream wrapper for scheme {$scheme}.");
+  public static function unregister($schemes) {
+    $schemes = (array) $schemes;
+    $c       = count($schemes);
+    for ($i = 0; $i < $c; ++$i) {
+      if (stream_wrapper_unregister($schemes[$i]) === false) {
+        throw new \UnexpectedValueException("Couldn't unregister stream wrapper for scheme {$schemes[$i]}.");
+      }
+      unset(static::$wrapper[$schemes[$i]]);
     }
-    unset(static::$wrapper[$scheme]);
   }
 
 }
