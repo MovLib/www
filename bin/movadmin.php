@@ -26,6 +26,6 @@
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-$command = "Admin";
+$command = ucfirst(substr(basename(__FILE__, ".php"), 3));
 require dirname(__DIR__) . "/vendor/autoload.php";
 (new \MovLib\Tool\Console\Application("MovLib {$command} CLI", (new \MovLib\Tool\Kernel())->version, $command))->run();
