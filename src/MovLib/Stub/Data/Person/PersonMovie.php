@@ -38,14 +38,14 @@ final class PersonMovie {
   /**
    * The director job.
    *
-   * @var \MovLib\Stub\Data\Person\PersonJob
+   * @var \MovLib\Stub\Data\Person\Job
    */
   public $director;
 
   /**
    * The cast job.
    *
-   * @var \MovLib\Stub\Data\Person\PersonJob
+   * @var \MovLib\Stub\Data\Person\Job
    */
   public $cast;
 

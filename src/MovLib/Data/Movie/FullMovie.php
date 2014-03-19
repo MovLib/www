@@ -259,44 +259,87 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
   }
 
   /**
-   * Get the mysqli result for the movie's crew.
+   * Get the movie's crew grouped by job.
    *
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
-   * @param null|integer $limit
-   *   Limit of unique crew members to return, defaults to <code>8</code>. <code>NULL</code> means no limit.
-   * @return \mysqli_result
-   *   The result containing the {@see \MovLib\Data\Movie\Crew} objects.
+   * @return null|array
+   *   Associative array containing the job identifiers as key and {@see \MovLib\Stub\Data\Movie\MovieCrew} objects as
+   *   values or <code>NULL</code> if no crew was found.
    */
-  public function getCrew($limit = 8) {
+  public function getCrew() {
     global $db, $i18n;
-    $query =
-      "SELECT
-        `mc`.`id`,
-        `mc`.`movie_id` AS `movieId`,
-        `mc`.`job_id` AS `jobId`,
-        `mc`.`alias_id` AS `aliasId`,
-        `mc`.`person_id` AS `personId`,
-        IFNULL(COLUMN_GET(`j`.`dyn_titles`, ? AS BINARY), COLUMN_GET(`j`.`dyn_titles`, '{$i18n->defaultLanguageCode}' AS BINARY)),
-        `image_uploader_id` AS `uploaderId`,
-        `image_width` AS `width`,
-        `image_height` AS `height`,
-        `image_filesize` AS `filesize`,
-        `image_extension` AS `extension`,
-        `image_styles` AS `styles`
-      FROM `movies_crew` AS `mc`
-      INNER JOIN `jobs` AS `j`
-        ON `j`.`id` = `mc`.`job_id`
-      WHERE `mc`.`movie_id` = ?"
-    ;
-    $types = "sd";
-    $params = [ $i18n->languageCode, $this->id ];
 
-    if ($limit) {
-      // @todo implement limit.
+    $result = $db->query(
+      "SELECT
+        `jobs`.`id` AS `job_id`,
+        IFNULL(
+          COLUMN_GET(`jobs`.`dyn_names_sex0`, ? AS CHAR(255)),
+          COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$i18n->defaultLanguageCode}' AS CHAR(255))
+        ) AS `job_title`,
+        `movies_directors`.`person_id` AS `director_person_id`,
+        `movies_crew`.`person_id` AS `crew_person_id`,
+        `movies_crew`.`company_id` AS `crew_company_id`,
+        IFNULL(IFNULL(`person_crew`.`name`, `companies`.`name`), `person_director`.`name`) AS `name`
+        FROM `jobs`
+        LEFT JOIN `movies_directors`
+          ON `movies_directors`.`job_id` = `jobs`.`id`
+          AND `movies_directors`.`movie_id` = ?
+        LEFT JOIN `persons` AS `person_director`
+          ON `person_director`.`id` = `movies_directors`.`person_id`
+        LEFT JOIN `movies_crew`
+          ON `movies_crew`.`job_id` = `jobs`.`id`
+          AND `movies_crew`.`movie_id` = ?
+        LEFT JOIN `persons` AS `person_crew`
+          ON `person_crew`.`id` = `movies_crew`.`person_id`
+        LEFT JOIN `companies`
+          ON `companies`.`id` = `movies_crew`.`company_id`
+        WHERE `movies_directors`.`person_id` IS NOT NULL
+          OR `movies_crew`.`person_id` IS NOT NULL
+          OR `movies_crew`.`company_id` IS NOT NULL
+        ORDER BY `job_title`{$db->collations[$i18n->languageCode]} ASC",
+      "sdd",
+      [ $i18n->languageCode, $this->id, $this->id ]
+    )->get_result();
+
+    $crew         = null;
+    $companyRoute = $i18n->r("/company/{0}");
+    $jobRoute     = $i18n->r("/job/{0}");
+    $personRoute  = $i18n->r("/person/{0}");
+
+    while ($row = $result->fetch_assoc()) {
+      // Initialize a movie crew stub object if not present yet.
+      if (!isset($crew[$row["job_id"]])) {
+        $crew[$row["job_id"]] = (object) [
+          "job"     => (object) [
+            "id"    => $row["job_id"],
+            "route" => str_replace("{0}", $row["job_id"], $jobRoute),
+            "title" => $row["job_title"]
+          ],
+          "members" => [],
+        ];
+      }
+
+      if ($row["director_person_id"] || $row["crew_person_id"]) {
+        $id    = $row["director_person_id"] ?: $row["crew_person_id"];
+        $route = $personRoute;
+        $type  = "Person";
+      }
+      else {
+        $id    = $row["crew_company_id"];
+        $route = $companyRoute;
+        $type  = "Organization";
+      }
+
+      $crew[$row["job_id"]]->members[] = (object) [
+        "id"    => $id,
+        "name"  => $row["name"],
+        "route" => str_replace("{0}", $id, $route),
+        "type"  => $type,
+      ];
     }
-    // @todo implement ordering by name (person and company)!
-    return $db->query($query, $types, $params);
+
+    return $crew;
   }
 
   /**

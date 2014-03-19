@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Stub\Data\Movie;
+namespace MovLib\Stub\Data;
 
 /**
- * Movie person stub.
+ * Generic entity stub to use as a proxy for all kinds of data objects (e.g. Person).
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -26,20 +26,34 @@ namespace MovLib\Stub\Data\Movie;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MoviePerson {
+final class Entity {
 
   /**
-   * The movie's person.
+   * The entity's unique identifier.
    *
-   * @var \MovLib\Data\Person\FullPerson
+   * @var integer
    */
-  public $person;
+  public $id;
 
   /**
-   * Numeric array with the roles as {@see \MovLib\Stub\Data\Person\PersonRole} objects.
+   * The entity's name.
    *
-   * @var array
+   * @var string
    */
-  public $roles;
+  public $name;
+
+  /**
+   * The entity's translated route.
+   *
+   * @var string
+   */
+  public $route;
+
+  /**
+   * The entity's RDFa {@link http://schema.org schema.org} type.
+   *
+   * @var string
+   */
+  public $type;
 
 }

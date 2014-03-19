@@ -128,6 +128,7 @@ ol ol {
 
 dl {
   margin-bottom: 20px;
+  margin-top: 0;
 }
 
 dt,
@@ -146,4 +147,26 @@ dd {
 .description dd {
   margin: 0 0 10px 0;
   padding-right: 20px;
+}
+
+.dl-big dt {
+  border-bottom: 1px solid #e5e5e5;
+  font-weight: 200;
+  font-size: 24px;
+  line-height: 1.1;
+  margin: 40px 0 10px;
+  padding-bottom: 5px;
+}
+
+.dl-big dt:first-child {
+  margin-top: 0;
+}
+
+.dl-big dt a {
+  display: block;
+}
+
+.dl-big dd {
+  line-height: 1.82;
+  margin-left: 0;
 }

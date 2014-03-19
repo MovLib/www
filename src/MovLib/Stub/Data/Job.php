@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Stub\Data\Movie;
+namespace MovLib\Stub\Data;
 
 /**
- * Movie person stub.
+ * Generic job stub.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -26,20 +26,27 @@ namespace MovLib\Stub\Data\Movie;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MoviePerson {
+final class Job {
 
   /**
-   * The movie's person.
+   * The job's identifier.
    *
-   * @var \MovLib\Data\Person\FullPerson
+   * @var integer
    */
-  public $person;
+  public $id;
 
   /**
-   * Numeric array with the roles as {@see \MovLib\Stub\Data\Person\PersonRole} objects.
+   * The job's translated route.
    *
-   * @var array
+   * @var string
    */
-  public $roles;
+  public $route;
+
+  /**
+   * The translated and gendered job title.
+   *
+   * @var string
+   */
+  public $title;
 
 }
