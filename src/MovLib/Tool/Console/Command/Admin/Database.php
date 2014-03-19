@@ -17,16 +17,15 @@
  */
 namespace MovLib\Tool\Console\Command\Admin;
 
+use \MovLib\Data\Shell;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * CLI command for all database related tasks.
+ * Database related administrative tasks.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -44,7 +43,7 @@ class Database extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @see Database::__construct()
    * @var string
    */
-  protected $pathBackup = "/private/backup";
+  protected $pathBackup = "/var/backups";
 
   /**
    * The directory containing the migration scripts.
@@ -52,7 +51,7 @@ class Database extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @see Database::__construct()
    * @var string
    */
-  protected $pathMigration = "/conf/migration";
+  protected $pathMigration = "/var/migrations";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -64,21 +63,37 @@ class Database extends \MovLib\Tool\Console\Command\AbstractCommand {
    */
   protected function configure() {
     global $kernel;
+
     $this->setName("database");
+    $this->setDescription("Perform various database related tasks.");
+    //$this->addOption("backup", "b", InputOption::VALUE_NONE, "Create backup of the complete database.");
+    $this->addOption("optimize-tables", "ot", InputOption::VALUE_NONE, "Optimize all tables of all databases.");
+    //$this->addOption("migration", "m", InputOption::VALUE_NONE, "Run all migration scripts.");
+
     $this->pathBackup    = "{$kernel->documentRoot}{$this->pathBackup}";
     $this->pathMigration = "{$kernel->documentRoot}{$this->pathMigration}";
-    $this->setDescription("Perform various database related tasks.");
-    $this->addInputOption("backup", InputOption::VALUE_NONE, "Create backup of the complete database.");
-    $this->addInputOption("migration", InputOption::VALUE_NONE, "Run all migration scripts.");
   }
 
   /**
    * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    $options = parent::execute($input, $output);
-    throw new \RuntimeException("Not implemented yet!");
-    return $options;
+    foreach ($input->getOptions() as $option) {
+      $method = str_replace("-", "", $option);
+      if (method_exists($this, $method)) {
+        $this->{$method}();
+      }
+    }
+    return 0;
+  }
+
+  /**
+   * Optimize all tables of all databases.
+   *
+   * @return this
+   */
+  protected function optimizeTables() {
+    $this->exec("mysqlcheck --optimize --all-databases --verbose");
   }
 
 }
