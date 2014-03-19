@@ -17,7 +17,9 @@
  */
 namespace MovLib\Tool\Console\Command\Dev;
 
+use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
+use \Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Extended cache inspector with some very special commands.
