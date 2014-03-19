@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Stub\Data\Person;
+namespace MovLib\Stub\Data;
 
 /**
- * Person movie stub.
+ * Generic job stub.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -26,46 +26,27 @@ namespace MovLib\Stub\Data\Person;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class PersonMovie {
+final class Job {
 
   /**
-   * The person's movie.
+   * The job's identifier.
    *
-   * @var \MovLib\Data\Movie\FullMovie
+   * @var integer
    */
-  public $movie;
+  public $id;
 
   /**
-   * The director job.
+   * The job's translated route.
    *
-   * @var \MovLib\Stub\Data\Person\Job
+   * @var string
    */
-  public $director;
+  public $route;
 
   /**
-   * The cast job.
+   * The translated and gendered job title.
    *
-   * @var \MovLib\Stub\Data\Person\Job
+   * @var string
    */
-  public $cast;
-
-  /**
-   * Associative array containing the person's roles in this movie.
-   *
-   * The key is either a person identifier if the person plays another person or a string if it is just a minor role.
-   * The value is a numeric array: <code>0</code> contains the role identifier and <code>1</code> the role name.
-   *
-   * @var array
-   */
-  public $roles;
-
-  /**
-   * Associative array containing the person's crew jobs in this movie.
-   *
-   * The key is the jobs identifier and the value is the translated and gendered job name.
-   *
-   * @var array
-   */
-  public $jobs;
+  public $title;
 
 }
