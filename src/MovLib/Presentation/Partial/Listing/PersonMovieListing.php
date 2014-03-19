@@ -54,7 +54,7 @@ class PersonMovieListing extends \MovLib\Presentation\Partial\Listing\MovieListi
       if ($this->noItemsText) {
         return (string) $this->noItemsText;
       }
-      
+
       return (string) new Alert($i18n->t("This person hasn’t worked on any movies yet."), null, Alert::SEVERITY_INFO);
     // @devStart
     // @codeCoverageIgnoreStart
@@ -70,7 +70,7 @@ class PersonMovieListing extends \MovLib\Presentation\Partial\Listing\MovieListi
    * @param \MovLib\Data\Movie\FullMovie $movie
    *   {@inheritdoc}
    * @param \MovLib\Stub\Data\Person\PersonMovie $personMovie
-   *
+   *   The list item containing all director, role and job information.
    */
   protected function getAdditionalContent($movie, $personMovie = null) {
     global $i18n;

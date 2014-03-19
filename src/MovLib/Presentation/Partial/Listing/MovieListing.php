@@ -57,18 +57,14 @@ class MovieListing extends \MovLib\Presentation\AbstractBase {
   /**
    * Instantiate new special movies listing.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param mixed $listItems
    *   The items to build the movie listing.
    * @param mixed $noItemsText [optional]
    *   The text to display if there are no items, defaults to a generic {@see \MovLib\Presentation\Partial\Alert}.
    */
   public function __construct($listItems, $noItemsText = null) {
-    global $i18n;
-    $this->listItems = $listItems;
-    if ($noItemsText) {
-      $this->noItemsText = $noItemsText;
-    }
+    $this->listItems   = $listItems;
+    $this->noItemsText = $noItemsText;
   }
 
   /**
@@ -169,7 +165,7 @@ class MovieListing extends \MovLib\Presentation\AbstractBase {
    * @return string
    *   The formatted additional content.
    */
-  protected function getAdditionalContent($movie) {
+  protected function getAdditionalContent($movie, $listItem) {
     // The default implementation returns no additional content.
   }
 
