@@ -97,13 +97,6 @@ final class Configuration {
   public $release = "dev";
 
   /**
-   * The machine's directories for the environment.
-   *
-   * @var \MovLib\Stub\Configuration\Directory
-   */
-  public $directory;
-
-  /**
    * The machine's PHP configuration.
    *
    * @var \MovLib\Stub\Configuration\PHP

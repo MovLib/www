@@ -7,16 +7,6 @@
   "webmaster": "webmaster@movlib.org",
   "user": "movdev",
   "group": "www-data",
-  "directory": {
-    "bin": "/usr/local/bin",
-    "cache": "/var/cache",
-    "etc": "/etc",
-    "lib": "/var/lib",
-    "log": "/var/log",
-    "run": "/run",
-    "src": "/usr/local/src",
-    "tmp": "/tmp"
-  },
   "elasticsearch": {
     "version": "1.0.1"
   },
