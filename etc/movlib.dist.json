@@ -25,13 +25,13 @@
     "release": "trusty"
   },
   "mariadb": {
-    
+
   },
   "nginx": {
     "configure": {
       "arguments": [
-        "user={$kernel->configuration->user}",
-        "group={$kernel->configuration->group}",
+        "user={{ user }}",
+        "group={{ group }}",
         "prefix=/usr/local",
         "sbin-path=/usr/local/sbin",
         "conf-path=/etc/nginx/nginx.conf",
@@ -73,7 +73,7 @@
       ]
     },
     "modules": [
-      { "nginx_accept_language_module": "git://github.com/Fleshgrinder/nginx_accept_language_module.git" }
+      "git://github.com/Fleshgrinder/nginx_accept_language_module.git"
     ],
     "opensslVersion": "1.0.1f",
     "pcreVersion": "8.34",
@@ -84,8 +84,6 @@
   },
   "php": {
     "checksum": "e760656f7cf2f05158f73da75e8b720b",
-    "daemon": "/usr/local/sbin/php-fpm",
-    "daemonArgs": "",
     "version": "5.5.10"
   }
 }

@@ -72,10 +72,10 @@ DAEMON="/usr/local/sbin/${NAME}"
 DAEMON_ARGS=""
 
 # The php-fpm group.
-GROUP=<?= $group ?>
+GROUP="www-data"
 
 # The php-fpm log directory.
-LOG_DIR="/var/log/php-fpm"
+LOG_DIR="/var/log/php"
 
 # The php-fpm error log.
 LOG_ERROR="error.log"
@@ -90,7 +90,7 @@ PIDFILE="/run/${PID_DIR_NAME}/${PID_NAME}.pid"
 UPLOAD_TMP_DIR="/tmp/${NAME}"
 
 # The php-fpm user.
-USER="www-data"
+USER="movdev"
 
 
 # -----------------------------------------------------------------------------
@@ -114,21 +114,6 @@ if [ ! -x ${DAEMON} ]; then
   log_failure_msg ${NAME} "not installed"
   exit 1
 fi
-
-# Create the temporary upload directory if it's missing.
-if [ ! -d ${UPLOAD_TMP_DIR} ]; then
-  mkdir -p ${UPLOAD_TMP_DIR}
-  chmod 2770 ${UPLOAD_TMP_DIR}
-  chown ${USER}:${GROUP} ${UPLOAD_TMP_DIR}
-fi
-
-if [ ! -d ${LOG_DIR} ]; then
-  mkdir ${LOG_DIR}
-fi
-touch "${LOG_DIR}/${ERROR_LOG}"
-touch "${LOG_DIR}/${SLOW_LOG}"
-chmod 0770 /var/log/php-fpm
-chmod 0660 /var/log/php-fpm/*
 
 # Always check if service is already running.
 RUNNING=$(start-stop-daemon --start --quiet --pidfile ${PIDFILE} --exec ${DAEMON} --test && echo "false" || echo "true")

@@ -77,6 +77,7 @@ apt-get install --yes   \
   ca-certificates       \
   checkinstall          \
   coreutils             \
+  libbz2-dev            \
   libcurl4-openssl-dev  \
   libssl-dev            \
   libtidy-dev           \
@@ -110,29 +111,26 @@ else
   USER=$(json_get "['user']")
   GROUP=$(json_get "['group']")
 fi
-ETC_DIR=$(json_get "['directory']['etc']")
-RUN_DIR=$(json_get "['directory']['run']")
-SRC_DIR=$(json_get "['directory']['src']")
 VERSION=$(json_get "['php']['version']")
 CHECKSUM=$(json_get "['php']['checksum']")
 WEBMASTER=$(json_get "['webmaster']")
 
-cd ${SRC_DIR}
+cd /usr/local/src
 
 wget "http://at1.php.net/distributions/php-${VERSION}.tar.gz"
 
 if [[ $(echo "${CHECKSUM}  php-${VERSION}.tar.gz" | md5sum --check -) -ne 0 ]]; then
-  rm "php-${VERSION}.tar.gz"
+  rm "/usr/local/src/php-${VERSION}.tar.gz"
   exit 1
 fi
 
-tar --extract --gzip --file "php-${VERSION}.tar.gz"
+tar --extract --gzip --file "/usr/local/src/php-${VERSION}.tar.gz"
 
-rm "php-${VERSION}.tar.gz"
+rm "/usr/local/src/php-${VERSION}.tar.gz"
 
-chown --recursive root:root "php-${VERSION}/*"
+chown --recursive root:root "/usr/local/src/php-${VERSION}"
 
-cd "php-${VERSION}"
+cd "/usr/local/src/php-${VERSION}"
 
 CFLAGS='-O3 -m64 -march=native -DMYSQLI_NO_CHANGE_USER_ON_PCONNECT' \
 CXXFLAGS='-O3 -m64 -march=native' \
@@ -153,13 +151,14 @@ CXXFLAGS='-O3 -m64 -march=native' \
   --enable-xml \
   --enable-zend-signals \
   --enable-zip \
-  --sysconfdir="${ETC_DIR}/php" \
-  --with-config-file-path="${ETC_DIR}/php" \
+  --sysconfdir="/etc/php" \
+  --with-bz2 \
+  --with-config-file-path="/etc/php" \
   --with-curl \
   --with-fpm-group="${GROUP}" \
   --with-fpm-user="${USER}" \
   --with-icu-dir='/usr' \
-  --with-mysql-sock="${RUN_DIR}/mariadb/mariadb.sock" \
+  --with-mysql-sock="/run/mysql/mysql.sock" \
   --with-mysqli \
   --with-openssl \
   --with-pcre-regex \
@@ -179,6 +178,6 @@ checkinstall \
   --provides='php' \
   --type='debian' \
 
-rm -r "${SRC_DIR}/php-${VERSION}"
+rm -r "/usr/local/src/php-${VERSION}"
 
 exit 0
