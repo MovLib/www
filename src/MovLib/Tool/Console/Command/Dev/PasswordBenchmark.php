@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Tool\Console\Command\Production;
+namespace MovLib\Tool\Console\Command\Dev;
 
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
@@ -30,7 +30,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class PasswordBenchmark extends \MovLib\Tool\Console\Command\AbstractCommand {
+class PasswordBenchmark extends \MovLib\Tool\Console\Command\Dev\AbstractDevCommand {
 
   /**
    * @inheritdoc
@@ -45,7 +45,6 @@ class PasswordBenchmark extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    $options    = parent::execute($input, $output);
     $timeTarget = $input->getArgument("time-target");
     $cost       = 9;
     $this->write("Starting password cost benchmark ...");
@@ -60,9 +59,10 @@ class PasswordBenchmark extends \MovLib\Tool\Console\Command\AbstractCommand {
     }
     while ($actual < $timeTarget);
     $this->progressFinish();
-    $this->write("Optimal password cost setting for the desired time target of {$timeTarget} seconds would be <info>{$cost}</info> (hashing will take ~{$actual} seconds).");
-    $this->write("");
-    return $options;
+    $this->write(
+      "Optimal password cost setting for the desired time target of {$timeTarget} seconds would be " .
+      "<info>{$cost}</info> (hashing will take ~{$actual} seconds).\n"
+    );
   }
 
 }

@@ -142,7 +142,11 @@ class Composer {
   public function phpunit($fullName) {
     global $kernel;
     if ($kernel->isWindows === false) {
-      FileSystem::createSymbolicLink("{$this->vendorPath}/{$fullName}/composer/bin/phpunit", "/usr/local/bin/phpunit", true);
+      FileSystem::createSymbolicLink(
+        "{$this->vendorPath}/{$fullName}/composer/bin/phpunit",
+        "/usr/local/bin/phpunit",
+        true
+      );
     }
     return $this;
   }

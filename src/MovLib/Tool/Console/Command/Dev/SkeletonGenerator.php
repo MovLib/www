@@ -30,7 +30,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class SkeletonGenerator extends AbstractDevCommand {
+class SkeletonGenerator extends \MovLib\Tool\Console\Command\Dev\AbstractDevCommand {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -99,75 +99,20 @@ class SkeletonGenerator extends AbstractDevCommand {
 
   /**
    * @inheritdoc
+   * @global \MovLib\Tool\Kernel $kernel
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    $options = parent::execute($input, $output);
+    global $kernel;
 
     // We need to fix the permissions after generating the skeletons, therefor we need elevated privileges.
     $this->checkPrivileges();
 
     // If we have them, generate the skeletons.
-    $this->generateSkeletons();
-
-    return $options;
-  }
-
-  /**
-   * Generate a new skeleton or extend an existing one.
-   *
-   * @global \MovLib\Tool\Kernel $kernel
-   * @param string $file
-   *   Absolute path to the source file.
-   * @return this
-   */
-  protected function generateSkeleton($file) {
-    global $kernel;
-
-    // Every test file has the same path as the source file, the only reside in a different directory. All source files
-    // are in "src" and all test files in "test", therefore we have to replace that portion of the part. Every test
-    // file ends on Test, this is per convention from PHPUnit, therefor we simply replace the ".php" file extension,
-    // prefix it with "Test" and we have the absolute path to the test file.
-    $testFile = str_replace([ "/src/", ".php" ], [ "/test/", "Test.php" ], $file);
-
-    // We have to remove the document root and "src" portion and the file extension to get the fully qualified class
-    // name and of course we have to replace the directory separator with the PHP namespace separator.
-    $class    = strtr(str_replace([ "{$kernel->documentRoot}/src", ".php" ], "", $file), DIRECTORY_SEPARATOR, "\\");
-
-    // Check if we are really dealing with a (abstract) class or a trait, otherwise there's no need for a skeleton.
-    if (!class_exists($class) && !trait_exists($class)) {
-      return $this;
-    }
-
-    // Create a reflection of this particular class, in order to easily gather information about it. We also need the
-    // real source code to make absolutely sure that the method is really declared in this class (traits are a real
-    // problem because they are reported as declared in the using class by the reflector).
-    $reflector = new \ReflectionClass($class);
-    $source    = file_get_contents($file);
-
-    // We might have to extend the existing test if we already have a test file.
-    if (is_file($testFile)) {
-      $this->skeletonExtend($reflector, $class, $source, $testFile);
-    }
-    // If not, generate a totally new skeleton for this source file.
-    else {
-      $this->skeletonNew($reflector, $class, $source, $testFile);
-    }
-
-    return $this;
-  }
-
-  /**
-   * Generate all skeletons.
-   *
-   * @global \MovLib\Tool\Kernel $kernel
-   */
-  public function generateSkeletons() {
-    global $kernel;
     $this->write("Generating unit test skeletons for all files in <info>'{$kernel->documentRoot}/src/'</info> ...");
 
     // Load template files.
     foreach ([ "abstract", "class", "method", "trait" ] as $tpl) {
-      $this->{"{$tpl}Template"} = file_get_contents("{$kernel->documentRoot}/conf/skeleton/{$tpl}.tpl.php");
+      $this->{"{$tpl}Template"} = file_get_contents("{$kernel->documentRoot}/etc/skeleton/{$tpl}.tpl.php");
     }
 
     // Collect all source files.
@@ -213,6 +158,48 @@ class SkeletonGenerator extends AbstractDevCommand {
     // If we haven't done anything, tell the client.
     if ($doneSomething === false) {
       $this->write("All tests are up-to-date, nothing was deleted, generated or extended!", self::MESSAGE_TYPE_COMMENT);
+    }
+  }
+
+  /**
+   * Generate a new skeleton or extend an existing one.
+   *
+   * @global \MovLib\Tool\Kernel $kernel
+   * @param string $file
+   *   Absolute path to the source file.
+   * @return this
+   */
+  protected function generateSkeleton($file) {
+    global $kernel;
+
+    // Every test file has the same path as the source file, the only reside in a different directory. All source files
+    // are in "src" and all test files in "test", therefore we have to replace that portion of the part. Every test
+    // file ends on Test, this is per convention from PHPUnit, therefor we simply replace the ".php" file extension,
+    // prefix it with "Test" and we have the absolute path to the test file.
+    $testFile = str_replace([ "/src/", ".php" ], [ "/test/", "Test.php" ], $file);
+
+    // We have to remove the document root and "src" portion and the file extension to get the fully qualified class
+    // name and of course we have to replace the directory separator with the PHP namespace separator.
+    $class    = strtr(str_replace([ "{$kernel->documentRoot}/src", ".php" ], "", $file), DIRECTORY_SEPARATOR, "\\");
+
+    // Check if we are really dealing with a (abstract) class or a trait, otherwise there's no need for a skeleton.
+    if (!class_exists($class) && !trait_exists($class)) {
+      return $this;
+    }
+
+    // Create a reflection of this particular class, in order to easily gather information about it. We also need the
+    // real source code to make absolutely sure that the method is really declared in this class (traits are a real
+    // problem because they are reported as declared in the using class by the reflector).
+    $reflector = new \ReflectionClass($class);
+    $source    = file_get_contents($file);
+
+    // We might have to extend the existing test if we already have a test file.
+    if (is_file($testFile)) {
+      $this->skeletonExtend($reflector, $class, $source, $testFile);
+    }
+    // If not, generate a totally new skeleton for this source file.
+    else {
+      $this->skeletonNew($reflector, $class, $source, $testFile);
     }
 
     return $this;

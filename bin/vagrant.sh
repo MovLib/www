@@ -45,9 +45,12 @@ bash /vagrant/bin/install-composer.sh
 composer update --no-interaction --prefer-source --working-dir=/vagrant
 
 # Install everything else.
-php /vagrant/bin/movlib.php provision --all --environment=${MOVLIB_ENVIRONMENT}
+php /vagrant/bin/movinstall.php all --environment=vagrant
 
 # Fix permissions of all files.
-php /vagrant/bin/movlib.php fix-permissions
+php /vagrant/bin/movadmin.php fix-permissions
+
+# Create symbolic link for the dev CLI.
+ln -s /vagrant/bin/movdev.php /usr/local/bin/movdev
 
 exit 0

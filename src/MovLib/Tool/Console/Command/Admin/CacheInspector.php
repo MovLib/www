@@ -15,61 +15,51 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Tool\Console\Command\Production;
+namespace MovLib\Tool\Console\Command\Admin;
 
+use \MovLib\Data\FileSystem;
+use \MovLib\Tool\Console\Command\Production\FixPermissions;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * CLI command for all database related tasks.
+ * Manage various caches of the MovLib software.
  *
+ * @link http://www.linuxatemyram.com/play.html
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Database extends \MovLib\Tool\Console\Command\AbstractCommand {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The directory where backups are stored.
-   *
-   * @see Database::__construct()
-   * @var string
-   */
-  protected $pathBackup = "/private/backup";
-
-  /**
-   * The directory containing the migration scripts.
-   *
-   * @see Database::__construct()
-   * @var string
-   */
-  protected $pathMigration = "/conf/migration";
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
+class CacheInspector extends \MovLib\Tool\Console\Command\AbstractCommand {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Tool\Kernel $kernel
    */
   protected function configure() {
+    $this->setName("cache-inspector");
+    $this->setDescription("Manage various system caches.");
+    $this->addInputOption("presentation", InputOption::VALUE_NONE, "Empty the presentation cache.");
+  }
+
+  /**
+   * Purge the presentation cache.
+   *
+   * @todo Allow to purge specific host caches or certain directories.
+   * @global \MovLib\Tool\Kernel $kernel
+   * @return this
+   */
+  public function purgePresentationCache() {
     global $kernel;
-    $this->setName("database");
-    $this->pathBackup    = "{$kernel->documentRoot}{$this->pathBackup}";
-    $this->pathMigration = "{$kernel->documentRoot}{$this->pathMigration}";
-    $this->setDescription("Perform various database related tasks.");
-    $this->addInputOption("backup", InputOption::VALUE_NONE, "Create backup of the complete database.");
-    $this->addInputOption("migration", InputOption::VALUE_NONE, "Run all migration scripts.");
+    $this->checkPrivileges();
+    $this->write("Purging presentation cache...");
+    (new FixPermissions())->fixPermissions();
+    FileSystem::delete("{$kernel->documentRoot}/cache/*", true, true);
+    $this->write("Successfuly purge the presentation cache!", self::MESSAGE_TYPE_INFO);
+
+    return $this;
   }
 
   /**
@@ -77,7 +67,17 @@ class Database extends \MovLib\Tool\Console\Command\AbstractCommand {
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $options = parent::execute($input, $output);
-    throw new \RuntimeException("Not implemented yet!");
+    $foundOption = false;
+    foreach ($options as $option => $value) {
+      $method = "purge{$option}Cache";
+      if ($value === true && method_exists($this, $method)) {
+        $this->{$method}();
+        $foundOption = true;
+      }
+    }
+    if ($foundOption === false) {
+      $this->write("Use `movlib --help {$this->getName()}` to list all available options.", self::MESSAGE_TYPE_COMMENT);
+    }
     return $options;
   }
 

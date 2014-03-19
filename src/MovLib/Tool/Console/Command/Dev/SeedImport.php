@@ -36,7 +36,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class SeedImport extends AbstractDevCommand {
+class SeedImport extends \MovLib\Tool\Console\Command\Dev\AbstractDevCommand {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -107,7 +107,7 @@ class SeedImport extends AbstractDevCommand {
    * @see SeedImport::__construct()
    * @var string
    */
-  protected $seedPath = "/conf/seed";
+  protected $seedPath = "/etc/seed";
 
   /**
    * Associative array containing the upload directory names as key and the absolute path to the directory as value.

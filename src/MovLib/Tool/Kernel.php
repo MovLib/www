@@ -66,7 +66,6 @@ class Kernel extends \MovLib\Kernel {
    */
   public function __construct($composer = false) {
     global $db, $i18n, $kernel, $session;
-    ini_set("display_errors", true);
 
     // Export ourself to global scope and allow any layer to access the kernel's public properties.
     $kernel = $this;
@@ -80,11 +79,11 @@ class Kernel extends \MovLib\Kernel {
     $this->isWindows        = defined("PHP_WINDOWS_VERSION_MAJOR");
 
     // Get the global configuration if present.
-    $configuration = "/etc/movlib/movlib.json";
+    $configuration = "{$kernel->documentRoot}/etc/movlib/movlib.json";
     if (file_exists($configuration) === true) {
       $this->configuration = FileSystem::getJSON($configuration);
-      $this->systemUser   =& $this->configuration->user;
-      $this->systemGroup  =& $this->configuration->group;
+      $this->systemUser    =& $this->configuration->user;
+      $this->systemGroup   =& $this->configuration->group;
     }
 
     // Transform ALL PHP errors to exceptions unless this is executed in composer context, too many vendor supplied
@@ -95,7 +94,7 @@ class Kernel extends \MovLib\Kernel {
 
     // Create global object instances.
     $db      = new \MovLib\Tool\Database();
-    $i18n    = new \MovLib\Data\I18n(\Locale::getDefault());
+    $i18n    = new \MovLib\Data\I18n();
     $session = new \MovLib\Data\User\Session();
   }
 

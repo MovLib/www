@@ -101,7 +101,7 @@ json_get() {
   if [[ "${2}" ]]; then
     local ENV=${2}
   fi
-  echo $(python -c "import json; print json.load(open('${DIR}/etc/movlib.${ENV}.json'))${1}")
+  echo $(python -c "import json; print json.load(open('${DIR}/etc/movlib/${ENV}.json'))${1}")
 }
 
 if [[ "${MOVLIB_ENVIRONMENT}" ]]; then
