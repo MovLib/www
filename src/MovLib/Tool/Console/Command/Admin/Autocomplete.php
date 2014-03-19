@@ -40,10 +40,10 @@ class Autocomplete extends \MovLib\Tool\Console\Command\AbstractCommand {
     $this->setName("gen-autocompletion");
     $this->setDescription("Generation autocompletion for Symfony Console Application.");
     $this->addArgument(
-      "application",
-      InputArgument::OPTIONAL,
+      "application(s)",
+      InputArgument::OPTIONAL | InputArgument::IS_ARRAY,
       "The Symfony Console Application for which the autocompletion should be generated.",
-      "movadmin"
+      [ "all" ]
     );
   }
 
@@ -54,7 +54,36 @@ class Autocomplete extends \MovLib\Tool\Console\Command\AbstractCommand {
   protected function execute(InputInterface $input, OutputInterface $output) {
     global $kernel;
 
-    $app = $input->getArgument("application");
+    $apps = $input->getArgument("application(s)");
+
+    if (count($apps) === 1 && $apps[0] == "all") {
+      $apps = [];
+      foreach (new \DirectoryIterator("glob://{$kernel->documentRoot}/bin/mov*.php") as $app) {
+        $apps[] = $app->getBasename(".php");
+      }
+    }
+
+    foreach ($apps as $app) {
+      $this->generateAutocompletion($app);
+    }
+
+    $this->write("Run the command <fg=black;bg=cyan>source ~/.bashrc</fg=black;bg=cyan> to enjoy auto-completion.");
+    $this->writeVerbose("Successfully generated autocompletion for '{$app}'!", self::MESSAGE_TYPE_INFO);
+
+    return 0;
+  }
+
+  /**
+   * Generate bash autocompletion for given Symfony Console CLI application.
+   *
+   * @global \MovLib\Tool\Kernel $kernel
+   * @param type $app
+   *   The name of the Symfony Console CLI application.
+   * @return this
+   */
+  protected function generateAutocompletion($app) {
+    global $kernel;
+
     $this->writeVerbose(
       "Generating autocompletion for '{$app}', this may take several minutes...",
       self::MESSAGE_TYPE_COMMENT
@@ -80,10 +109,7 @@ class Autocomplete extends \MovLib\Tool\Console\Command\AbstractCommand {
       );
     }
 
-    $this->write("Run the command <fg=black;bg=cyan>source ~/.bashrc</fg=black;bg=cyan> to enjoy auto-completion.");
-    $this->writeVerbose("Successfully generated autocompletion for '{$app}'!", self::MESSAGE_TYPE_INFO);
-
-    return 0;
+    return $this;
   }
 
 }
