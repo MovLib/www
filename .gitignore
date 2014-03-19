@@ -10,15 +10,13 @@ Desktop.ini
 !/bin/
 /composer.lock
 /conf/mariadb/movlib.mwb.bak
+/etc/mariadb/movlib.mwb.bak
 /private/sandbox/
 /private/subscriptions.txt
 /public/bower/
-/public/components/
-/public/coverage/
-/public/doc/
 /vendor/
 /public/vagrant/
 /.vagrant/
-/conf/vagrant/Visual Studio Project/MovLib Vagrant Bootstrap/publish/
-/conf/vagrant/Visual Studio Project/MovLib Vagrant Bootstrap/bin/
-/conf/vagrant/Visual Studio Project/MovLib Vagrant Bootstrap/obj/
+/etc/vagrant/Visual Studio Project/MovLib Vagrant Bootstrap/publish/
+/etc/vagrant/Visual Studio Project/MovLib Vagrant Bootstrap/bin/
+/etc/vagrant/Visual Studio Project/MovLib Vagrant Bootstrap/obj/
