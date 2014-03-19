@@ -515,9 +515,10 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_awards` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `company_id` BIGINT UNSIGNED NULL COMMENT 'The company’s unique ID (who received the award).',
   `person_id` BIGINT UNSIGNED NULL COMMENT 'The person’s unique ID (who received the award).',
+  `award_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award’s unique ID.',
+  `award_category_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award category’s unique ID within an award.',
   `won` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this award has been won (TRUE(1)) or not (FALSE(0), default is FALSE (0).',
   `year` SMALLINT(4) UNSIGNED ZEROFILL NOT NULL COMMENT 'The year in which the movie won the award.',
-  `award_category_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award category’s unique ID.',
   PRIMARY KEY (`id`, `movie_id`),
   INDEX `fk_awards_movies_movies` (`movie_id` ASC),
   INDEX `fk_persons_awards_persons` (`person_id` ASC),
@@ -1038,15 +1039,15 @@ SHOW WARNINGS;
 -- Table `movlib`.`awards_categories`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`awards_categories` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The award category’s unique ID.',
   `award_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award’s unique ID.',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The award category’s unique ID within an award.',
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp on which this award category was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the award category was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The award categorie’s description in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_names` BLOB NOT NULL COMMENT 'The award categorie’s name in various languages. Keys are ISO alpha-2 language codes.',
   `first_awarding_year` SMALLINT(4) NULL COMMENT 'The first year this award category existed.',
   `last_awarding_year` SMALLINT(4) NULL COMMENT 'The last year this award category existed.',
-  PRIMARY KEY (`id`),
+  PRIMARY KEY (`id`, `award_id`),
   INDEX `fk_awards_categories_awards_idx` (`award_id` ASC),
   CONSTRAINT `fk_awards_categories_awards`
     FOREIGN KEY (`award_id`)
