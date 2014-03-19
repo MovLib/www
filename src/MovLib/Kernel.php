@@ -344,9 +344,6 @@ class Kernel {
   public function __construct($documentRoot) {
     global $cache, $db, $i18n, $kernel, $session;
 
-    // Export ourself to global scope and allow any layer to access the kernel's public properties.
-    $kernel = $this;
-
     // Transform ALL PHP errors to exceptions.
     set_error_handler([ $this, "errorHandler" ], -1);
 
@@ -356,10 +353,13 @@ class Kernel {
       register_shutdown_function([ $this, "fatalErrorHandler" ]);
     }
 
-    // Disable PHP's display error functionality.
-    ini_set("display_errors", false);
-
     try {
+      // Disable PHP's display error functionality.
+      ini_set("display_errors", false);
+
+      // Export ourself to global scope and allow any layer to access the kernel's public properties.
+      $kernel = $this;
+
       // Initialize environment properties based on variables passed in by nginx.
       $this->documentRoot      = $documentRoot;
       $this->domainDefault     = $_ENV["DOMAIN_DEFAULT"];
@@ -392,9 +392,6 @@ class Kernel {
       $this->domainDefault = "alpha.{$this->domainDefault}";
       // @codeCoverageIgnoreEnd
       // @devEnd
-
-      // Configure fast autoloader.
-      //spl_autoload_register([ $this, "autoload" ], true);
 
       // Configure Composer autoloader.
       try {
@@ -463,27 +460,16 @@ class Kernel {
       $cache->cacheable = $_SERVER[ "REQUEST_METHOD" ] == "GET";
 
       // Try to get the presentation.
-      $presentation = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
-      $presentation = (new $presentation())->getPresentation();
-    }
-    catch (AbstractClientException $clientException) {
-      Log::notice($clientException);
-      $presentation = $clientException->getPresentation();
-    }
-    catch (\Exception $e) {
       try {
-        $presentation = (new Stacktrace($e))->getPresentation();
-        // Log after trying to fetch the exception, if above code results in an exception things are worse than we
-        // thought.
-        Log::alert($e);
+        $presentation = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
+        $presentation = (new $presentation())->getPresentation();
       }
-      catch (\Exception $e) {
-        Log::emergency($e);
-        header("Content-Type: text/plain; charset=utf-8");
-        exit("==== FATAL ERROR ====\n\n{$e}");
+      // Change the presentation if a client exception is thrown.
+      catch (AbstractClientException $clientException) {
+        Log::notice($clientException);
+        $presentation = $clientException->getPresentation();
       }
-    }
-    finally {
+
       // Set alert messages for next page view. Instead of storing alert messages on our server we send them to the
       // client, this will only increase network traffic by a few bytes. Plus the alert message is stored until the user
       // closes the agent, it's very unlikely that such an alert is still from interest on the next user agent session.
@@ -499,11 +485,7 @@ class Kernel {
       // @devStart
       // @codeCoverageIgnoreStart
       Log::debug("Response Time: " . (microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"]));
-      // @codeCoverageIgnoreEnd
-      // @devEnd
 
-      // @devStart
-      // @codeCoverageIgnoreStart
       if (empty($presentation)) {
         header("Content-Type: test/plain; charset=utf-8");
         echo "==== PRESENTATION IS EMPTY ====";
@@ -520,45 +502,23 @@ class Kernel {
         fastcgi_finish_request();
       }
 
-      // Calculate execution time for response generation and log if it took too long.
-      if (($responseEnd = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"]) > 0.75) {
-        Log::notice("Slow Response", [
-          "time" => $responseEnd,
-          "uri"  => "{$this->scheme}://{$this->hostname}{$this->requestURI}",
-        ]);
-      }
-
-      // Can we cache this presentation?
+      // Perform kernel shutdown.
+      $this->benchmark("response", 0.75);
       $cache->save($presentation);
-
-      // Execute each delayed method.
-      if ($this->delayedMethods) {
-        foreach ($this->delayedMethods as list($callable, $params)) {
-          try {
-            call_user_func_array($callable, (array) $params);
-          }
-          catch (\Exception $e) {
-            Log::error($e);
-          }
-        }
+      $this->executeDelayedMethods();
+      new Mailer($this->delayedEmails);
+      $this->benchmark("delayed", 5.0);
+    }
+    catch (\Exception $e) {
+      try {
+        echo (new Stacktrace($e))->getPresentation();
+        // Log after trying to fetch the exception, if above code results in an exception.
+        Log::alert($e);
       }
-
-      // Send all delayed emails.
-      if ($this->delayedEmails) {
-        try {
-          new Mailer($this->delayedEmails);
-        }
-        catch (\Exception $e) {
-          Log::critical($e);
-        }
-      }
-
-      // Calculate time for response and delayed generation and log if it took too long.
-      if (($delayedEnd = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"]) > 5.0) {
-        Log::info("Slow Delayed", [
-          "time" => $delayedEnd,
-          "uri"  => "{$this->scheme}://{$this->hostname}{$this->requestURI}",
-        ]);
+      catch (\Exception $e) {
+        Log::emergency($e);
+        header("Content-Type: text/plain; charset=utf-8");
+        exit("==== FATAL ERROR ====\n\n{$e}");
       }
     }
   }
@@ -568,67 +528,23 @@ class Kernel {
 
 
   /**
-   * Get absolute URL for an asset file.
+   * Check if phase took more time then max.
    *
-   * @staticvar array $cache
-   *   Used to cache the URLs that are built during a single request.
-   * @param string $name
-   *   The filename (or path) of the asset file for which the URL should be built. What you have to pass with this
-   *   parameter depends on the asset type you need. CSS and JS files are <b>always</b> only referred by their name.
-   *   This is because all CSS and JS files that are dynamically included reside in the module sub-directory of their
-   *   asset directory. If you need an image on the other side the name must include the absolute path within the img
-   *   directory in the asset directory (without leading slash). Don't include the trailing dot nor the asset's
-   *   extension here!
-   * @param string $extension
-   *   The asset's file extension (e.g. <code>"css"</code>).
-   * @return string
-   *   The absolute URL (including scheme and hostname) of the asset.
+   * @param string $phase
+   *   The phase's name to benchmark (used as name for logging).
+   * @param float $max
+   *   The maximum time the phase is allowed to take to avoid logging.
+   * @return this
    */
-  public function getAssetURL($name, $extension) {
-    static $cache = [];
-
-    // If we have no cached URL for this asset build the URL.
-    if (!isset($cache[$extension][$name])) {
-      // CSS and JS assets are always in the same directory as their extension plus the module sub-directory (other
-      // assets of this type aren't includable during normal execution, with the exception of the files that are named
-      // MovLib), images have many different extensions and their directory doesn't match up with that.
-      $dir = "img";
-      if ($extension == "css" || $extension == "js") {
-        $dir = $extension;
-        if ($name != "MovLib") {
-          $dir .= "/module";
-        }
-      }
-
-      // @devStart
-      // @codeCoverageIgnoreStart
-      if (!isset($this->cacheBusters[$extension][$name])) {
-        $this->cacheBusters[$extension][$name] = md5_file("{$this->documentRoot}/public/asset/{$dir}/{$name}.{$extension}");
-      }
-      // @codeCoverageIgnoreEnd
-      // @devEnd
-
-      // Add the absolute URL to our URL cache and we're done.
-      $cache[$extension][$name] = "//{$this->domainStatic}/asset/{$dir}/{$name}.{$extension}?{$this->cacheBusters[$extension][$name]}";
+  private function benchmark($phase, $max) {
+    if (($time = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"]) > $max) {
+      Log::notice("Slow {$phase}", [
+        "time" => $time,
+        "uri"  => "{$this->scheme}://{$this->hostname}{$this->requestURI}",
+      ]);
     }
-
-    return $cache[$extension][$name];
+    return $this;
   }
-
-  /**
-   * Class autoloader.
-   *
-   * The default autoloader doesn't honor any external libraries and only loads MovLib classes. This is intentional
-   * because there should be no dependencies. Other parts of the application should use the composer provided autoloader.
-   *
-   * @param string $class
-   *   Fully qualified class name (automatically passed to this magic method by PHP).
-   * @throws \ErrorException
-   */
-//  public function autoload($class) {
-//    $class = strtr($class, "\\", "/");
-//    require "{$this->documentRoot}/src/{$class}.php";
-//  }
 
   /**
    * Create cookie.
@@ -739,6 +655,25 @@ class Kernel {
   }
 
   /**
+   * Execute all delayed methods.
+   *
+   * @return this
+   */
+  private function executeDelayedMethods() {
+    if ($this->delayedMethods) {
+      foreach ($this->delayedMethods as list($callable, $params)) {
+        try {
+          call_user_func_array($callable, (array) $params);
+        }
+        catch (\Exception $e) {
+          Log::error($e);
+        }
+      }
+    }
+    return $this;
+  }
+
+  /**
    * Transform fatal errors to exceptions.
    *
    * This isn't meant to recover after a fatal error occurred. The purpose of this is to ensure that a nice presentation
@@ -787,6 +722,54 @@ class Kernel {
       Log::emergency($exception);
       exit($presentation);
     }
+  }
+
+  /**
+   * Get absolute URL for an asset file.
+   *
+   * @staticvar array $cache
+   *   Used to cache the URLs that are built during a single request.
+   * @param string $name
+   *   The filename (or path) of the asset file for which the URL should be built. What you have to pass with this
+   *   parameter depends on the asset type you need. CSS and JS files are <b>always</b> only referred by their name.
+   *   This is because all CSS and JS files that are dynamically included reside in the module sub-directory of their
+   *   asset directory. If you need an image on the other side the name must include the absolute path within the img
+   *   directory in the asset directory (without leading slash). Don't include the trailing dot nor the asset's
+   *   extension here!
+   * @param string $extension
+   *   The asset's file extension (e.g. <code>"css"</code>).
+   * @return string
+   *   The absolute URL (including scheme and hostname) of the asset.
+   */
+  public function getAssetURL($name, $extension) {
+    static $cache = [];
+
+    // If we have no cached URL for this asset build the URL.
+    if (!isset($cache[$extension][$name])) {
+      // CSS and JS assets are always in the same directory as their extension plus the module sub-directory (other
+      // assets of this type aren't includable during normal execution, with the exception of the files that are named
+      // MovLib), images have many different extensions and their directory doesn't match up with that.
+      $dir = "img";
+      if ($extension == "css" || $extension == "js") {
+        $dir = $extension;
+        if ($name != "MovLib") {
+          $dir .= "/module";
+        }
+      }
+
+      // @devStart
+      // @codeCoverageIgnoreStart
+      if (!isset($this->cacheBusters[$extension][$name])) {
+        $this->cacheBusters[$extension][$name] = md5_file("{$this->documentRoot}/public/asset/{$dir}/{$name}.{$extension}");
+      }
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+
+      // Add the absolute URL to our URL cache and we're done.
+      $cache[$extension][$name] = "//{$this->domainStatic}/asset/{$dir}/{$name}.{$extension}?{$this->cacheBusters[$extension][$name]}";
+    }
+
+    return $cache[$extension][$name];
   }
 
   /**
