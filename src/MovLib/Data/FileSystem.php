@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data;
 
+use \MovLib\Exception\FileSystemException;
+
 /**
  * Static methods to interact with the local filesystem.
  *
@@ -68,7 +70,7 @@ final class FileSystem {
    * @param null|string $mode [optional]
    *   The file's new mode. If <code>NULL</code> is passed (default) {@see FileSystem::DIRECTORY_MODE} or
    *   {@see FileSystem::FILE_MODE} are applied.
-   * @throws \RuntimeException
+   * @throws \MovLib\Exception\FileSystemException
    */
   public static function changeMode($path, $mode = null) {
     // @devStart
@@ -98,9 +100,7 @@ final class FileSystem {
       }
     }
     catch (\Exception $e) {
-      $e = new \RuntimeException("Couldn't change mode of '{$path}'", null, $e);
-      Log::error($e);
-      throw $e;
+      throw new FileSystemException("Couldn't change mode of '{$path}'", null, $e);
     }
   }
 
@@ -121,7 +121,7 @@ final class FileSystem {
    *   The file's mode, defaults to {@see FileSystem::FILE_MODE}.
    * @param string $directoryMode [optional]
    *   The directory's mode, defaults to {@see FileSystem::DIRECTORY_MODE}.
-   * @throws \RuntimeException
+   * @throws \MovLib\Exception\FileSystemException
    */
   public static function changeModeRecursive($path, $fileMode = FileSystem::FILE_MODE, $directoryMode = FileSystem::DIRECTORY_MODE) {
     // @devStart
@@ -148,9 +148,7 @@ final class FileSystem {
       Shell::execute("find '{$path}' -follow -type d -exec chmod {$directoryMode} {} \;");
     }
     catch (\Exception $e) {
-      $e = new \RuntimeException("Couldn't change modes of '{$path}'", null, $e);
-      Log::error($e);
-      throw $e;
+      throw new FileSystemException("Couldn't change modes of '{$path}'", null, $e);
     }
   }
 
@@ -166,7 +164,7 @@ final class FileSystem {
    *   The file's new owning group name, defaults to <code>NULL</code> which will apply the kernel group.
    * @param boolean $recursive [optional]
    *   Whether to change owernship recursively, only makes sense with directories.
-   * @throws \RuntimeException
+   * @throws \MovLib\Exception\FileSystemException
    */
   public static function changeOwner($path, $user = null, $group = null, $recursive = false) {
     global $kernel;
@@ -212,9 +210,7 @@ final class FileSystem {
       }
     }
     catch (\Exception $e) {
-      $e = new \RuntimeException("Couldn't change ownership of '{$path}'", null, $e);
-      Log::error($e);
-      throw $e;
+      throw new FileSystemException("Couldn't change ownership of '{$path}'", null, $e);
     }
   }
 
@@ -223,7 +219,7 @@ final class FileSystem {
    *
    * @param string $path
    *   Absolute path to the file that should be compressed.
-   * @throws \RuntimeException
+   * @throws \MovLib\Exception\FileSystemException
    */
   public static function compress($path) {
     // @devStart
@@ -252,9 +248,7 @@ final class FileSystem {
       }
     }
     catch (\Exception $e) {
-      $e = new \RuntimeException("Couldn't compress '{$path}'", null, $e);
-      Log::error($e);
-      throw $e;
+      throw new FileSystemException("Couldn't compress '{$path}'", null, $e);
     }
   }
 
@@ -279,7 +273,7 @@ final class FileSystem {
    *   configuration will be applied to the directory.
    * @return string
    *   <var>$path</var>
-   * @throws \RuntimeException
+   * @throws \MovLib\Exception\FileSystemException
    */
   public static function createDirectory($path, $parents = true, $mode = FileSystem::DIRECTORY_MODE, $user = null, $group = null) {
     // @devStart
@@ -307,9 +301,7 @@ final class FileSystem {
       }
     }
     catch (\Exception $e) {
-      $e = new \RuntimeException("Couldn't create directory '{$path}'", null, $e);
-      Log::error($e);
-      throw $e;
+      throw new FileSystemException("Couldn't create directory '{$path}'", null, $e);
     }
 
     self::changeOwner($path, $user, $group);
@@ -325,7 +317,7 @@ final class FileSystem {
    *   The symoblic link's absolute path.
    * @param boolean $force [optional]
    *   Whether to override existing destination or not, defaults to <code>FALSE</code> (do not override).
-   * @throws \RuntimeException
+   * @throws \MovLib\Exception\FileSystemException
    */
   public static function createSymbolicLink($target, $link, $force = false) {
     // @devStart
@@ -357,9 +349,7 @@ final class FileSystem {
       }
     }
     catch (\Exception $e) {
-      $e = new \RuntimeException("Couldn't create symbolic link from '{$target}' to '{$link}'", null, $e);
-      Log::error($e);
-      throw $e;
+      throw new FileSystemException("Couldn't create symbolic link from '{$target}' to '{$link}'", null, $e);
     }
   }
 
@@ -377,7 +367,7 @@ final class FileSystem {
    * @param boolean $force [optional]
    *   Whether to force deletion, only makes sense if the file is a directory and should be deleted even if is non-empty.
    *   Defaults to <code>FALSE</code>.
-   * @throws \RuntimeException
+   * @throws \MovLib\Exception\FileSystemException
    */
   public static function delete($path, $recursive = false, $force = false) {
     // @devStart
@@ -415,9 +405,7 @@ final class FileSystem {
         }
       }
       catch (\Exception $e) {
-        $e = new \RuntimeException("Couldn't delete '{$path}'", null, $e);
-        Log::error($e);
-        throw $e;
+        throw new FileSystemException("Couldn't delete '{$path}'", null, $e);
       }
     }
   }
@@ -427,15 +415,14 @@ final class FileSystem {
    *
    * @param string $directory
    *   Absolute path to the directory from which the deletion process should start.
-   * @throws \RuntimeException
+   * @throws \MovLib\Exception\FileSystemException
    */
   public static function deleteDirectories($directory) {
     try {
       Shell::execute("rmdir --ignore-fail-on-non-empty --parent '{$directory}'");
     }
-    catch (\RuntimeException $e) {
-      Log::error($e);
-      throw $e;
+    catch (\Exception $e) {
+      throw new FileSystemException("Couldn't delete directory '{$directory}'", null, $e);
     }
   }
 
@@ -446,7 +433,7 @@ final class FileSystem {
    *   The file's absolute path to get the content from.
    * @return string
    *   The file's content.
-   * @throws \RuntimeException
+   * @throws \MovLib\Exception\FileSystemException
    */
   public static function getContent($path) {
     // @devStart
@@ -469,9 +456,7 @@ final class FileSystem {
       }
     }
     catch (\Exception $e) {
-      $e = new \RuntimeException("Couldn't get content of '{$path}'", null, $e);
-      Log::error($e);
-      throw $e;
+      throw new FileSystemException("Couldn't get content of '{$path}'", null, $e);
     }
 
     return $content;
@@ -520,14 +505,12 @@ final class FileSystem {
    *   Bitmask of <var>JSON_*</var> decode options.
    * @return array|object
    *   The decoded JSON string from the file either as object or array (depending on <var>$assoc</var>).
-   * @throws \RuntimeException
+   * @throws \MovLib\Exception\FileSystemException
    */
   public static function getJSON($path, $assoc = false, $depth = 512, $options = 0) {
     $json = json_decode(self::getContent($path), $assoc, $depth, $options);
     if (json_last_error() !== JSON_ERROR_NONE) {
-      $e = new \RuntimeException(json_last_error_msg());
-      Log::warning($e);
-      throw $e;
+      throw new FileSystemException(json_last_error_msg());
     }
     return $json;
   }
@@ -545,7 +528,7 @@ final class FileSystem {
    *   The local file to get the absolute path to.
    * @return string
    *   The absolute path of the local file.
-   * @throws \RuntimeException
+   * @throws \MovLib\Exception\FileSystemException
    */
   public static function getRealPath($path) {
     // Let PHP resolve the absolute path to the file.
@@ -556,12 +539,9 @@ final class FileSystem {
       // realpath() will return FALSE if the file doesn't exist, which isn't really an error for us. Therefore we have
       // to check if the file really doesn't exist, this on the other hand means that some other error occurred and we
       // throw an exception in this case.
-      if (file_exists($path) === true) {
-        $e = new \RuntimeException("Path '{$path}' seems to be invalid");
-        Log::warning($e);
-        throw $e;
+      if (($realpath = realpath(dirname($path)) . "/" . basename($path)) === false) {
+        throw new FileSystemException("Path '{$path}' seems to be invalid");
       }
-      // @todo Should we attempt to canonicalize the path ourselfs at this point?
     }
     // Only use the realpath result if it isn't of type boolean.
     else {
@@ -569,75 +549,6 @@ final class FileSystem {
     }
 
     return $path;
-  }
-
-  /**
-   * Find files and directories in path optionally filtered by extension(s).
-   *
-   * <b>IMPORTANT</b><br>
-   * Avoid using complicated <code>FileSystem::glob()</code> or <code>glob()</code> calls because they use a special
-   * kind of <i>regular expression</i>. It's wiser to use the {@see \MovLib\Data\FileSystem::globRegExp} for that
-   * because everyone knows how to use PCRE regular expressions. This is the reason why this method refers to the first
-   * parameter as <i>path</i> instead of <i>pattern</i>.
-   *
-   * @see \MovLib\Data\FileSystem::globRecursive()
-   * @see \MovLib\Data\FileSystem::globRegExp()
-   * @param string $path
-   *   Absolute path to the directory to search in. It's basically the same as the first parameter to PHP's built-in
-   *   <code>glob()</code> function, read the <b>IMPORTANT</b> note in this methods description why you shouldn't use
-   *   it like that.
-   * @param mixed $extension [optional]
-   *   Either <code>NULL</code> (default) which will treat <var>$path</var> exactly like PHP's built-in first parameter
-   *   of <code>glob()</code>, or a string containing a single extension (e.g. <code>"php"</code>), or a numeric array
-   *   containing multiple extensions (e.g. <code>[ "php", "inc" ]</code>) which will automatically add the
-   *   <var>GLOB_BRACE</var> flag to the <var>$flags</var> and format the pattern accordingly.
-   * @param integer $flags [optional]
-   *   Same flags as PHP's built-in <code>glob()</code> function accepts, defaults to <var>GLOB_NOSORT</var> which you
-   *   should always use to improve performance unless you really need a sorted array. Also note that
-   *   <var>GLOB_BRACE</var> is automatically added to the flags if <var>$extensions</var> is of type array. Flags are
-   *   combined with the binary or (<code>|</code>) operator.
-   * @return array
-   *   Array containing the matched files.
-   * @throws \RuntimeException
-   */
-  public static function glob($path, $extension = null, $flags = GLOB_NOSORT) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (empty($path) || !is_string($path)) {
-      throw new \InvalidArgumentException("\$pattern cannot be empty and must be of type string");
-    }
-    if (empty($extension) && (!is_string($extension) || !is_array($extension))) {
-      throw new \InvalidArgumentException("\$extensions cannot be empty and must be of type string or array");
-    }
-    if (!is_integer($flags)) {
-      throw new \InvalidArgumentException("\$flags must be of type integer, use the GLOB_* constants");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    try {
-      if (isset($extension)) {
-        if ($extension === (array) $extension) {
-          $extensions = implode(",", $extension);
-          $path      .= "/*.{{$extensions}}";
-          $flags     |= GLOB_BRACE;
-        }
-        else {
-          $path .= "/*.{$extension}";
-        }
-      }
-      if (($matches = glob($path, $flags)) === false) {
-        // @codeCoverageIgnoreStart
-        throw new \Exception;
-        // @codeCoverageIgnoreEnd
-      }
-    }
-    catch (\Exception $e) {
-      $e = new \RuntimeException("Globbing with pattern '{$path}' failed", null, $e);
-      Log::error($e);
-      throw $e;
-    }
-
-    return (array) $matches;
   }
 
   /**
@@ -650,7 +561,7 @@ final class FileSystem {
    *   Absolute path of the file to move.
    * @param string $to
    *   Absolute path of the file's destination.
-   * @throws \RuntimeException
+   * @throws \MovLib\Exception\FileSystemException
    */
   public static function move($from, $to) {
     try {
@@ -661,9 +572,7 @@ final class FileSystem {
       }
     }
     catch (\Exception $e) {
-      $e = new \RuntimeException("Couldn't move file from '{$from}' to '{$to}'", null, $e);
-      Log::error($e);
-      throw $e;
+      throw new FileSystemException("Couldn't move file from '{$from}' to '{$to}'", null, $e);
     }
   }
 
@@ -683,7 +592,7 @@ final class FileSystem {
    *   </table>
    * @return string
    *   <var>$path</var>
-   * @throws \RuntimeException
+   * @throws \MovLib\Exception\FileSystemException
    */
   public static function putContent($path, $content = null, $flags = 0) {
     // @devStart
@@ -702,9 +611,7 @@ final class FileSystem {
       }
     }
     catch (\Exception $e) {
-      $e = new \RuntimeException("Couldn't create and/or write to file {$path}");
-      Log::error($e);
-      throw $e;
+      throw new FileSystemException("Couldn't create and/or write to file {$path}");
     }
     return $path;
   }
@@ -732,14 +639,12 @@ final class FileSystem {
    *   The file's access time, defaults to <code>NULL</code> (<var>$modificationTime</var> or current time).
    * @return string
    *   <var>$data</var> encoded as JSON.
-   * @throws \RuntimeException
+   * @throws \MovLib\Exception\FileSystemException
    */
   public static function putJSON($path, $data, $flags = 0, $options = JSON_UNESCAPED_UNICODE, $modificationTime = null, $accessTime = null) {
     $json = json_encode($data, $options);
     if (json_last_error() !== JSON_ERROR_NONE) {
-      $e = new \RuntimeException(json_last_error_msg());
-      Log::warning($e);
-      throw $e;
+      throw new FileSystemException(json_last_error_msg());
     }
     self::putContent($path, $json, $flags, $modificationTime, $accessTime);
     return $json;
@@ -790,7 +695,7 @@ final class FileSystem {
    *   The file's access time, defaults to <code>NULL</code> (<var>$modificationTime</var> or current time).
    * @return string
    *   <var>$path</var>
-   * @throws \RuntimeException
+   * @throws \MovLib\Exception\FileSystemException
    */
   public static function touch($path, $modificationTime = null, $accessTime = null) {
     try {
@@ -801,9 +706,7 @@ final class FileSystem {
       }
     }
     catch (\Exception $e) {
-      $e = new \RuntimeException("Couldn't touch '{$path}'");
-      Log::error($e);
-      throw $e;
+      throw new FileSystemException("Couldn't touch '{$path}'");
     }
     return $path;
   }
@@ -850,14 +753,12 @@ final class FileSystem {
    * @global \MovLib\Kernel $kernel
    * @param string $path
    *   Absolute path to check.
-   * @throws \LogicException
+   * @throws \MovLib\Exception\FileSystemException
    */
   public static function withinDocumentRoot($path) {
     global $kernel;
     if ($kernel->fastCGI === true && strpos($path, $kernel->documentRoot) === false) {
-      $e = new \LogicException("\$path cannot be outside document root");
-      Log::warning($e);
-      throw $e;
+      throw new FileSystemException("\$path cannot be outside document root");
     }
   }
 
