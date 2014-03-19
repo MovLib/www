@@ -21,11 +21,11 @@
  * Initialize kernel for CLI usage and start application.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
+$command = "Install";
 require dirname(__DIR__) . "/vendor/autoload.php";
-new \MovLib\Tool\Kernel();
-(new \MovLib\Tool\Console\Application())->run();
+(new \MovLib\Tool\Console\Application("MovLib {$command} CLI", (new \MovLib\Tool\Kernel())->version, $command))->run();
