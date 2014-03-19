@@ -63,7 +63,6 @@ final class Nginx extends AbstractInstallCommand {
    */
   protected function configure() {
     global $kernel;
-    parent::configure();
     $name = "nginx";
     $this->setName($name);
     $this->setDescription(
@@ -211,8 +210,9 @@ final class Nginx extends AbstractInstallCommand {
         $this->exec("patch --forward --input='{$patch}' --strip=1 --verbose", $opensslPath);
       }
     }
-    $this->writeDebug("Reconfiguring OpenSSL sources after patching...");
-    $this->exec("./Configure reconf", $opensslPath);
+    // We have to touch this file, otherwise OpenSSL complains about out of date makefiles.
+    // @link https://rt.openssl.org/Ticket/Display.html?id=607&user=guest&pass=guest
+    touch("{$opensslPath}/Makefile.ssl");
     return $this;
   }
 
@@ -226,6 +226,7 @@ final class Nginx extends AbstractInstallCommand {
    */
   protected function validate($conf) {
     $name = $this->getName();
+    $this->checkPrivileges();
 
     foreach ([ "version", "opensslVersion", "pcreVersion" ] as $version) {
       if (empty($conf->{$version})) {
