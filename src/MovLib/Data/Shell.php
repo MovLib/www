@@ -51,7 +51,7 @@ abstract class Shell {
    *   The exit status code of the command.
    * @throws \MovLib\Exception\ShellException
    */
-  public static function execute($command, &$output = null, $exception = true) {
+  final public static function execute($command, &$output = null, $exception = true) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($command) || !is_string($command)) {
@@ -104,7 +104,7 @@ abstract class Shell {
    *   The command to execute detached.
    * @throws \MovLib\Exception\ShellException
    */
-  public static function executeDetached($command) {
+  final public static function executeDetached($command) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($command) || !is_string($command)) {
@@ -138,7 +138,7 @@ abstract class Shell {
    *   The actual return code of the command.
    * @throws \MovLib\Exception\ShellException
    */
-  public static function executeDisplayOutput($command, $exception = true) {
+  final public static function executeDisplayOutput($command, $exception = true) {
     // @devStart
     // @codeCoverageIngoreStart
     global $kernel;
