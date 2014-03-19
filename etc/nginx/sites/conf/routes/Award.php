@@ -89,7 +89,7 @@ location ^~ <?= $this->r("/award") ?> {
     <?= $this->set('$1', "award_id") ?>
     <?= $this->cache() ?>
   }
-  
+
 
   # -------------------------------------------------------------------------------------------------------------------- Categories
   <?php $this->setRoutesNamespace("Award\\Category") ?>
@@ -98,6 +98,61 @@ location ^~ <?= $this->r("/award") ?> {
   location ~* '^<?= $this->rp("/award/{0}/categories") ?>$' {
     <?= $this->set("Index") ?>
     <?= $this->set('$1', "award_id") ?>
+    <?= $this->cache() ?>
+  }
+
+  location ~* '^<?= $this->r("/award/{0}/category/create") ?>$' {
+    <?= $this->set("Create") ?>
+    <?= $this->set('$1', "award_id") ?>
+    <?= $this->cache() ?>
+  }
+
+  location ~* '^<?= $this->r("/award/{0}/category/{1}") ?>$' {
+    <?= $this->set("Show") ?>
+    <?= $this->set('$1', "award_id") ?>
+    <?= $this->set('$2', "award_category_id") ?>
+    <?= $this->cache() ?>
+  }
+
+  location ~* '^<?= $this->r("/award/{0}/category/{1}/discussion") ?>$' {
+    <?= $this->set("Discussion") ?>
+    <?= $this->set('$1', "award_id") ?>
+    <?= $this->set('$2', "award_category_id") ?>
+    <?= $this->cache() ?>
+  }
+
+  location ~* '^<?= $this->r("/award/{0}/category/{1}/edit") ?>$' {
+    <?= $this->set("Edit") ?>
+    <?= $this->set('$1', "award_id") ?>
+    <?= $this->set('$2', "award_category_id") ?>
+    <?= $this->cache() ?>
+  }
+
+  location ~* '^<?= $this->r("/award/{0}/category/{1}/history") ?>$' {
+    <?= $this->set("History") ?>
+    <?= $this->set('$1', "award_id") ?>
+    <?= $this->set('$2', "award_category_id") ?>
+    <?= $this->cache() ?>
+  }
+
+  location ~* '^<?= $this->r("/award/{0}/category/{1}/delete") ?>$' {
+    <?= $this->set("Delete") ?>
+    <?= $this->set('$1', "award_id") ?>
+    <?= $this->set('$2', "award_category_id") ?>
+    <?= $this->cache() ?>
+  }
+
+  location ~* '^<?= $this->rp("/award/{0}/category/{1}/movies") ?>$' {
+    <?= $this->set("Movies") ?>
+    <?= $this->set('$1', "award_id") ?>
+    <?= $this->set('$2', "award_category_id") ?>
+    <?= $this->cache() ?>
+  }
+
+  location ~* '^<?= $this->rp("/award/{0}/category/{1}/series") ?>$' {
+    <?= $this->set("Series") ?>
+    <?= $this->set('$1', "award_id") ?>
+    <?= $this->set('$2', "award_category_id") ?>
     <?= $this->cache() ?>
   }
 

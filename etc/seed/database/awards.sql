@@ -75,6 +75,7 @@ SET @oscar_award_id = LAST_INSERT_ID();
 
 INSERT INTO `awards_categories` SET
   `award_id`            = @oscar_award_id,
+  `id`                  = 1,
   `created`             = CURRENT_TIMESTAMP,
   `dyn_names`           = COLUMN_CREATE(
     'en', 'Best Assistant Director',
@@ -84,12 +85,17 @@ INSERT INTO `awards_categories` SET
     'en', '&lt;p&gt;With the Oscar for best assistant director, the assistant directors of films were honored. The prize was awarded in this category between 1933 and 1937.&lt;/p&gt;',
     'de', '&lt;p&gt;Mit dem Oscar für die beste Regieassistenz wurden die Regieassistenten eines Films geehrt. Der Preis wurde in dieser Kategorie zwischen 1933 und 1937 vergeben.&lt;/p&gt;'
   ),
+  `dyn_wikipedia`       = COLUMN_CREATE(
+    'en', 'http://en.wikipedia.org/wiki/Academy_Award_for_Best_Assistant_Director',
+    'de', 'http://de.wikipedia.org/wiki/Oscar/Beste_Regieassistenz'
+  ),
   `first_awarding_year` = 1933,
   `last_awarding_year`  = 1937
 ;
 
 INSERT INTO `awards_categories` SET
   `award_id`            = @oscar_award_id,
+  `id`                  = 2,
   `created`             = CURRENT_TIMESTAMP,
   `dyn_names`           = COLUMN_CREATE(
     'en', 'Best Picture',
@@ -99,11 +105,16 @@ INSERT INTO `awards_categories` SET
     'en', '&lt;p&gt;The Academy Award for Best Picture is one of the Academy Awards of Merit presented annually by the Academy of Motion Picture Arts and Sciences (AMPAS) to producers working in the film industry and is the only category in which every member is eligible to submit a nomination. Best Picture is considered the most important of the Academy Awards, as it represents all the directing, acting, music composing, writing, editing and other efforts put forth into a film. Consequently, Best Picture is the final award of every Academy Awards ceremony. The Grand Staircase columns at the Dolby Theatre in Los Angeles, where the Academy Awards ceremonies have been held since 2002, showcase every film that has won the Best Picture title since the award&#039;s inception. As of the 86th Academy Awards nominations, there have been 512 films nominated for the Best Picture award.&lt;/p&gt;',
     'de', '&lt;p&gt;Mit dem Oscar für den besten Film werden die Produzenten eines Films ausgezeichnet. In der Regel können drei Personen als Produzenten eines Films nominiert werden. Ab der 80. Verleihung des Oscars können unter bestimmten Umständen mehr als drei Personen als Produzenten nominiert werden. Bis 1936 gingen die Auszeichnungen an die Produktionsgesellschaft.&lt;/p&gt;&lt;p&gt;Die Anzahl der nominierten Filme wurde erstmals zur Oscarverleihung 2010 von fünf auf zehn erhöht, um Fantasy- oder Animationsfilmen wie Oben eine Nominierung in dieser Kategorie zu ermöglichen. Nach zweimaliger Durchführung wurde zur Oscarverleihung 2012 entschieden, dass künftig zwischen fünf und zehn Filme nominiert werden. Nominiert werden Filme, die mindestens fünf Prozent der Stimmen des bei der Vorauswahl beliebtesten Films erhalten haben.&lt;/p&gt;'
   ),
+  `dyn_wikipedia`       = COLUMN_CREATE(
+    'en', 'http://en.wikipedia.org/wiki/Academy_Award_for_Best_Picture',
+    'de', 'http://de.wikipedia.org/wiki/Oscar/Bester_Film'
+  ),
   `first_awarding_year` = 1929
 ;
 
 INSERT INTO `awards_categories` SET
   `award_id`            = @oscar_award_id,
+  `id`                  = 3,
   `created`             = CURRENT_TIMESTAMP,
   `dyn_names`           = COLUMN_CREATE(
     'en', 'Best Director',
@@ -113,50 +124,62 @@ INSERT INTO `awards_categories` SET
     'en', '&lt;p&gt;The Academy Award for Best Directing (Best Director), usually known as the Best Director Oscar, is one of the Awards of Merit presented by the Academy of Motion Picture Arts and Sciences (AMPAS) to directors working in the motion picture industry. While nominations for Best Director are made by members in the Academy&#039;s Directing branch, the award winners are selected by the Academy membership as a whole.&lt;/p&gt;',
     'de', '&lt;p&gt;Mit dem Oscar für die Beste Regie werden die Leistungen der Regisseure eines Films geehrt.&lt;/p&gt;&lt;p&gt;Acht Regisseure wurden als bester Regisseur und bester Hauptdarsteller für denselben Film nominiert: Warren Beatty für (Heaven Can Wait und Reds), Clint Eastwood für (Unforgiven und Million Dollar Baby), Orson Welles (Citizen Kane), Laurence Olivier (Hamlet), Woody Allen (Annie Hall), Kenneth Branagh (Henry V), Kevin Costner (Dances with Wolves) und Roberto Benigni (Life Is Beautiful).&lt;/p&gt;&lt;p&gt;Die einzigen Brüder, die gemeinsam nominiert wurden, waren Joel und Ethan Coen für No Country for Old Men (2007) und True Grit (2010).&lt;/p&gt;&lt;p&gt;John Ford und Joseph L. Mankiewicz sind die einzigen Titelverteidiger&lt;/p&gt;'
   ),
+  `dyn_wikipedia`       = COLUMN_CREATE(
+    'en', 'http://en.wikipedia.org/wiki/Academy_Award_for_Best_Director',
+    'de', 'http://de.wikipedia.org/wiki/Oscar/Beste_Regie'
+  ),
   `first_awarding_year` = 1929
 ;
 
 INSERT INTO `awards_categories` SET
   `award_id`            = @oscar_award_id,
+  `id`                  = 4,
   `created`             = CURRENT_TIMESTAMP,
   `dyn_names`           = COLUMN_CREATE(
     'en', 'Best Actor in a Leading Role',
     'de', 'Bester Hauptdarsteller'
   ),
   `dyn_descriptions`    = '',
+  `dyn_wikipedia`       = '',
   `first_awarding_year` = 1929
 ;
 
 INSERT INTO `awards_categories` SET
   `award_id`            = @oscar_award_id,
+  `id`                  = 5,
   `created`             = CURRENT_TIMESTAMP,
   `dyn_names`           = COLUMN_CREATE(
     'en', 'Best Actress in a Leading Role',
     'de', 'Beste Hauptdarstellerin'
   ),
   `dyn_descriptions`    = '',
+  `dyn_wikipedia`       = '',
   `first_awarding_year` = 1929
 ;
 
 INSERT INTO `awards_categories` SET
   `award_id`            = @oscar_award_id,
+  `id`                  = 6,
   `created`             = CURRENT_TIMESTAMP,
   `dyn_names`           = COLUMN_CREATE(
     'en', 'Best Actor in a Supporting Role',
     'de', 'Bester Nebendarsteller'
   ),
   `dyn_descriptions`    = '',
+  `dyn_wikipedia`       = '',
   `first_awarding_year` = 1937
 ;
 
 INSERT INTO `awards_categories` SET
   `award_id`            = @oscar_award_id,
+  `id`                  = 7,
   `created`             = CURRENT_TIMESTAMP,
   `dyn_names`           = COLUMN_CREATE(
     'en', 'Best Actress in a Supporting Role',
     'de', 'Beste Nebendarstellerin'
   ),
   `dyn_descriptions`    = '',
+  `dyn_wikipedia`       = '',
   `first_awarding_year` = 1929
 ;
 

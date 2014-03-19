@@ -123,6 +123,13 @@ class Award extends \MovLib\Data\Image\AbstractImage {
   public $route;
 
   /**
+   * The route key of this award.
+   *
+   * @var string
+   */
+  public $routeKey;
+
+  /**
    * The award’s translated Wikipedia link.
    *
    * @var string
@@ -294,17 +301,8 @@ class Award extends \MovLib\Data\Image\AbstractImage {
   public function getMoviesCount() {
     global $db;
     return $db->query(
-      "SELECT
-        count(DISTINCT `movie_id`) as `count`
-        FROM `movies_awards` as `ma`
-        LEFT JOIN `awards_categories` as `mac`
-          ON `ma`.award_category_id = `mac`.`id`
-        LEFT JOIN `awards`
-          ON `mac`.`award_id` = `awards`.`id`
-        WHERE `awards`.`id` = ?",
-      "d",
-      [ $this->id ]
-    )->get_result()->fetch_assoc()["count"];
+        "SELECT count(DISTINCT `movie_id`) as `count` FROM `movies_awards` WHERE `award_id` = ?", "d", [ $this->id ]
+      )->get_result()->fetch_assoc()["count"];
   }
 
   /**
@@ -464,12 +462,14 @@ class Award extends \MovLib\Data\Image\AbstractImage {
       $this->place = new Place($this->place);
     }
 
-    $this->aliases = $this->aliases ? unserialize($this->aliases) : [];
-    $this->links   = $this->links ? unserialize($this->links) : [];
+    $this->aliases  = $this->aliases ? unserialize($this->aliases) : [];
+    $this->links    = $this->links ? unserialize($this->links) : [];
 
-    $this->deleted = (boolean) $this->deleted;
-    $this->route   = $i18n->r("/award/{0}", [ $this->id]);
-    $key           = "edit";
+    $this->deleted  = (boolean) $this->deleted;
+
+    $this->routeKey = "/award/{0}";
+    $this->route    = $i18n->r($this->routeKey, [ $this->id]);
+    $key            = "edit";
     if ($this->uploaderId) {
       $this->imageExists = true;
       $key               = "icon";

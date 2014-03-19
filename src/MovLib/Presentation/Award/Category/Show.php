@@ -15,14 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Award;
+namespace MovLib\Presentation\Award\Category;
 
 use \MovLib\Data\Award;
+use \MovLib\Data\AwardCategory;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Place;
 
 /**
- * Presentation of a single award.
+ * Presentation of a single award category.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -30,7 +30,7 @@ use \MovLib\Presentation\Partial\Place;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\Award\AbstractBase {
+class Show extends \MovLib\Presentation\Award\Category\AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -45,10 +45,15 @@ class Show extends \MovLib\Presentation\Award\AbstractBase {
    */
   public function __construct() {
     global $i18n, $kernel;
-    $this->award = new Award((integer) $_SERVER["AWARD_ID"]);
-    $this->initPage($this->award->name);
-    $this->initLanguageLinks("/award/{0}", [ $this->award->id]);
-    $this->initBreadcrumb([[ $i18n->rp("/awards"), $i18n->t("Awards") ]]);
+    $this->award         = new Award((integer) $_SERVER["AWARD_ID"]);
+    $this->awardCategory = new AwardCategory((integer) $_SERVER["AWARD_CATEGORY_ID"]);
+    $this->initPage($this->awardCategory->name);
+    $this->initLanguageLinks("/award/{0}/category/{1}", [ $this->award->id, $this->awardCategory->id ]);
+    $this->initBreadcrumb([
+      [ $i18n->rp("/awards"), $i18n->t("Awards") ],
+      [ $this->award->route, $this->award->name ],
+      [ $i18n->rp("/award/{0}/categories", [ $this->award->id ]), $i18n->t("Categories") ],
+    ]);
     $this->sidebarInit();
 
     $kernel->stylesheets[] = "award";
@@ -67,45 +72,38 @@ class Show extends \MovLib\Presentation\Award\AbstractBase {
 
     // Enhance the page title with microdata.
     $this->schemaType = "Intangible";
-    $this->pageTitle  = "<span property='name'>{$this->award->name}</span>";
+    $this->pageTitle  = "<span property='name'>{$this->awardCategory->name}</span>";
 
-    if ($this->award->deleted === true) {
+    if ($this->awardCategory->deleted === true) {
       return $this->goneGetContent();
     }
 
     // Put the award information together.
     $info = null;
 
-    if ($this->award->firstAwardingYear && $this->award->lastAwardingYear) {
-      $info .=
-        "<span>{$i18n->t("from {0} to {1}", [ $this->award->firstAwardingYear, $this->award->lastAwardingYear ])}</span>"
-      ;
+    if ($this->awardCategory->firstAwardingYear && $this->awardCategory->lastAwardingYear) {
+      $info .= "<span>{$i18n->t("from {0} to {1}", [
+        $this->awardCategory->firstAwardingYear,
+        $this->awardCategory->lastAwardingYear
+      ])}</span>";
     }
-    else if ($this->award->firstAwardingYear) {
-      $info .= "<span>{$i18n->t("since {0}", [ $this->award->firstAwardingYear ])}</span>";
+    else if ($this->awardCategory->firstAwardingYear) {
+      $info .= "<span>{$i18n->t("since {0}", [ $this->awardCategory->firstAwardingYear ])}</span>";
     }
-    else if ($this->award->lastAwardingYear) {
-      $info .= "<span>{$i18n->t("until {0}", [ $this->award->lastAwardingYear ])}</span>";
-    }
-
-    if ($this->award->place) {
-      if ($info) {
-        $info .= "<br>";
-      }
-      $info .= "<span itemprop='location'>". new Place($this->award->place) . "</span>";
+    else if ($this->awardCategory->lastAwardingYear) {
+      $info .= "<span>{$i18n->t("until {0}", [ $this->awardCategory->lastAwardingYear ])}</span>";
     }
 
     // Construct the wikipedia link.
-    if ($this->award->wikipedia) {
+    if ($this->awardCategory->wikipedia) {
       if ($info) {
         $info .= "<br>";
       }
       $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->award->wikipedia}' itemprop='sameAs' target='_blank'>{$i18n->t("Wikipedia Article")}</a>";
     }
 
-    $headerImage = $this->getImage($this->award->getStyle(Award::STYLE_SPAN_02), true, [ "itemprop" => "image" ]);
     $this->headingBefore = "<div class='r'><div class='s s10'>";
-    $this->headingAfter = "<p>{$info}</p></div><div id='award-logo' class='s s2'>{$headerImage}</div></div>";
+    $this->headingAfter = "<p>{$info}</p></div></div>";
 
 
     // ----------------------------------------------------------------------------------------------------------------- Build page sections.
@@ -113,31 +111,10 @@ class Show extends \MovLib\Presentation\Award\AbstractBase {
 
     $content = null;
     // Description section
-    if ($this->award->description) {
-      $content .= $this->getSection("description", $i18n->t("Description"), $this->htmlDecode($this->award->description));
-    }
-
-    // Additional names section.
-    $awardAliases = $this->award->aliases;
-    if (!empty($awardAliases)) {
-      $aliases = null;
-      $c       = count($awardAliases);
-      for ($i = 0; $i < $c; ++$i) {
-        $aliases .= "<li class='mb10 s s10' property='additionalName'>{$awardAliases[$i]}</li>";
-      }
-      $content .= $this->getSection("aliases", $i18n->t("Also Known As"), "<ul class='grid-list r'>{$aliases}</ul>");
-    }
-
-     // External links section.
-    $awardLinks = $this->award->links;
-    if ($awardLinks) {
-      $links = null;
-      $c     = count($awardLinks);
-      for ($i = 0; $i < $c; ++$i) {
-        $hostname = str_replace("www.", "", parse_url($awardLinks[$i], PHP_URL_HOST));
-        $links .= "<li class='mb10 s s10'><a href='{$awardLinks[$i]}' property='url' rel='nofollow' target='_blank'>{$hostname}</a></li>";
-      }
-      $content .= $this->getSection("links", $i18n->t("External Links"), "<ul class='grid-list r'>{$links}</ul>");
+    if ($this->awardCategory->description) {
+      $content .=
+        $this->getSection("description", $i18n->t("Description"), $this->htmlDecode($this->awardCategory->description))
+      ;
     }
 
     if ($content) {
@@ -145,7 +122,7 @@ class Show extends \MovLib\Presentation\Award\AbstractBase {
     }
 
     return new Alert(
-      $i18n->t("{sitename} has no further details about this award.", [ "sitename"    => $kernel->siteName ]),
+      $i18n->t("{sitename} has no further details about this award category.", [ "sitename"    => $kernel->siteName ]),
       $i18n->t("No Data Available"),
       Alert::SEVERITY_INFO
     );

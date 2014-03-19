@@ -93,10 +93,10 @@ class Award extends \MovLib\Presentation\Partial\Listing\AbstractListing {
               $this->getImage($award->getStyle($this->imageStyle), $award->route, [ "property" => "image" ], [ "class" => "fl" ]) .
               "<span class='s s9'>" .
                 "<span class='fr'>" .
-                  "<a class='ico ico-movie label' href='{$i18n->rp("{$award->route}/movies")}' title='{$moviesTitle}'>" .
+                  "<a class='ico ico-movie label' href='{$i18n->rp("{$award->routeKey}/movies", [ $award->id ])}' title='{$moviesTitle}'>" .
                     " &nbsp; {$award->getMoviesCount()}" .
                   "</a>" .
-                  "<a class='ico ico-series label' href='{$i18n->rp("{$award->route}/series")}' title='{$seriesTitle}'>" .
+                  "<a class='ico ico-series label' href='{$i18n->rp("{$award->routeKey}/series", [ $award->id ])}' title='{$seriesTitle}'>" .
                     " &nbsp; {$award->getSeriesCount()}" .
                   "</a>" .
                 "</span>" .

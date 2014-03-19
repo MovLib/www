@@ -82,6 +82,13 @@ class AwardCategory extends \MovLib\Data\Database {
   public $routeKey;
 
   /**
+   * The award category’s translated Wikipedia link.
+   *
+   * @var string
+   */
+  public $wikipedia;
+
+  /**
    * The first year there was an award in this category.
    *
    * @var integer
@@ -117,7 +124,7 @@ class AwardCategory extends \MovLib\Data\Database {
         WHERE
           `id` = ?
         LIMIT 1",
-        "ssdd",
+        "ssd",
         [ $i18n->languageCode, $i18n->languageCode, $id ]
       );
       $stmt->bind_result(
@@ -169,7 +176,38 @@ class AwardCategory extends \MovLib\Data\Database {
    */
   public function getMoviesResult() {
     global $db, $i18n;
-    return $this;
+    return $db->query(
+      "SELECT
+        `movies`.`year` AS `year`,
+        IFNULL(`dt`.`title`, `ot`.`title`) AS `displayTitle`,
+        IFNULL(`dt`.`language_code`, `ot`.`language_code`) AS `displayTitleLanguageCode`,
+        `ot`.`title` AS `originalTitle`,
+        `ot`.`language_code` AS `originalTitleLanguageCode`,
+        `p`.`poster_id` AS `displayPoster`
+        FROM `movies_awards` as `ma`
+        LEFT JOIN `awards_categories` as `mac`
+          ON `ma`.award_category_id = `mac`.`id`
+        LEFT JOIN `awards`
+          ON `mac`.`award_id` = `awards`.`id`
+        LEFT JOIN `movies` AS `movies`
+          ON `movies`.`id` = `movies`.`id`
+        LEFT JOIN `movies_display_titles` AS `mdt`
+          ON `mdt`.`movie_id` = `movies`.`id`
+          AND `mdt`.`language_code` = ?
+        LEFT JOIN `movies_titles` AS `dt`
+          ON `dt`.`id` = `mdt`.`title_id`
+        LEFT JOIN `movies_original_titles` AS `mot`
+          ON `mot`.`movie_id` = `movies`.`id`
+        LEFT JOIN `movies_titles` AS `ot`
+          ON `ot`.`id` = `mot`.`title_id`
+        LEFT JOIN `display_posters` AS `p`
+          ON `p`.`movie_id` = `movies`.`id`
+          AND `p`.`language_code` = ?
+      WHERE `ma`.`award_id` = ? AND `ma`.`award_category_id` = ?
+      ORDER BY `movies`.`year` DESC",
+      "ssdd",
+      [ $i18n->languageCode, $i18n->languageCode, $this->awardId, $this->id ]
+    )->get_result();
   }
 
   /**

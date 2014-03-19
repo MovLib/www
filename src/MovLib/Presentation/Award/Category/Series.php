@@ -15,12 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Award;
+namespace MovLib\Presentation\Award\Category;
 
 use \MovLib\Data\Award;
+use \MovLib\Data\AwardCategory;
+
 
 /**
- * A award's history.
+ * Series with a certain award category associated.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -28,25 +30,29 @@ use \MovLib\Data\Award;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\Award\AbstractBase {
+class Series extends \MovLib\Presentation\Award\Category\AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new award history presentation.
+   * Instantiate new award category series presentation.
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
     global $i18n, $kernel;
-    $this->award = new Award((integer) $_SERVER["AWARD_ID"]);
-    $this->initPage($i18n->t("History"));
-    $this->pageTitle = $i18n->t("History of {0}", [ "<a href='{$this->award->route}'>{$this->award->name}</a>" ]);
-    $this->initLanguageLinks("/award/{0}/history", [ $this->award->id ]);
-    $this->initAwardBreadcrumb();
+    $this->award           = new Award((integer) $_SERVER["AWARD_ID"]);
+    $this->awardCategory   = new AwardCategory((integer) $_SERVER["AWARD_CATEGORY_ID"]);
+    $this->initPage($i18n->t("Series with {0}", [ $this->awardCategory->name ]));
+    $this->pageTitle       =
+      $i18n->t("Series with {0}", [ "<a href='{$this->awardCategory->route}'>{$this->awardCategory->name}</a>" ])
+    ;
+    $this->breadcrumbTitle = $i18n->t("Series");
+    $this->initLanguageLinks("/award/{0}/category/{1}/series", [ $this->award->id, $this->awardCategory->id ], true);
+    $this->initAwardCategoryBreadcrumb();
     $this->sidebarInit();
 
     $kernel->stylesheets[] = "award";
@@ -56,14 +62,14 @@ class History extends \MovLib\Presentation\Award\AbstractBase {
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
-  /**
+ /**
    * @inheritdoc
    * @global \MovLib\Data\I18n $i18n
    * @return \MovLib\Presentation\Partial\Alert
    */
   protected function getPageContent() {
     global $i18n;
-    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("award history") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("series with award category") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
   }
 
 }

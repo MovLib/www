@@ -1040,14 +1040,15 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`awards_categories` (
   `award_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award’s unique ID.',
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The award category’s unique ID within an award.',
+  `id` BIGINT UNSIGNED NOT NULL COMMENT 'The award category’s unique ID within an award.',
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp on which this award category was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the award category was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The award categorie’s description in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_names` BLOB NOT NULL COMMENT 'The award categorie’s name in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_wikipedia` BLOB NOT NULL COMMENT 'The award’s translated Wikipedia links.',
   `first_awarding_year` SMALLINT(4) NULL COMMENT 'The first year this award category existed.',
   `last_awarding_year` SMALLINT(4) NULL COMMENT 'The last year this award category existed.',
-  PRIMARY KEY (`id`, `award_id`),
+  PRIMARY KEY (`award_id`, `id`),
   INDEX `fk_awards_categories_awards_idx` (`award_id` ASC),
   CONSTRAINT `fk_awards_categories_awards`
     FOREIGN KEY (`award_id`)
