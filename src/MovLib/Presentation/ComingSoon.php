@@ -91,10 +91,10 @@ final class ComingSoon extends \MovLib\Presentation\Page {
           "<section id='f-logos' class='s s12 tac'>" .
             "<h3 class='vh'>{$i18n->t("Sponsors and external resources")}</h3>" .
             "<a class='no-link' href='http://www.fh-salzburg.ac.at/' target='_blank'>" .
-              "<img alt='Fachhochschule Salzburg' height='30' src='{$kernel->getAssetURL("footer/fachhochschule-salzburg", "svg")}' width='48'>" .
+              "<img alt='Fachhochschule Salzburg' height='30' src='{$this->getURL("asset://img/footer/fachhochschule-salzburg.svg")}' width='48'>" .
             "</a>" .
             "<a class='no-link' href='https://github.com/MovLib' target='_blank'>" .
-              "<img alt='GitHub' height='30' src='{$kernel->getAssetURL("footer/github", "svg")}' width='48'>" .
+              "<img alt='GitHub' height='30' src='{$this->getURL("asset://img/footer/github.svg")}' width='48'>" .
             "</a>" .
           "</section>" .
           "<p class='last s s12 tac'>{$i18n->t("Wanna see the current alpha version of {sitename}? Go to {alpha_url}", [
@@ -129,7 +129,7 @@ final class ComingSoon extends \MovLib\Presentation\Page {
     return
       "<main class='{$this->id}-content' id='m' role='main'><div class='c'>" .
         "<h1 class='cf'>" .
-          "<img alt='' height='192' src='{$kernel->getAssetURL("logo/vector", "svg")}' width='192'>" .
+          "<img alt='' height='192' src='{$this->getURL("asset://img/logo/vector.svg")}' width='192'>" .
           "<span>{$kernel->siteNameAndSloganHTML}</span>" .
         "</h1>" .
         $this->alerts .

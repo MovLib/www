@@ -34,13 +34,30 @@ class AssetStreamWrapper extends \MovLib\Data\StreamWrapper\AbstractLocalStreamW
    * Get the web accessible URL of the asset.
    *
    * @global \MovLib\Kernel $kernel
+   * @staticvar array $urls
+   *   Used to cache already generated external URLs.
    * @return string
    *   The web accessible URL of the asset.
    */
   public function getExternalURL() {
+    static $urls = [];
+    if (isset($urls[$this->uri])) {
+      return $urls[$this->uri];
+    }
+
     global $kernel;
-    $target = URL::encodePath($this->getTarget());
-    return "//{$kernel->domainStatic}/asset/{$target}";
+    $target    = URL::encodePath($this->getTarget());
+    $extension = pathinfo($target, PATHINFO_EXTENSION);
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (!isset($kernel->cacheBusters[$extension][$target])) {
+      $kernel->cacheBusters[$extension][$target] = md5_file($this->realpath());
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    $urls[$this->uri] = "//{$kernel->domainStatic}/asset/{$target}?{$kernel->cacheBusters[$extension][$target]}";
+
+    return $urls[$this->uri];
   }
 
   /**

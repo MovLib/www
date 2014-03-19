@@ -84,7 +84,7 @@ abstract class StreamWrapperFactory {
           "stream wrapper registered for this scheme."
         );
       }
-      static::$wrapper[$scheme] = $class;
+      static::$wrapper[$schemes[$i]] = $class;
     }
   }
 
