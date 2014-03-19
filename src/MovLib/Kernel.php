@@ -363,6 +363,9 @@ class Kernel {
       register_shutdown_function([ $this, "fatalErrorHandler" ]);
     }
 
+    // Disable PHP's display error functionality.
+    ini_set("display_errors", false);
+
     try {
       // Initialize environment properties based on variables passed in by nginx.
       $this->documentRoot      = $documentRoot;
