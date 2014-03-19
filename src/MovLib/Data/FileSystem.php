@@ -399,7 +399,7 @@ final class FileSystem {
     if (file_exists($path) === true) {
       try {
         if ($recursive === false) {
-          if (is_dir($path) === true) {
+          if (is_dir($path) === true && is_link($path) === false) {
             if (rmdir($path) === false) {
               // @codeCoverageIgnoreStart
               throw new \Exception;
