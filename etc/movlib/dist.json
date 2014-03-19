@@ -5,8 +5,8 @@
   "locale": "en_US",
   "timezone": "Etc/UTC",
   "webmaster": "webmaster@movlib.org",
-  "user": "movlib",
-  "group": "movlib",
+  "user": "movdev",
+  "group": "www-data",
   "directory": {
     "bin": "/usr/local/bin",
     "cache": "/var/cache",
