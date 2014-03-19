@@ -66,7 +66,7 @@ class Crew extends \MovLib\Presentation\Movie\AbstractBase {
       $crew = null;
       /* @var $movieCrew \MovLib\Stub\Data\Movie\MovieCrew */
       foreach ($crewResult as $movieCrew) {
-        $crew .= "<dt><a href='{$movieCrew->job->route}'>{$movieCrew->job->title}</a></dt>";
+        $crew .= "<dt><a class='no-link' href='{$movieCrew->job->route}'>{$movieCrew->job->title}</a></dt>";
         /* @var $entity \MovLib\Stub\Data\Entity */
         foreach ($movieCrew->members as $entity) {
           $crew .=
@@ -76,7 +76,7 @@ class Crew extends \MovLib\Presentation\Movie\AbstractBase {
         }
       }
       if ($crew) {
-        return "<dl>{$crew}</dl>";
+        return "<dl class='dl-big s10'>{$crew}</dl>";
       }
     }
 
