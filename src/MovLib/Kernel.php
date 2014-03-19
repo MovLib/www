@@ -193,13 +193,6 @@ class Kernel {
   public $passwordOptions = [ "cost" => 12 ];
 
   /**
-   * Absolute path to the persistent disk cache for presentations.
-   *
-   * @var string
-   */
-  public $pathCache = "/cache";
-
-  /**
    * Absolute path to the PHP translation files.
    *
    * @var string
@@ -380,7 +373,6 @@ class Kernel {
       $this->emailWebmaster    = $_ENV["EMAIL_WEBMASTER"];
       $this->hostname          = $_SERVER["SERVER_NAME"];
       $this->https             = isset($_SERVER["HTTPS"]);
-      $this->pathCache         = "{$this->documentRoot}{$this->pathCache}/{$_SERVER["LANGUAGE_CODE"]}";
       $this->pathTranslations  = "{$this->documentRoot}{$this->pathTranslations}";
       $this->production        = (boolean) $_ENV["PRODUCTION"];
       $this->protocol          = $_SERVER["SERVER_PROTOCOL"];

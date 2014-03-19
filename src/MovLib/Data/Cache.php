@@ -55,11 +55,12 @@ class Cache {
   /**
    * Instantiate new cache instance.
    *
+   * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $kernel;
-    $this->cacheFile = "{$kernel->pathCache}{$kernel->requestPath}";
+    global $i18n, $kernel;
+    $this->cacheFile = "{$kernel->documentRoot}/var/cache/{$i18n->languageCode}{$kernel->requestPath}";
     if ($kernel->requestPath == "/") {
       $this->cacheFile .= $_SERVER["PRESENTER"];
     }

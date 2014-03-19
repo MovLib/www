@@ -94,7 +94,7 @@ class Kernel extends \MovLib\Kernel {
 
     // Create global object instances.
     $db      = new \MovLib\Tool\Database();
-    $i18n    = new \MovLib\Data\I18n();
+    $i18n    = new \MovLib\Data\I18n(\Locale::getDefault());
     $session = new \MovLib\Data\User\Session();
   }
 

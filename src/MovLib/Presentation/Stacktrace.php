@@ -73,7 +73,9 @@ class Stacktrace extends \MovLib\Presentation\Page {
     http_response_code(500);
     $this->initPage($i18n->t("Internal Server Error"));
     $this->initBreadcrumb();
-    $cache->cacheable      = false;
+    if (isset($cache)) {
+      $cache->cacheable = false;
+    }
     $kernel->stylesheets[] = "stacktrace";
     $this->exception       = $exception;
     $this->fatal           = $fatal;
