@@ -257,13 +257,36 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
   protected function execute(InputInterface $input, OutputInterface $output) {
     global $kernel;
 
+    $this->writeDebug("Generating global configuration...", self::MESSAGE_TYPE_COMMENT);
     $etc = "{$kernel->documentRoot}/etc/movlib";
     $env = $input->getOption("environment");
     $cfn = FileSystem::getJSON("{$etc}/dist.json", true);
+
     if ($env != "dist") {
+      $this->writeDebug("Merging dist with {$env}...");
       $cfn = array_replace_recursive($cfn, FileSystem::getJSON("{$etc}/{$env}.json", true));
     }
-    $kernel->configuration = FileSystem::putJSON("{$etc}/movlib.json", $cfn, LOCK_EX);
+
+    $etc = "{$etc}/movlib.json";
+
+    if (is_file($etc)) {
+      $this->writeDebug("Deleting old global configuration...");
+      FileSystem::delete($etc, false, true);
+    }
+
+    $this->writeDebug("Writing new global configuration...");
+    FileSystem::putJSON($etc, $cfn, LOCK_EX);
+
+    $this->writeDebug("Exporting new global configuration to kernel...");
+    $kernel->configuration = json_decode(json_encode($cfn));
+    $kernel->systemUser    = $kernel->configuration->user;
+    $kernel->systemGroup   = $kernel->configuration->group;
+
+    $this->writeDebug("Changing global configuration ownership to {$kernel->systemUser}:{$kernel->systemGroup}...");
+    FileSystem::changeOwner($etc, $kernel->systemUser, $kernel->systemGroup);
+
+    $this->writeDebug("Changing global configuration mode to read-only...");
+    FileSystem::changeMode($etc, "0444");
 
     $name = $this->getName();
     $conf = $this->getConfiguration();
