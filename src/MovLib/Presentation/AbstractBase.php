@@ -311,6 +311,7 @@ abstract class AbstractBase {
     if (!isset($wrappers[$scheme])) {
       $wrappers[$scheme] = StreamWrapperFactory::create($uri);
     }
+    $wrappers[$scheme]->uri = $uri;
     return $wrappers[$scheme]->getExternalURL();
   }
 
