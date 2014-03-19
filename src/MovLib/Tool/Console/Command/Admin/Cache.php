@@ -18,7 +18,6 @@
 namespace MovLib\Tool\Console\Command\Admin;
 
 use \MovLib\Data\FileSystem;
-use \MovLib\Tool\Console\Command\Production\FixPermissions;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -26,22 +25,21 @@ use \Symfony\Component\Console\Output\OutputInterface;
 /**
  * Manage various caches of the MovLib software.
  *
- * @link http://www.linuxatemyram.com/play.html
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class CacheInspector extends \MovLib\Tool\Console\Command\AbstractCommand {
+class Cache extends \MovLib\Tool\Console\Command\AbstractCommand {
 
   /**
    * @inheritdoc
    */
   protected function configure() {
-    $this->setName("cache-inspector");
+    $this->setName("cache");
     $this->setDescription("Manage various system caches.");
-    $this->addInputOption("presentation", InputOption::VALUE_NONE, "Empty the presentation cache.");
+    $this->addOption("presentation", "p", InputOption::VALUE_NONE, "Empty the presentation cache.");
   }
 
   /**
@@ -53,11 +51,10 @@ class CacheInspector extends \MovLib\Tool\Console\Command\AbstractCommand {
    */
   public function purgePresentationCache() {
     global $kernel;
-    $this->checkPrivileges();
-    $this->write("Purging presentation cache...");
-    (new FixPermissions())->fixPermissions();
-    FileSystem::delete("{$kernel->documentRoot}/cache/*", true, true);
-    $this->write("Successfuly purge the presentation cache!", self::MESSAGE_TYPE_INFO);
+
+    $this->writeVerbose("Purging presentation cache...", self::MESSAGE_TYPE_COMMENT);
+    FileSystem::delete("{$kernel->documentRoot}/var/cache/*", true, true);
+    $this->writeVerbose("Successfuly purged the presentation cache!", self::MESSAGE_TYPE_INFO);
 
     return $this;
   }
@@ -66,9 +63,8 @@ class CacheInspector extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    $options = parent::execute($input, $output);
     $foundOption = false;
-    foreach ($options as $option => $value) {
+    foreach ($input->getOptions() as $option => $value) {
       $method = "purge{$option}Cache";
       if ($value === true && method_exists($this, $method)) {
         $this->{$method}();
@@ -76,9 +72,8 @@ class CacheInspector extends \MovLib\Tool\Console\Command\AbstractCommand {
       }
     }
     if ($foundOption === false) {
-      $this->write("Use `movlib --help {$this->getName()}` to list all available options.", self::MESSAGE_TYPE_COMMENT);
+      $this->write("Use `movlib --help {$this->getName()}` to list all available options.", self::MESSAGE_TYPE_ERROR);
     }
-    return $options;
   }
 
 }
