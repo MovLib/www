@@ -18,10 +18,8 @@
 namespace MovLib\Tool\Console\Command\Install;
 
 use \MovLib\Data\FileSystem;
-use \MovLib\Data\Shell;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
-use \Symfony\Component\Console\Output\Output;
 use \Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -44,6 +42,7 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
    */
   public function __construct($name = null) {
     parent::__construct($name);
+    $this->addOption("environment", "e", InputOption::VALUE_OPTIONAL, "The environment we're currenlty working with.", "dist");
     $this->addOption("keep", "k", InputOption::VALUE_NONE, "Keep downloaded source files on disc.");
   }
 
@@ -157,8 +156,6 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
 
     $command .= "./configure";
     if (!empty($options->arguments)) {
-      print_r($options->arguments);
-      exit();
       $command .= " --" . implode(" --", $options->arguments);
     }
 
@@ -169,11 +166,17 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
    * Delete registered files.
    *
    * <b>NOTE</b><br>
-   * Must be public because it's used as shutdown function.
+   * Must be public because it's used as shutdown function. We cannot utiliye the native <code>__destruct()</code>
+   * method because we need all the global objects intact (e.g. the Kernel).
    *
+   * @global \MovLib\Tool\Kernel $kernel
    * @return this
    */
   final public function deleteRegisteredFiles() {
+    global $kernel;
+    // Make sure that we aren't within one of the directories that we're going to delete.
+    $this->changeWorkingDirectory($kernel->documentRoot);
+
     $this->writeDebug("Deleting registered files...");
     foreach ($this->registerFileForDeletion() as $file) {
       FileSystem::delete($file, true, true);
@@ -206,9 +209,11 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
       $name = basename($url, ".git");
     }
     if (!isset($destination)) {
-      $destination = "{$kernel->documentRoot}/tmp/{$name}";;
+      $destination = "{$kernel->documentRoot}/tmp";
     }
-    $scheme = parse_url($url, PHP_URL_SCHEME);
+
+    $scheme      = parse_url($url, PHP_URL_SCHEME);
+    $destination = "{$destination}/{$name}";
 
     if (file_exists($destination)) {
       if ($scheme == "git") {
@@ -247,9 +252,19 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
 
   /**
    * @inheritdoc
+   * @global \MovLib\Tool\Kernel $kernel
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    $this->checkPrivileges();
+    global $kernel;
+
+    $etc = "{$kernel->documentRoot}/etc/movlib";
+    $env = $input->getOption("environment");
+    $cfn = FileSystem::getJSON("{$etc}/dist.json", true);
+    if ($env != "dist") {
+      $cfn = array_replace_recursive($cfn, FileSystem::getJSON("{$etc}/{$env}.json", true));
+    }
+    $kernel->configuration = FileSystem::putJSON("{$etc}/movlib.json", $cfn, LOCK_EX);
+
     $name = $this->getName();
     $conf = $this->getConfiguration();
 
