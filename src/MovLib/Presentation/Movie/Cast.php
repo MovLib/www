@@ -18,14 +18,13 @@
 namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Movie\FullMovie;
-use \MovLib\Presentation\Partial\Listing\PersonListing;
 use \MovLib\Presentation\Partial\Listing\PersonCastListing;
 
 /**
  * Presentation of single movie's cast.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
@@ -58,22 +57,9 @@ class Cast extends \MovLib\Presentation\Movie\AbstractBase {
   protected function getPageContent() {
     global $i18n;
     $this->schemaType = "Movie";
-    $content = null;
 
-    // Build the directors section.
-    $this->sidebarNavigation->menuitems[] = [ "#directors", $i18n->t("Directors") ];
-    $directors = new PersonListing($this->movie->getDirectors(), "director", $i18n->t(
-      "No directors assigned yet, {0}add directors{1}?",
-      [ "<a href='{$i18n->r("/movie{0}/edit", [ $this->movie->id ])}'>", "</a>" ]
-    ));
-    $content .= "<div id='directors'><h2>{$i18n->t("Directors")}</h2>{$directors}</div>";
-
-    // Build the cast section.
-    $this->sidebarNavigation->menuitems[] = [ "#cast", $i18n->t("Cast") ];
-    $cast                                 = new PersonCastListing($this->movie->getCast(), "actor");
-    $content .= "<div id='cast'><h2>{$i18n->t("Cast")}</h2>{$cast}</div>";
-
-    return $content;
+    $cast = new PersonCastListing($this->movie->getCast(), "actor");
+    return "<div id='cast'><h2>{$i18n->t("Cast")}</h2>{$cast}</div>";
   }
 
 }

@@ -56,7 +56,7 @@ class Movies extends \MovLib\Presentation\Person\AbstractBase {
    * @inheritdoc
    */
   protected function getPageContent() {
-    return new PersonMovieListing($this->person->getMovies(), $this->person);
+    return new PersonMovieListing($this->person->getMovies());
   }
 
 

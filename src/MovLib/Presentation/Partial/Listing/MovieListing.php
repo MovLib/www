@@ -21,7 +21,7 @@ use \MovLib\Data\Image\MoviePoster;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
- * Special images list for movie instances.
+ * Images list for movie instances.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -55,7 +55,7 @@ class MovieListing extends \MovLib\Presentation\AbstractBase {
 
 
   /**
-   * Instantiate new special movies listing.
+   * Instantiate new movie listing.
    *
    * @param mixed $listItems
    *   The items to build the movie listing.
@@ -63,6 +63,15 @@ class MovieListing extends \MovLib\Presentation\AbstractBase {
    *   The text to display if there are no items, defaults to a generic {@see \MovLib\Presentation\Partial\Alert}.
    */
   public function __construct($listItems, $noItemsText = null) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (isset($noItemsText) && (empty($noItemsText) || !method_exists($noItemsText, "__toString"))) {
+      throw new \InvalidArgumentException(
+        "\$noItemsText must be a non-empty string or convertable to string when given"
+      );
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     $this->listItems   = $listItems;
     $this->noItemsText = $noItemsText;
   }
@@ -92,14 +101,15 @@ class MovieListing extends \MovLib\Presentation\AbstractBase {
         return "<ol class='hover-list no-list'>{$list}</ol>";
       }
 
-      if ($this->noItemsText) {
-        return (string) $this->noItemsText;
+      if (!$this->noItemsText) {
+        $this->noItemsText = (string) new Alert(
+          $i18n->t("No movies match your search criteria."),
+          $i18n->t("No Movies"),
+          Alert::SEVERITY_INFO
+        );
       }
-      return (string) new Alert(
-        $i18n->t("No movies match your search criteria."),
-        $i18n->t("No Movies"),
-        Alert::SEVERITY_INFO
-      );
+
+      return (string) $this->noItemsText;
     // @devStart
     // @codeCoverageIgnoreStart
     } catch (\Exception $e) {

@@ -78,6 +78,24 @@ location ^~ <?= $this->r("/person") ?> {
     <?= $this->cache() ?>
   }
 
+  location ~* '^<?= $this->rp("/person/{0}/movies") ?>$' {
+    <?= $this->set("Movies") ?>
+    <?= $this->set('$1', "person_id") ?>
+    <?= $this->cache() ?>
+  }
+
+  location ~* '^<?= $this->rp("/person/{0}/series") ?>$' {
+    <?= $this->set("Series") ?>
+    <?= $this->set('$1', "person_id") ?>
+    <?= $this->cache() ?>
+  }
+
+  location ~* '^<?= $this->rp("/person/{0}/releases") ?>$' {
+    <?= $this->set("Releases") ?>
+    <?= $this->set('$1', "person_id") ?>
+    <?= $this->cache() ?>
+  }
+
 
   # -------------------------------------------------------------------------------------------------------------------- Photo
   <?php $this->setRoutesNamespace("Person\\Photo") ?>
