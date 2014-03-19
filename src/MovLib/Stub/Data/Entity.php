@@ -21,7 +21,7 @@ namespace MovLib\Stub\Data;
  * Generic entity stub to use as a proxy for all kinds of data objects (e.g. Person).
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev

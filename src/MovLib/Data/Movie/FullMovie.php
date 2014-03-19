@@ -269,6 +269,7 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
    */
   public function getCrew() {
     global $db, $i18n;
+
     $result = $db->query(
       "SELECT
         `jobs`.`id` AS `job_id`,
@@ -305,12 +306,13 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
     $companyRoute = $i18n->r("/company/{0}");
     $jobRoute     = $i18n->r("/job/{0}");
     $personRoute  = $i18n->r("/person/{0}");
+
     while ($row = $result->fetch_assoc()) {
       // Initialize a movie crew stub object if not present yet.
       if (!isset($crew[$row["job_id"]])) {
         $crew[$row["job_id"]] = (object) [
-          "job" => (object) [
-            "id" => $row["job_id"],
+          "job"     => (object) [
+            "id"    => $row["job_id"],
             "route" => str_replace("{0}", $row["job_id"], $jobRoute),
             "title" => $row["job_title"]
           ],
@@ -328,6 +330,7 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
         $route = $companyRoute;
         $type  = "Organization";
       }
+
       $crew[$row["job_id"]]->members[] = (object) [
         "id"    => $id,
         "name"  => $row["name"],
@@ -335,6 +338,7 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
         "type"  => $type,
       ];
     }
+
     return $crew;
   }
 

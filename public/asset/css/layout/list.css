@@ -158,12 +158,11 @@ dd {
   padding-bottom: 5px;
 }
 
-.dl-big dt:first-of-type {
+.dl-big dt:first-child {
   margin-top: 0;
 }
 
 .dl-big dt a {
-  color: inherit;
   display: block;
 }
 
