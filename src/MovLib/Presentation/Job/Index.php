@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Job;
 
 use \MovLib\Data\Job;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Listing\Entity as EntityPartial;
+use \MovLib\Presentation\Partial\Listing\EntityListing;
 
 /**
  * List of all jobs.
@@ -79,6 +79,6 @@ class Index extends \MovLib\Presentation\Page {
     $noItemText .=
       $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/job/create")}'>", "</a>" ]);
 
-    return new EntityPartial($result, $noItemText, "Job");
+    return new EntityListing($result, $noItemText, "Job");
   }
 }

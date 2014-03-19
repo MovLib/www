@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Genre;
 
 use \MovLib\Data\Genre;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Listing\Entity as EntityPartial;
+use \MovLib\Presentation\Partial\Listing\EntityListing;
 
 /**
  * List of all genres.
@@ -79,6 +79,6 @@ class Index extends \MovLib\Presentation\Page {
     $noItemText .=
       $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/genre/create")}'>", "</a>" ]);
 
-    return new EntityPartial($result, $noItemText, "Genre");
+    return new EntityListing($result, $noItemText, "Genre");
   }
 }

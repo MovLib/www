@@ -76,6 +76,13 @@ class Genre extends \MovLib\Data\Database {
   public $route;
 
   /**
+   * The route key of this genre.
+   *
+   * @var string
+   */
+  public $routeKey;
+
+  /**
    * Amount of series with this genre.
    *
    * @var integer
@@ -291,8 +298,9 @@ class Genre extends \MovLib\Data\Database {
   protected function init() {
     global $i18n;
 
-    $this->deleted = (boolean) $this->deleted;
-    $this->route   = $i18n->r("/genre/{0}", [ $this->id ]);
+    $this->deleted  = (boolean) $this->deleted;
+    $this->routeKey = "/genre/{0}";
+    $this->route    = $i18n->r($this->routeKey, [ $this->id ]);
   }
 
 }

@@ -125,7 +125,7 @@ class CompanyListing extends  \MovLib\Presentation\AbstractBase {
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-   /**
+  /**
    * Format a company list item.
    *
    * @global \MovLib\Data\I18n $i18n
@@ -139,6 +139,7 @@ class CompanyListing extends  \MovLib\Presentation\AbstractBase {
   final protected function formatListItem($company, $listItem = null) {
     global $i18n;
 
+    // Put company dates together.
     $companyDates = null;
     if ($company->foundingDate || $company->defunctDate) {
       $companyDates    = "<br><span class='small'>";

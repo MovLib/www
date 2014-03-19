@@ -71,6 +71,13 @@ class Job extends \MovLib\Data\Database {
   public $route;
 
   /**
+   * The route key of this job.
+   *
+   * @var string
+   */
+  public $routeKey;
+
+  /**
    * The job's translated unisex name.
    *
    * @var string
@@ -304,8 +311,9 @@ class Job extends \MovLib\Data\Database {
   protected function init() {
     global $i18n;
 
-    $this->deleted = (boolean) $this->deleted;
-    $this->route   = $i18n->r("/job/{0}", [ $this->id ]);
+    $this->deleted  = (boolean) $this->deleted;
+    $this->routeKey = "/job/{0}";
+    $this->route    = $i18n->r($this->routeKey, [ $this->id ]);
   }
 
 }

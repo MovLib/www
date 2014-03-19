@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Partial\Listing;
 
 /**
- * List to display Awards, Genres or Jobs.
+ * List to display Genres or Jobs.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -26,7 +26,7 @@ namespace MovLib\Presentation\Partial\Listing;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Entity extends \MovLib\Presentation\Partial\Listing\AbstractListing {
+class EntityListing extends \MovLib\Presentation\Partial\Listing\AbstractListing {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -96,12 +96,11 @@ class Entity extends \MovLib\Presentation\Partial\Listing\AbstractListing {
       $list = null;
       $moviesTitle = $i18n->t("Movies");
       $seriesTitle = $i18n->t("Series");
-      $routeKey = $routeMovies = $routeSeries = $moviesRoute = $seriesRoute = null;
+      $routeMovies = $routeSeries = $moviesRoute = $seriesRoute = null;
       while ($entity = $this->listItems->fetch_object($this->entity)) {
-        if (!$routeKey) {
-          $routeKey = preg_replace("#/[0-9]+$#", "/{0}", $entity->route);
-          $routeMovies = $i18n->rp("{$routeKey}/movies");
-          $routeSeries = $i18n->rp("{$routeKey}/series");
+        if (!$routeMovies) {
+          $routeMovies = $i18n->rp("{$entity->routeKey}/movies");
+          $routeSeries = $i18n->rp("{$entity->routeKey}/series");
         }
         $moviesRoute = str_replace("{0}", $entity->id, $routeMovies);
         $seriesRoute = str_replace("{0}", $entity->id, $routeSeries);
