@@ -29,6 +29,68 @@ namespace MovLib\Presentation\Partial\Listing;
 final class CompanyIndexListing extends \MovLib\Presentation\Partial\Listing\CompanyListing {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * Translated movie route of first item.
+   *
+   * @var string
+   */
+  private $firstMovieRoute;
+
+  /**
+   * Translated release route of first item.
+   *
+   * @var string
+   */
+  private $firstReleaseRoute;
+
+  /**
+   * Translated series route of first item.
+   *
+   * @var string
+   */
+  private $firstSeriesRoute;
+
+  /**
+   * Translated movies title.
+   *
+   * @var string
+   */
+  private $moviesTitle;
+
+  /**
+   * Translated releases title.
+   *
+   * @var string
+   */
+  private $releasesTitle;
+
+  /**
+   * Translated series title.
+   *
+   * @var string
+   */
+  private $seriesTitle;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   */
+  public function __construct($listItems, $noItemsText = null) {
+    global $i18n;
+    $this->moviesTitle   = $i18n->t("Movies");
+    $this->releasesTitle = $i18n->t("Releases");
+    $this->seriesTitle   = $i18n->t("Series");
+    parent::__construct($listItems, $noItemsText);
+  }
+
+
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
@@ -38,6 +100,7 @@ final class CompanyIndexListing extends \MovLib\Presentation\Partial\Listing\Com
    */
   protected function getAdditionalContent($company, $listItem) {
     global $i18n;
+
     // @devStart
     // @codeCoverageIgnoreStart
     if(!($company instanceof \MovLib\Data\Company\Company)) {
@@ -46,24 +109,29 @@ final class CompanyIndexListing extends \MovLib\Presentation\Partial\Listing\Com
     // @codeCoverageIgnoreEnd
     // @devEnd
 
+    if (!isset($this->firstMovieRoute)) {
+      $this->firstMovieRoute = $i18n->rp("{$company->routeKey}/movies");
+    }
+    if (!isset($this->firstReleaseRoute)) {
+      $this->firstReleaseRoute = $i18n->rp("{$company->routeKey}/releases");
+    }
+    if (!isset($this->firstSeriesRoute)) {
+      $this->firstSeriesRoute = $i18n->rp("{$company->routeKey}/series");
+    }
+
+    $currentMovieRoute   = str_replace("{0}", $company->id, $this->firstMovieRoute);
+    $currentReleaseRoute = str_replace("{0}", $company->id, $this->firstReleaseRoute);
+    $currentSeriesRoute  = str_replace("{0}", $company->id, $this->firstSeriesRoute);
+
     return
       "<span class='fr'>" .
-        "<a class='ico ico-movie label' href='{$i18n->rp(
-          "{$company->routeKey}/movies",
-          [ $company->id ]
-        )}' title='{$i18n->t("Movies")}'>" .
+        "<a class='ico ico-movie label' href='{$currentMovieRoute}' title='{$i18n->t("Movies")}'>" .
           " &nbsp; {$company->getMoviesCount()}" .
         "</a>" .
-        "<a class='ico ico-series label' href='{$i18n->rp(
-          "{$company->routeKey}/series",
-          [ $company->id ]
-        )}' title='{$i18n->t("Series")}'>" .
+        "<a class='ico ico-series label' href='{$currentSeriesRoute}' title='{$i18n->t("Series")}'>" .
           " &nbsp; {$company->getSeriesCount()}" .
         "</a>" .
-        "<a class='ico ico-release label' href='{$i18n->rp(
-          "{$company->routeKey}/releases",
-          [ $company->id ]
-        )}' title='{$i18n->t("Releases")}'>" .
+        "<a class='ico ico-release label' href='{$currentReleaseRoute}' title='{$i18n->t("Releases")}'>" .
           " &nbsp; {$company->getSeriesCount()}" .
         "</a>" .
       "</span>"
