@@ -450,7 +450,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
         "<link href='{$this->getURL("asset://css/MovLib.css")}' rel='stylesheet'>{$stylesheets}" .
         // Yes, we could create these in a loop, but why should we implement a loop for static data? To be honest, I
         // generated it with a loop and simply copied the output here.
-        "<link href='{$this->getURL("logo/vector", "svg")}' rel='icon' type='image/svg+xml'>" .
+        "<link href='{$this->getURL("asset://img/logo/vector.svg")}' rel='icon' type='image/svg+xml'>" .
         "<link href='{$logo256}' rel='icon' sizes='256x256' type='image/png'>" .
         "<link href='{$this->getURL("asset://img/logo/128.png")}' rel='icon' sizes='128x128' type='image/png'>" .
         "<link href='{$this->getURL("asset://img/logo/64.png")}' rel='icon' sizes='64x64' type='image/png'>" .
