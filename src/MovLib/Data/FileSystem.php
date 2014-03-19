@@ -34,7 +34,7 @@ use \MovLib\Exception\FileSystemException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class FileSystem {
+abstract class FileSystem {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants

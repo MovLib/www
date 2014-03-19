@@ -28,7 +28,7 @@ use \MovLib\Exception\ShellException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Shell {
+abstract class Shell {
 
   /**
    * Execute external command.
