@@ -49,4 +49,11 @@ final class Entity {
    */
   public $route;
 
+  /**
+   * The entity's RDFa {@link http://schema.org schema.org} type.
+   *
+   * @var string
+   */
+  public $type;
+
 }

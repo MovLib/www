@@ -319,17 +319,20 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
       }
 
       if ($row["director_person_id"] || $row["crew_person_id"]) {
-        $id = $row["director_person_id"] ?: $row["crew_person_id"];
+        $id    = $row["director_person_id"] ?: $row["crew_person_id"];
         $route = $personRoute;
+        $type  = "Person";
       }
       else {
-        $id = $row["crew_company_id"];
+        $id    = $row["crew_company_id"];
         $route = $companyRoute;
+        $type  = "Organization";
       }
       $crew[$row["job_id"]]->members[] = (object) [
-        "id" => $id,
-        "name" => $row["name"],
+        "id"    => $id,
+        "name"  => $row["name"],
         "route" => str_replace("{0}", $id, $route),
+        "type"  => $type,
       ];
     }
     return $crew;
