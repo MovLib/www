@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data;
 
+use \MovLib\Exception\ShellException;
+
 /**
  * Various static methods to interact with the local shell.
  *
@@ -47,10 +49,9 @@ final class Shell {
    *   exception).
    * @return integer
    *   The exit status code of the command.
-   * @throws \RuntimeException
+   * @throws \MovLib\Exception\ShellException
    */
   public static function execute($command, &$output = null, $exception = true) {
-    global $kernel;
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($command) || !is_string($command)) {
@@ -68,25 +69,20 @@ final class Shell {
     // Execute the command and redirect stderr to stdin.
     try {
       exec("{$command} 2>&1", $output, $status);
-    }
-    catch (\Exception $e) {
-      throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
-    }
 
-    // Only throw an exception if we are allowed to and if the command had a non-zero exit status.
-    if ($exception === true && $status !== 0) {
-      // Join the output's lines back together.
-      $log = implode("\n", $output);
-
-      // We replae tabs with four spaces because tabs destroy the Symfony Console output.
-      if ($kernel->fastCGI === false) {
-        $log = str_replace("\t", "    ", $log);
+      // Only throw an exception if we are allowed to and if the command had a non-zero exit status.
+      if ($status !== 0 && $exception === true) {
+        throw new \ShellException($command, $output);
       }
 
-      throw new \RuntimeException("{$log}\n\nCouldn't execute command: {$command}");
+      return $status;
     }
-
-    return $status;
+    catch (\Exception $e) {
+      if ($exception === true) {
+        throw new \ShellException($command, $output);
+      }
+      return 1;
+    }
   }
 
   /**
@@ -106,7 +102,7 @@ final class Shell {
    * @link http://stackoverflow.com/questions/222414/asynchronous-shell-exec-in-php
    * @param string $command
    *   The command to execute detached.
-   * @throws \RuntimeException
+   * @throws \MovLib\Exception\ShellException
    */
   public static function executeDetached($command) {
     // @devStart
@@ -116,11 +112,12 @@ final class Shell {
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
+
     try {
       exec("{$command} <&- 1<&- 2<&- &");
     }
     catch (\Exception $e) {
-      throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
+      throw new ShellException($command, null, $e);
     }
   }
 
@@ -132,7 +129,6 @@ final class Shell {
    * <b>NOTE</b><br>
    * Don't use this method in FastCGI context, doing so will throw an exception if you're in a development environment.
    *
-   * @global \MovLib\Kernel $kernel
    * @param string $command
    *   The command to execute.
    * @param boolean $exception
@@ -140,7 +136,7 @@ final class Shell {
    *   exception).
    * @return integer
    *   The actual return code of the command.
-   * @throws \RuntimeException
+   * @throws \MovLib\Exception\ShellException
    */
   public static function executeDisplayOutput($command, $exception = true) {
     // @devStart
@@ -161,17 +157,17 @@ final class Shell {
     // Execute the command and directly display its output.
     try {
       system($command, $status);
+      if ($status !== 0 && $exception === true) {
+        throw new ShellException($command);
+      }
+      return $status;
     }
     catch (\Exception $e) {
-      throw new \RuntimeException($e->getMessage(), $e->getCode(), $e);
+      if ($exception === true) {
+        throw new ShellException($command, null, $e);
+      }
+      return 1;
     }
-
-    // Only throw an exception if we are allowed to and if the command had a non-zero exit status.
-    if ($exception === true && $status !== 0) {
-      throw new \RuntimeException("Couldn't execute command: {$command}");
-    }
-
-    return $status;
   }
 
 }
