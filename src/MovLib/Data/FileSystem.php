@@ -223,7 +223,6 @@ final class FileSystem {
    *
    * @param string $path
    *   Absolute path to the file that should be compressed.
-   * @return this
    * @throws \RuntimeException
    */
   public static function compress($path) {
@@ -257,8 +256,6 @@ final class FileSystem {
       Log::error($e);
       throw $e;
     }
-
-    return $this;
   }
 
   /**
