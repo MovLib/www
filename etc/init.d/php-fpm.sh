@@ -59,38 +59,14 @@
 # The name of the service (must be the first variable).
 NAME="php-fpm"
 
-# The name of the directory for the PID file.
-PID_DIR_NAME="php"
-
-# The name of the PID file.
-PID_NAME="fpm"
-
 # Absolute path to the executable.
 DAEMON="/usr/local/sbin/${NAME}"
 
 # Arguments that should be passed to the executable.
 DAEMON_ARGS=""
 
-# The php-fpm group.
-GROUP="www-data"
-
-# The php-fpm log directory.
-LOG_DIR="/var/log/php"
-
-# The php-fpm error log.
-LOG_ERROR="error.log"
-
-# The php-fpm slow log.
-LOG_SLOW="slow.log"
-
 # Absolute path to the PID file.
-PIDFILE="/run/${PID_DIR_NAME}/${PID_NAME}.pid"
-
-# Absolute path to the upload temporary directory.
-UPLOAD_TMP_DIR="/tmp/${NAME}"
-
-# The php-fpm user.
-USER="movdev"
+PIDFILE="/run/${NAME}.pid"
 
 
 # -----------------------------------------------------------------------------
@@ -117,12 +93,6 @@ fi
 
 # Always check if service is already running.
 RUNNING=$(start-stop-daemon --start --quiet --pidfile ${PIDFILE} --exec ${DAEMON} --test && echo "false" || echo "true")
-
-# Create the directory for PID and socket files, if it doesn't exist.
-if [ ! -d /run/${PID_DIR_NAME} ]; then
-  mkdir /run/${PID_DIR_NAME}
-  chown ${USER}:${GROUP} /run/${PID_DIR_NAME}
-fi
 
 
 # -----------------------------------------------------------------------------
