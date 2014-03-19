@@ -172,28 +172,6 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
-    /**
-     * Add an option to this command.
-     *
-     * Replacement for the <code>addOption</code> method with auto-generated shortcuts. No checks are performed, you'll
-     * get an exception anyways if something is really odd and if your shortcut is messy you'll get complains from
-     * others.
-     *
-     * @see AbstractCommand::addOption()
-     * @param string $name
-     *   The option's name.
-     * @param integer $mode
-     *   The option's mode: One of the <code>InputOption::VALUE_*</code> constants.
-     * @param string $description
-     *   The option's description text.
-     * @param mixed $default
-     *   The default value (must be null for <code>InputOption::VALUE_REQUIRED</code> or <code>InputOption::VALUE_NONE<code>).
-     * @return this
-     */
-  final protected function addInputOption($name, $mode = null, $description = "", $default = null) {
-    return $this->addOption($name, $this->getShortcut($name), $mode, $description, $default);
-  }
-
   /**
    * Ask a question.
    *
@@ -350,26 +328,6 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
     }
     $this->output->setVerbosity(OutputInterface::VERBOSITY_DEBUG); // Always display exceptions!
     return $options;
-  }
-
-  /**
-   * Get shortcut for argument or option.
-   *
-   * @param string $name
-   *   The name of the argument or option.
-   * @return string
-   *   The shortcut.
-   * @throws \InvalidArgumentException
-   */
-  final protected function getShortcut($name) {
-    if (empty($name)) {
-      throw new \InvalidArgumentException("Name cannot be empty!");
-    }
-    $shortcut = null;
-    foreach (explode("-", $name) as $namePart) {
-      $shortcut .= $namePart[0];
-    }
-    return $shortcut;
   }
 
   /**
