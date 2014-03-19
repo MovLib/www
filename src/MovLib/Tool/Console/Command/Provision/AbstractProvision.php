@@ -311,6 +311,21 @@ abstract class AbstractProvision {
   }
 
   /**
+   * Delete registered files.
+   *
+   * <b>NOTE</b><br>
+   * Must be public because it's used as shutdown function.
+   *
+   * @return this
+   */
+  final public function deleteRegisteredFiles() {
+    foreach ($this->registerFileForDeletion() as $file) {
+      FileSystem::delete($file, true, true);
+    }
+    return $this;
+  }
+
+  /**
    * Get requirements for this software.
    *
    * @return null|array
@@ -322,95 +337,54 @@ abstract class AbstractProvision {
   }
 
   /**
-   * Download given URL to the temporary directory.
+   * Download a file.
    *
    * @global \MovLib\Tool\Kernel $kernel
    * @param string $url
-   *   The URL of the file(s) or the Git repository to download.
-   * @param string $filename [optional]
-   *   The desired output filename. If <code>NULL</code> is passed (default) the basename of the URL is used as filename.
-   * return string
-   *   Absolute path to the downloaded file.
+   *   The URL of the file to download.
+   * @param null|string $destination [optional]
+   *   The canonical absolute destination directory, defaults to <code>NULL</code> which means that the downloaded file
+   *   will be stored in the temporary directory.
+   * @param null|string $filename [optional]
+   *   The downloaded file's name, if no name is supplied the base name of the URL is used.
+   * @param boolean $delete [optional]
+   *   Whether the file should be deleted at the end of execution or not, defaults to <code>TRUE</code>, the file will
+   *   be deleted.
+   * @return string
+   *   Canonical absolute path to the downloaded file.
    * @throws \RuntimeException
    */
-  final protected function download($url, $filename = null) {
+  final protected function downloadFile($url, $destination = null, $filename = null, $delete = true) {
     global $kernel;
-    if (!$filename) {
+
+    if (!isset($filename)) {
       $filename = basename($url);
     }
-    $filename = "{$kernel->configuration->directory->tmp}/{$filename}";
-    $scheme   = parse_url($url, PHP_URL_SCHEME);
-    if (file_exists($filename) === false) {
-      switch ($scheme) {
-        case "ftp":
-        case "http":
-        case "https":
-          $this->downloadWeb($url, $filename);
-          break;
+    $this->write("Using filename '{$filename}' for download of '{$url}'...", Output::VERBOSITY_DEBUG);
 
-        case "git":
-          $this->downloadGit($url, $filename);
-          break;
+    if (!isset($destination)) {
+      $destination = $destination = "{$kernel->documentRoot}/tmp/{$filename}";;
+    }
+    $this->write("Using destination '{$destination}' for download of '{$url}'...", Output::VERBOSITY_DEBUG);
 
-        default:
-          throw new \LogicException("Unknown scheme {$scheme}");
+    if (file_exists($destination)) {
+      $this->write("Destination '{$destination}' already exists, skipping download...");
+    }
+    else {
+      $command = "wget --timeout=30 --output-document='{$destination}' '{$url}'";
+      if ($this->output->getVerbosity() > Output::VERBOSITY_NORMAL) {
+        Shell::executeDisplayOutput($command);
+      }
+      else {
+        Shell::execute($command);
       }
     }
-    FileSystem::changeOwner($filename, "root", "root", true);
-    return $filename;
-  }
 
-  /**
-   * Clone given Git repository.
-   *
-   * @global \MovLib\Tool\Kernel $kernel
-   * @param string $url
-   *   The URL of the Git repository to download.
-   * @param string $filename [optional]
-   *   The desired output filename. If <code>NULL</code> is passed (default) the basename of the URL is used as filename.
-   * @return $this
-   * @throws \RuntimeExcepiton
-   */
-  final private function downloadGit($url, $filename) {
-    try {
-      Shell::execute("which git");
+    if ($delete === true) {
+      $this->registerFileForDeletion($destination);
     }
-    catch (\RuntimeException $e) {
-      $this->aptInstall("git");
-    }
-    $url      = escapeshellarg($url);
-    $filename = escapeshellarg($filename);
-    Shell::execute("git clone {$url} {$filename}");
-    return $this;
-  }
 
-  /**
-   * Download given URL to the temporary directory.
-   *
-   * @global \MovLib\Tool\Kernel $kernel
-   * @param string $url
-   *   The URL of the file(s) or the Git repository to download.
-   * @param string $filename [optional]
-   *   The desired output filename. If <code>NULL</code> is passed (default) the basename of the URL is used as filename.
-   * @return $this
-   * @throws \RuntimeException
-   */
-  final private function downloadWeb($url, $filename) {
-    $source = fopen($url, "rb");
-    if ($source === false) {
-      throw new \RuntimeException("Couldn't start download of '{$url}'");
-    }
-    $target = fopen($filename, "wb");
-    while (feof($source) !== false) {
-      if (($chunk = fread($source, 8192)) === false) {
-        throw new \RuntimeException("Couldn't download next chunk from '{$url}'");
-      }
-      fwrite($target, $chunk, 8192);
-    }
-    if (fclose($source) === false || fclose($target)) {
-      throw new \RuntimeExcepiton("Couldn't close file handles of '{$url}' and/or '{$filename}'");
-    }
-    return $this;
+    return $destination;
   }
 
   /**
@@ -418,19 +392,47 @@ abstract class AbstractProvision {
    *
    * @param string $source
    *   Absolute path to the source archive.
-   * @param string $target
-   *   Absolute path to the target directory.
-   * @return $this
+   * @param null|string $target [optional]
+   *   Absolute path to the target directory, defaults to <code>NULL</code> and the archive is extracted to the
+   *   directory it currently resides.
+   * @param boolean $delete [optional]
+   *   Whether the archive's content should be deleted at the end of execution or not, defaults to <code>TRUE</code>,
+   *   the archive's content will be deleted.
+   * @return string
+   *   Canonical absolute path to the extracted files.
    * @throws \BadMethodCallException
    * @throws \PharException
    * @throws \UnexpectedValueException
    */
-  final protected function extract($source, $target) {
-    $archive = new \PharData($source);
-    $archive->extractTo($target);
-    unset($archive);
-    FileSystem::changeOwner($target, "root", "root", true);
-    return $this;
+  final protected function extract($source, $target = null, $delete = true) {
+    if (realpath($source) === false) {
+      throw new \UnexpectedValueException("\$source must point to an existing archive on the local file system");
+    }
+
+    if (!isset($target)) {
+      $this->write("Using source directory for extraction of archive...", Output::VERBOSITY_DEBUG);
+      $target = dirname($source);
+    }
+
+    $archive     = new \PharData($source);
+    $destination = "{$target}/{$archive->getFilename()}";
+
+    if (file_exists($destination)) {
+      $this->write("Destination '{$destination}' already exists, skipping extraction...");
+    }
+    else {
+      $this->write("Extracting '{$source}' to '{$destination}'...", Output::VERBOSITY_VERBOSE);
+      $archive->extractTo($target);
+
+      $this->write("Changing ownership of '{$destination}' to 'root:root' for all files...", Output::VERBOSITY_DEBUG);
+      FileSystem::changeOwner($destination, "root", "root", true);
+    }
+
+    if ($delete === true) {
+      $this->registerFileForDeletion($destination);
+    }
+
+    return $destination;
   }
 
   /**
@@ -473,6 +475,29 @@ abstract class AbstractProvision {
       }
     }
     return false;
+  }
+
+  /**
+   * Register file for deletion.
+   *
+   * @staticvar array $registeredFiles
+   *   Used to keep track of registered files for deletion.
+   * @param null|string $file [optional]
+   *   Canonical absolute path to the file that should be deleted.
+   * @return array
+   *   The files registered for deletion.
+   */
+  final protected function registerFileForDeletion($file = null) {
+    static $registeredFiles = [];
+    if (isset($file)) {
+      if (empty($registeredFiles)) {
+        $this->write("Registering shutdown function for deletion of registered files...", Output::VERBOSITY_DEBUG);
+        register_shutdown_function([ $this, "deleteRegisteredFiles" ]);
+      }
+      $this->write("Registering '{$file}' for deletion...", Output::VERBOSITY_DEBUG);
+      $registeredFiles[] = $file;
+    }
+    return $registeredFiles;
   }
 
   /**
@@ -546,7 +571,7 @@ abstract class AbstractProvision {
    *   The type of output, defaults to <var>Output::OUTPUT_NORMAL</var>.
    * @return $this
    */
-  final protected function write($messages, $level = Output::VERBOSITY_VERBOSE, $newline = true, $type = Output::OUTPUT_NORMAL) {
+  final protected function write($messages, $level = Output::VERBOSITY_NORMAL, $newline = true, $type = Output::OUTPUT_NORMAL) {
     if ($this->output && $this->output->getVerbosity() >= $level) {
       $this->output->write($messages, $newline, $type);
     }

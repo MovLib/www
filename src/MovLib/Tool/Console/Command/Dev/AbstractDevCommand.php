@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Tool\Console\Command\Development;
+namespace MovLib\Tool\Console\Command\Dev;
 
 /**
  * Base class for all development commands.
@@ -26,7 +26,7 @@ namespace MovLib\Tool\Console\Command\Development;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractDevelopmentCommand extends \MovLib\Tool\Console\Command\AbstractCommand {
+abstract class AbstractDevCommand extends \MovLib\Tool\Console\Command\AbstractCommand {
 
   /**
    * Instantiate new development CLI command.

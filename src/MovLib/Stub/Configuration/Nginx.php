@@ -35,7 +35,7 @@ final class Nginx {
   /**
    * The nginx configure flags and arguments.
    *
-   * @var \MovLib\Configuration\Configure
+   * @var \MovLib\Stub\Configuration\Configure
    */
   public $configure;
 

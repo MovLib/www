@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Tool\Console\Command\Production;
+namespace MovLib\Tool\Console\Command\Admin;
 
 use \MovLib\Data\FileSystem;
 use \MovLib\Data\Shell;
@@ -36,15 +36,6 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   * Absolute path to the nginx configuration.
-   *
-   * Don't add the document root to this path, this is added automatically.
-   *
-   * @var string
-   */
-  protected $etcPath = "/etc/nginx";
 
   /**
    * Used to collect plural routes that need translation.
@@ -112,33 +103,46 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
   }
 
   /**
-   * Compiles and translates nginx routes for all servers.
-   *
-   * @global \MovLib\Tool\Kernel $kernel
-   * @global \MovLib\Data\Database
-   * @global \MovLib\Data\I18n $i18n
-   * @return this
+   * @inheritdoc
    */
-  public function compileAndTranslateRoutes() {
+  protected function configure() {
+    $this->setName("nginx-routes");
+    $this->setDescription("Translate and compile nginx routes for all servers.");
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected function execute(InputInterface $input, OutputInterface $output) {
     // Don't remove the $db variable just because it's unused, it's used in the included routes.php file!
     global $kernel, $db, $i18n;
 
+    // Reload of nginx is only possible as privileged user.
+    $this->checkPrivileges();
+
     // Let the user know what's going to happen.
-    $this->write("Starting to translate and compile nginx routes ...");
+    $this->writeVerbose("Starting to translate and compile nginx routes ...", self::MESSAGE_TYPE_COMMENT);
 
     // Store currently set language code to reset after all routes have been built.
     $currentLanguageCode = $i18n->languageCode;
 
     // Make sure that the routes directory exists.
-    $routesDirectory = FileSystem::createDirectory("{$kernel->documentRoot}{$this->etcPath}/sites/conf/routes");
+    $routesDirectory = "{$kernel->documentRoot}/etc/nginx/sites/conf/routes";
+    if (is_dir($routesDirectory) === false) {
+      $this->writeDebug("Creating routes directory '{$routesDirectory}'");
+      FileSystem::createDirectory($routesDirectory);
+    }
 
     // Generate routes file for each system language.
+    $this->writeDebug("Generating routes for all system locales: " . implode(" ", $kernel->systemLanguages));
     foreach ($kernel->systemLanguages as $languageCode => $locale) {
       $translatedRoutes   = null;
       $i18n->locale       = $locale;
       $i18n->languageCode = $languageCode;
+      $this->writeDebug("Generating routes for system locale '{$i18n->locale}'");
 
       // We need output buffering to catch the output of the following require call.
+      $this->writeDebug("Starting output buffering...");
       $obStart = ob_start(function ($buffer) use (&$translatedRoutes) {
         $translatedRoutes = $buffer;
       });
@@ -149,10 +153,11 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
       }
 
       // Execute the routes source file and translate all routes with the closure.
-      foreach (FileSystem::glob($routesDirectory, "php") as $routesFile) {
-        $this->routesNamespace = basename($routesFile, ".php");
+      /* @var $routesFile \splFileInfo */
+      foreach (new \DirectoryIterator("glob://{$routesDirectory}/*.php") as $routesFile) {
+        $this->routesNamespace = $routesFile->getBasename(".php");
         try {
-          include $routesFile;
+          include $routesFile->getRealPath();
         }
         catch (\Exception $e) {
           ob_end_clean();
@@ -165,10 +170,11 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
       if (ob_end_clean() === false) {
         throw new \RuntimeException("Couldn't get buffered output!");
       }
+      $this->writeDebug("Ending output buffering...");
 
       // ... and write it to the target directory.
       FileSystem::putContent("{$routesDirectory}/{$i18n->languageCode}.conf", $translatedRoutes, LOCK_EX);
-      $this->write("Written routing file for '{$i18n->languageCode}' ...");
+      $this->writeDebug("Written routing file for '{$i18n->locale}'");
 
       // Print the keys that still need translation.
       foreach ([ "singular", "plural" ] as $form) {
@@ -180,32 +186,14 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
     }
 
     // Reload nginx and load the newly translated routes.
-    Shell::execute("service nginx reload");
+    $this->exec("service nginx reload");
 
     // Make sure that the previously set language code is set again globally in case other commands are executed with
     // the same instance.
     $i18n->languageCode = $currentLanguageCode;
 
     // Let the user know that everything went fine.
-    return $this->write("Successfully translated and compiled routes, plus reloaded nginx!", self::MESSAGE_TYPE_INFO);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function configure() {
-    $this->setName("nginx-routes");
-    $this->setDescription("Translate and compile nginx routes for all servers.");
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function execute(InputInterface $input, OutputInterface $output) {
-    parent::execute($input, $output);
-    $this->checkPrivileges();
-    $this->compileAndTranslateRoutes();
-    return 0;
+    $this->writeVerbose("Successfully translated and compiled routes, plus reloaded nginx!", self::MESSAGE_TYPE_INFO);
   }
 
   /**

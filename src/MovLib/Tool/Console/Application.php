@@ -17,6 +17,8 @@
  */
 namespace MovLib\Tool\Console;
 
+use \MovLib\Data\FileSystem;
+
 /**
  * MovLib Command Line Interface
  *
@@ -32,69 +34,49 @@ namespace MovLib\Tool\Console;
  */
 class Application extends \Symfony\Component\Console\Application {
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * Array used to collect available commands.
-   *
-   * @var array
-   */
-  private $commands = [];
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
   /**
    * Instantiate new MovLib CLI application.
    *
    * @global \MovLib\Tool\Kernel $kernel
+   * @param string $name
+   *   The application's name.
+   * @param string $version
+   *   The application's version.
+   * @param string $directoryName
+   *   The directory from which commands should be imported.
+   * @throws \LogicException
    */
-  public function __construct() {
+  public function __construct($name, $version, $directoryName) {
     global $kernel;
+    parent::__construct($name, $version);
 
-    // Call the Symfony console constructor.
-    parent::__construct("MovLib Command Line Interface (CLI)", $kernel->version);
-
-    // Always include production commands.
-    $this->importCommands("Production");
-
-    // Only include development commands if the flag is set to false.
-    if ($kernel->production === false) {
-      $this->importCommands("Development");
-    }
-
-    // This loop allows development commands to override / extend production commands.
-    foreach ($this->commands as $shortName => $command) {
-      $this->add(new $command());
-    }
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * Imports all instantiable commands from the given directory (subnamespace directory of Command).
-   *
-   * @param string $directory
-   *   The directory name.
-   * @return this
-   */
-  protected function importCommands($directory) {
-    foreach (glob(__DIR__ . "/Command/{$directory}/*.php") as $command) {
-      $shortName = basename($command, ".php");
-      $command   = "\\MovLib\\Tool\\Console\\Command\\{$directory}\\{$shortName}";
-
-      // Make sure we don't include any abstract classes, interfaces or traits.
-      if ((new \ReflectionClass($command))->isInstantiable()) {
-        $this->commands[$shortName] = $command;
+    // Create symbolic link if it doesn't exist yet for this executable.
+    if (posix_getuid() === 0) {
+      $name   = "/bin/mov" . strtolower($directoryName);
+      $target = "/usr/local{$name}";
+      if (is_link($target) === false) {
+        FileSystem::createSymbolicLink("{$kernel->documentRoot}{$name}.php", $target);
       }
     }
 
-    return $this;
+    // Build the canonical absolute path to the directory where the commands reside.
+    $directory = "{$kernel->documentRoot}/src/MovLib/Tool/Console/Command/{$directoryName}";
+
+    // Make that the desired directory actually exists.
+    if (is_dir($directory) === false) {
+      throw new \LogicException("Directory '{$directory}' doesn't exist");
+    }
+
+    // Go through all files in the directory and add command instance to our application if possible.
+    /* @var $file \splFileInfo */
+    foreach (new \DirectoryIterator("glob://{$directory}/*.php") as $file) {
+      $basename  = $file->getBasename(".php");
+      $class     = "\\MovLib\\Tool\\Console\\Command\\{$directoryName}\\{$basename}";
+      $reflector = new \ReflectionClass($class);
+      if ($reflector->isInstantiable() && $reflector->isSubclassOf("\\Symfony\\Component\\Console\\Command\\Command")) {
+        $this->add(new $class());
+      }
+    }
   }
 
 }

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Tool\Console\Command\Production;
+namespace MovLib\Tool\Console\Command\Admin;
 
 use \MovLib\Data\FileSystem;
 use \MovLib\Data\Shell;
@@ -52,53 +52,42 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
 
   /**
    * @inheritdoc
+   * @global \MovLib\Tool\Kernel $kernel
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    $options = parent::execute($input, $output);
-    $this->checkPrivileges();
-    $this->fixPermissions($input->getArgument("directory"));
-    return $options;
-  }
-
-  /**
-   * Fix permissions of all directories and files.
-   *
-   * @global \MovLib\Tool\Kernel $kernel
-   * @param string $directory [optional]
-   *   If given only the directories and files in that directory will be fixed, defaults to empty string which fixes the
-   *   permissions on all directories and files in the document root.
-   * @return this
-   * @throws \InvalidArgumentException
-   */
-  public function fixPermissions($directory = null) {
     global $kernel;
 
-    // No directory? No problem!
-    if (!isset($directory)) {
-      $directory = $kernel->documentRoot;
-    }
+    // Fixing permissions of all files only works reliable if executed as privileged user.
+    $this->checkPrivileges();
+
+    // Remove trailing directory separators.
+    $directory = rtrim(str_replace("\\", "/", $input->getArgument("directory")), "\\/");
+
     // Ensure that the given directory is within the globally defined document root. At this point, we don't even trust
     // the person who's calling this method as it would simply break way too many things.
-    elseif (strpos($directory, $kernel->documentRoot) === false) {
+    if (strpos($directory, $kernel->documentRoot) === false) {
       $directory = "{$kernel->documentRoot}/{$directory}";
     }
-    $directory = rtrim($directory, "/");
 
     // If this isn't a valid directory abort.
     if (is_dir($directory) === false) {
       throw new \InvalidArgumentException("Given directory '{$directory}' doesn't exist!");
     }
-    $this->write("Fixing permissions in '{$directory}' ...");
+    $this->writeVerbose("Fixing permissions in '{$directory}' ...", self::MESSAGE_TYPE_COMMENT);
 
+    $fMode = FileSystem::FILE_MODE;
+    $this->writeDebug("Fixing file mode to {$fMode} and ownership to {$kernel->systemUser}:{$kernel->systemGroup}");
     FileSystem::changeOwner($directory, $kernel->systemUser, $kernel->systemGroup, true);
-    $this->write("Fixed file ownership!", self::MESSAGE_TYPE_INFO);
+    $this->writeVerbose("Fixed file ownership...");
 
+    $dMode = FileSystem::DIRECTORY_MODE;
+    $this->writeDebug("Fixing directory mode to {$dMode} and ownership to {$kernel->systemUser}:{$kernel->systemGroup}");
     FileSystem::changeModeRecursive($directory);
-    $this->write("Fixed file permissions!", self::MESSAGE_TYPE_INFO);
+    $this->writeVerbose("Fixed file permissions...");
 
     // Only attempt to fix the permissions of our executables if we're working with the document root.
     if ($directory == $kernel->documentRoot) {
-      $bin[] = "{$kernel->documentRoot}/bin/movlib.php";
+      $bin[] = "{$kernel->documentRoot}/bin/*.php";
       $bin[] = "{$kernel->documentRoot}/bin/*.sh";
 
       foreach ([ "/conf" => "/*/*.sh", "/etc" => "/*/*.sh", "/vendor/bin" => "/*" ] as $dir => $pattern) {
@@ -108,11 +97,16 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
         }
       }
 
-      Shell::execute("chmod -R 0775 " . implode(" ", $bin));
-      $this->write("Executable permissions fixed!", self::MESSAGE_TYPE_INFO);
+      $bin = implode(" ", $bin);
+      $this->writeDebug("Fixing modes to 0755 of the following executables (glob patterns): {$bin}");
+      Shell::execute("chmod --recursive 0775 {$bin}");
+      $this->writeVerbose("Executable permissions fixed...");
+    }
+    else {
+      $this->writeVerbose("Binaries are only fixed if executed against document root.", self::MESSAGE_TYPE_ERROR);
     }
 
-    return $this;
+    $this->writeVerbose("Fixed all file permissions in '{$directory}'!", self::MESSAGE_TYPE_INFO);
   }
 
 }

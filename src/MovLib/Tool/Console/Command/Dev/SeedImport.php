@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Tool\Console\Command\Development;
+namespace MovLib\Tool\Console\Command\Dev;
 
 use \Elasticsearch\Client as ElasticClient;
 use \MovLib\Data\Shell;
@@ -36,7 +36,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelopmentCommand {
+class SeedImport extends AbstractDevCommand {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants

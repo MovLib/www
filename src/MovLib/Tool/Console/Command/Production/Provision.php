@@ -21,6 +21,7 @@ use \MovLib\Data\FileSystem;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
+use \Symfony\Component\Console\Output\Output;
 use \Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -32,7 +33,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Provision extends \MovLib\Tool\Console\Command\AbstractCommand {
+class Provision extends \Symfony\Component\Console\Command\Command {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -125,21 +126,17 @@ class Provision extends \MovLib\Tool\Console\Command\AbstractCommand {
   }
 
   /**
-   * Execute the provisioning command.
-   *
-   * @global \MovLib\Tool\Kernel $kernel
-   * @return integer
-   *   <code>0</code> if successfully provisioned, otherwise <code>1</code>.
+   * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     global $kernel;
+    parent::execute($input, $output);
 
     // Output a list of all available software and exit successfully.
     if ($input->getOption("list") === true) {
       $output->writeln("<comment>Available Software:</comment>");
-      foreach ($this->getSoftware() as $software) {
-        $output->writeln("  {$software}");
-      }
+      array_map([ $output, "writeln" ], array_keys($this->getSoftware()));
+      $this->write("list option ignores any other options, exiting...", self::MESSAGE_TYPE_COMMENT, Output::VERBOSITY_DEBUG);
       return 0;
     }
 
@@ -175,17 +172,20 @@ class Provision extends \MovLib\Tool\Console\Command\AbstractCommand {
     $force = $input->getOption("force");
 
     if ($input->getOption("all") === true) {
+      if ($output->getVerbosity() > Output::VERBOSITY_VERBOSE) {
+        $this->write("Option --all was passed, provisioning everything and ignoring additional software arguments...");
+      }
       $software = $this->getSoftware();
     }
     else {
-      $software = $input->getArgument("software");
+      $software = array_intersect($this->getSoftware(), $input->getArgument("software"));
     }
 
-    if (!empty($software)) {
-      $this->provision($software, $force, $output);
+    if (empty($software)) {
+      $output->writeln("<error>Nothing to do, use --help for usage information.</error>");
     }
     else {
-      $output->writeln("<error>Nothing to do, use --help for usage information.</error>");
+      $this->provision($software, $force, $output);
     }
 
     return 0;
@@ -197,15 +197,18 @@ class Provision extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @staticvar array $software
    *   Used to cache the software.
    * @return array
-   *   Numeric array containing all available software for provisioning.
+   *   Associative array where the key is the software's short name and the value the class name.
    */
   protected function getSoftware() {
-    static $software = null;
-    if (!$software) {
-      foreach (FileSystem::glob(dirname(__DIR__) . "/Provision", "php") as $filename) {
-        $basename = basename($filename, ".php");
-        if ((new \ReflectionClass("\\MovLib\\Tool\\Console\\Command\\Provision\\{$basename}"))->isInstantiable()) {
-          $software[] = strtolower($basename);
+    static $software = [];
+    if (empty($software)) {
+      /* @var $file \splFileInfo */
+      foreach (new \DirectoryIterator("glob://" . dirname(__DIR__) . "/Provision/*.php") as $file) {
+        $basename  = $file->getBasename(".php");
+        $class     = "\\MovLib\\Tool\\Console\\Command\\Provision\\{$basename}";
+        $reflector = new \ReflectionClass($class);
+        if ($reflector->isInstantiable() === true) {
+          $software[strtolower($basename)] = $class;
         }
       }
     }
@@ -227,6 +230,8 @@ class Provision extends \MovLib\Tool\Console\Command\AbstractCommand {
    */
   protected function provision($software, $force, OutputInterface $output) {
     static $installed = [];
+    $availableSoftware = $this->getSoftware();
+
     $software = (array) $software;
     $c = count($software);
     for ($i = 0; $i < $c; ++$i) {

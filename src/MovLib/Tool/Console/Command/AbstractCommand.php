@@ -17,8 +17,10 @@
  */
 namespace MovLib\Tool\Console\Command;
 
+use \MovLib\Data\Shell;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
+use \Symfony\Component\Console\Output\Output;
 
 /**
  * Abstract base class for all MovLib console command classes.
@@ -118,15 +120,6 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    */
   protected $output;
 
-  /**
-   * <code>TRUE</code> if the user requested no output, otherwise <code>FALSE</code>.
-   *
-   * Default is true, this allows us to use our commands in other classes and not only via console.
-   *
-   * @var boolean
-   */
-  protected $quiet = true;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Property Getters
 
@@ -137,7 +130,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    * @param type $max
    */
   final protected function progressStart($max = null) {
-    if ($this->output && $this->quiet === false) {
+    if ($this->output) {
       $this->progress = $this->getHelperSet()->get("progress");
       $this->progress->setBarCharacter("<comment>=</comment>");
       $this->progress->setBarWidth(120);
@@ -214,7 +207,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   The answer or <var>$default</var> if user requested no interaction or quiet execution.
    */
   final protected function ask($question, $default = null, array $autocomplete = null) {
-    if ($this->output && $this->dialog && $this->interaction === true && $this->quiet === false) {
+    if ($this->output && $this->dialog && $this->interaction === true) {
       $defaultDisplay = $default ? " [default: {$default}]" : null;
       return $this->dialog->ask($this->output, "<question>{$question}</question>{$defaultDisplay} ", $default, $autocomplete);
     }
@@ -232,7 +225,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   The answer or <var>$default</var> if user requested no interaction or quiet execution.
    */
   final protected function askConfirmation($question, $default = true) {
-    if ($this->output && $this->dialog && $this->interaction === true && $this->quiet === false) {
+    if ($this->output && $this->dialog && $this->interaction === true) {
       $defaultDisplay = $default ? "y" : "n";
       return $this->dialog->askConfirmation($this->output, "<question>{$question}</question> [default: {$defaultDisplay}] ", $default);
     }
@@ -254,7 +247,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   The answer or <var>$default</var> if user requested no interaction or quiet execution.
    */
   final protected function askWithChoices($text, $default = null, array $choices = null, array $choiceExplanations = null) {
-    if ($this->output && $this->interaction === true && $this->quiet === false) {
+    if ($this->output && $this->interaction === true) {
       $this->write($text, self::MESSAGE_TYPE_COMMENT)->write("Possible choices are:\n", self::MESSAGE_TYPE_COMMENT);
       if ($choices && $choiceExplanations){
         $c = count($choices);
@@ -271,6 +264,21 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
       return $this->write("")->ask("Which one should it be?", $default ?: "none", $choices);
     }
     return $default;
+  }
+
+  /**
+   * Change the current working directory.
+   *
+   * @param string $directory
+   *   Canonical absolute path to the new working directory.
+   * @return this
+   */
+  final protected function changeWorkingDirectory($directory) {
+    if (getcwd() != $directory) {
+      $this->writeDebug("Changeing working directory to '{$directory}'...");
+      chdir($directory);
+    }
+    return $this;
   }
 
   /**
@@ -299,6 +307,39 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
   }
 
   /**
+   * @inheritdoc
+   */
+  protected function initialize(InputInterface $input, OutputInterface $output) {
+    $this->input  = $input;
+    $this->output = $output;
+    return $this;
+  }
+
+  /**
+   * Execute shell command, same as {@see Shell::execute} but output is displayed if output has verbosity level debug.
+   *
+   * @param string $command
+   *   The command to execute.
+   * @param null|string $workingDirectory [optional]
+   *   Canonical absolute path to the new working directory, defaults to <code>NULL</code> (stay in current working
+   *   directory).
+   * @return this
+   */
+  final protected function exec($command, $workingDirectory = null) {
+    if (isset($workingDirectory)) {
+      $this->changeWorkingDirectory($workingDirectory);
+    }
+    $this->writeDebug($command, self::MESSAGE_TYPE_COMMENT);
+    if ($this->output->getVerbosity() >= Output::VERBOSITY_DEBUG) {
+      Shell::executeDisplayOutput($command);
+    }
+    else {
+      Shell::execute($command);
+    }
+    return $this;
+  }
+
+  /**
    * Automatically called by Symfony if this command was called.
    *
    * @param InputInterface $input
@@ -309,18 +350,9 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   The input options array.
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    /* @var $helperSet \Symfony\Component\Console\Helper\HelperSet */
-    if (($helperSet = $this->getHelperSet()) && $helperSet->has("dialog")) {
-      $this->dialog = $helperSet->get("dialog");
-    }
-    $this->input  = $input;
-    $this->output = $output;
     if (($options = $input->getOptions())) {
       if (isset($options["no-interaction"])) {
         $this->interaction = !$options["no-interaction"];
-      }
-      if (isset($options["quiet"])) {
-        $this->quiet = $options["quiet"];
       }
     }
     $this->output->setVerbosity(OutputInterface::VERBOSITY_DEBUG); // Always display exceptions!
@@ -386,7 +418,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    * @return this
    */
   final protected function write($message, $type = null) {
-    if ($this->output && $this->quiet === false) {
+    if ($this->output) {
       if (is_array($message)) {
         $message = $this->getHelper("formatter")->formatBlock($message, $type, true);
       }
@@ -396,6 +428,60 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
       if (!$this->progress) {
         $this->output->writeln($message);
       }
+    }
+    return $this;
+  }
+
+  /**
+   * Write message only if verbosity level is debug (highest level invoked with <code>-vvv</code>).
+   *
+   * @link http://symfony.com/doc/master/components/console/introduction.html#components-console-coloring
+   * @param string|array $message
+   *   The message that should be displayed to the user.
+   * @param string $type [optional]
+   *   The message type, one of the predefined Symfony console styles (see the class constants <var>MESSAGE_TYPE_*</var>).
+   *   Defaults to no style (white text).
+   * @return this
+   */
+  final protected function writeDebug($message, $type = null) {
+    if ($this->output->getVerbosity() >= Output::VERBOSITY_DEBUG) {
+      $this->write($message, $type);
+    }
+    return $this;
+  }
+
+  /**
+   * Write message only if verbosity level is verbose (lowest verbosity level invoked with <code>-v</code>).
+   *
+   * @link http://symfony.com/doc/master/components/console/introduction.html#components-console-coloring
+   * @param string|array $message
+   *   The message that should be displayed to the user.
+   * @param string $type [optional]
+   *   The message type, one of the predefined Symfony console styles (see the class constants <var>MESSAGE_TYPE_*</var>).
+   *   Defaults to no style (white text).
+   * @return this
+   */
+  final protected function writeVerbose($message, $type = null) {
+    if ($this->output->getVerbosity() >= Output::VERBOSITY_VERBOSE) {
+      $this->write($message, $type);
+    }
+    return $this;
+  }
+
+  /**
+   * Write message only if verbosity level is very verbose (invoked with <code>-vv</code>).
+   *
+   * @link http://symfony.com/doc/master/components/console/introduction.html#components-console-coloring
+   * @param string|array $message
+   *   The message that should be displayed to the user.
+   * @param string $type [optional]
+   *   The message type, one of the predefined Symfony console styles (see the class constants <var>MESSAGE_TYPE_*</var>).
+   *   Defaults to no style (white text).
+   * @return this
+   */
+  final protected function writeVeryVerbose($message, $type = null) {
+    if ($this->output->getVerbosity() >= Output::VERBOSITY_VERY_VERBOSE) {
+      $this->write($message, $type);
     }
     return $this;
   }
