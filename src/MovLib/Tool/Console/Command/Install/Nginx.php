@@ -168,6 +168,8 @@ final class Nginx extends AbstractInstallCommand {
     $this->downloadModules($conf->modules, $conf->configure->arguments);
     $this->configureInstallation($sourceDirectories[$name], $conf->configure);
 
+    $this->exec("make build", $sourceDirectories[$name]);
+
     if (file_exists($this->etcTarget)) {
       $this->writeDebug(
         "Deleting symbolic {$name} configuration link to ensure that files aren't overwritten during installation..."
@@ -175,7 +177,6 @@ final class Nginx extends AbstractInstallCommand {
       FileSystem::delete($this->etcTarget);
     }
 
-    $this->exec("make build", $sourceDirectories[$name]);
     $this->checkinstall($sourceDirectories[$name], $name, $conf->version, [
       "provides='{$name}'",
       "requires='build-essential,libc6'"
@@ -210,10 +211,9 @@ final class Nginx extends AbstractInstallCommand {
         $this->exec("patch --forward --input='{$patch}' --strip=1 --verbose", $opensslPath);
       }
     }
-    // We have to touch this file, otherwise OpenSSL complains about out of date makefiles.
+    // We have to re-configure after patching.
     // @link https://rt.openssl.org/Ticket/Display.html?id=607&user=guest&pass=guest
-    sleep(1);
-    touch("{$opensslPath}/Makefile.ssl");
+    //$this->exec("./config reconf", $opensslPath);
     return $this;
   }
 
