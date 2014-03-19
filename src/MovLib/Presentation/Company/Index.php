@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Company;
 
 use \MovLib\Data\Company\Company;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Listing\Company as CompanyPartial;
+use \MovLib\Presentation\Partial\Listing\CompanyIndexListing;
 
 /**
  * The latest companies.
@@ -80,7 +80,7 @@ class Index extends \MovLib\Presentation\Page {
     $noItemText .=
       $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/company/create")}'>", "</a>" ]);
 
-    return new CompanyPartial($result, $noItemText);
+    return new CompanyIndexListing($result, $noItemText);
   }
 
 }
