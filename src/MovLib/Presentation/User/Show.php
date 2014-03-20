@@ -207,7 +207,7 @@ class Show extends \MovLib\Presentation\Page {
       $ratingInfo = null;
       $ratingData = $movie->getUserRating($this->user->id);
       if ($ratingData !== null) {
-        $rating = str_repeat("<img alt='' height='20' src='{$kernel->getAssetURL("star", "svg")}' width='24'>", $ratingData["rating"]);
+        $rating = str_repeat("<img alt='' height='20' src='{$this->getURL("asset://star.svg")}' width='24'>", $ratingData["rating"]);
         $ratingTime = (new Time($ratingData["created"]))->formatRelative();
         $ratingInfo = "<div class ='rating-user tar' title='{$i18n->t("{user}’s rating", [ "user" => $this->user->name])}'>{$rating}<br><small>{$ratingTime}</small></div>";
       }

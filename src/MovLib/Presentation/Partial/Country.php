@@ -92,24 +92,19 @@ class Country extends \MovLib\Presentation\AbstractBase {
   /**
    * Get the string represntation of the country including a small flag icon.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @param boolean $nameVisible [optional]
    *   Whether the name should be visible or not, defaults to invisible.
    * @return string
    *   The string represntation of the country including a small flag icon.
    */
   public function getFlag($nameVisible = false) {
-    global $kernel;
-    $name = $nameVisible === true
+    $a = $this->expandTagAttributes($this->attributes);
+    $i = $this->getURL("asset://img/flag/{$this->country->code}.png");
+    $n = $nameVisible === true
       ? " <span property='name'>{$this->country->name}</span>"
       : "<meta property='name' content='{$this->country->name}'>"
     ;
-    return
-      "<{$this->tag}{$this->expandTagAttributes($this->attributes)}>" .
-        "<img alt='' class='inline' height='11' property='image' src='{$kernel->getAssetURL("flag/{$this->country->code}", "png")}' width='16'>{$name}" .
-      "</{$this->tag}>"
-    ;
+    return "<{$this->tag}{$a}><img alt='' class='inline' height='11' property='image' src='{$i}' width='16'>{$n}</{$this->tag}>";
   }
 
   /**

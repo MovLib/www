@@ -98,7 +98,7 @@ final class LanguageSelection extends \MovLib\Presentation\Page {
     return
       "{$prerender}<main class='{$this->id}-content' id='m' role='main'><div class='c'>" .
         "<h1 class='cf'>" .
-          "<img alt='' height='192' src='{$kernel->getAssetURL("logo/vector", "svg")}' width='192'>" .
+          "<img alt='' height='192' src='{$this->getURL("asset://img/logo/vector.svg")}' width='192'>" .
           "<span>{$kernel->siteNameAndSloganHTML}</span>" .
         "</h1>" .
         "<p>{$i18n->t("Please select your preferred language from the following list.")}</p>{$navigation}" .

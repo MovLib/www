@@ -22,6 +22,7 @@ use \MovLib\Data\Database;
 use \MovLib\Data\I18n;
 use \MovLib\Data\Log;
 use \MovLib\Data\Mailer;
+use \MovLib\Data\StreamWrapper\StreamWrapperFactory;
 use \MovLib\Data\User\Session;
 use \MovLib\Exception\AbstractClientException;
 use \MovLib\Presentation\Error\Forbidden;
@@ -457,7 +458,10 @@ class Kernel {
 
       // Instantiate the cache if we are serving a presentation.
       $cache            = new Cache();
-      $cache->cacheable = $_SERVER[ "REQUEST_METHOD" ] == "GET";
+      $cache->cacheable = $_SERVER["REQUEST_METHOD"] == "GET";
+
+      // Register available stream wrappers.
+      StreamWrapperFactory::register([ "asset" ]);
 
       // Try to get the presentation.
       try {
@@ -722,54 +726,6 @@ class Kernel {
       Log::emergency($exception);
       exit($presentation);
     }
-  }
-
-  /**
-   * Get absolute URL for an asset file.
-   *
-   * @staticvar array $cache
-   *   Used to cache the URLs that are built during a single request.
-   * @param string $name
-   *   The filename (or path) of the asset file for which the URL should be built. What you have to pass with this
-   *   parameter depends on the asset type you need. CSS and JS files are <b>always</b> only referred by their name.
-   *   This is because all CSS and JS files that are dynamically included reside in the module sub-directory of their
-   *   asset directory. If you need an image on the other side the name must include the absolute path within the img
-   *   directory in the asset directory (without leading slash). Don't include the trailing dot nor the asset's
-   *   extension here!
-   * @param string $extension
-   *   The asset's file extension (e.g. <code>"css"</code>).
-   * @return string
-   *   The absolute URL (including scheme and hostname) of the asset.
-   */
-  public function getAssetURL($name, $extension) {
-    static $cache = [];
-
-    // If we have no cached URL for this asset build the URL.
-    if (!isset($cache[$extension][$name])) {
-      // CSS and JS assets are always in the same directory as their extension plus the module sub-directory (other
-      // assets of this type aren't includable during normal execution, with the exception of the files that are named
-      // MovLib), images have many different extensions and their directory doesn't match up with that.
-      $dir = "img";
-      if ($extension == "css" || $extension == "js") {
-        $dir = $extension;
-        if ($name != "MovLib") {
-          $dir .= "/module";
-        }
-      }
-
-      // @devStart
-      // @codeCoverageIgnoreStart
-      if (!isset($this->cacheBusters[$extension][$name])) {
-        $this->cacheBusters[$extension][$name] = md5_file("{$this->documentRoot}/public/asset/{$dir}/{$name}.{$extension}");
-      }
-      // @codeCoverageIgnoreEnd
-      // @devEnd
-
-      // Add the absolute URL to our URL cache and we're done.
-      $cache[$extension][$name] = "//{$this->domainStatic}/asset/{$dir}/{$name}.{$extension}?{$this->cacheBusters[$extension][$name]}";
-    }
-
-    return $cache[$extension][$name];
   }
 
   /**

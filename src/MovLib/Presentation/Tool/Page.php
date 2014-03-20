@@ -53,9 +53,10 @@ class Page extends \MovLib\Presentation\Page {
    */
   protected function getHeader() {
     global $kernel;
+    $l = $this->getURL("asset://img/logo/tools-vector.svg");
     return
       "<header id='header' role='banner'><div class='c'><div class='r'>" .
-        "<h1 class='s s3'>{$this->a("/", "<img height='42' src='{$kernel->getAssetURL("logo/tools-vector", "svg")}' width='42'> {$kernel->siteName}", [ "id" => "logo" ])}</h1>" .
+        "<h1 class='s s3'>{$this->a("/", "<img height='42' src='{$l}' width='42'> {$kernel->siteName}", [ "id" => "logo" ])}</h1>" .
         "<div class='s s9'><h2><a href='//{$kernel->domainDefault}/'>{$kernel->siteName}</a></h2></div>" .
       "</div></div></header>"
     ;
