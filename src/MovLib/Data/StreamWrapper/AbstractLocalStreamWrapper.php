@@ -112,7 +112,10 @@ abstract class AbstractLocalStreamWrapper {
    */
   public function chgrp($group) {
     try {
-      return chgrp($this->realpath(), $group);
+      $realpath = $this->realpath();
+      $return   = chgrp($realpath, $group);
+      clearstatcache(true, $realpath);
+      return $return;
     }
     catch (\ErrorException $e) {
       throw new StreamException("Couldn't change file group of '{$this->uri}'", null, $e);
@@ -136,7 +139,10 @@ abstract class AbstractLocalStreamWrapper {
    */
   public function chmod($mode) {
     try {
-      return chmod($this->realpath(), $mode);
+      $realpath = $this->realpath();
+      $return   = chmod($realpath, $mode);
+      clearstatcache(true, $realpath);
+      return $return;
     }
     catch (\ErrorException $e) {
       throw new StreamException("Couldn't change file mode of '{$this->uri}'", null, $e);
@@ -154,7 +160,10 @@ abstract class AbstractLocalStreamWrapper {
    */
   public function chown($user) {
     try {
-      return chown($this->realpath(), $user);
+      $realpath = $this->realpath();
+      $return   = chown($realpath, $mode);
+      clearstatcache(true, $realpath);
+      return $return;
     }
     catch (\ErrorException $e) {
       throw new StreamException("Couldn't change file user of '{$this->uri}'", null, $e);
@@ -270,7 +279,7 @@ abstract class AbstractLocalStreamWrapper {
     // Build relative path to file from URI.
     list(, $target) = explode("://", $this->uri, 2);
 
-    // Remove erroneous leading or trailing, forward-slashes and backslashes.
+    // Remove erroneous leading or trailing, forwardslashes and backslashes.
     return trim($target, "\\/");
   }
 

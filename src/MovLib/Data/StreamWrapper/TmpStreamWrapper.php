@@ -17,10 +17,8 @@
  */
 namespace MovLib\Data\StreamWrapper;
 
-use \MovLib\Data\URL;
-
 /**
- * Defines the asset stream wrapper for the <code>"asset://"</code> scheme.
+ * Defines the tmp stream wrapper for the <code>"tmp://"</code> scheme.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -28,7 +26,7 @@ use \MovLib\Data\URL;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class AssetStreamWrapper extends \MovLib\Data\StreamWrapper\AbstractLocalStreamWrapper {
+final class TmpStreamWrapper extends \MovLib\Data\StreamWrapper\AbstractLocalStreamWrapper {
 
   /**
    * Get the web accessible URL of the file.
@@ -40,24 +38,7 @@ final class AssetStreamWrapper extends \MovLib\Data\StreamWrapper\AbstractLocalS
    *   The web accessible URL of the file.
    */
   public function getExternalURL() {
-    static $urls = [];
-    if (isset($urls[$this->uri])) {
-      return $urls[$this->uri];
-    }
-
-    global $kernel;
-    $target    = URL::encodePath($this->getTarget());
-    $extension = pathinfo($target, PATHINFO_EXTENSION);
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (!isset($kernel->cacheBusters[$extension][$target])) {
-      $kernel->cacheBusters[$extension][$target] = md5_file($this->realpath());
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    $urls[$this->uri] = "//{$kernel->domainStatic}/asset/{$target}?{$kernel->cacheBusters[$extension][$target]}";
-
-    return $urls[$this->uri];
+    throw new \LogicException;
   }
 
   /**
@@ -69,7 +50,7 @@ final class AssetStreamWrapper extends \MovLib\Data\StreamWrapper\AbstractLocalS
    */
   public function getPath() {
     global $kernel;
-    return "{$kernel->documentRoot}/public/asset";
+    return "{$kernel->documentRoot}/public";
   }
 
 }

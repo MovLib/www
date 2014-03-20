@@ -461,7 +461,7 @@ class Kernel {
       $cache->cacheable = $_SERVER["REQUEST_METHOD"] == "GET";
 
       // Register available stream wrappers.
-      StreamWrapperFactory::register([ "asset" ]);
+      StreamWrapperFactory::register([ "asset", "tmp" ]);
 
       // Try to get the presentation.
       try {

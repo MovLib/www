@@ -20,7 +20,7 @@ namespace MovLib\Data\StreamWrapper;
 use \MovLib\Data\URL;
 
 /**
- * Defines the asset stream wrapper for the <code>"asset://"</code> scheme.
+ * Base class for stream wrappers that handle uploads.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -28,7 +28,23 @@ use \MovLib\Data\URL;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class AssetStreamWrapper extends \MovLib\Data\StreamWrapper\AbstractLocalStreamWrapper {
+abstract class AbstractUploadStreamWrapper extends \MovLib\Data\StreamWrapper\AbstractLocalStreamWrapper {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
+
+
+  /**
+   * Get the stream wrappers external path.
+   *
+   * @return string
+   *   The stream wrappers external path.
+   */
+  abstract public function getExternalPath();
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * Get the web accessible URL of the file.
@@ -40,36 +56,25 @@ final class AssetStreamWrapper extends \MovLib\Data\StreamWrapper\AbstractLocalS
    *   The web accessible URL of the file.
    */
   public function getExternalURL() {
-    static $urls = [];
+    static $externalPath = null, $urls = [];
+
+    if (!$externalPath) {
+      $externalPath = $this->getExternalPath();
+    }
+
     if (isset($urls[$this->uri])) {
       return $urls[$this->uri];
     }
 
     global $kernel;
-    $target    = URL::encodePath($this->getTarget());
-    $extension = pathinfo($target, PATHINFO_EXTENSION);
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (!isset($kernel->cacheBusters[$extension][$target])) {
-      $kernel->cacheBusters[$extension][$target] = md5_file($this->realpath());
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    $urls[$this->uri] = "//{$kernel->domainStatic}/asset/{$target}?{$kernel->cacheBusters[$extension][$target]}";
+    $target           = URL::encodePath($this->getTarget());
+    $urls[$this->uri] = "//{$kernel->domainStatic}{$externalPath}/{$target}";
+
+    var_dump(static::class);
+    var_dump($externalPath);
+    var_dump($urls);
 
     return $urls[$this->uri];
-  }
-
-  /**
-   * Get the canonical absolute path to the directory the stream wrapper is responsible for.
-   *
-   * @global \MovLib\Kernel $kernel
-   * @return string
-   *   The canonical absolute path to the directory the stream wrapper is responsible for.
-   */
-  public function getPath() {
-    global $kernel;
-    return "{$kernel->documentRoot}/public/asset";
   }
 
 }
