@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data\Image;
 
+use \MovLib\Data\StreamWrapper\StreamWrapperFactory;
+
 /**
  * All available image widths as namespace constants.
  *
@@ -331,6 +333,8 @@ abstract class AbstractBaseImage {
    * Get the absolute URL to the image.
    *
    * @global \MovLib\Kernel $kernel
+   * @staticvar array $placeholders
+   *   Used to cache placeholder URLs.
    * @param mixed $style [optional]
    *   The style for which you want the URL, if no style is given (default) the URL to the original file is returned.
    * @return string
@@ -338,21 +342,20 @@ abstract class AbstractBaseImage {
    * @throws \LogicException
    */
   public function getURL($style = null) {
-    global $kernel;
-
+    static $placeholders = [];
     // If the image doesn't exist but a URL is claimed return the placeholder.
     if ($this->imageExists === false) {
-      return $kernel->getAssetURL($this->placeholder, $this->placeholderExtension);
+      if (!isset($placeholders[$this->placeholder])) {
+        $placeholders[$this->placeholder] = StreamWrapperFactory::create(
+          "asset://img/{$this->placeholder}.{$this->placeholderExtension}"
+        )->getExternalURL();
+      }
+      return $placeholders[$this->placeholder];
     }
 
     // We need a directory, filename and extension if the image exists.
     if (empty($this->directory) || empty($this->filename) || empty($this->extension)) {
       throw new \LogicException("Directory, filename and/or extension cannot be empty.");
-    }
-
-    // The file's name might still contain characters that aren't save to use in HTML or in requests.
-    if (!$this->filenameEncoded) {
-      $this->filenameEncoded = rawurlencode($this->filename);
     }
 
     // If no style was given the URL to the original is desired. The originals are always delivered from the current
@@ -363,7 +366,12 @@ abstract class AbstractBaseImage {
     }
 
     // Otherwise the URL to the given style.
-    return "//{$kernel->domainStatic}/upload/{$this->directory}/{$this->filenameEncoded}.{$style}.{$this->extension}?c={$this->changed}";
+    if (!$this->filenameEncoded) {
+      // The file's name might still contain characters that aren't save to use in HTML or in requests.
+      $this->filenameEncoded = rawurlencode($this->filename);
+    }
+    global $kernel;
+    return "//{$kernel->domainStatic}/upload/{$this->directory}/{$this->filenameEncoded}.{$style}.{$this->extension}?{$this->changed}";
   }
 
 }

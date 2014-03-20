@@ -17,6 +17,9 @@
  */
 namespace MovLib\Presentation;
 
+use \MovLib\Data\StreamWrapper\StreamWrapperFactory;
+use \MovLib\Data\URL;
+
 /**
  * The abstract presentation class provides several HTML related utility methods.
  *
@@ -30,10 +33,6 @@ namespace MovLib\Presentation;
  * @since 0.0.1-dev
  */
 abstract class AbstractBase {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Protected Methods
-
 
   /**
    * Generate an internal link.
@@ -259,6 +258,61 @@ abstract class AbstractBase {
       return $this->a(($route === true ? $style->route : $route), $image, $anchorAttributes);
     }
     return $image;
+  }
+
+  /**
+   * Get the web accessible URL for given URI.
+   *
+   * @staticvar \MovLib\Data\StreamWrapper\AbstractLocalStreamWrapper $wrapper
+   *   Used to cache the stream wrapper instances.
+   * @param string $uri
+   *   Absolute URI for which to get the web accessible URL (e.g. <code>"asset://img/logo/vector.svg"</code>).
+   * @return string
+   *   The web accessible URL for given URI.
+   * @throws \ErrorException
+   */
+  final protected function getURL($uri) {
+    static $wrappers = null;
+
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($uri) || !is_string($uri)) {
+      throw new \InvalidArgumentException("\$uri cannot be empty and must be of type string");
+    }
+    if (strpos($uri, "?") !== false || strpos($uri, "#") !== false) {
+      \MovLib\Data\Log::debug(
+        "Be careful including query strings and/or fragments in URIs passed to " . static::class . "::getURL() " .
+        "because they might be encoded to URL entities. If this is what you needed/wanted ignore this message."
+      );
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    $scheme = parse_url($uri, PHP_URL_SCHEME);
+
+    if (!$scheme) {
+      // Allow for:
+      //   - root-relative URIs (e.g. /robots.txt in https://movlib.org/robots.txt)
+      //   - protocol-relative URIs (e.g. //robots.txt which is expanded to https://movlib.org/robots.txt)
+      if ($scheme[0] == "/") {
+        return $uri;
+      }
+
+      // No scheme and not root, assume root.
+      $uri = URL::encodePath($uri);
+      return "/{$uri}";
+    }
+    // If the URI already has HTTP or HTTPS scheme do nothing.
+    elseif ($scheme == "http" || $scheme == "https") {
+      return $uri;
+    }
+
+    // Assume that we actually have a stream wrapper handling this kind of scheme.
+    if (!isset($wrappers[$scheme])) {
+      $wrappers[$scheme] = StreamWrapperFactory::create($uri);
+    }
+    $wrappers[$scheme]->uri = $uri;
+    return $wrappers[$scheme]->getExternalURL();
   }
 
   /**

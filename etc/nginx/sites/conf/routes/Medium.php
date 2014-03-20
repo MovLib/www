@@ -17,9 +17,8 @@
  */
 
 /**
- * Release routes
+ * Medium routes
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -30,47 +29,35 @@
 /* @var $this \MovLib\Tool\Console\Command\Production\NginxRoutes */
 ?>
 
-location = <?= $this->rp("/releases") ?> {
+location = <?= $this->rp("/media") ?> {
   <?= $this->set("Index") ?>
   <?= $this->cache() ?>
 }
 
-<?= $this->redirectSingularToPlural("/release", "/releases") ?>
+<?= $this->redirectSingularToPlural("/medium", "/media") ?>
 
-location = <?= $this->r("/release/random") ?> {
+location = <?= $this->r("/medium/random") ?> {
   <?= $this->set("Random") ?>
   <?= $this->cache(false) ?>
 }
 
-location ^~ <?= $this->r("/release") ?> {
+location ^~ <?= $this->r("/medium") ?> {
 
-  location ~* '^<?= $this->r("/release/{0}") ?>$' {
+  location ~* '^<?= $this->r("/medium/{0}") ?>$' {
     <?= $this->set("Show") ?>
-    <?= $this->set('$1', "release_id") ?>
+    <?= $this->set('$1', "medium_id") ?>
     <?= $this->cache() ?>
   }
 
-  location ~* '^<?= $this->r("/release/{0}/discussion") ?>$' {
-    <?= $this->set("Discussion") ?>
-    <?= $this->set('$1', "release_id") ?>
-    <?= $this->cache() ?>
-  }
-
-  location ~* '^<?= $this->r("/release/{0}/edit") ?>$' {
+  location ~* '^<?= $this->r("/medium/{0}/edit") ?>$' {
     <?= $this->set("Edit") ?>
-    <?= $this->set('$1', "release_id") ?>
+    <?= $this->set('$1', "medium_id") ?>
     <?= $this->cache(false) ?>
   }
 
-  location ~* '^<?= $this->r("/release/{0}/history") ?>$' {
+  location ~* '^<?= $this->r("/medium/{0}/history") ?>$' {
     <?= $this->set("History") ?>
-    <?= $this->set('$1', "release_id") ?>
-    <?= $this->cache() ?>
-  }
-
-  location ~* '^<?= $this->r("/release/{0}/delete") ?>$' {
-    <?= $this->set("Delete") ?>
-    <?= $this->set('$1', "release_id") ?>
+    <?= $this->set('$1', "medium_id") ?>
     <?= $this->cache() ?>
   }
 

@@ -34,7 +34,7 @@ use \MovLib\Exception\FileSystemException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class FileSystem {
+abstract class FileSystem {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -72,7 +72,7 @@ final class FileSystem {
    *   {@see FileSystem::FILE_MODE} are applied.
    * @throws \MovLib\Exception\FileSystemException
    */
-  public static function changeMode($path, $mode = null) {
+  final public static function changeMode($path, $mode = null) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($path) || is_string($path) === false) {
@@ -123,7 +123,7 @@ final class FileSystem {
    *   The directory's mode, defaults to {@see FileSystem::DIRECTORY_MODE}.
    * @throws \MovLib\Exception\FileSystemException
    */
-  public static function changeModeRecursive($path, $fileMode = FileSystem::FILE_MODE, $directoryMode = FileSystem::DIRECTORY_MODE) {
+  final public static function changeModeRecursive($path, $fileMode = FileSystem::FILE_MODE, $directoryMode = FileSystem::DIRECTORY_MODE) {
     // @devStart
     // @codeCoverageIgnoreStart
     global $kernel;
@@ -166,7 +166,7 @@ final class FileSystem {
    *   Whether to change owernship recursively, only makes sense with directories.
    * @throws \MovLib\Exception\FileSystemException
    */
-  public static function changeOwner($path, $user = null, $group = null, $recursive = false) {
+  final public static function changeOwner($path, $user = null, $group = null, $recursive = false) {
     global $kernel;
     // We can't simply change the ownership of a file if we aren't root or executed via sudo. First of all we can't
     // change the user at all at that point, because we aren't that user and don't have the privileges to give him or
@@ -221,7 +221,7 @@ final class FileSystem {
    *   Absolute path to the file that should be compressed.
    * @throws \MovLib\Exception\FileSystemException
    */
-  public static function compress($path) {
+  final public static function compress($path) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($path) || !is_string($path)) {
@@ -275,7 +275,7 @@ final class FileSystem {
    *   <var>$path</var>
    * @throws \MovLib\Exception\FileSystemException
    */
-  public static function createDirectory($path, $parents = true, $mode = FileSystem::DIRECTORY_MODE, $user = null, $group = null) {
+  final public static function createDirectory($path, $parents = true, $mode = FileSystem::DIRECTORY_MODE, $user = null, $group = null) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($path) || is_string($path) === false) {
@@ -319,7 +319,7 @@ final class FileSystem {
    *   Whether to override existing destination or not, defaults to <code>FALSE</code> (do not override).
    * @throws \MovLib\Exception\FileSystemException
    */
-  public static function createSymbolicLink($target, $link, $force = false) {
+  final public static function createSymbolicLink($target, $link, $force = false) {
     // @devStart
     // @codeCoverageIgnoreStart
     foreach ([ "target", "link" ] as $param) {
@@ -369,7 +369,7 @@ final class FileSystem {
    *   Defaults to <code>FALSE</code>.
    * @throws \MovLib\Exception\FileSystemException
    */
-  public static function delete($path, $recursive = false, $force = false) {
+  final public static function delete($path, $recursive = false, $force = false) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($path) || is_string($path) === false) {
@@ -417,7 +417,7 @@ final class FileSystem {
    *   Absolute path to the directory from which the deletion process should start.
    * @throws \MovLib\Exception\FileSystemException
    */
-  public static function deleteDirectories($directory) {
+  final public static function deleteDirectories($directory) {
     try {
       Shell::execute("rmdir --ignore-fail-on-non-empty --parent '{$directory}'");
     }
@@ -435,7 +435,7 @@ final class FileSystem {
    *   The file's content.
    * @throws \MovLib\Exception\FileSystemException
    */
-  public static function getContent($path) {
+  final public static function getContent($path) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($path) || is_string($path) === false) {
@@ -481,7 +481,7 @@ final class FileSystem {
    * @return string
    *   The file's permissions.
    */
-  public static function getPermissions($path) {
+  final public static function getPermissions($path) {
     clearstatcache();
     $mode   = decoct(fileperms($path));
     $length = strlen($mode);
@@ -507,7 +507,7 @@ final class FileSystem {
    *   The decoded JSON string from the file either as object or array (depending on <var>$assoc</var>).
    * @throws \MovLib\Exception\FileSystemException
    */
-  public static function getJSON($path, $assoc = false, $depth = 512, $options = 0) {
+  final public static function getJSON($path, $assoc = false, $depth = 512, $options = 0) {
     $json = json_decode(self::getContent($path), $assoc, $depth, $options);
     if (json_last_error() !== JSON_ERROR_NONE) {
       throw new FileSystemException(json_last_error_msg());
@@ -530,7 +530,7 @@ final class FileSystem {
    *   The absolute path of the local file.
    * @throws \MovLib\Exception\FileSystemException
    */
-  public static function getRealPath($path) {
+  final public static function getRealPath($path) {
     // Let PHP resolve the absolute path to the file.
     $realpath = realpath($path);
 
@@ -563,7 +563,7 @@ final class FileSystem {
    *   Absolute path of the file's destination.
    * @throws \MovLib\Exception\FileSystemException
    */
-  public static function move($from, $to) {
+  final public static function move($from, $to) {
     try {
       if (($status = rename(rtrim($from, "/"), rtrim($to, "/"))) === false) {
         // @codeCoverageIgnoreStart
@@ -594,7 +594,7 @@ final class FileSystem {
    *   <var>$path</var>
    * @throws \MovLib\Exception\FileSystemException
    */
-  public static function putContent($path, $content = null, $flags = 0) {
+  final public static function putContent($path, $content = null, $flags = 0) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($path) || is_string($path) === false) {
@@ -641,7 +641,7 @@ final class FileSystem {
    *   <var>$data</var> encoded as JSON.
    * @throws \MovLib\Exception\FileSystemException
    */
-  public static function putJSON($path, $data, $flags = 0, $options = JSON_UNESCAPED_UNICODE, $modificationTime = null, $accessTime = null) {
+  final public static function putJSON($path, $data, $flags = 0, $options = JSON_UNESCAPED_UNICODE, $modificationTime = null, $accessTime = null) {
     $json = json_encode($data, $options);
     if (json_last_error() !== JSON_ERROR_NONE) {
       throw new FileSystemException(json_last_error_msg());
@@ -662,7 +662,7 @@ final class FileSystem {
    * @return string
    *   The sanitized filename.
    */
-  public static function sanitizeFilename($filename) {
+  final public static function sanitizeFilename($filename) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($filename) || is_string($filename) === false) {
@@ -697,7 +697,7 @@ final class FileSystem {
    *   <var>$path</var>
    * @throws \MovLib\Exception\FileSystemException
    */
-  public static function touch($path, $modificationTime = null, $accessTime = null) {
+  final public static function touch($path, $modificationTime = null, $accessTime = null) {
     try {
       if (touch($path, $modificationTime, $accessTime) === false) {
         // @codeCoverageIgnoreStart
@@ -723,7 +723,7 @@ final class FileSystem {
    *   The validated mode as octal integer.
    * @throws \InvalidArgumentException
    */
-  public static function validateMode($mode) {
+  final public static function validateMode($mode) {
     // Mode is mandatory.
     if (empty($mode)) {
       throw new \InvalidArgumentException("A file's mode cannot be empty");
@@ -755,7 +755,7 @@ final class FileSystem {
    *   Absolute path to check.
    * @throws \MovLib\Exception\FileSystemException
    */
-  public static function withinDocumentRoot($path) {
+  final public static function withinDocumentRoot($path) {
     global $kernel;
     if ($kernel->fastCGI === true && strpos($path, $kernel->documentRoot) === false) {
       throw new FileSystemException("\$path cannot be outside document root");

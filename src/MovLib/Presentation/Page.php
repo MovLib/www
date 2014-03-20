@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation;
 
+use \MovLib\Presentation\Partial\Language;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Navigation;
 
@@ -187,7 +188,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
     if ($this->languageLinks) {
       $languageLinks = $currentLanguageName = $teamOffset = null;
       foreach ($this->languageLinks as $code => $route) {
-        $language = new \MovLib\Data\Language($code);
+        $language = Language::get($code);
         if ($code == $i18n->languageCode) {
           $currentLanguageName = $language->name;
           $languageLinks[$language->name] =
@@ -240,10 +241,10 @@ class Page extends \MovLib\Presentation\AbstractBase {
           "<section id='f-logos' class='s s12 tac'>" .
             "<h3 class='vh'>{$i18n->t("Sponsors and external resources")}</h3>" .
             "<a class='no-link' href='http://www.fh-salzburg.ac.at/' target='_blank'>" .
-              "<img alt='Fachhochschule Salzburg' height='30' src='{$kernel->getAssetURL("footer/fachhochschule-salzburg", "svg")}' width='48'>" .
+              "<img alt='Fachhochschule Salzburg' height='30' src='{$this->getURL("asset://img/footer/fachhochschule-salzburg.svg")}' width='48'>" .
             "</a>" .
             "<a class='no-link' href='https://github.com/MovLib' target='_blank'>" .
-              "<img alt='GitHub' height='30' src='{$kernel->getAssetURL("footer/github", "svg")}' width='48'>" .
+              "<img alt='GitHub' height='30' src='{$this->getURL("asset://img/footer/github.svg")}' width='48'>" .
             "</a>" .
           "</section>" .
           $languageLinks .
@@ -337,7 +338,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
         // wants us to use multiple <h1>s for multiple sections, so here we go. The header is always the MovLib header.
         "<h1 class='s s3'>{$this->a(
           "/",
-          "<img alt='' height='42' src='{$kernel->getAssetURL("logo/vector", "svg")}' width='42'> {$kernel->siteName}",
+          "<img alt='' height='42' src='{$this->getURL("asset://img/logo/vector.svg")}' width='42'> {$kernel->siteName}",
           [ "id" => "l", "title" => $i18n->t("Go back to the home page.") ]
         )}</h1>" .
         "<div class='s s9'>" .
@@ -420,7 +421,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
     $stylesheets = null;
     $c           = count($kernel->stylesheets);
     for ($i = 0; $i < $c; ++$i) {
-      $stylesheets .= "<link href='{$kernel->getAssetURL($kernel->stylesheets[$i], "css")}' rel='stylesheet'>";
+      $stylesheets .= "<link href='{$this->getURL("asset://css/module/{$kernel->stylesheets[$i]}.css")}' rel='stylesheet'>";
     }
 
     // Apply additional CSS class if the current request is made from a signed in user.
@@ -432,12 +433,12 @@ class Page extends \MovLib\Presentation\AbstractBase {
     $kernel->javascriptSettings["domainStatic"] = $kernel->domainStatic;
     $c = count($kernel->javascripts);
     for ($i = 0; $i < $c; ++$i) {
-      $kernel->javascriptSettings["modules"][$kernel->javascripts[$i]] = $kernel->getAssetURL($kernel->javascripts[$i], "js");
+      $kernel->javascriptSettings["modules"][$kernel->javascripts[$i]] = $this->getURL("asset://js/module/{$kernel->javascripts[$i]}.js");
     }
     $jsSettings = json_encode($kernel->javascriptSettings, JSON_UNESCAPED_UNICODE);
 
     $htmlAttr = " dir='{$i18n->direction}' id='nojs' lang='{$i18n->languageCode}' prefix='og: http://ogp.me/ns#'";
-    $logo256  = $kernel->getAssetURL("logo/256", "png");
+    $logo256  = $this->getURL("asset://img/logo/256.png");
     $title    = $this->getHeadTitle();
 
     return
@@ -447,16 +448,16 @@ class Page extends \MovLib\Presentation\AbstractBase {
       "<head>" .
         "<title>{$title}</title>" .
         // Include the global styles and any presentation specific ones.
-        "<link href='{$kernel->getAssetURL("MovLib", "css")}' rel='stylesheet'>{$stylesheets}" .
+        "<link href='{$this->getURL("asset://css/MovLib.css")}' rel='stylesheet'>{$stylesheets}" .
         // Yes, we could create these in a loop, but why should we implement a loop for static data? To be honest, I
         // generated it with a loop and simply copied the output here.
-        "<link href='{$kernel->getAssetURL("logo/vector", "svg")}' rel='icon' type='image/svg+xml'>" .
+        "<link href='{$this->getURL("asset://img/logo/vector.svg")}' rel='icon' type='image/svg+xml'>" .
         "<link href='{$logo256}' rel='icon' sizes='256x256' type='image/png'>" .
-        "<link href='{$kernel->getAssetURL("logo/128", "png")}' rel='icon' sizes='128x128' type='image/png'>" .
-        "<link href='{$kernel->getAssetURL("logo/64", "png")}' rel='icon' sizes='64x64' type='image/png'>" .
-        "<link href='{$kernel->getAssetURL("logo/32", "png")}' rel='icon' sizes='32x32' type='image/png'>" .
-        "<link href='{$kernel->getAssetURL("logo/24", "png")}' rel='icon' sizes='24x24' type='image/png'>" .
-        "<link href='{$kernel->getAssetURL("logo/16", "png")}' rel='icon' sizes='16x16' type='image/png'>" .
+        "<link href='{$this->getURL("asset://img/logo/128.png")}' rel='icon' sizes='128x128' type='image/png'>" .
+        "<link href='{$this->getURL("asset://img/logo/64.png")}' rel='icon' sizes='64x64' type='image/png'>" .
+        "<link href='{$this->getURL("asset://img/logo/32.png")}' rel='icon' sizes='32x32' type='image/png'>" .
+        "<link href='{$this->getURL("asset://img/logo/24.png")}' rel='icon' sizes='24x24' type='image/png'>" .
+        "<link href='{$this->getURL("asset://img/logo/16.png")}' rel='icon' sizes='16x16' type='image/png'>" .
         "<link href='https://plus.google.com/115387876584819891316?rel=publisher' property='publisher'>" .
         "<meta property='og:description' content='{$i18n->t("The free online movie database that anyone can edit.")}'>" .
         "<meta property='og:image' content='{$kernel->scheme}:{$logo256}'>" .
@@ -474,7 +475,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
       "<body id='{$this->id}' class='{$this->bodyClasses}' vocab='http://schema.org/'>" .
         "{$this->getHeader()}{$content}{$this->getFooter()}" .
         "<script id='jss' type='application/json'>{$jsSettings}</script>" .
-        "<script async src='{$kernel->getAssetURL("MovLib", "js")}'></script>"
+        "<script async src='{$this->getURL("asset://js/MovLib.js")}'></script>"
     ;
   }
 
