@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation;
 
+use \MovLib\Presentation\Partial\Language;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Navigation;
 
@@ -187,7 +188,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
     if ($this->languageLinks) {
       $languageLinks = $currentLanguageName = $teamOffset = null;
       foreach ($this->languageLinks as $code => $route) {
-        $language = new \MovLib\Data\Language($code);
+        $language = Language::get($code);
         if ($code == $i18n->languageCode) {
           $currentLanguageName = $language->name;
           $languageLinks[$language->name] =

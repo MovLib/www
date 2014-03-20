@@ -56,6 +56,13 @@ final class Language extends \MovLib\Presentation\AbstractBase {
    */
   protected $tag;
 
+  /**
+   * Array containing all available languages.
+   *
+   * @var array
+   */
+  protected static $languages;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -100,29 +107,33 @@ final class Language extends \MovLib\Presentation\AbstractBase {
 
 
   /**
+   * Get language instance.
+   *
+   * @param string $code
+   *   The ISO 639-1 code of the language. Additionally you can pass <code>"xx"</code> which is a custom code for the
+   *   ISO 639-2 code <code>"zxx"</code> and declares the <em>absence of linguistic information</em>.
+   * @return \MovLib\Stub\Data\Language
+   *   The desired language.
+   */
+  public static function get($code) {
+    if (!self::$languages) {
+      return self::getLanguages()[$code];
+    }
+    return self::$languages[$code];
+  }
+
+  /**
    * Get all supported and translated languages.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @staticvar array $languages
-   *   Associative array used for caching.
    * @return array
    *   All supported and translated languages.
    */
   public static function getLanguages() {
-    global $i18n;
-    static $languages = null;
-
-    // If we haven't built the array for this locale build it.
-    if (!isset($languages[$i18n->locale])) {
-      // @todo We can't use the native name as title because it has a different language and we have no possiblity to
-      //       indicate that to the user agent. On the other hand this isn't only used for form elements and in those
-      //       other use cases the native name might be from interest.
-      foreach (\MovLib\Data\Language::getLanguages() as $code => $language) {
-        $languages[$i18n->locale][$code] = $language["name"];
-      }
+    if (!self::$languages) {
+      global $i18n, $kernel;
+      self::$languages = require "{$kernel->documentRoot}/private/translation/language/{$i18n->locale}.php";
     }
-
-    return $languages[$i18n->locale];
+    return self::$languages;
   }
 
   /**
