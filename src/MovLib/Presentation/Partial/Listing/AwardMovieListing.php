@@ -83,21 +83,19 @@ final class AwardMovieListing extends \MovLib\Presentation\Partial\Listing\Movie
 
     // @devStart
     // @codeCoverageIgnoreStart
-    if (!isset($movie->won)) {
-      throw new \LogicException($i18n->t("\$movie->won has to be set!"));
+    if (!isset($movie->wonCount)) {
+      throw new \LogicException($i18n->t("\$movie->wonCount has to be set!"));
+    }
+    if (!isset($movie->nominationCount)) {
+      throw new \LogicException($i18n->t("\$movie->nominationCount has to be set!"));
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-    $nominatedOrWon = null;
-    if ($movie->won) {
-      $nominatedOrWon = $i18n->t("won");
-    }
-    else {
-      $nominatedOrWon = $i18n->t("nominated");
-    }
-
-    return "<span class='label'>{$nominatedOrWon}</span>";
+    return
+      "<span class='label small'>{$i18n->t("{0}x won", [ $movie->wonCount ])}</span>" .
+      "<span class='label small'>{$i18n->t("{0}x nominated", [ $movie->nominationCount ])}</span>"
+    ;
   }
 
 }

@@ -362,8 +362,16 @@ class Award extends \MovLib\Data\Image\AbstractImage {
         $movies[$row["id"]]->movie->originalTitle             = $row["originalTitle"];
         $movies[$row["id"]]->movie->originalTitleLanguageCode = $row["originalTitleLanguageCode"];
         $movies[$row["id"]]->movie->displayPoster             = $row["displayPoster"];
-        $movies[$row["id"]]->movie->won                       = $row["won"];
+        $movies[$row["id"]]->movie->nominationCount           = 0;
+        $movies[$row["id"]]->movie->wonCount                  = 0;
         $movies[$row["id"]]->movie->init();
+      }
+      if ($row["won"]) {
+        ++$movies[$row["id"]]->movie->nominationCount;
+        ++$movies[$row["id"]]->movie->wonCount;
+      }
+      else {
+        ++$movies[$row["id"]]->movie->nominationCount;
       }
     }
     return $movies;
