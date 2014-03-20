@@ -539,8 +539,8 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`awards_events` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The award event’s unique ID.',
   `award_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award’s unique ID.',
-  `changed` TIMESTAMP NOT NULL COMMENT 'The timestamp on which this award event was changed.',
-  `created` TIMESTAMP NOT NULL COMMENT 'The timestamp on which this award event was created.',
+  `changed` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The timestamp on which this award event was changed.',
+  `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The timestamp on which this award event was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the award event was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The award event’s description in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_names` BLOB NOT NULL COMMENT 'The award event’s name in various languages. Keys are ISO alpha-2 language codes.',
@@ -548,16 +548,24 @@ CREATE TABLE IF NOT EXISTS `movlib`.`awards_events` (
   `start_date` DATE NOT NULL COMMENT 'The award event’s start date.',
   `end_date` DATE NULL COMMENT 'The award event’s end date.',
   `links` BLOB NULL COMMENT 'The award event’s weblinks as serialized PHP array.',
-  `place_id` BIGINT UNSIGNED NULL COMMENT 'The  award event’s location.',
+  `place_id` BIGINT UNSIGNED NULL COMMENT 'The  award event’s unique place ID.',
   PRIMARY KEY (`id`),
-  INDEX `fk_awards_events_awards1_idx` (`award_id` ASC),
-  CONSTRAINT `fk_awards_events_awards1`
+  INDEX `fk_awards_events_award_id` (`award_id` ASC),
+  INDEX `fk_awards_events_place_id` (`place_id` ASC),
+  CONSTRAINT `fk_awards_events_award_id`
     FOREIGN KEY (`award_id`)
     REFERENCES `movlib`.`awards` (`id`)
     ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_awards_events_place_id`
+    FOREIGN KEY (`place_id`)
+    REFERENCES `movlib`.`places` (`place_id`)
+    ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-COMMENT = 'Contains all award events';
+COMMENT = 'Contains all award events'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
 
 SHOW WARNINGS;
 
