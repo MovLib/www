@@ -496,7 +496,6 @@ CREATE TABLE IF NOT EXISTS `movlib`.`awards` (
   `image_uploader_id` BIGINT UNSIGNED NULL COMMENT 'The  award’s image unique uploader identifier.',
   `image_width` SMALLINT NULL COMMENT 'The award’s image width.',
   `links` BLOB NULL COMMENT 'The company’s weblinks as serialized PHP array.',
-  `place_id` BIGINT UNSIGNED NULL COMMENT 'The  award’s location.',
   `first_awarding_year` SMALLINT(4) NULL COMMENT 'The first year this award was awarded.',
   `last_awarding_year` SMALLINT(4) NULL COMMENT 'The last year this award was awarded.',
   PRIMARY KEY (`id`))
@@ -508,21 +507,87 @@ KEY_BLOCK_SIZE = 8;
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
+-- Table `movlib`.`awards_categories`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`awards_categories` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The award category’s unique ID.',
+  `award_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award’s unique ID.',
+  `created` TIMESTAMP NOT NULL COMMENT 'The timestamp on which this award category was created.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the award category was deleted or not.',
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The award categorie’s description in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_names` BLOB NOT NULL COMMENT 'The award categorie’s name in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_wikipedia` BLOB NOT NULL COMMENT 'The award’s translated Wikipedia links.',
+  `first_awarding_year` SMALLINT(4) NULL COMMENT 'The first year this award category existed.',
+  `last_awarding_year` SMALLINT(4) NULL COMMENT 'The last year this award category existed.',
+  PRIMARY KEY (`id`),
+  INDEX `fk_awards_categories_awards_idx` (`award_id` ASC),
+  CONSTRAINT `fk_awards_categories_awards`
+    FOREIGN KEY (`award_id`)
+    REFERENCES `movlib`.`awards` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains all award categories'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`awards_events`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`awards_events` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The award event’s unique ID.',
+  `award_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award’s unique ID.',
+  `changed` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The timestamp on which this award event was changed.',
+  `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The timestamp on which this award event was created.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the award event was deleted or not.',
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The award event’s description in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_names` BLOB NOT NULL COMMENT 'The award event’s name in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_wikipedia` BLOB NOT NULL COMMENT 'The award event’s translated Wikipedia links.',
+  `start_date` DATE NOT NULL COMMENT 'The award event’s start date.',
+  `end_date` DATE NULL COMMENT 'The award event’s end date.',
+  `links` BLOB NULL COMMENT 'The award event’s weblinks as serialized PHP array.',
+  `place_id` BIGINT UNSIGNED NULL COMMENT 'The  award event’s unique place ID.',
+  PRIMARY KEY (`id`),
+  INDEX `fk_awards_events_award_id` (`award_id` ASC),
+  INDEX `fk_awards_events_place_id` (`place_id` ASC),
+  CONSTRAINT `fk_awards_events_award_id`
+    FOREIGN KEY (`award_id`)
+    REFERENCES `movlib`.`awards` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_awards_events_place_id`
+    FOREIGN KEY (`place_id`)
+    REFERENCES `movlib`.`places` (`place_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains all award events'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
 -- Table `movlib`.`movies_awards`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_awards` (
-  `id` BIGINT NOT NULL COMMENT 'The movie award’s unique ID within a movie.',
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT 'The movie award’s unique ID.',
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
+  `award_category_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award category’s unique ID.',
+  `award_event_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award event’s unique ID.',
+  `award_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award’s unique ID.',
   `company_id` BIGINT UNSIGNED NULL COMMENT 'The company’s unique ID (who received the award).',
   `person_id` BIGINT UNSIGNED NULL COMMENT 'The person’s unique ID (who received the award).',
-  `award_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award’s unique ID.',
-  `award_category_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award category’s unique ID within an award.',
   `won` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this award has been won (TRUE(1)) or not (FALSE(0), default is FALSE (0).',
   `year` SMALLINT(4) UNSIGNED ZEROFILL NOT NULL COMMENT 'The year in which the movie won the award.',
-  PRIMARY KEY (`id`, `movie_id`),
+  PRIMARY KEY (`id`),
   INDEX `fk_awards_movies_movies` (`movie_id` ASC),
   INDEX `fk_persons_awards_persons` (`person_id` ASC),
   INDEX `fk_persons_awards_companies` (`company_id` ASC),
+  INDEX `fk_movies_awards_awards_categories_idx` (`award_category_id` ASC),
+  INDEX `fk_movies_awards_awards_events_idx` (`award_event_id` ASC),
   CONSTRAINT `fk_movies_awards_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
@@ -536,6 +601,21 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_awards` (
   CONSTRAINT `fk_persons_awards_companies`
     FOREIGN KEY (`company_id`)
     REFERENCES `movlib`.`companies` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_awards_awards_categories`
+    FOREIGN KEY (`award_category_id`)
+    REFERENCES `movlib`.`awards_categories` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_awards_awards`
+    FOREIGN KEY (`award_id`)
+    REFERENCES `movlib`.`awards` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_awards_awards_events`
+    FOREIGN KEY (`award_event_id`)
+    REFERENCES `movlib`.`awards_events` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -1032,33 +1112,6 @@ CREATE TABLE IF NOT EXISTS `movlib`.`master_releases_labels` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Contains the label a master release is related to.';
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`awards_categories`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`awards_categories` (
-  `award_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award’s unique ID.',
-  `id` BIGINT UNSIGNED NOT NULL COMMENT 'The award category’s unique ID within an award.',
-  `created` TIMESTAMP NOT NULL COMMENT 'The timestamp on which this award category was created.',
-  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the award category was deleted or not.',
-  `dyn_descriptions` BLOB NOT NULL COMMENT 'The award categorie’s description in various languages. Keys are ISO alpha-2 language codes.',
-  `dyn_names` BLOB NOT NULL COMMENT 'The award categorie’s name in various languages. Keys are ISO alpha-2 language codes.',
-  `dyn_wikipedia` BLOB NOT NULL COMMENT 'The award’s translated Wikipedia links.',
-  `first_awarding_year` SMALLINT(4) NULL COMMENT 'The first year this award category existed.',
-  `last_awarding_year` SMALLINT(4) NULL COMMENT 'The last year this award category existed.',
-  PRIMARY KEY (`award_id`, `id`),
-  INDEX `fk_awards_categories_awards_idx` (`award_id` ASC),
-  CONSTRAINT `fk_awards_categories_awards`
-    FOREIGN KEY (`award_id`)
-    REFERENCES `movlib`.`awards` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-COMMENT = 'Contains all award categories'
-ROW_FORMAT = COMPRESSED
-KEY_BLOCK_SIZE = 8;
 
 SHOW WARNINGS;
 

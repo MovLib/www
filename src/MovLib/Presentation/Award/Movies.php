@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Award;
 
 use \MovLib\Data\Award;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Listing\MovieListing as MoviesPartial;
+use \MovLib\Presentation\Partial\Listing\MovieListing;
 
 /**
  * Movies with a certain award associated.
@@ -61,12 +61,10 @@ class Movies extends \MovLib\Presentation\Award\AbstractBase {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    * @return \MovLib\Presentation\Partial\Listing\Movies
    */
   protected function getPageContent() {
-    global $i18n;
-    return new MoviesPartial($this->award->getMoviesResult(), (new Alert($i18n->t("Check back later"), $i18n->t("No movies found."), Alert::SEVERITY_INFO))->__toString());
+    return new MovieListing($this->award->getMoviesResult());
   }
 
 }

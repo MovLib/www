@@ -197,7 +197,7 @@ class Job extends \MovLib\Data\Database {
   public function getMoviesResult() {
     global $db, $i18n;
     return $db->query(
-      "SELECT
+      "SELECT DISTINCT
         `movies`.`id` AS `id`,
         `movies`.`year` AS `year`,
         IFNULL(`dt`.`title`, `ot`.`title`) AS `displayTitle`,

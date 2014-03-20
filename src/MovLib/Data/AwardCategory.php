@@ -177,7 +177,7 @@ class AwardCategory extends \MovLib\Data\Database {
   public function getMoviesResult() {
     global $db, $i18n;
     return $db->query(
-      "SELECT
+      "SELECT DISTINCT
         `movies`.`year` AS `year`,
         IFNULL(`dt`.`title`, `ot`.`title`) AS `displayTitle`,
         IFNULL(`dt`.`language_code`, `ot`.`language_code`) AS `displayTitleLanguageCode`,

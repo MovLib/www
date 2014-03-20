@@ -274,7 +274,7 @@ class Award extends \MovLib\Data\Image\AbstractImage {
   public function getCategoriesResult() {
     global $db, $i18n;
     return $db->query(
-      "SELECT
+      "SELECT DISTINCT
         `award_id` AS `awardId`,
         `id`,
         `deleted`,
@@ -318,7 +318,7 @@ class Award extends \MovLib\Data\Image\AbstractImage {
   public function getMoviesResult() {
     global $db, $i18n;
     return $db->query(
-      "SELECT
+      "SELECT DISTINCT
         `movies`.`year` AS `year`,
         IFNULL(`dt`.`title`, `ot`.`title`) AS `displayTitle`,
         IFNULL(`dt`.`language_code`, `ot`.`language_code`) AS `displayTitleLanguageCode`,
