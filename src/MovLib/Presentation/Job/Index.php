@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Job;
 
 use \MovLib\Data\Job;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Listing\EntityListing;
+use \MovLib\Presentation\Partial\Listing\EntityIndexListing;
 
 /**
  * List of all jobs.
@@ -79,6 +79,9 @@ class Index extends \MovLib\Presentation\Page {
     $noItemText .=
       $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/job/create")}'>", "</a>" ]);
 
-    return new EntityListing($result, $noItemText, "Job");
+    $moviesRoute = $i18n->rp("/job/{0}/movies", [ "{{ id }}" ]);
+    $seriesRoute = $i18n->rp("/job/{0}/series", [ "{{ id }}" ]);
+
+    return new EntityIndexListing($result, $noItemText, "Job", $moviesRoute, $seriesRoute);
   }
 }
