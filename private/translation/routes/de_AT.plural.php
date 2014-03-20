@@ -35,16 +35,15 @@ return [
   "/movie/{0}/backdrops"          => "/film/{0}/hintergründe",
   "/movie/{0}/posters"            => "/film/{0}/poster",
   "/movie/{0}/lobby-cards"        => "/film/{0}/aushangbilder",
-  "/movie/{0}/releases"           => "/film/{0}/veröffentlichungen",
   "/movie/{0}/titles"             => "/film/{0}/titel",
-  // ------------------------------------------------------------------------------------------------------------------- Movie Releases
-  "/movie/{0}/release/{1}/images" => "/film/{0}/veröffentlichung/{1}/bilder",
   // ------------------------------------------------------------------------------------------------------------------- Series
   "/series"                       => "/serien",
   "/series/charts"                => "/serien/charts",
   "/series/{0}/seasons"           => "/serie/{0}/staffeln",
   // ------------------------------------------------------------------------------------------------------------------- Releases
   "/releases"                     => "/veröffentlichungen",
+  // ------------------------------------------------------------------------------------------------------------------- Media
+  "/media"                        => "/medien",
   // ------------------------------------------------------------------------------------------------------------------- Companies
   "/companies"                    => "/unternehmen",
   "/company/{0}/movies"           => "/unternehmen/{0}/filme",
