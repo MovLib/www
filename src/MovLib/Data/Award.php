@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data;
 
+use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Presentation\Error\NotFound;
 
 /**
@@ -109,13 +110,6 @@ class Award extends \MovLib\Data\Image\AbstractImage {
   public $name;
 
   /**
-   * The awards’s place.
-   *
-   * @var integer|object
-   */
-  public $place;
-
-  /**
    * The translated route of this award.
    *
    * @var string
@@ -190,7 +184,6 @@ class Award extends \MovLib\Data\Image\AbstractImage {
         $this->changed,
         $this->imageDescription,
         $this->styles,
-        $this->place,
         $this->links,
         $this->aliases,
         $this->firstAwardingYear,
@@ -274,7 +267,7 @@ class Award extends \MovLib\Data\Image\AbstractImage {
   public function getCategoriesResult() {
     global $db, $i18n;
     return $db->query(
-      "SELECT DISTINCT
+      "SELECT
         `award_id` AS `awardId`,
         `id`,
         `deleted`,
@@ -317,38 +310,63 @@ class Award extends \MovLib\Data\Image\AbstractImage {
    */
   public function getMoviesResult() {
     global $db, $i18n;
-    return $db->query(
-      "SELECT DISTINCT
-        `movies`.`year` AS `year`,
+    $result = $db->query(
+      "SELECT
+        `movies`.`id`,
+        `movies`.`deleted`,
+        `movies`.`year`,
+        `movies`.`mean_rating` AS `ratingMean`,
         IFNULL(`dt`.`title`, `ot`.`title`) AS `displayTitle`,
         IFNULL(`dt`.`language_code`, `ot`.`language_code`) AS `displayTitleLanguageCode`,
         `ot`.`title` AS `originalTitle`,
         `ot`.`language_code` AS `originalTitleLanguageCode`,
-        `p`.`poster_id` AS `displayPoster`
-        FROM `movies_awards` as `ma`
-        LEFT JOIN `awards_categories` as `mac`
-          ON `ma`.award_category_id = `mac`.`id`
-        LEFT JOIN `awards`
-          ON `mac`.`award_id` = `awards`.`id`
+        `p`.`poster_id` AS `displayPoster`,
+        `ma`.`won` AS `won`
+      FROM `movies_awards` AS `ma`
         LEFT JOIN `movies` AS `movies`
-          ON `movies`.`id` = `movies`.`id`
+          ON `movies`.`id` = `ma`.`movie_id`
         LEFT JOIN `movies_display_titles` AS `mdt`
           ON `mdt`.`movie_id` = `movies`.`id`
           AND `mdt`.`language_code` = ?
         LEFT JOIN `movies_titles` AS `dt`
-          ON `dt`.`id` = `mdt`.`title_id`
+          ON `dt`.`movie_id` = `movies`.`id`
+          AND `dt`.`id` = `mdt`.`title_id`
         LEFT JOIN `movies_original_titles` AS `mot`
           ON `mot`.`movie_id` = `movies`.`id`
         LEFT JOIN `movies_titles` AS `ot`
-          ON `ot`.`id` = `mot`.`title_id`
+          ON `ot`.`movie_id` = `movies`.`id`
+          AND `ot`.`id` = `mot`.`title_id`
         LEFT JOIN `display_posters` AS `p`
           ON `p`.`movie_id` = `movies`.`id`
           AND `p`.`language_code` = ?
-      WHERE `awards`.`id` = ?
-      ORDER BY `movies`.`year` DESC",
+      WHERE `ma`.`award_id` = ?
+      ORDER BY
+        `ma`.`won` DESC,
+        `movies`.`year` DESC",
       "ssd",
       [ $i18n->languageCode, $i18n->languageCode, $this->id ]
     )->get_result();
+
+    while ($row = $result->fetch_assoc()) {
+      // Instantiate and initialize a Movie if it is not present yet.
+      if (!isset($movies[$row["id"]])) {
+        $movies[$row["id"]] = (object) [
+          "movie" => new FullMovie()
+        ];
+        $movies[$row["id"]]->movie->id                        = $row["id"];
+        $movies[$row["id"]]->movie->deleted                   = $row["deleted"];
+        $movies[$row["id"]]->movie->year                      = $row["year"];
+        $movies[$row["id"]]->movie->ratingMean                = $row["ratingMean"];
+        $movies[$row["id"]]->movie->displayTitle              = $row["displayTitle"];
+        $movies[$row["id"]]->movie->displayTitleLanguageCode  = $row["displayTitleLanguageCode"];
+        $movies[$row["id"]]->movie->originalTitle             = $row["originalTitle"];
+        $movies[$row["id"]]->movie->originalTitleLanguageCode = $row["originalTitleLanguageCode"];
+        $movies[$row["id"]]->movie->displayPoster             = $row["displayPoster"];
+        $movies[$row["id"]]->movie->won                       = $row["won"];
+        $movies[$row["id"]]->movie->init();
+      }
+    }
+    return $movies;
   }
 
   /**
@@ -379,7 +397,6 @@ class Award extends \MovLib\Data\Image\AbstractImage {
           UNIX_TIMESTAMP(`image_changed`) AS `changed`,
           IFNULL(COLUMN_GET(`dyn_image_descriptions`, ? AS CHAR), COLUMN_GET(`dyn_image_descriptions`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `imageDescription`,
           `image_styles` AS `styles`,
-          `place_id` AS `place`,
           `links`,
           `aliases`,
           `first_awarding_year` AS `firstAwardingYear`,
@@ -458,9 +475,6 @@ class Award extends \MovLib\Data\Image\AbstractImage {
    */
   protected function init() {
     global $i18n;
-    if ($this->place) {
-      $this->place = new Place($this->place);
-    }
 
     $this->aliases  = $this->aliases ? unserialize($this->aliases) : [];
     $this->links    = $this->links ? unserialize($this->links) : [];

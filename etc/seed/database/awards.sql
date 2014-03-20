@@ -72,7 +72,6 @@ INSERT INTO `awards` SET
   `image_styles`           = 'a:3:{i:220;a:3:{s:6:"height";i:231;s:5:"width";i:220;s:9:"resizeArg";s:3:"220";}i:140;a:3:{s:6:"height";i:147;s:5:"width";i:140;s:9:"resizeArg";s:3:"140";}i:60;a:3:{s:6:"height";i:63;s:5:"width";i:60;s:9:"resizeArg";s:2:"60";}}',
   `image_uploader_id`      = 1
 ;
-
 SET @oscar_award_id = LAST_INSERT_ID();
 
 INSERT INTO `awards_categories` SET
@@ -141,6 +140,7 @@ INSERT INTO `awards_categories` SET
   `dyn_wikipedia`       = '',
   `first_awarding_year` = 1929
 ;
+SET @oscar_award_category_id1 = LAST_INSERT_ID();
 
 INSERT INTO `awards_categories` SET
   `award_id`            = @oscar_award_id,
@@ -195,7 +195,7 @@ INSERT INTO `awards_categories` SET
   ),
   `first_awarding_year` = 1929
 ;
-SET @oscar_award_category_id = LAST_INSERT_ID();
+SET @oscar_award_category_id2 = LAST_INSERT_ID();
 
 INSERT INTO `awards_events` SET
   `award_id`            = @oscar_award_id,
@@ -220,7 +220,17 @@ SET @oscar_award_event_id = LAST_INSERT_ID();
 INSERT INTO `movies_awards` SET
   `movie_id`          = 3, /* The Shawshank Redemption */
   `award_id`          = @oscar_award_id,
-  `award_category_id` = @oscar_award_category_id,
+  `award_category_id` = @oscar_award_category_id1,
+  `award_event_id`    = @oscar_award_event_id,
+  `person_id`         = 8, /* Morgan Freeman */
+  `won`               = false,
+  `year`              = 1995
+;
+
+INSERT INTO `movies_awards` SET
+  `movie_id`          = 3, /* The Shawshank Redemption */
+  `award_id`          = @oscar_award_id,
+  `award_category_id` = @oscar_award_category_id2,
   `award_event_id`    = @oscar_award_event_id,
   `person_id`         = 7, /* Frank Darabont */
   `won`               = false,

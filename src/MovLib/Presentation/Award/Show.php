@@ -19,7 +19,6 @@ namespace MovLib\Presentation\Award;
 
 use \MovLib\Data\Award;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Place;
 
 /**
  * Presentation of a single award.
@@ -86,13 +85,6 @@ class Show extends \MovLib\Presentation\Award\AbstractBase {
     }
     else if ($this->award->lastAwardingYear) {
       $info .= "<span>{$i18n->t("until {0}", [ $this->award->lastAwardingYear ])}</span>";
-    }
-
-    if ($this->award->place) {
-      if ($info) {
-        $info .= "<br>";
-      }
-      $info .= "<span itemprop='location'>". new Place($this->award->place) . "</span>";
     }
 
     // Construct the wikipedia link.

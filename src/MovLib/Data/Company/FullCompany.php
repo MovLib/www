@@ -223,7 +223,7 @@ class FullCompany extends \MovLib\Data\Company\Company {
   public function getMovieResult() {
     global $db, $i18n;
     return $db->query(
-      "SELECT DISTINCT
+      "SELECT
         `movies_crew`.`movie_id` AS `id`,
         `jobs`.`id` AS `jobId`,
         IFNULL(COLUMN_GET(`jobs`.`dyn_names_sex0`, ? AS CHAR), COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `jobTitle`,
@@ -267,7 +267,7 @@ class FullCompany extends \MovLib\Data\Company\Company {
   public function getReleasesResult() {
     global $db;
     return $db->query(
-      "SELECT DISTINCT
+      "SELECT
         `master_releases_labels`.`company_id` AS `company_id`,
         `master_releases_labels`.`master_release_id` AS `master_release_id`
       FROM `master_releases_labels'
