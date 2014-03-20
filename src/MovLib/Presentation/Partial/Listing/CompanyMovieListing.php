@@ -17,8 +17,10 @@
  */
 namespace MovLib\Presentation\Partial\Listing;
 
+use \MovLib\Presentation\Partial\Alert;
+
 /**
- * List for movie instances that have won or were nominatet for an award.
+ * List for movie instances with jobs.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -26,7 +28,7 @@ namespace MovLib\Presentation\Partial\Listing;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class AwardMovieListing extends \MovLib\Presentation\Partial\Listing\MovieListing {
+final class CompanyMovieListing extends \MovLib\Presentation\Partial\Listing\MovieListing {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -83,21 +85,28 @@ final class AwardMovieListing extends \MovLib\Presentation\Partial\Listing\Movie
 
     // @devStart
     // @codeCoverageIgnoreStart
-    if (!isset($movie->won)) {
-      throw new \LogicException($i18n->t("\$movie->won has to be set!"));
+    if (empty($movie->jobIds)) {
+      throw new \LogicException($i18n->t("\$movie->jobIds can not be empty!"));
+    }
+
+    if (empty($movie->jobTitles)) {
+      throw new \LogicException($i18n->t("\$movie->jobTitles can not be empty!"));
+    }
+    if (count($movie->jobTitles) != count($movie->jobIds)) {
+      throw new \LogicException($i18n->t("The count of \$movie->jobTitles and \$movie->jobIds has to be equal!"));
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-    $nominatedOrWon = null;
-    if ($movie->won) {
-      $nominatedOrWon = $i18n->t("won");
-    }
-    else {
-      $nominatedOrWon = $i18n->t("nominated");
+    $jobsDone = null;
+    $c = count($movie->jobTitles);
+    for ($i = 0; $i < $c; ++$i) {
+      $jobsDone .=
+        "<a class='label' href='{$i18n->r("/job/{0}", [ $movie->jobIds[$i] ])}'>{$movie->jobTitles[$i]}</a>"
+      ;
     }
 
-    return "<span class='label'>{$nominatedOrWon}</span>";
+    return "<span class='small'>{$jobsDone}</span>";
   }
 
 }
