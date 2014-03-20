@@ -26,6 +26,7 @@
 
 TRUNCATE TABLE `awards`;
 TRUNCATE TABLE `awards_categories`;
+TRUNCATE TABLE `awards_events`;
 
 -- START "Oscar"
 
@@ -39,6 +40,7 @@ INSERT INTO `places` SET
   `latitude`     = 89,
   `longitude`    = -118.24368
 ;
+SET @oscar_place_id = LAST_INSERT_ID();
 
 INSERT INTO `awards` SET
   `created`                = CURRENT_TIMESTAMP,
@@ -50,14 +52,13 @@ INSERT INTO `awards` SET
     'en', 'http://en.wikipedia.org/wiki/Academy_Award',
     'de', 'http://de.wikipedia.org/wiki/Oscar'
   ),
-  `dyn_names`          = COLUMN_CREATE(
+  `dyn_names`              = COLUMN_CREATE(
     'en', 'Academy Awards',
     'de', 'Oscar'
   ),
   `first_awarding_year`    = 1929,
   `aliases`                = 'a:2:{i:0;s:5:"Oscar";i:1;s:14:"Academy Awards";}',
   `links`                  = 'a:1:{i:0;s:22:"http://www.oscars.org/";}',
-  `place_id`               = 5368361,
   `image_width`            = 1875,
   `image_height`           = 1968,
   `image_filesize`         = 383689,
@@ -75,7 +76,6 @@ SET @oscar_award_id = LAST_INSERT_ID();
 
 INSERT INTO `awards_categories` SET
   `award_id`            = @oscar_award_id,
-  `id`                  = 1,
   `created`             = CURRENT_TIMESTAMP,
   `dyn_names`           = COLUMN_CREATE(
     'en', 'Best Assistant Director',
@@ -95,7 +95,6 @@ INSERT INTO `awards_categories` SET
 
 INSERT INTO `awards_categories` SET
   `award_id`            = @oscar_award_id,
-  `id`                  = 2,
   `created`             = CURRENT_TIMESTAMP,
   `dyn_names`           = COLUMN_CREATE(
     'en', 'Best Picture',
@@ -114,7 +113,6 @@ INSERT INTO `awards_categories` SET
 
 INSERT INTO `awards_categories` SET
   `award_id`            = @oscar_award_id,
-  `id`                  = 3,
   `created`             = CURRENT_TIMESTAMP,
   `dyn_names`           = COLUMN_CREATE(
     'en', 'Best Director',
@@ -133,7 +131,6 @@ INSERT INTO `awards_categories` SET
 
 INSERT INTO `awards_categories` SET
   `award_id`            = @oscar_award_id,
-  `id`                  = 4,
   `created`             = CURRENT_TIMESTAMP,
   `dyn_names`           = COLUMN_CREATE(
     'en', 'Best Actor in a Leading Role',
@@ -146,7 +143,6 @@ INSERT INTO `awards_categories` SET
 
 INSERT INTO `awards_categories` SET
   `award_id`            = @oscar_award_id,
-  `id`                  = 5,
   `created`             = CURRENT_TIMESTAMP,
   `dyn_names`           = COLUMN_CREATE(
     'en', 'Best Actress in a Leading Role',
@@ -159,7 +155,6 @@ INSERT INTO `awards_categories` SET
 
 INSERT INTO `awards_categories` SET
   `award_id`            = @oscar_award_id,
-  `id`                  = 6,
   `created`             = CURRENT_TIMESTAMP,
   `dyn_names`           = COLUMN_CREATE(
     'en', 'Best Actor in a Supporting Role',
@@ -172,7 +167,6 @@ INSERT INTO `awards_categories` SET
 
 INSERT INTO `awards_categories` SET
   `award_id`            = @oscar_award_id,
-  `id`                  = 7,
   `created`             = CURRENT_TIMESTAMP,
   `dyn_names`           = COLUMN_CREATE(
     'en', 'Best Actress in a Supporting Role',
@@ -180,6 +174,24 @@ INSERT INTO `awards_categories` SET
   ),
   `dyn_descriptions`    = '',
   `dyn_wikipedia`       = '',
+  `first_awarding_year` = 1929
+;
+
+INSERT INTO `awards_categories` SET
+  `award_id`            = @oscar_award_id,
+  `created`             = CURRENT_TIMESTAMP,
+  `dyn_names`           = COLUMN_CREATE(
+    'en', 'Best Writing (Adapted Screenplay)',
+    'de', 'Bestes adaptiertes Drehbuch'
+  ),
+  `dyn_descriptions`    = COLUMN_CREATE(
+    'en', '&lt;p&gt;The Academy Award for Best Adapted Screenplay is one of the Academy Awards, the most prominent film awards in the United States. It is awarded each year to the writer of a screenplay adapted from another source (usually a novel, play, short story, or TV show but sometimes another film). All sequels are automatically considered adaptations by this standard (since the sequel must be based on the original story).&lt;/p&gt;',
+    'de', '&lt;p&gt;Als Drehbuch nach literarischer Vorlage (Adapted Screenplay) wird eine Form des Drehbuchs bezeichnet, bei dem das Skript auf einer zuvor veröffentlichten Publikation beruht (wie einem Roman, einem Theaterstück oder einem bereits verfilmten Drehbuch), ist also Basis von sogenannten Literaturverfilmungen. Anfangs unregelmäßig, vergibt die Filmakademie der USA seit 1929 ihren Preis (Oscar) in dieser Kategorie. Im Gegensatz dazu steht die Kategorie Originaldrehbuch, das ohne Vorlage verfasst wird.&lt;/p&gt;'
+  ),
+  `dyn_wikipedia`       = COLUMN_CREATE(
+    'en', 'http://en.wikipedia.org/wiki/Academy_Award_for_Best_Writing_(Adapted_Screenplay)',
+    'de', 'http://de.wikipedia.org/wiki/Oscar/Bestes_adaptiertes_Drehbuch'
+  ),
   `first_awarding_year` = 1929
 ;
 

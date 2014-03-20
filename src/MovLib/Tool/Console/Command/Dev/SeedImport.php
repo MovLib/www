@@ -248,6 +248,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Dev\AbstractDevCommand {
       $this->uploadDirectories[basename($uploadDirectory)] = $uploadDirectory;
     }
 
+    $options = $input->getOptions();
     $all     = true;
     foreach ([ self::OPTION_DATABASE, self::OPTION_ELASTICSEARCH, self::OPTION_HISTORY, self::OPTION_INTL_ICU, self::OPTION_UPLOAD ] as $option) {
       if ($options[$option]) {
