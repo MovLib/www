@@ -17,8 +17,10 @@
  */
 namespace MovLib\Presentation\Partial\Listing;
 
+use \MovLib\Presentation\Partial\Alert;
+
 /**
- * List to display Genres or Jobs.
+ * Images list for entities.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -26,7 +28,7 @@ namespace MovLib\Presentation\Partial\Listing;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class EntityListing extends \MovLib\Presentation\Partial\Listing\AbstractListing {
+class EntityListing extends \MovLib\Presentation\AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -39,22 +41,36 @@ class EntityListing extends \MovLib\Presentation\Partial\Listing\AbstractListing
    */
   protected $entity;
 
+  /**
+   * The list items to display.
+   *
+   * @var mixed
+   */
+  protected $listItems;
+
+  /**
+   * The text to display if there are no items.
+   *
+   * @var mixed
+   */
+  protected $noItemsText;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new listing.
+   * Instantiate new entity listing.
    *
-   * @param \mysqli_result $result
-   *   The MySQLi result object containing the entities.
-   * @param string $noItemsText
-   *   {@inheritdoc}
+   * @param mixed $listItems
+   *   The items to build the entity listing.
+   * @param mixed $noItemsText [optional]
+   *   The text to display if there are no items, defaults to a generic {@see \MovLib\Presentation\Partial\Alert}.
    * @param string $entityName
    *   The name of the Data object to fetch (e.g. <code>"Genre"</code> which will lead to instantiation of
    *   <code>"\\MovLib\\Data\\Genre"</code>).
    */
-  public function __construct($result, $noItemsText, $entityName) {
+  public function __construct($listItems, $noItemsText, $entityName) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($entityName)) {
@@ -63,16 +79,46 @@ class EntityListing extends \MovLib\Presentation\Partial\Listing\AbstractListing
     if (class_exists("\\MovLib\\Data\\{$entityName}") === false) {
       throw new \InvalidArgumentException("\\MovLib\\Data\\{$entityName} must match an existing class");
     }
-    if (method_exists("\\MovLib\\Data\\{$entityName}", "getMoviesCount") === false) {
-      throw new \InvalidArgumentException("\\MovLib\\Data\\{$entityName} must implement method 'getMoviesCount()'.");
-    }
-    if (method_exists("\\MovLib\\Data\\{$entityName}", "getSeriesCount") === false) {
-      throw new \InvalidArgumentException("\\MovLib\\Data\\{$entityName} must implement method 'getSeriesCount()'.");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    $this->listItems   = $listItems;
+    $this->noItemsText = $noItemsText;
+    $this->entity      = "\\MovLib\\Data\\{$entityName}";
+  }
+
+  /**
+   * Get the string representation of the listing.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return string
+   *   The string representation of the listing.
+   */
+  public function __toString() {
+    global $i18n;
+
+    // @devStart
+    // @codeCoverageIgnoreStart
+    try {
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+      $list = null;
+      while ($entity = $this->listItems->fetch_object($this->entity)) {
+        $list .= $this->formatListItem($entity);
+      }
+
+      if ($list) {
+        return "<ol class='hover-list no-list'>{$list}</ol>";
+      }
+
+      return (string) $this->noItemsText;
+
+    // @devStart
+    // @codeCoverageIgnoreStart
+    } catch (\Exception $e) {
+      return (string) new Alert("<pre>{$e}</pre>", "Error Rendering Entity List", Alert::SEVERITY_ERROR);
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    parent::__construct($result, $noItemsText);
-    $this->entity = "\\MovLib\\Data\\{$entityName}";
   }
 
 
@@ -80,58 +126,37 @@ class EntityListing extends \MovLib\Presentation\Partial\Listing\AbstractListing
 
 
   /**
-   * Get the rendered listing.
+   * Format list item.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @param mixed $entity
+   *   The entity to format.
+   * @param mixed $listItem [optional]
+   *   The current list item if different from $entity.
    * @return string
-   *   The rendered listing.
+   *   The formatted entity list item.
    */
-  public function __toString() {
-    global $i18n;
-    // @devStart
-    // @codeCoverageIgnoreStart
-    try {
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-      $list = null;
-      $moviesTitle = $i18n->t("Movies");
-      $seriesTitle = $i18n->t("Series");
-      $routeMovies = $routeSeries = $moviesRoute = $seriesRoute = null;
-      while ($entity = $this->listItems->fetch_object($this->entity)) {
-        if (!$routeMovies) {
-          $routeMovies = $i18n->rp("{$entity->routeKey}/movies");
-          $routeSeries = $i18n->rp("{$entity->routeKey}/series");
-        }
-        $moviesRoute = str_replace("{0}", $entity->id, $routeMovies);
-        $seriesRoute = str_replace("{0}", $entity->id, $routeSeries);
-        $list .=
-          "<li class='hover-item r'>" .
-            "<div class='s s10'>" .
-              "<span class='fr'>" .
-                "<a class='ico ico-movie label' href='{$moviesRoute}' title='{$moviesTitle}'> &nbsp; {$entity->getMoviesCount()}</a>" .
-                "<a class='ico ico-series label' href='{$seriesRoute}' title='{$seriesTitle}'> &nbsp; {$entity->getSeriesCount()}</a>" .
-              "</span>" .
-              "<a href='{$entity->route}'>{$entity->name}</a>" .
-            "</div>" .
-          "</li>"
-        ;
-      }
-      if ($list) {
-        return "<ol class='hover-list'>{$list}</ol>";
-      }
-      return (string) $this->noItemsText;
-    // @devStart
-    // @codeCoverageIgnoreStart
-    }
-    catch (\Exception $e) {
-      return (string) new \MovLib\Presentation\Partial\Alert(
-        "<pre>{$e}</pre>",
-        $i18n->t("Error Rendering List"),
-        \MovLib\Presentation\Partial\Alert::SEVERITY_ERROR
-      );
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
+  final protected function formatListItem($entity, $listItem = null) {
+    return
+      "<li class='hover-item r' typeof='Corporation'>" .
+        "<div class='s s10'>" .
+          $this->getAdditionalContent($entity, $listItem) .
+          "<a href='{$entity->route}' property='url'><span property='name'>{$entity->name}</span></a>" .
+        "</div>" .
+      "</li>"
+    ;
+  }
+
+  /**
+   * Get additional content to display on a list item.
+   *
+   * @param mixed $entity
+   *   The entity providing the information.
+   * @return string
+   *   The formatted additional content.
+   */
+  protected function getAdditionalContent($entity, $listItem) {
+    // The default implementation returns no additional content.
   }
 
 }

@@ -20,7 +20,7 @@ namespace MovLib\Presentation\Partial\Listing;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
- * List all movies a person has participated in.
+ * Listing for all movies a person has participated in.
  *
  * @see \MovLib\Data\Person\FullPerson::getMovies()
  * @author Richard Fussenegger <richard@fussenegger.info>
@@ -30,7 +30,18 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class PersonMovieListing extends \MovLib\Presentation\Partial\Listing\MovieListing {
+final class PersonMovieListing extends \MovLib\Presentation\Partial\Listing\MovieListing {
+
+  // @devStart
+  // @codeCoverageIgnoreStart
+  public function __construct($listItems, $noItemsText = null) {
+    if (isset($listItems) && $listItems !== (array) $listItems) {
+      throw new \InvalidArgumentException("\$listItems must be an array");
+    }
+    parent::__construct($listItems, $noItemsText);
+  }
+  // @codeCoverageIgnoreEnd
+  // @devEnd
 
   /**
    * @inheritdoc
@@ -52,13 +63,18 @@ class PersonMovieListing extends \MovLib\Presentation\Partial\Listing\MovieListi
       }
 
       if ($this->noItemsText) {
-        return (string) $this->noItemsText;
+        $this->noItemsText = new Alert(
+          $i18n->t("This person hasn’t worked on any movies yet."),
+          $i18n->t("No Movies"),
+          Alert::SEVERITY_INFO
+        );
       }
 
-      return (string) new Alert($i18n->t("This person hasn’t worked on any movies yet."), null, Alert::SEVERITY_INFO);
+      return (string) $this->noItemsText;
     // @devStart
     // @codeCoverageIgnoreStart
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       return (string) new Alert("<pre>{$e}</pre>", "Error Rendering Movie List", Alert::SEVERITY_ERROR);
     }
     // @codeCoverageIgnoreEnd
@@ -67,6 +83,7 @@ class PersonMovieListing extends \MovLib\Presentation\Partial\Listing\MovieListi
 
   /**
    * {@inheritdoc}
+   * @global \MovLib\Data\I18n $i18n
    * @param \MovLib\Data\Movie\FullMovie $movie
    *   {@inheritdoc}
    * @param \MovLib\Stub\Data\Person\PersonMovie $personMovie
@@ -74,6 +91,7 @@ class PersonMovieListing extends \MovLib\Presentation\Partial\Listing\MovieListi
    */
   protected function getAdditionalContent($movie, $personMovie = null) {
     global $i18n;
+
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($movie instanceof \MovLib\Data\Movie\FullMovie)) {

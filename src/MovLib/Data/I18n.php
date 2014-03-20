@@ -31,6 +31,56 @@ namespace MovLib\Data;
 final class I18n {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * Custom language code for non linguistic content.
+   *
+   * Used in languages.
+   *
+   * @see \MovLib\Stub\Data\Language
+   * @see \MovLib\Presentation\Partial\Language
+   * @var string
+   */
+  const CODE_NON_LINGUISTIC = "--";
+
+  /**
+   * Custom language code for other content.
+   *
+   * Used in languages and subtitles.
+   *
+   * @see \MovLib\Stub\Data\Language
+   * @see \MovLib\Presentation\Partial\Language
+   * @see \MovLib\Stub\Data\Subtitle
+   * @see \MovLib\Presentation\Partial\Subtitle
+   * @var string
+   */
+  const CODE_OTHER = "&&";
+
+  /**
+   * Custom language code for commentary content.
+   *
+   * Used in subtitles.
+   *
+   * @see \MovLib\Stub\Data\Subtitle
+   * @see \MovLib\Presentation\Partial\Subtitle
+   * @var string
+   */
+  const CODE_COMMENTARY = "@@";
+
+  /**
+   * Custom language code for fact content.
+   *
+   * Used in subtitles.
+   *
+   * @see \MovLib\Stub\Data\Subtitle
+   * @see \MovLib\Presentation\Partial\Subtitle
+   * @var string
+   */
+  const CODE_FACT = "§§";
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 

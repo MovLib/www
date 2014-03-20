@@ -26,7 +26,7 @@
 
 TRUNCATE TABLE `jobs`;
 
--- START "makeup artist" DELETED
+-- START "makeup artist"
 
 INSERT INTO `jobs` SET
   `created`                = CURRENT_TIMESTAMP,
@@ -48,6 +48,7 @@ INSERT INTO `jobs` SET
     'de', 'Visagistin'
   )
 ;
+SET @makeup_company_id = LAST_INSERT_ID();
 
 -- END "makeup artist"
 
@@ -72,7 +73,6 @@ INSERT INTO `jobs` SET
     'de', 'Produzentin'
   )
 ;
-
 SET @production_company_id = LAST_INSERT_ID();
 
 INSERT INTO `movies_crew` SET
@@ -81,8 +81,10 @@ INSERT INTO `movies_crew` SET
   `job_id`      = @production_company_id
 ;
 
+INSERT INTO `movies_crew` SET
+  `movie_id`    = 3,
+  `company_id`  = 3,
+  `job_id`      = @makeup_company_id
+;
+
 -- END "production"
-
--- START "makeup artist"
-
--- END "makeup artist"

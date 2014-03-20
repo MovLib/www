@@ -286,6 +286,8 @@ INSERT INTO `messages` (`message`, `dyn_translations`) VALUES
 ('Job', COLUMN_CREATE('de', 'Tätigkeit')),
 ('Awards', COLUMN_CREATE('de', 'Auszeichnungen')),
 ('Award', COLUMN_CREATE('de', 'Auszeichnung')),
+('{0}x won', COLUMN_CREATE('de', '{0}x gewonnen')),
+('{0}x nominated', COLUMN_CREATE('de', '{0}x nominiert')),
 ('Category', COLUMN_CREATE('de', 'Kategorie')),
 ('Categories', COLUMN_CREATE('de', 'Kategorien')),
 ('Categories of {0}', COLUMN_CREATE('de', 'Kategorien von {0}')),

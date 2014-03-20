@@ -18,24 +18,35 @@
 namespace MovLib\Presentation\Partial\Listing;
 
 /**
- * Special images list for person instances displaying their life dates.
+ * Images listing for person instances displaying their life dates.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class PersonLifeDateListing extends \MovLib\Presentation\Partial\Listing\PersonListing {
+final class PersonLifeDateListing extends \MovLib\Presentation\Partial\Listing\PersonListing {
   use \MovLib\Presentation\TraitPerson;
 
+  // @devStart
+  // @codeCoverageIgnoreStart
+  public function __construct($listItems, $listItemProperty = null, $noItemsText = null) {
+    if (isset($listItems) && $listItems !== (array) $listItems) {
+      throw new \InvalidArgumentException("\$listItems must be an array");
+    }
+    parent::__construct($listItems, $listItemProperty, $noItemsText);
+  }
+  // @codeCoverageIgnoreEnd
+  // @devEnd
+  
   /**
    * @inheritdoc
    */
   protected function getAdditionalContent($person, $listItem) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if(!($person instanceof \MovLib\Data\Person\Person)) {
+    if (!($person instanceof \MovLib\Data\Person\Person)) {
       throw new \InvalidArgumentException("\$person must be of type \\MovLib\\Data\\Person\\Person");
     }
     // @codeCoverageIgnoreEnd

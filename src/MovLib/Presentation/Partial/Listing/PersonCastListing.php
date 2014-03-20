@@ -20,19 +20,30 @@ namespace MovLib\Presentation\Partial\Listing;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
- * Special images list for cast.
+ * Images list for cast.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class PersonCastListing extends \MovLib\Presentation\Partial\Listing\PersonListing {
+final class PersonCastListing extends \MovLib\Presentation\Partial\Listing\PersonListing {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
+
+  // @devStart
+  // @codeCoverageIgnoreStart
+  public function __construct($listItems, $listItemProperty = null, $noItemsText = null) {
+    if (isset($listItems) && $listItems !== (array) $listItems) {
+      throw new \InvalidArgumentException("\$listItems must be an array");
+    }
+    parent::__construct($listItems, $listItemProperty, $noItemsText);
+  }
+  // @codeCoverageIgnoreEnd
+  // @devEnd
 
   public function __toString() {
     global $i18n;
@@ -51,14 +62,15 @@ class PersonCastListing extends \MovLib\Presentation\Partial\Listing\PersonListi
         return "<ol class='hover-list no-list'>{$list}</ol>";
       }
 
-      if ($this->noItemsText) {
-        return (string) $this->noItemsText;
+      if (!$this->noItemsText) {
+        $this->noItemsText = new Alert(
+          $i18n->t("No cast assigned yet, please edit this page to provide this information."),
+          null,
+          Alert::SEVERITY_INFO
+        );
       }
-      return new Alert(
-        $i18n->t("No cast assigned yet, please edit this page to provide this information."),
-        null,
-        Alert::SEVERITY_INFO
-      );
+
+      return (string) $this->noItemsText;
     // @devStart
     // @codeCoverageIgnoreStart
     } catch (\Exception $e) {
@@ -88,7 +100,7 @@ class PersonCastListing extends \MovLib\Presentation\Partial\Listing\PersonListi
 
     // @devStart
     // @codeCoverageIgnoreStart
-    if(!($person instanceof \MovLib\Data\Person\Person)) {
+    if (!($person instanceof \MovLib\Data\Person\Person)) {
       throw new \InvalidArgumentException("\$person must be of type \\MovLib\\Data\\Person\\Person");
     }
     // @codeCoverageIgnoreEnd
@@ -112,75 +124,6 @@ class PersonCastListing extends \MovLib\Presentation\Partial\Listing\PersonListi
     if ($roles) {
       return "<small><em>{$i18n->t("as")}</em> {$roles}</small>";
     }
-  }
-  /**
-   * @inheritdoc
-   */
-  protected function render() {
-    global $i18n;
-    $personRoles = [];
-    $roleHimself      = $i18n->t("Himself");
-    $roleHerself      = $i18n->t("Herself");
-    $roleSelf         = $i18n->t("Self");
-    /* @var $cast \MovLib\Data\Movie\Cast */
-    while ($cast = $this->listItems->fetch_object($this->castClass)) {
-      // Initialize the offset in the person role array.
-      if (!isset($personRoles[$cast->personId])) {
-        $personRoles[$cast->personId]["person"] = $cast->getPerson();
-        $personRoles[$cast->personId]["roles"]  = [];
-      }
-
-      // Add the role to the person's information in the role array.
-      // Simple role with just a name.
-      if ($cast->roleName) {
-        $personRoles[$cast->personId]["roles"][] = $cast->roleName;
-      }
-      // Persons playing themselves.
-      elseif ($cast->role === true) {
-        if ($personRoles[$cast->personId]["person"]->sex === 1) {
-          $role = $roleHimself;
-        }
-        elseif ($personRoles[$cast->personId]["person"] === 2) {
-          $role = $roleHerself;
-        }
-        else {
-          $role = $roleSelf;
-        }
-        $personRoles[$cast->personId]["roles"][] = $this->a($personRoles[$cast->personId]["person"]->route, $role);
-      }
-      // Role with own person page.
-      elseif (isset ($cast->role)) {
-        $personRoles[$cast->personId]["roles"][] = $this->a($cast->role->route, $cast->role->name);
-      }
-    }
-
-    // No cast was found, return descriptive text.
-    if (empty($personRoles)) {
-      return (string) new Alert($this->noItemsText, null, Alert::SEVERITY_INFO);
-    }
-
-    // Construct the cast list.
-    $list = null;
-    foreach ($personRoles as $id => $info) {
-      $roles = null;
-      if (!empty($info["roles"])) {
-        $roles = implode(", ", $info["roles"]);
-        $roles = "<small>{$i18n->t(
-          "{begin_emphasize}as{end_emphasize} {roles}",
-          [ "roles" => $roles, "begin_emphasize" => "<em>", "end_emphasize" => "</em>" ]
-        )}</small>";
-      }
-
-      $list .=
-        "<li{$this->expandTagAttributes($this->listItemsAttributes)}>" .
-          $this->getImage($info["person"]->getStyle($this->imageStyle), $info["person"]->route, [ "property" => "image" ], [ "class" => "s s1 tac" ]) .
-          "<div class='s s{$this->descriptionSpan}'>" .
-            "<p><a href='{$info["person"]->route}' property='name url'>{$info["person"]->name}</a></p>{$roles}" .
-          "</div>" .
-        "</li>"
-      ;
-    }
-    return "<ol{$this->expandTagAttributes($this->attributes)}>{$list}</ol>";
   }
 
 }

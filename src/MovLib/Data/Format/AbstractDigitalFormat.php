@@ -15,55 +15,66 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Award;
-
-use \MovLib\Data\Award;
-use \MovLib\Presentation\Partial\Listing\AwardMovieListing;
+namespace MovLib\Data\Format;
 
 /**
- * Movies with a certain award associated.
+ * Base class for all concrete formats.
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Movies extends \MovLib\Presentation\Award\AbstractBase {
+abstract class AbstractDigitalFormat {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
-  /**
-   * Instantiate new award movie presentation.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   */
+  // @devStart
+  // @codeCoverageIgnoreStart
   public function __construct() {
-    global $i18n, $kernel;
-    $this->award = new Award((integer) $_SERVER["AWARD_ID"]);
-    $this->initPage($i18n->t("Movies with {0}", [ $this->award->name ]));
-    $this->pageTitle       = $i18n->t("Movies with {0}", [ "<a href='{$this->award->route}'>{$this->award->name}</a>" ]);
-    $this->breadcrumbTitle = $i18n->t("Movies");
-    $this->initLanguageLinks("/award/{0}/movies", [ $this->award->id ], true);
-    $this->initAwardBreadcrumb();
-    $this->sidebarInit();
 
-    $kernel->stylesheets[] = "award";
   }
+  // @codeCoverageIgnoreEnd
+  // @devEnd
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
+
+
+  abstract public function getAspectRatios();
+
+  abstract public function getAudioFormats();
+
+  abstract public function getCodecs();
+
+  abstract public function getTvNorms();
+
+  abstract public function getRegionCodes();
+
+  abstract public function getResolutions();
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * @inheritdoc
-   * @return \MovLib\Presentation\Partial\Listing\Movies
+   * Get a list of all available subtitles.
+   *
+   * @return array
+   *   List of all available subtitles.
    */
-  protected function getPageContent() {
-    return new AwardMovieListing($this->award->getMoviesResult());
+  final public function getSubtitles() {
+    static $subtitles = null;
+
+    return $subtitles;
   }
 
 }

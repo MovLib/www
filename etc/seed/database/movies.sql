@@ -315,6 +315,22 @@ INSERT INTO `movies_directors` SET
   `job_id` = @job_director
 ;
 
+INSERT INTO `persons` SET
+  `name`                   = 'Morgan Freeman',
+  `birthdate`              = '1937-06-01',
+  `sex`                    = 1,
+  `dyn_biographies`        = '',
+  `dyn_wikipedia`          = '',
+  `dyn_image_descriptions` = ''
+;
+SET @morgan_freeman_id = LAST_INSERT_ID();
+
+INSERT INTO `movies_crew` SET
+  `movie_id`  = @the_shawshank_redemption_id,
+  `person_id` = @morgan_freeman_id,
+  `job_id` = @job_actor
+;
+
 INSERT INTO `movies_titles` SET
   `movie_id`      = @the_shawshank_redemption_id,
   `dyn_comments`  = COLUMN_CREATE(

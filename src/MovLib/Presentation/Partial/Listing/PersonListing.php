@@ -21,7 +21,7 @@ use \MovLib\Data\Person\Person;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
- * Special images list for person instances.
+ * Listing for person instances.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
@@ -62,7 +62,7 @@ class PersonListing extends \MovLib\Presentation\AbstractBase {
 
 
   /**
-   * Instantiate new special persons listing.
+   * Instantiate new person listing.
    *
    * @param mixed $listItems
    *   The items to build the person listing.
@@ -72,6 +72,18 @@ class PersonListing extends \MovLib\Presentation\AbstractBase {
    *   The text to display if there are no items, defaults to a generic {@see \MovLib\Presentation\Partial\Alert}.
    */
   public function __construct($listItems, $listItemProperty = null, $noItemsText = null) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (isset($listItemProperty) && (empty($listItemProperty) || !is_string($listItemProperty))) {
+      throw new \InvalidArgumentException("\$listItemProperty must be a non-empty string when given");
+    }
+    if (isset($noItemsText) && (empty($noItemsText) || !method_exists($noItemsText, "__toString"))) {
+      throw new \InvalidArgumentException(
+        "\$noItemsText must be a non-empty string or convertable to string when given"
+      );
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     $this->listItems   = $listItems;
     $this->noItemsText = $noItemsText;
     if ($listItemProperty) {
@@ -104,20 +116,23 @@ class PersonListing extends \MovLib\Presentation\AbstractBase {
         return "<ol class='hover-list no-list'>{$list}</ol>";
       }
 
-      if ($this->noItemsText) {
-        return (string) $this->noItemsText;
+      if (!$this->noItemsText) {
+        $this->noItemsText = new Alert(
+          $i18n->t(
+            "We couldn’t find any persons matching your filter criteria, or there simply aren’t any persons available." .
+            " Would you like to {0}create a new entry{1}?",
+            [ "<a href='{$i18n->r("/person/create")}'>", "</a>" ]
+          ),
+          $i18n->t("No Persons"),
+          Alert::SEVERITY_INFO
+        );
       }
-      return new Alert(
-        $i18n->t(
-          "We couldn’t find any persons matching your filter criteria, or there simply aren’t any persons available. Would you like to {0}create a new entry{1}?",
-          [ "<a href='{$i18n->r("/person/create")}'>", "</a>" ]
-        ),
-        $i18n->t("No Persons"),
-        Alert::SEVERITY_INFO
-      );
+
+      return (string) $this->noItemsText;
     // @devStart
     // @codeCoverageIgnoreStart
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       return (string) new Alert("<pre>{$e}</pre>", "Error Rendering Person List", Alert::SEVERITY_ERROR);
     }
     // @codeCoverageIgnoreEnd
@@ -145,7 +160,7 @@ class PersonListing extends \MovLib\Presentation\AbstractBase {
     $bornName = null;
     if ($person->bornName) {
       $bornName = "<small>{$i18n->t("{0} ({1})", [
-        "<span>{$person->bornName}</span>",
+        "<span property='additionalName'>{$person->bornName}</span>",
         "<i>{$i18n->t("born name")}</i>",
       ])}</small>";
     }

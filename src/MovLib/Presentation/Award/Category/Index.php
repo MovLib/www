@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Award\Category;
 
 use \MovLib\Data\Award;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Listing\AwardCategory as CategoryPartial;
+use \MovLib\Presentation\Partial\Listing\EntityIndexListing;
 
 /**
  * A category of a certain award.
@@ -79,7 +79,10 @@ class Index extends \MovLib\Presentation\Award\AbstractBase {
     $noItemText .=
       $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/award/{0}/category/creat", [ $this->award->id ])}'>", "</a>" ]);
 
-    return new CategoryPartial($result, $noItemText);
+    $moviesRoute = $i18n->rp("/award/{0}/category/{1}/movies", [ $this->award->id, "{{ id }}" ]);
+    $seriesRoute = $i18n->rp("/award/{0}/category/{1}/series", [ $this->award->id, "{{ id }}" ]);
+
+    return new EntityIndexListing($result, $noItemText, "AwardCategory", $moviesRoute, $seriesRoute);
   }
 
 }
