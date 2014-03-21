@@ -877,7 +877,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`media` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The medium’s unique identifier.',
   `changed` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The medium’s last update date and time.',
   `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The medium’s insert date and time.',
-  `bootleg` TINYINT(1) NOT NULL DEFAULT FALSE,
+  `bootleg` TINYINT(1) NOT NULL DEFAULT FALSE COMMENT 'Flag if this medium is a bootleg or not.',
+  `type` TINYINT NOT NULL COMMENT 'The medium’s type as enumeration of one of \\\\MovLib\\\\Data\\\\Format\\\\FormatFactory class constants.',
   `dyn_notes` BLOB NOT NULL COMMENT 'The medium’s notes in various languages. Keys are ISO alpha-2 language codes.',
   `bin_format` BLOB NULL COMMENT 'The medium’s release format (e.g. DVD) as serialized PHP object (\\\\MovLib\\\\Data\\\\Format\\\\AbstractFormat).',
   PRIMARY KEY (`id`))
