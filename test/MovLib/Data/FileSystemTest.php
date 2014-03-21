@@ -469,7 +469,7 @@ class FileSystemTest extends \MovLib\TestCase {
    * @covers ::getRealPath
    */
   public function testGetRealPath() {
-    $this->assertEquals(dirname(getcwd()), FileSystem::getRealPath("../"));
+    $this->assertEquals(dirname(getcwd()), FileSystem::realpath("../"));
   }
 
   /**
@@ -485,7 +485,7 @@ class FileSystemTest extends \MovLib\TestCase {
    */
   public function testGetRealPathDoesntExist() {
     $f = str_repeat("/phpunit", 10);
-    $this->assertEquals($f, FileSystem::getRealPath($f));
+    $this->assertEquals($f, FileSystem::realpath($f));
   }
 
   /**
