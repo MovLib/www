@@ -17,64 +17,36 @@
  */
 namespace MovLib\Tool\Console\Command\Admin;
 
-use \MovLib\Data\FileSystem;
 use \Symfony\Component\Console\Input\InputInterface;
-use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Manage various caches of the MovLib software.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Cache extends \MovLib\Tool\Console\Command\AbstractCommand {
+class PurgeCache extends \MovLib\Tool\Console\Command\AbstractCommand {
 
   /**
    * @inheritdoc
    */
   protected function configure() {
-    $this->setName("cache");
-    $this->setDescription("Manage various system caches.");
-    $this->addOption("presentation", "p", InputOption::VALUE_NONE, "Empty the presentation cache.");
-  }
-
-  /**
-   * Purge the presentation cache.
-   *
-   * @todo Allow to purge specific host caches or certain directories.
-   * @global \MovLib\Tool\Kernel $kernel
-   * @return this
-   */
-  public function purgePresentationCache() {
-    global $kernel;
-
-    $this->writeVerbose("Purging presentation cache...", self::MESSAGE_TYPE_COMMENT);
-    FileSystem::delete("{$kernel->documentRoot}/var/cache/*", true, true);
-    $this->writeVerbose("Successfuly purged the presentation cache!", self::MESSAGE_TYPE_INFO);
-
-    return $this;
+    $this->setName("purge-cache");
+    $this->setDescription("Purge the presentation cache.");
   }
 
   /**
    * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    $foundOption = false;
-    foreach ($input->getOptions() as $option => $value) {
-      $method = "purge{$option}Cache";
-      if ($value === true && method_exists($this, $method)) {
-        $this->{$method}();
-        $foundOption = true;
-      }
-    }
-    if ($foundOption === false) {
-      $this->write("Use `movlib --help {$this->getName()}` to list all available options.", self::MESSAGE_TYPE_ERROR);
-    }
-
+    $this->writeVerbose("Purging presentation cache...", self::MESSAGE_TYPE_COMMENT);
+    unlink("dr://var/cache");
+    mkdir("dr://var/cache", 0775);
+    $this->writeVerbose("Successfuly purged the presentation cache!", self::MESSAGE_TYPE_INFO);
     return 0;
   }
 
