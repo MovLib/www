@@ -29,8 +29,6 @@ TRUNCATE TABLE `awards_categories`;
 TRUNCATE TABLE `awards_events`;
 TRUNCATE TABLE `movies_awards`;
 
--- START "Oscar"
-
 INSERT INTO `places` SET
   `place_id`     = 5368361,
   `country_code` = 'US',
@@ -41,7 +39,9 @@ INSERT INTO `places` SET
   `latitude`     = 89,
   `longitude`    = -118.24368
 ;
-SET @oscar_place_id = LAST_INSERT_ID();
+SET @place_los_angeles = LAST_INSERT_ID();
+
+-- START "Oscar"
 
 INSERT INTO `awards` SET
   `created`                = CURRENT_TIMESTAMP,
@@ -140,7 +140,7 @@ INSERT INTO `awards_categories` SET
   `dyn_wikipedia`       = '',
   `first_awarding_year` = 1929
 ;
-SET @oscar_award_category_id1 = LAST_INSERT_ID();
+SET @oscar_award_best_actor = LAST_INSERT_ID();
 
 INSERT INTO `awards_categories` SET
   `award_id`            = @oscar_award_id,
@@ -195,7 +195,7 @@ INSERT INTO `awards_categories` SET
   ),
   `first_awarding_year` = 1929
 ;
-SET @oscar_award_category_id2 = LAST_INSERT_ID();
+SET @oscar_award_best_writing = LAST_INSERT_ID();
 
 INSERT INTO `awards_events` SET
   `award_id`            = @oscar_award_id,
@@ -213,14 +213,14 @@ INSERT INTO `awards_events` SET
   ),
   `start_date`          = '1995-03-27',
   `links`               = 'a:2:{i:0;s:80:"http://www.oscars.org/awards/academyawards/oscarlegacy/1990-1999/67nominees.html";i:1;s:112:"http://www.nytimes.com/1995/01/29/movies/bear-hunting-in-oscar-season-five-strategies.html?pagewanted=all&src=pm";}',
-  `place_id`            = @oscar_place_id
+  `place_id`            = @place_los_angeles
 ;
 SET @oscar_award_event_id = LAST_INSERT_ID();
 
 INSERT INTO `movies_awards` SET
   `movie_id`          = 3, /* The Shawshank Redemption */
   `award_id`          = @oscar_award_id,
-  `award_category_id` = @oscar_award_category_id1,
+  `award_category_id` = @oscar_award_best_actor,
   `award_event_id`    = @oscar_award_event_id,
   `person_id`         = 8, /* Morgan Freeman */
   `won`               = false,
@@ -230,7 +230,7 @@ INSERT INTO `movies_awards` SET
 INSERT INTO `movies_awards` SET
   `movie_id`          = 3, /* The Shawshank Redemption */
   `award_id`          = @oscar_award_id,
-  `award_category_id` = @oscar_award_category_id2,
+  `award_category_id` = @oscar_award_best_writing,
   `award_event_id`    = @oscar_award_event_id,
   `person_id`         = 7, /* Frank Darabont */
   `won`               = false,
@@ -238,3 +238,105 @@ INSERT INTO `movies_awards` SET
 ;
 
 -- END "Oscar"
+
+-- START "Golden Globe"
+
+INSERT INTO `awards` SET
+  `created`                = CURRENT_TIMESTAMP,
+  `dyn_descriptions`       = COLUMN_CREATE(
+    'en', '&lt;p&gt;The Golden Globe Award is an American accolade bestowed by the 93 members of the Hollywood Foreign Press Association (HFPA) recognizing excellence in film and television, both domestic and foreign. The annual formal ceremony and dinner at which the awards are presented is a major part of the film industry&#039;s awards season, which culminates each year with the Academy Awards.&lt;/p&gt;&lt;p&gt;The 71st Golden Globe Awards, honoring the best in film and television for 2013, were presented on January 12, 2014, at the Beverly Hilton Hotel in Beverly Hills, California, where they have been held annually since 1961.&lt;/p&gt;',
+    'de', '&lt;p&gt;Die Golden Globe Awards sind jährlich vergebene Auszeichnungen für Kinofilme und Fernsehsendungen. Die letzte Verleihung fand am 12. Januar 2014 statt.&lt;/p&gt;&lt;p&gt;Die Preisverleihung wird seit 1944 von der Hollywood Foreign Press Association (HFPA) organisiert. Über die Vergabe bestimmt eine Gruppe von stets etwa 100 internationalen Journalisten, die in Hollywood arbeiten. In den Anfangsjahren wurden ausschließlich Leinwandproduktionen bewertet, doch angesichts der wachsenden Popularität des Fernsehens entschloss man sich 1956, das neuere Medium ebenfalls zu berücksichtigen. In diesen zwei Bereichen der amerikanischen Unterhaltungsindustrie gelten die Golden Globes nach den Academy Awards (den Oscars) bzw. den Emmys als jeweils zweitbedeutendste Auszeichnung.&lt;/p&gt;&lt;p&gt;Die Verleihungszeremonie erfolgt im Rahmen eines Gala-Dinners, zu dem geladen ist, wer in Hollywood Rang und Namen hat. Da die Abstimmungen für die Oscars oft nur wenige Tage danach beginnen, hoffen viele Beteiligte, durch ein erfolgreiches Abschneiden bei den Golden Globes in der Gunst der Academy-Mitglieder zu steigen.&lt;/p&gt;'
+  ),
+  `dyn_wikipedia`          = COLUMN_CREATE(
+    'en', 'http://en.wikipedia.org/wiki/Golden_Globe_Award',
+    'de', 'http://de.wikipedia.org/wiki/Golden_Globe_Award'
+  ),
+  `dyn_names`              = COLUMN_CREATE(
+    'en', 'Golden Globe Award',
+    'de', 'Golden Globe Award'
+  ),
+  `dyn_image_descriptions` = '',
+  `first_awarding_year`    = 1944,
+  `links`                  = 'a:1:{i:0;s:28:"http://www.goldenglobes.com/";}'
+;
+SET @golden_globe_award_id = LAST_INSERT_ID();
+
+INSERT INTO `awards_categories` SET
+  `award_id`            = @golden_globe_award_id,
+  `created`             = CURRENT_TIMESTAMP,
+  `dyn_names`           = COLUMN_CREATE(
+    'en', 'Best Actor – Motion Picture Drama',
+    'de', 'Bester Hauptdarsteller – Drama'
+  ),
+  `dyn_descriptions`    = COLUMN_CREATE(
+    'en', '&lt;p&gt;The Golden Globe Award for Best Actor in a Motion Picture – Drama was first awarded by the Hollywood Foreign Press Association as a separate category in 1951. Previously, there was a single award for &quot;Best Actor in a Motion Picture&quot; but the splitting allowed for recognition of it and the Best Actor – Musical or Comedy.&lt;/p&gt;&lt;p&gt;The formal title has varied since its inception. In 2005, it was officially called: &quot;Best Performance by an Actor in a Motion Picture – Drama&quot;. As of 2013, the wording is &quot;Best Actor in a Motion Picture – Drama&quot;.&lt;/p&gt;',
+    'de', '&lt;p&gt;Gewinner und Nominierte in der Kategorie Bester Hauptdarsteller – Drama (seit 2005 Best Performance by an Actor in a Motion Picture – Drama), die die herausragendsten Schauspielleistungen des vergangenen Kalenderjahres prämiert. Die Kategorie wurde im Jahr 1951 ins Leben gerufen. Von 1944 bis 1950 vergab die Hollywood Foreign Press Association (HFPA) einen Darstellerpreis (Best Actor in a Motion Picture) ohne Unterteilung nach Filmgenre.&lt;/p&gt;&lt;p&gt;In 46 von 71 Fällen wurde der beste Drama-Darsteller später mit dem Oscar ausgezeichnet, zuletzt 2014 geschehen, mit der Preisvergabe an den US-amerikanischen Schauspieler Matthew McConaughey (Dallas Buyers Club). 2007 wurde dem US-Amerikaner Leonardo DiCaprio (Blood Diamond, Departed – Unter Feinden) die seltene Ehre zuteil, in einem Jahr für zwei unterschiedliche Filmrollen nominiert zu werden.&lt;/p&gt;&lt;p&gt;51 Mal konnten US-amerikanische Schauspieler den Darstellerpreis erringen (darunter in die USA emigrierte Akteure wie der Ungar Paul Lukas), gefolgt von ihren Kollegen aus Großbritannien (15 Siege) und Irland (4 Siege). Als einziger Schauspieler aus dem deutschsprachigen Raum konnte Maximilian Schell den Preis 1962 für seine Leistung in der Hollywood-Produktion Das Urteil von Nürnberg erringen, für die er später auch den Academy Award gewann. Vergeblich konkurrierte er 1976 mit The Man in the Glass Booth, während sich Oskar Werner 1966 für das englischsprachige Drama Das Narrenschiff in die Nominiertenliste einreihen konnte. Die einzigen Nominierungen für nicht-englischsprachige Rollen errangen 1978 Marcello Mastroianni für die italienische Produktion Ein besonderer Tag und 2005 Javier Bardem für den spanischen Film Das Meer in mir.&lt;/p&gt;&lt;p&gt;Posthume Auszeichnungen und Nominierungen wurden 1956 James Dean, 1968 Spencer Tracy (Rat mal, wer zum Essen kommt) und 1977 Peter Finch (Network) zuteil.&lt;/p&gt;'
+  ),
+  `dyn_wikipedia`       = COLUMN_CREATE(
+    'en', 'http://en.wikipedia.org/wiki/Golden_Globe_Award_for_Best_Actor_%E2%80%93_Motion_Picture_Drama',
+    'de', 'http://de.wikipedia.org/wiki/Golden_Globe_Award/Bester_Hauptdarsteller_%E2%80%93_Drama'
+  ),
+  `first_awarding_year` = 1951
+;
+SET @golden_globe_award_best_actor = LAST_INSERT_ID();
+
+INSERT INTO `awards_categories` SET
+  `award_id`            = @golden_globe_award_id,
+  `created`             = CURRENT_TIMESTAMP,
+  `dyn_names`           = COLUMN_CREATE(
+    'en', 'Best Screenplay',
+    'de', 'Bestes Filmdrehbuch'
+  ),
+  `dyn_descriptions`    = COLUMN_CREATE(
+    'en', '&lt;p&gt;The Golden Globe Award for Best Screenplay - Motion Picture is one of the annual awards given by the Hollywood Foreign Press Association.&lt;/p&gt;',
+    'de', '&lt;p&gt;Gewinner und Nominierte in der Kategorie Bestes Filmdrehbuch (Best Screenplay – Motion Picture), die die herausragendsten Leistungen von Drehbuchautoren des vergangenen Kalenderjahres prämiert. Die Kategorie wurde im Jahr 1948 ins Leben gerufen.&lt;/p&gt;&lt;p&gt;Im Gegensatz zur Oscarverleihung erfolgt keine Unterteilung nach Originaldrehbuch und Adaption. In 38 von 57 Fällen wurde der Preisträger später mit einem Oscar ausgezeichnet, zuletzt 2014 geschehen, mit der Preisvergabe an den US-Amerikaner Spike Jonze (Her). Die seltene Ehre in einem Jahr für zwei unterschiedliche Drehbücher nominiert zu werden wurde 1975 dem US-Amerikaner Francis Ford Coppola (Der Dialog, Der Pate) und 1977 dessen Landsmann William Goldman (Der Marathon-Mann, Die Unbestechlichen) zuteil.&lt;/p&gt;&lt;p&gt;Ein Drehbuchautor aus dem deutschsprachigen Raum konnte sich erstmals 1949 in die Siegerliste einreihen, als der Zürcher Richard Schweizer (Die Gezeichneten) die Auszeichnung erhielt.&lt;/p&gt;'
+  ),
+  `dyn_wikipedia`       = COLUMN_CREATE(
+    'en', 'http://en.wikipedia.org/wiki/Golden_Globe_Award_for_Best_Screenplay',
+    'de', 'http://de.wikipedia.org/wiki/Golden_Globe_Award/Bestes_Filmdrehbuch'
+  ),
+  `first_awarding_year` = 1948
+;
+SET @golden_globe_award_screenplay = LAST_INSERT_ID();
+
+INSERT INTO `awards_events` SET
+  `award_id`            = @oscar_award_id,
+  `dyn_names`           = COLUMN_CREATE(
+    'en', '52nd Golden Globe Awards',
+    'de', 'Golden Globe Awards 1995'
+  ),
+  `dyn_descriptions`    = COLUMN_CREATE(
+    'en', '&lt;p&gt;The 52nd Golden Globe Awards, honoring the best in film and television for 1994, were held on January 21, 1995 at the Beverly Hilton Hotel in Beverly Hills, California.&lt;/p&gt;',
+    'de', '&lt;p&gt;Die 52. Verleihung der Golden Globe Awards fand am 21. Januar 1995 statt.&lt;/p&gt;'
+  ),
+  `dyn_wikipedia`       = COLUMN_CREATE(
+    'en', 'http://en.wikipedia.org/wiki/52nd_Golden_Globe_Awards',
+    'de', 'http://de.wikipedia.org/wiki/Golden_Globe_Awards_1995'
+  ),
+  `start_date`          = '1995-01-21',
+  `links`               = 'a:1:{i:0;s:40:"http://www.imdb.com/event/ev0000292/1995";}',
+  `place_id`            = @place_los_angeles
+;
+SET @golden_globe_award_event_id = LAST_INSERT_ID();
+
+INSERT INTO `movies_awards` SET
+  `movie_id`          = 3, /* The Shawshank Redemption */
+  `award_id`          = @golden_globe_award_id,
+  `award_category_id` = @golden_globe_award_best_actor,
+  `award_event_id`    = @golden_globe_award_event_id,
+  `person_id`         = 8, /* Morgan Freeman */
+  `won`               = false,
+  `year`              = 1995
+;
+
+INSERT INTO `movies_awards` SET
+  `movie_id`          = 3, /* The Shawshank Redemption */
+  `award_id`          = @golden_globe_award_id,
+  `award_category_id` = @golden_globe_award_screenplay,
+  `award_event_id`    = @golden_globe_award_event_id,
+  `person_id`         = 7, /* Frank Darabont */
+  `won`               = false,
+  `year`              = 1995
+;
+
+-- END "Golden Globe"

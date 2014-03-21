@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Award\Category;
 
 use \MovLib\Data\Award;
 use \MovLib\Data\AwardCategory;
-use \MovLib\Presentation\Partial\Listing\AwardMovieListing;
+use \MovLib\Presentation\Partial\Listing\AwardCategoryMovieListing;
 
 /**
  * Movies with a certain award category associated.
@@ -67,7 +67,7 @@ class Movies extends \MovLib\Presentation\Award\Category\AbstractBase {
    * @return \MovLib\Presentation\Partial\Listing\Movies
    */
   protected function getPageContent() {
-    return new AwardMovieListing($this->awardCategory->getMoviesResult());
+    return new AwardCategoryMovieListing($this->awardCategory->getMoviesResult());
   }
 
 }

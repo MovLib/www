@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Partial\Listing;
 
+use \MovLib\Presentation\Partial\Alert;
+
 /**
  * List for movie instances that have won or were nominatet for an award.
  *
@@ -26,7 +28,7 @@ namespace MovLib\Presentation\Partial\Listing;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class AwardMovieListing extends \MovLib\Presentation\Partial\Listing\MovieListing {
+class AwardMovieListing extends \MovLib\Presentation\Partial\Listing\MovieListing {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
