@@ -192,12 +192,20 @@ return [
   "/award/{0}/history"                         => "/auszeichnung/{0}/geschichte",
   "/award/{0}/icon"                            => "/auszeichnung/{0}/icon",
   "/award/{0}/icon/delete"                     => "/auszeichnung/{0}/icon/löschen",
+  // ------------------------------------------------------------------------------------------------------------------- Award Category
   "/award/{0}/category/create"                 => "/auszeichnung/{0}/kategorie/erstellen",
   "/award/{0}/category/{1}"                    => "/auszeichnung/{0}/kategorie/{1}",
   "/award/{0}/category/{1}/delete"             => "/auszeichnung/{0}/kategorie/{1}/löschen",
   "/award/{0}/category/{1}/discussion"         => "/auszeichnung/{0}/kategorie/{1}/diskussion",
   "/award/{0}/category/{1}/edit"               => "/auszeichnung/{0}/kategorie/{1}/bearbeiten",
   "/award/{0}/category/{1}/history"            => "/auszeichnung/{0}/kategorie/{1}/geschichte",
+  // ------------------------------------------------------------------------------------------------------------------- Award Event
+  "/award/{0}/event/create"                    => "/auszeichnung/{0}/event/erstellen",
+  "/award/{0}/event/{1}"                       => "/auszeichnung/{0}/event/{1}",
+  "/award/{0}/event/{1}/delete"                => "/auszeichnung/{0}/event/{1}/löschen",
+  "/award/{0}/event/{1}/discussion"            => "/auszeichnung/{0}/event/{1}/diskussion",
+  "/award/{0}/event/{1}/edit"                  => "/auszeichnung/{0}/event/{1}/bearbeiten",
+  "/award/{0}/event/{1}/history"               => "/auszeichnung/{0}/event/{1}/geschichte",
   // ------------------------------------------------------------------------------------------------------------------- System Pages
   "/about-movlib"                              => "/über-movlib",
   "/about-movlib/edit"                         => "/über-movlib/bearbeiten",
