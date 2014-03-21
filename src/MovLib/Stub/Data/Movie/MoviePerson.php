@@ -26,7 +26,7 @@ namespace MovLib\Stub\Data\Movie;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MoviePerson {
+abstract class MoviePerson {
 
   /**
    * The movie's person.

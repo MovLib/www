@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Stub\Data;
+namespace MovLib\Data\Release;
 
 /**
- * Generic entity stub to use as a proxy for all kinds of data objects (e.g. Person).
+ * Represents a single release with all data contained.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -26,34 +26,13 @@ namespace MovLib\Stub\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class Entity {
+class FullRelease {
 
   /**
-   * The entity's unique identifier.
    *
-   * @var integer
    */
-  public $id;
+  public function __construct() {
 
-  /**
-   * The entity's name.
-   *
-   * @var string
-   */
-  public $name;
-
-  /**
-   * The entity's translated route.
-   *
-   * @var string
-   */
-  public $route;
-
-  /**
-   * The entity's RDFa {@link http://schema.org schema.org} type.
-   *
-   * @var string
-   */
-  public $type;
+  }
 
 }
