@@ -36,7 +36,7 @@ namespace MovLib\Stub;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Configuration {
+abstract class Configuration {
 
   /**
    * The machine's hostname.
