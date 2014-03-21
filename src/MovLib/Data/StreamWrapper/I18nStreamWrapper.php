@@ -15,40 +15,30 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Stub\Data;
+namespace MovLib\Data\StreamWrapper;
 
 /**
- * Language stub.
+ * Defines the i18n stream wrapper for the <code>"i18n://"</code> scheme.
  *
- * @see \MovLib\Data\StreamWrapper\I18nStreamWrapper
- * @see \MovLib\Tool\Console\Command\Install\SeedLanguages
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class Language {
+final class I18nStreamWrapper extends AbstractLocalStreamWrapper {
 
   /**
-   * The language's ISO 639-1 code.
+   * Get the canonical absolute path to the directory the stream wrapper is responsible for.
    *
-   * @var string
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @return string
+   *   The canonical absolute path to the directory the stream wrapper is responsible for.
    */
-  public $code;
-
-  /**
-   * The language's translated full name.
-   *
-   * @var string
-   */
-  public $name;
-
-  /**
-   * The language's native full name.
-   *
-   * @var string
-   */
-  public $native;
+  public function getPath() {
+    global $i18n, $kernel;
+    return "{$kernel->documentRoot}/var/i18n/{$i18n->locale}";
+  }
 
 }

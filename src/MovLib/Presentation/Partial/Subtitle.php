@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Partial;
 
+use \MovLib\Data\FileSystem;
+
 /**
  * Represents a single subtitle in HTML and provides an interface to all available subtitles in the current locale.
  *
@@ -82,8 +84,7 @@ final class Subtitle {
    */
   public static function getSubtitles() {
     if (!self::$subtitles) {
-      global $i18n, $kernel;
-      self::$subtitles = require "{$kernel->documentRoot}/private/translation/subtitle/{$i18n->locale}.php";
+      self::$subtitles = require FileSystem::realpath("i18n://subtitles");
     }
     return self::$subtitles;
   }

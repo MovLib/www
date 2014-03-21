@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Partial;
 
+use \MovLib\Data\FileSystem;
 use \MovLib\Presentation\Partial\FormElement\RadioGroup;
 use \MovLib\Presentation\Partial\FormElement\Select;
 
@@ -130,8 +131,7 @@ final class Language extends \MovLib\Presentation\AbstractBase {
    */
   public static function getLanguages() {
     if (!self::$languages) {
-      global $i18n, $kernel;
-      self::$languages = require "{$kernel->documentRoot}/private/translation/language/{$i18n->locale}.php";
+      self::$languages = require FileSystem::realpath("i18n://languages");
     }
     return self::$languages;
   }

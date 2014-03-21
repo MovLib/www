@@ -163,28 +163,6 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
   }
 
   /**
-   * Delete registered files.
-   *
-   * <b>NOTE</b><br>
-   * Must be public because it's used as shutdown function. We cannot utiliye the native <code>__destruct()</code>
-   * method because we need all the global objects intact (e.g. the Kernel).
-   *
-   * @global \MovLib\Tool\Kernel $kernel
-   * @return this
-   */
-  final public function deleteRegisteredFiles() {
-    global $kernel;
-    // Make sure that we aren't within one of the directories that we're going to delete.
-    $this->changeWorkingDirectory($kernel->documentRoot);
-
-    $this->writeDebug("Deleting registered files...");
-    foreach ($this->registerFileForDeletion() as $file) {
-      FileSystem::delete($file, true, true);
-    }
-    return $this;
-  }
-
-  /**
    * Download a file.
    *
    * @global \MovLib\Tool\Kernel $kernel
@@ -417,26 +395,10 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
   }
 
   /**
-   * Register file for deletion.
-   *
-   * @staticvar array $registeredFiles
-   *   Used to keep track of registered files for deletion.
-   * @param null|string $file [optional]
-   *   Canonical absolute path to the file that should be deleted.
-   * @return array
-   *   The files registered for deletion.
+   * @todo Change calls in implementing classes to FS calls.
    */
   final protected function registerFileForDeletion($file = null) {
-    static $registeredFiles = [];
-    if (isset($file)) {
-      if (empty($registeredFiles)) {
-        $this->writeDebug("Registering shutdown function for deletion of registered files...");
-        register_shutdown_function([ $this, "deleteRegisteredFiles" ]);
-      }
-      $this->writeDebug("Registering '{$file}' for deletion...");
-      $registeredFiles[] = $file;
-    }
-    return $registeredFiles;
+    return FileSystem::registerFileForDeletion($file);
   }
 
 }
