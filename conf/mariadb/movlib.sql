@@ -898,8 +898,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`releases` (
   `country_code` CHAR(2) NOT NULL COMMENT 'The release’s ISO alpha-2 country code.',
   `dyn_notes` BLOB NOT NULL COMMENT 'The release’s notes in various languages. Keys are ISO alpha-2 language codes.',
   `title` TEXT NOT NULL COMMENT 'The release’s title.',
-  `publishing_date_buy` DATE NULL COMMENT 'The release’s publishing date for sale.',
-  `publishing_date_rent` DATE NULL COMMENT 'The release’s publishing date for rental.',
+  `publishing_date_sale` DATE NULL COMMENT 'The release’s publishing date for sale.',
+  `publishing_date_rental` DATE NULL COMMENT 'The release’s publishing date for rental.',
   `edition` TEXT NULL COMMENT 'The release’s edition.',
   `bin_identifiers` BLOB NULL COMMENT 'The release’s additional identifiers as serialized PHP object (\\\\MovLib\\\\Stub\\\\Data\\\\Release\\\\Identifier).',
   PRIMARY KEY (`id`))
