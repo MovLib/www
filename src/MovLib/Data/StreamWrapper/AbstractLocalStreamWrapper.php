@@ -21,11 +21,16 @@ use \MovLib\Data\Log;
 use \MovLib\Exception\StreamException;
 
 /**
- * Stream wrapper base class for local files.
+ * Base class for all local stream wrappers.
  *
  * This class provides a complete stream wrapper implementation. URIs such as "<scheme>://<target>" are expanded to
  * normal file system paths such a <code>"/document/root/tmp"</code> and then PHP file system functions are invoked.
  *
+ * <b>NOTE</b><br>
+ * Method names have to be written in snake-case because they have to follow the interface defined by PHP. We cannot
+ * rename them!
+ *
+ * @link http://php.net/manual/class.streamwrapper.php
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -77,17 +82,6 @@ abstract class AbstractLocalStreamWrapper {
 
   // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
 
-
-  /**
-   * Get the web accessible URL of the resource.
-   *
-   * This method should return a URL that can be embedded in a web page and accessed from a browser. For example, the
-   * external URL of <code>"asset://img/logo/vecotr.svg"</code> might be <code>"https://movlib.org/asset/img/logo/vector.svg"</code>.
-   *
-   * @return string
-   *   The web accessible URL of the resource.
-   */
-  abstract public function getExternalURL();
 
   /**
    * Get the canonical absolute path to the directory the stream wrapper is responsible for.
@@ -161,7 +155,7 @@ abstract class AbstractLocalStreamWrapper {
   public function chown($user) {
     try {
       $realpath = $this->realpath();
-      $return   = chown($realpath, $mode);
+      $return   = chown($realpath, $user);
       clearstatcache(true, $realpath);
       return $return;
     }
@@ -476,9 +470,9 @@ abstract class AbstractLocalStreamWrapper {
    * @throws \MovLib\Exception\StreamException
    */
   public function stream_lock($operation) {
-    static $operations = [ LOCK_SH, LOCK_EX, LOCK_UN, LOCK_NB ];
+    static $operations = [ LOCK_SH => 0, LOCK_EX => 0, LOCK_UN => 0, LOCK_NB => 0 ];
     try {
-      if (in_array($operation, $operations)) {
+      if (isset($operations[$operation])) {
         return flock($this->handle, $operation);
       }
       return true;
@@ -560,11 +554,11 @@ abstract class AbstractLocalStreamWrapper {
   public function stream_open($uri, $mode, $options, &$openedPath) {
     try {
       $this->uri = $uri;
-      $filepath  = $this->realpath();
-      $return    = (boolean) ($this->handle = fopen($filepath, $mode));
+      $realpath  = $this->realpath();
+      $return    = (boolean) ($this->handle = fopen($realpath, $mode));
 
       if ($return === true && ($options & STREAM_USE_PATH)) {
-        $openedPath = $filepath;
+        $openedPath = $realpath;
       }
 
       return $return;
@@ -721,7 +715,7 @@ abstract class AbstractLocalStreamWrapper {
       return fwrite($this->handle, $data);
     }
     catch (\ErrorException $e) {
-      throw new StreamException("Couldn't write to stream '{$this->url}'", null, $e);
+      throw new StreamException("Couldn't write to stream '{$this->uri}'", null, $e);
     }
   }
 
@@ -779,9 +773,9 @@ abstract class AbstractLocalStreamWrapper {
    * @throws \MovLib\Exception\StreamException
    */
   public function url_stat($uri, $flags) {
+    $this->uri = $uri;
+    $realpath  = $this->realpath();
     try {
-      $this->uri = $uri;
-      $realpath  = $this->realpath();
       return stat($realpath);
     }
     catch (\ErrorException $e) {
