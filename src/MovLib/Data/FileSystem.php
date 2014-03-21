@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data;
 
+use \MovLib\Data\StreamWrapper\StreamWrapperFactory;
 use \MovLib\Exception\FileSystemException;
 
 /**
@@ -133,7 +134,7 @@ abstract class FileSystem {
     if (empty($path) || is_string($path) === false) {
       throw new \InvalidArgumentException("The path cannot be empty and must be of type string");
     }
-    $realpath = self::getRealPath($path);
+    $realpath = self::realpath($path);
     if (is_dir($realpath) === false) {
       throw new \InvalidArgumentException("Recursively changing the mode only makes sense on directories");
     }
@@ -217,39 +218,49 @@ abstract class FileSystem {
   /**
    * Compress file with GZIP.
    *
-   * @param string $path
-   *   Absolute path to the file that should be compressed.
+   * @param string $uri
+   *   URI or path to the file that should be compressed.
+   * @return string
+   *   URI or path of the compressed file.
    * @throws \MovLib\Exception\FileSystemException
    */
-  final public static function compress($path) {
+  final public static function compress($uri) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (empty($path) || !is_string($path)) {
+    if (empty($uri) || !is_string($uri)) {
       throw new \InvalidArgumentException("\$source cannot be empty and must be of type string");
     }
-    if (!is_file($path) || !is_readable($path)) {
-      throw new \LogicException("'{$path}' file is not readable for compression");
-    }
-    if (!is_writable(dirname($path))) {
-      throw new \LogicException("Cannot write to '{$path}' directory for compression");
+    if (!is_file($uri) || !is_readable($uri)) {
+      throw new \LogicException("'{$uri}' file is not readable for compression");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
 
     try {
+      $scheme = parse_url($uri, PHP_URL_SCHEME);
+      if ($scheme) {
+        $realpath = StreamWrapperFactory::create($uri)->realpath();
+      }
+      else {
+        $realpath = realpath($uri);
+      }
+
       // Try to compress the file.
-      Shell::execute("zopfli --gzip --ext 'gz' {$path}");
+      Shell::execute("zopfli --gzip --ext 'gz' {$realpath}");
+      $uriCompressed = "{$uri}.gz";
 
       // Make sure that the modification time is exactly the same (as recommended in the nginx docs).
-      if (touch("{$path}.gz", filemtime($path)) === false) {
+      if (touch($uriCompressed, filemtime($uri)) === false) {
         // @codeCoverageIgnoreStart
         throw new \Exception;
         // @codeCoverageIgnoreEnd
       }
     }
     catch (\Exception $e) {
-      throw new FileSystemException("Couldn't compress '{$path}'", null, $e);
+      throw new FileSystemException("Couldn't compress '{$uri}'", null, $e);
     }
+
+    return $uriCompressed;
   }
 
   /**
@@ -427,6 +438,20 @@ abstract class FileSystem {
   }
 
   /**
+   * Delete registered files.
+   *
+   * <b>NOTE</b><br>
+   * Mainly used as shutdown function.
+   */
+  final public static function deleteRegisteredFiles() {
+    if (($registeredFiles = $this->registerFileForDeletion())) {
+      foreach ($registeredFiles as $file) {
+        FileSystem::delete($file, true, true);
+      }
+    }
+  }
+
+  /**
    * Get file's content.
    *
    * @param string $path
@@ -518,29 +543,36 @@ abstract class FileSystem {
   /**
    * Resolves the absolute path of a local file.
    *
-   * <b>Note:</b> Only use this method with local files!
+   * <b>NOTE</b><br>
+   * Do not use this method with remote URIs!
    *
    * An exception is thrown if PHP's built-in <code>realpath()</code> returned <code>FALSE</code> and the file actually
    * does exist or if the current process isn't running in CLI mode and attempting to resolve a file outside the
    * document root.
    *
-   * @param string $path
-   *   The local file to get the absolute path to.
+   * @param string $uri
+   *   A stream wrapper URI or a filepath, possibly including one or more symbolic links.
    * @return string
    *   The absolute path of the local file.
    * @throws \MovLib\Exception\FileSystemException
+   * @throws \MovLib\Exception\StreamException
    */
-  final public static function getRealPath($path) {
+  final public static function realpath($uri) {
+    // If we're dealing with a URI pass it to the stream wrapper factory.
+    if (strpos($uri, "://") !== false) {
+      return StreamWrapperFactory::create($uri)->realpath();
+    }
+
     // Let PHP resolve the absolute path to the file.
-    $realpath = realpath($path);
+    $realpath = realpath($uri);
 
     // Check if PHP was able to do so.
     if ($realpath === false) {
       // realpath() will return FALSE if the file doesn't exist, which isn't really an error for us. Therefore we have
       // to check if the file really doesn't exist, this on the other hand means that some other error occurred and we
       // throw an exception in this case.
-      if (($realpath = realpath(dirname($path)) . "/" . basename($path)) === false) {
-        throw new FileSystemException("Path '{$path}' seems to be invalid");
+      if (($realpath = realpath(dirname($uri)) . "/" . basename($uri)) === false) {
+        throw new FileSystemException("Path '{$uri}' seems to be invalid");
       }
     }
     // Only use the realpath result if it isn't of type boolean.
@@ -548,7 +580,7 @@ abstract class FileSystem {
       return $realpath;
     }
 
-    return $path;
+    return $uri;
   }
 
   /**
@@ -651,6 +683,27 @@ abstract class FileSystem {
   }
 
   /**
+   * Register file for deletion.
+   *
+   * @staticvar array $registeredFiles
+   *   Used to keep track of registered files for deletion.
+   * @param null|string $file [optional]
+   *   Canonical absolute path to the file that should be deleted.
+   * @return array
+   *   The files registered for deletion.
+   */
+  final public static function registerFileForDeletion($file = null) {
+    static $registeredFiles = null;
+    if (!$file) {
+      if (!$registeredFiles) {
+        register_shutdown_function("FileSystem::deleteRegisteredFiles");
+      }
+      $registeredFiles[] = $file;
+    }
+    return $registeredFiles;
+  }
+
+  /**
    * Sanitizes a filename, replacing whitespace with dashes and transforming the string to lowercase.
    *
    * Removes special characters that are illegal in filenames on certain operating systems and special characters
@@ -682,6 +735,44 @@ abstract class FileSystem {
 
     // Always lowercase all filenames for better compatibility.
     return mb_strtolower($filename);
+  }
+
+  /**
+   * Create file with unique filename.
+   *
+   * <b>NOTE</b><br>
+   * Generated files are deleted shortly before this process ends.
+   *
+   * @param string $directory
+   *   The directory where the temporary filename will be created.
+   * @param string $prefix
+   *   The prefix of the generated temporary filename.
+   * @return string
+   *   The new temporary filename.
+   * @throws \MovLib\Exception\FileSystemException
+   */
+  final public static function tempnam($directory, $prefix) {
+    $scheme = parse_url($directory, PHP_URL_SCHEME);
+
+    if ($scheme) {
+      if (($filename = tempnam(StreamWrapperFactory::create($directory)->getPath(), $prefix))) {
+        self::registerFileForDeletion($filename);
+        $filename = basename($filename);
+        return "{$scheme}://{$filename}";
+      }
+
+      $return = false;
+    }
+    else {
+      $return = tempnam($directory, $prefix);
+    }
+
+    if ($return === false) {
+      throw new FileSystemException("Couldn't create unique temporary file in '{$directory}' with prefix '{$prefix}'");
+    }
+
+    self::registerFileForDeletion($return);
+    return $return;
   }
 
   /**

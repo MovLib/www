@@ -18,6 +18,8 @@
 namespace MovLib\Data;
 
 use \MovLib\Data\FileSystem;
+use \MovLib\Data\StreamWrapper\StreamWrapperFactory;
+use \MovLib\Exception\StreamException;
 
 /**
  * Interact with the persistent disc cache.
@@ -28,18 +30,11 @@ use \MovLib\Data\FileSystem;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Cache {
+final class Cache {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   * Absolute path to the cache file of the current request.
-   *
-   * @var string
-   */
-  protected $cacheFile;
 
   /**
    * Indicates whether this request is cacheable or not.
@@ -47,6 +42,13 @@ class Cache {
    * @var boolean
    */
   public $cacheable = true;
+
+  /**
+   * URI to the cache file of the current request.
+   *
+   * @var string
+   */
+  protected $uri;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -60,9 +62,11 @@ class Cache {
    */
   public function __construct() {
     global $i18n, $kernel;
-    $this->cacheFile = "{$kernel->documentRoot}/var/cache/{$i18n->languageCode}{$kernel->requestPath}";
+    // Make sure the var stream wrapper is registered.
+    StreamWrapperFactory::register("var");
+    $this->uri = "var://cache/{$i18n->languageCode}{$kernel->requestPath}";
     if ($kernel->requestPath == "/") {
-      $this->cacheFile .= $_SERVER["PRESENTER"];
+      $this->uri .= $_SERVER["PRESENTER"];
     }
   }
 
@@ -77,37 +81,43 @@ class Cache {
    *   <code>TRUE</code> if a cached version exists, otherwise <code>FALSE</code>.
    */
   public function cached() {
-    return is_file($this->cacheFile);
+    try {
+      return is_file($this->uri);
+    }
+    catch (StreamException $e) {
+      return false;
+    }
   }
 
   /**
    * Delete cached version of current presentation.
    *
-   * @param string $cacheFile [optional]
-   *   Absolute path to the cache file that should be deleted, defaults to the current cache file property of this
-   *   instance. Note that the compressed version of the cached file is deleted as well.
+   * @param string $uri [optional]
+   *   URI of the cache file to delete, defaults to the current presentation.
    * @return this
    */
-  public function delete($cacheFile = null) {
+  public function delete($uri = null) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (isset($cacheFile) && (empty($cacheFile) || !is_string($cacheFile))) {
-      throw new \InvalidArgumentException("\$cacheFile cannot be empty and must be of type string");
+    if (isset($uri) && (empty($uri) || !is_string($uri))) {
+      throw new \InvalidArgumentException("\$uri cannot be empty and must be of type string");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    if (!$cacheFile) {
-      $cacheFile = $this->cacheFile;
+
+    if (!$uri) {
+      $uri = $this->uri;
     }
-    if (is_file($cacheFile) === true) {
-      try {
-        FileSystem::delete($cacheFile);
-        FileSystem::delete("{$cacheFile}.gz");
-      }
-      catch (\RuntimeException $e) {
-        Log::error($e);
-      }
+
+    if (is_file($uri) === true) {
+      unlink($uri);
     }
+
+    $uri = "{$uri}.gz";
+    if (is_file($uri)) {
+      unlink($uri);
+    }
+
     return $this;
   }
 
@@ -128,16 +138,25 @@ class Cache {
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
+
     if ($this->cacheable === true && $session->isAuthenticated === false && $this->cached() === false) {
-      try {
-        FileSystem::createDirectory(dirname($this->cacheFile));
-        FileSystem::putContent($this->cacheFile, "{$presentation}<!--{$_SERVER["REQUEST_TIME_FLOAT"]}-->", LOCK_EX);
-        FileSystem::compress($this->cacheFile);
+      // Make sure that the complete directory structure actuallyz exists.
+      $cacheDirectory = dirname($this->uri);
+      if (is_dir($cacheDirectory) === false) {
+        mkdir($cacheDirectory, 0777, true);
       }
-      catch (\RuntimeException $e) {
-        Log::error($e);
-      }
+
+      // Write the new cache file to a temporary file.
+      $tmp = FileSystem::tempnam($cacheDirectory, "cache");
+      file_put_contents($tmp, "{$presentation}<!--{$_SERVER["REQUEST_TIME_FLOAT"]}-->");
+      $gz  = FileSystem::compress($tmp);
+
+      // Rename is an atomic action, we want to ensure that no other process is reading the file while we're writing
+      // to it.
+      rename($tmp, $this->uri);
+      rename($gz, "{$this->uri}.gz");
     }
+
     return $this;
   }
 

@@ -271,7 +271,7 @@ abstract class AbstractLocalStreamWrapper {
     }
 
     // Build relative path to file from URI.
-    list(, $target) = explode("://", $this->uri, 2);
+    list(, $target) = explode("://", $uri, 2);
 
     // Remove erroneous leading or trailing, forwardslashes and backslashes.
     return trim($target, "\\/");
@@ -304,7 +304,7 @@ abstract class AbstractLocalStreamWrapper {
       return mkdir($path, $mode, $recursive);
     }
     catch (\ErrorException $e) {
-      $e = new \StreamException("Couldn't create directory '{$uri}'", null, $e);
+      $e = new StreamException("Couldn't create directory '{$uri}'", null, $e);
       if ($options & STREAM_REPORT_ERRORS) {
         throw $e;
       }
@@ -322,6 +322,10 @@ abstract class AbstractLocalStreamWrapper {
    * @throws \MovLib\Exception\StreamException
    */
   public function realpath($uri = null) {
+    if (!$uri) {
+      $uri = $this->uri;
+    }
+
     // Buld canonical absolute local file path.
     $basepath = $this->getPath();
     $filepath = "{$basepath}/{$this->getTarget($uri)}";
@@ -332,8 +336,8 @@ abstract class AbstractLocalStreamWrapper {
     }
 
     // Make sure we have a canonical absolute path by now.
-    if ($realpath === false || strpos($realpath, $basepath) === false) {
-      throw new StreamException("Couldn't determine canonical absolute local path for '{$this->uri}'");
+    if ($realpath === false || strpos($realpath, $basepath) !== 0) {
+      throw new StreamException("Couldn't determine canonical absolute local path for '{$uri}'");
     }
 
     return $realpath;
@@ -352,12 +356,7 @@ abstract class AbstractLocalStreamWrapper {
    * @throws \MovLib\Exception\StreamException
    */
   public function rename($fromURI, $toURI) {
-    try {
-      return rename($fromURI, $toURI);
-    }
-    catch (\ErrorException $e) {
-      throw new StreamException("Couldn't rename URI from '{$fromURI}' to '{$toURI}'");
-    }
+    return rename($this->realpath($fromURI), $this->realpath($toURI));
   }
 
   /**

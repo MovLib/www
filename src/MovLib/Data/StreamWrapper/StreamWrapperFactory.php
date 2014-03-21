@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data\StreamWrapper;
 
+use \MovLib\Data\Log;
+
 /**
  * Factory to create, register, and unregister MovLib stream wrappers.
  *
@@ -79,7 +81,7 @@ abstract class StreamWrapperFactory {
       // @codeCoverageIgnoreEnd
       // @devEnd
       if (stream_wrapper_register($schemes[$i], $class) === false) {
-        throw new \LogicException(
+        Log::debug(
           "Couldn't register {$class} for as stream wrapper for scheme {$schemes[$i]} because there's already another " .
           "stream wrapper registered for this scheme."
         );
