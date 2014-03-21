@@ -26,7 +26,7 @@ namespace MovLib\Data\StreamWrapper;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class TmpStreamWrapper extends AbstractLocalStreamWrapper {
+final class TemporaryStreamWrapper extends AbstractLocalStreamWrapper {
 
   /**
    * Get the canonical absolute path to the directory the stream wrapper is responsible for.
@@ -36,8 +36,11 @@ final class TmpStreamWrapper extends AbstractLocalStreamWrapper {
    *   The canonical absolute path to the directory the stream wrapper is responsible for.
    */
   public function getPath() {
-    global $kernel;
-    return "{$kernel->documentRoot}/public";
+    static $path = null;
+    if (!$path) {
+      $path = StreamWrapperFactory::create("dr://tmp")->realpath();
+    }
+    return $path;
   }
 
 }
