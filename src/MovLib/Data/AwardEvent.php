@@ -17,10 +17,7 @@
  */
 namespace MovLib\Data;
 
-use \MovLib\Data\AwardCategory;
-use \MovLib\Data\Company\Company;
 use \MovLib\Data\Movie\FullMovie;
-use \MovLib\Data\Person\Person;
 use \MovLib\Data\Place;
 
 /**
@@ -226,8 +223,9 @@ class AwardEvent extends \MovLib\Data\Database {
         `ot`.`language_code` AS `originalTitleLanguageCode`,
         `p`.`poster_id` AS `displayPoster`,
         `ma`.`award_category_id` AS `awardCategoryId`,
+        `ma`.`won` AS `awardCategoryWon`,
         `ma`.`person_id` AS `personId`,
-        `ma`.`company_id` AS `companyId`,
+        `ma`.`company_id` AS `companyId`
       FROM `movies_awards` AS `ma`
         LEFT JOIN `movies` AS `movies`
           ON `movies`.`id` = `ma`.`movie_id`
@@ -246,7 +244,7 @@ class AwardEvent extends \MovLib\Data\Database {
           ON `p`.`movie_id` = `movies`.`id`
           AND `p`.`language_code` = ?
       WHERE `ma`.`award_id` = ? AND `ma`.`award_event_id` = ?
-      ORDER BY `movies`.`displayTitle` DESC",
+      ORDER BY `displayTitle` DESC",
       "ssdd",
       [ $i18n->languageCode, $i18n->languageCode, $this->awardId, $this->id ]
     )->get_result();
@@ -266,21 +264,17 @@ class AwardEvent extends \MovLib\Data\Database {
         $movies[$row["id"]]->movie->originalTitle             = $row["originalTitle"];
         $movies[$row["id"]]->movie->originalTitleLanguageCode = $row["originalTitleLanguageCode"];
         $movies[$row["id"]]->movie->displayPoster             = $row["displayPoster"];
-        $movies[$row["id"]]->movie->awardCategory             = [];
-        $movies[$row["id"]]->movie->awardedCompany            = [];
-        $movies[$row["id"]]->movie->awardedPerson             = [];
+        $movies[$row["id"]]->movie->awardCategoryIds          = [];
+        $movies[$row["id"]]->movie->awardCategoryWon          = [];
+        $movies[$row["id"]]->movie->awardedCompanyIds         = [];
+        $movies[$row["id"]]->movie->awardedPersonIds          = [];
         $movies[$row["id"]]->movie->init();
       }
       // We need all awarded companies and persions with the correct award category.
-      array_push($movies[$row["id"]]->movie->awardCategory, new AwardCategory($row["awardCategoryId"]));
-      if (isset($row["personId"])) {
-        array_push($movies[$row["id"]]->movie->awardedPerson, new Person($row["personId"]));
-        array_push($movies[$row["id"]]->movie->awardedCompany, null);
-      }
-      else {
-        array_push($movies[$row["id"]]->movie->awardedPerson, null);
-        array_push($movies[$row["id"]]->movie->awardedCompany, new Company($row["companyId"]));
-      }
+      array_push($movies[$row["id"]]->movie->awardCategoryIds, $row["awardCategoryId"]);
+      array_push($movies[$row["id"]]->movie->awardCategoryWon, $row["awardCategoryWon"]);
+      array_push($movies[$row["id"]]->movie->awardedPersonIds, $row["personId"]);
+      array_push($movies[$row["id"]]->movie->awardedCompanyIds, $row["companyId"]);
     }
     return $movies;
   }

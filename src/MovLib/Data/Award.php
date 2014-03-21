@@ -385,6 +385,7 @@ class Award extends \MovLib\Data\Image\AbstractImage {
       [ $i18n->languageCode, $i18n->languageCode, $this->id ]
     )->get_result();
 
+    $movies = [];
     while ($row = $result->fetch_assoc()) {
       // Instantiate and initialize a Movie if it is not present yet.
       if (!isset($movies[$row["id"]])) {

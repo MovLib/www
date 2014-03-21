@@ -142,6 +142,7 @@ class AwardCategory extends \MovLib\Data\Database {
         throw new NotFound;
       }
       $stmt->close();
+      $this->id = $id;
     }
     if ($this->id) {
       $this->init();
@@ -215,6 +216,7 @@ class AwardCategory extends \MovLib\Data\Database {
       [ $i18n->languageCode, $i18n->languageCode, $this->awardId, $this->id ]
     )->get_result();
 
+    $movies = [];
     while ($row = $result->fetch_assoc()) {
       // Instantiate and initialize a Movie if it is not present yet.
       if (!isset($movies[$row["id"]])) {

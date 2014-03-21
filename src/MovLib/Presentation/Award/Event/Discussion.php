@@ -15,14 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Award\Category;
+namespace MovLib\Presentation\Award\Event;
 
 use \MovLib\Data\Award;
-use \MovLib\Data\AwardCategory;
-use \MovLib\Presentation\Partial\Listing\AwardCategoryMovieListing;
+use \MovLib\Data\AwardEvent;
+use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
 /**
- * Movies with a certain award category associated.
+ * A award event's discussion.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -30,29 +30,36 @@ use \MovLib\Presentation\Partial\Listing\AwardCategoryMovieListing;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Movies extends \MovLib\Presentation\Award\Category\AbstractBase {
+class Discussion extends \MovLib\Presentation\Award\Event\AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new award category movie presentation.
+   * Instantiate new award event discussion presentation.
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
     global $i18n, $kernel;
-    $this->award           = new Award((integer) $_SERVER["AWARD_ID"]);
-    $this->awardCategory   = new AwardCategory((integer) $_SERVER["AWARD_CATEGORY_ID"]);
-    $this->initPage($i18n->t("Movies with {0}", [ $this->awardCategory->name ]));
-    $this->pageTitle       =
-      $i18n->t("Movies with {0}", [ "<a href='{$this->awardCategory->route}'>{$this->awardCategory->name}</a>" ])
+    $this->award      = new Award((integer) $_SERVER["AWARD_ID"]);
+    $this->awardEvent = new AwardEvent((integer) $_SERVER["AWARD_EVENT_ID"]);
+
+    if ($this->award->id != $this->awardEvent->awardId) {
+      throw new SeeOtherRedirect($i18n->r("/award/{0}/event/{1}/discussion", [
+        $this->awardEvent->awardId,
+        $this->awardEvent->id
+      ]));
+    }
+
+    $this->initPage($i18n->t("Discussion"));
+    $this->pageTitle     =
+      $i18n->t("Discussion of {0}", [ "<a href='{$this->awardEvent->route}'>{$this->awardEvent->name}</a>" ])
     ;
-    $this->breadcrumbTitle = $i18n->t("Movies");
-    $this->initLanguageLinks("/award/{0}/category/{1}/movies", [ $this->award->id, $this->awardCategory->id ], true);
-    $this->initAwardCategoryBreadcrumb();
+    $this->initLanguageLinks("/award/{0}/event/{1}/discussion", [ $this->award->id, $this->awardEvent->id ]);
+    $this->initAwardEventBreadcrumb();
     $this->sidebarInit();
 
     $kernel->stylesheets[] = "award";
@@ -64,10 +71,12 @@ class Movies extends \MovLib\Presentation\Award\Category\AbstractBase {
 
   /**
    * @inheritdoc
-   * @return \MovLib\Presentation\Partial\Listing\Movies
+   * @global \MovLib\Data\I18n $i18n
+   * @return \MovLib\Presentation\Partial\Alert
    */
   protected function getPageContent() {
-    return new AwardCategoryMovieListing($this->awardCategory->getMoviesResult());
+    global $i18n;
+    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("discuss award event") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
   }
 
 }

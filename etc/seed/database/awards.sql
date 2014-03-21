@@ -232,7 +232,7 @@ INSERT INTO `movies_awards` SET
   `award_category_id` = @oscar_award_best_writing,
   `award_event_id`    = @oscar_award_event_id,
   `person_id`         = 7, /* Frank Darabont */
-  `won`               = false,
+  `won`               = true,
   `year`              = 1995
 ;
 

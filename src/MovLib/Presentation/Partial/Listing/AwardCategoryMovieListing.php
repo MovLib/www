@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presentation\Partial\Listing;
 
-use \MovLib\Presentation\Partial\Alert;
 
 /**
  * List for movie instances that have won or were nominatet for an award.
