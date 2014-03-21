@@ -18,6 +18,7 @@
 namespace MovLib\Tool;
 
 use \MovLib\Data\FileSystem;
+use \MovLib\Data\StreamWrapper\StreamWrapperFactory;
 
 /**
  * The tool kernel extends the default kernel and is targeted towards console, PHPUnit, or mixed execution.
@@ -67,6 +68,12 @@ class Kernel extends \MovLib\Kernel {
   public function __construct($composer = false) {
     global $db, $i18n, $kernel, $session;
 
+    // Transform ALL PHP errors to exceptions unless this is executed in composer context, too many vendor supplied
+    // software is casting various deprecated or strict errors.
+    if ($composer === false) {
+      set_error_handler([ $this, "errorHandler" ], -1);
+    }
+
     // Export ourself to global scope and allow any layer to access the kernel's public properties.
     $kernel = $this;
 
@@ -86,16 +93,20 @@ class Kernel extends \MovLib\Kernel {
       $this->systemGroup   =& $this->configuration->group;
     }
 
-    // Transform ALL PHP errors to exceptions unless this is executed in composer context, too many vendor supplied
-    // software is casting various deprecated or strict errors.
-    if ($composer === false) {
-      set_error_handler([ $this, "errorHandler" ], -1);
-    }
-
     // Create global object instances.
     $db      = new \MovLib\Tool\Database();
     $i18n    = new \MovLib\Data\I18n(\Locale::getDefault());
     $session = new \MovLib\Data\User\Session();
+
+    // Register all available stream wrappers.
+    $streamWrappers = [];
+    foreach (new \DirectoryIterator("glob://{$this->documentRoot}/src/MovLib/Data/StreamWrapper/*.php") as $file) {
+      $basename  = $file->getBasename(".php");
+      if ((new \ReflectionClass("\\MovLib\\Data\\StreamWrapper\\{$basename}"))->isInstantiable()) {
+        $streamWrappers[] = strtolower(str_replace("StreamWrapper", "", $basename));
+      }
+    }
+    StreamWrapperFactory::register($streamWrappers);
   }
 
 }
