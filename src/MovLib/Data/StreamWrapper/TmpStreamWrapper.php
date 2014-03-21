@@ -26,20 +26,7 @@ namespace MovLib\Data\StreamWrapper;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class TmpStreamWrapper extends \MovLib\Data\StreamWrapper\AbstractLocalStreamWrapper {
-
-  /**
-   * Get the web accessible URL of the file.
-   *
-   * @global \MovLib\Kernel $kernel
-   * @staticvar array $urls
-   *   Used to cache already generated external URLs.
-   * @return string
-   *   The web accessible URL of the file.
-   */
-  public function getExternalURL() {
-    throw new \LogicException;
-  }
+final class TmpStreamWrapper extends AbstractLocalStreamWrapper {
 
   /**
    * Get the canonical absolute path to the directory the stream wrapper is responsible for.
