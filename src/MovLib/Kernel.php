@@ -52,19 +52,6 @@ class Kernel {
   public $alerts;
 
   /**
-   * Associative array containing the cache buster strings for the various assets.
-   *
-   * @var array
-   */
-  public $cacheBusters = [
-    "css" => [ /*####css-cache-buster####*/ ],
-    "jpg" => [ /*####jpg-cache-buster####*/ ],
-    "js"  => [ /*####js-cache-buster####*/ ],
-    "png" => [ /*####png-cache-buster####*/ ],
-    "svg" => [ /*####svg-cache-buster####*/ ],
-  ];
-
-  /**
    * Numeric array containing all delayed emails.
    *
    * @var null|array
@@ -461,7 +448,7 @@ class Kernel {
       $cache->cacheable = $_SERVER["REQUEST_METHOD"] == "GET";
 
       // Register available stream wrappers.
-      StreamWrapperFactory::register([ "asset", "tmp" ]);
+      StreamWrapperFactory::register([ "asset", "i18n", "tmp", "upload" ]);
 
       // Try to get the presentation.
       try {
