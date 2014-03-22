@@ -92,13 +92,17 @@ final class AssetStreamWrapper extends AbstractLocalStreamWrapper {
   /**
    * Get the canonical absolute path to the directory the stream wrapper is responsible for.
    *
-   * @global \MovLib\Kernel $kernel
+   * @staticvar string $path
+   *   Used to cache the path.
    * @return string
    *   The canonical absolute path to the directory the stream wrapper is responsible for.
    */
   public function getPath() {
-    global $kernel;
-    return "{$kernel->documentRoot}/public/asset";
+    static $path = null;
+    if (!$path) {
+      $path = StreamWrapperFactory::create("dr://public/asset")->realpath();
+    }
+    return $path;
   }
 
 }
