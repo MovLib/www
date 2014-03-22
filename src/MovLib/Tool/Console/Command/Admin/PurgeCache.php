@@ -44,8 +44,17 @@ class PurgeCache extends \MovLib\Tool\Console\Command\AbstractCommand {
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $this->writeVerbose("Purging presentation cache...", self::MESSAGE_TYPE_COMMENT);
-    unlink("dr://var/cache");
-    mkdir("dr://var/cache", 0775);
+    foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator("dr://var/cache", \RecursiveDirectoryIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST) as $fileinfo) {
+      $path = $fileinfo->getPathname();
+      if ($fileinfo->isDir()) {
+        $this->writeDebug("Deleting directory <comment>{$path}</comment>");
+        rmdir($path);
+      }
+      else {
+        $this->writeDebug("Deleting file <comment>{$path}</comment>");
+        unlink($path);
+      }
+    }
     $this->writeVerbose("Successfuly purged the presentation cache!", self::MESSAGE_TYPE_INFO);
     return 0;
   }
