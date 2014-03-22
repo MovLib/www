@@ -17,6 +17,10 @@
  */
 namespace MovLib\Data;
 
+use \Locale;
+use \MessageFormatter;
+use \MovLib\Data\Collator;
+
 /**
  * The i18n model loads and and updated translations and retrieves translated data.
  *
@@ -85,14 +89,6 @@ final class I18n {
 
 
   /**
-   * Extended collator for locale aware sorting.
-   *
-   * @see \MovLib\Data\I18n::getCollator()
-   * @var \MovLib\Data\Collator
-   */
-  protected $collator;
-
-  /**
    * The system's default language code.
    *
    * @var string
@@ -129,6 +125,15 @@ final class I18n {
    */
   public $locale;
 
+  /**
+   * Used to cache translations.
+   *
+   * @see I18n::getTranslations()
+   * @see I18n::translate()
+   * @var array
+   */
+  protected static $translations = [];
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -149,12 +154,11 @@ final class I18n {
     global $kernel;
 
     // Export default locale and language code to class scope.
-    $this->defaultLocale       = \Locale::getDefault();
+    $this->defaultLocale       = Locale::getDefault();
     $this->defaultLanguageCode = "{$this->defaultLocale[0]}{$this->defaultLocale[1]}";
 
-    // Use server determined language code if no locale was passed to the constructor. We can safely assume that this
-    // variable is always set.
-    if (!$locale) {
+    // Use server determined language code if no locale was passed to the constructor.
+    if (!$locale && isset($_SERVER["LANGUAGE_CODE"]) && isset($kernel->systemLanguages[$_SERVER["LANGUAGE_CODE"]])) {
       $this->locale       = $kernel->systemLanguages[$_SERVER["LANGUAGE_CODE"]];
       $this->languageCode = $_SERVER["LANGUAGE_CODE"];
     }
@@ -204,7 +208,7 @@ final class I18n {
    *   The formatted message.
    */
   public function format($message, array $args) {
-    return \MessageFormatter::formatMessage($this->locale, $message, $args);
+    return MessageFormatter::formatMessage($this->locale, $message, $args);
   }
 
   /**
@@ -233,20 +237,44 @@ final class I18n {
       $title = "Byte";
       $abbr  = "B";
     }
-    return \MessageFormatter::formatMessage($this->locale, "{0,number,integer} <abbr title='{$title}'>{$abbr}</abbr>", [ $bytes ]);
+    return MessageFormatter::formatMessage($this->locale, "{0,number,integer} <abbr title='{$title}'>{$abbr}</abbr>", [ $bytes ]);
   }
 
   /**
    * Get collator for the current locale.
    *
+   * @staticvar array $collators
+   *   Cache for collator instances.
    * @return \MovLib\Data\Collator
    *   If instantiating of the collator failed (e.g. non supported locale).
    */
   public function getCollator() {
-    if (!$this->collator) {
-      $this->collator = new \MovLib\Data\Collator($this->locale);
+    static $collators = [];
+    if (!isset($collators[$this->locale])) {
+      $collators[$this->locale] = new Collator($this->locale);
     }
-    return $this->collator;
+    return $collators[$this->locale];
+  }
+
+  /**
+   * Get translations from file.
+   *
+   * @param string $filename
+   *   The name of the file that contains the translations.
+   * @return array
+   *   The translations from the file.
+   */
+  public function getTranslations($filename) {
+    // Build absolute path to the translation file.
+    $file = "dr://var/i18n/{$this->locale}/{$filename}.php";
+
+    // Only try to load the translation file's content if we have not cached entry for it and it actually exists. Some
+    // things don't need translation in the default locale (e.g. routes) and others do (e.g. time zones).
+    if (!isset(self::$translations[$this->locale][$filename]) && is_file($file)) {
+      self::$translations[$this->locale][$filename] = require_once $file;
+    }
+
+    return self::$translations[$this->locale][$filename];
   }
 
   /**
@@ -272,99 +300,97 @@ final class I18n {
   }
 
   /**
-   * Format and translate the given route for singular forms.
+   * Translate and format given message with given context.
    *
-   * @global \MovLib\Kernel $kernel
-   * @staticvar array $routes
-   * @param string $route
+   * @param string $pattern
    *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
-   * @param array $args [optional]
-   *   Array of arguments that should be inserted into <var>$route</var>.
-   * @param string $locale [optional]
-   *   Use this locale to translate the route instead of the current display locale. Must be a valid system locale!
+   * @param null|array $args
+   *   The message formatter arguments.
+   * @param string $context
+   *   The translations context (e.g. <code>"routes/singular"</code> or <code>"countries"</code>) if you pass
+   *   <code>NULL</code> the database is asked.
    * @return string
-   *   The formatted and translated <var>$route</var>.
-   * @throws \ErrorException
-   * @throws \IntlException
+   *   The translated and formatted pattern.
    */
-  public function r($route, array $args = null, $locale = null) {
-    global $kernel;
-    static $routes = [];
-
-    // Use currently active locale if none was passed.
-    if (!$locale) {
-      $locale = $this->locale;
-    }
-
-    // We only need to translate the route if it isn't in the default locale.
-    if ($locale != $this->defaultLocale) {
-      // Check if we already have the route translations for this locale cached.
-      if (!isset($routes[$locale])) {
-        $routes[$locale] = require "{$kernel->pathTranslations}/routes/{$locale}.singular.php";
+  public function translate($pattern, $args, $context) {
+    // Only attempt to translate the pattern if we have no translation already cached.
+    if (!isset(self::$translations[$this->locale][$context][$pattern])) {
+      // Fetch translations from database for message context.
+      if ($context == "messages") {
+        global $db;
+        list(self::$translations[$this->locale][$context][$pattern]) = $db->query(
+          "SELECT COLUMN_GET(`dyn_translations`, ? AS CHAR) FROM `messages` WHERE `message` = ? LIMIT 1",
+          "ss",
+          [ $this->languageCode, $pattern ]
+        )->get_result()->fetch_row();
       }
-
-      // Check if we have a translation for this route and use it if we do.
-      if (isset($routes[$locale][$route])) {
-        $route = $routes[$locale][$route];
-      }
-      // Otherwise assume that there is no translation available.
+      // Fetch translations from file for everything else, we don't need the returned value because we're directly
+      // accessing the internal caching array.
       else {
-        $routes[$locale][$route] = $route;
+        $this->getTranslations($context);
+      }
+
+      // Check if we have a translation for this pattern. If we have none this either means that the pattern is in the
+      // default locale and has no translations (e.g. time zones have translations in the default locale as well, but
+      // most other things have no default locale translations). We insert the given pattern in this case to speed up
+      // later look ups.
+      if (empty(self::$translations[$this->locale][$context][$pattern])) {
+        self::$translations[$this->locale][$context][$pattern] = $pattern;
       }
     }
 
     if ($args) {
-      return \MessageFormatter::formatMessage($locale, $route, $args);
+      return MessageFormatter::formatMessage($this->locale, self::$translations[$this->locale][$context][$pattern], $args);
     }
-    return $route;
+    return self::$translations[$this->locale][$context][$pattern];
   }
 
   /**
-   * Format and translate the given route for plural forms.
+   * Translate and format singular route.
    *
-   * @global \MovLib\Kernel $kernel
-   * @staticvar array $routes
    * @param string $route
    *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
    * @param array $args [optional]
-   *   Array of arguments that should be inserted into <var>$route</var>.
-   * @param string $locale [optional]
-   *   Use this locale to translate the route instead of the current display locale. Must be a valid system locale!
+   *   The message formatter arguments.
    * @return string
-   *   The formatted and translated <var>$route</var>.
-   * @throws \ErrorException
-   * @throws \IntlException
+   *   The translated and formatted singular route.
    */
-  public function rp($route, array $args = null, $locale = null) {
-    global $kernel;
-    static $routes = [];
-
-    // Use currently active locale if none was passed.
-    if (!$locale) {
-      $locale = $this->locale;
+  public function r($route, array $args = null) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($route) || !is_string($route)) {
+      throw new \LogicException("\$route cannot be empty and must of type string");
     }
-
-    // We only need to translate the route if it isn't in the default locale.
-    if ($locale != $this->defaultLocale) {
-      // Check if we already have the route translations for this locale cached.
-      if (!isset($routes[$locale])) {
-        $routes[$locale] = require "{$kernel->pathTranslations}/routes/{$locale}.plural.php";
-      }
-
-      // Check if we have a translation for this route and use it if we do.
-      if (isset($routes[$locale][$route])) {
-        $route = $routes[$locale][$route];
-      }
-      // Otherwise assume that there is no translation available.
-      else {
-        $routes[$locale][$route] = $route;
-      }
+    if ($route == "/") {
+      throw new \LogicException("Translating the root route '/' makes no sense");
     }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    return $this->translate($route, $args, "routes/singular");
+  }
 
-    if ($args) {
-      return \MessageFormatter::formatMessage($locale, $route, $args);
+  /**
+   * Translate and format plural route.
+   *
+   * @param string $route
+   *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
+   * @param array $args [optional]
+   *   The message formatter arguments.
+   * @return string
+   *   The translated and formatted plural route.
+   */
+  public function rp($route, array $args = null) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($route) || !is_string($route)) {
+      throw new \LogicException("\$route cannot be empty and must of type string");
     }
-    return $route;
+    if ($route == "/") {
+      throw new \LogicException("Translating the root route '/' makes no sense");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    return $this->translate($route, $args, "routes/plural");
   }
 
   /**
@@ -382,29 +408,14 @@ final class I18n {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function t($message, array $args = null) {
-    global $db;
-    static $messages = [];
-
-    if ($this->locale != $this->defaultLocale) {
-      if (!isset($messages[$this->locale][$message])) {
-        $result = $db->query("SELECT COLUMN_GET(`dyn_translations`, ? AS CHAR) FROM `messages` WHERE `message` = ? LIMIT 1", "ss", [ $this->languageCode, $message ])->get_result()->fetch_row();
-        if (!empty($result[0])) {
-          $messages[$this->locale][$message] = $result[0];
-          $message                           = $result[0];
-        }
-        else {
-          $messages[$this->locale][$message] = $message;
-        }
-      }
-      else {
-        $message = $messages[$this->locale][$message];
-      }
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($message) || !is_string($message)) {
+      throw new \LogicException("\$message cannot be empty and must be of type string");
     }
-
-    if ($args) {
-      return \MessageFormatter::formatMessage($this->locale, $message, $args);
-    }
-    return $message;
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    return $this->translate($message, $args, "messages");
   }
 
   /**
@@ -442,15 +453,15 @@ final class I18n {
       throw new \LogicException("\$count must be numeric");
     }
     if (isset($args["@count"])) {
-      throw new \LogicException("You cannot have a '#count' key in the arguments passed to I18n::tp() method");
+      throw new \LogicException("You cannot have a '@count' key in the arguments passed to I18n::tp()");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    if (!isset($singular)) {
+    if (!$singular) {
       $singular = $plural;
     }
     $args["@count"] = $count;
-    return $this->t("{@count, plural, one{{$singular}} other{{$plural}}}", $args);
+    return $this->translate("{@count, plural, one{{$singular}} other{{$plural}}}", $args, "messages");
   }
 
 }
