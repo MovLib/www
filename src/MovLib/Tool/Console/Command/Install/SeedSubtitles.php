@@ -24,8 +24,8 @@ use \MovLib\Data\I18n;
  * Create subtitle translations.
  *
  * @see \MovLib\Data\StreamWrapper\I18nStreamWrapper
- * @see \MovLib\Stub\Data\Subtitle
  * @see \MovLib\Presentation\Partial\Subtitle
+ * @see \MovLib\Stub\Data\Subtitle
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -36,7 +36,6 @@ class SeedSubtitles extends SeedLanguages {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Tool\Kernel $kernel
    */
   protected function configure() {
     $this->setName("seed-subtitles");
@@ -52,8 +51,8 @@ class SeedSubtitles extends SeedLanguages {
 
     // Translate all available languages to the desired locale.
     $languages = [];
-    foreach ($this->languageCodes as $languageCode) {
-      $languages[$languageCode] = Locale::getDisplayLanguage($languageCode, $i18n->locale);
+    foreach ($this->codes as $code) {
+      $languages[$code] = Locale::getDisplayLanguage($code, $i18n->locale);
     }
 
     // Add the two special language codes.
@@ -68,17 +67,17 @@ class SeedSubtitles extends SeedLanguages {
     $i18n->getCollator()->asort($languages);
 
     $translations = null;
-    foreach ($languages as $languageCode => $name) {
+    foreach ($languages as $code => $name) {
       // Add the native language's name to the output if applicable.
-      if (in_array($languageCode, $noNative)) {
+      if (in_array($code, $noNative)) {
         $native = "null";
       }
       else {
-        $native = Locale::getDisplayLanguage($languageCode, $languageCode);
+        $native = Locale::getDisplayLanguage($code, $code);
       }
 
       // Put it together.
-      $translations .= '"' . $languageCode . '"=>(object)["code"=>"' . $languageCode . '","name"=>"' . $name . '","native"=>"' . $native . '","closed"=>null,"forced"=>true],';
+      $translations .= '"' . $code . '"=>(object)["code"=>"' . $code . '","name"=>"' . $name . '","native"=>"' . $native . '","closed"=>null,"forced"=>true],';
     }
 
     return $translations;

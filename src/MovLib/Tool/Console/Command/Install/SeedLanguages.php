@@ -32,7 +32,8 @@ use \MovLib\Data\I18n;
  * parsers built upon them, Intl ICU, ...).
  *
  * @see \MovLib\Data\StreamWrapper\I18nStreamWrapper
- * @see \movLib\Stub\Data\Language
+ * @see \MovLib\Presentation\Partial\Language
+ * @see \MovLib\Stub\Data\Language
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -50,7 +51,7 @@ class SeedLanguages extends AbstractIntlCommand {
    *
    * @var array
    */
-  protected $languageCodes = [
+  protected $codes = [
     "aa", "ab", "ae", "af", "ak", "am", "an", "ar", "as", "av", "ay", "az",
     "ba", "be", "bg", "bh", "bi", "bm", "bn", "bo", "br", "bs",
     "ca", "ce", "ch", "co", "cr", "cs", "cu", "cv", "cy",
@@ -79,12 +80,12 @@ class SeedLanguages extends AbstractIntlCommand {
     "za", "zh", "zu",
   ];
 
+
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
    * @inheritdoc
-   * @global \MovLib\Tool\Kernel $kernel
    */
   protected function configure() {
     $this->setName("seed-languages");
@@ -100,8 +101,8 @@ class SeedLanguages extends AbstractIntlCommand {
 
     // Translate all available languages to the desired locale.
     $languages = [];
-    foreach ($this->languageCodes as $languageCode) {
-      $languages[$languageCode] = Locale::getDisplayLanguage($languageCode, $i18n->locale);
+    foreach ($this->codes as $code) {
+      $languages[$code] = Locale::getDisplayLanguage($code, $i18n->locale);
     }
 
     // Add the two special language codes.
@@ -115,17 +116,17 @@ class SeedLanguages extends AbstractIntlCommand {
     $i18n->getCollator()->asort($languages);
 
     $translations = null;
-    foreach ($languages as $languageCode => $name) {
+    foreach ($languages as $code => $name) {
       // Add the native language's name to the output if applicable.
-      if (in_array($languageCode, $noNative)) {
+      if (in_array($code, $noNative)) {
         $native = "null";
       }
       else {
-        $native = Locale::getDisplayLanguage($languageCode, $languageCode);
+        $native = Locale::getDisplayLanguage($code, $code);
       }
 
       // Put it together.
-      $translations .= '"' . $languageCode . '"=>(object)["code"=>"' . $languageCode . '","name"=>"' . $name . '","native"=>"' . $native . '"],';
+      $translations .= '"' . $code . '"=>(object)["code"=>"' . $code . '","name"=>"' . $name . '","native"=>"' . $native . '"],';
     }
 
     return $translations;
