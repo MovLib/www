@@ -38,7 +38,7 @@ abstract class Language {
   public $code;
 
   /**
-   * The language's translated full name.
+   * The language's name in the current locale.
    *
    * @var string
    */
