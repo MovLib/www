@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data\StreamWrapper;
 
-use \MovLib\Data\Log;
 use \MovLib\Exception\StreamException;
 
 /**
@@ -29,6 +28,9 @@ use \MovLib\Exception\StreamException;
  * <b>NOTE</b><br>
  * Method names have to be written in snake-case because they have to follow the interface defined by PHP. We cannot
  * rename them!
+ *
+ * <b>NOTE</b><br>
+ * The code is based on the Drupal stream wrapper impelentation and (as always) a lot of other Drupal code.
  *
  * @link http://php.net/manual/class.streamwrapper.php
  * @author Richard Fussenegger <richard@fussenegger.info>
@@ -56,6 +58,14 @@ abstract class AbstractLocalStreamWrapper {
    * @var null|resource
    */
   public $handle;
+
+  /**
+   * The stream wrapper's scheme.
+   *
+   * @see StreamWrapperFactory::create()
+   * @var string
+   */
+  public $scheme;
 
   /**
    * Instance URI (stream).
@@ -98,22 +108,17 @@ abstract class AbstractLocalStreamWrapper {
   /**
    * Change file group.
    *
+   * @param string $realpath
+   *   The file's real path.
    * @param integer|string $group
    *   The file's new group either as <code>gid</code> or string.
    * @return boolean
    *   <code>TRUE</code> on success or <code>FALSE</code> on failure.
-   * @throws \MovLib\Exception\StreamException
    */
-  public function chgrp($group) {
-    try {
-      $realpath = $this->realpath();
-      $return   = chgrp($realpath, $group);
-      clearstatcache(true, $realpath);
-      return $return;
-    }
-    catch (\ErrorException $e) {
-      throw new StreamException("Couldn't change file group of '{$this->uri}'", null, $e);
-    }
+  public function chgrp($realpath, $group) {
+    $status = chgrp($realpath, $group);
+    clearstatcache(true, $realpath);
+    return $status;
   }
 
   /**
@@ -125,43 +130,39 @@ abstract class AbstractLocalStreamWrapper {
    * <b>NOTE</b><br>
    * You cannot remove special bits with this method.
    *
+   * @global \MovLib\Kernel $kernel
+   * @param string $realpath
+   *   The file's real path.
    * @param integer $mode
    *   The file's new mode as octal integer (always with leading zero).
    * @return boolean
    *   <code>TRUE</code> on success or <code>FALSE</code> on failure.
-   * @throws \MovLib\Exception\StreamException
    */
-  public function chmod($mode) {
-    try {
-      $realpath = $this->realpath();
-      $return   = chmod($realpath, $mode);
-      clearstatcache(true, $realpath);
-      return $return;
+  public function chmod($realpath, $mode) {
+    global $kernel;
+    $status = chmod($realpath, $mode);
+    if ($kernel->fastCGI === false && posix_getuid() === 0) {
+      chown($realpath, $kernel->systemUser);
+      chgrp($realpath, $kernel->systemGroup);
     }
-    catch (\ErrorException $e) {
-      throw new StreamException("Couldn't change file mode of '{$this->uri}'", null, $e);
-    }
+    clearstatcache(true, $realpath);
+    return $status;
   }
 
   /**
    * Change file user.
    *
+   * @param string $realpath
+   *   The file's real path.
    * @param integer|string $user
    *   The file's new user either as <code>uid</code> or string.
    * @return boolean
    *   <code>TRUE</code> on success or <code>FALSE</code> on failure.
-   * @throws \MovLib\Exception\StreamException
    */
-  public function chown($user) {
-    try {
-      $realpath = $this->realpath();
-      $return   = chown($realpath, $user);
-      clearstatcache(true, $realpath);
-      return $return;
-    }
-    catch (\ErrorException $e) {
-      throw new StreamException("Couldn't change file user of '{$this->uri}'", null, $e);
-    }
+  protected function chown($realpath, $user) {
+    $status = chown($realpath, $user);
+    clearstatcache(true, $realpath);
+    return $status;
   }
 
   /**
@@ -174,11 +175,10 @@ abstract class AbstractLocalStreamWrapper {
    */
   public function dir_closedir() {
     try {
-      closedir($this->handle);
-      return (boolean) $this->handle;
+      return (boolean) (closedir($this->handle));
     }
     catch (\ErrorException $e) {
-      throw new StreamException("Couldn't close directory handle of '{$this->uri}'", null, $e);
+      throw new StreamException("Couldn't close {$this->uri} directory handle", null, $e);
     }
   }
 
@@ -188,20 +188,17 @@ abstract class AbstractLocalStreamWrapper {
    * @link http://php.net/manual/streamwrapper.dir-opendir.php
    * @param string $uri
    *   Absolute URI to the directory that should be opened.
-   * @param integer $options [unused]
-   *   Whether or not to enforce <code>safe_mode</code>.
    * @return boolean
    *   <code>TRUE</code> on success or <code>FALSE</code> on failure.
    * @throws \MovLib\Exception\StreamException
    */
-  public function dir_opendir($uri, $options) {
+  public function dir_opendir($uri) {
     try {
-      $this->uri    = $uri;
-      $this->handle = opendir($this->realpath());
-      return (boolean) $this->handle;
+      $this->uri = $uri;
+      return (boolean) ($this->handle = opendir($this->realpath()));
     }
     catch (\ErrorException $e) {
-      throw new StreamException("Couldn't open directory handle of '{$this->uri}'", null, $e);
+      throw new StreamException("Couldn't open {$this->uri} directory handle", null, $e);
     }
   }
 
@@ -218,7 +215,7 @@ abstract class AbstractLocalStreamWrapper {
       return readdir($this->handle);
     }
     catch (\ErrorException $e) {
-      throw new StreamException("Couldn't read next directory entry of '{$this->url}'", null, $e);
+      throw new StreamException("Couldn't read entry from {$this->uri} directory handle", null, $e);
     }
   }
 
@@ -227,7 +224,7 @@ abstract class AbstractLocalStreamWrapper {
    *
    * @link http://php.net/manual/streamwrapper.dir-rewinddir.php
    * @return boolean
-   *   Always <code>TRUE</code>.
+   *   Always <code>TRUE</code> because there's no way to find out if the function call succeeded.
    * @throws \MovLib\Exception\StreamException
    */
   public function dir_rewinddir() {
@@ -236,7 +233,7 @@ abstract class AbstractLocalStreamWrapper {
       return true;
     }
     catch (\ErrorException $e) {
-      throw new StreamException("Couldn't rewind directory of '{$this->url}'", null, $e);
+      throw new StreamException("Couldn't rewind {$this->uri} directory handle", null, $e);
     }
   }
 
@@ -247,14 +244,22 @@ abstract class AbstractLocalStreamWrapper {
    *   Absolute URI of the file.
    * @return string
    *   The name of the directory from given URI.
+   * @throws \MovLib\Exception\StreamException
    */
   public function dirname($uri = null) {
-    $scheme  = parse_url($uri, PHP_URL_SCHEME);
-    $dirname = dirname($this->getTarget($uri));
-    if ($dirname == ".") {
-      $dirname = "";
+    try {
+      if (!$uri) {
+        $uri = $this->uri;
+      }
+      $dirname = dirname($this->getTarget($uri));
+      if ($dirname == ".") {
+        $dirname = "";
+      }
+      return "{$this->scheme}://{$dirname}";
     }
-    return "{$scheme}://{$dirname}";
+    catch (\ErrorException $e) {
+      throw new StreamException("Couldn't get directory name of {$uri}", null, $e);
+    }
   }
 
   /**
@@ -264,22 +269,24 @@ abstract class AbstractLocalStreamWrapper {
    *   Absolute URI of the file.
    * @return string
    *   The canonical absolute writable local path of the URI.
+   * @throws \MovLib\Exception\StreamException
    */
   protected function getTarget($uri = null) {
-    if (!$uri) {
-      $uri = $this->uri;
+    try {
+      if (!$uri) {
+        $uri = $this->uri;
+      }
+      return trim(explode("://", $uri, 2)[1], "\\/");
     }
-
-    // Build relative path to file from URI.
-    list(, $target) = explode("://", $uri, 2);
-
-    // Remove erroneous leading or trailing, forwardslashes and backslashes.
-    return trim($target, "\\/");
+    catch (\ErrorException $e) {
+      throw new StreamException("Couldn't generate target for {$uri}", null, $e);
+    }
   }
 
   /**
    * Create directory.
    *
+   * @global \MovLib\Kernel $kernel
    * @link http://php.net/manual/streamwrapper.mkdir.php
    * @param string $uri
    *   Absolute URI to the directory to create.
@@ -287,28 +294,57 @@ abstract class AbstractLocalStreamWrapper {
    *   Permission flags as octal integer.
    * @param integer $options
    *   Bit mask of <var>STREAM_REPORT_ERRORS</var> and <var>STREAM_MKDIR_RECURSIVE</var>.
+   * @param boolean $recursion [internal]
+   *   <code>TRUE</code> if in recursion.
    * @return boolean
    *   <code>TRUE</code> on success or <code>FALSE</code> on failure.
    * @throws \MovLib\Exception\StreamException
    */
-  public function mkdir($uri, $mode, $options) {
+  public function mkdir($uri, $mode, $options, $recursion = false) {
     try {
-      $this->uri = $uri;
-      $recursive = (boolean) ($options & STREAM_MKDIR_RECURSIVE);
-      if ($recursive === true) {
-        $path = "{$this->getPath()}/{$this->getTarget()}";
+      // The URI is already the real path if we're in recursion.
+      if ($recursion) {
+        $realpath = $uri;
       }
       else {
-        $path = $this->realpath();
+        $this->uri = $uri;
+        $realpath  = $this->realpath();
       }
-      return mkdir($path, $mode, $recursive);
+
+      // Nothing to do if the directory already exists, but ensure correct permission mode.
+      if ($realpath !== false && is_dir($realpath)) {
+        return chmod($realpath, $mode);
+      }
+
+      // Check if we should generate parent directories.
+      if (($recursive = (boolean) ($options & STREAM_MKDIR_RECURSIVE)) === true) {
+        // Realpath doesn't return the correct path if the parent directories don't exist.
+        if ($recursion === false) {
+          $realpath = "{$this->getPath()}/{$this->getTarget()}";
+        }
+
+        // Try to create the parent directory.
+        if (is_dir(($parent = dirname($realpath)))) {
+          // The recursion has to end if the parent directory exists, regardless of whether the subdirectory could be
+          // created.
+          if (($status = mkdir($realpath))) {
+            $status = chmod($realpath, $mode);
+          }
+
+          return $recursion ? true : $status;
+        }
+
+        // If the parent directory doesn't exist and couldn't be created walk the requested directory path back up until
+        // an existing directory is hit, and from there, recursively create the sub-directories. Only if that recursion
+        // succeeds create the final, originally requested sub-directory.
+        return $this->mkdir($parent, $mode, $options, true) && mkdir($realpath) && chmod($realpath, $mode);
+      }
+
+      // Try to create the directory and change the mode.
+      return mkdir($realpath) && chmod($realpath, $mode);
     }
     catch (\ErrorException $e) {
-      $e = new StreamException("Couldn't create directory '{$uri}'", null, $e);
-      if ($options & STREAM_REPORT_ERRORS) {
-        throw $e;
-      }
-      Log::warning($e);
+      throw new StreamException("Couldn't create directory {$this->uri}", null, $e);
     }
   }
 
@@ -317,30 +353,35 @@ abstract class AbstractLocalStreamWrapper {
    *
    * @param null|string $uri [optional]
    *   Absolute URI to get the real path for, default to <code>NULL</code> and uses the URI of the current stream.
-   * @return string
-   *   The canonical absolute local path of the URI.
+   * @return boolean|string
+   *   The canonical absolute local path of the URI or <code>FALSE</code> if the path couldn't be resolved.
    * @throws \MovLib\Exception\StreamException
    */
   public function realpath($uri = null) {
-    if (!$uri) {
-      $uri = $this->uri;
+    try {
+      if (!$uri) {
+        $uri = $this->uri;
+      }
+
+      // Buld canonical absolute local file path.
+      $basepath = $this->getPath();
+      $filepath = "{$basepath}/{$this->getTarget($uri)}";
+
+      // File doesn't exist yet if realpath returns FALSE.
+      if (($realpath = realpath($filepath)) === false) {
+        $realpath = realpath(dirname($filepath)) . "/" . basename($filepath);
+      }
+
+      // Make sure we have a canonical absolute path by now.
+      if ($realpath === false || strpos($realpath, $basepath) !== 0) {
+        return false;
+      }
+
+      return $realpath;
     }
-
-    // Buld canonical absolute local file path.
-    $basepath = $this->getPath();
-    $filepath = "{$basepath}/{$this->getTarget($uri)}";
-
-    // File doesn't exist yet if realpath returns FALSE.
-    if (($realpath = realpath($filepath)) === false) {
-      $realpath = realpath(dirname($filepath)) . "/" . basename($filepath);
+    catch (\ErrorException $e) {
+      throw new StreamException("Couldn't generate real path for {$uri}", null, $e);
     }
-
-    // Make sure we have a canonical absolute path by now.
-    if ($realpath === false || strpos($realpath, $basepath) !== 0) {
-      throw new StreamException("Couldn't determine canonical absolute local path for '{$uri}'");
-    }
-
-    return $realpath;
   }
 
   /**
@@ -356,7 +397,12 @@ abstract class AbstractLocalStreamWrapper {
    * @throws \MovLib\Exception\StreamException
    */
   public function rename($fromURI, $toURI) {
-    return rename($this->realpath($fromURI), $this->realpath($toURI));
+    try {
+      return rename($this->realpath($fromURI), $this->realpath($toURI));
+    }
+    catch (\Exception $e) {
+      throw new StreamException("Couldn't rename (move) file from {$fromURI} to {$toURI}", null, $e);
+    }
   }
 
   /**
@@ -365,23 +411,17 @@ abstract class AbstractLocalStreamWrapper {
    * @link http://php.net/manual/streamwrapper.rmdir.php
    * @param string $uri
    *   Absolute URI to the directory to remove.
-   * @param integer $options
-   *   Bit mask of <var>STREAM_REPORT_ERRORS</var>.
    * @return boolean
    *   <code>TRUE</code> on success or <code>FALSE</code> on failure.
    * @throws \MovLib\Exception\StreamException
    */
-  public function rmdir($uri, $options) {
+  public function rmdir($uri) {
     try {
       $this->uri = $uri;
       return rmdir($this->realpath());
     }
     catch (\ErrorException $e) {
-      $e = new StreamException("Couldn't delete directory '{$uri}'", null, $e);
-      if ($options & STREAM_REPORT_ERRORS) {
-        throw $e;
-      }
-      Log::warning($e);
+      throw new StreamException("Couldn't delete {$this->uri} directory", null, $e);
     }
   }
 
@@ -394,6 +434,7 @@ abstract class AbstractLocalStreamWrapper {
    *   or <var>STREAM_CAST_AS_STREAM</var> when <code>stream_cast()</code> is called for other uses.
    * @return boolean
    *   Always <code>FALSE</code>, indicating that this method is not supported.
+   * @throws \MovLib\Exception\StreamException
    */
   public function stream_cast($castAs) {
     return false;
@@ -412,7 +453,7 @@ abstract class AbstractLocalStreamWrapper {
       return fclose($this->handle);
     }
     catch (\ErrorException $e) {
-      throw new StreamException("Couldn't close stream of '{$this->url}'", null, $e);
+      throw new StreamException("Couldn't close {$this->url} handle", null, $e);
     }
   }
 
@@ -430,7 +471,7 @@ abstract class AbstractLocalStreamWrapper {
       return feof($this->handle);
     }
     catch (\ErrorException $e) {
-      throw new StreamException("Couldn't test for end-of-file on stream of '{$this->url}'", null, $e);
+      throw new StreamException("Failed to determine end-of-file from {$this->uri}", null, $e);
     }
   }
 
@@ -448,7 +489,7 @@ abstract class AbstractLocalStreamWrapper {
       return fflush($this->handle);
     }
     catch (\ErrorException $e) {
-      throw new StreamException("Couldn't test for end-of-file on stream of '{$this->url}'", null, $e);
+      throw new StreamException("Couldn't flush {$this->uri} handle", null, $e);
     }
   }
 
@@ -469,15 +510,11 @@ abstract class AbstractLocalStreamWrapper {
    * @throws \MovLib\Exception\StreamException
    */
   public function stream_lock($operation) {
-    static $operations = [ LOCK_SH => 0, LOCK_EX => 0, LOCK_UN => 0, LOCK_NB => 0 ];
     try {
-      if (isset($operations[$operation])) {
-        return flock($this->handle, $operation);
-      }
-      return true;
+      return flock($this->handle, $operation);
     }
     catch (\ErrorException $e) {
-      throw new StreamException("Couldn't lock URI '{$this->uir}'", null, $e);
+      throw new StreamException("Couldn't lock {$this->uri} handle", null, $e);
     }
   }
 
@@ -513,25 +550,29 @@ abstract class AbstractLocalStreamWrapper {
    * @throws \MovLib\Exception\StreamException
    */
   public function stream_metadata($uri, $option, $value) {
-    $this->uri = $uri;
+    try {
+      $this->uri = $uri;
+      $realpath  = $this->realpath();
+      switch ($option) {
+        case STREAM_META_TOUCH:
+          return $this->touch($realpath, isset($value[0]) ? $value[0] : null, isset($value[1]) ? $value[1] : null);
 
-    switch ($option) {
-      case STREAM_META_TOUCH:
-        return $this->touch($value[0], $value[1]);
+        case STREAM_META_OWNER_NAME:
+        case STREAM_META_OWNER:
+          return $this->chown($realpath, $value);
 
-      case STREAM_META_OWNER_NAME:
-      case STREAM_META_OWNER:
-        return $this->chown($value);
+        case STREAM_META_GROUP_NAME:
+        case STREAM_META_GROUP:
+          return $this->chgrp($realpath, $value);
 
-      case STREAM_META_GROUP_NAME:
-      case STREAM_META_GROUP:
-        return $this->chgrp($value);
-
-      case STREAM_META_ACCESS:
-        return $this->chmod($value);
+        case STREAM_META_ACCESS:
+          return $this->chmod($realpath, $value);
+      }
+      return false;
     }
-
-    return false;
+    catch (\ErrorException $e) {
+      throw new StreamException("Metadata failed on {$this->uri}", null, $e);
+    }
   }
 
   /**
@@ -554,20 +595,14 @@ abstract class AbstractLocalStreamWrapper {
     try {
       $this->uri = $uri;
       $realpath  = $this->realpath();
-      $return    = (boolean) ($this->handle = fopen($realpath, $mode));
-
-      if ($return === true && ($options & STREAM_USE_PATH)) {
+      $status    = (boolean) ($this->handle = fopen($realpath, $mode));
+      if ($status === true && $options & STREAM_USE_PATH) {
         $openedPath = $realpath;
       }
-
-      return $return;
+      return $status;
     }
     catch (\ErrorException $e) {
-      $e = new StreamException("Couldn't open local stream '{$uri}'");
-      if ($options & STREAM_REPORT_ERRORS) {
-        throw $e;
-      }
-      Log::warning($e);
+      throw new StreamException("Couldn't open {$this->uri} stream handle", null, $e);
     }
   }
 
@@ -586,7 +621,7 @@ abstract class AbstractLocalStreamWrapper {
       return fread($this->handle, $count);
     }
     catch (\ErrorException $e) {
-      throw new StreamException("Couldn't read from stream '{$this->uri}'", null, $e);
+      throw new StreamException("Couldn't read from {$this->uri} handle", null, $e);
     }
   }
 
@@ -614,7 +649,7 @@ abstract class AbstractLocalStreamWrapper {
       return !fseek($this->handle, $offset, $whence);
     }
     catch (\ErrorException $e) {
-      throw new StreamException("Couldn't seek to specific location in stream of '{$this->uri}'", null, $e);
+      throw new StreamException("Couldn't seek in {$this->uri} handle", null, $e);
     }
   }
 
@@ -629,21 +664,26 @@ abstract class AbstractLocalStreamWrapper {
    * @param mixed $arg2
    *   Depends on <var>$option</var>.
    * @return boolean
-   *   Always <code>FALSE</code> indicating that this method is not supported.
+   *   <code>TRUE</code> on success and <code>FALSE</code> on failure or if the desired function is not implemented.
    * @throws \MovLib\Exception\StreamException
    */
   public function stream_set_option($option, $arg1, $arg2) {
-    switch ($option) {
-      case STREAM_OPTION_BLOCKING:
-        return stream_set_blocking($this->handle, $arg1);
+    try {
+      switch ($option) {
+        case STREAM_OPTION_BLOCKING:
+          return stream_set_blocking($this->handle, $arg1);
 
-      case STREAM_OPTION_WRITE_BUFFER:
-        return stream_set_write_buffer($this->handle, $arg1, $arg2);
+        case STREAM_OPTION_WRITE_BUFFER:
+          return stream_set_write_buffer($this->handle, $arg1, $arg2);
 
-      case STREAM_OPTION_READ_TIMEOUT:
-        return stream_set_timeout($this->handle, $arg1, $arg2);
+        case STREAM_OPTION_READ_TIMEOUT:
+          return stream_set_timeout($this->handle, $arg1, $arg2);
+      }
+      return false;
     }
-    return false;
+    catch (\ErrorException $e) {
+      throw new StreamException("Couldn't set options on {$this->uri} handle", null, $e);
+    }
   }
 
   /**
@@ -660,7 +700,7 @@ abstract class AbstractLocalStreamWrapper {
       return fstat($this->handle);
     }
     catch (\ErrorException $e) {
-      throw new StreamException("Couldn't get stats for stream of '{$this->uri}'", null, $e);
+      throw new StreamException("Couldn't get stats for {$this->uri} handle", null, $e);
     }
   }
 
@@ -677,7 +717,7 @@ abstract class AbstractLocalStreamWrapper {
       return ftell($this->handle);
     }
     catch (\ErrorException $e) {
-      throw new StreamException("Couldn't get stats for stream of '{$this->uri}'", null, $e);
+      throw new StreamException("Couldn't get current position of {$this->uri} handle", null, $e);
     }
   }
 
@@ -696,7 +736,7 @@ abstract class AbstractLocalStreamWrapper {
       return ftruncate($this->handle, $newSize);
     }
     catch (\ErrorException $e) {
-      throw new StreamException("Couldn't truncate stream '{$this->url}'", null, $e);
+      throw new StreamException("Couldn't truncate {$this->uri} handle", null, $e);
     }
   }
 
@@ -714,13 +754,15 @@ abstract class AbstractLocalStreamWrapper {
       return fwrite($this->handle, $data);
     }
     catch (\ErrorException $e) {
-      throw new StreamException("Couldn't write to stream '{$this->uri}'", null, $e);
+      throw new StreamException("Couldn't write to {$this->uri} handle", null, $e);
     }
   }
 
   /**
    * Set access and modification time of file.
    *
+   * @param string $realpath
+   *   The file's real path.
    * @param null|integer $modificationTime [optional]
    *   The file's new modification time, defaults to <code>NULL</code> (current system time is used).
    * @param null|integer $accessTime [optional]
@@ -729,13 +771,8 @@ abstract class AbstractLocalStreamWrapper {
    *   <code>TRUE</code> on success or <code>FALSE</code> on failure.
    * @throws \MovLib\Exception\StreamException
    */
-  public function touch($modificationTime = null, $accessTime = null) {
-    try {
-      return touch($this->realpath(), $modificationTime, $accessTime);
-    }
-    catch (\ErrorException $e) {
-      throw new StreamException("Couldn't touch '{$this->uri}'", null, $e);
-    }
+  protected function touch($realpath, $modificationTime = null, $accessTime = null) {
+    return touch($realpath, $modificationTime, $accessTime);
   }
 
   /**
@@ -751,10 +788,14 @@ abstract class AbstractLocalStreamWrapper {
   public function unlink($uri) {
     try {
       $this->uri = $uri;
-      return unlink($this->realpath());
+      $realpath  = $this->realpath();
+      if (file_exists($realpath)) {
+        return unlink($realpath);
+      }
+      return true;
     }
     catch (\ErrorException $e) {
-      throw new StreamException("Couldn't unlink '{$this->uri}'", null, $e);
+      throw new StreamException("Couldn't unlink {$this->uri}", null, $e);
     }
   }
 
@@ -772,19 +813,16 @@ abstract class AbstractLocalStreamWrapper {
    * @throws \MovLib\Exception\StreamException
    */
   public function url_stat($uri, $flags) {
-    $this->uri = $uri;
-    $realpath  = $this->realpath();
     try {
-      return stat($realpath);
+      $this->uri = $uri;
+      $realpath  = $this->realpath();
+      if (file_exists($realpath)) {
+        return stat($realpath);
+      }
+      return false;
     }
     catch (\ErrorException $e) {
-      $e = new StreamException("Couldn't stat '{$this->uri}'", null, $e);
-      if (($flags & STREAM_URL_STAT_QUIET) || !file_exists($realpath)) {
-        Log::notice($e);
-      }
-      else {
-        throw $e;
-      }
+      throw new StreamException("Couldn't get stats for {$this->uri}", null, $e);
     }
   }
 
