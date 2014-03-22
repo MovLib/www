@@ -17,8 +17,11 @@
  */
 namespace MovLib\Tool;
 
-use \MovLib\Data\FileSystem;
+use \Locale;
+use \MovLib\Data\Database;
+use \MovLib\Data\I18n;
 use \MovLib\Data\StreamWrapper\StreamWrapperFactory;
+use \MovLib\Data\User\Session;
 
 /**
  * The tool kernel extends the default kernel and is targeted towards console, PHPUnit, or mixed execution.
@@ -58,15 +61,15 @@ class Kernel extends \MovLib\Kernel {
   /**
    * Instantiate new Tool configuration.
    *
-   * @global \MovLib\Tool\Database $db
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Tool\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
    * @param boolean $composer [optional]
    *   Set this to <code>TRUE</code> if composer is in use.
    */
   public function __construct($composer = false) {
-    global $db, $i18n, $kernel, $session;
+    global $db, $kernel, $i18n, $session;
 
     // Transform ALL PHP errors to exceptions unless this is executed in composer context, too many vendor supplied
     // software is casting various deprecated or strict errors.
@@ -74,39 +77,27 @@ class Kernel extends \MovLib\Kernel {
       set_error_handler([ $this, "errorHandler" ], -1);
     }
 
-    // Export ourself to global scope and allow any layer to access the kernel's public properties.
-    $kernel = $this;
-
     // The tool kernel has to ensure that the document root is always set to the actual MovLib document root without
     // tampering with any super global (which might destroy other software).
     $this->documentRoot     = dirname(dirname(dirname(__DIR__)));
-    $this->fastCGI          = isset($_SERVER["FCGI_ROLE"]);
+    $this->fastCGI          = isset($_SERVER[ "FCGI_ROLE" ]);
     $this->pathTranslations = "{$this->documentRoot}{$this->pathTranslations}";
     $this->production       = !is_dir("{$this->documentRoot}/.git");
     $this->isWindows        = defined("PHP_WINDOWS_VERSION_MAJOR");
+    $kernel                 = $this;
+    $db                     = new Database();
+    $i18n                   = new I18n(Locale::getDefault());
+    $session                = new Session();
+
+    StreamWrapperFactory::register();
 
     // Get the global configuration if present.
-    $configuration = "{$kernel->documentRoot}/etc/movlib/movlib.json";
-    if (file_exists($configuration) === true) {
-      $this->configuration = FileSystem::getJSON($configuration);
+    $configuration = "dr://etc/movlib/movlib.json";
+    if (file_exists($configuration)) {
+      $this->configuration = json_decode(file_get_contents($configuration));
       $this->systemUser    =& $this->configuration->user;
       $this->systemGroup   =& $this->configuration->group;
     }
-
-    // Create global object instances.
-    $db      = new \MovLib\Tool\Database();
-    $i18n    = new \MovLib\Data\I18n(\Locale::getDefault());
-    $session = new \MovLib\Data\User\Session();
-
-    // Register all available stream wrappers.
-    $streamWrappers = [];
-    foreach (new \DirectoryIterator("glob://{$this->documentRoot}/src/MovLib/Data/StreamWrapper/*.php") as $file) {
-      $basename  = $file->getBasename(".php");
-      if ((new \ReflectionClass("\\MovLib\\Data\\StreamWrapper\\{$basename}"))->isInstantiable()) {
-        $streamWrappers[] = strtolower(str_replace("StreamWrapper", "", $basename));
-      }
-    }
-    StreamWrapperFactory::register($streamWrappers);
   }
 
 }

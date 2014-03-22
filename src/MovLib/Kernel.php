@@ -25,6 +25,7 @@ use \MovLib\Data\Mailer;
 use \MovLib\Data\StreamWrapper\StreamWrapperFactory;
 use \MovLib\Data\User\Session;
 use \MovLib\Exception\AbstractClientException;
+use \MovLib\Exception\StreamException;
 use \MovLib\Presentation\Error\Forbidden;
 use \MovLib\Presentation\Error\Unauthorized;
 use \MovLib\Presentation\Stacktrace;
@@ -202,6 +203,13 @@ class Kernel {
   public $protocol = "HTTP/1.1";
 
   /**
+   * URIs of files that should be deleted at the end of the request.
+   *
+   * @var array
+   */
+  private static $registeredFiles;
+
+  /**
    * The client's remote address.
    *
    * @var string
@@ -335,16 +343,14 @@ class Kernel {
     // Transform ALL PHP errors to exceptions.
     set_error_handler([ $this, "errorHandler" ], -1);
 
-    // Catch fatal errors and ensure that something is displayed to the client.
+    // Catch fatal errors and ensure that something is displayed to the client if we're executed via php-fpm.
     $this->fastCGI = isset($_SERVER["FCGI_ROLE"]);
     if ($this->fastCGI === true) {
+      ini_set("display_errors", false);
       register_shutdown_function([ $this, "fatalErrorHandler" ]);
     }
 
     try {
-      // Disable PHP's display error functionality.
-      ini_set("display_errors", false);
-
       // Export ourself to global scope and allow any layer to access the kernel's public properties.
       $kernel = $this;
 
@@ -381,9 +387,9 @@ class Kernel {
       // @codeCoverageIgnoreEnd
       // @devEnd
 
-      // Configure Composer autoloader.
+      // Configure Composer autoloader, stream wrappers aren't registered at this point.
       try {
-        require "{$this->documentRoot}/vendor/autoload.php";
+        require "{$_SERVER["DOCUMENT_ROOT"]}/vendor/autoload.php";
       }
       catch (\ErrorException $e) {
         // Only react on real problems, the vendor supplied stuff often raises DEPRECATED or STRICT errors we don't
@@ -394,6 +400,9 @@ class Kernel {
             throw $e;
         }
       }
+
+      // Register all available stream wrappers.
+      StreamWrapperFactory::register();
 
       // Prepare global database connection.
       $db = new Database();
@@ -447,9 +456,6 @@ class Kernel {
       $cache            = new Cache();
       $cache->cacheable = $_SERVER["REQUEST_METHOD"] == "GET";
 
-      // Register available stream wrappers.
-      StreamWrapperFactory::register([ "asset", "i18n", "tmp", "upload" ]);
-
       // Try to get the presentation.
       try {
         $presentation = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
@@ -478,7 +484,7 @@ class Kernel {
       Log::debug("Response Time: " . (microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"]));
 
       if (empty($presentation)) {
-        header("Content-Type: test/plain; charset=utf-8");
+        header("Content-Type: text/plain");
         echo "==== PRESENTATION IS EMPTY ====";
       }
       // @codeCoverageIgnoreEnd
@@ -500,7 +506,11 @@ class Kernel {
       new Mailer($this->delayedEmails);
       $this->benchmark("delayed", 5.0);
     }
+    // Catch any exceptions that weren't catched, this won't execute any delayed methods!
     catch (\Exception $e) {
+      // Re-activate PHP's built-in display errors directive in case of fatal errors wile trying to display the stack.
+      ini_set("display_errors", true);
+
       try {
         echo (new Stacktrace($e))->getPresentation();
         // Log after trying to fetch the exception, if above code results in an exception.
@@ -509,7 +519,7 @@ class Kernel {
       catch (\Exception $e) {
         Log::emergency($e);
         header("Content-Type: text/plain; charset=utf-8");
-        exit("==== FATAL ERROR ====\n\n{$e}");
+        echo "==== FATAL ERROR ====\n\n{$e}";
       }
     }
   }
@@ -551,7 +561,7 @@ class Kernel {
    * @return this
    * @throws \LogicException
    */
-  public function cookieCreate($id, $value, $expire = 0, $httpOnly = false) {
+  final public function cookieCreate($id, $value, $expire = 0, $httpOnly = false) {
     // @devStart
     // @codeCoverageIgnoreStart
     Log::debug("Creating Cookie", [ "id" => $id, "value" => $value ]);
@@ -580,7 +590,7 @@ class Kernel {
    * @return this
    * @throws \LogicException
    */
-  public function cookieDelete($ids) {
+  final public function cookieDelete($ids) {
     foreach ((array) $ids as $id) {
       // @devStart
       // @codeCoverageIgnoreStart
@@ -601,7 +611,7 @@ class Kernel {
    *   Parameters that should be passed to <var>$callable</var>.
    * @return this
    */
-  public function delayMethodCall($callable, array $params = null) {
+  final public function delayMethodCall($callable, array $params = null) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (is_callable($callable) === false) {
@@ -613,6 +623,40 @@ class Kernel {
     // @codeCoverageIgnoreEnd
     // @devEnd
     $this->delayedMethods[] = [ $callable, $params ];
+    return $this;
+  }
+
+  /**
+   * Delete all registered files (used as shutdown function and must be public).
+   *
+   * @return this
+   */
+  final public function deleteRegisteredFiles() {
+    if (self::$registeredFiles) {
+      foreach (self::$registeredFiles as $uri => $recursive) {
+        try {
+          if ($recursive) {
+            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($uri, \RecursiveDirectoryIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST) as $fileinfo) {
+              if ($fileinfo->isDir()) {
+                rmdir($fileinfo->getPathname());
+              }
+              else {
+                unlink($fileinfo->getPathname());
+              }
+            }
+          }
+          if (is_dir($uri)) {
+            rmdir($uri);
+          }
+          else {
+            unlink($uri);
+          }
+        }
+        catch (StreamException $e) {
+          Log::error($e);
+        }
+      }
+    }
     return $this;
   }
 
@@ -641,7 +685,7 @@ class Kernel {
    *   The line number within the file.
    * @throws \ErrorException
    */
-  public function errorHandler($severity, $message, $file, $line) {
+  final public function errorHandler($severity, $message, $file, $line) {
     throw new \ErrorException($message, $severity, 0, $file, $line);
   }
 
@@ -672,7 +716,7 @@ class Kernel {
    *
    * @link http://stackoverflow.com/a/2146171/1251219 How do I catch a PHP Fatal Error
    */
-  public function fatalErrorHandler() {
+  final public function fatalErrorHandler() {
     if (($error = error_get_last())) {
       try {
         $line = __LINE__ - 2;
@@ -705,14 +749,33 @@ class Kernel {
         $presentation = (new Stacktrace($exception, true))->getPresentation();
       }
       catch (\Exception $e) {
-        header("Content-Type: text/plain; charset=utf-8");
+        ini_set("display_errors", true);
+        header("Content-Type: text/plain");
         $presentation = (string) $e;
       }
 
       // Log this error, send an email to all developers, and display the error to the user.
       Log::emergency($exception);
-      exit($presentation);
+      echo $presentation;
     }
+  }
+
+  /**
+   * Register a file or a directory for deletion.
+   *
+   * @param string $uri
+   *   The URI of the file that should be registered for deletion.
+   * @param boolean $recursive [optional]
+   *   If set to <code>TRUE</code> and the URI is a directory everything will be deleted, the directory and all of its
+   *   contents. Defaults to <code>FALSE</code>, which means that the deletion will fail if the directory is non empty.
+   * @return this
+   */
+  final public function registerFileForDeletion($uri, $recursive = false) {
+    if (!self::$registeredFiles) {
+      register_shutdown_function([ $this, "deleteRegisteredFiles" ]);
+    }
+    self::$registeredFiles[$uri] = $recursive;
+    return $this;
   }
 
   /**
@@ -722,7 +785,7 @@ class Kernel {
    *   The email to send.
    * @return this
    */
-  public function sendEmail($email) {
+  final public function sendEmail($email) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($email) || !($email instanceof \MovLib\Presentation\Email\AbstractEmail)) {
