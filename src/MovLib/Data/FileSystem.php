@@ -86,49 +86,6 @@ abstract class FileSystem {
   }
 
   /**
-   * Resolves the absolute path of a local file.
-   *
-   * <b>NOTE</b><br>
-   * Do not use this method with remote URIs!
-   *
-   * An exception is thrown if PHP's built-in <code>realpath()</code> returned <code>FALSE</code> and the file actually
-   * does exist or if the current process isn't running in CLI mode and attempting to resolve a file outside the
-   * document root.
-   *
-   * @param string $uri
-   *   A stream wrapper URI or a filepath, possibly including one or more symbolic links.
-   * @return string
-   *   The absolute path of the local file.
-   * @throws \MovLib\Exception\FileSystemException
-   * @throws \MovLib\Exception\StreamException
-   */
-  final public static function realpath($uri) {
-    // If we're dealing with a URI pass it to the stream wrapper factory.
-    if (strpos($uri, "://") !== false) {
-      return StreamWrapperFactory::create($uri)->realpath();
-    }
-
-    // Let PHP resolve the absolute path to the file.
-    $realpath = realpath($uri);
-
-    // Check if PHP was able to do so.
-    if ($realpath === false) {
-      // realpath() will return FALSE if the file doesn't exist, which isn't really an error for us. Therefore we have
-      // to check if the file really doesn't exist, this on the other hand means that some other error occurred and we
-      // throw an exception in this case.
-      if (($realpath = realpath(dirname($uri)) . "/" . basename($uri)) === false) {
-        throw new FileSystemException("Path '{$uri}' seems to be invalid");
-      }
-    }
-    // Only use the realpath result if it isn't of type boolean.
-    else {
-      return $realpath;
-    }
-
-    return $uri;
-  }
-
-  /**
    * Sanitizes a filename, replacing whitespace with dashes and transforming the string to lowercase.
    *
    * Removes special characters that are illegal in filenames on certain operating systems and special characters
