@@ -18,9 +18,10 @@
 namespace MovLib\Tool\Console\Command;
 
 use \MovLib\Data\Shell;
+use \MovLib\Data\StreamWrapper\StreamWrapperFactory;
 use \Symfony\Component\Console\Input\InputInterface;
-use \Symfony\Component\Console\Output\OutputInterface;
 use \Symfony\Component\Console\Output\Output;
+use \Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Abstract base class for all MovLib console command classes.
@@ -246,8 +247,11 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    * @return this
    */
   final protected function changeWorkingDirectory($directory) {
+    if (strpos($directory, "://") !== false) {
+      $directory = StreamWrapperFactory::create($directory)->realpath();
+    }
     if (getcwd() != $directory) {
-      $this->writeDebug("Changeing working directory to '{$directory}'...");
+      $this->writeDebug("Changeing working directory to <comment>{$directory}</comment>");
       chdir($directory);
     }
     return $this;

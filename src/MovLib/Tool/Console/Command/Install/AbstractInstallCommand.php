@@ -222,7 +222,7 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
       $delete = !$this->input->getOption("keep");
     }
     if ($delete === true) {
-      $this->registerFileForDeletion($destination);
+      $kernel->registerFileForDeletion($destination);
     }
 
     return $destination;
@@ -249,7 +249,7 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
 
     if (is_file($etc)) {
       $this->writeDebug("Deleting old global configuration...");
-      FileSystem::delete($etc, false, true);
+      unlink($etc);
     }
 
     $this->writeDebug("Writing new global configuration...");
@@ -283,6 +283,7 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
   /**
    * Extract given source archive to target directory.
    *
+   * @global \MovLib\Tool\Kernel $kernel
    * @param string $source
    *   Absolute path to the source archive.
    * @param null|string $target [optional]
@@ -298,6 +299,8 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
    * @throws \UnexpectedValueException
    */
   final protected function extract($source, $target = null, $delete = null) {
+    global $kernel;
+
     if (realpath($source) === false) {
       throw new \UnexpectedValueException("\$source must point to an existing archive on the local file system");
     }
@@ -324,7 +327,7 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
       $delete = !$this->input->getOption("keep");
     }
     if ($delete === true) {
-      $this->registerFileForDeletion($destination);
+      $kernel->registerFileForDeletion($destination);
     }
 
     return $destination;
@@ -392,13 +395,6 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
       return false;
     }
     return $version;
-  }
-
-  /**
-   * @todo Change calls in implementing classes to FS calls.
-   */
-  final protected function registerFileForDeletion($file = null) {
-    return FileSystem::registerFileForDeletion($file);
   }
 
 }

@@ -17,6 +17,7 @@
  */
 namespace MovLib\Tool\Console\Command\Admin;
 
+use \MovLib\Data\StreamWrapper\StreamWrapperFactory;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -64,13 +65,8 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
       $this->writeVerbose("New URI is <comment>{$uri}</comment>");
     }
 
-    try {
-      if (realpath_uri($uri) === false) {
-        throw new \InvalidArgumentException("The passed URI '{$uri}' doesn't exist");
-      }
-    }
-    catch (\ErrorException $e) {
-      throw new \InvalidArgumentException("No scheme registered to handle this URI '{$uri}'", null, $e);
+    if (StreamWrapperFactory::create($uri)->realpath() === false) {
+      throw new \InvalidArgumentException("The passed URI '{$uri}' doesn't exist");
     }
 
     if (is_file($uri)) {

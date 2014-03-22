@@ -17,7 +17,7 @@
  */
 namespace MovLib\Tool\Console\Command\Admin;
 
-use \MovLib\Data\FileSystem;
+use \MovLib\Data\StreamWrapper\StreamWrapperFactory;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -38,11 +38,15 @@ class Autocomplete extends \MovLib\Tool\Console\Command\AbstractCommand {
    */
   protected function configure() {
     $this->setName("gen-autocompletion");
-    $this->setDescription("Generation autocompletion for Symfony Console Application.");
+    $this->setDescription("Generate autocompletion for Symfony Console Applications. Note that this application has to be executed as privileged user because the generated autocompletion files have to moved to a protected directory.");
     $this->addArgument(
-      "application(s)",
+      "application",
       InputArgument::OPTIONAL | InputArgument::IS_ARRAY,
-      "The Symfony Console Application for which the autocompletion should be generated.",
+      str_replace("'all'", "<comment>all</comment>", wordwrap(
+        "The Symfony Console Applications for which autocompletions should be generated. Note that the default value " .
+        "'all' is a special keyword, if 'all' is part of your supplied arguments any other argument is simply ignored.",
+        120
+      )),
       [ "all" ]
     );
   }
@@ -52,64 +56,44 @@ class Autocomplete extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @global \MovLib\Tool\Kernel $kernel
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    global $kernel;
+    $this->checkPrivileges();
+    $apps = $input->getArgument("application");
 
-    $apps = $input->getArgument("application(s)");
-
-    if (count($apps) === 1 && $apps[0] == "all") {
+    if (in_array("all", $apps)) {
+      $this->writeVerbose("Found special keyword <comment>all</comment>, generating translations for all system locales");
       $apps = [];
-      foreach (new \DirectoryIterator("glob://{$kernel->documentRoot}/bin/mov*.php") as $app) {
-        $apps[] = $app->getBasename(".php");
+      foreach (new \RegexIterator(new \DirectoryIterator("dr://bin"), "/mov[a-z]+\.php$/") as $fileinfo) {
+        $apps[] = $fileinfo->getBasename(".php");
       }
     }
 
+    $vendor = StreamWrapperFactory::create("dr://vendor")->realpath();
+    $tmp    = StreamWrapperFactory::create("tmp://");
+
     foreach ($apps as $app) {
-      $this->generateAutocompletion($app);
+      $this->writeVerbose("Generating autocompletion for <comment>{$app}</comment>");
+
+      // Create the autocompletion project if it doesn't exist yet.
+      $autocomplete = "{$vendor}/symfony-console-autocomplete/bin/autocomplete";
+      $this->exec("which '{$app}'");
+      if (is_file($autocomplete) === false) {
+        $this->exec("composer create-project bamarni/symfony-console-autocomplete -s dev", $vendor);
+      }
+
+      // Create the autocompletion dump of the desired application.
+      $this->exec("php {$autocomplete} dump '{$app}' > '{$app}'", "tmp://");
+      $bashCompletion = "/etc/bash_completion.d";
+
+      // We have to call realpath at this point, because it's not possible to move a file around wrapper types.
+      rename($tmp->realpath("tmp://{$app}"), "{$bashCompletion}/{$app}");
     }
 
+    // Although our process is running as the user who started it, it's still a different session and we can't simply
+    // reload it for the user.
     $this->write("Run the command <fg=black;bg=cyan>source ~/.bashrc</fg=black;bg=cyan> to enjoy auto-completion.");
     $this->writeVerbose("Successfully generated autocompletion for '{$app}'!", self::MESSAGE_TYPE_INFO);
 
     return 0;
-  }
-
-  /**
-   * Generate bash autocompletion for given Symfony Console CLI application.
-   *
-   * @global \MovLib\Tool\Kernel $kernel
-   * @param type $app
-   *   The name of the Symfony Console CLI application.
-   * @return this
-   */
-  protected function generateAutocompletion($app) {
-    global $kernel;
-
-    $this->writeVerbose(
-      "Generating autocompletion for '{$app}', this may take several minutes...",
-      self::MESSAGE_TYPE_COMMENT
-    );
-
-    $vendor       = "{$kernel->documentRoot}/vendor";
-    $autocomplete = "{$vendor}/symfony-console-autocomplete/bin/autocomplete";
-    $this->exec("which '{$app}'");
-    if (is_file($autocomplete) === false) {
-      $this->exec("composer create-project bamarni/symfony-console-autocomplete -s dev", $vendor);
-    }
-
-    $this->exec("php {$autocomplete} dump '{$app}' > '{$app}'", "{$kernel->documentRoot}/tmp");
-    $bashCompletion = "/etc/bash_completion.d";
-    if ($this->checkPrivileges(false) === true) {
-      FileSystem::move("{$kernel->documentRoot}/tmp/{$app}", "{$bashCompletion}/{$app}");
-      $this->exec("source ~/.bashrc");
-    }
-    else {
-      $this->write(
-        "Cannot move generated autocompletion dump to {$bashCompletion} because command wasn't executed as privileged user.",
-        self::MESSAGE_TYPE_ERROR
-      );
-    }
-
-    return $this;
   }
 
 }

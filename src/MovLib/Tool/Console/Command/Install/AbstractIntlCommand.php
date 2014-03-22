@@ -17,13 +17,22 @@
  */
 namespace MovLib\Tool\Console\Command\Install;
 
+use \MovLib\Data\StreamWrapper\StreamWrapperFactory;
 use \MovLib\Data\I18n;
+use \MovLib\Data\Shell;
+use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
-use \Symfony\Component\Console\Input\InputArgument;
 
 /**
  * Base class for Intl related seed commands.
+ *
+ * <b>NOTE</b><br>
+ * All translated data is stored in the directory defined by the {@see \MovLib\Data\StreamWrapper\I18nStreamWrapper},
+ * this class will extract the appropriate sub-directory's name from the command name of the extending concrete class to
+ * store the translations. This means, if your extending class's command name is <code>"seed-my-translations"</code>
+ * then your translations will be stored in <code>"i18n://my-translations"</code>. For exact implementation see
+ * aforementioned stream wrapper and the body of this class.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -46,10 +55,14 @@ abstract class AbstractIntlCommand extends \MovLib\Tool\Console\Command\Abstract
     $this->addArgument(
       "locale",
       InputArgument::IS_ARRAY | InputArgument::OPTIONAL,
-      "The system locales for which translations should be generated, either a language code or a locale. Note that " .
-      "the default value 'all' is a special keyword, if 'all' is part of your supplied arguments any other argument " .
-      "is simply ignored and translations for all available system locales will be generated. The following system " .
-      "locales are currently available: " . implode(", ", $kernel->systemLanguages),
+      str_replace("'all'", "<comment>all</comment>", wordwrap(
+        "The system locales for which translations should be generated, either a language code or a locale. Note that " .
+        "the default value 'all' is a special keyword, if 'all' is part of your supplied arguments any other argument " .
+        "is simply ignored and translations for all available system locales will be generated. The following system " .
+        "locales are currently available:\n\n<info>" . implode("</info>, <info>", [ "all" ] + $kernel->systemLanguages) .
+        "</info>",
+        120
+      )),
       [ "all" ]
     );
   }
@@ -57,33 +70,6 @@ abstract class AbstractIntlCommand extends \MovLib\Tool\Console\Command\Abstract
 
   // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
 
-
-  /**
-   * Get the translation's source directory name.
-   *
-   * The translations are based on Intl ICU source files checked out via SVN from their repository. Each command that
-   * extends this class will have to provide the name of the directory within the Intl ICU source date directory in
-   * which the <i>.txt</i> files with the translations reside for automated translation.
-   *
-   * @link https://ssl.icu-project.org/repos/icu/icu/tags/latest/source/data/
-   * @return string
-   *   The translation's source directory name.
-   */
-//  abstract protected function getSourceDirectoryName();
-
-  /**
-   * Get the translations's target directory name.
-   *
-   * All translated data is stored in the directory defined by the {@see \MovLib\Data\StreamWrapper\I18nStreamWrapper},
-   * this method should return the directory name within that directory under which the translations should be stored.
-   * For example if we want to have translations for country names we'd use the directory name <code>"countries"</code>.
-   * This allows the data layer to access the translated files via the URI <code>"i18n://countries"</code>, they'll
-   * directly receive access to the correct file. For exact implementation see aforementioned stream wrapper.
-   *
-   * @return string
-   *   The translations's target directory name.
-   */
-//  abstract protected function getTargetDirectoryName();
 
   /**
    * Translate for the given locale.
@@ -116,13 +102,13 @@ abstract class AbstractIntlCommand extends \MovLib\Tool\Console\Command\Abstract
    * @return integer {@inheritdoc}
    * @throws \InvalidArgumentException
    */
-  protected function execute(InputInterface $input, OutputInterface $output) {
+  final protected function execute(InputInterface $input, OutputInterface $output) {
     global $i18n, $kernel;
 
     // Build array containing all desired locales.
     $args = $input->getArgument("locale");
     if (in_array("all", $args)) {
-      $this->writeVerbose("Found special 'all' keyword, generating translations for all system locales...");
+      $this->writeVerbose("Found special <comment>all</comment> keyword, generating translations for all system locales");
       $locales = $kernel->systemLanguages;
     }
     else {
@@ -135,28 +121,133 @@ abstract class AbstractIntlCommand extends \MovLib\Tool\Console\Command\Abstract
       }
     }
 
-    $this->writeDebug("Creating target URI for translations based on the command's name...");
-    $target = "i18n://" . str_replace("seed-", "", $this->getName());
-    $this->writeVeryVerbose("Translation file will be: '{$target}'...");
+    $this->writeDebug("Creating target URI for translations based on the command's name");
+    $targetFilename = str_replace("seed-", "", $this->getName());
+    $this->writeVeryVerbose("Target filename will be <comment>dr://var/i18n/{$targetFilename}.php</comment>");
 
     foreach ($locales as $locale) {
-      $this->writeDebug("Creating new global I18n instance for '{$locale}' (important for stream wrapper)...");
+      $this->writeDebug("Creating new global I18n instance for <comment>{$locale}</comment>");
       $i18n = new I18n($locale);
 
-      if (file_exists($target)) {
-        $this->writeDebug("Changing file mode of translations file to read and write...");
-        chmod($target, 0666);
-      }
-
-      $this->writeVerbose("Creating translations for '{$locale}'...");
-      file_put_contents($target, "<?php return [{$this->translate()}];");
-
-      $this->writeDebug("Changing file mode of translations file to read only!", self::MESSAGE_TYPE_COMMENT);
-      chmod($target, 0444);
+      $this->writeVerbose("Creating translations for <comment>{$locale}</comment>");
+      file_put_contents("dr://var/i18n/{$locale}/{$targetFilename}.php", "<?php return[{$this->translate()}];");
     }
 
     $this->writeDebug("Successfully created translations for " . implode(", ", $locales) . "!", self::MESSAGE_TYPE_INFO);
     return 0;
+  }
+
+  /**
+   * Get resource bundle from the Intl ICU sources.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Tool\Kernel $kernel
+   * @param string $dataSourceDirectoryName
+   *   The name of the Intl ICU data source directory to generate the desired resource bundle.
+   *
+   *   The translations are based on Intl ICU source files checked out via SVN from their repository. This command will
+   *   need to know the directory within the source data directory of the exported SVN directory of your specific
+   *   translation task to generate the resource bundle. Go to {@link https://ssl.icu-project.org/repos/icu/icu/tags/latest/source/data/}
+   *   to see all available default Intl ICU translations.
+   * @return \ResourceBundle
+   *   The desired resource bundle.
+   * @throws \ErrorException
+   * @throws \InvalidArgumentException
+   */
+  final protected function getResourceBundle($dataSourceDirectoryName) {
+    global $i18n, $kernel;
+
+    $uri        = $this->getSourceDataURI();
+    $source     = "{$uri}/{$dataSourceDirectoryName}";
+    $version    = $this->getVersion();
+    $versionURI = $this->getSourceDataVersionURI();
+
+    // Make sure we have the latest sources available.
+    if (is_dir($uri) && is_file($versionURI) && version_compare($version, file_get_contents($versionURI), ">")) {
+      unlink($uri);
+    }
+    if (!is_dir($uri)) {
+      $this->svnExport();
+    }
+
+    // Make sure the desired directory exists.
+    if (!is_dir($source)) {
+      throw new \InvalidArgumentException("The desired source data directory '{$source}' doesn't exist");
+    }
+
+    // Load the best matching translations.
+    $source    = "{$source}/{$i18n->languageCode}.txt";
+    $srcLocale = "{$source}/{$i18n->locale}.txt";
+    if (is_file($srcLocale)) {
+      $source = $srcLocale;
+    }
+    elseif (!is_file($source)) {
+      throw new \UnexpectedValueException("There are not translations available for '{$i18n->languageCode}' ('{$dataSourceDirectoryName}')");
+    }
+
+    // Generate the resource bundle.
+    $destination = StreamWrapperFactory::create("tmp://icu-resource-bundle")->realpath();
+    $this->exec("genrb --encoding UTF-8 --destdir '{$destination}' '{$source}'");
+    $resourceBundle = "{$destination}/" . basename($source, ".txt") . ".res";
+    $kernel->registerFileForDeletion($resourceBundle);
+
+    return $resourceBundle;
+  }
+
+  /**
+   * Get the Intl ICU source data URI.
+   *
+   * @return string
+   *   The Intl ICU source data URI.
+   */
+  final protected function getSourceDataURI() {
+    return "dr://var/i18n/icu-data";
+  }
+
+  /**
+   * Get the URI to the stored source data version.
+   *
+   * @return string
+   *   The URI to the stored source data version.
+   */
+  final protected function getSourceDataVersionURI() {
+    return "{$this->getSourceDataURI()}/.version";
+  }
+
+  /**
+   * Get the installed ICU version.
+   *
+   * <b>NOTE</b><br>
+   * The returned version has the format <code>"<major>-<minor>"</code>.
+   *
+   * @staticvar string $version
+   *   Used to cache the version.
+   * @return string
+   *   The installed ICU version.
+   * @throws \MovLib\Exception\ShellException
+   */
+  final protected function getVersion() {
+    $this->writeDebug("Determining installed ICU version...");
+    Shell::execute("icu-config --version", $version);
+    return trim(strtr($version[0], ".", "-"));
+  }
+
+  /**
+   * Export the Intl ICU source data directory via SVN.
+   *
+   * @return this
+   * @throws \MovLib\Exception\ShellException
+   */
+  final protected function svnExport() {
+    $uri        = $this->getSourceDataURI();
+    $realpath   = StreamWrapperFactory::create($uri)->realpath();
+    $version    = $this->getVersion();
+    $versionURI = $this->getSourceDataVersionURI();
+
+    $this->exec("svn export 'http://source.icu-project.org/repos/icu/icu/tags/release-{$version}/source/data' '{$realpath}'");
+    file_put_contents($versionURI, $version);
+
+    return $this;
   }
 
 }

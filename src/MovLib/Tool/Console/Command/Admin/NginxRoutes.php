@@ -17,8 +17,9 @@
  */
 namespace MovLib\Tool\Console\Command\Admin;
 
-use \MovLib\Data\FileSystem;
-use \MovLib\Data\Shell;
+use \Locale;
+use \MessageFormatter;
+use \MovLib\Data\I18n;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -117,47 +118,36 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
     // Don't remove the $db variable just because it's unused, it's used in the included routes.php file!
     global $kernel, $db, $i18n;
 
-    // Reload of nginx is only possible as privileged user.
-    $this->checkPrivileges();
-
-    // Let the user know what's going to happen.
     $this->writeVerbose("Starting to translate and compile nginx routes ...", self::MESSAGE_TYPE_COMMENT);
 
-    // Store currently set language code to reset after all routes have been built.
-    $currentLanguageCode = $i18n->languageCode;
+    $routesDirectory = "dr://etc/nginx/sites/conf/routes";
+    $this->writeDebug("Creating <comment>{$routesDirectory}</comment>");
+    mkdir($routesDirectory);
 
-    // Make sure that the routes directory exists.
-    $routesDirectory = "{$kernel->documentRoot}/etc/nginx/sites/conf/routes";
-    if (is_dir($routesDirectory) === false) {
-      $this->writeDebug("Creating routes directory '{$routesDirectory}'");
-      FileSystem::createDirectory($routesDirectory);
-    }
+    $this->writeDebug(
+      "Generating routes for all system locales: <comment>" .
+      implode("</comment>, <comment>", $kernel->systemLanguages) .
+      "</comment>"
+    );
 
-    // Generate routes file for each system language.
-    $this->writeDebug("Generating routes for all system locales: " . implode(" ", $kernel->systemLanguages));
     foreach ($kernel->systemLanguages as $languageCode => $locale) {
-      $translatedRoutes   = null;
-      $i18n->locale       = $locale;
-      $i18n->languageCode = $languageCode;
-      $this->writeDebug("Generating routes for system locale '{$i18n->locale}'");
+      $translatedRoutes = null;
+      $i18n             = new I18n($locale);
+      $this->writeDebug("Generating routes for system locale <comment>{$i18n->locale}</comment>");
 
-      // We need output buffering to catch the output of the following require call.
       $this->writeDebug("Starting output buffering...");
       $obStart = ob_start(function ($buffer) use (&$translatedRoutes) {
         $translatedRoutes = $buffer;
       });
 
-      // Make sure output buffering was started successfully.
       if ($obStart === false) {
         throw new \RuntimeException("Couldn't start output buffering!");
       }
 
-      // Execute the routes source file and translate all routes with the closure.
-      /* @var $routesFile \splFileInfo */
-      foreach (new \DirectoryIterator("glob://{$routesDirectory}/*.php") as $routesFile) {
-        $this->routesNamespace = $routesFile->getBasename(".php");
+      foreach (new \RegexIterator(new \DirectoryIterator($routesDirectory), "/\.php$/") as $fileinfo) {
+        $this->routesNamespace = $fileinfo->getBasename(".php");
         try {
-          include $routesFile->getRealPath();
+          require $fileinfo->getPathname();
         }
         catch (\Exception $e) {
           ob_end_clean();
@@ -166,31 +156,33 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
         $this->routesNamespace = null;
       }
 
-      // End output buffering for this system language ...
       if (ob_end_clean() === false) {
         throw new \RuntimeException("Couldn't get buffered output!");
       }
       $this->writeDebug("Ending output buffering...");
 
-      // ... and write it to the target directory.
-      FileSystem::putContent("{$routesDirectory}/{$i18n->languageCode}.conf", $translatedRoutes, LOCK_EX);
-      $this->writeDebug("Written routing file for '{$i18n->locale}'");
+      $this->writeDebug("Writing translated routing file for <comment>{$i18n->locale}</comment>");
+      file_put_contents("dr://etc/nginx/sites/conf/routes/{$i18n->languageCode}.conf", $translatedRoutes);
 
-      // Print the keys that still need translation.
       foreach ([ "singular", "plural" ] as $form) {
-        if (!empty($this->{"empty{$form}Translations"}[$i18n->languageCode])) {
-          $this->write("The following {$form} form(s) still need translation:", self::MESSAGE_TYPE_ERROR);
-          $this->write($this->{"empty{$form}Translations"}[$i18n->languageCode], self::MESSAGE_TYPE_COMMENT);
+        if (!empty($this->{"empty{$form}Translations"}[$i18n->locale])) {
+          $this->write("The following {$i18n->locale} {$form} form(s) still need translation:", self::MESSAGE_TYPE_ERROR);
+          $this->write($this->{"empty{$form}Translations"}[$i18n->locale], self::MESSAGE_TYPE_COMMENT);
         }
       }
     }
 
     // Reload nginx and load the newly translated routes.
-    $this->exec("service nginx reload");
+    if ($this->checkPrivileges(false)) {
+      $this->exec("service nginx reload");
+    }
+    else {
+      $this->write("Cannot reload nginx, only possible as privileged user (root or sudo).", self::MESSAGE_TYPE_ERROR);
+    }
 
     // Make sure that the previously set language code is set again globally in case other commands are executed with
     // the same instance.
-    $i18n->languageCode = $currentLanguageCode;
+    $i18n = new I18n(Locale::getDefault());
 
     // Let the user know that everything went fine.
     $this->writeVerbose("Successfully translated and compiled routes, plus reloaded nginx!", self::MESSAGE_TYPE_INFO);
@@ -205,56 +197,62 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @global \MovLib\Tool\Kernel $kernel
    * @staticvar array $routes
    *   Use to cache the routes.
-   * @param string $route
+   * @param string $pattern
    *   The untranslated route to translate.
-   * @param boolean $plural
+   * @param string $context
+   *   Either <code>"singular"</code> or <code>"plural"</code>.
    *   Whether this route key is singular or plural.
    * @param array $args [optional]
    *   Replacement arguments for the route key.
    * @return string
    *   The translated and formatted route.
    */
-  protected function getTranslatedRoute($route, $plural, array &$args = null) {
-    global $i18n, $kernel;
+  protected function getTranslatedRoute($pattern, $context, array &$args = null) {
+    global $i18n;
     static $routes = [];
 
     // @devStart
     // @codeCoverageIgnoreStart
-    if (empty($route) || !is_string($route)) {
+    if (empty($pattern) || !is_string($pattern)) {
       throw new \InvalidArgumentException("\$route cannot be empty and must be of type string");
     }
-    if (!is_bool($plural)) {
-      throw new \InvalidArgumentException("\$plural cannot be empty and must be of type boolean");
+    if ($context != "singular" && $context != "plural") {
+      throw new \InvalidArgumentException("\$context has to be either 'singular' or 'plural'");
     }
     if (isset($args) && (empty($args) || !is_array($args))) {
       throw new \InvalidArgumentException("\$args cannot be empty and must be of type array");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    $form = ($plural === true) ? "plural" : "singular";
 
     // We only need to translate the route if it isn't in the default locale.
     if ($i18n->locale != $i18n->defaultLocale) {
       // Check if we already have the route translations for this locale cached.
-      if (!isset($routes[$form][$i18n->locale])) {
-        $routes[$form][$i18n->locale] = require "{$kernel->pathTranslations}/routes/{$i18n->locale}.{$form}.php";
+      if (empty($routes[$i18n->locale][$context])) {
+        $routes[$i18n->locale][$context] = require "dr://var/i18n/{$i18n->locale}/routes/{$context}.php";
       }
 
       // Check if we have a translation for this route and use it if we have one.
-      if (!empty($routes[$form][$i18n->locale][$route])) {
-        $route = $routes[$form][$i18n->locale][$route];
+      if (empty($routes[$i18n->locale][$context][$pattern])) {
+        $this->{"empty{$context}Translations"}[$i18n->locale][$pattern] = $pattern;
       }
       else {
-        $this->{"empty{$form}Translations"}[$i18n->languageCode][$route] = $route;
+        $pattern = $routes[$i18n->locale][$context][$pattern];
       }
     }
-    if (empty($args) && ($num = preg_match_all("/{[a-z0-9_]+}/", $route)) > 0) {
+
+    // Check if the route contains any placeholder tokens if no arguments were passed. Default placeholder tokens in
+    // routes are replaced with the identifier regular expression.
+    if (empty($args) && ($num = preg_match_all("/{[a-z0-9_]+}/", $pattern)) > 0) {
       $args = array_fill(0, $num, $this->idRegExp);
     }
+
+    // Let the message formatter replace any placeholder tokens if we have arguments at this point.
     if (!empty($args)) {
-      return \MessageFormatter::formatMessage($i18n->locale, $route, $args);
+      return MessageFormatter::formatMessage($i18n->locale, $pattern, $args);
     }
-    return $route;
+
+    return $pattern;
   }
 
   /**
@@ -278,7 +276,7 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
    *   The translated route.
    */
   public function r($route, array &$args = null) {
-    return $this->getTranslatedRoute($route, false, $args);
+    return $this->getTranslatedRoute($route, "singular", $args);
   }
 
   /**
@@ -343,7 +341,7 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
    *   The translated route.
    */
   public function rp($route, array &$args = null) {
-    return $this->getTranslatedRoute($route, true, $args);
+    return $this->getTranslatedRoute($route, "plural", $args);
   }
 
   /**
