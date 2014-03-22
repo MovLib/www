@@ -311,52 +311,6 @@ final class I18n {
   }
 
   /**
-   * Translate and format given message with given context.
-   *
-   * @param string $pattern
-   *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
-   * @param null|array $args
-   *   The message formatter arguments.
-   * @param string $context
-   *   The translations context (e.g. <code>"routes/singular"</code> or <code>"countries"</code>) if you pass
-   *   <code>NULL</code> the database is asked.
-   * @return string
-   *   The translated and formatted pattern.
-   */
-  public function translate($pattern, $args, $context) {
-    // Only attempt to translate the pattern if we have no translation already cached.
-    if (empty(self::$translations[$this->locale][$context][$pattern])) {
-      // Fetch translations from database for message context.
-      if ($context == "messages") {
-        global $db;
-        list(self::$translations[$this->locale][$context][$pattern]) = $db->query(
-          "SELECT COLUMN_GET(`dyn_translations`, ? AS CHAR) FROM `messages` WHERE `message` = ? LIMIT 1",
-          "ss",
-          [ $this->languageCode, $pattern ]
-        )->get_result()->fetch_row();
-      }
-      // Fetch translations from file for everything else, we don't need the returned value because we're directly
-      // accessing the internal caching array.
-      else {
-        $this->getTranslations($context);
-      }
-
-      // Check if we have a translation for this pattern. If we have none this either means that the pattern is in the
-      // default locale and has no translations (e.g. time zones have translations in the default locale as well, but
-      // most other things have no default locale translations). We insert the given pattern in this case to speed up
-      // later look ups.
-      if (empty(self::$translations[$this->locale][$context][$pattern])) {
-        self::$translations[$this->locale][$context][$pattern] = $pattern;
-      }
-    }
-
-    if ($args) {
-      return MessageFormatter::formatMessage($this->locale, self::$translations[$this->locale][$context][$pattern], $args);
-    }
-    return self::$translations[$this->locale][$context][$pattern];
-  }
-
-  /**
    * Translate and format singular route.
    *
    * @param string $route
@@ -473,6 +427,52 @@ final class I18n {
     }
     $args["@count"] = $count;
     return $this->translate("{@count, plural, one{{$singular}} other{{$plural}}}", $args, "messages");
+  }
+
+  /**
+   * Translate and format given message with given context.
+   *
+   * @param string $pattern
+   *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
+   * @param null|array $args
+   *   The message formatter arguments.
+   * @param string $context
+   *   The translations context (e.g. <code>"routes/singular"</code> or <code>"countries"</code>) if you pass
+   *   <code>NULL</code> the database is asked.
+   * @return string
+   *   The translated and formatted pattern.
+   */
+  public function translate($pattern, $args, $context) {
+    // Only attempt to translate the pattern if we have no translation already cached.
+    if (empty(self::$translations[$this->locale][$context][$pattern])) {
+      // Fetch translations from database for message context.
+      if ($context == "messages") {
+        global $db;
+        list(self::$translations[$this->locale][$context][$pattern]) = $db->query(
+          "SELECT COLUMN_GET(`dyn_translations`, ? AS CHAR) FROM `messages` WHERE `message` = ? LIMIT 1",
+          "ss",
+          [ $this->languageCode, $pattern ]
+        )->get_result()->fetch_row();
+      }
+      // Fetch translations from file for everything else, we don't need the returned value because we're directly
+      // accessing the internal caching array.
+      else {
+        $this->getTranslations($context);
+      }
+
+      // Check if we have a translation for this pattern. If we have none this either means that the pattern is in the
+      // default locale and has no translations (e.g. time zones have translations in the default locale as well, but
+      // most other things have no default locale translations). We insert the given pattern in this case to speed up
+      // later look ups.
+      if (empty(self::$translations[$this->locale][$context][$pattern])) {
+        self::$translations[$this->locale][$context][$pattern] = $pattern;
+      }
+    }
+
+    if ($args) {
+      return MessageFormatter::formatMessage($this->locale, self::$translations[$this->locale][$context][$pattern], $args);
+    }
+    return self::$translations[$this->locale][$context][$pattern];
   }
 
 }
