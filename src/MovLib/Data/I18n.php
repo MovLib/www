@@ -267,19 +267,25 @@ final class I18n {
    * @param string $filename
    *   The name of the file that contains the translations.
    * @return array
-   *   The translations from the file.
+   *   The translations from the file or an empty array if no translations are available.
    */
   public function getTranslations($filename) {
+    // Nothing to do if we already have the translations cached for this entry.
+    if (isset(self::$translations[$this->locale][$filename])) {
+      return self::$translations[$this->locale][$filename];
+    }
+
     // Build absolute path to the translation file.
     $file = "dr://var/i18n/{$this->locale}/{$filename}.php";
 
-    // Only try to load the translation file's content if we have not cached entry for it and it actually exists. Some
-    // things don't need translation in the default locale (e.g. routes) and others do (e.g. time zones).
-    if (!isset(self::$translations[$this->locale][$filename]) && is_file($file)) {
-      self::$translations[$this->locale][$filename] = require $file;
+    // Only load the translation file if it really exists, some things don't need translation in the default locale
+    // (e.g. routes) and others do (e.g. time zones).
+    if (is_file($file)) {
+      return (self::$translations[$this->locale][$filename] = require $file);
     }
 
-    return self::$translations[$this->locale][$filename];
+    // No cached entry and not file was loaded, create an empty index in the cache to speed up later look ups.
+    return (self::$translations[$this->locale][$filename] = []);
   }
 
   /**
