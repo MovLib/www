@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Partial;
+namespace MovLib\Stub\Data;
 
 /**
- * Represents a single subtitle in HTML and provides an interface to all available subtitles in the current locale.
+ * Country stub.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,6 +26,20 @@ namespace MovLib\Presentation\Partial;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Subtitle {
+abstract class Country {
+
+  /**
+   * The country's ISO 3166-1 alpha-2 code.
+   *
+   * @var string
+   */
+  public $code;
+
+  /**
+   * The country's name in the current locale.
+   *
+   * @var string
+   */
+  public $name;
 
 }

@@ -15,14 +15,25 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\Data\StreamWrapper;
 
 /**
- * {classComment}
+ * Defines the dr (document root) stream wrapper for the <code>"dr://"</code> scheme.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-// @codeCoverageIgnoreStart
+final class DocumentRootStreamWrapper extends AbstractLocalStreamWrapper {
+
+  /**
+   * @inheritdoc
+   */
+  public function getPath() {
+    global $kernel;
+    return $kernel->documentRoot;
+  }
+
+}

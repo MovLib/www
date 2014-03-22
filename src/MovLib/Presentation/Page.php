@@ -186,9 +186,10 @@ class Page extends \MovLib\Presentation\AbstractBase {
     // Only build the language links if we have routes to build them. For example the internal server error page doesn't
     // need language links ;)
     if ($this->languageLinks) {
+      $languages     = $i18n->getTranslations("languages");
       $languageLinks = $currentLanguageName = $teamOffset = null;
       foreach ($this->languageLinks as $code => $route) {
-        $language = Language::get($code);
+        $language = $languages[$code];
         if ($code == $i18n->languageCode) {
           $currentLanguageName = $language->name;
           $languageLinks[$language->name] =

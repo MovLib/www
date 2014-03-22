@@ -17,8 +17,7 @@
  */
 namespace MovLib\Tool\Console\Command\Admin;
 
-use \MovLib\Data\FileSystem;
-use \MovLib\Data\Shell;
+use \MovLib\Data\StreamWrapper\StreamWrapperFactory;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -27,7 +26,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * Command to fix permissions on directories and files.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
@@ -36,18 +35,11 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Tool\Kernel $kernel
    */
   protected function configure() {
-    global $kernel;
     $this->setName("fix-permissions");
     $this->setDescription("Fix permissions on a directory and its contents.");
-    $this->addArgument(
-      "directory",
-      InputArgument::OPTIONAL,
-      "Specify the directory in which the permissions should be fixed (relative to the document root).",
-      $kernel->documentRoot
-    );
+    $this->addArgument("uri", InputArgument::OPTIONAL, "The URI to fix, either a directory or file, all stream wrappers are available.", "dr://");
   }
 
   /**
@@ -55,58 +47,62 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @global \MovLib\Tool\Kernel $kernel
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    global $kernel;
-
     // Fixing permissions of all files only works reliable if executed as privileged user.
-    $this->checkPrivileges();
-
-    // Remove trailing directory separators.
-    $directory = rtrim(str_replace("\\", "/", $input->getArgument("directory")), "\\/");
-
-    // Ensure that the given directory is within the globally defined document root. At this point, we don't even trust
-    // the person who's calling this method as it would simply break way too many things.
-    if (strpos($directory, $kernel->documentRoot) === false) {
-      $directory = "{$kernel->documentRoot}/{$directory}";
+    if ($this->checkPrivileges(false) === false) {
+      $this->write(
+        "You're executing this command as non privileged user which should work, if you get permission denied errors " .
+        "execute as root or via sudo, but you should definitely check which files caused the problem.",
+        self::MESSAGE_TYPE_ERROR
+      );
     }
 
-    // If this isn't a valid directory abort.
-    if (is_dir($directory) === false) {
-      throw new \InvalidArgumentException("Given directory '{$directory}' doesn't exist!");
+    $uri = str_replace("\\", "/", $input->getArgument("uri"));
+    $this->writeDebug("URI: <comment>{$uri}</comment>...");
+
+    if (strpos($uri, "://") === false) {
+      $this->write("Not a URI, assuming path relative to document root...");
+      $uri = "dr://{$uri}";
+      $this->writeVerbose("New URI is <comment>{$uri}</comment>");
     }
-    $this->writeVerbose("Fixing permissions in '{$directory}' ...", self::MESSAGE_TYPE_COMMENT);
 
-    $fMode = FileSystem::FILE_MODE;
-    $this->writeDebug("Fixing file mode to {$fMode} and ownership to {$kernel->systemUser}:{$kernel->systemGroup}");
-    FileSystem::changeOwner($directory, $kernel->systemUser, $kernel->systemGroup, true);
-    $this->writeVerbose("Fixed file ownership...");
+    if (StreamWrapperFactory::create($uri)->realpath() === false) {
+      throw new \InvalidArgumentException("The passed URI '{$uri}' doesn't exist");
+    }
 
-    $dMode = FileSystem::DIRECTORY_MODE;
-    $this->writeDebug("Fixing directory mode to {$dMode} and ownership to {$kernel->systemUser}:{$kernel->systemGroup}");
-    FileSystem::changeModeRecursive($directory);
-    $this->writeVerbose("Fixed file permissions...");
-
-    // Only attempt to fix the permissions of our executables if we're working with the document root.
-    if ($directory == $kernel->documentRoot) {
-      $bin[] = "{$kernel->documentRoot}/bin/*.php";
-      $bin[] = "{$kernel->documentRoot}/bin/*.sh";
-
-      foreach ([ "/conf" => "/*/*.sh", "/etc" => "/*/*.sh", "/vendor/bin" => "/*" ] as $dir => $pattern) {
-        $dir = "{$kernel->documentRoot}{$dir}";
-        if (is_dir($dir)) {
-          $bin[] = "{$dir}{$pattern}";
-        }
-      }
-
-      $bin = implode(" ", $bin);
-      $this->writeDebug("Fixing modes to 0755 of the following executables (glob patterns): {$bin}");
-      Shell::execute("chmod --recursive 0775 {$bin}");
-      $this->writeVerbose("Executable permissions fixed...");
+    if (is_file($uri)) {
+      $this->writeVeryVerbose("Passed URI is a single file...");
+      chmod($uri, 0664);
     }
     else {
-      $this->writeVerbose("Binaries are only fixed if executed against document root.", self::MESSAGE_TYPE_ERROR);
-    }
+      $this->writeVerbose("Fixing file and directory permission...");
+      $dir  = "0775";
+      $file = "0664";
+      /* @var $fileinfo \SplFileInfo */
+      foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($uri, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::SELF_FIRST) as $fileinfo) {
+        $path = $fileinfo->getPathname();
+        $mode = $fileinfo->isDir() ? 0775 : 0664;
+        $this->writeDebug(sprintf("Fixing <comment>{$path}</comment> [<comment>%04o</comment>]", $mode));
+        chmod($path, $mode);
+      }
+      $this->writeVeryVerbose("Fixed file and directory permissions...");
 
-    $this->writeVerbose("Fixed all file permissions in '{$directory}'!", self::MESSAGE_TYPE_INFO);
+      // Only attempt to fix the permissions of our executables if we're working with the document root.
+      if ($uri == "dr://") {
+        $this->writeVerbose("Fixing binary permissions...");
+        foreach (new \DirectoryIterator("dr://bin") as $fileinfo) {
+          if (in_array($fileinfo->getExtension(), [ "php", "sh" ])) {
+            $path = $fileinfo->getPathname();
+            $this->writeDebug("Fixing <comment>{$path}</comment> [<comment>0775</comment>]");
+            chmod($path, 0775);
+          }
+        }
+        $this->writeVeryVerbose("Fixed binary permissions...");
+      }
+      else {
+        $this->writeVerbose("Binaries are only fixed if executed against document root.", self::MESSAGE_TYPE_ERROR);
+      }
+      $this->writeVerbose("Fixed permissions in <comment>{$uri}</comment>", self::MESSAGE_TYPE_INFO);
+    }
 
     return 0;
   }

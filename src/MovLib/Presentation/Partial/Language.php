@@ -56,13 +56,6 @@ final class Language extends \MovLib\Presentation\AbstractBase {
    */
   protected $tag;
 
-  /**
-   * Array containing all available languages.
-   *
-   * @var array
-   */
-  protected static $languages;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -83,7 +76,7 @@ final class Language extends \MovLib\Presentation\AbstractBase {
     $this->attributes             = $attributes;
     $this->attributes[]           = "itemscope";
     $this->attributes["itemtype"] = "http://schema.org/Language";
-    $this->language               = new \MovLib\Data\Language($code);
+    $this->language               = $i18n->getTranslations("languages")[$code];
     $this->tag                    = $tag;
 
     // The special code xx isn't valid if we use it as lang attribute, but the ISO 639-2 code zxx is, make sure we use
@@ -105,36 +98,6 @@ final class Language extends \MovLib\Presentation\AbstractBase {
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-
-  /**
-   * Get language instance.
-   *
-   * @param string $code
-   *   The ISO 639-1 code of the language. Additionally you can pass <code>"xx"</code> which is a custom code for the
-   *   ISO 639-2 code <code>"zxx"</code> and declares the <em>absence of linguistic information</em>.
-   * @return \MovLib\Stub\Data\Language
-   *   The desired language.
-   */
-  public static function get($code) {
-    if (!self::$languages) {
-      return self::getLanguages()[$code];
-    }
-    return self::$languages[$code];
-  }
-
-  /**
-   * Get all supported and translated languages.
-   *
-   * @return array
-   *   All supported and translated languages.
-   */
-  public static function getLanguages() {
-    if (!self::$languages) {
-      global $i18n, $kernel;
-      self::$languages = require "{$kernel->documentRoot}/private/translation/language/{$i18n->locale}.php";
-    }
-    return self::$languages;
-  }
 
   /**
    * Get select form element to select a language.

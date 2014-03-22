@@ -15,35 +15,32 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Data\StreamWrapper;
 
 /**
- * Extended date time zone class with more utility methods to handle time zones.
+ * Defines the tmp stream wrapper for the <code>"tmp://"</code> scheme.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class DateTimeZone extends \DateTimeZone {
+final class TemporaryStreamWrapper extends AbstractLocalStreamWrapper {
 
   /**
-   * Get all sorted and translated time zone identifiers.
+   * Get the canonical absolute path to the directory the stream wrapper is responsible for.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
-   * @return array
-   *   Associative array containing all sorted and translated time zone identifiers. The key is the time zone identifier
-   *   and the value the translation for the currently active language. The array is sorted by value.
+   * @return string
+   *   The canonical absolute path to the directory the stream wrapper is responsible for.
    */
-  public static function getTranslatedIdentifiers() {
-    global $i18n, $kernel;
-    static $timeZones = null;
-    if (!isset($timeZones[$i18n->locale])) {
-      $timeZones[$i18n->locale] = require "{$kernel->pathTranslations}/time_zone/{$i18n->locale}.php";
+  public function getPath() {
+    static $path = null;
+    if (!$path) {
+      $path = StreamWrapperFactory::create("dr://tmp")->realpath();
     }
-    return $timeZones[$i18n->locale];
+    return $path;
   }
 
 }
