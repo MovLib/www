@@ -18,6 +18,7 @@
 namespace MovLib\Data\StreamWrapper;
 
 use \MovLib\Data\Log;
+use \MovLib\Exception\StreamException;
 
 /**
  * Factory to create, register, and unregister MovLib stream wrappers.
@@ -39,7 +40,12 @@ abstract class StreamWrapperFactory {
    *
    * @var array
    */
-  protected static $wrapper = [];
+  protected static $wrapper = [
+    "asset"  => "\\MovLib\\Data\\StreamWrapper\\AssetStreamWrapper",
+    "dr"     => "\\MovLib\\Data\\StreamWrapper\\DocumentRootStreamWrapper",
+    "tmp"    => "\\MovLib\\Data\\StreamWrapper\\TemporaryStreamWrapper",
+    "upload" => "\\MovLib\\Data\\StreamWrapper\\UploadStreamWrapper",
+  ];
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -55,56 +61,29 @@ abstract class StreamWrapperFactory {
    * @throws \ErrorException
    */
   public static function create($uri) {
-    /* @var $instance \MovLib\Data\StreamWrapper\AbstractLocalStreamWrapper */
-    $instance = new static::$wrapper[parse_url($uri, PHP_URL_SCHEME)]();
-    $instance->uri = $uri;
-    return $instance;
+    try {
+      $scheme           = explode("://", $uri, 2)[0];
+      $instance         = new static::$wrapper[$scheme]();
+      $instance->scheme = $scheme;
+      $instance->uri    = $uri;
+      return $instance;
+    }
+    catch (\ErrorException $e) {
+      throw new StreamException("No stream wraper available to handle '{$uri}'");
+    }
   }
 
   /**
-   * Register new stream wrapper.
-   *
-   * @param string|array $schemes
-   *   The scheme(s) the stream wrapper(s) provides.
-   * @throws \LogicException
+   * Register all available stream wrapperw.
    */
-  public static function register($schemes) {
-    $schemes = (array) $schemes;
-    $c       = count($schemes);
-    for ($i = 0; $i < $c; ++$i) {
-      $class = "\\MovLib\\Data\\StreamWrapper\\" . ucfirst($schemes[$i]) . "StreamWrapper";
-      // @devStart
-      // @codeCoverageIgnoreStart
-      if (class_exists($class) === false) {
-        throw new \LogicException("Couldn't find stream wrapper '{$class}'");
-      }
-      // @codeCoverageIgnoreEnd
-      // @devEnd
-      if (stream_wrapper_register($schemes[$i], $class) === false) {
+  public static function register() {
+    foreach (self::$wrapper as $scheme => $class) {
+      if (stream_wrapper_register($scheme, $class) === false) {
         Log::debug(
           "Couldn't register {$class} for as stream wrapper for scheme {$schemes[$i]} because there's already another " .
           "stream wrapper registered for this scheme."
         );
       }
-      static::$wrapper[$schemes[$i]] = $class;
-    }
-  }
-
-  /**
-   * Unregister scheme wrapper.
-   *
-   * @param string|array $schemes
-   *   The registered stream wrapper(s)'s scheme(s).
-   * @throws \UnexpectedValueException
-   */
-  public static function unregister($schemes) {
-    $schemes = (array) $schemes;
-    $c       = count($schemes);
-    for ($i = 0; $i < $c; ++$i) {
-      if (stream_wrapper_unregister($schemes[$i]) === false) {
-        throw new \UnexpectedValueException("Couldn't unregister stream wrapper for scheme {$schemes[$i]}.");
-      }
-      unset(static::$wrapper[$schemes[$i]]);
     }
   }
 
