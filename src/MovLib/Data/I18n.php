@@ -45,6 +45,7 @@ final class I18n {
    *
    * @see \MovLib\Stub\Data\Language
    * @see \MovLib\Presentation\Partial\Language
+   * @see \MovLib\Tool\Console\Command\Install\SeedLanguages
    * @var string
    */
   const CODE_NON_LINGUISTIC = "--";
@@ -56,8 +57,10 @@ final class I18n {
    *
    * @see \MovLib\Stub\Data\Language
    * @see \MovLib\Presentation\Partial\Language
+   * @see \MovLib\Tool\Console\Command\Install\SeedLanguages
    * @see \MovLib\Stub\Data\Subtitle
    * @see \MovLib\Presentation\Partial\Subtitle
+   * @see \MovLib\Tool\Console\Command\Install\SeedSubtitles
    * @var string
    */
   const CODE_OTHER = "&&";
@@ -69,6 +72,7 @@ final class I18n {
    *
    * @see \MovLib\Stub\Data\Subtitle
    * @see \MovLib\Presentation\Partial\Subtitle
+   * @see \MovLib\Tool\Console\Command\Install\SeedSubtitles
    * @var string
    */
   const CODE_COMMENTARY = "@@";
@@ -80,6 +84,7 @@ final class I18n {
    *
    * @see \MovLib\Stub\Data\Subtitle
    * @see \MovLib\Presentation\Partial\Subtitle
+   * @see \MovLib\Tool\Console\Command\Install\SeedSubtitles
    * @var string
    */
   const CODE_FACT = "§§";
@@ -271,7 +276,7 @@ final class I18n {
     // Only try to load the translation file's content if we have not cached entry for it and it actually exists. Some
     // things don't need translation in the default locale (e.g. routes) and others do (e.g. time zones).
     if (!isset(self::$translations[$this->locale][$filename]) && is_file($file)) {
-      self::$translations[$this->locale][$filename] = require_once $file;
+      self::$translations[$this->locale][$filename] = require $file;
     }
 
     return self::$translations[$this->locale][$filename];
