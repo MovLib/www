@@ -173,7 +173,7 @@ final class I18n {
       if ($len === 2) {
         // @devStart
         // @codeCoverageIgnoreStart
-        if (!isset($kernel->systemLanguages[$locale])) {
+        if (empty($kernel->systemLanguages[$locale])) {
           throw new \InvalidArgumentException("Unsupported language code '{$locale}' passed to i18n constructor");
         }
         // @codeCoverageIgnoreEnd
@@ -187,7 +187,7 @@ final class I18n {
         if ($len !== 5) {
           throw new \LogicException("A locale consists of five characters, the language code followed by the country code, e.g.: 'de_AT'");
         }
-        if (!isset($kernel->systemLanguages["{$locale[0]}{$locale[1]}"])) {
+        if (empty($kernel->systemLanguages["{$locale[0]}{$locale[1]}"])) {
           throw new \InvalidArgumentException("Unsupported locale '{$locale}' passed to i18n constructor");
         }
         // @codeCoverageIgnoreEnd
@@ -255,7 +255,7 @@ final class I18n {
    */
   public function getCollator() {
     static $collators = [];
-    if (!isset($collators[$this->locale])) {
+    if (empty($collators[$this->locale])) {
       $collators[$this->locale] = new Collator($this->locale);
     }
     return $collators[$this->locale];
@@ -302,7 +302,7 @@ final class I18n {
   public function insertMessage($message, $options = null) {
     global $db;
     if (empty($db->query("SELECT `message_id` FROM `messages` WHERE `message` = ? LIMIT 1", "s", [ $message ])->get_result()->fetch_assoc())) {
-      if (!isset($options["comment"])) {
+      if (empty($options["comment"])) {
         $options["comment"] = null;
       }
       $db->query("INSERT INTO `messages` (`message`, `comment`, `dyn_translations`) VALUES (?, ?, '')", "ss", [ $message, $options["comment"] ]);
@@ -325,7 +325,7 @@ final class I18n {
    */
   public function translate($pattern, $args, $context) {
     // Only attempt to translate the pattern if we have no translation already cached.
-    if (!isset(self::$translations[$this->locale][$context][$pattern])) {
+    if (empty(self::$translations[$this->locale][$context][$pattern])) {
       // Fetch translations from database for message context.
       if ($context == "messages") {
         global $db;
