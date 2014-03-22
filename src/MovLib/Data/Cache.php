@@ -17,9 +17,9 @@
  */
 namespace MovLib\Data;
 
-use \MovLib\Data\FileSystem;
 use \MovLib\Data\StreamWrapper\StreamWrapperFactory;
-use \MovLib\Exception\StreamException;
+use \MovLib\Data\FileSystem;
+use \MovLib\Data\Log;
 
 /**
  * Interact with the persistent disc cache.
@@ -62,9 +62,7 @@ final class Cache {
    */
   public function __construct() {
     global $i18n, $kernel;
-    // Make sure the var stream wrapper is registered.
-    StreamWrapperFactory::register("var");
-    $this->uri = "var://cache/{$i18n->languageCode}{$kernel->requestPath}";
+    $this->uri = "dr://var/cache/{$i18n->languageCode}{$kernel->requestPath}";
     if ($kernel->requestPath == "/") {
       $this->uri .= $_SERVER["PRESENTER"];
     }
@@ -81,12 +79,7 @@ final class Cache {
    *   <code>TRUE</code> if a cached version exists, otherwise <code>FALSE</code>.
    */
   public function cached() {
-    try {
-      return is_file($this->uri);
-    }
-    catch (StreamException $e) {
-      return false;
-    }
+    return is_file($this->uri);
   }
 
   /**
@@ -97,27 +90,11 @@ final class Cache {
    * @return this
    */
   public function delete($uri = null) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (isset($uri) && (empty($uri) || !is_string($uri))) {
-      throw new \InvalidArgumentException("\$uri cannot be empty and must be of type string");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
     if (!$uri) {
       $uri = $this->uri;
     }
-
-    if (is_file($uri) === true) {
-      unlink($uri);
-    }
-
-    $uri = "{$uri}.gz";
-    if (is_file($uri)) {
-      unlink($uri);
-    }
-
+    unlink($uri);
+    unlink("{$uri}.gz");
     return $this;
   }
 
@@ -140,21 +117,25 @@ final class Cache {
     // @devEnd
 
     if ($this->cacheable === true && $session->isAuthenticated === false && $this->cached() === false) {
-      // Make sure that the complete directory structure actuallyz exists.
-      $cacheDirectory = dirname($this->uri);
-      if (is_dir($cacheDirectory) === false) {
-        mkdir($cacheDirectory, 0777, true);
+      try {
+        // Make sure that the complete directory structure actually exists.
+        $dir = dirname($this->uri);
+        mkdir($dir, 0775, true);
+
+        // Write the new cache file to a temporary file, this ensures that nginx isn't delivering the file while we're
+        // writing to it.
+        $uri = StreamWrapperFactory::create($this->uri)->realpath();
+        $tmp = tempnam($dir, "cache");
+        file_put_contents($tmp, "{$presentation}<!--{$_SERVER["REQUEST_TIME_FLOAT"]}-->");
+        $gz  = FileSystem::compress($tmp);
+
+        // Rename is an atomic action.
+        rename($tmp, $uri);
+        rename($gz, "{$uri}.gz");
       }
-
-      // Write the new cache file to a temporary file.
-      $tmp = FileSystem::tempnam($cacheDirectory, "cache");
-      file_put_contents($tmp, "{$presentation}<!--{$_SERVER["REQUEST_TIME_FLOAT"]}-->");
-      $gz  = FileSystem::compress($tmp);
-
-      // Rename is an atomic action, we want to ensure that no other process is reading the file while we're writing
-      // to it.
-      rename($tmp, $this->uri);
-      rename($gz, "{$this->uri}.gz");
+      catch (\Exception $e) {
+        Log::error($e);
+      }
     }
 
     return $this;
