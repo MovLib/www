@@ -31,5 +31,6 @@
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-require __DIR__ . "/src/MovLib/Kernel.php";
-new \MovLib\Kernel(__DIR__);
+$autoloader = __DIR__ . "/vendor/autoload.php";
+$kernel     = new \MovLib\Core\Kernel();
+$kernel->boot();
