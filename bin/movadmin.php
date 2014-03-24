@@ -21,11 +21,17 @@
  * Initialize kernel for CLI usage and start application.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-$command = ucfirst(substr(basename(__FILE__, ".php"), 3));
-require dirname(__DIR__) . "/vendor/autoload.php";
-(new \MovLib\Tool\Console\Application("MovLib {$command} CLI", (new \MovLib\Tool\Kernel())->version, $command))->run();
+
+// Make sure that the document root is available to all classes as they expect.
+$_SERVER["DOCUMENT_ROOT"] = dirname(__DIR__);
+
+$autoloader = require "{$_SERVER["DOCUMENT_ROOT"]}/vendor/autoload.php";
+$kernel     = new \MovLib\Core\Kernel();
+
+$kernel->boot();
+(new \MovLib\Console\Application())->run();
