@@ -90,6 +90,10 @@ return [
   "/award/{0}/events"             => "/auszeichnung/{0}/events",
   "/award/{0}/event/{1}/movies"   => "/auszeichnung/{0}/event/{1}/filme",
   "/award/{0}/event/{1}/series"   => "/auszeichnung/{0}/event/{1}/serien",
+  // ------------------------------------------------------------------------------------------------------------------- Events
+  "/events"                       => "/auszeichnung",
+  "/event/{0}/movies"             => "/event/{0}/filme",
+  "/event/{0}/series"             => "/event/{0}/serien",
   // ------------------------------------------------------------------------------------------------------------------- Jobs
   "/jobs"                         => "/tätigkeiten",
   "/job/{0}/movies"               => "/tätigkeit/{0}/filme",
