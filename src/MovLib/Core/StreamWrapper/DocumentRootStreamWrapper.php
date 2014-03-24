@@ -15,25 +15,24 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Stub\Configuration;
+namespace MovLib\Core\StreamWrapper;
 
 /**
- * Nodejs configuration stub.
+ * Defines the dr (document root) stream wrapper for the <code>"dr://"</code> scheme.
  *
- * @see \MovLib\Stub\Configuration
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Nodejs {
+final class DocumentRootStreamWrapper extends AbstractLocalStreamWrapper {
 
   /**
-   * The global node packed modules.
-   *
-   * @var array
+   * @inheritdoc
    */
-  public $npm = [];
+  public function getPath() {
+    return $_SERVER["DOCUMENT_ROOT"];
+  }
 
 }

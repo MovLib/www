@@ -44,6 +44,17 @@ class Config {
 
 
   /**
+   * The default language code.
+   *
+   * <b>NOTE</b><br>
+   * Automatically set based on default locale.
+   *
+   * @see Config::$defaultLocale
+   * @var string
+   */
+  public $defaultLanguageCode;
+
+  /**
    * The default locale.
    *
    * @var string
@@ -59,6 +70,27 @@ class Config {
    * @var string
    */
   public $documentRoot = "/var/www";
+
+  /**
+   * Developer mailing list.
+   *
+   * @var string
+   */
+  public $emailDevelopers = "developers@movlib.org";
+
+  /**
+   * Default FROM email address.
+   *
+   * @var string
+   */
+  public $emailFrom = "noreply@movlib.org";
+
+  /**
+   * Webmaster email address.
+   *
+   * @var string
+   */
+  public $emailWebmaster = "webmaster@movlib.org";
 
   /**
    * The system group.
@@ -108,6 +140,13 @@ class Config {
   public $production = false;
 
   /**
+   * The site name.
+   *
+   * @var string
+   */
+  public $siteName = "MovLib";
+
+  /**
    * The system user.
    *
    * @var string
@@ -130,6 +169,7 @@ class Config {
    * Instantiate new default configuration.
    */
   public function __construct() {
+    $this->setDefaultLocale($this->defaultLocale);
     $this->setLocales($this->locales);
   }
 
@@ -152,7 +192,10 @@ class Config {
     if (!in_array($locale, $this->locales)) {
       throw new \InvalidArgumentException("The default locale must be part of available system locales, currently the following system locales are configured: " . implode(", ", $this->languages));
     }
-    $this->defaultLocale = $locale;
+
+    $this->defaultLanguageCode = "{$locale[0]}{$locale[1]}";
+    $this->defaultLocale       = $locale;
+
     return $this;
   }
 

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\StreamWrapper;
+namespace MovLib\Core\StreamWrapper;
 
 use \MovLib\Data\URL;
 
@@ -43,7 +43,7 @@ final class AssetStreamWrapper extends AbstractLocalStreamWrapper {
    *
    * @var array
    */
-  private static $cacheBusters = [
+  protected static $cacheBusters = [
     "css" => "{{ css_cache_buster }}",
     "jpg" => "{{ jpg_cache_buster }}",
     "js"  => "{{ js_cache_buster }}",
@@ -92,17 +92,11 @@ final class AssetStreamWrapper extends AbstractLocalStreamWrapper {
   /**
    * Get the canonical absolute path to the directory the stream wrapper is responsible for.
    *
-   * @staticvar string $path
-   *   Used to cache the path.
    * @return string
    *   The canonical absolute path to the directory the stream wrapper is responsible for.
    */
   public function getPath() {
-    static $path = null;
-    if (!$path) {
-      $path = StreamWrapperFactory::create("dr://public/asset")->realpath();
-    }
-    return $path;
+    return "{$_SERVER["DOCUMENT_ROOT"]}/var/www/asset";
   }
 
 }

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Core;
 
 use \MovLib\Exception\ShellException;
 
@@ -142,7 +142,7 @@ abstract class Shell {
     // @devStart
     // @codeCoverageIngoreStart
     global $kernel;
-    if ($kernel->fastCGI === true) {
+    if ($kernel->http) {
       throw new \LogicException("Don't use the Shell::executeDisplayOutput() method in FastCGI context");
     }
     if (empty($command) || !is_string($command)) {

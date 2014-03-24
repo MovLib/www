@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,58 +15,24 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Stub\Configuration;
+namespace MovLib\Core\HTTP;
 
 /**
- * Nginx configuration stub.
+ * @todo Description of Request
  *
- * <b>Note:</b> We compile nginx from source for best performance and highest customization factor.
- *
- * @link http://nginx.org/
- * @see \MovLib\Stub\Configuration
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Nginx {
+class Request {
 
   /**
-   * The nginx configure flags and arguments.
    *
-   * @var \MovLib\Stub\Configuration\Configure
    */
-  public $configure;
+  public function __construct() {
 
-  /**
-   * The OpenSSL version to compile into nginx.
-   *
-   * @link https://www.openssl.org/
-   * @var string
-   */
-  public $opensslVersion;
-
-  /**
-   * Array containing module names and their download location that should be added to nginx.
-   *
-   * @var array
-   */
-  public $modules = [];
-
-  /**
-   * The PCRE version to compile into nginx.
-   *
-   * @link http://www.pcre.org/
-   * @var string
-   */
-  public $pcreVersion;
-
-  /**
-   * The machine's nginx version.
-   *
-   * @var string
-   */
-  public $version;
+  }
 
 }

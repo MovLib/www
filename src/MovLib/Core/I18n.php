@@ -15,10 +15,8 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Core;
 
-use \Locale;
-use \MessageFormatter;
 use \MovLib\Data\Collator;
 
 /**
@@ -94,20 +92,6 @@ final class I18n {
 
 
   /**
-   * The system's default language code.
-   *
-   * @var string
-   */
-  public $defaultLanguageCode;
-
-  /**
-   * The system's default locale.
-   *
-   * @var string
-   */
-  public $defaultLocale;
-
-  /**
    * The languages direction.
    *
    * @todo Implement right-to-left language detection.
@@ -144,57 +128,43 @@ final class I18n {
 
 
   /**
-   * Create new i18n model instance.
+   * Instantiate new I18n object.
    *
-   * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Core\Config $config
    * @param $locale [optional]
-   *   The desired locale, if no locale is passed the following procedure is executed:
-   *   <ol>
-   *     <li>Check if the server set a language code (access via subdomain)</li>
-   *     <li>Check if the user has provided an <code>HTTP_ACCEPT_LANGUAGE</code> header</li>
-   *     <li>Use default locale</li>
-   *   </ol>
+   *   The desired system locale or language code.
    */
   public function __construct($locale = null) {
-    global $kernel;
+    global $config;
 
-    // Export default locale and language code to class scope.
-    $this->defaultLocale       = Locale::getDefault();
-    $this->defaultLanguageCode = "{$this->defaultLocale[0]}{$this->defaultLocale[1]}";
-
-    // Use server determined language code if no locale was passed to the constructor.
-    if (!$locale && isset($_SERVER["LANGUAGE_CODE"]) && isset($kernel->systemLanguages[$_SERVER["LANGUAGE_CODE"]])) {
-      $this->locale       = $kernel->systemLanguages[$_SERVER["LANGUAGE_CODE"]];
-      $this->languageCode = $_SERVER["LANGUAGE_CODE"];
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (isset($locale) && (empty($locale) || !is_string($locale))) {
+      throw new \InvalidArgumentException("\$locale cannot be empty and must be of type string.");
     }
-    // If a locale was passed to the constructor, export to class scope.
-    else {
-      $len = strlen($locale);
-      if ($len === 2) {
-        // @devStart
-        // @codeCoverageIgnoreStart
-        if (empty($kernel->systemLanguages[$locale])) {
-          throw new \InvalidArgumentException("Unsupported language code '{$locale}' passed to i18n constructor");
-        }
-        // @codeCoverageIgnoreEnd
-        // @devEnd
-        $this->locale       = $kernel->systemLanguages[$locale];
-        $this->languageCode = $locale;
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    if ($locale) {
+      if (isset($config->locales[$locale])) {
+        $this->locale       = $config->locales[$locale];
+        $this->languageCode = "{$locale[0]}{$locale[1]}";
       }
-      else {
-        // @devStart
-        // @codeCoverageIgnoreStart
-        if ($len !== 5) {
-          throw new \LogicException("A locale consists of five characters, the language code followed by the country code, e.g.: 'de_AT'");
-        }
-        if (empty($kernel->systemLanguages["{$locale[0]}{$locale[1]}"])) {
-          throw new \InvalidArgumentException("Unsupported locale '{$locale}' passed to i18n constructor");
-        }
-        // @codeCoverageIgnoreEnd
-        // @devEnd
+      elseif (in_array($locale, $config->locales)) {
         $this->locale       = $locale;
         $this->languageCode = "{$locale[0]}{$locale[1]}";
       }
+      else {
+        throw new \InvalidArgumentException("No valid system locale found for '{$locale}'.");
+      }
+    }
+    elseif (isset($_SERVER["LANGUAGE_CODE"]) && isset($config->locales[$_SERVER["LANGUAGE_CODE"]])) {
+      $this->locale       = $config->locales[$_SERVER["LANGUAGE_CODE"]];
+      $this->languageCode = $_SERVER["LANGUAGE_CODE"];
+    }
+    else {
+      $this->locale       = $config->defaultLocale;
+      $this->languageCode = "{$config->defaultLocale[0]}{$config->defaultLocale[1]}";
     }
   }
 
@@ -213,7 +183,7 @@ final class I18n {
    *   The formatted message.
    */
   public function format($message, array $args) {
-    return MessageFormatter::formatMessage($this->locale, $message, $args);
+    return \MessageFormatter::formatMessage($this->locale, $message, $args);
   }
 
   /**
@@ -242,7 +212,7 @@ final class I18n {
       $title = "Byte";
       $abbr  = "B";
     }
-    return MessageFormatter::formatMessage($this->locale, "{0,number,integer} <abbr title='{$title}'>{$abbr}</abbr>", [ $bytes ]);
+    return \MessageFormatter::formatMessage($this->locale, "{0,number,integer} <abbr title='{$title}'>{$abbr}</abbr>", [ $bytes ]);
   }
 
   /**
@@ -470,7 +440,7 @@ final class I18n {
     }
 
     if ($args) {
-      return MessageFormatter::formatMessage($this->locale, self::$translations[$this->locale][$context][$pattern], $args);
+      return \MessageFormatter::formatMessage($this->locale, self::$translations[$this->locale][$context][$pattern], $args);
     }
     return self::$translations[$this->locale][$context][$pattern];
   }

@@ -15,8 +15,9 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\StreamWrapper;
+namespace MovLib\Core\StreamWrapper;
 
+use \MovLib\Core\FileSystem;
 use \MovLib\Exception\StreamException;
 
 /**
@@ -130,7 +131,8 @@ abstract class AbstractLocalStreamWrapper {
    * <b>NOTE</b><br>
    * You cannot remove special bits with this method.
    *
-   * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Core\Config $config
+   * @global \MovLib\Core\Kernel $kernel
    * @param string $realpath
    *   The file's real path.
    * @param integer $mode
@@ -141,9 +143,10 @@ abstract class AbstractLocalStreamWrapper {
   public function chmod($realpath, $mode) {
     global $kernel;
     $status = chmod($realpath, $mode);
-    if ($kernel->fastCGI === false && posix_getuid() === 0) {
-      chown($realpath, $kernel->systemUser);
-      chgrp($realpath, $kernel->systemGroup);
+    if ($kernel->privileged) {
+      global $config;
+      chown($realpath, $config->user);
+      chgrp($realpath, $config->group);
     }
     clearstatcache(true, $realpath);
     return $status;
@@ -286,7 +289,6 @@ abstract class AbstractLocalStreamWrapper {
   /**
    * Create directory.
    *
-   * @global \MovLib\Kernel $kernel
    * @link http://php.net/manual/streamwrapper.mkdir.php
    * @param string $uri
    *   Absolute URI to the directory to create.
@@ -302,6 +304,11 @@ abstract class AbstractLocalStreamWrapper {
    */
   public function mkdir($uri, $mode, $options, $recursion = false) {
     try {
+      // Nothing to do if the directory already exists, but ensure correct permission mode.
+      if (is_dir($uri)) {
+        return chmod($uri, $mode);
+      }
+
       // The URI is already the real path if we're in recursion.
       if ($recursion) {
         $realpath = $uri;
@@ -309,11 +316,6 @@ abstract class AbstractLocalStreamWrapper {
       else {
         $this->uri = $uri;
         $realpath  = $this->realpath();
-      }
-
-      // Nothing to do if the directory already exists, but ensure correct permission mode.
-      if ($realpath !== false && is_dir($realpath)) {
-        return chmod($realpath, $mode);
       }
 
       // Check if we should generate parent directories.
@@ -444,16 +446,31 @@ abstract class AbstractLocalStreamWrapper {
    * Close stream.
    *
    * @link http://php.net/manual/streamwrapper.stream-close.php
+   * @global \MovLib\Core\Config $config
+   * @global \MovLib\Core\Kernel $kernel
    * @return boolean
    *   <code>TRUE</code> on success or <code>FALSE</code> on failure.
    * @throws \MovLib\Exception\StreamException
    */
   public function stream_close() {
+    global $kernel;
     try {
-      return fclose($this->handle);
+      $status = fclose($this->handle);
+      if ($kernel->privileged) {
+        global $config;
+        if (is_dir($this->uri)) {
+          chmod($this->uri, FileSystem::MODE_DIR);
+        }
+        elseif (is_file($this->uri)) {
+          chmod($this->uri, FileSystem::MODE_FILE);
+        }
+        chown($this->uri, $config->user);
+        chgrp($this->uri, $config->group);
+      }
+      return $status;
     }
     catch (\ErrorException $e) {
-      throw new StreamException("Couldn't close {$this->url} handle", null, $e);
+      throw new StreamException("Couldn't close {$this->uri} handle", null, $e);
     }
   }
 
@@ -602,7 +619,7 @@ abstract class AbstractLocalStreamWrapper {
       return $status;
     }
     catch (\ErrorException $e) {
-      throw new StreamException("Couldn't open {$this->uri} stream handle", null, $e);
+      throw new StreamException("Couldn't open {$uri} stream handle", null, $e);
     }
   }
 

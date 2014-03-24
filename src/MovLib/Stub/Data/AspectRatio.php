@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\StreamWrapper;
+namespace MovLib\Stub\Data;
 
 /**
- * Defines the tmp stream wrapper for the <code>"tmp://"</code> scheme.
+ * @todo Description of AspectRatio
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,21 +26,20 @@ namespace MovLib\Data\StreamWrapper;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class TemporaryStreamWrapper extends AbstractLocalStreamWrapper {
+class AspectRatio {
 
   /**
-   * Get the canonical absolute path to the directory the stream wrapper is responsible for.
+   * The aspect ratio's unique identifier.
    *
-   * @global \MovLib\Kernel $kernel
-   * @return string
-   *   The canonical absolute path to the directory the stream wrapper is responsible for.
+   * @var integer
    */
-  public function getPath() {
-    static $path = null;
-    if (!$path) {
-      $path = StreamWrapperFactory::create("dr://tmp")->realpath();
-    }
-    return $path;
-  }
+  public $id;
+
+  /**
+   * The aspect ratio in the current locale.
+   *
+   * @var string
+   */
+  public $name;
 
 }

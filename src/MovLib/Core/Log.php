@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Core;
 
 use \Monolog\Formatter\HtmlFormatter;
 use \Monolog\Formatter\LineFormatter;
@@ -155,16 +155,19 @@ final class Log {
    *   Whether the record has been processed.
    */
   public static function log($level, $message, array $context = []) {
-    global $kernel;
     static $logger = null;
 
     // Instantiate logger if we have no instance yet.
     if (!$logger) {
+      /* @var $config \MovLib\Core\Config */
+      /* @var $kernel \MovLib\Core\Kernel */
+      /* @var $request \MovLib\Core\HTTP\Request */
+      global $config, $kernel, $request;
       // CRITICAL upwards triggers sending of email.
       $mailer = new NativeMailerHandler(
-        $kernel->emailDevelopers,
-        "IMPORTANT! {$kernel->siteName} is experiencing problems!",
-        $kernel->emailFrom,
+        $config->emailDevelopers,
+        "IMPORTANT! {$config->siteName} is experiencing problems!",
+        $config->emailFrom,
         Logger::CRITICAL,
         true,
         2048
@@ -183,13 +186,24 @@ final class Log {
       ];
 
       // DEBUG, INFO, and NOTICE are sent to the client's browser if not in production and executed via php-fpm.
-      if ($kernel->production === false && $kernel->fastCGI === true) {
+      if ($config->production === false && $kernel->http === true) {
         $handlers[] = new FirePHPHandler();
         $errorLog->setLevel(Logger::WARNING);
       }
 
+      // Try to find an appropriate name for the log entries base on the currently available environment.
+      if (isset($request->hostname)) {
+        $name = $request->hostname;
+      }
+      elseif ($kernel->cli) {
+        $name = cli_get_process_title();
+      }
+      else {
+        $name = "Unknown Environment";
+      }
+
       // Instantiate the new logger and store it in the static variable of this method for later usage.
-      $logger = new Logger($kernel->hostname, $handlers, [ new IntrospectionProcessor(Logger::WARNING) ]);
+      $logger = new Logger($name, $handlers, [ new IntrospectionProcessor(Logger::WARNING) ]);
     }
 
     // Log the message as requested.
