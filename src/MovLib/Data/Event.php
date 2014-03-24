@@ -19,6 +19,7 @@ namespace MovLib\Data;
 
 use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Data\Place;
+use \MovLib\Presentation\Error\NotFound;
 
 /**
  * Handling of one or more award events.

@@ -20,6 +20,7 @@ namespace MovLib\Presentation\Award\Category;
 use \MovLib\Data\Award;
 use \MovLib\Data\AwardCategory;
 use \MovLib\Presentation\Partial\Listing\AwardCategoryMovieListing;
+use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
 /**
  * Movies with a certain award category associated.
@@ -44,10 +45,16 @@ class Movies extends \MovLib\Presentation\Award\Category\AbstractBase {
    */
   public function __construct() {
     global $i18n, $kernel;
-    $this->award           = new Award((integer) $_SERVER["AWARD_ID"]);
-    $this->awardCategory   = new AwardCategory((integer) $_SERVER["AWARD_CATEGORY_ID"]);
+    $this->award         = new Award((integer) $_SERVER["AWARD_ID"]);
+    $this->awardCategory = new AwardCategory((integer) $_SERVER["AWARD_CATEGORY_ID"]);
+    $routeArgs           = [ $this->awardCategory->awardId, $this->awardCategory->id ];
+
+    if ($this->award->id != $this->awardCategory->awardId) {
+      throw new SeeOtherRedirect($i18n->rp("/award/{0}/category/{1}/movies", $routeArgs));
+    }
+
     $this->initPage($i18n->t("Movies with {0}", [ $this->awardCategory->name ]));
-    $this->pageTitle       =
+    $this->pageTitle     =
       $i18n->t("Movies with {0}", [ "<a href='{$this->awardCategory->route}'>{$this->awardCategory->name}</a>" ])
     ;
     $this->breadcrumbTitle = $i18n->t("Movies");

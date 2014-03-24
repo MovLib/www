@@ -19,6 +19,7 @@ namespace MovLib\Presentation\Award\Category;
 
 use \MovLib\Data\Award;
 use \MovLib\Data\AwardCategory;
+use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
 /**
  * Allows editing of a award category's information.
@@ -45,6 +46,12 @@ class Edit extends \MovLib\Presentation\Award\Category\AbstractBase {
     global $i18n, $kernel;
     $this->award         = new Award((integer) $_SERVER["AWARD_ID"]);
     $this->awardCategory = new AwardCategory((integer) $_SERVER["AWARD_CATEGORY_ID"]);
+    $routeArgs           = [ $this->awardCategory->awardId, $this->awardCategory->id ];
+
+    if ($this->award->id != $this->awardCategory->awardId) {
+      throw new SeeOtherRedirect($i18n->r("/award/{0}/category/{1}/edit", $routeArgs));
+    }
+
     $this->initPage($i18n->t("Edit"));
     $this->pageTitle     =
       $i18n->t("Edit {0}", [ "<a href='{$this->awardCategory->route}'>{$this->awardCategory->name}</a>" ])

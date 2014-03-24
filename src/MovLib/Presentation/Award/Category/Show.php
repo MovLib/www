@@ -20,6 +20,7 @@ namespace MovLib\Presentation\Award\Category;
 use \MovLib\Data\Award;
 use \MovLib\Data\AwardCategory;
 use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
 /**
  * Presentation of a single award category.
@@ -47,8 +48,14 @@ class Show extends \MovLib\Presentation\Award\Category\AbstractBase {
     global $i18n, $kernel;
     $this->award         = new Award((integer) $_SERVER["AWARD_ID"]);
     $this->awardCategory = new AwardCategory((integer) $_SERVER["AWARD_CATEGORY_ID"]);
+    $routeArgs           = [ $this->awardCategory->awardId, $this->awardCategory->id ];
+
+    if ($this->award->id != $this->awardCategory->awardId) {
+      throw new SeeOtherRedirect($this->awardCategory->route);
+    }
+
     $this->initPage($this->awardCategory->name);
-    $this->initLanguageLinks("/award/{0}/category/{1}", [ $this->award->id, $this->awardCategory->id ]);
+    $this->initLanguageLinks("/award/{0}/category/{1}", $routeArgs);
     $this->initBreadcrumb([
       [ $i18n->rp("/awards"), $i18n->t("Awards") ],
       [ $this->award->route, $this->award->name ],
