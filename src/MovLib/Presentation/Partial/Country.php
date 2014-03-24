@@ -20,7 +20,7 @@ namespace MovLib\Presentation\Partial;
 use \MovLib\Presentation\Partial\FormElement\Select;
 
 /**
- * Represents a single country in HTML and provides an interface to all available countries.
+ * Represents a single country in HTML and provides an interface to all available countries in the current locale.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -28,7 +28,7 @@ use \MovLib\Presentation\Partial\FormElement\Select;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Country extends \MovLib\Presentation\AbstractBase {
+final class Country extends \MovLib\Presentation\AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -70,10 +70,11 @@ class Country extends \MovLib\Presentation\AbstractBase {
    *   The tag that should be used to wrap this country, defaults to <code>"span"</code>.
    */
   public function __construct($code, array $attributes = null, $tag = "span") {
-    $this->attributes             = $attributes;
+    global $i18n;
+    $this->attributes           = $attributes;
     $this->attributes["typeof"] = "http://schema.org/Country";
-    $this->country                = new \MovLib\Data\Country($code);
-    $this->tag                    = $tag;
+    $this->country              = $i18n->getTranslations("countries")[$code];
+    $this->tag                  = $tag;
   }
 
   /**
@@ -105,16 +106,6 @@ class Country extends \MovLib\Presentation\AbstractBase {
       : "<meta property='name' content='{$this->country->name}'>"
     ;
     return "<{$this->tag}{$a}><img alt='' class='inline' height='11' property='image' src='{$i}' width='16'>{$n}</{$this->tag}>";
-  }
-
-  /**
-   * Get all supported and translated countries.
-   *
-   * @return array
-   *   All supported and translated countries.
-   */
-  public static function getCountries() {
-    return \MovLib\Data\Country::getCountries();
   }
 
   /**

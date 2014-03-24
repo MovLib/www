@@ -26,7 +26,7 @@ namespace MovLib\Stub\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Job {
+abstract class Job {
 
   /**
    * The job's identifier.

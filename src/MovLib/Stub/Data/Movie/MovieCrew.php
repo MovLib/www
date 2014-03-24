@@ -26,7 +26,7 @@ namespace MovLib\Stub\Data\Movie;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class MovieCrew {
+abstract class MovieCrew {
 
   /**
    * The job of the crew members.

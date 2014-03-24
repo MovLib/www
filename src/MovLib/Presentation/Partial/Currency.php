@@ -20,7 +20,7 @@ namespace MovLib\Presentation\Partial;
 use \MovLib\Presentation\Partial\FormElement\Select;
 
 /**
- * Represents a single currency in HTML and provides an interface to all available currencies.
+ * Represents a single currency in HTML and provides an interface to all available currencies in the current locale.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -28,7 +28,7 @@ use \MovLib\Presentation\Partial\FormElement\Select;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Currency extends \MovLib\Presentation\AbstractBase {
+final class Currency extends \MovLib\Presentation\AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -112,29 +112,6 @@ class Currency extends \MovLib\Presentation\AbstractBase {
   }
 
   /**
-   * Get all supported and translated currencies.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @staticvar array $currencies
-   *   Associative array used for caching.
-   * @return array
-   *   All supported and translated currencies.
-   */
-  public static function getCurrencies() {
-    global $i18n;
-    static $currencies = null;
-
-    // If we haven't built the array for this locale build it.
-    if (!isset($currencies[$i18n->locale])) {
-      foreach (\MovLib\Data\Currency::getCurrencies() as $code => $currency) {
-        $currencies[$i18n->locale][$code] = [ $code, [ "title" => $i18n->t("{0} ({1})", [ $currency["name"], $currency["symbol"] ]) ] ];
-      }
-    }
-
-    return $currencies[$i18n->locale];
-  }
-
-  /**
    * Get select form element to select a currency.
    *
    * @global \MovLib\Data\I18n $i18n
@@ -151,7 +128,7 @@ class Currency extends \MovLib\Presentation\AbstractBase {
    */
   public static function getSelectFormElement(&$value, array $attributes = null, $id = "currency", $label = null) {
     global $i18n;
-    return new Select($id, $label ?: $i18n->t("Currency"), self::getCurrencies(), $value, $attributes);
+    return new Select($id, $label ?: $i18n->t("Currency"), $i18n->getTranslations("currencies"), $value, $attributes);
   }
 
 }

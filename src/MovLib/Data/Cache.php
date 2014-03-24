@@ -17,7 +17,9 @@
  */
 namespace MovLib\Data;
 
+use \MovLib\Data\StreamWrapper\StreamWrapperFactory;
 use \MovLib\Data\FileSystem;
+use \MovLib\Data\Log;
 
 /**
  * Interact with the persistent disc cache.
@@ -28,18 +30,11 @@ use \MovLib\Data\FileSystem;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Cache {
+final class Cache {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   * Absolute path to the cache file of the current request.
-   *
-   * @var string
-   */
-  protected $cacheFile;
 
   /**
    * Indicates whether this request is cacheable or not.
@@ -47,6 +42,13 @@ class Cache {
    * @var boolean
    */
   public $cacheable = true;
+
+  /**
+   * URI to the cache file of the current request.
+   *
+   * @var string
+   */
+  protected $uri;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -60,9 +62,9 @@ class Cache {
    */
   public function __construct() {
     global $i18n, $kernel;
-    $this->cacheFile = "{$kernel->documentRoot}/var/cache/{$i18n->languageCode}{$kernel->requestPath}";
+    $this->uri = "dr://var/cache/{$i18n->languageCode}{$kernel->requestPath}";
     if ($kernel->requestPath == "/") {
-      $this->cacheFile .= $_SERVER["PRESENTER"];
+      $this->uri .= $_SERVER["PRESENTER"];
     }
   }
 
@@ -77,37 +79,22 @@ class Cache {
    *   <code>TRUE</code> if a cached version exists, otherwise <code>FALSE</code>.
    */
   public function cached() {
-    return is_file($this->cacheFile);
+    return is_file($this->uri);
   }
 
   /**
    * Delete cached version of current presentation.
    *
-   * @param string $cacheFile [optional]
-   *   Absolute path to the cache file that should be deleted, defaults to the current cache file property of this
-   *   instance. Note that the compressed version of the cached file is deleted as well.
+   * @param string $uri [optional]
+   *   URI of the cache file to delete, defaults to the current presentation.
    * @return this
    */
-  public function delete($cacheFile = null) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (isset($cacheFile) && (empty($cacheFile) || !is_string($cacheFile))) {
-      throw new \InvalidArgumentException("\$cacheFile cannot be empty and must be of type string");
+  public function delete($uri = null) {
+    if (!$uri) {
+      $uri = $this->uri;
     }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    if (!$cacheFile) {
-      $cacheFile = $this->cacheFile;
-    }
-    if (is_file($cacheFile) === true) {
-      try {
-        FileSystem::delete($cacheFile);
-        FileSystem::delete("{$cacheFile}.gz");
-      }
-      catch (\RuntimeException $e) {
-        Log::error($e);
-      }
-    }
+    unlink($uri);
+    unlink("{$uri}.gz");
     return $this;
   }
 
@@ -128,16 +115,29 @@ class Cache {
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
+
     if ($this->cacheable === true && $session->isAuthenticated === false && $this->cached() === false) {
       try {
-        FileSystem::createDirectory(dirname($this->cacheFile));
-        FileSystem::putContent($this->cacheFile, "{$presentation}<!--{$_SERVER["REQUEST_TIME_FLOAT"]}-->", LOCK_EX);
-        FileSystem::compress($this->cacheFile);
+        // Make sure that the complete directory structure actually exists.
+        $dir = dirname($this->uri);
+        mkdir($dir, 0775, true);
+
+        // Write the new cache file to a temporary file, this ensures that nginx isn't delivering the file while we're
+        // writing to it.
+        $uri = StreamWrapperFactory::create($this->uri)->realpath();
+        $tmp = tempnam($dir, "cache");
+        file_put_contents($tmp, "{$presentation}<!--{$_SERVER["REQUEST_TIME_FLOAT"]}-->");
+        $gz  = FileSystem::compress($tmp);
+
+        // Rename is an atomic action.
+        rename($tmp, $uri);
+        rename($gz, "{$uri}.gz");
       }
-      catch (\RuntimeException $e) {
+      catch (\Exception $e) {
         Log::error($e);
       }
     }
+
     return $this;
   }
 

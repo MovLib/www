@@ -17,10 +17,8 @@
  */
 namespace MovLib\Data\StreamWrapper;
 
-use \MovLib\Data\URL;
-
 /**
- * Defines the asset stream wrapper for the <code>"asset://"</code> scheme.
+ * Defines the upload stream wrapper for the <code>"upload://"</code> scheme.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -28,32 +26,7 @@ use \MovLib\Data\URL;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class AssetStreamWrapper extends AbstractLocalStreamWrapper {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * Associative array containing the cache busters for the various assets.
-   *
-   * <b>NOTE</b><br>
-   * The cache buster checksums are generated offline for each release and directly inserted into this class definition.
-   * Checksums are generated on the fly in a development environment.
-   *
-   * @var array
-   */
-  private static $cacheBusters = [
-    "css" => "{{ css_cache_buster }}",
-    "jpg" => "{{ jpg_cache_buster }}",
-    "js"  => "{{ js_cache_buster }}",
-    "png" => "{{ png_cache_buster }}",
-    "svg" => "{{ svg_cache_buster }}",
-  ];
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
+final class UploadStreamWrapper extends AbstractLocalStreamWrapper {
 
   /**
    * Get the web accessible URL of the file.
@@ -65,42 +38,29 @@ final class AssetStreamWrapper extends AbstractLocalStreamWrapper {
    *   The web accessible URL of the file.
    */
   public function getExternalURL() {
+    // Directly return the URL if we already generated it once.
     static $urls = [];
     if (isset($urls[$this->uri])) {
       return $urls[$this->uri];
     }
 
+    // Build and cache the complete URL.
     global $kernel;
-    $target    = URL::encodePath($this->getTarget());
-    $extension = pathinfo($target, PATHINFO_EXTENSION);
-
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (!is_array(self::$cacheBusters[$extension])) {
-      self::$cacheBusters[$extension] = [];
-    }
-    if (!isset(self::$cacheBusters[$extension][$target])) {
-      self::$cacheBusters[$extension][$target] = md5_file($this->realpath());
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
-    $cacheBuster = self::$cacheBusters[$extension][$target];
-    return ($urls[$this->uri] = "//{$kernel->domainStatic}/asset/{$target}?{$cacheBuster}");
+    $target = URL::encodePath($this->getTarget());
+    return ($urls[$this->uri] = "//{$kernel->domainStatic}/upload/{$target}");
   }
 
   /**
    * Get the canonical absolute path to the directory the stream wrapper is responsible for.
    *
-   * @staticvar string $path
-   *   Used to cache the path.
+   * @global \MovLib\Kernel $kernel
    * @return string
    *   The canonical absolute path to the directory the stream wrapper is responsible for.
    */
   public function getPath() {
     static $path = null;
     if (!$path) {
-      $path = StreamWrapperFactory::create("dr://public/asset")->realpath();
+      $path = StreamWrapperFactory::create("dr://var/uploads")->realpath();
     }
     return $path;
   }

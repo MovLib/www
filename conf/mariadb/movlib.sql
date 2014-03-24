@@ -877,10 +877,10 @@ CREATE TABLE IF NOT EXISTS `movlib`.`media` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The medium’s unique identifier.',
   `changed` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The medium’s last update date and time.',
   `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The medium’s insert date and time.',
-  `bootleg` TINYINT(1) NOT NULL DEFAULT FALSE,
+  `bootleg` TINYINT(1) NOT NULL DEFAULT FALSE COMMENT 'Flag if this medium is a bootleg or not.',
+  `type` TINYINT NOT NULL COMMENT 'The medium’s type as enumeration of one of \\\\MovLib\\\\Data\\\\Format\\\\FormatFactory class constants.',
   `dyn_notes` BLOB NOT NULL COMMENT 'The medium’s notes in various languages. Keys are ISO alpha-2 language codes.',
-  `bin_format` BLOB NULL COMMENT 'The medium’s release format (e.g. DVD) as serialized PHP object with all relevant information.',
-  `bonus_runtime` SMALLINT NULL COMMENT 'The medium’s total bonus runtime in seconds.',
+  `bin_format` BLOB NULL COMMENT 'The medium’s release format (e.g. DVD) as serialized PHP object (\\\\MovLib\\\\Data\\\\Format\\\\AbstractFormat).',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 COMMENT = 'Contains all single units of one or more releases.'
@@ -899,8 +899,10 @@ CREATE TABLE IF NOT EXISTS `movlib`.`releases` (
   `country_code` CHAR(2) NOT NULL COMMENT 'The release’s ISO alpha-2 country code.',
   `dyn_notes` BLOB NOT NULL COMMENT 'The release’s notes in various languages. Keys are ISO alpha-2 language codes.',
   `title` TEXT NOT NULL COMMENT 'The release’s title.',
-  `publishing_date` DATE NULL COMMENT 'The release’s publishing date.',
+  `publishing_date_sale` DATE NULL COMMENT 'The release’s publishing date for sale.',
+  `publishing_date_rental` DATE NULL COMMENT 'The release’s publishing date for rental.',
   `edition` TEXT NULL COMMENT 'The release’s edition.',
+  `bin_identifiers` BLOB NULL COMMENT 'The release’s additional identifiers as serialized PHP object (\\\\MovLib\\\\Stub\\\\Data\\\\Release\\\\Identifier).',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 COMMENT = 'Contains all releases. A release contains one or more media.'
@@ -934,86 +936,12 @@ COMMENT = 'A movie has many releases, a release has many movies.';
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`sound_formats`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`sound_formats` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The sound format’s unique ID.',
-  `dyn_descriptions` BLOB NOT NULL COMMENT 'The sound format’s description in various languages. Keys are ISO alpha-2 language codes.',
-  `dyn_names` BLOB NOT NULL COMMENT 'The sound format’s name in various languages. Keys are ISO alpha-2 language codes.',
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB
-COMMENT = 'Contains all available sound formats.'
-ROW_FORMAT = COMPRESSED
-KEY_BLOCK_SIZE = 8;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`releases_sound_formats`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`releases_sound_formats` (
-  `language_code` CHAR(2) NOT NULL COMMENT 'The releases sound format’s ISO alpha-2 language code.',
-  `release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The release’s unique ID.',
-  `sound_format_id` INT UNSIGNED NOT NULL COMMENT 'The sound format’s unique ID.',
-  `dyn_comments` BLOB NOT NULL COMMENT 'The release sound format’s comment in various languages. Keys are ISO alpha-2 language codes.',
-  PRIMARY KEY (`release_id`, `sound_format_id`, `language_code`),
-  INDEX `fk_releases_sound_formats_sound_formats` (`sound_format_id` ASC),
-  INDEX `fk_releases_sound_formats_releases` (`release_id` ASC),
-  CONSTRAINT `fk_releases_sound_formats_releases`
-    FOREIGN KEY (`release_id`)
-    REFERENCES `movlib`.`media` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_releases_sound_formats_sound_formats`
-    FOREIGN KEY (`sound_format_id`)
-    REFERENCES `movlib`.`sound_formats` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-COMMENT = 'Contains the sound formats a release has.';
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`releases_subtitles`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`releases_subtitles` (
-  `impaired` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Flag that determines whether the subtitle is hearing impaired or not (defaults to FALSE).',
-  `language_code` CHAR(2) NOT NULL COMMENT 'The releases subtitle’s ISO alpha-2 language code.',
-  `release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The release subtitle’s unique ID.',
-  `dyn_comments` BLOB NOT NULL COMMENT 'The release subtitle’s comment in various languages. Keys are ISO alpha-2 language codes.',
-  PRIMARY KEY (`impaired`, `language_code`, `release_id`),
-  CONSTRAINT `fk_releases_subtitles_releases`
-    FOREIGN KEY (`release_id`)
-    REFERENCES `movlib`.`media` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-COMMENT = 'Contains information about subtitles belonging to releases.'
-ROW_FORMAT = COMPRESSED
-KEY_BLOCK_SIZE = 8;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`aspect_ratios`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`aspect_ratios` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The aspect ratio’s unique ID.',
-  `name` TINYTEXT NOT NULL COMMENT 'The aspect ratio’s name.',
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB
-COMMENT = 'Contains all aspect ratios.';
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
 -- Table `movlib`.`releases_labels`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`releases_labels` (
   `company_id` BIGINT UNSIGNED NOT NULL COMMENT 'The company’s unique ID.',
   `release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The release’s unique ID.',
-  `catalog_number` TEXT NULL COMMENT 'The catalog number associated with the release.',
+  `catalog_number` TINYTEXT NULL COMMENT 'The catalog number associated with the release.',
   PRIMARY KEY (`company_id`, `release_id`),
   INDEX `fk_releases_labels_companies` (`company_id` ASC),
   INDEX `fk_releases_labels_master_releases` (`release_id` ASC),
@@ -1028,22 +956,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`releases_labels` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-COMMENT = 'Contains the label a master release is related to.'
-ROW_FORMAT = COMPRESSED;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`packaging`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`packaging` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The packaging’s unique ID.',
-  `dyn_descriptions` BLOB NOT NULL COMMENT 'The packaging’s description in various languages. Keys are ISO alpha-2 language codes.',
-  `dyn_names` BLOB NOT NULL COMMENT 'The packaging´s translatable names.',
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB
-COMMENT = 'Contains all available packaging variants.'
-ROW_FORMAT = COMPRESSED;
+COMMENT = 'Contains the label a master release is related to.';
 
 SHOW WARNINGS;
 
@@ -1252,61 +1165,6 @@ CREATE TABLE IF NOT EXISTS `movlib`.`users_persons_lists` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Contains person lists of users.';
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`releases_identifiers_types`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`releases_identifiers_types` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The release identifier type’s unique ID.',
-  `abbreviation` TINYBLOB NOT NULL COMMENT 'The release identifier type’s abbreviation.',
-  `dyn_descriptions` BLOB NOT NULL COMMENT 'The release identifier type’s description in various languages. Keys are ISO alpha-2 language codes.',
-  `dyn_names` BLOB NOT NULL COMMENT 'The release identifier type’s name in various languages. Keys are ISO alpha-2 language codes.',
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB
-COMMENT = 'Contains all release identifier types (e.g. EAN, GTIN, JAN,. /* comment truncated */ /*.)*/'
-ROW_FORMAT = COMPRESSED;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`releases_identifiers`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`releases_identifiers` (
-  `release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The master release’s unique ID.',
-  `releases_identifiers_type_id` INT UNSIGNED NOT NULL COMMENT 'The release identifier type’s unique ID.',
-  `identifier` TINYBLOB NOT NULL COMMENT 'The release identifier’s unique identifier.',
-  INDEX `fk_releases_identifiers_releases_identifiers_types_idx` (`releases_identifiers_type_id` ASC),
-  INDEX `fk_releases_identifiers_releases_idx` (`release_id` ASC),
-  CONSTRAINT `fk_releases_identifiers_releases_identifiers_types`
-    FOREIGN KEY (`releases_identifiers_type_id`)
-    REFERENCES `movlib`.`releases_identifiers_types` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_releases_identifiers_releases`
-    FOREIGN KEY (`release_id`)
-    REFERENCES `movlib`.`releases` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-COMMENT = 'Contains all release identifiers belonging to master release /* comment truncated */ /*s.*/'
-ROW_FORMAT = COMPRESSED;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`releases_types`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`releases_types` (
-  `id` INT UNSIGNED NOT NULL COMMENT 'The release type’s unique ID.',
-  `abbreviation` TINYBLOB NOT NULL COMMENT 'The release type’s abbreviation.',
-  `dyn_descriptions` BLOB NOT NULL COMMENT 'The release type’s description in various languages. Keys are ISO alpha-2 language codes.',
-  `dyn_names` BLOB NOT NULL COMMENT 'The release type’s name in various languages. Keys are ISO alpha-2 language codes.',
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB
-ROW_FORMAT = COMPRESSED
-KEY_BLOCK_SIZE = 8;
 
 SHOW WARNINGS;
 
@@ -1755,8 +1613,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`releases_media` (
     REFERENCES `movlib`.`media` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB
-ROW_FORMAT = COMPRESSED;
+ENGINE = InnoDB;
 
 SHOW WARNINGS;
 
@@ -1766,9 +1623,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`media_movies` (
   `media_id` BIGINT UNSIGNED NOT NULL COMMENT 'The medium’s identifier.',
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s identifier.',
-  `bin_aspect_ratio` BLOB NULL COMMENT 'The movie’s aspect ratio as serialized PHP object.',
-  `bin_sound_formats` BLOB NULL COMMENT 'The movie’s sound formats as serialized PHP array containing object with the specific information.',
-  `bin_subtitles` BLOB NULL COMMENT 'The movie’s subtitles as serialized PHP array containing objects with the specific information.',
+  `bin_medium_movie` BLOB NOT NULL COMMENT 'The movie’s medium specific data as serialized PHP object.',
   PRIMARY KEY (`media_id`, `movie_id`),
   INDEX `fk_media_movies_movies_idx` (`movie_id` ASC),
   CONSTRAINT `fk_media_movies_media`

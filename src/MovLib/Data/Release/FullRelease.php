@@ -15,35 +15,24 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Data\Release;
 
 /**
- * Extended date time zone class with more utility methods to handle time zones.
+ * Represents a single release with all data contained.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class DateTimeZone extends \DateTimeZone {
+class FullRelease {
 
   /**
-   * Get all sorted and translated time zone identifiers.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @return array
-   *   Associative array containing all sorted and translated time zone identifiers. The key is the time zone identifier
-   *   and the value the translation for the currently active language. The array is sorted by value.
    */
-  public static function getTranslatedIdentifiers() {
-    global $i18n, $kernel;
-    static $timeZones = null;
-    if (!isset($timeZones[$i18n->locale])) {
-      $timeZones[$i18n->locale] = require "{$kernel->pathTranslations}/time_zone/{$i18n->locale}.php";
-    }
-    return $timeZones[$i18n->locale];
+  public function __construct() {
+
   }
 
 }

@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,45 +15,25 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Stub\Data;
+namespace MovLib\Data\StreamWrapper;
 
 /**
- * Generic entity stub to use as a proxy for all kinds of data objects (e.g. Person).
+ * Defines the dr (document root) stream wrapper for the <code>"dr://"</code> scheme.
  *
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class Entity {
+final class DocumentRootStreamWrapper extends AbstractLocalStreamWrapper {
 
   /**
-   * The entity's unique identifier.
-   *
-   * @var integer
+   * @inheritdoc
    */
-  public $id;
-
-  /**
-   * The entity's name.
-   *
-   * @var string
-   */
-  public $name;
-
-  /**
-   * The entity's translated route.
-   *
-   * @var string
-   */
-  public $route;
-
-  /**
-   * The entity's RDFa {@link http://schema.org schema.org} type.
-   *
-   * @var string
-   */
-  public $type;
+  public function getPath() {
+    global $kernel;
+    return $kernel->documentRoot;
+  }
 
 }

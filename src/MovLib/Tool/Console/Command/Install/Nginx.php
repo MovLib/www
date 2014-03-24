@@ -96,6 +96,7 @@ final class Nginx extends AbstractInstallCommand {
   /**
    * Download source files for compilation of nginx.
    *
+   * @global \MovLib\Tool\Kernel $kernel
    * @param array $paths
    *   Used to collect canonical absolute paths to the downloaded source files.
    * @param string $nginxVersion
@@ -107,6 +108,7 @@ final class Nginx extends AbstractInstallCommand {
    * @return this
    */
   protected function downloadSources(array &$paths, $nginxVersion, $opensslVersion, $pcreVersion) {
+    global $kernel;
     foreach ([
       "nginx"   => "http://nginx.org/download/nginx-{$nginxVersion}.tar.gz",
       "openssl" => "http://www.openssl.org/source/openssl-{$opensslVersion}.tar.gz",
@@ -123,8 +125,8 @@ final class Nginx extends AbstractInstallCommand {
         $path      = "{$directory}/{$basename}";
         $this->exec("tar --extract --gzip --file '{$archive}'", $directory);
         if ($this->input->getOption("keep") === false) {
-          $this->registerFileForDeletion($archive);
-          $this->registerFileForDeletion($path);
+          $kernel->registerFileForDeletion($archive);
+          $kernel->registerFileForDeletion($path);
         }
       }
       elseif (pathinfo($url, PATHINFO_EXTENSION) != "git") {
@@ -184,7 +186,7 @@ final class Nginx extends AbstractInstallCommand {
 
     if (file_exists($this->etcTarget)) {
       $this->writeDebug("Deleting default {$name} configuration...");
-      FileSystem::delete($this->etcTarget, true);
+      FileSystem::delete($this->etcTarget);
     }
 
     $this->writeDebug("Linking {$name} configuration...");

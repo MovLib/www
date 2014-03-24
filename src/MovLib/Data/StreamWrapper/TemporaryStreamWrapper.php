@@ -15,14 +15,32 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\Data\StreamWrapper;
 
 /**
- * {classComment}
+ * Defines the tmp stream wrapper for the <code>"tmp://"</code> scheme.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-// @codeCoverageIgnoreStart
+final class TemporaryStreamWrapper extends AbstractLocalStreamWrapper {
+
+  /**
+   * Get the canonical absolute path to the directory the stream wrapper is responsible for.
+   *
+   * @global \MovLib\Kernel $kernel
+   * @return string
+   *   The canonical absolute path to the directory the stream wrapper is responsible for.
+   */
+  public function getPath() {
+    static $path = null;
+    if (!$path) {
+      $path = StreamWrapperFactory::create("dr://tmp")->realpath();
+    }
+    return $path;
+  }
+
+}
