@@ -1218,7 +1218,7 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`help_subcategories` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The help subcategory’s unique identifier.',
-  `help_category_id` BIGINT UNSIGNED NOT NULL COMMENT 'The help category’s unique id.',
+  `help_category_id` TINYINT UNSIGNED NOT NULL COMMENT 'The help category’s unique id.',
   `dyn_titles` BLOB NOT NULL COMMENT 'The help subcategory’s title in various languages. Keys are ISO alpha-2 language codes.',
   PRIMARY KEY (`id`),
   INDEX `fk_help_subcategories_help_category_id` (`help_category_id` ASC),
@@ -1240,7 +1240,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`help_articles` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The help’s unique identifier.',
   `help_category_id` TINYINT UNSIGNED NOT NULL COMMENT 'The help category’s unique identifier.',
-  `help_subcategory_id` BIGINT UNSIGNED NULL COMMENT 'The help subcategory’s unique identifier.',
+  `help_subcategory_id` INT UNSIGNED NULL COMMENT 'The help subcategory’s unique identifier.',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The timestamp on which this help article was created.',
   `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The timestamp on which this help article was changed.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the help article was deleted or not.',

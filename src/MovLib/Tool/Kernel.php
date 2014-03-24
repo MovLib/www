@@ -18,7 +18,7 @@
 namespace MovLib\Tool;
 
 use \Locale;
-use \MovLib\Data\Database;
+use \MovLib\Tool\Database;
 use \MovLib\Data\I18n;
 use \MovLib\Data\StreamWrapper\StreamWrapperFactory;
 use \MovLib\Data\User\Session;
