@@ -15,9 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Award\Event;
+namespace MovLib\Presentation\Event;
 
 use \MovLib\Data\Award;
+use \MovLib\Data\Event;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
@@ -56,19 +57,19 @@ class Create extends \MovLib\Presentation\Page {
   public function __construct() {
     global $i18n, $kernel;
 
-    $awardId     = (integer) $_SERVER["AWARD_ID"];
-    $this->award = new Award($awardId);
-
     $this->initPage($i18n->t("Create Event"));
     $this->initBreadcrumb([
-      [ $i18n->rp("/awards"), $i18n->t("Awards") ],
-      [ $this->award->route, $this->award->name ],
-      [ $i18n->rp("/award/{0}/events", [ $this->award->id ]), $i18n->t("Events") ],
+      [ $i18n->rp("/events"), $i18n->t("Events") ],
     ]);
+    $this->initLanguageLinks("/event/create");
     $this->breadcrumbTitle = $i18n->t("Create");
-    $this->initLanguageLinks("/award/{0}/event/create", [ $awardId ]);
 
     $kernel->stylesheets[] = "award";
+
+    // instantiate award if award id (a) is set.
+    if ($kernel->requestMethod == "GET" && !empty($_GET["a"])) {
+      $this->award = new Award((integer) $_GET["a"]);
+    }
   }
 
 
@@ -82,7 +83,7 @@ class Create extends \MovLib\Presentation\Page {
   protected function getContent() {
     global $i18n;
     return new Alert(
-      $i18n->t("The create award event feature isn’t implemented yet."),
+      $i18n->t("The create event feature isn’t implemented yet."),
       $i18n->t("Check back later"),
       Alert::SEVERITY_INFO
     );

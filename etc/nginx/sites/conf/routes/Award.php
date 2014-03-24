@@ -167,62 +167,6 @@ location ^~ <?= $this->r("/award") ?> {
     <?= $this->cache() ?>
   }
 
-  location ~* '^<?= $this->r("/award/{0}/event/create") ?>$' {
-    <?= $this->set("Create") ?>
-    <?= $this->set('$1', "award_id") ?>
-    <?= $this->cache() ?>
-  }
-
-  location ~* '^<?= $this->r("/award/{0}/event/{1}") ?>$' {
-    <?= $this->set("Show") ?>
-    <?= $this->set('$1', "award_id") ?>
-    <?= $this->set('$2', "award_event_id") ?>
-    <?= $this->cache() ?>
-  }
-
-  location ~* '^<?= $this->r("/award/{0}/event/{1}/discussion") ?>$' {
-    <?= $this->set("Discussion") ?>
-    <?= $this->set('$1', "award_id") ?>
-    <?= $this->set('$2', "award_event_id") ?>
-    <?= $this->cache() ?>
-  }
-
-  location ~* '^<?= $this->r("/award/{0}/event/{1}/edit") ?>$' {
-    <?= $this->set("Edit") ?>
-    <?= $this->set('$1', "award_id") ?>
-    <?= $this->set('$2', "award_event_id") ?>
-    <?= $this->cache() ?>
-  }
-
-  location ~* '^<?= $this->r("/award/{0}/event/{1}/history") ?>$' {
-    <?= $this->set("History") ?>
-    <?= $this->set('$1', "award_id") ?>
-    <?= $this->set('$2', "award_event_id") ?>
-    <?= $this->cache() ?>
-  }
-
-  location ~* '^<?= $this->r("/award/{0}/event/{1}/delete") ?>$' {
-    <?= $this->set("Delete") ?>
-    <?= $this->set('$1', "award_id") ?>
-    <?= $this->set('$2', "award_event_id") ?>
-    <?= $this->cache() ?>
-  }
-
-  location ~* '^<?= $this->rp("/award/{0}/event/{1}/movies") ?>$' {
-    <?= $this->set("Movies") ?>
-    <?= $this->set('$1', "award_id") ?>
-    <?= $this->set('$2', "award_event_id") ?>
-    <?= $this->cache() ?>
-  }
-
-  location ~* '^<?= $this->rp("/award/{0}/event/{1}/series") ?>$' {
-    <?= $this->set("Series") ?>
-    <?= $this->set('$1', "award_id") ?>
-    <?= $this->set('$2', "award_event_id") ?>
-    <?= $this->cache() ?>
-  }
-
-
   # -------------------------------------------------------------------------------------------------------------------- Icon
   <?php $this->setRoutesNamespace("Award\\Icon") ?>
 

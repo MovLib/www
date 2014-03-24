@@ -15,44 +15,45 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Award\Event;
+namespace MovLib\Presentation\Event;
 
-use \MovLib\Data\Award;
+use \MovLib\Data\Event;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Listing\AwardEventListing;
 
 /**
- * A event of a certain award.
+ * The latest Award Events.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\Award\AbstractBase {
+class Index extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\TraitSidebar;
+  use \MovLib\Presentation\TraitPagination;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new award events presentation.
+   * Instantiate new latest award events presentation.
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
     global $i18n, $kernel;
-    $this->award = new Award((integer) $_SERVER["AWARD_ID"]);
-    $this->initPage($i18n->t("Events of {0}", [ $this->award->name ]));
-    $this->pageTitle       = $i18n->t("Events of {0}", [ "<a href='{$this->award->route}'>{$this->award->name}</a>" ]);
-    $this->breadcrumbTitle = $i18n->t("Events");
-    $this->initLanguageLinks("/award/{0}/events", [ $this->award->id ], true);
-    $this->initAwardBreadcrumb();
-    $this->sidebarInit();
-
-    $kernel->stylesheets[] = "award";
+    $this->initPage($i18n->t("Events"));
+    $this->initBreadcrumb();
+    $this->initLanguageLinks("/events", null, true);
+    $this->paginationInit(Event::getTotalCount());
+    $this->sidebarInit([
+      [ $kernel->requestPath, $this->title, [ "class" => "ico ico-event" ] ],
+      [ $i18n->r("/event/random"), $i18n->t("Random") ],
+    ]);
   }
 
 
@@ -61,28 +62,22 @@ class Index extends \MovLib\Presentation\Award\AbstractBase {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @return \MovLib\Presentation\Partial\Listing\EntityIndexListing
    */
   protected function getPageContent() {
     global $i18n;
+
     $this->headingBefore =
-      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/event/create")}?a={$this->award->id}'>" .
-        $i18n->t("Create New Event") .
-      "</a>"
+      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/event/create")}'>{$i18n->t("Create New Event")}</a>"
     ;
 
-    $result      = $this->award->getEventsResult();
+    $result      = Event::getEvents($this->paginationOffset, $this->paginationLimit);
     $noItemText  = new Alert(
       $i18n->t(
-        "We couldn’t find any event matching your filter criteria, or there simply aren’t any events available."
-      ), $i18n->t("No Event"), Alert::SEVERITY_INFO
+        "We couldn’t find any events matching your filter criteria, or there simply aren’t any events available."
+      ), $i18n->t("No Events"), Alert::SEVERITY_INFO
     );
     $noItemText .=
-      $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [
-        "<a href='{$i18n->r("/event/creat")}?a={$this->award->id}'>",
-        "</a>"
-      ]);
+      $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/award/create")}'>", "</a>" ]);
 
     $moviesRoute = $i18n->rp("/event/{0}/movies", [ "{{ id }}" ]);
     $seriesRoute = $i18n->rp("/event/{0}/series", [ "{{ id }}" ]);

@@ -45,13 +45,13 @@ final class AwardEventListing extends \MovLib\Presentation\Partial\Listing\Entit
     // @devStart
     // @codeCoverageIgnoreStart
     if(!($event instanceof $this->entity)) {
-      throw new \InvalidArgumentException("\$entity must be of type {$this->entity}");
+      throw new \InvalidArgumentException("\$event must be of type {$this->entity}");
     }
     if (!isset($event->place)) {
-      throw new \LogicException($i18n->t("\$movie->place has to be set!"));
+      throw new \LogicException($i18n->t("\$event->place has to be set!"));
     }
     if (!isset($event->startDate)) {
-      throw new \LogicException($i18n->t("\$movie->startDate has to be set!"));
+      throw new \LogicException($i18n->t("\$event->startDate has to be set!"));
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

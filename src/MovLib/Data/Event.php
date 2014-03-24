@@ -29,7 +29,7 @@ use \MovLib\Data\Place;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class AwardEvent extends \MovLib\Data\Database {
+class Event extends \MovLib\Data\Database {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -186,6 +186,31 @@ class AwardEvent extends \MovLib\Data\Database {
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
+ /**
+   * Get all events matching the offset and row count.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @param integer $offset
+   *   The offset in the result.
+   * @param integer $rowCount
+   *   The number of rows to retrieve.
+   * @return \mysqli_result
+   *   The query result.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public static function getEvents($offset, $rowCount) {
+    global $db, $i18n;
+    $query = self::getQuery();
+    return $db->query("
+        {$query}
+        ORDER BY `start_date` DESC
+        LIMIT ? OFFSET ?",
+      "sssid",
+      [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $rowCount, $offset ]
+    )->get_result();
+  }
+
   /**
    * The count of movies connected to this award event.
    *
@@ -313,6 +338,22 @@ class AwardEvent extends \MovLib\Data\Database {
   }
 
   /**
+   * Get random event identifier.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return integer|null
+   *   Random event identifier, or <code>NULL</code> on failure.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public static function getRandomEventId() {
+    global $db;
+    $query = "SELECT `id` FROM `awards_events` WHERE `deleted` = false ORDER BY RAND() LIMIT 1";
+    if ($result = $db->query($query)->get_result()) {
+      return $result->fetch_assoc()["id"];
+    }
+  }
+
+  /**
    * The count of movies connected to this event.
    *
    * @todo Implement when series are implemented.
@@ -321,6 +362,25 @@ class AwardEvent extends \MovLib\Data\Database {
    */
   public function getSeriesCount() {
     return 0;
+  }
+
+  /**
+   * Get the total count of all events.
+   *
+   * @global \MovLib\Data\Database $db
+   * @staticvar null|integer $count
+   *   The total amount of events which haven't been deleted.
+   * @return integer
+   *   The total amount of events which haven't been deleted.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public static function getTotalCount() {
+    global $db;
+    static $count = null;
+    if (!$count) {
+      $count = $db->query("SELECT COUNT(`id`) FROM `awards_events` WHERE `deleted` = false LIMIT 1")->get_result()->fetch_row()[0];
+    }
+    return $count;
   }
 
   /**
@@ -336,8 +396,8 @@ class AwardEvent extends \MovLib\Data\Database {
     }
     $this->deleted  = (boolean) $this->deleted;
     $this->links    = $this->links ? unserialize($this->links) : [];
-    $this->routeKey = "/award/{0}/event/{1}";
-    $this->route    = $i18n->r($this->routeKey, [ $this->awardId, $this->id ]);
+    $this->routeKey = "/event/{0}";
+    $this->route    = $i18n->r($this->routeKey, [ $this->id ]);
   }
 
 }

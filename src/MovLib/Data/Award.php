@@ -18,7 +18,7 @@
 namespace MovLib\Data;
 
 use \MovLib\Data\AwardCategory;
-use \MovLib\Data\AwardEvent;
+use \MovLib\Data\Event;
 use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Presentation\Error\NotFound;
 
@@ -290,7 +290,7 @@ class Award extends \MovLib\Data\Image\AbstractImage {
   public function getEventsResult() {
     global $db, $i18n;
 
-    $query = AwardEvent::getQuery();
+    $query = Event::getQuery();
     return $db->query("
       {$query}
       WHERE `award_id` = ?

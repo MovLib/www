@@ -15,14 +15,13 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Award\Event;
+namespace MovLib\Presentation\Event;
 
 use \MovLib\Data\Award;
-use \MovLib\Data\AwardEvent;
-use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
+use \MovLib\Data\Event;
 
 /**
- * A award event's history.
+ * Series with a certain event associated.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -30,53 +29,48 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\Award\Event\AbstractBase {
+class Series extends \MovLib\Presentation\Event\AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new award event history presentation.
+   * Instantiate new event series presentation.
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
     global $i18n, $kernel;
-    $this->award      = new Award((integer) $_SERVER["AWARD_ID"]);
-    $this->awardEvent = new AwardEvent((integer) $_SERVER["AWARD_EVENT_ID"]);
 
-    if ($this->award->id != $this->awardEvent->awardId) {
-      throw new SeeOtherRedirect($i18n->r("/award/{0}/event/{1}/history", [
-        $this->awardEvent->awardId,
-        $this->awardEvent->id
-      ]));
-    }
+    $this->event = new Event((integer) $_SERVER["EVENT_ID"]);
+    $this->award = new Award($this->event->awardId);
 
-    $this->initPage($i18n->t("History"));
-    $this->pageTitle     =
-      $i18n->t("History of {0}", [ "<a href='{$this->awardEvent->route}'>{$this->awardEvent->name}</a>" ])
+    $this->initPage($i18n->t("Series with {0}", [ $this->event->name ]));
+    $this->pageTitle    =
+      $i18n->t("Series with {0}", [ "<a href='{$this->event->route}'>{$this->event->name}</a>" ])
     ;
-    $this->initLanguageLinks("/award/{0}/event/{1}/history", [ $this->award->id, $this->awardEvent->id ]);
-    $this->initAwardEventBreadcrumb();
+    $this->breadcrumbTitle = $i18n->t("Series");
+    $this->initLanguageLinks("/event/{0}/series", [ $this->event->id ], true);
+    $this->initEventBreadcrumb();
     $this->sidebarInit();
 
-    $kernel->stylesheets[] = "award";
+    $kernel->stylesheets[] = "event";
   }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
-  /**
+ /**
    * @inheritdoc
    * @global \MovLib\Data\I18n $i18n
    * @return \MovLib\Presentation\Partial\Alert
    */
   protected function getPageContent() {
     global $i18n;
-    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("award event history") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("series with event") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
   }
 
 }

@@ -88,10 +88,8 @@ return [
   "/award/{0}/category/{1}/series" => "/auszeichnung/{0}/kategorie/{1}/serien",
   // ------------------------------------------------------------------------------------------------------------------- Award Events
   "/award/{0}/events"             => "/auszeichnung/{0}/events",
-  "/award/{0}/event/{1}/movies"   => "/auszeichnung/{0}/event/{1}/filme",
-  "/award/{0}/event/{1}/series"   => "/auszeichnung/{0}/event/{1}/serien",
   // ------------------------------------------------------------------------------------------------------------------- Events
-  "/events"                       => "/auszeichnung",
+  "/events"                       => "/events",
   "/event/{0}/movies"             => "/event/{0}/filme",
   "/event/{0}/series"             => "/event/{0}/serien",
   // ------------------------------------------------------------------------------------------------------------------- Jobs

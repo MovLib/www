@@ -199,13 +199,6 @@ return [
   "/award/{0}/category/{1}/discussion"         => "/auszeichnung/{0}/kategorie/{1}/diskussion",
   "/award/{0}/category/{1}/edit"               => "/auszeichnung/{0}/kategorie/{1}/bearbeiten",
   "/award/{0}/category/{1}/history"            => "/auszeichnung/{0}/kategorie/{1}/geschichte",
-  // ------------------------------------------------------------------------------------------------------------------- Award Event
-  "/award/{0}/event/create"                    => "/auszeichnung/{0}/event/erstellen",
-  "/award/{0}/event/{1}"                       => "/auszeichnung/{0}/event/{1}",
-  "/award/{0}/event/{1}/delete"                => "/auszeichnung/{0}/event/{1}/löschen",
-  "/award/{0}/event/{1}/discussion"            => "/auszeichnung/{0}/event/{1}/diskussion",
-  "/award/{0}/event/{1}/edit"                  => "/auszeichnung/{0}/event/{1}/bearbeiten",
-  "/award/{0}/event/{1}/history"               => "/auszeichnung/{0}/event/{1}/geschichte",
   // ------------------------------------------------------------------------------------------------------------------- Event
   "/event"                                     => "/event",
   "/event/create"                              => "/event/erstellen",

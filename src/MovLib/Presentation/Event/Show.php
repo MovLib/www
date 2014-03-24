@@ -15,17 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Award\Event;
+namespace MovLib\Presentation\Event;
 
 use \MovLib\Data\Award;
-use \MovLib\Data\AwardEvent;
+use \MovLib\Data\Event;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Date;
-use \MovLib\Presentation\Partial\Place;
-use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
 /**
- * Presentation of a single award event.
+ * Presentation of a single event.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -33,14 +30,14 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\Award\Event\AbstractBase {
+class Show extends \MovLib\Presentation\Event\AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new award event presentation.
+   * Instantiate new event presentation.
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
@@ -49,23 +46,18 @@ class Show extends \MovLib\Presentation\Award\Event\AbstractBase {
    */
   public function __construct() {
     global $i18n, $kernel;
-    $this->award      = new Award((integer) $_SERVER["AWARD_ID"]);
-    $this->awardEvent = new AwardEvent((integer) $_SERVER["AWARD_EVENT_ID"]);
 
-    if ($this->award->id != $this->awardEvent->awardId) {
-      throw new SeeOtherRedirect($this->awardEvent->route);
-    }
+    $this->event = new Event((integer) $_SERVER["EVENT_ID"]);
+    $this->award = new Award($this->event->awardId);
 
-    $this->initPage($this->awardEvent->name);
-    $this->initLanguageLinks("/award/{0}/event/{1}", [ $this->award->id, $this->awardEvent->id ]);
+    $this->initPage($this->event->name);
+    $this->initLanguageLinks("/event/{0}", [ $this->event->id ]);
     $this->initBreadcrumb([
-      [ $i18n->rp("/awards"), $i18n->t("Awards") ],
-      [ $this->award->route, $this->award->name ],
-      [ $i18n->rp("/award/{0}/events", [ $this->award->id ]), $i18n->t("Events") ],
+      [ $i18n->rp("/events"), $i18n->t("Events") ],
     ]);
     $this->sidebarInit();
 
-    $kernel->stylesheets[] = "award";
+    $kernel->stylesheets[] = "event";
   }
 
 
@@ -79,57 +71,18 @@ class Show extends \MovLib\Presentation\Award\Event\AbstractBase {
   protected function getPageContent() {
     global $i18n, $kernel;
 
-    // Enhance the page title with microdata.
-    $this->schemaType = "Intangible";
-    $this->pageTitle  = "<span property='name'>{$this->awardEvent->name}</span>";
-
-    if ($this->awardEvent->deleted === true) {
-      return $this->goneGetContent();
-    }
-
-    // Put the award event information together.
-    $info = null;
-    if (($this->awardEvent->startDate && $this->awardEvent->endDate) && ($this->awardEvent->startDate != $this->awardEvent->endDate)) {
-      $info .= "{$i18n->t("from {0} to {1}", [
-        (new Date($this->awardEvent->startDate))->format(),
-        (new Date($this->awardEvent->endDate))->format()
-      ])} ";
-    }
-    else if ($this->awardEvent->startDate) {
-      $info .= "{$i18n->t("on {0}", [ (new Date($this->awardEvent->startDate))->format() ])} ";
-    }
-    if ($this->awardEvent->place) {
-      if ($info) {
-        $info .= "<br>";
-      }
-      $info .= $i18n->t("in {0}", [ new Place($this->awardEvent->place) ]);
-    }
-
-    // Construct the wikipedia link.
-    if ($this->awardEvent->wikipedia) {
-      if ($info) {
-        $info .= "<br>";
-      }
-      $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->awardEvent->wikipedia}' itemprop='sameAs' target='_blank'>{$i18n->t("Wikipedia Article")}</a>";
-    }
-
-    $this->headingBefore = "<div class='r'><div class='s s10'>";
-    $this->headingAfter = "<p>{$info}</p></div></div>";
-
-
-    // ----------------------------------------------------------------------------------------------------------------- Build page sections.
-
+    $this->getEventHeader();
 
     $content = null;
     // Description section
-    if ($this->awardEvent->description) {
+    if ($this->event->description) {
       $content .=
-        $this->getSection("description", $i18n->t("Description"), $this->htmlDecode($this->awardEvent->description))
+        $this->getSection("description", $i18n->t("Description"), $this->htmlDecode($this->event->description))
       ;
     }
 
     // External links section.
-    $awardLinks = $this->awardEvent->links;
+    $awardLinks = $this->event->links;
     if ($awardLinks) {
       $links = null;
       $c     = count($awardLinks);

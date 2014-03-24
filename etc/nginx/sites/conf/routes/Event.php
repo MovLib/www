@@ -29,8 +29,6 @@
 /* @var $this \MovLib\Tool\Console\Command\Production\NginxRoutes */
 ?>
 
-<?php $this->setRoutesNamespace("Event\\Event") ?>
-
 location = <?= $this->rp("/events") ?> {
   <?= $this->set("Index") ?>
   <?= $this->cache() ?>
@@ -52,43 +50,43 @@ location ^~ <?= $this->r("/event") ?> {
 
   location ~* '^<?= $this->r("/event/{0}") ?>$' {
     <?= $this->set("Show") ?>
-    <?= $this->set('$1', "award_event_id") ?>
+    <?= $this->set('$1', "event_id") ?>
     <?= $this->cache() ?>
   }
 
   location ~* '^<?= $this->r("/event/{0}/discussion") ?>$' {
     <?= $this->set("Discussion") ?>
-    <?= $this->set('$1', "award_event_id") ?>
+    <?= $this->set('$1', "event_id") ?>
     <?= $this->cache() ?>
   }
 
   location ~* '^<?= $this->r("/event/{0}/edit") ?>$' {
     <?= $this->set("Edit") ?>
-    <?= $this->set('$1', "award_event_id") ?>
+    <?= $this->set('$1', "event_id") ?>
     <?= $this->cache() ?>
   }
 
   location ~* '^<?= $this->r("/event/{0}/history") ?>$' {
     <?= $this->set("History") ?>
-    <?= $this->set('$1', "award_event_id") ?>
+    <?= $this->set('$1', "event_id") ?>
     <?= $this->cache() ?>
   }
 
   location ~* '^<?= $this->r("/event/{0}/delete") ?>$' {
     <?= $this->set("Delete") ?>
-    <?= $this->set('$1', "award_event_id") ?>
+    <?= $this->set('$1', "event_id") ?>
     <?= $this->cache() ?>
   }
 
   location ~* '^<?= $this->rp("/event/{0}/movies") ?>$' {
     <?= $this->set("Movies") ?>
-    <?= $this->set('$1', "award_event_id") ?>
+    <?= $this->set('$1', "event_id") ?>
     <?= $this->cache() ?>
   }
 
   location ~* '^<?= $this->rp("/event/{0}/series") ?>$' {
     <?= $this->set("Series") ?>
-    <?= $this->set('$1', "award_event_id") ?>
+    <?= $this->set('$1', "event_id") ?>
     <?= $this->cache() ?>
   }
 
