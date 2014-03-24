@@ -15,10 +15,9 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Tool\Console\Command;
+namespace MovLib\Console\Command;
 
-use \MovLib\Data\Shell;
-use \MovLib\Data\StreamWrapper\StreamWrapperFactory;
+use \MovLib\Core\Shell;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\Output;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -242,37 +241,18 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
   /**
    * Change the current working directory.
    *
+   * @global \MovLib\Core\FileSystem $fs
    * @param string $directory
    *   Canonical absolute path to the new working directory.
    * @return this
    */
   final protected function changeWorkingDirectory($directory) {
-    if (strpos($directory, "://") !== false) {
-      $directory = StreamWrapperFactory::create($directory)->realpath();
-    }
-    if (getcwd() != $directory) {
+    global $fs;
+    if (getcwd() != ($directory = $fs->realpath($directory))) {
       $this->writeDebug("Changeing working directory to <comment>{$directory}</comment>");
       chdir($directory);
     }
     return $this;
-  }
-
-  /**
-   * Check if the executing user has root privileges.
-   *
-   * @param boolean $exception [optional]
-   *   Flag indicating if the method should throw an exception or return <code>TRUE</code>/<code>FALSE</code>.
-   *   Defaults to throwing an exception.
-   * @return boolean
-   *   <code>TRUE</code> if user is privileged, otherwise <code>FALSE</code>.
-   * @throws \RuntimeException
-   */
-  final protected function checkPrivileges($exception = true) {
-    $privileged = (posix_getuid() === 0);
-    if ($privileged === false && $exception === true) {
-      throw new \RuntimeException("This script must be executed as privileged user (root or sudo).");
-    }
-    return $privileged;
   }
 
   /**

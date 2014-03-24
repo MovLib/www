@@ -15,9 +15,8 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Tool\Console\Command\Admin;
+namespace MovLib\Console\Command\Admin;
 
-use \MovLib\Data\Shell;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -31,7 +30,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Database extends \MovLib\Tool\Console\Command\AbstractCommand {
+class Database extends \MovLib\Console\Command\AbstractCommand {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -40,18 +39,16 @@ class Database extends \MovLib\Tool\Console\Command\AbstractCommand {
   /**
    * The directory where backups are stored.
    *
-   * @see Database::__construct()
    * @var string
    */
-  protected $pathBackup = "/var/backups";
+  protected $pathBackup = "dr://var/backups";
 
   /**
    * The directory containing the migration scripts.
    *
-   * @see Database::__construct()
    * @var string
    */
-  protected $pathMigration = "/var/migrations";
+  protected $pathMigration = "dr://var/migrations";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -62,16 +59,11 @@ class Database extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @global \MovLib\Tool\Kernel $kernel
    */
   protected function configure() {
-    global $kernel;
-
     $this->setName("database");
     $this->setDescription("Perform various database related tasks.");
     //$this->addOption("backup", "b", InputOption::VALUE_NONE, "Create backup of the complete database.");
     $this->addOption("optimize-tables", "ot", InputOption::VALUE_NONE, "Optimize all tables of all databases.");
     //$this->addOption("migration", "m", InputOption::VALUE_NONE, "Run all migration scripts.");
-
-    $this->pathBackup    = "{$kernel->documentRoot}{$this->pathBackup}";
-    $this->pathMigration = "{$kernel->documentRoot}{$this->pathMigration}";
   }
 
   /**

@@ -15,11 +15,11 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Tool\Console\Command\Admin;
+namespace MovLib\Console\Command\Admin;
 
-use \MovLib\Data\Shell;
-use \MovLib\Data\Temporary;
+use \MovLib\Core\Log;
 use \MovLib\Exception\DatabaseException;
+use \MovLib\Exception\ShellException;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -35,14 +35,14 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class CronDaily extends \MovLib\Tool\Console\Command\AbstractCommand {
+class CronDaily extends \MovLib\Console\Command\AbstractCommand {
 
   /**
    * @inheritdoc
    */
   protected function configure() {
     $this->setName("cron-daily");
-    $this->setDescription("Cron jobs that should run on a daily basis.");
+    $this->setDescription("Execute cron jobs.");
   }
 
   /**
@@ -57,18 +57,20 @@ class CronDaily extends \MovLib\Tool\Console\Command\AbstractCommand {
   /**
    * Purge all data from the temporary table.
    *
-   * @global \MovLib\Tool\Database $db
+   * @global \MovLib\Core\Database $db
    * @return this
-   * @throws \MovLib\Exception\DatabaseException
    */
   public function purgeTemporaryTable() {
     global $db;
     try {
-      $db->query("DELETE FROM `tmp` WHERE DATEDIFF(CURRENT_TIMESTAMP, `created`) > 0 AND `ttl` = '{$db->escapeString(Temporary::TMP_TTL_DAILY)}'");
+      $this->writeVerbose("Purging temporary database table...");
+
+      $daily = "DELETE FROM `tmp` WHERE DATEDIFF(CURRENT_TIMESTAMP, `created`) > 0 AND `ttl` = '@daily'";
+      $this->writeDebug("mysql> <comment>{$daily};</comment>");
+      $db->query($daily);
     }
     catch (DatabaseException $e) {
-      error_log($e);
-      throw $e;
+      Log::error($e);
     }
     return $this;
   }
@@ -79,8 +81,13 @@ class CronDaily extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @return this
    */
   public function purgeTemporaryUploads() {
-    $directory = ini_get("upload_tmp_dir");
-    Shell::execute("find '{$directory}' -type f -mtime +1 -exec rm -f {} \\;");
+    try {
+      $this->writeVerbose("Purging temporary uploads directory...");
+      $this->exec("find '" . ini_get("upload_tmp_dir") . "' -type f -mtime +1 -exec rm -f {} \\;");
+    }
+    catch (ShellException $e) {
+      Log::error($e);
+    }
     return $this;
   }
 

@@ -15,9 +15,8 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Tool\Console\Command\Admin;
+namespace MovLib\Console\Command\Admin;
 
-use \MovLib\Data\StreamWrapper\StreamWrapperFactory;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -31,14 +30,17 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Autocomplete extends \MovLib\Tool\Console\Command\AbstractCommand {
+class Autocomplete extends \MovLib\Console\Command\AbstractCommand {
 
   /**
    * @inheritdoc
    */
   protected function configure() {
     $this->setName("gen-autocompletion");
-    $this->setDescription("Generate autocompletion for Symfony Console Applications. Note that this application has to be executed as privileged user because the generated autocompletion files have to moved to a protected directory.");
+    $this->setDescription(
+      "Generate autocompletion for Symfony Console Applications. Note that this application has to be executed as " .
+      "privileged user because the generated autocompletion files have to moved to a protected directory."
+    );
     $this->addArgument(
       "application",
       InputArgument::OPTIONAL | InputArgument::IS_ARRAY,
@@ -52,11 +54,20 @@ class Autocomplete extends \MovLib\Tool\Console\Command\AbstractCommand {
   }
 
   /**
-   * @inheritdoc
-   * @global \MovLib\Tool\Kernel $kernel
+   * {@inheritdoc}
+   * @global \MovLib\Core\FileSystem $fs
+   * @global \MovLib\Core\Kernel $kernel
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    $this->checkPrivileges();
+    global $fs, $kernel;
+
+    if (!$kernel->privileged) {
+      throw new \RuntimeException(
+        "Please execute this command as root or via sudo, otherwise it's not possible to move the generated autocompletion " .
+        "files to the global bash completion folder."
+      );
+    }
+
     $apps = $input->getArgument("application");
 
     if (in_array("all", $apps)) {
@@ -67,8 +78,7 @@ class Autocomplete extends \MovLib\Tool\Console\Command\AbstractCommand {
       }
     }
 
-    $vendor = StreamWrapperFactory::create("dr://vendor")->realpath();
-    $tmp    = StreamWrapperFactory::create("tmp://");
+    $vendor = $fs->realpath("dr://vendor");
 
     foreach ($apps as $app) {
       $this->writeVerbose("Generating autocompletion for <comment>{$app}</comment>");
@@ -81,16 +91,16 @@ class Autocomplete extends \MovLib\Tool\Console\Command\AbstractCommand {
       }
 
       // Create the autocompletion dump of the desired application.
-      $this->exec("php {$autocomplete} dump '{$app}' > '{$app}'", "tmp://");
+      $this->exec("php {$autocomplete} dump '{$app}' > '{$app}'", "dr://tmp");
       $bashCompletion = "/etc/bash_completion.d";
 
       // We have to call realpath at this point, because it's not possible to move a file around wrapper types.
-      rename($tmp->realpath("tmp://{$app}"), "{$bashCompletion}/{$app}");
+      rename($fs->realpath("dr://tmp/{$app}"), "{$bashCompletion}/{$app}");
     }
 
     // Although our process is running as the user who started it, it's still a different session and we can't simply
     // reload it for the user.
-    $this->write("Run the command <fg=black;bg=cyan>source ~/.bashrc</fg=black;bg=cyan> to enjoy auto-completion.");
+    $this->write("Run the command <fg=black;bg=cyan> source ~/.bashrc </fg=black;bg=cyan> to enjoy auto-completion.");
     $this->writeVerbose("Successfully generated autocompletion for '{$app}'!", self::MESSAGE_TYPE_INFO);
 
     return 0;
