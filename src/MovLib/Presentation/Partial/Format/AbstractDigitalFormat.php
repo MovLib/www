@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Format;
+namespace MovLib\Presentation\Partial\Format;
 
 /**
  * Base class for all concrete formats.
@@ -27,7 +27,7 @@ namespace MovLib\Data\Format;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractFormat {
+abstract class AbstractDigitalFormat extends \MovLib\Presentation\Partial\Format\AbstractFormat {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -49,24 +49,21 @@ abstract class AbstractFormat {
   // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
 
 
+  abstract public function getAspectRatios();
+
   abstract public function getAudioFormats();
+
+  abstract public function getCodecs();
+
+  abstract public function getTvNorms();
+
+  abstract public function getRegionCodes();
+
+  abstract public function getResolutions();
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-
-  /**
-   * Get a list of all available aspect ratios.
-   *
-   * @return array
-   *   List of all available aspect ratios.
-   */
-  final public function getAspectRatios() {
-    return [
-      "1.85:1",
-      "2.35:1",
-    ];
-  }
 
   /**
    * Get a list of all available subtitles.
@@ -75,42 +72,9 @@ abstract class AbstractFormat {
    *   List of all available subtitles.
    */
   final public function getSubtitles() {
-    return [
+    static $subtitles = null;
 
-    ];
-  }
-
-  /**
-   * Get a list of all available color formats.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @return array
-   *   The available color formats.
-   *
-   *   Associative array with the format name as key and the translation (if any) as value.
-   *   being the tranlation.
-   */
-  final public function getColorFormats() {
-    global $i18n;
-    return [
-      "Technicolor" => "Technicolor",
-      "Eastmancolor" => "Eastmancolor",
-      "Metrocolor" => "Metrocolor",
-      "Fujicolor" => "Fujicolor",
-      "Cinecolor" => "Cinecolor",
-      "Pathécolor" => "Pathécolor",
-      "Kinemacolor" => "Kinemacolor",
-      "Black & White and Color" => $i18n->t("Black & White and Color"),
-      "Orwocolor" => "Orwocolor",
-      "Sovcolor" => "Sovcolor",
-      "Gevacolor" => "Gevacolor",
-      "Ferraniacolor" => "Ferraniacolor",
-      "Trucolor" => "Trucolor",
-      "Agfacolor" => "Agfacolor",
-      "Prizma" => "Prizma",
-      "Warnercolor" => "Warnercolor",
-      "DeLuxe Color" => "DeLuxe Color",
-    ];
+    return $subtitles;
   }
 
 }

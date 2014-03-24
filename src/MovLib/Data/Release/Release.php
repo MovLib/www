@@ -232,8 +232,24 @@ class Release {
    * @return \mysqli_result
    *   Paginated releases result.
    */
-  public static function getReleases($offset, $rowCount) {
-    
+  public static function getReleases($offset = 0, $rowCount = 8) {
+    global $db, $i18n;
+    return $db->query(
+      "SELECT
+        `release`.`changed`,
+        `release`.`created`,
+        `release`.`country_code`,
+        `release`.`title`,
+        `release`.`publishing_date_rental`,
+        `release`.`publishing_date_sale`,
+        `release`.`edition`
+      FROM `release`
+      ORDER BY `release`.`created` DESC
+      OFFSET ?
+      LIMIT ?",
+      "di",
+      [ $offset, $rowCount ]
+    )->get_result();
   }
 
 }
