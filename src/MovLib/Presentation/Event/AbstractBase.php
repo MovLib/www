@@ -17,10 +17,6 @@
  */
 namespace MovLib\Presentation\Event;
 
-use \MovLib\Data\Award;
-use \MovLib\Presentation\Partial\Date;
-use \MovLib\Presentation\Partial\Place;
-
 /**
  * Base presenation of all event pages.
  *
@@ -59,54 +55,6 @@ abstract class AbstractBase extends \MovLib\Presentation\Page {
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-  /**
-   * Build the Header of an Event
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @return $this
-   */
-  protected function getEventHeader() {
-    global $i18n;
-
-    // Enhance the page title with microdata.
-    $this->schemaType = "Intangible";
-    $this->pageTitle  = "<span property='name'>{$this->event->name}</span>";
-
-    if ($this->event->deleted === true) {
-      return $this->goneGetContent();
-    }
-
-    // Put the event information together.
-    $info = null;
-    if (($this->event->startDate && $this->event->endDate) && ($this->event->startDate != $this->event->endDate)) {
-      $info .= "{$i18n->t("from {0} to {1}", [
-        (new Date($this->event->startDate))->format(),
-        (new Date($this->event->endDate))->format()
-      ])} ";
-    }
-    else if ($this->event->startDate) {
-      $info .= "{$i18n->t("on {0}", [ (new Date($this->event->startDate))->format() ])} ";
-    }
-    if ($this->event->place) {
-      if ($info) {
-        $info .= "<br>";
-      }
-      $info .= $i18n->t("in {0}", [ new Place($this->event->place) ]);
-    }
-    $info   .= "<br>{$i18n->t("Award")}: <a href='{$this->award->route}'>{$this->award->name}</a>";
-
-    // Construct the wikipedia link.
-    if ($this->event->wikipedia) {
-      if ($info) {
-        $info .= "<br>";
-      }
-      $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->event->wikipedia}' itemprop='sameAs' target='_blank'>{$i18n->t("Wikipedia Article")}</a>";
-    }
-
-    $headerImage = $this->getImage($this->award->getStyle(Award::STYLE_SPAN_02), $this->award->route, [ "itemprop" => "image" ]);
-    $this->headingBefore = "<div class='r'><div class='s s10'>";
-    $this->headingAfter = "<p>{$info}</p></div><div id='award-logo' class='s s2'>{$headerImage}</div></div>";
-  }
 
   /**
    * Build content for gone page.
