@@ -79,12 +79,19 @@ return [
   "/genre/{0}/movies"             => "/genre/{0}/filme",
   "/genre/{0}/series"             => "/genre/{0}/serien",
   // ------------------------------------------------------------------------------------------------------------------- Awards
-  "/awards"                        => "/auszeichnungen",
-  "/award/{0}/movies"              => "/auszeichnung/{0}/filme",
-  "/award/{0}/series"              => "/auszeichnung/{0}/serien",
+  "/awards"                       => "/auszeichnungen",
+  "/award/{0}/movies"             => "/auszeichnung/{0}/filme",
+  "/award/{0}/series"             => "/auszeichnung/{0}/serien",
+  // ------------------------------------------------------------------------------------------------------------------- Award Categories
   "/award/{0}/categories"          => "/auszeichnung/{0}/kategorien",
   "/award/{0}/category/{1}/movies" => "/auszeichnung/{0}/kategorie/{1}/filme",
   "/award/{0}/category/{1}/series" => "/auszeichnung/{0}/kategorie/{1}/serien",
+  // ------------------------------------------------------------------------------------------------------------------- Award Events
+  "/award/{0}/events"             => "/auszeichnung/{0}/events",
+  // ------------------------------------------------------------------------------------------------------------------- Events
+  "/events"                       => "/events",
+  "/event/{0}/movies"             => "/event/{0}/filme",
+  "/event/{0}/series"             => "/event/{0}/serien",
   // ------------------------------------------------------------------------------------------------------------------- Jobs
   "/jobs"                         => "/tätigkeiten",
   "/job/{0}/movies"               => "/tätigkeit/{0}/filme",

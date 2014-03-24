@@ -18,9 +18,10 @@
 namespace MovLib\Data;
 
 use \MovLib\Data\Movie\FullMovie;
+use \MovLib\Data\Place;
 
 /**
- * Handling of one or more award categories.
+ * Handling of one or more award events.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -28,93 +29,121 @@ use \MovLib\Data\Movie\FullMovie;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class AwardCategory extends \MovLib\Data\Database {
+class Event extends \MovLib\Data\Database {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The award's unique identifier this category belongs to.
+   * The award's unique identifier this event belongs to.
    *
    * @var integer
    */
   public $awardId;
 
   /**
-   * The award category's deletion state.
+   * The timestamp on which this event was changed.
+   *
+   * @var integer
+   */
+  public $changed;
+
+  /**
+   * The timestamp on which this event was created.
+   *
+   * @var integer
+   */
+  public $created;
+
+  /**
+   * The award event's deletion state.
    *
    * @var boolean
    */
   public $deleted;
 
   /**
-   * The award category's description in the current display language.
+   * The award event's description in the current display language.
    *
    * @var string
    */
   public $description;
 
   /**
-   * The award category's unique identifier.
+   * The event’s end date.
+   *
+   * @var string
+   */
+  public $endDate;
+
+  /**
+   * The award event's unique identifier.
    *
    * @var integer
    */
   public $id;
 
   /**
-   * The award category's name in the current display language.
+   * The event’s weblinks.
+   *
+   * @var array
+   */
+  public $links = [];
+
+  /**
+   * The award event's name in the current display language.
    *
    * @var string
    */
   public $name;
 
   /**
-   * The translated route of this award category.
+   * The event’s place.
+   *
+   * @var integer|object
+   */
+  public $place;
+
+  /**
+   * The translated route of this award event.
    *
    * @var string
    */
   public $route;
 
   /**
-   * The route key of this award category.
+   * The route key of this award event.
    *
    * @var string
    */
   public $routeKey;
 
   /**
-   * The award category’s translated Wikipedia link.
+   * The event’s start date.
+   *
+   * @var string
+   */
+  public $startDate;
+
+  /**
+   * The award event’s translated Wikipedia link.
    *
    * @var string
    */
   public $wikipedia;
-
-  /**
-   * The first year there was an award in this category.
-   *
-   * @var integer
-   */
-  public $firstAwardingYear;
-
-  /**
-   * The last year there was an award in this category.
-   *
-   * @var integer
-   */
-  public  $lastAwardingYear;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new award category.
+   * Instantiate new award event.
    *
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @param integer $id [optional]
-   *   The award category's unique identifier, omit to create empty instance.
+   *   The award event's unique identifier, omit to create empty instance.
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct($id = null) {
@@ -126,23 +155,27 @@ class AwardCategory extends \MovLib\Data\Database {
         WHERE
           `id` = ?
         LIMIT 1",
-        "ssd",
-        [ $i18n->languageCode, $i18n->languageCode, $id ]
+        "sssd",
+        [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $id ]
       );
       $stmt->bind_result(
         $this->awardId,
-        $this->id,
+        $this->changed,
+        $this->created,
         $this->deleted,
-        $this->name,
         $this->description,
-        $this->firstAwardingYear,
-        $this->lastAwardingYear
+        $this->endDate,
+        $this->id,
+        $this->links,
+        $this->name,
+        $this->place,
+        $this->startDate,
+        $this->wikipedia
       );
       if (!$stmt->fetch()) {
         throw new NotFound;
       }
       $stmt->close();
-      $this->id = $id;
     }
     if ($this->id) {
       $this->init();
@@ -153,8 +186,33 @@ class AwardCategory extends \MovLib\Data\Database {
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
+ /**
+   * Get all events matching the offset and row count.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @param integer $offset
+   *   The offset in the result.
+   * @param integer $rowCount
+   *   The number of rows to retrieve.
+   * @return \mysqli_result
+   *   The query result.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public static function getEvents($offset, $rowCount) {
+    global $db, $i18n;
+    $query = self::getQuery();
+    return $db->query("
+        {$query}
+        ORDER BY `start_date` DESC
+        LIMIT ? OFFSET ?",
+      "sssid",
+      [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $rowCount, $offset ]
+    )->get_result();
+  }
+
   /**
-   * The count of movies with this award category.
+   * The count of movies connected to this award event.
    *
    * @global \MovLib\Data\Database $db
    * @return integer
@@ -163,18 +221,17 @@ class AwardCategory extends \MovLib\Data\Database {
   public function getMoviesCount() {
     global $db;
     return $db->query(
-      "SELECT count(DISTINCT `movie_id`) as `count` FROM `movies_awards` WHERE `award_category_id` = ?", "d", [ $this->id ]
+      "SELECT count(DISTINCT `movie_id`) as `count` FROM `movies_awards` WHERE `award_event_id` = ?", "d", [ $this->id ]
     )->get_result()->fetch_assoc()["count"];
   }
 
  /**
-   * Get the mysqli result for all movies that are of this award.
+   * Get the mysqli result for all movies connected to this event.
    *
-  *  @todo Implement
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @return \mysqli_result
-   *   The mysqli result for all movies that are of this award.
+   *   The mysqli result for all movies connected to this event.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMoviesResult() {
@@ -190,7 +247,10 @@ class AwardCategory extends \MovLib\Data\Database {
         `ot`.`title` AS `originalTitle`,
         `ot`.`language_code` AS `originalTitleLanguageCode`,
         `p`.`poster_id` AS `displayPoster`,
-        `ma`.`won` AS `won`
+        `ma`.`award_category_id` AS `awardCategoryId`,
+        `ma`.`won` AS `awardCategoryWon`,
+        `ma`.`person_id` AS `personId`,
+        `ma`.`company_id` AS `companyId`
       FROM `movies_awards` AS `ma`
         LEFT JOIN `movies` AS `movies`
           ON `movies`.`id` = `ma`.`movie_id`
@@ -208,15 +268,12 @@ class AwardCategory extends \MovLib\Data\Database {
         LEFT JOIN `display_posters` AS `p`
           ON `p`.`movie_id` = `movies`.`id`
           AND `p`.`language_code` = ?
-      WHERE `ma`.`award_id` = ? AND `ma`.`award_category_id` = ?
-      ORDER BY
-        `ma`.`won` DESC,
-        `movies`.`year` DESC",
+      WHERE `ma`.`award_id` = ? AND `ma`.`award_event_id` = ?
+      ORDER BY `displayTitle` DESC",
       "ssdd",
       [ $i18n->languageCode, $i18n->languageCode, $this->awardId, $this->id ]
     )->get_result();
 
-    $movies = [];
     while ($row = $result->fetch_assoc()) {
       // Instantiate and initialize a Movie if it is not present yet.
       if (!isset($movies[$row["id"]])) {
@@ -232,9 +289,17 @@ class AwardCategory extends \MovLib\Data\Database {
         $movies[$row["id"]]->movie->originalTitle             = $row["originalTitle"];
         $movies[$row["id"]]->movie->originalTitleLanguageCode = $row["originalTitleLanguageCode"];
         $movies[$row["id"]]->movie->displayPoster             = $row["displayPoster"];
-        $movies[$row["id"]]->movie->won                       = $row["won"];
+        $movies[$row["id"]]->movie->awardCategoryIds          = [];
+        $movies[$row["id"]]->movie->awardCategoryWon          = [];
+        $movies[$row["id"]]->movie->awardedCompanyIds         = [];
+        $movies[$row["id"]]->movie->awardedPersonIds          = [];
         $movies[$row["id"]]->movie->init();
       }
+      // We need all awarded companies and persions with the correct award category.
+      array_push($movies[$row["id"]]->movie->awardCategoryIds, $row["awardCategoryId"]);
+      array_push($movies[$row["id"]]->movie->awardCategoryWon, $row["awardCategoryWon"]);
+      array_push($movies[$row["id"]]->movie->awardedPersonIds, $row["personId"]);
+      array_push($movies[$row["id"]]->movie->awardedCompanyIds, $row["companyId"]);
     }
     return $movies;
   }
@@ -255,42 +320,84 @@ class AwardCategory extends \MovLib\Data\Database {
       $query =
         "SELECT
           `award_id` AS `awardId`,
-          `id`,
+          `changed`,
+          `created`,
           `deleted`,
-          IFNULL(COLUMN_GET(`dyn_names`, ? AS CHAR), COLUMN_GET(`dyn_names`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `name`,
           IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS CHAR), COLUMN_GET(`dyn_descriptions`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `description`,
-          `first_awarding_year` AS `firstAwardingYear`,
-          `last_awarding_year` AS `lastAwardingYear`
-        FROM `awards_categories`"
+          `end_date` AS `endDate`,
+          `id`,
+          `links`,
+          IFNULL(COLUMN_GET(`dyn_names`, ? AS CHAR), COLUMN_GET(`dyn_names`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `name`,
+          `place_id` AS `place`,
+          `start_date` AS `startDate`,
+          IFNULL(COLUMN_GET(`dyn_wikipedia`, ? AS CHAR), COLUMN_GET(`dyn_wikipedia`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `wikipedia`
+        FROM `awards_events`"
       ;
     }
     return $query;
   }
 
   /**
-   * The count of movies with this award category.
+   * Get random event identifier.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return integer|null
+   *   Random event identifier, or <code>NULL</code> on failure.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public static function getRandomEventId() {
+    global $db;
+    $query = "SELECT `id` FROM `awards_events` WHERE `deleted` = false ORDER BY RAND() LIMIT 1";
+    if ($result = $db->query($query)->get_result()) {
+      return $result->fetch_assoc()["id"];
+    }
+  }
+
+  /**
+   * The count of movies connected to this event.
    *
    * @todo Implement when series are implemented.
-   * @global \MovLib\Data\Database $db
    * @return integer
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getSeriesCount() {
-    global $db;
     return 0;
   }
 
   /**
-   * Initialize award.
+   * Get the total count of all events.
+   *
+   * @global \MovLib\Data\Database $db
+   * @staticvar null|integer $count
+   *   The total amount of events which haven't been deleted.
+   * @return integer
+   *   The total amount of events which haven't been deleted.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public static function getTotalCount() {
+    global $db;
+    static $count = null;
+    if (!$count) {
+      $count = $db->query("SELECT COUNT(`id`) FROM `awards_events` WHERE `deleted` = false LIMIT 1")->get_result()->fetch_row()[0];
+    }
+    return $count;
+  }
+
+  /**
+   * Initialize event.
    *
    * @global type $i18n
    */
   protected function init() {
     global $i18n;
 
+    if ($this->place) {
+      $this->place = new Place($this->place);
+    }
     $this->deleted  = (boolean) $this->deleted;
-    $this->routeKey = "/award/{0}/category/{1}";
-    $this->route    = $i18n->r($this->routeKey, [ $this->awardId, $this->id ]);
+    $this->links    = $this->links ? unserialize($this->links) : [];
+    $this->routeKey = "/event/{0}";
+    $this->route    = $i18n->r($this->routeKey, [ $this->id ]);
   }
 
 }

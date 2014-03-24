@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data;
 
+use \MovLib\Data\AwardCategory;
+use \MovLib\Data\Event;
 use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Presentation\Error\NotFound;
 
@@ -257,7 +259,49 @@ class Award extends \MovLib\Data\Image\AbstractImage {
   }
 
   /**
-   * Get all award categories matching the offset and row count.
+   * The total count of award events which are not deleted.
+   *
+   * @global \MovLib\Data\Database $db
+   * @staticvar null|integer $count
+   *   The total amount of award events which haven't been deleted.
+   * @return integer
+   *   The total amount of award events which haven't been deleted.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getEventsCount() {
+    global $db;
+    static $count = null;
+    if (!$count) {
+      $count = $db->query(
+        "SELECT count(DISTINCT `id`) as `count` FROM `awards_events` WHERE `deleted` = false AND `award_id` = ?", "d", [ $this->id ]
+      )->get_result()->fetch_assoc()["count"];
+    }
+    return $count;
+  }
+
+  /**
+   * Get all award events.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @return \mysqli_result
+   *   The query result.
+   */
+  public function getEventsResult() {
+    global $db, $i18n;
+
+    $query = Event::getQuery();
+    return $db->query("
+      {$query}
+      WHERE `award_id` = ?
+      ORDER BY `startDate` ASC",
+      "sssd",
+      [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $this->id ]
+    )->get_result();
+  }
+
+  /**
+   * Get all award categories.
    *
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
@@ -266,16 +310,10 @@ class Award extends \MovLib\Data\Image\AbstractImage {
    */
   public function getCategoriesResult() {
     global $db, $i18n;
-    return $db->query(
-      "SELECT
-        `award_id` AS `awardId`,
-        `id`,
-        `deleted`,
-        IFNULL(COLUMN_GET(`dyn_names`, ? AS CHAR), COLUMN_GET(`dyn_names`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `name`,
-        IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS CHAR), COLUMN_GET(`dyn_descriptions`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `description`,
-        `first_awarding_year` AS `firstAwardingYear`,
-        `last_awarding_year` AS `lastAwardingYear`
-      FROM `awards_categories`
+
+    $query = AwardCategory::getQuery();
+    return $db->query("
+      {$query}
       WHERE `award_id` = ?
       ORDER BY `name` ASC",
       "ssd",
@@ -347,6 +385,7 @@ class Award extends \MovLib\Data\Image\AbstractImage {
       [ $i18n->languageCode, $i18n->languageCode, $this->id ]
     )->get_result();
 
+    $movies = [];
     while ($row = $result->fetch_assoc()) {
       // Instantiate and initialize a Movie if it is not present yet.
       if (!isset($movies[$row["id"]])) {
