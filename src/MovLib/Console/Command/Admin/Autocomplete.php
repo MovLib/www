@@ -92,10 +92,9 @@ class Autocomplete extends \MovLib\Console\Command\AbstractCommand {
 
       // Create the autocompletion dump of the desired application.
       $this->exec("php {$autocomplete} dump '{$app}' > '{$app}'", "dr://tmp");
-      $bashCompletion = "/etc/bash_completion.d";
 
       // We have to call realpath at this point, because it's not possible to move a file around wrapper types.
-      rename($fs->realpath("dr://tmp/{$app}"), "{$bashCompletion}/{$app}");
+      rename($fs->realpath("dr://tmp/{$app}"), "/etc/bash_completion.d/{$app}");
     }
 
     // Although our process is running as the user who started it, it's still a different session and we can't simply

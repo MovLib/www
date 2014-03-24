@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Tool\Console\Command\Install;
+namespace MovLib\Console\Command\Admin;
 
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -29,7 +29,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ListEnvironments extends \MovLib\Tool\Console\Command\AbstractCommand {
+class ListEnvironments extends \MovLib\Console\Command\AbstractCommand {
 
   /**
    * @inheritdoc
@@ -40,23 +40,16 @@ class ListEnvironments extends \MovLib\Tool\Console\Command\AbstractCommand {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    * @global \MovLib\Tool\Kernel $kernel
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    global $kernel;
-
     $this->write("Available environments:\n", self::MESSAGE_TYPE_COMMENT);
-
-    foreach (new \DirectoryIterator("glob://{$kernel->documentRoot}/etc/movlib/*.json") as $file) {
-      $basename = $file->getBasename(".json");
-      if ($basename != "movlib") {
-        $this->write("  {$basename}");
-      }
+    /* @var $fileinfo \SplFileInfo */
+    foreach (new \RegexIterator(new \DirectoryIterator("dr://src/MovLib/Core/Config"), "/\.php$/") as $fileinfo) {
+      $this->write("  {$fileinfo->getBasename(".php")}");
     }
-
     $this->write("\nNote that all environments are merged with the dist environment configuration.");
-
     return 0;
   }
 

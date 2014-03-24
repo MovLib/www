@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Tool\Console\Command\Install;
+namespace MovLib\Console\Command\Install;
 
 use \MovLib\Data\FileSystem;
 use \MovLib\Tool\Console\Command\Production\NginxRoutes;
@@ -34,43 +34,12 @@ use \Symfony\Component\Console\Output\ConsoleOutput;
  */
 final class Nginx extends AbstractInstallCommand {
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * Canonical absolute path to the nginx target configuration directory.
-   *
-   * @var string
-   */
-  protected $etcTarget;
-
-  /**
-   * Canonical absolute path to the nginx source configuration directory.
-   *
-   * @see Nginx::configure()
-   * @var string
-   */
-  protected $etcSource;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
   /**
    * @inheritdoc
-   * @global \MovLib\Tool\Kernel $kernel
    */
   protected function configure() {
-    global $kernel;
-    $name = "nginx";
-    $this->setName($name);
-    $this->setDescription(
-      "Install nginx according to the current global configuration. Any installed nginx version will be uninstalled " .
-      "directly before the installation of the newly compiled nginx version."
-    );
-    $this->etcTarget = "/etc/{$name}";
-    $this->etcSource = "{$kernel->documentRoot}{$this->etcTarget}";
+    $this->setName("nginx");
+    $this->setDescription("Install nginx (privileged)");
   }
 
   /**

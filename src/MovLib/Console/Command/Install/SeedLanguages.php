@@ -15,13 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Tool\Console\Command\Install;
+namespace MovLib\Console\Command\Install;
 
-use \Locale;
-use \MovLib\Data\I18n;
+use \MovLib\Core\I18n;
 
 /**
- * Create language translations.
+ * Seed languages.
  *
  * The translated languages are used for audio formats of the various releases and contain two special language codes.
  * One for silent movies and one for other languages. The first one should be obvious and the later is meant for dead
@@ -31,9 +30,6 @@ use \MovLib\Data\I18n;
  * We don't use ISO 639-2 in our application because nearly no software works together with them (W3C standards and
  * parsers built upon them, Intl ICU, ...).
  *
- * @see \MovLib\Data\StreamWrapper\I18nStreamWrapper
- * @see \MovLib\Presentation\Partial\Language
- * @see \MovLib\Stub\Data\Language
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -89,12 +85,12 @@ class SeedLanguages extends AbstractIntlCommand {
    */
   protected function configure() {
     $this->setName("seed-languages");
-    $this->setDescription("Create translations for all available languages.");
+    $this->setDescription("Seed languages");
   }
 
   /**
-   * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
+   * {@inheritdoc}
+   * @global \MovLib\Core\I18n $i18n
    */
   protected function translate() {
     global $i18n;
@@ -102,7 +98,7 @@ class SeedLanguages extends AbstractIntlCommand {
     // Translate all available languages to the desired locale.
     $languages = [];
     foreach ($this->codes as $code) {
-      $languages[$code] = Locale::getDisplayLanguage($code, $i18n->locale);
+      $languages[$code] = \Locale::getDisplayLanguage($code, $i18n->locale);
     }
 
     // Add the two special language codes.
@@ -122,7 +118,7 @@ class SeedLanguages extends AbstractIntlCommand {
         $native = "null";
       }
       else {
-        $native = Locale::getDisplayLanguage($code, $code);
+        $native = \Locale::getDisplayLanguage($code, $code);
       }
 
       // Put it together.

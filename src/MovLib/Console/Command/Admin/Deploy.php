@@ -17,7 +17,6 @@
  */
 namespace MovLib\Console\Command\Admin;
 
-use \MovLib\Data\FileSystem;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -35,7 +34,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
+class Deploy extends \MovLib\Console\Command\AbstractCommand {
   use \MovLib\Data\Image\TraitOptimizeImage;
 
 
@@ -110,7 +109,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
   /**
    * Generate cache buster strings for all assets.
    *
-   * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Core\Kernel $kernel
    * @staticvar array $extensions
    *   Numeric array containing extensions to be hashed.
    * @return this

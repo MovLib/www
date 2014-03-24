@@ -34,21 +34,6 @@ use \Symfony\Component\Console\Output\OutputInterface;
  */
 final class Config extends \MovLib\Console\Command\AbstractCommand {
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * URI of the directory that contains predefined configuration classes.
-   *
-   * @var string
-   */
-  protected $storage;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
   /**
    * @inheritdoc
    */

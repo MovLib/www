@@ -15,16 +15,11 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Tool\Console\Command\Install;
-
-use \Locale;
+namespace MovLib\Console\Command\Install;
 
 /**
- * Create country translations.
+ * Seed countries.
  *
- * @see \MovLib\Data\StreamWrapper\I18nStreamWrapper
- * @see \MovLib\Presentation\Partial\Country
- * @see \MovLib\Stub\Data\Country
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -79,19 +74,19 @@ class SeedCountries extends AbstractIntlCommand {
    */
   protected function configure() {
     $this->setName("seed-countries");
-    $this->setDescription("Create translations for all available countries.");
+    $this->setDescription("Seed countries");
   }
 
   /**
-   * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
+   * {@inheritdoc}
+   * @global \MovLib\Core\I18n $i18n
    */
   protected function translate() {
     global $i18n;
 
     $countries = [];
     foreach ($this->codes as $code) {
-      $countries[$code] = Locale::getDisplayRegion("xx-{$code}", $i18n->locale);
+      $countries[$code] = \Locale::getDisplayRegion("xx-{$code}", $i18n->locale);
     }
 
     $i18n->getCollator()->asort($countries);

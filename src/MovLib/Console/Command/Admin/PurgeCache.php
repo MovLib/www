@@ -29,7 +29,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class PurgeCache extends \MovLib\Tool\Console\Command\AbstractCommand {
+class PurgeCache extends \MovLib\Console\Command\AbstractCommand {
 
   /**
    * @inheritdoc
@@ -40,11 +40,14 @@ class PurgeCache extends \MovLib\Tool\Console\Command\AbstractCommand {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
+   * @global \MovLib\Core\FileSystem $fs
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
+    global $fs;
     $this->writeVerbose("Purging presentation cache...", self::MESSAGE_TYPE_COMMENT);
-    foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator("dr://var/cache", \RecursiveDirectoryIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST) as $fileinfo) {
+    /* @var $fileinfo \SplFileInfo */
+    foreach ($fs->getRecursiveIterator("dr://var/cache") as $fileinfo) {
       $path = $fileinfo->getPathname();
       if ($fileinfo->isDir()) {
         $this->writeDebug("Deleting directory <comment>{$path}</comment>");

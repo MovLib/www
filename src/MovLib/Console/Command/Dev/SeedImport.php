@@ -15,16 +15,17 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Tool\Console\Command\Dev;
+namespace MovLib\Console\Command\Dev;
 
 use \Elasticsearch\Client as ElasticClient;
+use \MovLib\Console\Command\Admin\FixPermissions;
+use \MovLib\Console\Command\Install\SeedAspectRatios;
+use \MovLib\Console\Command\Install\SeedCountries;
+use \MovLib\Console\Command\Install\SeedCurrencies;
+use \MovLib\Console\Command\Install\SeedLanguages;
+use \MovLib\Console\Command\Install\SeedSubtitles;
 use \MovLib\Data\Shell;
 use \MovLib\Exception\DatabaseException;
-use \MovLib\Tool\Console\Command\Admin\FixPermissions;
-use \MovLib\Tool\Console\Command\Install\SeedCountries;
-use \MovLib\Tool\Console\Command\Install\SeedCurrencies;
-use \MovLib\Tool\Console\Command\Install\SeedLanguages;
-use \MovLib\Tool\Console\Command\Install\SeedSubtitles;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Input\StringInput;
@@ -42,7 +43,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class SeedImport extends \MovLib\Tool\Console\Command\Dev\AbstractDevCommand {
+class SeedImport extends \MovLib\Console\Command\Dev\AbstractDevCommand {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -314,71 +315,14 @@ class SeedImport extends \MovLib\Tool\Console\Command\Dev\AbstractDevCommand {
    */
   public function icuImport() {
     $this->write("Importing ICU translations ...");
-
-    // Prepare ICU environment variables.
-    Shell::execute("icu-config --version", $version);
-    $version = trim(strtr($version[0], ".", "-"));
-    $source  = "/usr/local/src/icu-{$version}/source/data";
-
-    // Generate the various ICU translations.
-    $this->icuImportCurrency($source);
-
     $input  = new StringInput("");
     $output = new ConsoleOutput($this->output->getVerbosity());
+    (new SeedAspectRatios())->run($input, $output);
     (new SeedCountries())->run($input, $output);
+    (new SeedCurrencies())->run($input, $output);
     (new SeedLanguages())->run($input, $output);
     (new SeedSubtitles())->run($input, $output);
-
     return $this->write("Imported all ICU translations.", self::MESSAGE_TYPE_INFO);
-  }
-
-  /**
-   * Generate, load and delete resource bundle.
-   *
-   * @param string $source
-   *   Absolute path to the resource source files.
-   * @param string $locale
-   *   The locale for which this resource bundle should be generated.
-   * @param string $languageCode
-   *   The language code for which this resource bundle should be generated.
-   * @return \ResourceBundle
-   *   The loaded resource bundle.
-   * @throws \RuntimeException
-   */
-  protected function icuGetResourceBundle($source, $locale, $languageCode) {
-    // Create absolute paths to source file and resource bundle.
-    $src = is_file("{$source}/{$locale}.txt") ? "{$source}/{$locale}.txt" : "{$source}/{$languageCode}.txt";
-
-    // Generate the resource bundle for this locale.
-    $destination = sys_get_temp_dir();
-    Shell::execute("genrb -R -e UTF-8 -d {$destination} {$src}");
-
-    // Load the generated resource bundle and delete the resource bundle files.
-    $rb = new \ResourceBundle($locale, $destination, true);
-    Shell::execute("rm {$destination}/*.res");
-    return $rb;
-  }
-
-  /**
-   * Debug method to export the contents of a ICU resource bundle.
-   *
-   * @param \ResourceBundle $rb
-   *   The resource bundle to export.
-   * @return string
-   *   The exported resource bundle as string (best written to file because it's usually very long).
-   */
-  protected function icuExportResourceBundle(\ResourceBundle $rb) {
-    ob_start();
-    foreach ($rb as $k => $v) {
-      if (is_object($v)) {
-        var_dump($k);
-        $this->icuExportResourceBundle($v);
-      }
-      else {
-        var_dump($k, $v);
-      }
-    }
-    return ob_get_clean();
   }
 
   /**
@@ -390,46 +334,12 @@ class SeedImport extends \MovLib\Tool\Console\Command\Dev\AbstractDevCommand {
    * @return this
    */
   protected function icuImportCurrency($source) {
-    global $kernel;
-    $source      .= "/curr";
-    $destination  = "{$kernel->pathTranslations}/currency";
-    $codes        = [
-      "ADP", "AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "ATS", "AUD", "AWG", "AZN",
-      "BAM", "BBD", "BDT", "BEF", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTN", "BWP", "BYR", "BZD",
-      "CAD", "CDF", "CHF", "CLP", "CNY", "COP", "CRC", "CUC", "CUP", "CVE", "CYP", "CZK",
-      "DEM", "DJF", "DKK", "DOP", "DZD",
-      "EEK", "EGP", "ERN", "ESP", "ETB", "EUR",
-      "FIM", "FJD", "FKP", "FRF",
-      "GBP", "GEL", "GHS", "GIP", "GMD", "GNF", "GRD", "GTQ", "GYD",
-      "HKD", "HNL", "HRK", "HTG", "HUF",
-      "IDR", "IEP", "ILS", "INR", "IQD", "IRR", "ISK", "ITL",
-      "JMD", "JOD", "JPY",
-      "KES", "KGS", "KHR", "KMF", "KPW", "KRW", "KWD", "KYD", "KZT",
-      "LAK", "LBP", "LKR", "LRD", "LSL", "LTL", "LUF", "LVL", "LYD",
-      "MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", "MRO", "MTL", "MUR", "MVR", "MWK", "MXN", "MXV", "MYR", "MZN",
-      "NAD", "NGN", "NIO", "NLG", "NOK", "NPR", "NZD",
-      "OMR",
-      "PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PTE", "PYG",
-      "QAR",
-      "RON", "RSD", "RUB", "RWF",
-      "SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", "SIT", "SKK", "SLL", "SOS", "SRD", "SSP", "STD", "SYP", "SZL",
-      "THB", "TJS", "TMT", "TND", "TOP", "TRY", "TTD", "TWD", "TZS",
-      "UAH", "UGX", "USD", "UYU", "UZS",
-      "VEF", "VND", "VUV",
-      "WST",
-      "XAF", "XCD", "XOF", "XPF",
-      "YER",
-      "ZAR", "ZMW",
-    ];
-    $this->icuWriteTranslations($destination, function (&$translation, $locale, $languageCode) use ($codes, $source) {
       $rb = $this->icuGetResourceBundle($source, $locale, $languageCode);
       foreach ($codes as $code) {
         $name         = $rb["Currencies"][$code][1];
         $symbol       = $rb["Currencies"][$code][0];
         $translation .= "  \"{$code}\" => [ \"name\" => \"{$name}\", \"symbol\" => \"{$symbol}\" ],\n";
       }
-    }, "ICU currency translations.");
-    return $this;
   }
 
   /**

@@ -17,9 +17,7 @@
  */
 namespace MovLib\Console\Command\Admin;
 
-use \Locale;
-use \MessageFormatter;
-use \MovLib\Data\I18n;
+use \MovLib\Core\I18n;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -32,7 +30,18 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
+class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * URI to the route files.
+   *
+   * @var string
+   */
+  const ROUTES_URI = "dr://etc/nginx/sites/conf/routes";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -112,30 +121,31 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
+   * @global \MovLib\Core\Config $config
+   * @global \MovLib\Core\Database $db
+   * @global \MovLib\Core\FileSystem $fs
+   * @global \MovLib\Core\I18n $i18n
+   * @global \MovLib\Core\Kernel $kernel
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     // Don't remove the $db variable just because it's unused, it's used in the included routes.php file!
-    global $kernel, $db, $i18n;
+    global $config, $db, $fs, $i18n, $kernel;
 
     $this->writeVerbose("Starting to translate and compile nginx routes ...", self::MESSAGE_TYPE_COMMENT);
 
-    $routesDirectory = "dr://etc/nginx/sites/conf/routes";
-    $this->writeDebug("Creating <comment>{$routesDirectory}</comment>");
-    mkdir($routesDirectory);
+    $this->writeDebug("Creating <comment>" . self::ROUTES_URI . "</comment>");
+    mkdir(self::ROUTES_URI);
 
-    $this->writeDebug(
-      "Generating routes for all system locales: <comment>" .
-      implode("</comment>, <comment>", $kernel->systemLanguages) .
-      "</comment>"
-    );
+    $locales = implode("</comment>, <comment>", $config->locales);
+    $this->writeDebug("Generating routes for all system locales: <comment>{$locales}</comment>");
 
-    foreach ($kernel->systemLanguages as $languageCode => $locale) {
+    foreach ($config->locales as $locale) {
       $translatedRoutes = null;
       $i18n             = new I18n($locale);
       $this->writeDebug("Generating routes for system locale <comment>{$i18n->locale}</comment>");
 
-      $this->writeDebug("Starting output buffering...");
+      $this->writeDebug("Started output buffering, here be dragons\n\n...\n");
       $obStart = ob_start(function ($buffer) use (&$translatedRoutes) {
         $translatedRoutes = $buffer;
       });
@@ -144,7 +154,8 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
         throw new \RuntimeException("Couldn't start output buffering!");
       }
 
-      foreach (new \RegexIterator(new \DirectoryIterator($routesDirectory), "/\.php$/") as $fileinfo) {
+      foreach (new \RegexIterator(new \DirectoryIterator(self::ROUTES_URI), "/\.php$/") as $fileinfo) {
+        echo $fileinfo->getPathname() . PHP_EOL;
         $this->routesNamespace = $fileinfo->getBasename(".php");
         try {
           require $fileinfo->getPathname();
@@ -159,7 +170,7 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
       if (ob_end_clean() === false) {
         throw new \RuntimeException("Couldn't get buffered output!");
       }
-      $this->writeDebug("Ending output buffering...");
+      $this->writeDebug("\nEnded output buffering =)");
 
       $this->writeDebug("Writing translated routing file for <comment>{$i18n->locale}</comment>");
       file_put_contents("dr://etc/nginx/sites/conf/routes/{$i18n->languageCode}.conf", $translatedRoutes);
@@ -173,7 +184,7 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
     }
 
     // Reload nginx and load the newly translated routes.
-    if ($this->checkPrivileges(false)) {
+    if ($kernel->privileged) {
       $this->exec("service nginx reload");
     }
     else {
@@ -182,7 +193,7 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
 
     // Make sure that the previously set language code is set again globally in case other commands are executed with
     // the same instance.
-    $i18n = new I18n(Locale::getDefault());
+    $i18n = new I18n($config->defaultLocale);
 
     // Let the user know that everything went fine.
     $this->writeVerbose("Successfully translated and compiled routes, plus reloaded nginx!", self::MESSAGE_TYPE_INFO);
@@ -193,8 +204,8 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
   /**
    * Get translated and formatted route.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Tool\Kernel $kernel
+   * @global \MovLib\Core\Config $config
+   * @global \MovLib\Core\I18n $i18n
    * @staticvar array $routes
    *   Use to cache the routes.
    * @param string $pattern
@@ -208,7 +219,7 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
    *   The translated and formatted route.
    */
   protected function getTranslatedRoute($pattern, $context, array &$args = null) {
-    global $i18n;
+    global $config, $i18n;
     static $routes = [];
 
     // @devStart
@@ -226,7 +237,7 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
     // @devEnd
 
     // We only need to translate the route if it isn't in the default locale.
-    if ($i18n->locale != $i18n->defaultLocale) {
+    if ($i18n->locale != $config->defaultLocale) {
       // Check if we already have the route translations for this locale cached.
       if (empty($routes[$i18n->locale][$context])) {
         $routes[$i18n->locale][$context] = require "dr://var/i18n/{$i18n->locale}/routes/{$context}.php";
@@ -249,7 +260,7 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
 
     // Let the message formatter replace any placeholder tokens if we have arguments at this point.
     if (!empty($args)) {
-      return MessageFormatter::formatMessage($i18n->locale, $pattern, $args);
+      return \MessageFormatter::formatMessage($i18n->locale, $pattern, $args);
     }
 
     return $pattern;

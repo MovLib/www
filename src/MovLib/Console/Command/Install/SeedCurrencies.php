@@ -15,13 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Tool\Console\Command\Install;
-
-use \Locale;
-use \MovLib\Data\I18n;
+namespace MovLib\Console\Command\Install;
 
 /**
- * Create language translations.
+ * Seed currencies.
  *
  * The translated languages are used for audio formats of the various releases and contain two special language codes.
  * One for silent movies and one for other languages. The first one should be obvious and the later is meant for dead
@@ -31,8 +28,6 @@ use \MovLib\Data\I18n;
  * We don't use ISO 639-2 in our application because nearly no software works together with them (W3C standards and
  * parsers built upon them, Intl ICU, ...).
  *
- * @see \MovLib\Data\StreamWrapper\I18nStreamWrapper
- * @see \movLib\Stub\Data\Language
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -87,30 +82,21 @@ class SeedCurrencies extends AbstractIntlCommand {
    */
   protected function configure() {
     $this->setName("seed-currencies");
-    $this->setDescription("Create translations for all available currencies.");
+    $this->setDescription("Seed currencies");
   }
 
   /**
-   * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
+   * {@inheritdoc}
+   * @global \MovLib\Core\I18n $i18n
    */
   protected function translate() {
-    global $i18n;
-
-    // Translate all available countries to the desired locale.
-    $countries = [];
-    foreach ($this->countryCodes as $code) {
-      $countries[$code] = Locale::getDisplayRegion("xx-{$code}", $i18n->locale);
+    $resourceBundle = $this->getResourceBundle("curr");
+    $translations   = null;
+    foreach ($this->codes as $code) {
+      $name          = $resourceBundle["Currencies"][$code][1];
+      $symbol        = $resourceBundle["Currencies"][$code][0];
+      $translations .= '"' . $code . '"=>(object)["code"=>"' . $code . '","name"=>"' . $name . '","symbol"=>"' . $symbol . '"],';
     }
-
-    // Sort the translated countries according to their translated names.
-    $i18n->getCollator()->asort($countries);
-
-    $translations = null;
-    foreach ($countries as $code => $name) {
-      $translations .= '"' . $code . '"=>(object)["code"=>"' . $code . '","name"=>"' . $name . '"],';
-    }
-
     return $translations;
   }
 

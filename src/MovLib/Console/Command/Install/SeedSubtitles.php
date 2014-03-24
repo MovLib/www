@@ -15,17 +15,13 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Tool\Console\Command\Install;
+namespace MovLib\Console\Command\Install;
 
-use \Locale;
-use \MovLib\Data\I18n;
+use \MovLib\Core\I18n;
 
 /**
- * Create subtitle translations.
+ * Seed subtitles.
  *
- * @see \MovLib\Data\StreamWrapper\I18nStreamWrapper
- * @see \MovLib\Presentation\Partial\Subtitle
- * @see \MovLib\Stub\Data\Subtitle
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -39,12 +35,12 @@ class SeedSubtitles extends SeedLanguages {
    */
   protected function configure() {
     $this->setName("seed-subtitles");
-    $this->setDescription("Create translations for all available subtitles.");
+    $this->setDescription("Seed subtitles");
   }
 
   /**
-   * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
+   * {@inheritdoc}
+   * @global \MovLib\Core\I18n $i18n
    */
   protected function translate() {
     global $i18n;
@@ -52,7 +48,7 @@ class SeedSubtitles extends SeedLanguages {
     // Translate all available languages to the desired locale.
     $languages = [];
     foreach ($this->codes as $code) {
-      $languages[$code] = Locale::getDisplayLanguage($code, $i18n->locale);
+      $languages[$code] = \Locale::getDisplayLanguage($code, $i18n->locale);
     }
 
     // Add the two special language codes.
@@ -73,7 +69,7 @@ class SeedSubtitles extends SeedLanguages {
         $native = "null";
       }
       else {
-        $native = Locale::getDisplayLanguage($code, $code);
+        $native = \Locale::getDisplayLanguage($code, $code);
       }
 
       // Put it together.

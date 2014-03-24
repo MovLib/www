@@ -17,8 +17,6 @@
  */
 namespace MovLib\Console;
 
-use \MovLib\Core\Kernel;
-
 /**
  * MovLib Command Line Interface Application.
  *
@@ -44,6 +42,7 @@ final class Application extends \Symfony\Component\Console\Application {
 
     $basename = basename($_SERVER["SCRIPT_FILENAME"], ".php");
     parent::__construct($basename, $config->version);
+    cli_set_process_title($basename);
 
     // Create symbolic link if it doesn't exist yet for this executable, we have to make sure that the link points to
     // the symbolic link document root and not the real document root.

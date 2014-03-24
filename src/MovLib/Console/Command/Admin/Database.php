@@ -56,13 +56,12 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Tool\Kernel $kernel
    */
   protected function configure() {
     $this->setName("database");
     $this->setDescription("Perform various database related tasks.");
     //$this->addOption("backup", "b", InputOption::VALUE_NONE, "Create backup of the complete database.");
-    $this->addOption("optimize-tables", "ot", InputOption::VALUE_NONE, "Optimize all tables of all databases.");
+    $this->addOption("optimize-tables", "o", InputOption::VALUE_NONE, "Optimize or recreate/analyze all tables of all databases.");
     //$this->addOption("migration", "m", InputOption::VALUE_NONE, "Run all migration scripts.");
   }
 
@@ -70,10 +69,10 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
    * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    foreach ($input->getOptions() as $option) {
-      $method = str_replace("-", "", $option);
-      if (method_exists($this, $method)) {
-        $this->{$method}();
+    foreach ($input->getOptions() as $method => $execute) {
+      $method = str_replace("-", "", $method);
+      if ($execute === true && method_exists($this, $method)) {
+        $this->$method();
       }
     }
     return 0;
