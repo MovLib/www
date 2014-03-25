@@ -878,7 +878,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`media` (
   `changed` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The medium’s last update date and time.',
   `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The medium’s insert date and time.',
   `bootleg` TINYINT(1) NOT NULL DEFAULT FALSE COMMENT 'Flag if this medium is a bootleg or not.',
-  `type` TINYINT NOT NULL COMMENT 'The medium’s type as enumeration of one of \\\\MovLib\\\\Data\\\\Format\\\\FormatFactory class constants.',
+  `format` VARCHAR(20) NOT NULL COMMENT 'The medium’s type as enumeration of one of \\\\MovLib\\Presentation\\\\Partial\\\\Format\\\\FormatFactory class constants.',
   `dyn_notes` BLOB NOT NULL COMMENT 'The medium’s notes in various languages. Keys are ISO alpha-2 language codes.',
   `bin_format` BLOB NULL COMMENT 'The medium’s release format (e.g. DVD) as serialized PHP object (\\\\MovLib\\\\Data\\\\Format\\\\AbstractFormat).',
   PRIMARY KEY (`id`))
@@ -897,12 +897,15 @@ CREATE TABLE IF NOT EXISTS `movlib`.`releases` (
   `changed` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The release’s last update date and time.',
   `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The release’s insert date and time.',
   `country_code` CHAR(2) NOT NULL COMMENT 'The release’s ISO alpha-2 country code.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT FALSE COMMENT 'The release’s deleted flag.',
   `dyn_notes` BLOB NOT NULL COMMENT 'The release’s notes in various languages. Keys are ISO alpha-2 language codes.',
   `title` TEXT NOT NULL COMMENT 'The release’s title.',
+  `type` TINYINT NOT NULL COMMENT 'The release’s type as one of the \\\\MovLib\\Data\\\\Release\\\\Release constants.',
   `publishing_date_sale` DATE NULL COMMENT 'The release’s publishing date for sale.',
   `publishing_date_rental` DATE NULL COMMENT 'The release’s publishing date for rental.',
   `edition` TEXT NULL COMMENT 'The release’s edition.',
   `bin_identifiers` BLOB NULL COMMENT 'The release’s additional identifiers as serialized PHP object (\\\\MovLib\\\\Stub\\\\Data\\\\Release\\\\Identifier).',
+  `bin_media_counts` BLOB NULL COMMENT 'The release’s counts of media formats as serialized PHP array.',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 COMMENT = 'Contains all releases. A release contains one or more media.'
@@ -1631,16 +1634,16 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`releases_media` (
   `release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The release’s identifier.',
-  `media_id` BIGINT UNSIGNED NOT NULL COMMENT 'The medium’s identifier.',
-  PRIMARY KEY (`release_id`, `media_id`),
-  INDEX `fk_releases_media_media_idx` (`media_id` ASC),
+  `medium_id` BIGINT UNSIGNED NOT NULL COMMENT 'The medium’s identifier.',
+  PRIMARY KEY (`release_id`, `medium_id`),
+  INDEX `fk_releases_media_media_idx` (`medium_id` ASC),
   CONSTRAINT `fk_releases_media_releases`
     FOREIGN KEY (`release_id`)
     REFERENCES `movlib`.`releases` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_releases_media_media`
-    FOREIGN KEY (`media_id`)
+    FOREIGN KEY (`medium_id`)
     REFERENCES `movlib`.`media` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
@@ -1652,13 +1655,13 @@ SHOW WARNINGS;
 -- Table `movlib`.`media_movies`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`media_movies` (
-  `media_id` BIGINT UNSIGNED NOT NULL COMMENT 'The medium’s identifier.',
+  `medium_id` BIGINT UNSIGNED NOT NULL COMMENT 'The medium’s identifier.',
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s identifier.',
   `bin_medium_movie` BLOB NOT NULL COMMENT 'The movie’s medium specific data as serialized PHP object.',
-  PRIMARY KEY (`media_id`, `movie_id`),
+  PRIMARY KEY (`medium_id`, `movie_id`),
   INDEX `fk_media_movies_movies_idx` (`movie_id` ASC),
   CONSTRAINT `fk_media_movies_media`
-    FOREIGN KEY (`media_id`)
+    FOREIGN KEY (`medium_id`)
     REFERENCES `movlib`.`media` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
