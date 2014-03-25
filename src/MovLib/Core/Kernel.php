@@ -17,9 +17,6 @@
  */
 namespace MovLib\Core;
 
-use \DomainException;
-use \ErrorException;
-use \Exception;
 use \MovLib\Core\Config;
 use \MovLib\Core\Database;
 use \MovLib\Core\FileSystem;
@@ -107,6 +104,7 @@ final class Kernel {
 
     // Transform all PHP errors to exceptions.
     set_error_handler([ $this, "errorHandler" ]);
+    set_exception_handler([ $this, "exceptionHandler" ]);
 
     // Prepare the core system.
     $fs     = new FileSystem();
@@ -115,80 +113,41 @@ final class Kernel {
     $i18n   = new I18n();
 
     // Determine if we're booting for a HTTP request.
-    if (($this->http = isset($_SERVER["FCGI_ROLE"])) === true) {
-
-      // Transform fatal errors to exceptions.
-      //
-      // This has nothing to do with recovering from a fatal error. The purpose is to ensure that a nice presentation is
-      // displayed to the client, including any information that might be helpful in resolving the fatal error.
-      //
-      // We use an anonymous function at this point because we don't want anyone to execute this function other that
-      // PHP itself.
-      //
-      // @link http://stackoverflow.com/a/2146171/1251219
-      register_shutdown_function(function () {
-        if (($error = error_get_last())) {
-          $line = __LINE__ - 2;
-
-          // Let xdebug provide the stack if available.
-          if (function_exists("xdebug_get_function_stack")) {
-            $error["trace"] = array_reverse(xdebug_get_function_stack());
-            $error["trace"][0]["line"] = $line;
-          }
-          // We have to build or own trace.
-          else {
-            $error["trace"] = [
-              [ "function" => __FUNCTION__, "line" => $line, "file" => __FILE__ ],
-              [ "function" => "<em>unknown</em>", "line" => $error["line"], "file" => $error["file"] ],
-            ];
-          }
-
-          // Please note that we have to use PHP's base exception class at this point, otherwise we can't set our own trace.
-          $e = new Exception($error["message"], $error["type"]);
-          $reflector = new ReflectionClass($e);
-          foreach ([ "file", "line", "trace" ] as $propertyName) {
-            $property = $reflector->getProperty($propertyName);
-            $property->setAccessible(true);
-            $property->setValue($e, $error[$propertyName]);
-          }
-
-          // Try to display the stack trace to the client and exit immediately.
-          global $response;
-          $response->content = new Stacktrace($e, true);
-          exit($response);
-        }
-      });
-
-      // Disable PHP's built-in display error functionality for HTTP context, we want to display a nice error page in
-      // almost any case to the client.
+    if (($this->http = PHP_SAPI == "fpm-fcgi")) {
+      // Always try to create a nice output, for developers and clients.
+      register_shutdown_function([ $this, "fatalErrorHandler" ]);
       ini_set("display_errors", false);
 
       // Instantiate HTTP objects.
       global $cache, $request, $response, $session;
-      $cache    = new Cache();
       $request  = new Request();
-      $response = new Response();
+      $cache    = new Cache();
       $session  = new Session();
+      $response = new Response();
 
-      try {
-        // Allows us to lazy start anonymous sessions and send cookies right before sending the response.
-        $session->shutdown();
+      // From here it's save to disable the display errors feature from PHP.
+      $session->resume();
+      $presentation = $response->respond();
+      $session->shutdown();
 
-        // Send the response to the client.
-        echo $response;
+      // @devStart
+      // @codeCoverageIgnoreStart
+      Log::debug("Response Time: " . (microtime(true) - $request->timeFloat));
+      // @codeCoverageIgnoreEnd
+      // @devEnd
 
-        // Shutdown the system.
-        $this->bench("response", 0.75);
-        $cache->store($response);
-        $this->executeDelayedMethods();
-        $this->bench("shutdown", 0.5);
+      // Send the response to the client.
+      echo $presentation;
+      if (fastcgi_finish_request() === false) {
+        Log::error("FastCGI finish request failure");
       }
-      catch (Exception $e) {
 
-      }
+      // Shutdown the system.
+      $this->bench("response", 0.75);
+      $cache->store($presentation);
     }
     // Check if we're booting for a CLI request.
-    elseif (($this->cli = PHP_SAPI == "cli") === true) {
+    elseif (($this->cli = PHP_SAPI == "cli")) {
       // Binaries might be executed via privileged user accounts (root or sudo) and is even required for very few
       // commands. It's very important to check for this because files might have the wrong owners otherwise.
       $this->privileged = posix_getuid() === 0;
@@ -198,7 +157,14 @@ final class Kernel {
     }
     // If none of the above held true abort execution.
     else {
-      throw DomainException("The MovLib Kernel is currently only supporting HTTP and CLI usage.");
+      throw new \DomainException("The MovLib Kernel is currently only supporting HTTP and CLI usage.");
+    }
+
+    $this->executeDelayedMethods();
+    $fs->deleteRegisteredFiles();
+
+    if ($this->http) {
+      $this->bench("shutdown", 0.5);
     }
   }
 
@@ -231,30 +197,12 @@ final class Kernel {
    * @return this
    */
   public function delayMethodCall(callable $callable, array $params = null) {
-    static $register = true;
-
-    if ($register) {
-      $register = false;
-
-      // Register shutdown function that will execute all delayed functions
-      register_shutdown_function(function () {
-        foreach ($this->delayedMethods as list($callable, $params)) {
-          try {
-            call_user_func_array($callable, (array) $params);
-          }
-          catch (Exception $e) {
-            Log::error($e);
-          }
-        }
-      });
-    }
-
     $this->delayedMethods[] = [ $callable, $params ];
     return $this;
   }
 
   /**
-   * Transforms PHP errors to PHP's ErrorException.
+   * Transforms PHP errors to PHP's {@see \ErrorException}.
    *
    * PHP by default mostly throws errors and not exceptions (like Java or Ruby). This user-defined error handler converts
    * these errors to exceptions and allows us to catch them and work with them. All PHP errors are runtime errors, as they
@@ -279,7 +227,131 @@ final class Kernel {
    * @throws \ErrorException
    */
   public function errorHandler($severity, $message, $file, $line) {
-    throw new ErrorException($message, $severity, 0, $file, $line);
+    throw new \ErrorException($message, $severity, 0, $file, $line);
+  }
+
+  /**
+   * Used to catch uncaught exceptions.
+   *
+   * @param \Exception $exception
+   *   The exception that wasn't caught.
+   */
+  public function exceptionHandler($exception) {
+    Log::critical($exception);
+    exit($this->getStacktrace($exception));
+  }
+
+  /**
+   * Execute all delayed methods.
+   *
+   * @return this
+   */
+  protected function executeDelayedMethods() {
+    foreach ($this->delayedMethods as list($callable, $params)) {
+      try {
+        call_user_func_array($callable, (array) $params);
+      }
+      catch (Exception $e) {
+        Log::error($e);
+      }
+    }
+    return $this;
+  }
+
+  /**
+   * Transform fatal errors to exceptions.
+   *
+   * This has nothing to do with recovering from a fatal error. The purpose is to ensure that a nice presentation is
+   * displayed to the client, including any information that might be helpful in resolving the fatal error.
+   *
+   * We use an anonymous function at this point because we don't want anyone to execute this function other that
+   * PHP itself.
+   *
+   * @link http://stackoverflow.com/a/2146171/1251219
+   */
+  public function fatalErrorHandler() {
+    if (($error = error_get_last())) {
+      $line = __LINE__ - 2;
+
+      // Let xdebug provide the stack if available.
+      if (function_exists("xdebug_get_function_stack")) {
+        $error["trace"] = array_reverse(xdebug_get_function_stack());
+        $error["trace"][0]["line"] = $line;
+      }
+      // We have to build our own trace.
+      else {
+        $error["trace"] = [
+          [ "function" => __FUNCTION__, "line" => $line, "file" => __FILE__ ],
+          [ "function" => "<em>unknown</em>", "line" => $error["line"], "file" => $error["file"] ],
+        ];
+      }
+
+      // Please note that we have to use PHP's base exception class at this point, otherwise we can't set our own trace.
+      $exception = new \Exception($error["message"], $error["type"]);
+      $reflector = new \ReflectionClass($exception);
+      foreach ([ "file", "line", "trace" ] as $propertyName) {
+        $property = $reflector->getProperty($propertyName);
+        $property->setAccessible(true);
+        $property->setValue($exception, $error[$propertyName]);
+      }
+
+      Log::emergency($exception);
+      echo $this->getStacktrace($exception, true);
+    }
+  }
+
+  /**
+   * Get stacktrac presentation for given stacktrace.
+   *
+   * @global \MovLib\Core\FileSystem $fs
+   * @global \MovLib\Core\Config $config
+   * @global \MovLib\Core\I18n $i18n
+   * @global \MovLib\Core\HTTP\Request $request
+   * @global \MovLib\Core\HTTP\Response $response
+   * @global \MovLib\Core\HTTP\Session $session
+   * @param \Exception $exception
+   *   The exception to get the stacktrace for.
+   * @param boolean $fatal
+   *   Whether this is a fatal error or not.
+   * @return string
+   *   The stacktrace presentation or a <code>"text/plain"</code> representation of the exception.
+   */
+  protected function getStacktrace(\Exception $exception, $fatal = false) {
+    global $fs, $config, $i18n, $request, $response, $session;
+    ini_set("display_errors", true);
+    try {
+      if (isset($fs) && isset($config) && isset($i18n) && isset($request) && isset($response) && isset($session)) {
+        return (new \MovLib\Presentation\Stacktrace($exception, $fatal))->getPresentation();
+      }
+    }
+    catch (\Exception $e) {
+      if ($this->http && !headers_sent()) {
+        header("Content-Type: text/plain");
+      }
+      return <<<EOT
+# -------------------------------------------------------------------------------------------------------------------- #
+#                                                                                                                      #
+#                   UNRECOVERABLE FATAL ERROR! Please report @ https://github.com/MovLib/www/issues                    #
+#                                                                                                                      #
+# -------------------------------------------------------------------------------------------------------------------- #
+
+{$exception}
+
+
+                 \   /
+                 .\-/.
+             /\  () ()  /\
+            /  \ /~-~\ /  \
+                y  Y  V
+          ,-^-./   |   \,-^-.  Don't Bug
+         /    {    |    }    \   Me!!!
+               \   |   /
+               /\  A  /\
+              /  \/ \/  \
+             /           \ ∫VaMp FiNaL / crw
+EOT;
+      // ASCII art source: http://www.chris.com/ASCII/index.php?art=animals/insects/other
+    }
   }
 
 }
