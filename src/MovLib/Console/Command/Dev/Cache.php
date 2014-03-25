@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Tool\Console\Command\Dev;
+namespace MovLib\Console\Command\Dev;
 
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
@@ -31,7 +31,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Cache extends \MovLib\Tool\Console\Command\Dev\AbstractDevCommand {
+class Cache extends \MovLib\Console\Command\AbstractCommand {
 
   /**
    * @inheritdoc

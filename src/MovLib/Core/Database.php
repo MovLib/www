@@ -20,10 +20,7 @@ namespace MovLib\Core;
 use \MovLib\Exception\DatabaseException;
 
 /**
- * Base class for all database related classes.
- *
- * Implements the most basic methods to query the database and handles connecting and disconnecting globally for all
- * models. We ensure that we only have a single database connection per request in this class.
+ * Global database.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -31,7 +28,7 @@ use \MovLib\Exception\DatabaseException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Database {
+final class Database {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -103,7 +100,7 @@ class Database {
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  final protected function connect() {
+  protected function connect() {
     if (!isset(self::$connections[$this->database])) {
       // A cached reflection function is faster than call_user_func_array()!
       if (!self::$stmtBindParam) {
@@ -121,6 +118,70 @@ class Database {
     if (!$this->mysqli) {
       $this->mysqli = self::$connections[$this->database];
     }
+    return $this;
+  }
+
+  /**
+   * Execute multiple queries against the database.
+   *
+   * <b>IMPORTANT!</b>
+   * You have to properly escape the data in the queries.
+   *
+   * @param string $queries
+   *   Multiple queries to execute.
+   * @param boolean $foreignKeyChecks [optional]
+   *   Whether foreign keys should be checked or not during execution, defaults to <code>TRUE</code>.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function multiQuery($queries, $foreignKeyChecks = true) {
+    // Obviously we can only execute string queries.
+    if (!is_string($queries)) {
+      $type = gettype($queries);
+      throw new \InvalidArgumentException("Parameter \$queries must be of type string, {$type} given.");
+    }
+
+    // Obviously we have to have at least a single query.
+    if (empty($queries)) {
+      throw new \InvalidArgumentException("Parameter \$queries cannot be empty.");
+    }
+
+    // Disallow direct SET on foreign key checks, if one forgets to set it back we have huge problems.
+    if (strpos($queries, "foreign_key_checks") !== false) {
+      throw new \LogicException("Your queries contain 'foreign_key_checks', you shouldn't tamper with this directly because it's dangerous!");
+    }
+
+    // The proper way is to set the parameter to FALSE which will always reset the foreign key checks.
+    if ($foreignKeyChecks === false) {
+      $this->query("SET foreign_key_checks = 0");
+    }
+
+    if (!$this->mysqli) {
+      $this->connect();
+    }
+
+    // Execute the queries and directly consume them.
+    $error  = $this->mysqli->multi_query($queries);
+    do {
+      if ($error === false) {
+        $error = $this->mysqli->error;
+        $errno = $this->mysqli->errno;
+        if ($foreignKeyChecks === false) {
+          $this->query("SET foreign_key_checks = 1");
+        }
+        throw new DatabaseException("Execution of multiple queries failed", $error, $errno);
+      }
+      $this->mysqli->use_result();
+      if (($more = $this->mysqli->more_results())) {
+        $error = $this->mysqli->next_result();
+      }
+    }
+    while ($more);
+
+    if ($foreignKeyChecks === false) {
+      $this->query("SET foreign_key_checks = 1");
+    }
+
     return $this;
   }
 

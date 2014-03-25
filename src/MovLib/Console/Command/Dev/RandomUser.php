@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Tool\Console\Command\Dev;
+namespace MovLib\Console\Command\Dev;
 
 use \MovLib\Data\Shell;
 use \MovLib\Data\User\FullUser;
@@ -32,7 +32,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class RandomUser extends AbstractDevCommand {
+class RandomUser extends \MovLib\Console\Command\AbstractCommand {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants

@@ -155,7 +155,6 @@ class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
       }
 
       foreach (new \RegexIterator(new \DirectoryIterator(self::ROUTES_URI), "/\.php$/") as $fileinfo) {
-        echo $fileinfo->getPathname() . PHP_EOL;
         $this->routesNamespace = $fileinfo->getBasename(".php");
         try {
           require $fileinfo->getPathname();
