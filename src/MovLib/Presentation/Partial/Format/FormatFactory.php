@@ -33,13 +33,28 @@ abstract class FormatFactory {
 
 
   /**
-   * Cinema media format.
-   *
-   * Includes weird formats of the pre-cinema era since they could only be viewed publicly.
+   * Blu-ray media format.
    *
    * @var integer
    */
-  const FORMAT_CINEMA = 0;
+  const FORMAT_BLU_RAY = "BD";
+
+
+  /**
+   * DVD media format.
+   *
+   * @var integer
+   */
+  const FORMAT_DVD = "DVD";
+
+  /**
+   * Film reel media format.
+   *
+   * Includes film reels nowadays but also weird formats of the pre-cinema era since they could only be viewed publicly.
+   *
+   * @var integer
+   */
+  const FORMAT_FILM_REEL = "Film Reel";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants

@@ -31,6 +31,38 @@ use \MovLib\Presentation\Error\NotFound;
 class Release {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * Cinema type.
+   *
+   * @var integer
+   */
+  const TYPE_CINEMA = 0;
+
+  /**
+   * Home video type.
+   *
+   * @var integer
+   */
+  const TYPE_HOME_VIDEO = 1;
+
+  /**
+   * TV type.
+   *
+   * @var integer
+   */
+  const TYPE_TV = 2;
+
+  /**
+   * Web type.
+   *
+   * @var integer
+   */
+  const TYPE_WEB = 3;
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
@@ -96,6 +128,16 @@ class Release {
   public $media;
 
   /**
+   * The counts of every media format contained in this release.
+   *
+   * Associative array: Keys are {@see \MovLib\Presentation\Partial\Format\FormatFactory}::FORMAT_* constants,
+   * values are the respective counts of these formats.
+   *
+   * @var array
+   */
+  public $mediaCounts;
+
+  /**
    * The release's translated notes.
    *
    * @var string
@@ -144,18 +186,18 @@ class Release {
     if ($id) {
       $result = $db->query(
         "SELECT
-          `release`.`changed`,
-          `release`.`created`,
-          `release`.`country_code`,
+          `releases`.`changed`,
+          `releases`.`created`,
+          `releases`.`country_code`,
           IFNULL(
-            COLUMN_GET(`release`.`dyn_notes`, ? AS BINARY),
-            COLUMN_GET(`release`.`dyn_notes`, {$i18n->defaultLanguageCode} AS BINARY)
+            COLUMN_GET(`releases`.`dyn_notes`, ? AS BINARY),
+            COLUMN_GET(`releases`.`dyn_notes`, {$i18n->defaultLanguageCode} AS BINARY)
           ) AS `notes`,
-          `release`.`title`,
-          `release`.`publishing_date_rental`,
-          `release`.`publishing_date_sale`,
-          `release`.`edition`,
-          `release`.`bin_identifiers`,
+          `releases`.`title`,
+          `releases`.`publishing_date_rental`,
+          `releases`.`publishing_date_sale`,
+          `releases`.`edition`,
+          `releases`.`bin_identifiers`,
           `releases_media`.`medium_id`,
           `media`.`changed` AS `medium_changed`,
           `media`.`created` AS `medium_created`,
@@ -220,35 +262,65 @@ class Release {
 
 
   /**
+   * Get the release's labels as associative arrays.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   *
+   * @return array
+   *   Numeric array containing the labels.
+   *
+   *   Format: [ "id" => LABEL_ID, "name" => LABEL_NAME, "catalog_number" => CATALOG_NUMBER ]
+   */
+  public function getLabels() {
+    global $db, $i18n;
+    return $db->query(
+      "SELECT
+        `companies`.`id`,
+        `companies`.`name`,
+        `releases_labels`.`catalog_number`
+      FROM `releases_labels`
+      INNER JOIN `companies`
+        ON `companies`.`id` = `releases_labels`.`company_id`
+      WHERE `releases_labels`.`release_id` = ?
+      ORDER BY `companies`.`name`{$db->collations[$i18n->languageCode]} ASC",
+      "d",
+      [ $this->id ]
+    )->get_result()->fetch_all(MYSQLI_ASSOC);
+  }
+
+  /**
    * Get paginated releases result.
    *
    * @internal The returned {@see \mysqli_result} is prepared for direct instantiating via fetch object of this class.
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
-   * @param integer $offset
-   *   The offset, usually provided by the pagination trait.
+   * @param integer $offset [optional]
+   *   The offset, usually provided by the pagination trait, defaults to <code>0</code>.
    * @param integer $rowCount
-   *   The row count, usually provided by the pagination trait.
+   *   The row count, usually provided by the pagination trait, defaults to <code>25</code>.
    * @return \mysqli_result
    *   Paginated releases result.
    */
-  public static function getReleases($offset = 0, $rowCount = 8) {
+  public static function getReleases($offset = 0, $rowCount = 25) {
     global $db, $i18n;
     return $db->query(
       "SELECT
-        `release`.`changed`,
-        `release`.`created`,
-        `release`.`country_code`,
-        `release`.`title`,
-        `release`.`publishing_date_rental`,
-        `release`.`publishing_date_sale`,
-        `release`.`edition`
-      FROM `release`
-      ORDER BY `release`.`created` DESC
-      OFFSET ?
-      LIMIT ?",
+        `releases`.`id`,
+        `releases`.`changed`,
+        `releases`.`created`,
+        `releases`.`country_code` AS `countryCode`,
+        `releases`.`title`,
+        `releases`.`publishing_date_rental` AS `publishingDateRental`,
+        `releases`.`publishing_date_sale` AS `publishingDateSale`,
+        `releases`.`edition`,
+        `releases`.`bin_media_counts` AS `mediaCounts`
+      FROM `releases`
+      ORDER BY `releases`.`created` DESC
+      LIMIT ?
+      OFFSET ?",
       "di",
-      [ $offset, $rowCount ]
+      [ $rowCount, $offset ]
     )->get_result();
   }
 
