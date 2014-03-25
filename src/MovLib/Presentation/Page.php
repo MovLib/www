@@ -153,6 +153,13 @@ class Page extends \MovLib\Presentation\AbstractBase {
   protected $schemaType;
 
   /**
+   * Additional stylesheets for this presentation.
+   *
+   * @var array
+   */
+  public $stylesheets = [];
+
+  /**
    * The page's title.
    *
    * @var string
@@ -170,7 +177,9 @@ class Page extends \MovLib\Presentation\AbstractBase {
    *   The reference implementation doesn't add any breadcrumbs to the trail!
    * @return string
    */
-  protected function getContent() {}
+  public function getContent() {
+    // Default implementation is empty!
+  }
 
   /**
    * Get the reference footer.
@@ -180,7 +189,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
    * @return string
    *   The reference footer.
    */
-  protected function getFooter() {
+  public function getFooter() {
     global $kernel, $i18n;
 
     // Only build the language links if we have routes to build them. For example the internal server error page doesn't
@@ -272,7 +281,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
    * @return string
    *   The reference header.
    */
-  protected function getHeader() {
+  public function getHeader() {
     global $i18n, $kernel, $session;
 
     $exploreNavigation =
@@ -407,9 +416,9 @@ class Page extends \MovLib\Presentation\AbstractBase {
    * <i>getPresentation() must not throw an exception</i> message would be displayed (fatal error of course, so you get
    * nothing).
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\User\Session $session
+   * @global \MovLib\Core\I18n $i18n
+   * @global \MovLib\Core\Kernel $kernel
+   * @global \MovLib\Core\Session $session
    * @return string
    */
   public function getPresentation() {
@@ -420,9 +429,9 @@ class Page extends \MovLib\Presentation\AbstractBase {
 
     // Build a link for each stylesheet of this page.
     $stylesheets = null;
-    $c           = count($kernel->stylesheets);
-    for ($i = 0; $i < $c; ++$i) {
-      $stylesheets .= "<link href='{$this->getURL("asset://css/module/{$kernel->stylesheets[$i]}.css")}' rel='stylesheet'>";
+    $i = count($this->stylesheets);
+    while ($i--) {
+      $stylesheets .= "<link href='{$this->getURL("asset://css/module/{$this->stylesheets[$i]}.css")}' rel='stylesheet'>";
     }
 
     // Apply additional CSS class if the current request is made from a signed in user.
@@ -485,11 +494,12 @@ class Page extends \MovLib\Presentation\AbstractBase {
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Core\HTTP\Request $request
    * @return string
    *   The wrapped content, including heading.
    */
-  protected function getMainContent() {
-    global $i18n, $kernel;
+  public function getMainContent() {
+    global $i18n, $kernel, $request;
 
     // Allow the presentation to alter the main content in getContent() method.
     $content = $this->getContent();
@@ -499,7 +509,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
 
     // Add the current page to the breadcrumb.
     if ($this->breadcrumb) {
-      $this->breadcrumb->menuitems[] = [ $kernel->requestPath, $this->breadcrumbTitle ?: $this->title ];
+      $this->breadcrumb->menuitems[] = [ $request->path, $this->breadcrumbTitle ?: $this->title ];
     }
 
     // The schema for the complete page content.
@@ -527,6 +537,10 @@ class Page extends \MovLib\Presentation\AbstractBase {
         "{$this->contentBefore}{$content}{$this->contentAfter}" .
       "</main>"
     ;
+  }
+
+  public function getSidebar($content) {
+
   }
 
   /**

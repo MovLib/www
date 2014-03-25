@@ -81,7 +81,7 @@ final class ComingSoon extends \MovLib\Presentation\Page {
   /**
    * @inheritdoc
    */
-  protected function getFooter() {
+  public function getFooter() {
     global $i18n, $kernel;
     return
       "<footer id='f' role='contentinfo'>" .
@@ -109,7 +109,7 @@ final class ComingSoon extends \MovLib\Presentation\Page {
   /**
    * @inheritdoc
    */
-  protected function getHeader() {
+  public function getHeader() {
     return "";
   }
 
@@ -124,7 +124,7 @@ final class ComingSoon extends \MovLib\Presentation\Page {
   /**
    * @inheritdoc
    */
-  protected function getMainContent() {
+  public function getMainContent() {
     global $i18n, $kernel;
     return
       "<main class='{$this->id}-content' id='m' role='main'><div class='c'>" .

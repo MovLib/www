@@ -59,9 +59,8 @@ class Stacktrace extends \MovLib\Presentation\Page {
   /**
    * Instantiate new stacktrace presentation page.
    *
-   * @global \MovLib\Data\Cache $cache
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Core\I18n $i18n
+   * @global \MovLib\Core\HTTP\Response $response
    * @param \Exception $exception
    *   The exception that should be presented. Any instance that inherits from PHP's built in exception class is okay.
    * @param boolean $fatal [optional]
@@ -69,17 +68,16 @@ class Stacktrace extends \MovLib\Presentation\Page {
    *   <code>FALSE</code>.
    */
   public function __construct($exception, $fatal = false) {
-    global $cache, $i18n, $kernel;
+    global $i18n, $response;
     http_response_code(500);
     $this->initPage($i18n->t("Internal Server Error"));
     $this->initBreadcrumb();
-    if (isset($cache)) {
-      $cache->cacheable = false;
-    }
-    $kernel->stylesheets[] = "stacktrace";
-    $this->exception       = $exception;
-    $this->fatal           = $fatal;
-    $this->alerts         .= new Alert(
+
+    $response->cacheable = false;
+    $this->stylesheets[] = "stacktrace";
+    $this->exception     = $exception;
+    $this->fatal         = $fatal;
+    $this->alerts       .= new Alert(
       $i18n->t("This error was reported to the system administrators, it should be fixed in no time. Please try again in a few minutes."),
       $i18n->t("An unexpected condition which prevented us from fulfilling the request was encountered."),
       Alert::SEVERITY_ERROR
@@ -92,17 +90,17 @@ class Stacktrace extends \MovLib\Presentation\Page {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Core\Config $config
+   * @global \MovLib\Core\I18n $i18n
    * @return string
    */
-  protected function getContent() {
-    global $i18n, $kernel;
+  public function getContent() {
+    global $config, $i18n;
     $stacktrace = new Alert(
       "<div id='stacktrace-details'><div class='title'><i class='ico ico-info'></i> {$i18n->t(
         "{exception_message} in {class} on line {line, number}", [
           "exception_message" => nl2br($this->exception->getMessage(), false),
-          "class"             => str_replace([ $kernel->documentRoot, "/src/" ], "", $this->exception->getFile()),
+          "class"             => str_replace([ $config->documentRoot, "/src/" ], "", $this->exception->getFile()),
           "line"              => $this->exception->getLine(),
         ]
       )}</div><table>{$this->formatStacktrace($this->exception->getTrace())}</table></div>",
@@ -162,18 +160,18 @@ class Stacktrace extends \MovLib\Presentation\Page {
   /**
    * Format the stacktrace entry's file name.
    *
-   * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Core\Config $config
    * @param array $stacktrace
    *   The stacktrace entry.
    * @return string
    *   The stacktrace entry's formatted file name.
    */
   protected function formatFileName(array &$stacktrace) {
-    global $kernel;
+    global $config;
     if (empty($stacktrace["file"])) {
       return "<em>unknown</em>";
     }
-    return str_replace([ $kernel->documentRoot, "/src/" ], "", $stacktrace["file"]);
+    return str_replace([ $config->documentRoot, "/src/" ], "", $stacktrace["file"]);
   }
 
   /**

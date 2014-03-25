@@ -275,9 +275,7 @@ abstract class AbstractBaseImage {
     // Generate the desired image style with ImageMagick. We directly call the binary instead of using some kind of
     // abstraction layer, we don't need any fancy object just to resize an image.
     try {
-      $source      = escapeshellarg($source);
-      $destination = escapeshellarg($destination);
-      Shell::execute("convert {$source} -filter Lanczos -resize {$resizeArg} -quality 75 {$destination}");
+      Shell::execute("convert '{$source}' -filter Lanczos -resize {$resizeArg} -quality 75 '{$destination}'");
     }
     catch (\RuntimeException $e) {
       // @todo Log error, convert command isn't available!
@@ -322,11 +320,11 @@ abstract class AbstractBaseImage {
 
     // If no style was given the path to the original is desired.
     if (empty($style)) {
-      return "{$kernel->documentRoot}/private/upload/{$this->directory}/{$this->filename}.{$this->extension}";
+      return "/var/www/private/upload/{$this->directory}/{$this->filename}.{$this->extension}";
     }
 
     // Otherwise the path to the given style.
-    return "{$kernel->documentRoot}/public/upload/{$this->directory}/{$this->filename}.{$style}.{$this->extension}";
+    return "/var/www/public/upload/{$this->directory}/{$this->filename}.{$style}.{$this->extension}";
   }
 
   /**
