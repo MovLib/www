@@ -17,10 +17,8 @@
  */
 namespace MovLib\Core;
 
-use \ErrorException;
 use \MovLib\Core\Log;
 use \MovLib\Exception\FileSystemException;
-use \MovLib\Exception\StreamException;
 
 /**
  * Global File System
@@ -139,6 +137,39 @@ final class FileSystem {
   }
 
   /**
+   * Delete all files that were registered for deletion.
+   *
+   * @return this
+   */
+  public function deleteRegisteredFiles() {
+    foreach (self::$registeredFiles as $uri => $recursive) {
+      try {
+        if ($recursive === true) {
+          /* @var $fileinfo \SplFileInfo */
+          foreach ($this->getRecursiveIterator($uri) as $fileinfo) {
+            if ($fileinfo->isDir()) {
+              rmdir($fileinfo->getPathname());
+            }
+            else {
+              unlink($fileinfo->getPathname());
+            }
+          }
+        }
+        if (is_dir($uri)) {
+          rmdir($uri);
+        }
+        else {
+          unlink($uri);
+        }
+      }
+      catch (\Exception $e) {
+        Log::error($e);
+      }
+    }
+    return $this;
+  }
+
+  /**
    * Get a recursive iterator to iterate through directories.
    *
    * The return iterator is suitable for usage with a <code>foreach</code> loop and will return childs first and skipt
@@ -192,7 +223,7 @@ final class FileSystem {
       $instance->uri    = $uri;
       return $instance;
     }
-    catch (ErrorException $e) {
+    catch (\ErrorException $e) {
       throw new FileSystemException("No stream wrapper available to handle '{$uri}'.", null, $e);
     }
   }
@@ -243,7 +274,6 @@ final class FileSystem {
    * @return this
    */
   public function registerFileForDeletion($uri, $force = false) {
-    static $register = true;
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($uri) || !is_string($uri)) {
@@ -254,39 +284,6 @@ final class FileSystem {
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    if ($register) {
-      $register = false;
-
-      // Register shutdown function that will delete all the files. We use a closure at this point because we don't
-      // want anybody to execute this function other than PHP.
-      register_shutdown_function(function () {
-        foreach (self::$registeredFiles as $uri => $recursive) {
-          try {
-            if ($recursive === true) {
-              /* @var $fileinfo \SplFileInfo */
-              foreach ($this->getRecursiveIterator($uri) as $fileinfo) {
-                if ($fileinfo->isDir()) {
-                  rmdir($fileinfo->getPathname());
-                }
-                else {
-                  unlink($fileinfo->getPathname());
-                }
-              }
-            }
-            if (is_dir($uri)) {
-              rmdir($uri);
-            }
-            else {
-              unlink($uri);
-            }
-          }
-          catch (StreamException $e) {
-            Log::error($e);
-          }
-        }
-      });
-    }
-
     self::$registeredFiles[$uri] = $force;
     return $this;
   }
@@ -351,7 +348,7 @@ final class FileSystem {
       }
       return $this;
     }
-    catch (ErrorException $e) {
+    catch (\ErrorException $e) {
       throw new FileSystemException("Couldn't create symbolic link '{$link}' with target '{$target}'.", null, $e);
     }
   }
