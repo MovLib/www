@@ -15,14 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\User;
+namespace MovLib\Core\HTTP;
 
-use \MovLib\Data\Log;
-use \MovLib\Data\User\FullUser;
+use \MovLib\Core\Log;
 use \MovLib\Data\User\User;
 use \MovLib\Exception\DatabaseException;
-use \MovLib\Presentation\Error\Forbidden;
-use \MovLib\Presentation\Error\Unauthorized;
+use \MovLib\Exception\UnauthorizedException;
 
 /**
  * The session model loads the basic user information, creates, updates and deletes sessions.
@@ -123,6 +121,13 @@ final class Session implements \ArrayAccess {
   public $authentication = 0;
 
   /**
+   * The session's data.
+   *
+   * @var array
+   */
+  public $data = [];
+
+  /**
    * The session's ID.
    *
    * @var string
@@ -174,9 +179,6 @@ final class Session implements \ArrayAccess {
   /**
    * The session's user time zone ID.
    *
-   * Defaults to global PHP INI default timezone.
-   *
-   * @see Session::__construct()
    * @var string
    */
   public $userTimeZone;
@@ -186,105 +188,16 @@ final class Session implements \ArrayAccess {
 
 
   /**
-   * Resume existing session if any.
+   * Instantiate new HTTP session object.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Kernel $kernel
-   * @throws \MemcachedException
-   * @throws \MovLib\Exception\DatabaseException
+   * @global \MovLib\Core\Config $config
+   * @global \MovLib\Core\HTTP\Request $request
    */
   public function __construct() {
-    global $db, $kernel;
-
-    // Only attempt to load the session if a non-empty session ID is present. Anonymous user's don't get any session to
-    // ensure that HTTP proxies are able to cache anonymous pageviews.
-    if (!empty($_COOKIE[$this->name])) {
-      // Try to resume the session with the ID from the cookie.
-      $this->start();
-
-      // Try to load the session from the persistent session storage for known users if we just generated a new
-      // session ID and have no data stored for it.
-      if (empty($_SESSION)) {
-        // Load session data from persistent session storage.
-        /* @var $stmt \mysqli_stmt */
-        $stmt = $db->query(
-          "SELECT UNIX_TIMESTAMP(`authentication`), `user_id` FROM `sessions` WHERE `id` = ? LIMIT 1",
-          "s",
-          [ $_COOKIE[$this->name] ]
-        );
-        $stmt->bind_result($this->authentication, $this->userId);
-
-        // We couldn't find a valid session and we have no data, invalid session.
-        if ($stmt->fetch()) {
-          try {
-            // Try to load the user and directly regenerate the session's identifier.
-            $user = new User(User::FROM_ID, $this->userId);
-            $this->regenerate();
-
-            // Export database result to class scope.
-            $this->userAvatar               = $user->getStyle(User::STYLE_HEADER_USER_NAVIGATION);
-            $this->userName                 = $user->name;
-            $this->userTimeZone             = $user->timeZoneIdentifier;
-
-            // Export properties to session scope.
-            $_SESSION[self::AUTHENTICATION] =& $this->authentication;
-            $_SESSION[self::INIT_TIME]      =& $this->initTime;
-            $_SESSION[self::USER_ID]        =& $this->userId;
-            $_SESSION[self::USER_AVATAR]    =& $this->userAvatar;
-            $_SESSION[self::USER_NAME]      =& $this->userName;
-            $_SESSION[self::USER_TIME_ZONE] =& $this->userTimeZone;
-
-            $this->isAuthenticated = true;
-            // @devStart
-            // @codeCoverageIgnoreStart
-            Log::debug("Loaded Session from Database");
-            // @codeCoverageIgnoreEnd
-            // @devEnd
-          }
-          // Well, this is akward, we have a valid session but no valid user, destroy session and log this error.
-          catch (\Exception $e) {
-            Log::error(
-              new \RuntimeException("Non-existent user ID from persistent session storage", null, $e),
-              [ "remote address" => $kernel->remoteAddress, "session ID" => $_COOKIE[$this->name] ]
-            );
-            $this->destroy();
-          }
-        }
-        else {
-          // @devStart
-          // @codeCoverageIgnoreStart
-          Log::debug("Couldn't Restore Session from Database");
-          // @codeCoverageIgnoreEnd
-          // @devEnd
-          $this->destroy();
-        }
-        $stmt->close();
-      }
-      // Session data was loaded from Memcached.
-      elseif (!empty($_SESSION[self::USER_ID])) {
-        $this->authentication  =& $_SESSION[self::AUTHENTICATION];
-        $this->initTime        =& $_SESSION[self::INIT_TIME];
-        $this->userAvatar      =& $_SESSION[self::USER_AVATAR];
-        $this->userId          =& $_SESSION[self::USER_ID];
-        $this->userName        =& $_SESSION[self::USER_NAME];
-        $this->userTimeZone    =& $_SESSION[self::USER_TIME_ZONE];
-        $this->isAuthenticated = true;
-        // @devStart
-        // @codeCoverageIgnoreStart
-        Log::debug("Loaded Session from Memcached");
-        // @codeCoverageIgnoreEnd
-        // @devEnd
-        if (($this->initTime + self::REGENERATION_GRACE_TIME) < $_SERVER["REQUEST_TIME"]) {
-          $this->regenerate();
-        }
-      }
-    }
-
-    // This is an anonymous user if we have no user name at this point.
-    if (!$this->userName) {
-      $this->userName       = $kernel->remoteAddress;
-      $this->userTimeZone = date_default_timezone_get();
-    }
+    global $config, $request;
+    $this->data         =& $_SESSION;
+    $this->userName     =  $request->remoteAddress;
+    $this->userTimeZone =  $config->timeZone;
   }
 
 
@@ -325,12 +238,12 @@ final class Session implements \ArrayAccess {
       $this->userTimeZone           = $user->timeZoneIdentifier;
 
       // Export to session storage.
-      $_SESSION[self::AUTHENTICATION] =& $this->authentication;
-      $_SESSION[self::INIT_TIME]      =& $this->initTime;
-      $_SESSION[self::USER_AVATAR]    =& $this->userAvatar;
-      $_SESSION[self::USER_ID]        =& $this->userId;
-      $_SESSION[self::USER_NAME]      =& $this->userName;
-      $_SESSION[self::USER_TIME_ZONE] =& $this->userTimeZone;
+      $this->data[self::AUTHENTICATION] =& $this->authentication;
+      $this->data[self::INIT_TIME]      =& $this->initTime;
+      $this->data[self::USER_AVATAR]    =& $this->userAvatar;
+      $this->data[self::USER_ID]        =& $this->userId;
+      $this->data[self::USER_NAME]      =& $this->userName;
+      $this->data[self::USER_TIME_ZONE] =& $this->userTimeZone;
 
       // Maybe the user was doing some work as anonymous user and already has a session active. If so generate new session
       // ID and if not generate a completely new session.
@@ -656,6 +569,105 @@ final class Session implements \ArrayAccess {
   }
 
   /**
+   * Resume existing HTTP session.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Core\HTTP\Request $request
+   * @return this
+   * @throws \MemcachedException
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function resume() {
+    global $db, $request;
+
+    // Only attempt to load the session if a non-empty session ID is present. Anonymous user's don't get any session to
+    // ensure that HTTP proxies are able to cache anonymous pageviews.
+    if (!empty($request->cookies[$this->name])) {
+      // Try to resume the session with the ID from the cookie.
+      $this->start();
+
+      // Try to load the session from the persistent session storage for known users if we just generated a new
+      // session ID and have no data stored for it.
+      if (empty($this->data)) {
+        // Load session data from persistent session storage.
+        /* @var $stmt \mysqli_stmt */
+        $stmt = $db->query(
+          "SELECT UNIX_TIMESTAMP(`authentication`), `user_id` FROM `sessions` WHERE `id` = ? LIMIT 1",
+          "s",
+          [ $request->cookies[$this->name] ]
+        );
+        $stmt->bind_result($this->authentication, $this->userId);
+
+        // We couldn't find a valid session and we have no data, invalid session.
+        if ($stmt->fetch()) {
+          try {
+            // Try to load the user and directly regenerate the session's identifier.
+            $user = new User(User::FROM_ID, $this->userId);
+            $this->regenerate();
+
+            // Export database result to class scope.
+            $this->userAvatar   = $user->getStyle(User::STYLE_HEADER_USER_NAVIGATION);
+            $this->userName     = $user->name;
+            $this->userTimeZone = $user->timeZoneIdentifier;
+
+            // Export properties to session scope.
+            $this->data[self::AUTHENTICATION] =& $this->authentication;
+            $this->data[self::INIT_TIME]      =& $this->initTime;
+            $this->data[self::USER_ID]        =& $this->userId;
+            $this->data[self::USER_AVATAR]    =& $this->userAvatar;
+            $this->data[self::USER_NAME]      =& $this->userName;
+            $this->data[self::USER_TIME_ZONE] =& $this->userTimeZone;
+
+            $this->isAuthenticated = true;
+            // @devStart
+            // @codeCoverageIgnoreStart
+            Log::debug("Loaded Session from Database");
+            // @codeCoverageIgnoreEnd
+            // @devEnd
+          }
+          // Well, this is akward, we have a valid session but no valid user, destroy session and log this error.
+          catch (\Exception $e) {
+            Log::error(
+              new \RuntimeException("Non-existent user ID from persistent session storage", null, $e),
+              [ "remote address" => $request->remoteAddress, "session ID" => $request->cookies[$this->name] ]
+            );
+            $this->destroy();
+          }
+        }
+        else {
+          // @devStart
+          // @codeCoverageIgnoreStart
+          Log::debug("Couldn't Restore Session from Database");
+          // @codeCoverageIgnoreEnd
+          // @devEnd
+          $this->destroy();
+        }
+        $stmt->close();
+      }
+      // Session data was loaded from Memcached.
+      elseif (!empty($this->data[self::USER_ID])) {
+        $this->authentication  =& $this->data[self::AUTHENTICATION];
+        $this->initTime        =& $this->data[self::INIT_TIME];
+        $this->userAvatar      =& $this->data[self::USER_AVATAR];
+        $this->userId          =& $this->data[self::USER_ID];
+        $this->userName        =& $this->data[self::USER_NAME];
+        $this->userTimeZone    =& $this->data[self::USER_TIME_ZONE];
+        $this->isAuthenticated = true;
+        // @devStart
+        // @codeCoverageIgnoreStart
+        Log::debug("Loaded Session from Memcached");
+        // @codeCoverageIgnoreEnd
+        // @devEnd
+        if (($this->initTime + self::REGENERATION_GRACE_TIME) < $request->time) {
+          $this->regenerate();
+        }
+      }
+    }
+
+    return $this;
+  }
+
+  /**
    * Shutdown the currently active session and start one for anonymous users if we have to.
    *
    * @global \MovLib\Kernel $kernel
@@ -667,7 +679,7 @@ final class Session implements \ArrayAccess {
     global $kernel;
 
     // Absolutely no session data is present (default state).
-    if (empty($_SESSION)) {
+    if (empty($this->data)) {
       // Destroy this session if one is active without any data associated to it.
       if (session_status() === PHP_SESSION_ACTIVE) {
         $this->destroy();
@@ -705,7 +717,7 @@ final class Session implements \ArrayAccess {
     // Only attempt to start a new session if we're operating via php-fpm.
     if ($kernel->fastCGI === true) {
       // Create backup of existing session data (if any).
-      $sessionData = isset($_SESSION) ? $_SESSION : null;
+      $sessionData = isset($this->data) ? $this->data : null;
 
       // Start new session (if exeution was started by nginx).
       if (($this->active = session_start()) === false) {
@@ -724,7 +736,7 @@ final class Session implements \ArrayAccess {
 
       // Restore session data.
       if ($sessionData) {
-        $_SESSION += $sessionData;
+        $this->data += $sessionData;
       }
     }
     // @devStart
@@ -783,21 +795,21 @@ final class Session implements \ArrayAccess {
    * @inheritdoc
    */
   public function offsetExists($offset) {
-    return isset($_SESSION[$offset]);
+    return isset($this->data[$offset]);
   }
 
   /**
    * @inheritdoc
    */
   public function &offsetGet($offset) {
-    return $_SESSION[$offset];
+    return $this->data[$offset];
   }
 
   /**
    * @inheritdoc
    */
   public function offsetSet($offset, $value) {
-    $_SESSION[$offset] = $value;
+    $this->data[$offset] = $value;
     $this->active      = true;
   }
 
@@ -805,8 +817,8 @@ final class Session implements \ArrayAccess {
    * @inheritdoc
    */
   public function offsetUnset($offset) {
-    unset($_SESSION[$offset]);
-    if (empty($_SESSION)) {
+    unset($this->data[$offset]);
+    if (empty($this->data)) {
       $this->destroy();
     }
   }
