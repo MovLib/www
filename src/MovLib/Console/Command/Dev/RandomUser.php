@@ -17,7 +17,6 @@
  */
 namespace MovLib\Console\Command\Dev;
 
-use \MovLib\Data\Shell;
 use \MovLib\Data\User\FullUser;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
@@ -123,26 +122,27 @@ class RandomUser extends \MovLib\Console\Command\AbstractCommand {
       }
     }
     // If this username is already in use generate another one.
-    while (in_array($username, $this->username));
+    while (in_array($username, $this->usernames));
 
     $this->usernames[] = $username;
     return $username;
   }
 
   /**
-   * @inheritdoc
-   * @global \MovLib\Tool\Database $db
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Tool\Kernel $kernel
+   * {@inheritdoc}
+   * @global \MovLib\Core\Config $config
+   * @global \MovLib\Core\Database $db
+   * @global \MovLib\Core\FileSystem $fs
+   * @global \MovLib\Core\I18n $i18n
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    global $db, $i18n, $kernel;
+    global $config, $db, $fs, $i18n;
     $this->amount = (integer) $input->getArgument("amount");
 
     $this->write("Preparing to generate <comment>{$this->amount}</comment> random users ...");
     $this->setUsernames();
     $values          = $params          = $usersWithAvatar = null;
-    $this->progress->start($this->output, $this->amount);
+    $this->progressStart($this->amount);
     $user            = new FullUser();
     $min             = strtotime("-1 year");
     $max             = time();
@@ -161,21 +161,21 @@ class RandomUser extends \MovLib\Console\Command\AbstractCommand {
         $params[] = $params[] = null;
       }
       $params[] = $created;
-      $params[] = "{$name}@{$kernel->domainDefault}";
+      $params[] = "{$name}@{$config->hostname}";
       $params[] = $name;
-      $params[] = $this->invoke($user, "passwordHash", [ $name ]);
-      $this->progress->advance();
+      $params[] = $user->hashPassword($name);
+      $this->progressAdvance();
     }
     $values = rtrim($values, ",");
-    $this->progress->finish();
+    $this->progressFinish();
 
     $this->write("Inserting <comment>{$this->amount}</comment> random users into database ...");
     $db->query(
       "INSERT INTO `users` (
-        `avatar_changed`,
-        `avatar_extension`,
+        `image_changed`,
+        `image_extension`,
         `created`,
-        `dyn_profile`,
+        `dyn_about_me`,
         `email`,
         `name`,
         `password`,
@@ -189,19 +189,23 @@ class RandomUser extends \MovLib\Console\Command\AbstractCommand {
       $this->write("Generating avatar images (every 6th user has none) ...");
       $dim = FullUser::STYLE_SPAN_02;
       $tmp = ini_get("upload_tmp_dir") . "/movdev-command-create-users.jpg";
-      Shell::execute("convert -size {$dim}x{$dim} xc: +noise Random {$tmp}");
-      $this->setProperty($user, "imageExtension", "jpg");
-      $this->progress->start($this->output, $c);
+      $this->exec("convert -size {$dim}x{$dim} xc: +noise Random {$tmp}");
+      $ext = new \ReflectionProperty($user, "extension");
+      $ext->setAccessible(true);
+      $ext->setValue($user, "jpg");
+      $this->progressStart($c);
       $in = rtrim(str_repeat("?,", $c), ",");
-      $result = $db->query("SELECT `user_id`, `name` FROM `users` WHERE `name` IN ({$in})", str_repeat("s", $c), $usersWithAvatar)->get_result();
+      $result = $db->query("SELECT `id`, `name` FROM `users` WHERE `name` IN ({$in})", str_repeat("s", $c), $usersWithAvatar)->get_result();
       while ($row = $result->fetch_assoc()) {
-        $this->setProperty($user, "imageName", $row["name"]);
-        $this->invoke($user, "convertImage", [ $tmp, FullUser::STYLE_SPAN_02 ]);
-        $this->invoke($user, "convertImage", [ $tmp, FullUser::STYLE_SPAN_01 ]);
-        $this->progress->advance();
+        $user->filename = $fs->sanitizeFilename($row["name"]);
+        $convert = new \ReflectionMethod($user, "convert");
+        $convert->setAccessible(true);
+        $convert->invoke($user, $tmp, FullUser::STYLE_SPAN_02);
+        $convert->invoke($user, $tmp, FullUser::STYLE_SPAN_01);
+        $this->progressAdvance();
       }
       unlink($tmp);
-      $this->progress->finish();
+      $this->progressFinish();
     }
 
     $this->write("Successfully created {$this->amount} of random users!", self::MESSAGE_TYPE_INFO);
