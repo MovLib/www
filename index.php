@@ -31,6 +31,6 @@
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-$autoloader = __DIR__ . "/vendor/autoload.php";
+$autoloader = require __DIR__ . "/lib/autoload.php";
 $kernel     = new \MovLib\Core\Kernel();
 $kernel->boot();
