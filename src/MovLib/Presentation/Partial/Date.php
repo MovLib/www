@@ -105,17 +105,7 @@ class Date extends \MovLib\Presentation\AbstractBase {
    *   and Time Formats} or an integer, which is treated as UNIX timestamp. Defaults to <code>"now"</code>.
    */
   public function __construct($date = "now") {
-    if (is_int($date)) {
-      $date = date(self::FORMAT_W3C, $date);
-    }
-    elseif ($date == "now") {
-      $date = date(self::FORMAT_W3C, strtotime("now"));
-    }
-    // Make sure date_parse() does not interpret incomplete dates as time strings.
-    $this->dateInfo          = date_parse("{$date} 00:00:00");
-    $this->dateInfo["month"] = $this->dateInfo["month"] === false ? 0 : $this->dateInfo["month"];
-    $this->dateInfo["day"]   = $this->dateInfo["day"] === false ? 0 : $this->dateInfo["day"];
-    $this->dateValue         = "{$this->dateInfo["year"]}-{$this->dateInfo["month"]}-{$this->dateInfo["day"]}";
+    $this->setDate($date);
   }
 
 
@@ -242,6 +232,31 @@ class Date extends \MovLib\Presentation\AbstractBase {
 
     // Everything is there, let Intl do its magic.
     return $fmt->format(new \DateTime($date));
+  }
+
+  /**
+   * Set the date partial value.
+   *
+   * @param string $date [optional]
+   *   A date/time string in a valid format as explained in {@link http://www.php.net/manual/en/datetime.formats.php Date
+   *   and Time Formats} or an integer, which is treated as UNIX timestamp. Defaults to <code>"now"</code>.
+   *
+   * @return $this
+   */
+  public function setDate($date = "now") {
+    if (is_int($date)) {
+      $date = date(self::FORMAT_W3C, $date);
+    }
+    elseif ($date == "now") {
+      $date = date(self::FORMAT_W3C, strtotime("now"));
+    }
+    // Make sure date_parse() does not interpret incomplete dates as time strings.
+    $this->dateInfo          = date_parse("{$date} 00:00:00");
+    $this->dateInfo["month"] = $this->dateInfo["month"] === false ? 0 : $this->dateInfo["month"];
+    $this->dateInfo["day"]   = $this->dateInfo["day"] === false ? 0 : $this->dateInfo["day"];
+    $this->dateValue         = "{$this->dateInfo["year"]}-{$this->dateInfo["month"]}-{$this->dateInfo["day"]}";
+
+    return $this;
   }
 
 }
