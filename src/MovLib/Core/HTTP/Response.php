@@ -17,7 +17,7 @@
  */
 namespace MovLib\Core\HTTP;
 
-use \Exception;
+use \MovLib\Exception\ClientException;
 use \MovLib\Presentation\Stacktrace;
 
 /**
@@ -43,38 +43,22 @@ final class Response {
    */
   protected $alerts;
 
+  /**
+   * Whether this request is cacheable or not.
+   *
+   * @var boolean
+   */
+  public $cacheable = false;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new HTTP response.
+   * Instantiate new HTTP request object.
    */
   public function __construct() {
-
-  }
-
-  /**
-   * Get the response as string.
-   *
-   * @return string
-   *   The response as string.
-   */
-  public function __toString() {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    try {
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
-    // @devStart
-    // @codeCoverageIgnoreStart
-    }
-    catch (Exception $e) {
-      return (new Stacktrace($e))->getPresentation();
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
+    $this->cacheable = $_SERVER["REQUEST_METHOD"] == "GET";
   }
 
 
@@ -116,6 +100,38 @@ final class Response {
       $this->createCookie($id, "", 1);
     }
     return $this;
+  }
+
+  /**
+   * Get the response.
+   *
+   * @global \MovLib\Presentation\Page $presenter
+   * @return string
+   *   The response.
+   */
+  public function respond() {
+    global $presenter;
+
+    try {
+      $className = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
+      $presenter = new $className();
+      $content   = $presenter->getContent();
+    }
+    catch (ClientException $e) {
+      return $e->getPresentation();
+    }
+    catch (\Exception $e) {
+      $presenter = new Stacktrace($e);
+      $content   = $presenter->getContent();
+    }
+
+    // Allow every stage to alter the final presentation.
+    $header = $presenter->getHeader();
+    $main   = $presenter->getMainContent($content);
+    $footer = $presenter->getFooter();
+
+    // Finally try to send the presentation.
+    return $presenter->getPresentation($header, $main, $footer);
   }
 
   /**
