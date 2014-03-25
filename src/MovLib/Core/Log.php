@@ -41,6 +41,8 @@ final class Log {
   /**
    * Action must be taken immediately.
    *
+   * <b style="color:red">SEVERITY 550</b>
+   *
    * <b>EXAMPLE</b><br>
    * Entire website down, database, unavailable, etc. This should trigger the SMS alerts and wake you up.
    *
@@ -58,6 +60,8 @@ final class Log {
 
   /**
    * Critical conditions.
+   *
+   * <b style="color:red">SEVERITY 500</b>
    *
    * <b>EXAMPLE</b><br>
    * Application component unavailable, unexpeced exception.
@@ -77,6 +81,8 @@ final class Log {
   /**
    * Detailed debug information.
    *
+   * <b style="color:red">SEVERITY 100</b>
+   *
    * @param string|object $message
    *   Either a string or an object implementing a <code>__toString()</code> method.
    * @param array $context [optional]
@@ -91,6 +97,8 @@ final class Log {
 
   /**
    * System is unusable.
+   *
+   * <b style="color:red">SEVERITY 600</b>
    *
    * @param string|object $message
    *   Either a string or an object implementing a <code>__toString()</code> method.
@@ -107,6 +115,8 @@ final class Log {
   /**
    * Runtime error that doesn't require immediate action but should typically be logged and monitored.
    *
+   * <b style="color:red">SEVERITY 400</b>
+   *
    * @param string|object $message
    *   Either a string or an object implementing a <code>__toString()</code> method.
    * @param array $context [optional]
@@ -121,6 +131,8 @@ final class Log {
 
   /**
    * Interesting events.
+   *
+   * <b style="color:red">SEVERITY 200</b>
    *
    * <b>EXAMPLE</b><br>
    * User logs in, SQL logs.
@@ -213,6 +225,8 @@ final class Log {
   /**
    * Normal but significant events.
    *
+   * <b style="color:red">SEVERITY 250</b>
+   *
    * @param string|object $message
    *   Either a string or an object implementing a <code>__toString()</code> method.
    * @param array $context [optional]
@@ -227,6 +241,8 @@ final class Log {
 
   /**
    * Exceptional occurrences that are not errors.
+   *
+   * <b style="color:red">SEVERITY 300</b>
    *
    * <b>EXAMPLE</b><br>
    * Use of deprecated APIs, poor use of an API, undesirable things that are not necessarily wrong.
