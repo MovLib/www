@@ -33,7 +33,7 @@ TRUNCATE TABLE `help_articles`;
 INSERT INTO `help_categories` SET
   `dyn_titles` = COLUMN_CREATE(
     'en', 'Database',
-    'de', 'Datanbank'
+    'de', 'Datenbank'
   )
 ;
 SET @help_category_database = LAST_INSERT_ID();
@@ -148,7 +148,7 @@ INSERT INTO `help_subcategories` SET
   ),
   `help_category_id` = @help_category_community
 ;
-SET @help_subcategory_movies = LAST_INSERT_ID();
+SET @help_subcategory_deletion_requests = LAST_INSERT_ID();
 
 -- END "Help Subcategories"
 

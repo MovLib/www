@@ -152,9 +152,9 @@ return [
   "/user/{0}/edits"                            => "/benutzer/{0}/bearbeitungen",
   // ------------------------------------------------------------------------------------------------------------------- Help
   "/help"                                      => "/hilfe",
-  "/help/movies"                               => "/hilfe/filme",
-  "/help/movies/ratings"                       => "/hilfe/filme/bewertungen",
-  "/help/movies/ratings/edit"                  => "/hilfe/filme/bewertungen/bearbeiten",
+  "/help/create"                               => "/hilfe/erstellen",
+  "/help/{0}/{1}"                              => "/hilfe/{0}/{1}",
+  "/help/{0}/{1}/{2}"                          => "/hilfe/{0}/{1}/{2}",
   // ------------------------------------------------------------------------------------------------------------------- Country
   // Countries are created with Intl ICU data and aren"t editable.
   "/country"                                   => "/land",

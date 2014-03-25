@@ -30,62 +30,6 @@
 ?>
 
 
-# ---------------------------------------------------------------------------------------------------------------------- help
-
-
-<?php
-$stmt           = $db->query("SELECT `id`, COLUMN_GET(`dyn_titles`, ? AS CHAR(255)) AS `title` FROM `help_categories`", "s", [ $i18n->defaultLanguageCode ]);
-$helpCategories = $stmt->get_result();
-while ($helpCategory = $helpCategories->fetch_assoc()):
-  $helpCategory["title"] = \MovLib\Data\FileSystem::sanitizeFilename($helpCategory["title"]);
-?>
-
-location = <?= $r("/help/{$helpCategory["title"]}") ?> {
-  set $movlib_presenter "Help\\Category";
-  set $movlib_help_category <?= $helpCategory["id"] ?>;
-  try_files $movlib_cache @php;
-}
-<?php
-endwhile;
-$stmt->close();
-
-$stmt = $db->query(
-  "SELECT
-    `help_articles`.`id` AS `article_id`,
-    COLUMN_GET(`help_articles`.`dyn_titles`, ? AS CHAR(255)) AS `article_title`,
-    `help_articles`.`category_id` AS `category_id`,
-    COLUMN_GET(`help_categories`.`dyn_titles`, ? AS CHAR(255)) AS `category_title`
-  FROM `help_articles`
-  INNER JOIN `help_categories`
-    ON `help_articles`.`category_id` = `help_categories`.`id`",
-  "ss",
-  [ $i18n->defaultLanguageCode, $i18n->defaultLanguageCode ]
-);
-$helpArticles = $stmt->get_result();
-while ($helpArticle = $helpArticles->fetch_assoc()):
-  $helpArticle["category_title"] = \MovLib\Data\FileSystem::sanitizeFilename($helpArticle["category_title"]);
-  $helpArticle["article_title"]  = \MovLib\Data\FileSystem::sanitizeFilename($helpArticle["article_title"]);
-?>
-
-location = <?= $r("/help/{$helpArticle["category_title"]}/{$helpArticle["article_title"]}") ?> {
-  set $movlib_presenter "Help\\Article";
-  set $movlib_help_category <?= $helpArticle["category_id"] ?>;
-  set $movlib_help_article <?= $helpArticle["article_id"] ?>;
-  try_files $movlib_cache @php;
-}
-
-location = <?= $r("/help/{$helpArticle["category_title"]}/{$helpArticle["article_title"]}/edit") ?> {
-  set $movlib_presenter "Help\\Edit";
-  set $movlib_help_category <?= $helpArticle["category_id"] ?>;
-  set $movlib_id <?= $helpArticle["article_id"] ?>;
-  try_files $movlib_cache @php;
-}
-<?php
-endwhile;
-$stmt->close();
-?>
-
-
 # ---------------------------------------------------------------------------------------------------------------------- Country(ies)
 
 

@@ -16,6 +16,8 @@
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
 
+use \MovLib\Data\Help\HelpArticle;
+
 /**
  * Help routes
  *
@@ -32,4 +34,42 @@
 location = <?= $this->r("/help") ?> {
   <?= $this->set("Index") ?>
   <?= $this->cache() ?>
+}
+
+location = <?= $this->r("/help/create") ?> {
+  <?= $this->set("Create") ?>
+  <?= $this->cache(false) ?>
+}
+
+location ^~ <?= $this->r("/help") ?> {
+
+<?php
+/* @var $result \mysqli_result */
+$result = HelpArticle::getHelpArticleIds();
+while ($row = $result->fetch_object()):
+  /* @var $article \MovLib\Data\Help\HelpArticle */
+  $article = new HelpArticle($row->id);
+
+  if (isset($article->subCategory)) {
+    $this->setRoutesNamespace("Help\\Category\\Subcategory");
+  }
+  else {
+    $this->setRoutesNamespace("Help\\Category");
+  }
+?>
+
+  location = <?= $article->route ?> {
+    <?= $this->set("Show") ?>
+    <?= $this->set($article->id, "help_article_id") ?>
+    <?= $this->cache() ?>
+  }
+
+  location = <?= "{$article->route}/edit" ?> {
+    <?= $this->set("Edit") ?>
+    <?= $this->set($article->id, "help_article_id") ?>
+    <?= $this->cache() ?>
+  }
+<?php endwhile; ?>
+
+  <?= $this->notFound() ?>
 }
