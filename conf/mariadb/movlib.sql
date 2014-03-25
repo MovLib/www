@@ -1249,7 +1249,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`help_articles` (
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the help article was deleted or not.',
   `dyn_texts` BLOB NOT NULL COMMENT 'The help article’s text in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_titles` BLOB NOT NULL COMMENT 'The help article’s title in various languages. Keys are ISO alpha-2 language codes.',
-  `commit` CHAR(40) NULL COMMENT 'The help article’s last history commit sha-1 hash.',
+  `view_count` BIGINT NOT NULL DEFAULT 0 COMMENT 'The help article’s view count.',
   PRIMARY KEY (`id`),
   INDEX `fk_help_articles_help_category_id` (`help_category_id` ASC),
   INDEX `fk_help_articles_help_subcategory_id` (`help_subcategory_id` ASC),
