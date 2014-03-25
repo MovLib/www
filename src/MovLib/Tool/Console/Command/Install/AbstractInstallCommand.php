@@ -163,28 +163,6 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
   }
 
   /**
-   * Delete registered files.
-   *
-   * <b>NOTE</b><br>
-   * Must be public because it's used as shutdown function. We cannot utiliye the native <code>__destruct()</code>
-   * method because we need all the global objects intact (e.g. the Kernel).
-   *
-   * @global \MovLib\Tool\Kernel $kernel
-   * @return this
-   */
-  final public function deleteRegisteredFiles() {
-    global $kernel;
-    // Make sure that we aren't within one of the directories that we're going to delete.
-    $this->changeWorkingDirectory($kernel->documentRoot);
-
-    $this->writeDebug("Deleting registered files...");
-    foreach ($this->registerFileForDeletion() as $file) {
-      FileSystem::delete($file, true, true);
-    }
-    return $this;
-  }
-
-  /**
    * Download a file.
    *
    * @global \MovLib\Tool\Kernel $kernel
@@ -244,7 +222,7 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
       $delete = !$this->input->getOption("keep");
     }
     if ($delete === true) {
-      $this->registerFileForDeletion($destination);
+      $kernel->registerFileForDeletion($destination);
     }
 
     return $destination;
@@ -271,7 +249,7 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
 
     if (is_file($etc)) {
       $this->writeDebug("Deleting old global configuration...");
-      FileSystem::delete($etc, false, true);
+      unlink($etc);
     }
 
     $this->writeDebug("Writing new global configuration...");
@@ -305,6 +283,7 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
   /**
    * Extract given source archive to target directory.
    *
+   * @global \MovLib\Tool\Kernel $kernel
    * @param string $source
    *   Absolute path to the source archive.
    * @param null|string $target [optional]
@@ -320,6 +299,8 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
    * @throws \UnexpectedValueException
    */
   final protected function extract($source, $target = null, $delete = null) {
+    global $kernel;
+
     if (realpath($source) === false) {
       throw new \UnexpectedValueException("\$source must point to an existing archive on the local file system");
     }
@@ -346,7 +327,7 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
       $delete = !$this->input->getOption("keep");
     }
     if ($delete === true) {
-      $this->registerFileForDeletion($destination);
+      $kernel->registerFileForDeletion($destination);
     }
 
     return $destination;
@@ -414,29 +395,6 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
       return false;
     }
     return $version;
-  }
-
-  /**
-   * Register file for deletion.
-   *
-   * @staticvar array $registeredFiles
-   *   Used to keep track of registered files for deletion.
-   * @param null|string $file [optional]
-   *   Canonical absolute path to the file that should be deleted.
-   * @return array
-   *   The files registered for deletion.
-   */
-  final protected function registerFileForDeletion($file = null) {
-    static $registeredFiles = [];
-    if (isset($file)) {
-      if (empty($registeredFiles)) {
-        $this->writeDebug("Registering shutdown function for deletion of registered files...");
-        register_shutdown_function([ $this, "deleteRegisteredFiles" ]);
-      }
-      $this->writeDebug("Registering '{$file}' for deletion...");
-      $registeredFiles[] = $file;
-    }
-    return $registeredFiles;
   }
 
 }

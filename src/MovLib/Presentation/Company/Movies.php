@@ -18,8 +18,7 @@
 namespace MovLib\Presentation\Company;
 
 use \MovLib\Data\Company\FullCompany;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Listing\MovieListing as MoviesPartial;
+use \MovLib\Presentation\Partial\Listing\CompanyMovieListing;
 
 /**
  * Movies with a certain company associated.
@@ -61,15 +60,10 @@ class Movies extends \MovLib\Presentation\Company\AbstractBase {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @return \MovLib\Presentation\Partial\Listing\MovieListing
+   * @return \MovLib\Presentation\Partial\Listing\CompanyMovieListing
    */
   protected function getPageContent() {
-    global $i18n;
-    return new MoviesPartial(
-      $this->company->getMovieResult(),
-      new Alert($i18n->t("Check back later"), $i18n->t("No movies found."), Alert::SEVERITY_INFO)
-    );
+    return new CompanyMovieListing($this->company->getMovieResult());
   }
 
 }

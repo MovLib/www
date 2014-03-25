@@ -72,14 +72,14 @@ abstract class Shell {
 
       // Only throw an exception if we are allowed to and if the command had a non-zero exit status.
       if ($status !== 0 && $exception === true) {
-        throw new \ShellException($command, $output);
+        throw new ShellException($command, $output);
       }
 
       return $status;
     }
     catch (\Exception $e) {
       if ($exception === true) {
-        throw new \ShellException($command, $output);
+        throw new ShellException($command, $output);
       }
       return 1;
     }

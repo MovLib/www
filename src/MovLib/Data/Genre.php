@@ -186,7 +186,7 @@ class Genre extends \MovLib\Data\Database {
   public function getMoviesResult() {
     global $db, $i18n;
     return $db->query(
-      "SELECT DISTINCT
+      "SELECT
         `movies`.`id` AS `id`,
         `movies`.`year` AS `year`,
         IFNULL(`dt`.`title`, `ot`.`title`) AS `displayTitle`,

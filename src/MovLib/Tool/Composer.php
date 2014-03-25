@@ -17,7 +17,7 @@
  */
 namespace MovLib\Tool;
 
-use \MovLib\Data\FileSystem;
+use \MovLib\Data\StreamWrapper\StreamWrapperFactory;
 use \Composer\Script\Event;
 
 /**
@@ -45,11 +45,18 @@ class Composer {
   protected $event;
 
   /**
-   * Absolute path to composer packages (without trailing slash).
+   * Document root stream wrapper instance.
+   *
+   * @var \MovLib\Data\StreamWrapper\AbstractLocalStreamWrapper
+   */
+  protected $dr;
+
+  /**
+   * The name of the vendor directory.
    *
    * @var string
    */
-  protected $vendorPath;
+  protected $vendor;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -67,8 +74,8 @@ class Composer {
     if (!$kernel) {
       $kernel = new \MovLib\Tool\Kernel(true);
     }
-    $this->event      = $event;
-    $this->vendorPath = "{$kernel->documentRoot}/{$event->getComposer()->getConfig()->get("vendor-dir")}";
+    $this->event = $event;
+    $this->dr    = StreamWrapperFactory::create("dr://");
   }
 
 
@@ -86,15 +93,16 @@ class Composer {
   public function apigen($fullName) {
     global $kernel;
 
-    if ($kernel->isWindows === false) {
-      FileSystem::createSymbolicLink("{$this->vendorPath}/{$fullName}/apigen.php", "/usr/local/bin/apigen", true);
+    $bin = "/usr/local/bin/apigen";
+    if ($kernel->isWindows === false && !is_link($bin)) {
+      symlink($this->dr->realpath("dr://vendor/{$fullName}/apigen.php", $bin));
     }
 
     // @see https://github.com/apigen/apigen/issues/252
-    $path = "{$this->vendorPath}/{$fullName}/ApiGen/Template.php";
-    $content = FileSystem::getContent($path);
-    if (strpos($content, "return \TexyHtml::el('code', \$fshl->highlight(\$matches[1]));") === false) {
-      FileSystem::putContent($path, str_replace(
+    $path    = "dr://vendor/{$fullName}/ApiGen/Template.php";
+    $content = file_get_contents($path);
+    if (strpos($content, "return \TexyHtml::el('code', \$fshl->highlight(\$matches[1]));") !== false) {
+      file_put_contents($path, str_replace(
         "return \TexyHtml::el('code', \$fshl->highlight(\$matches[1]));",
         "\$content = \$parser->getTexy()->protect(\$fshl->highlight(\$matches[1]), \Texy::CONTENT_MARKUP);\n         return \TexyHtml::el('code', \$content);",
         $content
@@ -117,16 +125,13 @@ class Composer {
     global $kernel, $db;
 
     // Create symbolic link to our phpMyAdmin configuration.
-    if ($kernel->isWindows === false) {
-      FileSystem::createSymbolicLink(
-        "{$kernel->documentRoot}/etc/phpmyadmin/config.inc.php",
-        "{$this->vendorPath}/{$fullName}config.inc.php",
-        true
-      );
+    $target = "dr://vendor/{$fullName}/config.inc.php";
+    if ($kernel->isWindows === false && !is_link($target)) {
+      symlink($this->dr->realpath("dr://etc/phpmyadmin/config.inc.php"), $this->dr->realpath($target));
     }
 
     // Create all tables for the advanced phpMyAdmin features.
-    $db->queries(FileSystem::getContent("{$this->vendorPath}/{$fullName}/examples/create_tables.sql"));
+    $db->queries(file_get_contents("dr://vendor/{$fullName}/examples/create_tables.sql"));
 
     return $this;
   }
@@ -141,12 +146,9 @@ class Composer {
    */
   public function phpunit($fullName) {
     global $kernel;
-    if ($kernel->isWindows === false) {
-      FileSystem::createSymbolicLink(
-        "{$this->vendorPath}/{$fullName}/composer/bin/phpunit",
-        "/usr/local/bin/phpunit",
-        true
-      );
+    $bin = "/usr/local/bin/phpunit";
+    if ($kernel->isWindows === false && !is_link($bin)) {
+      symlink($this->dr->realpath("dr://vendor/{$fullName}/composer/bin/phpunit"), $bin);
     }
     return $this;
   }

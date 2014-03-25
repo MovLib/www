@@ -26,7 +26,7 @@ namespace MovLib\Presentation\Partial\Listing;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class EntityIndexListing extends \MovLib\Presentation\Partial\Listing\EntityListing {
+class EntityIndexListing extends \MovLib\Presentation\Partial\Listing\EntityListing {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -39,7 +39,7 @@ final class EntityIndexListing extends \MovLib\Presentation\Partial\Listing\Enti
    *
    * @var string
    */
-  private $moviesRoute;
+  protected $moviesRoute;
 
   /**
    * The translated entity series route.
@@ -48,21 +48,21 @@ final class EntityIndexListing extends \MovLib\Presentation\Partial\Listing\Enti
    *
    * @var string
    */
-  private $seriesRoute;
+  protected $seriesRoute;
 
   /**
    * Translated movies title.
    *
    * @var string
    */
-  private $moviesTitle;
+  protected $moviesTitle;
 
   /**
    * Translated series title.
    *
    * @var string
    */
-  private $seriesTitle;
+  protected $seriesTitle;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods

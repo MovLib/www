@@ -20,7 +20,9 @@ namespace MovLib\Stub\Data;
 /**
  * Language stub.
  *
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @see \MovLib\Data\StreamWrapper\I18nStreamWrapper
+ * @see \MovLib\Tool\Console\Command\Install\SeedLanguages
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -36,7 +38,7 @@ abstract class Language {
   public $code;
 
   /**
-   * The language's translated full name.
+   * The language's name in the current locale.
    *
    * @var string
    */

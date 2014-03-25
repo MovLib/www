@@ -1204,9 +1204,31 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`help_categories` (
   `id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The help category’s unique identifier.',
-  `dyn_titles` BLOB NOT NULL COMMENT 'The help category’s translated titles.',
+  `dyn_titles` BLOB NOT NULL COMMENT 'The help category’s title in various languages. Keys are ISO alpha-2 language codes.',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
+COMMENT = 'Contains all help categories.'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`help_subcategories`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`help_subcategories` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The help subcategory’s unique identifier.',
+  `help_category_id` TINYINT UNSIGNED NOT NULL COMMENT 'The help category’s unique id.',
+  `dyn_titles` BLOB NOT NULL COMMENT 'The help subcategory’s title in various languages. Keys are ISO alpha-2 language codes.',
+  PRIMARY KEY (`id`),
+  INDEX `fk_help_subcategories_help_category_id` (`help_category_id` ASC),
+  CONSTRAINT `fk_help_subcategories_help_categories`
+    FOREIGN KEY (`help_category_id`)
+    REFERENCES `movlib`.`help_categories` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains all help subcategories.'
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
 
@@ -1217,16 +1239,25 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`help_articles` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The help’s unique identifier.',
-  `category_id` TINYINT UNSIGNED NOT NULL,
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The creation date of the help as timestamp.',
-  `dyn_texts` BLOB NOT NULL COMMENT 'The help’s text in various languages. Keys are ISO alpha-2 language codes.',
-  `dyn_titles` BLOB NOT NULL COMMENT 'The help’s title in various languages. Keys are ISO alpha-2 language codes.',
-  `commit` CHAR(40) NULL COMMENT 'The help’s last history commit sha-1 hash.',
+  `help_category_id` TINYINT UNSIGNED NOT NULL COMMENT 'The help category’s unique identifier.',
+  `help_subcategory_id` INT UNSIGNED NULL COMMENT 'The help subcategory’s unique identifier.',
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The timestamp on which this help article was created.',
+  `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The timestamp on which this help article was changed.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the help article was deleted or not.',
+  `dyn_texts` BLOB NOT NULL COMMENT 'The help article’s text in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_titles` BLOB NOT NULL COMMENT 'The help article’s title in various languages. Keys are ISO alpha-2 language codes.',
+  `commit` CHAR(40) NULL COMMENT 'The help article’s last history commit sha-1 hash.',
   PRIMARY KEY (`id`),
-  INDEX `fk_help_articles_help_categories1_idx` (`category_id` ASC),
-  CONSTRAINT `fk_help_articles_help_categories1`
-    FOREIGN KEY (`category_id`)
+  INDEX `fk_help_articles_help_category_id` (`help_category_id` ASC),
+  INDEX `fk_help_articles_help_subcategory_id` (`help_subcategory_id` ASC),
+  CONSTRAINT `fk_help_articles_help_categories`
+    FOREIGN KEY (`help_category_id`)
     REFERENCES `movlib`.`help_categories` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_help_articles_help_subcategories`
+    FOREIGN KEY (`help_subcategory_id`)
+    REFERENCES `movlib`.`help_subcategories` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB

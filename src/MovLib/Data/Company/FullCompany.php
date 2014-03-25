@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\Company;
 
+use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Data\Place;
 use \MovLib\Presentation\Error\NotFound;
 
@@ -222,17 +223,20 @@ class FullCompany extends \MovLib\Data\Company\Company {
    */
   public function getMovieResult() {
     global $db, $i18n;
-    return $db->query(
-      "SELECT DISTINCT
-        `movies_crew`.`movie_id` AS `id`,
-        `jobs`.`id` AS `jobId`,
-        IFNULL(COLUMN_GET(`jobs`.`dyn_names_sex0`, ? AS CHAR), COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `jobTitle`,
-        `movies`.`year` AS `year`,
+    $result = $db->query(
+      "SELECT
+        `movies`.`id`,
+        `movies`.`year`,
+        `movies`.`deleted`,
+        `movies`.`year`,
+        `movies`.`mean_rating` AS `ratingMean`,
         IFNULL(`dt`.`title`, `ot`.`title`) AS `displayTitle`,
         IFNULL(`dt`.`language_code`, `ot`.`language_code`) AS `displayTitleLanguageCode`,
         `ot`.`title` AS `originalTitle`,
         `ot`.`language_code` AS `originalTitleLanguageCode`,
-        `p`.`poster_id` AS `displayPoster`
+        `p`.`poster_id` AS `displayPoster`,
+        `jobs`.`id` AS `jobId`,
+        IFNULL(COLUMN_GET(`jobs`.`dyn_names_sex0`, ? AS CHAR), COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `jobTitle`
       FROM `movies_crew`
         LEFT JOIN `movies` AS `movies`
           ON `movies`.`id` = `movies_crew`.`movie_id`
@@ -254,6 +258,32 @@ class FullCompany extends \MovLib\Data\Company\Company {
       "sssd",
       [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $this->id ]
     )->get_result();
+
+    $movies = [];
+    while ($row = $result->fetch_assoc()) {
+      // Instantiate and initialize a Movie if it is not present yet.
+      if (!isset($movies[$row["id"]])) {
+        $movies[$row["id"]] = (object) [
+          "movie" => new FullMovie()
+        ];
+        $movies[$row["id"]]->movie->id                        = $row["id"];
+        $movies[$row["id"]]->movie->deleted                   = $row["deleted"];
+        $movies[$row["id"]]->movie->year                      = $row["year"];
+        $movies[$row["id"]]->movie->ratingMean                = $row["ratingMean"];
+        $movies[$row["id"]]->movie->displayTitle              = $row["displayTitle"];
+        $movies[$row["id"]]->movie->displayTitleLanguageCode  = $row["displayTitleLanguageCode"];
+        $movies[$row["id"]]->movie->originalTitle             = $row["originalTitle"];
+        $movies[$row["id"]]->movie->originalTitleLanguageCode = $row["originalTitleLanguageCode"];
+        $movies[$row["id"]]->movie->displayPoster             = $row["displayPoster"];
+        $movies[$row["id"]]->movie->jobIds                    = [];
+        $movies[$row["id"]]->movie->jobTitles                 = [];
+        $movies[$row["id"]]->movie->init();
+      }
+      // We need the job id and translated title for all jobs done by the company.
+      array_push($movies[$row["id"]]->movie->jobIds, $row["jobId"]);
+      array_push($movies[$row["id"]]->movie->jobTitles, $row["jobTitle"]);
+    }
+    return $movies;
   }
 
   /**
@@ -267,7 +297,7 @@ class FullCompany extends \MovLib\Data\Company\Company {
   public function getReleasesResult() {
     global $db;
     return $db->query(
-      "SELECT DISTINCT
+      "SELECT
         `master_releases_labels`.`company_id` AS `company_id`,
         `master_releases_labels`.`master_release_id` AS `master_release_id`
       FROM `master_releases_labels'

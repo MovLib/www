@@ -17,6 +17,9 @@
  */
 namespace MovLib\Data;
 
+use \MovLib\Data\Movie\FullMovie;
+use \MovLib\Presentation\Error\NotFound;
+
 /**
  * Handling of one or more award categories.
  *
@@ -140,6 +143,7 @@ class AwardCategory extends \MovLib\Data\Database {
         throw new NotFound;
       }
       $stmt->close();
+      $this->id = $id;
     }
     if ($this->id) {
       $this->init();
@@ -176,38 +180,64 @@ class AwardCategory extends \MovLib\Data\Database {
    */
   public function getMoviesResult() {
     global $db, $i18n;
-    return $db->query(
-      "SELECT DISTINCT
-        `movies`.`year` AS `year`,
+    $result = $db->query(
+      "SELECT
+        `movies`.`id`,
+        `movies`.`deleted`,
+        `movies`.`year`,
+        `movies`.`mean_rating` AS `ratingMean`,
         IFNULL(`dt`.`title`, `ot`.`title`) AS `displayTitle`,
         IFNULL(`dt`.`language_code`, `ot`.`language_code`) AS `displayTitleLanguageCode`,
         `ot`.`title` AS `originalTitle`,
         `ot`.`language_code` AS `originalTitleLanguageCode`,
-        `p`.`poster_id` AS `displayPoster`
-        FROM `movies_awards` as `ma`
-        LEFT JOIN `awards_categories` as `mac`
-          ON `ma`.award_category_id = `mac`.`id`
-        LEFT JOIN `awards`
-          ON `mac`.`award_id` = `awards`.`id`
+        `p`.`poster_id` AS `displayPoster`,
+        `ma`.`won` AS `won`
+      FROM `movies_awards` AS `ma`
         LEFT JOIN `movies` AS `movies`
-          ON `movies`.`id` = `movies`.`id`
+          ON `movies`.`id` = `ma`.`movie_id`
         LEFT JOIN `movies_display_titles` AS `mdt`
           ON `mdt`.`movie_id` = `movies`.`id`
           AND `mdt`.`language_code` = ?
         LEFT JOIN `movies_titles` AS `dt`
-          ON `dt`.`id` = `mdt`.`title_id`
+          ON `dt`.`movie_id` = `movies`.`id`
+          AND `dt`.`id` = `mdt`.`title_id`
         LEFT JOIN `movies_original_titles` AS `mot`
           ON `mot`.`movie_id` = `movies`.`id`
         LEFT JOIN `movies_titles` AS `ot`
-          ON `ot`.`id` = `mot`.`title_id`
+          ON `ot`.`movie_id` = `movies`.`id`
+          AND `ot`.`id` = `mot`.`title_id`
         LEFT JOIN `display_posters` AS `p`
           ON `p`.`movie_id` = `movies`.`id`
           AND `p`.`language_code` = ?
       WHERE `ma`.`award_id` = ? AND `ma`.`award_category_id` = ?
-      ORDER BY `movies`.`year` DESC",
+      ORDER BY
+        `ma`.`won` DESC,
+        `movies`.`year` DESC",
       "ssdd",
       [ $i18n->languageCode, $i18n->languageCode, $this->awardId, $this->id ]
     )->get_result();
+
+    $movies = [];
+    while ($row = $result->fetch_assoc()) {
+      // Instantiate and initialize a Movie if it is not present yet.
+      if (!isset($movies[$row["id"]])) {
+        $movies[$row["id"]] = (object) [
+          "movie" => new FullMovie()
+        ];
+        $movies[$row["id"]]->movie->id                        = $row["id"];
+        $movies[$row["id"]]->movie->deleted                   = $row["deleted"];
+        $movies[$row["id"]]->movie->year                      = $row["year"];
+        $movies[$row["id"]]->movie->ratingMean                = $row["ratingMean"];
+        $movies[$row["id"]]->movie->displayTitle              = $row["displayTitle"];
+        $movies[$row["id"]]->movie->displayTitleLanguageCode  = $row["displayTitleLanguageCode"];
+        $movies[$row["id"]]->movie->originalTitle             = $row["originalTitle"];
+        $movies[$row["id"]]->movie->originalTitleLanguageCode = $row["originalTitleLanguageCode"];
+        $movies[$row["id"]]->movie->displayPoster             = $row["displayPoster"];
+        $movies[$row["id"]]->movie->won                       = $row["won"];
+        $movies[$row["id"]]->movie->init();
+      }
+    }
+    return $movies;
   }
 
   /**
@@ -219,7 +249,7 @@ class AwardCategory extends \MovLib\Data\Database {
    * @return string
    *   The default query.
    */
-  protected static function getQuery() {
+  public static function getQuery() {
     global $i18n;
     static $query = null;
     if (!$query) {

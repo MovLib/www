@@ -1,5 +1,3 @@
-<?php
-
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
@@ -17,12 +15,12 @@
  */
 
 /**
- * {classComment}
+ * Styles exclusive to the event page.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
+ * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-// @codeCoverageIgnoreStart

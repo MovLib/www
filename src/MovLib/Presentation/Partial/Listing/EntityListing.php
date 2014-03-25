@@ -140,8 +140,8 @@ class EntityListing extends \MovLib\Presentation\AbstractBase {
     return
       "<li class='hover-item r' typeof='Corporation'>" .
         "<div class='s s10'>" .
-          $this->getAdditionalContent($entity, $listItem) .
           "<a href='{$entity->route}' property='url'><span property='name'>{$entity->name}</span></a>" .
+          $this->getAdditionalContent($entity, $listItem) .
         "</div>" .
       "</li>"
     ;

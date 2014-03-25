@@ -32,14 +32,14 @@ final class PersonLifeDateListing extends \MovLib\Presentation\Partial\Listing\P
   // @devStart
   // @codeCoverageIgnoreStart
   public function __construct($listItems, $listItemProperty = null, $noItemsText = null) {
-    if (isset($listItems) && $listItems !== (array) $listItems) {
-      throw new \InvalidArgumentException("\$listItems must be an array");
+    if (!($listItems instanceof \mysqli_result)) {
+      throw new \InvalidArgumentException("\$listItems must be of type \mysqli_result");
     }
     parent::__construct($listItems, $listItemProperty, $noItemsText);
   }
   // @codeCoverageIgnoreEnd
   // @devEnd
-  
+
   /**
    * @inheritdoc
    */
