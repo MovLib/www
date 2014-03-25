@@ -61,6 +61,10 @@ thead th {
   text-align: center;
 }
 
+thead.tal th {
+  text-align: left;
+}
+
 .table-condensed th,
 .table-condensed td {
   padding: 4px 5px;
