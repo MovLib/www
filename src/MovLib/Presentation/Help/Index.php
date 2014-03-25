@@ -17,37 +17,78 @@
  */
 namespace MovLib\Presentation\Help;
 
-use \MovLib\Presentation\Partial\Alert;
-
 /**
- * @todo Description of Show
+ * The main help page.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2014 MovLib
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
 class Index extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitSidebar;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new help presentation.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   */
   public function __construct() {
-    global $i18n;
+    global $i18n, $kernel;
+
     $this->initPage($i18n->t("Help"));
-    $this->initLanguageLinks("/help", null, true);
+    $this->initLanguageLinks("/help");
     $this->initBreadcrumb();
-    $this->sidebarInit([
-      [ $this->languageLinks[$i18n->languageCode], $i18n->t("Help"), [ "class" => "ico ico-help" ] ],
-    ]);
+
+    $kernel->stylesheets[] = "help";
   }
 
-  protected function getPageContent() {
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   */
+  protected function getContent() {
     global $i18n;
-    return new Alert(
-      $i18n->t("The help isn’t implemented yet."),
-      $i18n->t("Check back later"),
-      Alert::SEVERITY_INFO
-    );
+
+    $content =
+
+      "<div class='c'>" .
+      "<div class='r'>" .
+        "<article class='s s4 taj'>" .
+          "<h2 class='ico ico-movie tac'> {$i18n->t("Database")}</h2>" .
+          "<p>{$i18n->t(
+            "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore."
+          )}</p>" .
+          "<p class='tac'><a class='btn btn-success btn-large' href=''>{$i18n->t("Database Help")}</a></p>" .
+        "</article>" .
+        "<article class='s s4 taj'>" .
+          "<h2 class='ico ico-company tac'> {$i18n->t("Marketplace")}</h2>" .
+          "<p>{$i18n->t(
+            "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore."
+          )}</p>" .
+          "<p class='tac'><a class='btn btn-success btn-large' href=''>{$i18n->t("Marketplace Help")}</a></p>" .
+        "</article>" .
+        "<article class='s s4 taj'>" .
+          "<h2 class='ico ico-person tac'> {$i18n->t("Community")}</h2>" .
+          "<p>{$i18n->t(
+            "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore."
+          )}</p>" .
+          "<p class='tac'><a class='btn btn-success btn-large' href=''>{$i18n->t("Community Help")}</a></p>" .
+        "</article>" .
+      "</div>" .
+      "</div>"
+
+    ;
+    return $content;
   }
 
 }
