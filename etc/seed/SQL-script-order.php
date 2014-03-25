@@ -36,6 +36,7 @@ return [
   "licenses",
   "messages",
   "movies",
+  "releases",
   "system_pages",
   "users",
 ];
