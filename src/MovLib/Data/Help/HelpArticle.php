@@ -163,7 +163,7 @@ class HelpArticle extends \MovLib\Data\Database {
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
- /**
+  /**
    * Get all help articles.
    *
    * @global \MovLib\Data\Database $db

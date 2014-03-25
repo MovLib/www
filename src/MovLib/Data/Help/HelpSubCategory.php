@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data\Help;
 
+use \MovLib\Data\FileSystem;
+use \MovLib\Data\Help\HelpCategory;
 use \MovLib\Presentation\Error\NotFound;
 
 /**
@@ -35,11 +37,11 @@ class HelpSubCategory extends \MovLib\Data\Database {
 
 
   /**
-   * The help category's unique identifier.
+   * The help category.
    *
-   * @var integer
+   * @var mixed
    */
-  public $categoryId;
+  public $category;
 
   /**
    * The help sub category's unique identifier.
@@ -47,6 +49,20 @@ class HelpSubCategory extends \MovLib\Data\Database {
    * @var integer
    */
   public $id;
+
+  /**
+   * The translated route of this help sub category.
+   *
+   * @var string
+   */
+  public $route;
+
+  /**
+   * The route key of this help sub category.
+   *
+   * @var string
+   */
+  public $routeKey;
 
   /**
    * The help sub category's title in the current display language.
@@ -73,7 +89,7 @@ class HelpSubCategory extends \MovLib\Data\Database {
 
     $stmt = $db->query("
       SELECT
-        `help_category_id` AS `categoryId`,
+        `help_category_id` AS `category`,
         `id`,
         IFNULL(COLUMN_GET(`dyn_titles`, ? AS CHAR), COLUMN_GET(`dyn_titles`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `title`
       FROM `help_subcategories`
@@ -83,7 +99,7 @@ class HelpSubCategory extends \MovLib\Data\Database {
       [ $i18n->languageCode, $id ]
     );
     $stmt->bind_result(
-      $this->categoryId,
+      $this->category,
       $this->id,
       $this->title
     );
@@ -91,6 +107,43 @@ class HelpSubCategory extends \MovLib\Data\Database {
       throw new NotFound;
     }
     $stmt->close();
+    if ($this->id) {
+      $this->init();
+    }
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Get all help sub category ids.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return \mysqli_result
+   *   The query result.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public static function getHelpSubCategoryIds() {
+    global $db;
+
+    return $db->query("SELECT `id` FROM `help_subcategories`")->get_result();
+  }
+
+  /**
+   * Initialize help sub category.
+   *
+   * @global type $i18n
+   */
+  protected function init() {
+    global $i18n;
+
+    $this->category = new HelpCategory($this->category);
+
+    $this->routeKey = "/help/{0}/{1}";
+    $this->route    = $i18n->r($this->routeKey, [
+      FileSystem::sanitizeFilename($this->category->title),
+      FileSystem::sanitizeFilename($this->title)
+    ]);
+  }
 }

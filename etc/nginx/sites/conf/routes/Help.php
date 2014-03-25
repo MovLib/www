@@ -17,6 +17,8 @@
  */
 
 use \MovLib\Data\Help\HelpArticle;
+use \MovLib\Data\Help\HelpCategory;
+use \MovLib\Data\Help\HelpSubCategory;
 
 /**
  * Help routes
@@ -31,22 +33,64 @@ use \MovLib\Data\Help\HelpArticle;
 /* @var $this \MovLib\Tool\Console\Command\Production\NginxRoutes */
 ?>
 
+
+# ---------------------------------------------------------------------------------------------------------------------- Help
+
+
 location = <?= $this->r("/help") ?> {
   <?= $this->set("Index") ?>
   <?= $this->cache() ?>
 }
 
-location = <?= $this->r("/help/create") ?> {
-  <?= $this->set("Create") ?>
-  <?= $this->cache(false) ?>
-}
 
-location ^~ <?= $this->r("/help") ?> {
+# ---------------------------------------------------------------------------------------------------------------------- Help Categories
+
 
 <?php
 /* @var $result \mysqli_result */
-$result = HelpArticle::getHelpArticleIds();
-while ($row = $result->fetch_object()):
+$categoryResult = HelpCategory::getHelpCategoryIds();
+$this->setRoutesNamespace("Help\\Category");
+while ($row = $categoryResult->fetch_object()):
+  /* @var $category \MovLib\Data\Help\HelpCategory */
+  $category = new HelpCategory($row->id);
+?>
+
+location = <?= $category->route ?> {
+  <?= $this->set("Index") ?>
+  <?= $this->set($category->id, "help_category_id") ?>
+  <?= $this->cache() ?>
+}
+<?php endwhile; ?>
+
+
+# ---------------------------------------------------------------------------------------------------------------------- Help Sub-Categories
+
+
+<?php
+/* @var $result \mysqli_result */
+$subCategoryResult = HelpSubCategory::getHelpSubCategoryIds();
+$this->setRoutesNamespace("Help\\Category\\Subcategory");
+while ($row = $subCategoryResult->fetch_object()):
+  /* @var $subCategory \MovLib\Data\Help\HelpSubCategory */
+  $subCategory = new HelpSubCategory($row->id);
+?>
+
+location = <?= $subCategory->route ?> {
+  <?= $this->set("Index") ?>
+  <?= $this->set($subCategory->id, "help_subcategory_id") ?>
+  <?= $this->set($subCategory->category->id, "help_category_id") ?>
+  <?= $this->cache() ?>
+}
+<?php endwhile; ?>
+
+
+# ---------------------------------------------------------------------------------------------------------------------- Help Articles
+
+
+<?php
+/* @var $result \mysqli_result */
+$articleResult = HelpArticle::getHelpArticleIds();
+while ($row = $articleResult->fetch_object()):
   /* @var $article \MovLib\Data\Help\HelpArticle */
   $article = new HelpArticle($row->id);
 
@@ -58,18 +102,16 @@ while ($row = $result->fetch_object()):
   }
 ?>
 
-  location = <?= $article->route ?> {
-    <?= $this->set("Show") ?>
-    <?= $this->set($article->id, "help_article_id") ?>
-    <?= $this->cache() ?>
-  }
-
-  location = <?= "{$article->route}/edit" ?> {
-    <?= $this->set("Edit") ?>
-    <?= $this->set($article->id, "help_article_id") ?>
-    <?= $this->cache() ?>
-  }
-<?php endwhile; ?>
-
-  <?= $this->notFound() ?>
+location = <?= $article->route ?> {
+  <?= $this->set("Show") ?>
+  <?= $this->set($article->id, "help_article_id") ?>
+  <?= $this->cache() ?>
 }
+
+location = <?= "{$article->route}/edit" ?> {
+  <?= $this->set("Edit") ?>
+  <?= $this->set($article->id, "help_article_id") ?>
+  <?= $this->cache() ?>
+}
+
+<?php endwhile;

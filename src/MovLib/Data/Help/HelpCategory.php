@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\Help;
 
+use \MovLib\Data\FileSystem;
 use \MovLib\Presentation\Error\NotFound;
 
 /**
@@ -41,6 +42,19 @@ class HelpCategory extends \MovLib\Data\Database {
    */
   public $id;
 
+  /**
+   * The translated route of this help category.
+   *
+   * @var string
+   */
+  public $route;
+
+  /**
+   * The route key of this help category.
+   *
+   * @var string
+   */
+  public $routeKey;
 
   /**
    * The help category's title in the current display language.
@@ -83,6 +97,38 @@ class HelpCategory extends \MovLib\Data\Database {
       throw new NotFound;
     }
     $stmt->close();
+    if ($this->id) {
+      $this->init();
+    }
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Get all help category ids.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return \mysqli_result
+   *   The query result.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public static function getHelpCategoryIds() {
+    global $db;
+
+    return $db->query("SELECT `id` FROM `help_categories`")->get_result();
+  }
+
+  /**
+   * Initialize help category.
+   *
+   * @global type $i18n
+   */
+  protected function init() {
+    global $i18n;
+
+    $this->routeKey = "/help/{0}";
+    $this->route    = $i18n->r($this->routeKey, [ FileSystem::sanitizeFilename($this->title) ]);
+  }
 }
