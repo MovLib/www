@@ -29,32 +29,19 @@ namespace MovLib\Core\StreamWrapper;
 final class UploadStreamWrapper extends AbstractLocalStreamWrapper {
 
   /**
-   * Get the web accessible URL of the file.
+   * Get the external path of the given URI.
    *
-   * @global \MovLib\Kernel $kernel
-   * @staticvar array $urls
-   *   Used to cache already generated external URLs.
+   * @param string $uri [optional]
+   *   The URI to get the external path for.
    * @return string
-   *   The web accessible URL of the file.
+   *   The external path of the given URI.
    */
-  public function getExternalURL() {
-    // Directly return the URL if we already generated it once.
-    static $urls = [];
-    if (isset($urls[$this->uri])) {
-      return $urls[$this->uri];
-    }
-
-    // Build and cache the complete URL.
-    global $kernel;
-    $target = URL::encodePath($this->getTarget());
-    return ($urls[$this->uri] = "//{$kernel->domainStatic}/upload/{$target}");
+  public function getExternalPath($uri = null) {
+    return "/upload/{$this->getTarget($uri)}";
   }
 
   /**
-   * Get the canonical absolute path to the directory the stream wrapper is responsible for.
-   *
-   * @return string
-   *   The canonical absolute path to the directory the stream wrapper is responsible for.
+   * @inheritdoc
    */
   public function getPath() {
     return "{$_SERVER["DOCUMENT_ROOT"]}/var/uploads";
