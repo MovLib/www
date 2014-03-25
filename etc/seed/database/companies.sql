@@ -109,3 +109,17 @@ INSERT INTO `companies` SET
 ;
 
 -- END "Castle Rock Entertainment"
+
+-- START "Imagion AG"
+
+INSERT INTO `companies` SET
+  `created`                = CURRENT_TIMESTAMP,
+  `dyn_descriptions`       = '',
+  `dyn_wikipedia`          = '',
+  `name`                   = 'Imagion AG',
+  `aliases`                = 'a:0:{}',
+  `founding_date`          = '1998-00-00',
+  `dyn_image_descriptions` = ''
+;
+
+-- END "Imagion AG"
