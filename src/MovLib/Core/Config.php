@@ -107,6 +107,17 @@ class Config {
   public $hostname = "movlib.org";
 
   /**
+   * The hostname for static content.
+   *
+   * We use the same domain for static content all over our subdomains. While it's not the best for performance, it's
+   * the best for caching, because it doesn't matter where a client is browsing, the file will always be pointing to
+   * the same domain and if the client's cache has fetched the file on one subdomain it stays cached on the other.
+   *
+   * @var string
+   */
+  public $hostnameStatic = "movlib.org";
+
+  /**
    * Supported system language codes and locales.
    *
    * Each key contains a ISO 639-1 language code and the value is the associated locale (combination of aforementioned
@@ -145,6 +156,13 @@ class Config {
    * @var string
    */
   public $siteName = "MovLib";
+
+  /**
+   * The default time zone.
+   *
+   * @var string
+   */
+  public $timeZone = "UTC";
 
   /**
    * The system user.
