@@ -1209,6 +1209,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`help_categories` (
   `id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The help category’s unique identifier.',
   `dyn_titles` BLOB NOT NULL COMMENT 'The help category’s title in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The help category’s description in various languages. Keys are ISO alpha-2 language codes.',
+  `icon` VARCHAR(255) NOT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 COMMENT = 'Contains all help categories.'
