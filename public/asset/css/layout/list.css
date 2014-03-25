@@ -36,7 +36,6 @@ ol ol {
   list-style-type: lower-alpha;
 }
 
-.hover-list,
 .no-list {
   padding-left: 0;
   list-style: none;
@@ -48,47 +47,7 @@ ol ol {
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------
- * Hover lists (`ul` and `ol`).
- * ------------------------------------------------------------------------------------------------------------------ */
-
-.hover-list .hover-item {
-  border-bottom: 0 none;
-  display: block;
-  padding-top: 10px;
-  padding-bottom: 10px;
-  color: #656565;
-  transition: background-color 0.4s ease-out;
-  width: calc(100% + 40px);
-}
-
-.hover-list .hover-item:hover,
-.hover-list .hover-item:focus {
-  position: relative;
-  z-index: 2;
-  background-color: #e2f4fb;
-}
-
-.hover-list .hover-item .rating-user,
-.hover-list .hover-item .rating-mean {
-  float: right;
-  margin-right: 20px;
-}
-
-.hover-list .hover-item .rating-mean {
-  background: url("/asset/img/star.svg") center center no-repeat;
-  background-size: 60px 60px; /* Important for older WebKit browsers! */
-  color: #252525;
-  font-size: 15px;
-  font-weight: bold;
-  height: 60px;
-  letter-spacing: -1px;
-  line-height: 63px;
-  text-shadow: 0 0 5px #fff, 0 0 20px #fff;
-  width: 60px;
-}
-
-/* ---------------------------------------------------------------------------------------------------------------------
- * Hover lists (`ul` and `ol`).
+ * Grid lists (`ul` and `ol`).
  * ------------------------------------------------------------------------------------------------------------------ */
 
 /* This ensures that we have proper rows for the images in the grid. */

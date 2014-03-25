@@ -37,6 +37,7 @@
 @import "layout/typography.css";
 @import "layout/links.css";
 @import "layout/icon.css";
+@import "layout/generic.css";
 
 /* Specific styling */
 @import "layout/alert.css";
