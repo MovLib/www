@@ -146,13 +146,13 @@ abstract class AbstractIntlCommand extends \MovLib\Console\Command\AbstractComma
 
     foreach ($locales as $locale) {
       $this->writeDebug("Creating new global I18n instance for <comment>{$locale}</comment>");
-      $i18n = new I18n($locale);
+      $i18n->setLocale($locale);
 
       $this->writeVerbose("Creating translations for <comment>{$locale}</comment>");
       file_put_contents("dr://var/i18n/{$locale}/{$targetFilename}.php", "<?php return[{$this->translate()}];");
     }
 
-    $i18n = new I18n($config->defaultLocale);
+    $i18n->setLocale($i18n->defaultLocale);
     $this->writeDebug("Successfully created translations for " . implode(", ", $locales) . "!", self::MESSAGE_TYPE_INFO);
     return 0;
   }

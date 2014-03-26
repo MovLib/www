@@ -142,7 +142,7 @@ class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
 
     foreach ($config->locales as $locale) {
       $translatedRoutes = null;
-      $i18n             = new I18n($locale);
+      $i18n->setLocale($locale);
       $this->writeDebug("Generating routes for system locale <comment>{$i18n->locale}</comment>");
 
       $this->writeDebug("Started output buffering, here be dragons\n\n...\n");
@@ -193,7 +193,7 @@ class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
 
     // Make sure that the previously set language code is set again globally in case other commands are executed with
     // the same instance.
-    $i18n = new I18n($config->defaultLocale);
+    $i18n->setLocale($i18n->defaultLocale);
 
     // Let the user know that everything went fine.
     $this->writeVerbose("Successfully translated and compiled routes, plus reloaded nginx!", self::MESSAGE_TYPE_INFO);

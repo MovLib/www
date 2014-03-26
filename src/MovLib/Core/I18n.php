@@ -176,18 +176,7 @@ final class I18n {
     $this->defaultLocale       = $defaultLocale;
     $this->defaultLanguageCode = "{$defaultLocale[0]}{$defaultLocale[1]}";
     $this->systemLocales       = $systemLocales;
-
-    if (isset($systemLocales[$locale])) {
-      $this->locale       = $locale;
-      $this->languageCode = "{$locale[0]}{$locale[1]}";
-    }
-    elseif (in_array($locale, $systemLocales)) {
-      $this->locale       = $systemLocales[$locale];
-      $this->languageCode = $locale;
-    }
-    else {
-      throw new \InvalidArgumentException("\$locale ({$locale}) must be a valid system locale: " . implode(", ", $systemLocales));
-    }
+    $this->setLocale($locale);
   }
 
 
@@ -348,6 +337,31 @@ final class I18n {
     // @codeCoverageIgnoreEnd
     // @devEnd
     return $this->translate($route, $args, "routes/plural");
+  }
+
+  /**
+   * Set the locale.
+   *
+   * @param string $locale
+   *   The locale to set, you can also pass a language code.
+   * @return this
+   * @throws \InvalidArgumentException
+   */
+  public function setLocale($locale) {
+    if (isset($this->systemLocales[$locale])) {
+      $this->locale       = $locale;
+      $this->languageCode = "{$locale[0]}{$locale[1]}";
+    }
+    elseif (in_array($locale, $this->systemLocales)) {
+      $this->locale       = $this->systemLocales[$locale];
+      $this->languageCode = $locale;
+    }
+    else {
+      throw new \InvalidArgumentException(
+        "\$locale ({$locale}) must be a valid system locale: " . implode(", ", $this->systemLocales)
+      );
+    }
+    return $this;
   }
 
   /**
