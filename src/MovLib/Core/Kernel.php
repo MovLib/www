@@ -133,7 +133,7 @@ final class Kernel {
     // @devEnd
 
     $db   = new Database($config->database);
-    $i18n = new I18n($_SERVER["LANGUAGE_CODE"], $config->defaultLocale, $config->locales);
+    $i18n = new I18n($_SERVER["LANGUAGE_CODE"], $config->defaultLocale, $config->locales, $db);
 
     $config->siteSlogan            = $i18n->t($config->siteSlogan);
     $args                          = [ "sitename" => $config->siteName, "slogan" => $config->siteSlogan ];
