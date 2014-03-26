@@ -186,35 +186,6 @@ abstract class AbstractBase {
   }
 
   /**
-   * Format given Bytes to human readable form.
-   *
-   * <b>Example usages with Intl ICU</b>
-   * <pre>$i18n->t("{0,number} {1}", $this->formatBytes($bytes));</pre>
-   *
-   * @deprecated
-   * @internal
-   *   A loop is actually slower than the current implementation.
-   * @staticvar array $units
-   *   Available file size units.
-   * @param int $bytes
-   *   The number to format.
-   * @return array
-   *   Numeric array containing the truncated number in offset 0 and the unit in offset 1.
-   */
-  final protected function formatBytes($bytes) {
-    // https://en.wikipedia.org/wiki/Mebibyte
-    if ($bytes >= 1048576) {
-      return [ ceil($bytes / 1048576), "<abbr title='Mebibyte'>MiB</abbr>" ];
-    }
-    // https://en.wikipedia.org/wiki/Kibibyte
-    if ($bytes >= 1024) {
-      return [ ceil($bytes / 1024), "<abbr title='Kibibyte'>KiB</abbr>" ];
-    }
-    // https://en.wikipedia.org/wiki/Byte
-    return [ $bytes, "<abbr title='Byte'>B</abbr>" ];
-  }
-
-  /**
    * Get the image.
    *
    * @param \MovLib\Data\Image\Style $style
