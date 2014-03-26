@@ -33,4 +33,4 @@
  */
 $autoloader = require __DIR__ . "/lib/autoload.php";
 $kernel     = new \MovLib\Core\Kernel();
-$kernel->boot();
+$kernel->boot(__DIR__);
