@@ -96,7 +96,7 @@ final class FileSystem {
   public function compress($uri) {
     global $kernel;
     try {
-      $realpath      = $this->realpath($uri);
+      $realpath = $this->realpath($uri);
       Shell::execute("zopfli --ext 'gz' --gzip --verbose '{$realpath}'");
       $urigz = "{$uri}.gz";
       touch($urigz, filemtime($uri));
