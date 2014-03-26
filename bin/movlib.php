@@ -27,11 +27,22 @@
  * @since 0.0.1-dev
  */
 
-// Make sure that the document root is available to all classes as they expect.
-$_SERVER["DOCUMENT_ROOT"] = dirname(__DIR__);
+// Create symbolic links if called directly.
+if (realpath($_SERVER["SCRIPT_FILENAME"]) == __FILE__) {
+  if (posix_getuid() !== 0) {
+    trigger_error("Creation of symbolic links only works as root (or sudo).", E_USER_ERROR);
+  }
+  foreach ([ "admin", "dev", "install" ] as $binary) {
+    $binary = "/usr/local/bin/mov{$binary}";
+    if (!is_link($binary)) {
+      symlink(__FILE__, $binary);
+    }
+  }
+  exit();
+}
 
-$autoloader = require "{$_SERVER["DOCUMENT_ROOT"]}/vendor/autoload.php";
+// Assume that we were invoked via one of the symbolic links.
+$autoloader = require dirname(__DIR__) . "/lib/autoload.php";
 $kernel     = new \MovLib\Core\Kernel();
-
-$kernel->boot();
-(new \MovLib\Console\Application())->run();
+$kernel->boot(dirname(__DIR__));
+(new \MovLib\Console\Application(basename($_SERVER["PHP_SELF"], ".php")))->run();
