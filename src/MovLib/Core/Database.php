@@ -20,7 +20,7 @@ namespace MovLib\Core;
 use \MovLib\Exception\DatabaseException;
 
 /**
- * Global database.
+ * Defines the database object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -51,14 +51,17 @@ final class Database {
    *
    * @var array
    */
-  public $collations = [ "en" => null, "de" => " COLLATE utf8mb4_german2_ci" ];
+  public $collations = [
+    "en" => null,
+    "de" => " COLLATE utf8mb4_german2_ci",
+  ];
 
   /**
    * Name of the database to which this instance is connected.
    *
    * @var string
    */
-  protected $database = "movlib";
+  protected $database;
 
   /**
    * The current MySQLi connection.
@@ -81,12 +84,12 @@ final class Database {
 
 
   /**
-   * Instantiate new database.
+   * Instantiate new database object.
    *
-   * @param string $database [optional]
-   *   The database to connect to.
+   * @param string $database
+   *   Name of the database to connect to.
    */
-  public function __construct($database = "movlib") {
+  public function __construct($database) {
     $this->database = $database;
   }
 

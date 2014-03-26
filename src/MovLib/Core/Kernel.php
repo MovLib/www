@@ -111,7 +111,7 @@ final class Kernel {
 
     $config = file_exists(Config::URI) ? unserialize(file_get_contents(Config::URI)) : new Config();
 
-    $db   = new Database();
+    $db   = new Database($config->database);
     $i18n = new I18n();
 
     // Determine if we're booting for a HTTP request.

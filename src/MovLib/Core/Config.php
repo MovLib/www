@@ -44,6 +44,13 @@ class Config {
 
 
   /**
+   * The name of the database.
+   *
+   * @var string
+   */
+  public $database = "movlib";
+
+  /**
    * The default language code.
    *
    * <b>NOTE</b><br>
