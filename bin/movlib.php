@@ -28,7 +28,7 @@
  */
 
 // Create symbolic links if called directly.
-if (realpath($_SERVER["SCRIPT_FILENAME"]) == __FILE__) {
+if (basename($_SERVER["SCRIPT_FILENAME"]) == basename(__FILE__) && realpath($_SERVER["SCRIPT_FILENAME"]) == __FILE__) {
   if (posix_getuid() !== 0) {
     trigger_error("Creation of symbolic links only works as root (or sudo).", E_USER_ERROR);
   }
@@ -38,7 +38,7 @@ if (realpath($_SERVER["SCRIPT_FILENAME"]) == __FILE__) {
       symlink(__FILE__, $binary);
     }
   }
-  exit();
+  exit("Successfully created symbolic links.");
 }
 
 // Assume that we were invoked via one of the symbolic links.
