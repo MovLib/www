@@ -76,6 +76,21 @@ abstract class AbstractLocalStreamWrapper {
   public $uri;
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  // @devStart
+  // @codeCoverageIgnoreStart
+  public function __construct() {
+    $path = $this->getPath();
+    if (realpath($path) === false) {
+      throw new \LogicException("A stream wrapper's path must exist on the file system but '{$path}' doesn't");
+    }
+  }
+  // @codeCoverageIgnoreEnd
+  // @devEnd
+
+
   // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
 
 

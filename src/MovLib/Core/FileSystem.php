@@ -79,30 +79,6 @@ final class FileSystem {
   ];
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new file system.
-   *
-   * @staticvar boolean $registered
-   *   Whether stream wrappers were already registered or not.
-   */
-  public function __construct() {
-    static $registered = false;
-    if ($registered === false) {
-      foreach (self::$streamWrappers as $scheme => $class) {
-        if (stream_wrapper_register($scheme, $class) === false) {
-          Log::warning(
-            "Couldn't register '{$class}' as stream wrapper for scheme '{$scheme}://'. This might be because another " .
-            "stream wrapper is already registered for this scheme."
-          );
-        }
-      }
-    }
-  }
-
-
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
@@ -285,6 +261,28 @@ final class FileSystem {
     // @codeCoverageIgnoreEnd
     // @devEnd
     self::$registeredFiles[$uri] = $force;
+    return $this;
+  }
+
+  /**
+   * Instantiate new file system.
+   *
+   * @staticvar boolean $registered
+   *   Whether stream wrappers were already registered or not.
+   * @return this
+   */
+  public function registerStreamWrappers() {
+    static $registered = false;
+    if ($registered === false) {
+      foreach (self::$streamWrappers as $scheme => $class) {
+        if (stream_wrapper_register($scheme, $class) === false) {
+          Log::warning(
+            "Couldn't register '{$class}' as stream wrapper for scheme '{$scheme}://'. This might be because another " .
+            "stream wrapper is already registered for this scheme."
+          );
+        }
+      }
+    }
     return $this;
   }
 

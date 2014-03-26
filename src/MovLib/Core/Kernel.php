@@ -106,11 +106,13 @@ final class Kernel {
     set_error_handler([ $this, "errorHandler" ]);
     set_exception_handler([ $this, "exceptionHandler" ]);
 
-    // Prepare the core system.
-    $fs     = new FileSystem();
+    $fs = new FileSystem();
+    $fs->registerStreamWrappers();
+
     $config = file_exists(Config::URI) ? unserialize(file_get_contents(Config::URI)) : new Config();
-    $db     = new Database();
-    $i18n   = new I18n();
+
+    $db   = new Database();
+    $i18n = new I18n();
 
     // Determine if we're booting for a HTTP request.
     if (($this->http = PHP_SAPI == "fpm-fcgi")) {
