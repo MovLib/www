@@ -44,7 +44,13 @@ final class UploadStreamWrapper extends AbstractLocalStreamWrapper {
    * @inheritdoc
    */
   public function getPath() {
-    return "{$_SERVER["DOCUMENT_ROOT"]}/var/uploads";
+    static $path;
+    if ($path) {
+      return $path;
+    }
+    /* @var $fs \MovLib\Core\FileSystem */
+    global $fs;
+    return ($path = "{$fs->documentRoot}/var/uploads");
   }
 
 }

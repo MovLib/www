@@ -32,7 +32,13 @@ final class DocumentRootStreamWrapper extends AbstractLocalStreamWrapper {
    * @inheritdoc
    */
   public function getPath() {
-    return $_SERVER["DOCUMENT_ROOT"];
+    static $path;
+    if ($path) {
+      return $path;
+    }
+    /* @var $fs \MovLib\Core\FileSystem */
+    global $fs;
+    return ($path = $fs->documentRoot);
   }
 
 }

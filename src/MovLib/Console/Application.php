@@ -36,25 +36,15 @@ final class Application extends \Symfony\Component\Console\Application {
    * Instantiate new MovLib CLI application.
    *
    * @global \MovLib\Core\Config $config
+   * @param string $basename
+   *   The basename of the executed binary (without extension).
    */
-  public function __construct() {
+  public function __construct($basename) {
     global $config;
-
-    $basename = basename($_SERVER["SCRIPT_FILENAME"], ".php");
     parent::__construct($basename, $config->version);
     cli_set_process_title($basename);
 
-    // Create symbolic link if it doesn't exist yet for this executable, we have to make sure that the link points to
-    // the symbolic link document root and not the real document root.
-    $link = "/usr/local/bin/{$basename}";
-    if (posix_getuid() === 0 && !is_link($link)) {
-      symlink("{$config->documentRoot}/bin/{$_SERVER["SCRIPT_FILENAME"]}", $link);
-    }
-
     $commandDirectory = ucfirst(str_replace("mov", "", $basename));
-    if ($commandDirectory == "Test") {
-      $commandDirectory = "Admin";
-    }
 
     /* @var $fileinfo \SplFileInfo */
     foreach (new \RegexIterator(new \DirectoryIterator("dr://src/MovLib/Console/Command/{$commandDirectory}"), "/\.php/") as $fileinfo) {

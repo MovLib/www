@@ -61,6 +61,13 @@ final class FileSystem {
 
 
   /**
+   * The real document root path.
+   *
+   * @var string
+   */
+  public $documentRoot;
+
+  /**
    * List of files that should be deleted on shutdown.
    *
    * @var array
@@ -77,6 +84,20 @@ final class FileSystem {
     "asset"  => "\\MovLib\\Core\\StreamWrapper\\AssetStreamWrapper",
     "upload" => "\\MovLib\\Core\\StreamWrapper\\UploadStreamWrapper",
   ];
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Instantiate new file system.
+   *
+   * @param string $documentRoot
+   *   Real document root path.
+   */
+  public function __construct($documentRoot) {
+    $this->documentRoot = $documentRoot;
+  }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -143,6 +164,40 @@ final class FileSystem {
       }
     }
     return $this;
+  }
+
+  /**
+   * Get the external URL of the given URI.
+   *
+   * @param string $uri
+   *   The URI to get the external URL for.
+   * @return string
+   *   The external URL of the given URI.
+   */
+  public function getExternalURL($uri) {
+    static $streamWrappers = [], $uris = [];
+    if (isset($uris[$uri])) {
+      return $uris[$uri];
+    }
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (strpos($uri, "://") === false) {
+      throw new \LogicException("\$uri must be a valid URI in the form <scheme>://<path>.");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    $scheme = explode($uri, "://", 2)[0];
+    if (isset($streamWrappers[$scheme])) {
+      $streamWrappers[$scheme] = $this->getStreamWrapper($uri);
+    }
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (!method_exists($streamWrappers[$scheme], "getExternalURL")) {
+      throw new \LogicException("There is not external URL available for your URI '{$uri}'.");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    return ($uris[$uri] = $streamWrappers[$scheme]->getExternalURL());
   }
 
   /**
@@ -349,6 +404,25 @@ final class FileSystem {
     catch (\ErrorException $e) {
       throw new FileSystemException("Couldn't create symbolic link '{$link}' with target '{$target}'.", null, $e);
     }
+  }
+
+  /**
+   * Encode URL path preserving slashes.
+   *
+   * @param string $path
+   *   The URL path to encode.
+   * @return string
+   *   The encoded URL path.
+   */
+  public function urlEncodePath($path) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($path) || !is_string($path)) {
+      throw new \InvalidArgumentException("\$path cannot be empty and must be of type string.");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    return str_replace("%2F", "/", rawurlencode($path));
   }
 
 }

@@ -56,12 +56,16 @@ final class AssetStreamWrapper extends AbstractLocalStreamWrapper {
   /**
    * Get the external path of the given URI.
    *
+   * @global \MovLib\Core\Config $config
+   * @global \MovLib\Core\FileSystem $fs
    * @param string $uri [optional]
    *   The URI to get the external path for.
    * @return string
    *   The external path of the given URI.
    */
   public function getExternalPath($uri = null) {
+    global $config, $fs;
+
     $target    = $this->getTarget($uri);
     $extension = pathinfo($target, PATHINFO_EXTENSION);
 
@@ -76,14 +80,21 @@ final class AssetStreamWrapper extends AbstractLocalStreamWrapper {
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-    return "/asset/{$target}?" . self::$cacheBusters[$extension][$target];
+    return "//{$config->hostnameStatic}/asset/{$fs->urlEncodePath($target)}?" . self::$cacheBusters[$extension][$target];
   }
 
   /**
    * @inheritdoc
    */
   public function getPath() {
-    return "{$_SERVER["DOCUMENT_ROOT"]}/public/asset";
+    static $path;
+    if ($path) {
+      return $path;
+    }
+
+    /* @var $fs \MovLib\Core\FileSystem */
+    global $fs;
+    return ($path = "{$fs->documentRoot}/public/asset");
   }
 
 }
