@@ -449,15 +449,15 @@ class FullUser extends \MovLib\Data\User\User {
   /**
    * Get the <var>$rawPassword</var> hash.
    *
-   * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Core\Config $config
    * @param string $rawPassword
    *   The user supplied raw password.
    * @return string
    *   The <var>$rawPassword</var> hash.
    */
   public function hashPassword($rawPassword) {
-    global $kernel;
-    return password_hash($rawPassword, PASSWORD_DEFAULT, $kernel->passwordOptions);
+    global $config;
+    return password_hash($rawPassword, $config->passwordAlgorithm, $config->passwordOptions);
   }
 
   /**

@@ -17,9 +17,6 @@
  */
 namespace MovLib\Presentation;
 
-use \MovLib\Data\StreamWrapper\StreamWrapperFactory;
-use \MovLib\Data\URL;
-
 /**
  * The abstract presentation class provides several HTML related utility methods.
  *
@@ -42,8 +39,8 @@ abstract class AbstractBase {
    * need that. Please use common sense. In general you should simply create the anchor element instead of calling this
    * method.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Core\I18n $i18n
+   * @global \MovLib\Core\HTTP\Request $request
    * @link http://www.w3.org/TR/html5/text-level-semantics.html#the-a-element
    * @link http://www.nngroup.com/articles/avoid-within-page-links/ Avoid Within-Page Links
    * @param string $route
@@ -59,13 +56,13 @@ abstract class AbstractBase {
    *   The internal link ready for print.
    */
   final protected function a($route, $text, array $attributes = null, $ignoreQuery = true) {
-    global $i18n, $kernel;
+    global $i18n, $request;
 
     // We don't want any links to the current page (as per W3C recommendation). We also have to ensure that the anchors
     // aren't tabbed to, therefor we completely remove the href attribute. While we're at it we also remove the title
     // attribute because it doesn't add any value for screen readers without any target (plus the user is actually on
     // this very page).
-    if ($route == $kernel->requestURI) {
+    if ($route == $request->uri) {
       // Remove all attributes which aren't allowed on an anchor with empty href attribute.
       $unset = [ "download", "href", "hreflang", "rel", "target", "type" ];
       for ($i = 0; $i < 6; ++$i) {
@@ -81,12 +78,14 @@ abstract class AbstractBase {
     else {
       // We also have to mark the current anchor as active if the caller requested that we ignore the query part of the
       // URI (default behaviour of this method). We keep the title attribute in this case as it's a clickable link.
-      if ($ignoreQuery === true && $route == $kernel->requestPath) {
+      if ($ignoreQuery === true && $route == $request->path) {
         $this->addClass("active", $attributes);
       }
 
       // Add the route to the anchor element.
-      $attributes["href"] = $route;
+      /* @var $fs \MovLib\Core\FileSystem */
+      global $fs;
+      $attributes["href"] = $fs->urlEncodePath($route);
     }
 
     // Put it all together.
@@ -146,9 +145,6 @@ abstract class AbstractBase {
       // Local variables used to collect the expanded tag attributes.
       $expanded = null;
 
-      // Ensure we start from the beginning of the array.
-      reset($attributes);
-
       // Go through all attributes and expand them.
       foreach ($attributes as $name => $value) {
         // Special handling of boolean attributes, only include them if they are true and do not include the value.
@@ -192,35 +188,6 @@ abstract class AbstractBase {
   }
 
   /**
-   * Format given Bytes to human readable form.
-   *
-   * <b>Example usages with Intl ICU</b>
-   * <pre>$i18n->t("{0,number} {1}", $this->formatBytes($bytes));</pre>
-   *
-   * @deprecated
-   * @internal
-   *   A loop is actually slower than the current implementation.
-   * @staticvar array $units
-   *   Available file size units.
-   * @param int $bytes
-   *   The number to format.
-   * @return array
-   *   Numeric array containing the truncated number in offset 0 and the unit in offset 1.
-   */
-  final protected function formatBytes($bytes) {
-    // https://en.wikipedia.org/wiki/Mebibyte
-    if ($bytes >= 1048576) {
-      return [ ceil($bytes / 1048576), "<abbr title='Mebibyte'>MiB</abbr>" ];
-    }
-    // https://en.wikipedia.org/wiki/Kibibyte
-    if ($bytes >= 1024) {
-      return [ ceil($bytes / 1024), "<abbr title='Kibibyte'>KiB</abbr>" ];
-    }
-    // https://en.wikipedia.org/wiki/Byte
-    return [ $bytes, "<abbr title='Byte'>B</abbr>" ];
-  }
-
-  /**
    * Get the image.
    *
    * @param \MovLib\Data\Image\Style $style
@@ -261,61 +228,6 @@ abstract class AbstractBase {
   }
 
   /**
-   * Get the web accessible URL for given URI.
-   *
-   * @staticvar \MovLib\Data\StreamWrapper\AbstractLocalStreamWrapper $wrapper
-   *   Used to cache the stream wrapper instances.
-   * @param string $uri
-   *   Absolute URI for which to get the web accessible URL (e.g. <code>"asset://img/logo/vector.svg"</code>).
-   * @return string
-   *   The web accessible URL for given URI.
-   * @throws \ErrorException
-   */
-  final protected function getURL($uri) {
-    static $wrappers = null;
-
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (empty($uri) || !is_string($uri)) {
-      throw new \InvalidArgumentException("\$uri cannot be empty and must be of type string");
-    }
-    if (strpos($uri, "?") !== false || strpos($uri, "#") !== false) {
-      \MovLib\Data\Log::debug(
-        "Be careful including query strings and/or fragments in URIs passed to " . static::class . "::getURL() " .
-        "because they might be encoded to URL entities. If this is what you needed/wanted ignore this message."
-      );
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
-    $scheme = parse_url($uri, PHP_URL_SCHEME);
-
-    if (!$scheme) {
-      // Allow for:
-      //   - root-relative URIs (e.g. /robots.txt in https://movlib.org/robots.txt)
-      //   - protocol-relative URIs (e.g. //robots.txt which is expanded to https://movlib.org/robots.txt)
-      if ($scheme[0] == "/") {
-        return $uri;
-      }
-
-      // No scheme and not root, assume root.
-      $uri = URL::encodePath($uri);
-      return "/{$uri}";
-    }
-    // If the URI already has HTTP or HTTPS scheme do nothing.
-    elseif ($scheme == "http" || $scheme == "https") {
-      return $uri;
-    }
-
-    // Assume that we actually have a stream wrapper handling this kind of scheme.
-    if (!isset($wrappers[$scheme])) {
-      $wrappers[$scheme] = StreamWrapperFactory::create($uri);
-    }
-    $wrappers[$scheme]->uri = $uri;
-    return $wrappers[$scheme]->getExternalURL();
-  }
-
-  /**
    * Get the raw HTML string.
    *
    * @param string $text
@@ -324,6 +236,13 @@ abstract class AbstractBase {
    *   The raw HTML string.
    */
   final protected function htmlDecode($text) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($text) || !is_string($text)) {
+      throw new \InvalidArgumentException("\$text cannot be empty and must be of type string.");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     return htmlspecialchars_decode($text, ENT_QUOTES | ENT_HTML5);
   }
 
@@ -340,6 +259,13 @@ abstract class AbstractBase {
    *   <var>$text</var> with all HTML entities decoded.
    */
   final protected function htmlDecodeEntities($text) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($text) || !is_string($text)) {
+      throw new \InvalidArgumentException("\$text cannot be empty and must be of type string.");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     return html_entity_decode($text, ENT_QUOTES | ENT_HTML5);
   }
 
@@ -354,6 +280,13 @@ abstract class AbstractBase {
    *   <var>$text</var> with encoded HTML special characters.
    */
   final protected function htmlEncode($text) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($text) || !(is_string($text) || is_numeric($text))) {
+      throw new \InvalidArgumentException("\$text cannot be empty and must be of type string.");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     return htmlspecialchars($text, ENT_QUOTES | ENT_HTML5);
   }
 
@@ -370,8 +303,7 @@ abstract class AbstractBase {
   final protected function lang($lang) {
     global $i18n;
     if ($lang != $i18n->languageCode) {
-      $lang = $this->htmlEncode($lang);
-      return " lang='{$lang}'";
+      return " lang='{$this->htmlEncode($lang)}'";
     }
   }
 
@@ -385,6 +317,13 @@ abstract class AbstractBase {
    *   The normalized text.
    */
   final protected function normalizeLineFeeds($text) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($text) || !is_string($text)) {
+      throw new \InvalidArgumentException("\$text cannot be empty and must be of type string.");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     return preg_replace("/\R/u", "\n", $text);
   }
 
@@ -397,6 +336,13 @@ abstract class AbstractBase {
    *   The formatted text (html).
    */
   final protected function placeholder($text) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($text) || !is_string($text)) {
+      throw new \InvalidArgumentException("\$text cannot be empty and must be of type string.");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     return "<em class='placeholder'>{$this->htmlEncode($text)}</em>";
   }
 

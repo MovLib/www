@@ -44,13 +44,12 @@ bash /vagrant/bin/install-composer.sh
 # We need Symfony console to start our provisioning command.
 composer update --no-interaction --prefer-source --working-dir=/vagrant
 
-# Install everything else.
-php /vagrant/bin/movinstall.php all --environment=vagrant
+# Create all symbolic binary links in /usr/local/bin
+php /vagrant/bin/movlib.php
 
-# Fix permissions of all files.
-php /vagrant/bin/movadmin.php fix-permissions
-
-# Create symbolic link for the dev CLI.
-ln -s /vagrant/bin/movdev.php /usr/local/bin/movdev
+# Provision the system.
+movadmin config -cVagrant -s
+movadmin fix-permissions
+movinstall all
 
 exit 0

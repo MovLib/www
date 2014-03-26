@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation;
 
-use \MovLib\Presentation\Page;
+use \MovLib\Presentation\AbstractPresenter;
 
 /**
  * @coversDefaultClass \MovLib\Presentation\Page
@@ -29,11 +29,11 @@ use \MovLib\Presentation\Page;
  */
 class PageTest extends \MovLib\TestCase {
 
-  /** @var \MovLib\Presentation\Page */
+  /** @var \MovLib\Presentation\AbstractPresenter */
   public $page;
 
   public function setUp() {
-    $this->page = new Page("PHPUnit");
+    $this->page = new AbstractPresenter("PHPUnit");
   }
 
   /**

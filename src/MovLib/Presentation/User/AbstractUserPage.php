@@ -28,7 +28,7 @@ use \MovLib\Data\User\FullUser;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractUserPage extends \MovLib\Presentation\Page {
+abstract class AbstractUserPage extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Presentation\TraitSidebar;
 
 

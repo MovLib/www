@@ -27,14 +27,16 @@
  * @since 0.0.1-dev
  */
 
-/* @var $this \MovLib\Tool\Console\Command\Production\NginxRoutes */
-/* @var $db \MovLib\Data\Database */
-/* @var $i18n \MovLib\Data\I18n */
+/* @var $config \MovLib\Core\Config */
+/* @var $db \MovLib\Core\Database */
+/* @var $fs \MovLib\Core\FileSystem */
 /* @var $stmt \mysqli_stmt */
+/* @var $this \MovLib\Console\Command\Production\NginxRoutes */
+
 $stmt = $db->query(
   "SELECT `id`, COLUMN_GET(`dyn_titles`, ? AS CHAR(255)) AS `title`, `presenter` FROM `system_pages`",
   "s",
-  [ $i18n->defaultLanguageCode ]
+  [ $config->defaultLanguageCode ]
 );
 
 /* @var $systemPages \mysqli_result */
@@ -42,7 +44,7 @@ $systemPages = $stmt->get_result();
 
 /* @var $systemPage \MovLib\Data\SystemPage */
 while ($systemPage = $systemPages->fetch_object()):
-  $systemPage->title = \MovLib\Data\FileSystem::sanitizeFilename($systemPage->title);
+  $systemPage->title = $fs->sanitizeFilename($systemPage->title);
 ?>
 
 location = <?= $this->r("/{$systemPage->title}") ?> {

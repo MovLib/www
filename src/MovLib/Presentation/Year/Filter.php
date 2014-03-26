@@ -26,7 +26,7 @@ namespace MovLib\Presentation\Year;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Filter extends \MovLib\Presentation\Page {
+class Filter extends \MovLib\Presentation\AbstractPresenter {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

@@ -26,7 +26,7 @@ namespace MovLib\Presentation\Job;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractBase extends \MovLib\Presentation\Page {
+abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Presentation\TraitGone {
     goneGetContent as private traitGetGoneContent;
   }

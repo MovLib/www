@@ -8,7 +8,7 @@
     "linkNatives": "true",
     "attributesEmit": "false",
     "selleck": "false",
-    "paths": "public/asset/js",
-    "outdir": "public/doc/js"
+    "paths": "var/public/asset/js",
+    "outdir": "var/man/yuidoc"
   }
 }

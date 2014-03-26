@@ -30,7 +30,7 @@ use \MovLib\Presentation\Partial\Listing\EntityIndexListing;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\Page {
+class Index extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Presentation\TraitPagination;
   use \MovLib\Presentation\TraitSidebar;
 

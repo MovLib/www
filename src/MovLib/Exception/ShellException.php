@@ -17,8 +17,6 @@
  */
 namespace MovLib\Exception;
 
-use \MovLib\Data\Log;
-
 /**
  * Shell exceptions are thrown if something goes wrong while interacting with the shell.
  *
@@ -59,8 +57,6 @@ final class ShellException extends \RuntimeException {
     }
 
     parent::__construct("Couldn't execute command: {$command}", $code, $previous);
-
-    Log::warning($this);
   }
 
 }
