@@ -878,7 +878,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`media` (
   `changed` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The medium’s last update date and time.',
   `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The medium’s insert date and time.',
   `bootleg` TINYINT(1) NOT NULL DEFAULT FALSE COMMENT 'Flag if this medium is a bootleg or not.',
-  `type` TINYINT NOT NULL COMMENT 'The medium’s type as enumeration of one of \\\\MovLib\\\\Data\\\\Format\\\\FormatFactory class constants.',
+  `format` VARCHAR(20) NOT NULL COMMENT 'The medium’s type as enumeration of one of \\\\MovLib\\Presentation\\\\Partial\\\\Format\\\\FormatFactory class constants.',
   `dyn_notes` BLOB NOT NULL COMMENT 'The medium’s notes in various languages. Keys are ISO alpha-2 language codes.',
   `bin_format` BLOB NULL COMMENT 'The medium’s release format (e.g. DVD) as serialized PHP object (\\\\MovLib\\\\Data\\\\Format\\\\AbstractFormat).',
   PRIMARY KEY (`id`))
@@ -897,12 +897,15 @@ CREATE TABLE IF NOT EXISTS `movlib`.`releases` (
   `changed` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The release’s last update date and time.',
   `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The release’s insert date and time.',
   `country_code` CHAR(2) NOT NULL COMMENT 'The release’s ISO alpha-2 country code.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT FALSE COMMENT 'The release’s deleted flag.',
   `dyn_notes` BLOB NOT NULL COMMENT 'The release’s notes in various languages. Keys are ISO alpha-2 language codes.',
   `title` TEXT NOT NULL COMMENT 'The release’s title.',
+  `type` TINYINT NOT NULL COMMENT 'The release’s type as one of the \\\\MovLib\\Data\\\\Release\\\\Release constants.',
   `publishing_date_sale` DATE NULL COMMENT 'The release’s publishing date for sale.',
   `publishing_date_rental` DATE NULL COMMENT 'The release’s publishing date for rental.',
   `edition` TEXT NULL COMMENT 'The release’s edition.',
   `bin_identifiers` BLOB NULL COMMENT 'The release’s additional identifiers as serialized PHP object (\\\\MovLib\\\\Stub\\\\Data\\\\Release\\\\Identifier).',
+  `bin_media_counts` BLOB NULL COMMENT 'The release’s counts of media formats as serialized PHP array.',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 COMMENT = 'Contains all releases. A release contains one or more media.'
@@ -1204,9 +1207,33 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`help_categories` (
   `id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The help category’s unique identifier.',
-  `dyn_titles` BLOB NOT NULL COMMENT 'The help category’s translated titles.',
+  `dyn_titles` BLOB NOT NULL COMMENT 'The help category’s title in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The help category’s description in various languages. Keys are ISO alpha-2 language codes.',
+  `icon` VARCHAR(255) NOT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
+COMMENT = 'Contains all help categories.'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`help_subcategories`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`help_subcategories` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The help subcategory’s unique identifier.',
+  `help_category_id` TINYINT UNSIGNED NOT NULL COMMENT 'The help category’s unique id.',
+  `dyn_titles` BLOB NOT NULL COMMENT 'The help subcategory’s title in various languages. Keys are ISO alpha-2 language codes.',
+  PRIMARY KEY (`id`),
+  INDEX `fk_help_subcategories_help_category_id` (`help_category_id` ASC),
+  CONSTRAINT `fk_help_subcategories_help_categories`
+    FOREIGN KEY (`help_category_id`)
+    REFERENCES `movlib`.`help_categories` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains all help subcategories.'
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
 
@@ -1217,16 +1244,25 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`help_articles` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The help’s unique identifier.',
-  `category_id` TINYINT UNSIGNED NOT NULL,
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The creation date of the help as timestamp.',
-  `dyn_texts` BLOB NOT NULL COMMENT 'The help’s text in various languages. Keys are ISO alpha-2 language codes.',
-  `dyn_titles` BLOB NOT NULL COMMENT 'The help’s title in various languages. Keys are ISO alpha-2 language codes.',
-  `commit` CHAR(40) NULL COMMENT 'The help’s last history commit sha-1 hash.',
+  `help_category_id` TINYINT UNSIGNED NOT NULL COMMENT 'The help category’s unique identifier.',
+  `help_subcategory_id` INT UNSIGNED NULL COMMENT 'The help subcategory’s unique identifier.',
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The timestamp on which this help article was created.',
+  `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The timestamp on which this help article was changed.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the help article was deleted or not.',
+  `dyn_texts` BLOB NOT NULL COMMENT 'The help article’s text in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_titles` BLOB NOT NULL COMMENT 'The help article’s title in various languages. Keys are ISO alpha-2 language codes.',
+  `view_count` BIGINT NOT NULL DEFAULT 0 COMMENT 'The help article’s view count.',
   PRIMARY KEY (`id`),
-  INDEX `fk_help_articles_help_categories1_idx` (`category_id` ASC),
-  CONSTRAINT `fk_help_articles_help_categories1`
-    FOREIGN KEY (`category_id`)
+  INDEX `fk_help_articles_help_category_id` (`help_category_id` ASC),
+  INDEX `fk_help_articles_help_subcategory_id` (`help_subcategory_id` ASC),
+  CONSTRAINT `fk_help_articles_help_categories`
+    FOREIGN KEY (`help_category_id`)
     REFERENCES `movlib`.`help_categories` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_help_articles_help_subcategories`
+    FOREIGN KEY (`help_subcategory_id`)
+    REFERENCES `movlib`.`help_subcategories` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -1600,16 +1636,16 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`releases_media` (
   `release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The release’s identifier.',
-  `media_id` BIGINT UNSIGNED NOT NULL COMMENT 'The medium’s identifier.',
-  PRIMARY KEY (`release_id`, `media_id`),
-  INDEX `fk_releases_media_media_idx` (`media_id` ASC),
+  `medium_id` BIGINT UNSIGNED NOT NULL COMMENT 'The medium’s identifier.',
+  PRIMARY KEY (`release_id`, `medium_id`),
+  INDEX `fk_releases_media_media_idx` (`medium_id` ASC),
   CONSTRAINT `fk_releases_media_releases`
     FOREIGN KEY (`release_id`)
     REFERENCES `movlib`.`releases` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_releases_media_media`
-    FOREIGN KEY (`media_id`)
+    FOREIGN KEY (`medium_id`)
     REFERENCES `movlib`.`media` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
@@ -1621,13 +1657,13 @@ SHOW WARNINGS;
 -- Table `movlib`.`media_movies`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`media_movies` (
-  `media_id` BIGINT UNSIGNED NOT NULL COMMENT 'The medium’s identifier.',
+  `medium_id` BIGINT UNSIGNED NOT NULL COMMENT 'The medium’s identifier.',
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s identifier.',
   `bin_medium_movie` BLOB NOT NULL COMMENT 'The movie’s medium specific data as serialized PHP object.',
-  PRIMARY KEY (`media_id`, `movie_id`),
+  PRIMARY KEY (`medium_id`, `movie_id`),
   INDEX `fk_media_movies_movies_idx` (`movie_id` ASC),
   CONSTRAINT `fk_media_movies_media`
-    FOREIGN KEY (`media_id`)
+    FOREIGN KEY (`medium_id`)
     REFERENCES `movlib`.`media` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,

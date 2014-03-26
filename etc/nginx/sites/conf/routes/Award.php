@@ -20,6 +20,7 @@
  * Award routes
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -156,6 +157,15 @@ location ^~ <?= $this->r("/award") ?> {
     <?= $this->cache() ?>
   }
 
+  # -------------------------------------------------------------------------------------------------------------------- Events
+  <?php $this->setRoutesNamespace("Award\\Event") ?>
+
+
+  location ~* '^<?= $this->rp("/award/{0}/events") ?>$' {
+    <?= $this->set("Index") ?>
+    <?= $this->set('$1', "award_id") ?>
+    <?= $this->cache() ?>
+  }
 
   # -------------------------------------------------------------------------------------------------------------------- Icon
   <?php $this->setRoutesNamespace("Award\\Icon") ?>

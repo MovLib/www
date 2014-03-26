@@ -39,7 +39,6 @@ INSERT INTO `places` SET
   `latitude`     = 89,
   `longitude`    = -118.24368
 ;
-SET @place_los_angeles = LAST_INSERT_ID();
 
 -- START "Oscar"
 
@@ -213,7 +212,7 @@ INSERT INTO `awards_events` SET
   ),
   `start_date`          = '1995-03-27',
   `links`               = 'a:2:{i:0;s:80:"http://www.oscars.org/awards/academyawards/oscarlegacy/1990-1999/67nominees.html";i:1;s:112:"http://www.nytimes.com/1995/01/29/movies/bear-hunting-in-oscar-season-five-strategies.html?pagewanted=all&src=pm";}',
-  `place_id`            = @place_los_angeles
+  `place_id`            = 5368361
 ;
 SET @oscar_award_event_id = LAST_INSERT_ID();
 
@@ -233,7 +232,7 @@ INSERT INTO `movies_awards` SET
   `award_category_id` = @oscar_award_best_writing,
   `award_event_id`    = @oscar_award_event_id,
   `person_id`         = 7, /* Frank Darabont */
-  `won`               = false,
+  `won`               = true,
   `year`              = 1995
 ;
 
@@ -300,7 +299,7 @@ INSERT INTO `awards_categories` SET
 SET @golden_globe_award_screenplay = LAST_INSERT_ID();
 
 INSERT INTO `awards_events` SET
-  `award_id`            = @oscar_award_id,
+  `award_id`            = @golden_globe_award_id,
   `dyn_names`           = COLUMN_CREATE(
     'en', '52nd Golden Globe Awards',
     'de', 'Golden Globe Awards 1995'
@@ -314,8 +313,9 @@ INSERT INTO `awards_events` SET
     'de', 'http://de.wikipedia.org/wiki/Golden_Globe_Awards_1995'
   ),
   `start_date`          = '1995-01-21',
+  `end_date`            = '1995-01-21',
   `links`               = 'a:1:{i:0;s:40:"http://www.imdb.com/event/ev0000292/1995";}',
-  `place_id`            = @place_los_angeles
+  `place_id`            = 5368361
 ;
 SET @golden_globe_award_event_id = LAST_INSERT_ID();
 

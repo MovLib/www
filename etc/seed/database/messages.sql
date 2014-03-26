@@ -73,6 +73,7 @@ INSERT INTO `messages` (`message`, `dyn_translations`) VALUES
 ('Create New Genre', COLUMN_CREATE('de', 'Neues Genre Anlegen')),
 ('Create New Job', COLUMN_CREATE('de', 'Neue Tätigkeit Anlegen')),
 ('Create New Category', COLUMN_CREATE('de', 'Neue Kategorie Anlegen')),
+('Create New Event', COLUMN_CREATE('de', 'Neues Event Anlegen')),
 ('Create Movie', COLUMN_CREATE('de', 'Film Anlegen')),
 ('Create Series', COLUMN_CREATE('de', 'Serie Anlegen')),
 ('Create Release', COLUMN_CREATE('de', 'Veröffentlichung Anlegen')),
@@ -287,6 +288,8 @@ INSERT INTO `messages` (`message`, `dyn_translations`) VALUES
 ('Awards', COLUMN_CREATE('de', 'Auszeichnungen')),
 ('Award', COLUMN_CREATE('de', 'Auszeichnung')),
 ('won', COLUMN_CREATE('de', 'gewonnen')),
+('has won', COLUMN_CREATE('de', 'gewann')),
+('was nominated in', COLUMN_CREATE('de', 'wurde nominiert für')),
 ('nominated', COLUMN_CREATE('de', 'nominiert')),
 ('{0}x won', COLUMN_CREATE('de', '{0}x gewonnen')),
 ('{0}x nominated', COLUMN_CREATE('de', '{0}x nominiert')),
@@ -307,6 +310,8 @@ INSERT INTO `messages` (`message`, `dyn_translations`) VALUES
 ('from {0} to {1}', COLUMN_CREATE('de', 'von {0} bis {1}')),
 ('since {0}', COLUMN_CREATE('de', 'seit {0}')),
 ('until {0}', COLUMN_CREATE('de', 'bis {0}')),
+('in {0}', COLUMN_CREATE('de', 'in {0}')),
+('on {0}', COLUMN_CREATE('de', 'am {0}')),
 
 -- Coming Soon Page (must be last)
 
