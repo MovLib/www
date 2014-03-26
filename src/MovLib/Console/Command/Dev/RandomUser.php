@@ -130,13 +130,8 @@ class RandomUser extends \MovLib\Console\Command\AbstractCommand {
 
   /**
    * {@inheritdoc}
-   * @global \MovLib\Core\Config $config
-   * @global \MovLib\Core\Database $db
-   * @global \MovLib\Core\FileSystem $fs
-   * @global \MovLib\Core\I18n $i18n
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    global $config, $db, $fs, $i18n;
     $this->amount = (integer) $input->getArgument("amount");
 
     $this->write("Preparing to generate <comment>{$this->amount}</comment> random users ...");
@@ -218,12 +213,10 @@ class RandomUser extends \MovLib\Console\Command\AbstractCommand {
    *
    * The usernames we generate have to be absolutely unique, therefor we have to know all the usernames that are in use.
    *
-   * @global \MovLib\Tool\Database $db
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
   protected function setUsernames() {
-    global $db;
     if (($result = $db->query("SELECT `name` FROM `users`")->get_result())) {
       while ($user = $result->fetch_row()) {
         $this->usernames[] = $user[0];

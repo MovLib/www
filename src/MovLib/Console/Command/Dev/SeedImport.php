@@ -145,7 +145,6 @@ class SeedImport extends \MovLib\Console\Command\AbstractCommand {
   /**
    * Import one or more database seed data.
    *
-   * @global \MovLib\Tool\Database $db
    * @param array $scriptNames [optional]
    *   Numeric array containing the database seed data names that should be imported, if left empty (<code>NULL</code>)
    *   all seed data will be imported.
@@ -154,7 +153,6 @@ class SeedImport extends \MovLib\Console\Command\AbstractCommand {
    * @throws \RuntimeException
    */
   public function databaseImport(array $scriptNames = null) {
-    global $db;
     $queries = $scripts = null;
 
     // If no scripts where specified for import Import all available scripts.
@@ -240,11 +238,8 @@ class SeedImport extends \MovLib\Console\Command\AbstractCommand {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Tool\Kernel $kernel
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    global $kernel;
-
     $this->seedPath = "{$kernel->documentRoot}{$this->seedPath}";
     foreach (glob("{$this->seedPath}/" . self::OPTION_DATABASE . "/*.sql") as $seedScript) {
       $this->databaseScripts[basename($seedScript, ".sql")] = $seedScript;
@@ -273,8 +268,6 @@ class SeedImport extends \MovLib\Console\Command\AbstractCommand {
   /**
    * Create history repositories.
    *
-   * @global \MovLib\Tool\Database $db
-   * @global \MovLib\Tool\Kernel $kernel
    * @param string $type [optional]
    *   If supplied, only repositories of this type (e.g. <code>"movie"</code>) are created, otherwise all repositories
    *   are created.
@@ -282,8 +275,6 @@ class SeedImport extends \MovLib\Console\Command\AbstractCommand {
    * @throws \InvalidArgumentException
    */
   public function historyImport() {
-    global $db, $kernel;
-
     foreach ($this->historyTypes as $typePlural => $typeSingular) {
       // Remove complete history repository if it's present in the file system.
       $path = "{$kernel->documentRoot}/private/history/{$typeSingular}";
@@ -328,7 +319,6 @@ class SeedImport extends \MovLib\Console\Command\AbstractCommand {
   /**
    * Import ICU currency translations.
    *
-   * @global \MovLib\Tool\Kernel $kernel
    * @param string $source
    *   Absolute path to ICU source resources.
    * @return this
@@ -345,7 +335,6 @@ class SeedImport extends \MovLib\Console\Command\AbstractCommand {
   /**
    * ICU helper method to iterate over all available system languages and write the translated file.
    *
-   * @global \MovLib\Tool\Kernel $kernel
    * @staticvar string $scaffold
    *   Used for caching of the scaffold file.
    * @param string $destination
@@ -357,7 +346,6 @@ class SeedImport extends \MovLib\Console\Command\AbstractCommand {
    * @return this
    */
   protected function icuWriteTranslations($destination, callable $callback, $comment) {
-    global $kernel;
     static $scaffold = null;
     if (!$scaffold) {
       $scaffold = file_get_contents("{$kernel->pathTranslations}/scaffold.php");
@@ -374,15 +362,12 @@ class SeedImport extends \MovLib\Console\Command\AbstractCommand {
   /**
    * Import all seed data.
    *
-   * @global \MovLib\Tool\Kernel $kernel
    * @return this
    * @throws \MovLib\Exception\DatabaseExeption
    * @throws \ErrorException
    * @throws \RuntimeException
    */
   public function seedImport() {
-    global $kernel;
-
     // Array containing the names of all tasks that should be executed.
     $tasks = [
       "databaseImport",
@@ -410,7 +395,6 @@ class SeedImport extends \MovLib\Console\Command\AbstractCommand {
   /**
    * Import one ore more upload seed data.
    *
-   * @global \MovLib\Tool\Kernel $kernel
    * @param array $directoryNames [optional]
    *   Numeric array containing the upload directory data names that should be imported, if left empty (<code>NULL</code>)
    *   all seed data will be imported.
@@ -419,7 +403,6 @@ class SeedImport extends \MovLib\Console\Command\AbstractCommand {
    * @throws \RuntimeException
    */
   public function uploadImport(array $directoryNames = null) {
-    global $kernel;
     foreach ([ "private", "public" ] as $visibility) {
       $directories     = null;
       $seedDirectory   = "{$this->seedPath}/" . self::OPTION_UPLOAD . "/{$visibility}";

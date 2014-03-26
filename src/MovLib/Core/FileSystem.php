@@ -21,7 +21,9 @@ use \MovLib\Core\Log;
 use \MovLib\Exception\FileSystemException;
 
 /**
- * Global File System
+ * Defines the file system object.
+ *
+ * The core file system is also the factory for all custom stream wrappers.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -65,7 +67,22 @@ final class FileSystem {
    *
    * @var string
    */
-  public $documentRoot;
+  protected $documentRoot;
+
+  /**
+   * The process group.
+   *
+   * @var string
+   */
+  protected $group;
+
+  /**
+   * Whether this process has elevated privileges or not.
+   *
+   * @see FileSystem::setProcessOwner()
+   * @var boolean
+   */
+  protected $privileged = false;
 
   /**
    * List of files that should be deleted on shutdown.
@@ -85,6 +102,13 @@ final class FileSystem {
     "upload" => "\\MovLib\\Core\\StreamWrapper\\UploadStreamWrapper",
   ];
 
+  /**
+   * The process user.
+   *
+   * @var string
+   */
+  protected $user;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
@@ -92,11 +116,42 @@ final class FileSystem {
   /**
    * Instantiate new file system.
    *
+   * @staticvar boolean $registered
+   *   <code>TRUE</code> if stream wrappers were already registered, otherwise <code>FALSE</code>.
    * @param string $documentRoot
-   *   Real document root path.
+   *   Canonical absolute document root path.
+   * @param \MovLib\Core\Log $log
+   *   Log instance.
+   * @param string $user [optional]
+   *   Process user, defaults to <code>"movlib"</code>.
+   * @param string $group [optional]
+   *   Process group, defaults to <code>"movlib"</code>.
    */
-  public function __construct($documentRoot) {
+  public function __construct($documentRoot, \MovLib\Core\Log $log) {
+    static $registered = false;
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($documentRoot) || !is_string($documentRoot) || realpath($documentRoot) === false) {
+      throw new \InvalidArgumentException("\$documentRoot cannot be empty, must be of type string and exist on the local file system.");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     $this->documentRoot = $documentRoot;
+    $this->log          = $log;
+
+    // Register the stream wrappers if they weren't registered yet.
+    if ($registered === false) {
+      /* @var $class \MovLib\Core\StreamWrapper\AbstractLocalStream */
+      foreach (self::$streamWrappers as $scheme => $class) {
+        $class::$documentRoot = $this->documentRoot;
+        if (stream_wrapper_register($scheme, $class) === false) {
+          $log->warning(
+            "Couldn't register '{$class}' as stream wrapper for scheme '{$scheme}://'. This might be because another " .
+            "stream wrapper is already registered for this scheme."
+          );
+        }
+      }
+    }
   }
 
 
@@ -106,8 +161,6 @@ final class FileSystem {
   /**
    * Compress file.
    *
-   * @global \MovLib\Core\Config $config
-   * @global \MovLib\Core\Kernel $kernel
    * @param string $uri
    *   URI of the file to compress.
    * @return string
@@ -115,16 +168,14 @@ final class FileSystem {
    * @throws \MovLib\Exception\FileSystemException
    */
   public function compress($uri) {
-    global $kernel;
     try {
       $realpath = $this->realpath($uri);
       Shell::execute("zopfli --ext 'gz' --gzip --verbose '{$realpath}'");
       $urigz = "{$uri}.gz";
       touch($urigz, filemtime($uri));
-      if ($kernel->privileged === true) {
-        global $config;
-        chown($urigz, $config->user);
-        chgrp($urigz, $config->group);
+      if ($this->privileged && $this->user && $this->group) {
+        chown($urigz, $this->user);
+        chgrp($urigz, $this->group);
       }
       return $urigz;
     }
@@ -286,28 +337,6 @@ final class FileSystem {
   }
 
   /**
-   * Instantiate new file system.
-   *
-   * @staticvar boolean $registered
-   *   Whether stream wrappers were already registered or not.
-   * @return this
-   */
-  public function registerStreamWrappers() {
-    static $registered = false;
-    if ($registered === false) {
-      foreach (self::$streamWrappers as $scheme => $class) {
-        if (stream_wrapper_register($scheme, $class) === false) {
-          Log::warning(
-            "Couldn't register '{$class}' as stream wrapper for scheme '{$scheme}://'. This might be because another " .
-            "stream wrapper is already registered for this scheme."
-          );
-        }
-      }
-    }
-    return $this;
-  }
-
-  /**
    * Sanitizes a filename, replacing whitespace with dashes and transforming the string to lowercase.
    *
    * Removes special characters that are illegal in filenames on certain operating systems and special characters
@@ -339,6 +368,46 @@ final class FileSystem {
 
     // Always lowercase all filenames for better compatibility.
     return mb_strtolower($filename);
+  }
+
+  /**
+   * Set process owner (only used in CLI).
+   *
+   * @param string $user
+   *   The process user, pass <code>NULL</code> to reset the user.
+   * @param string $group
+   *   The process group, pass <code>NULL</code> to reset the group.
+   * @return this
+   */
+  public function setProcessOwner($user, $group) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    foreach ([ "user", "group" ] as $param) {
+      if (isset($param) && (empty(${$param}) || !is_string(${$param}))) {
+        throw new \InvalidArgumentException("\${$param} cannot be empty and must be of type string.");
+      }
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    if (isset($user) && !posix_getpwnam($user)) {
+      throw new \InvalidArgumentException("User {$user} doesn't exist.");
+    }
+    if (isset($group) && !posix_getgrnam($group)) {
+      throw new \InvalidArgumentException("Group {$group} doesn't exist.");
+    }
+
+    $this->group      = $group;
+    $this->privileged = posix_getuid() === 0;
+    $this->user       = $user;
+
+    foreach (self::$streamWrappers as $streamWrapper) {
+      $streamWrapper::$group      = $this->group;
+      $streamWrapper::$privileged = $this->privileged;
+      $streamWrapper::$user       = $this->user;
+    }
+
+    return $this;
   }
 
   /**

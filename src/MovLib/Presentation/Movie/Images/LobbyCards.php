@@ -31,13 +31,11 @@ class LobbyCards extends \MovLib\Presentation\Movie\Images\AbstractBase {
   /**
    * Instantiate new lobby cards presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
-    global $i18n;
-    parent::__construct("LobbyCard", $i18n->t("Lobby Card"), $i18n->t("Lobby Cards"), "lobby-card", "lobby-cards");
+    parent::__construct("LobbyCard", $this->intl->t("Lobby Card"), $this->intl->t("Lobby Cards"), "lobby-card", "lobby-cards");
   }
 
 }

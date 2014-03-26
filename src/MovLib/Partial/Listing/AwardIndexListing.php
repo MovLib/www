@@ -66,12 +66,10 @@ final class AwardIndexListing extends \MovLib\Partial\Listing\AwardListing {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    */
   public function __construct($listItems, $noItemsText = null) {
-    global $i18n;
-    $this->moviesTitle = $i18n->t("Movies");
-    $this->seriesTitle = $i18n->t("Series");
+    $this->moviesTitle = $this->intl->t("Movies");
+    $this->seriesTitle = $this->intl->t("Series");
     parent::__construct($listItems, $noItemsText);
   }
 
@@ -81,11 +79,8 @@ final class AwardIndexListing extends \MovLib\Partial\Listing\AwardListing {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function getAdditionalContent($award, $listItem) {
-    global $i18n;
-
     // @devStart
     // @codeCoverageIgnoreStart
     if(!($award instanceof \MovLib\Data\Award)) {
@@ -95,10 +90,10 @@ final class AwardIndexListing extends \MovLib\Partial\Listing\AwardListing {
     // @devEnd
 
     if (!isset($this->firstMovieRoute)) {
-      $this->firstMovieRoute = $i18n->rp("{$award->routeKey}/movies");
+      $this->firstMovieRoute = $this->intl->rp("{$award->routeKey}/movies");
     }
     if (!isset($this->firstSeriesRoute)) {
-      $this->firstSeriesRoute = $i18n->rp("{$award->routeKey}/series");
+      $this->firstSeriesRoute = $this->intl->rp("{$award->routeKey}/series");
     }
 
     $currentMovieRoute  = str_replace("{0}", $award->id, $this->firstMovieRoute);

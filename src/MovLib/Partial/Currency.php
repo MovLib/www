@@ -83,7 +83,6 @@ final class Currency extends \MovLib\Presentation\AbstractBase {
   /**
    * Format the given value.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @staticvar array $currencies
    *   Array used to cache the created HTML currencies.
    * @param integer|float $value
@@ -92,29 +91,27 @@ final class Currency extends \MovLib\Presentation\AbstractBase {
    *   The formatted value.
    */
   public function format($value) {
-    global $i18n;
     static $currencies = null;
 
     // If we created this string before, re-use it.
-    if (isset($currencies[$i18n->locale][$this->currency->code])) {
-      return $currencies[$i18n->locale][$this->currency->code];
+    if (isset($currencies[$this->intl->locale][$this->currency->code])) {
+      return $currencies[$this->intl->locale][$this->currency->code];
     }
 
     // Get the formatted string from our parent with the desired locale and replace the currency symbol with appropriate
     // HTML mark-up.
-    $currencies[$i18n->locale][$this->currency->code] = str_replace(
+    $currencies[$this->intl->locale][$this->currency->code] = str_replace(
       $this->currency->symbol,
       "<abbr title='{$this->currency->name}'>{$this->currency->symbol}</abbr>",
       $this->currency->format($value)
     );
 
-    return $currencies[$i18n->locale][$this->currency->code];
+    return $currencies[$this->intl->locale][$this->currency->code];
   }
 
   /**
    * Get select form element to select a currency.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param string $value
    *   The form element's value.
    * @param array $attributes [optional]
@@ -122,13 +119,12 @@ final class Currency extends \MovLib\Presentation\AbstractBase {
    * @param string $id [optional]
    *   The form element's unique identifier, defaults to <code>"currency"</code>.
    * @param string $label [optional]
-   *   The form element's translated label, default to <code>$i18n->t("Currency")</code>.
+   *   The form element's translated label, default to <code>$this->intl->t("Currency")</code>.
    * @return \MovLib\Presentation\Partial\FormElement\Select
    *   The select form element to select a currency.
    */
   public static function getSelectFormElement(&$value, array $attributes = null, $id = "currency", $label = null) {
-    global $i18n;
-    return new Select($id, $label ?: $i18n->t("Currency"), $i18n->getTranslations("currencies"), $value, $attributes);
+    return new Select($id, $label ?: $this->intl->t("Currency"), $this->intl->getTranslations("currencies"), $value, $attributes);
   }
 
 }

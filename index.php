@@ -31,6 +31,7 @@
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-$autoloader = require __DIR__ . "/lib/autoload.php";
-$kernel     = new \MovLib\Core\Kernel();
-$kernel->boot(__DIR__);
+
+// No need for IIFE because we aren't declaring any variables.
+require __DIR__ . "/lib/autoload.php";
+(new \MovLib\Core\Kernel())->bootHTTP(__DIR__);

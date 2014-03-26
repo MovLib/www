@@ -31,7 +31,6 @@ final class ShellException extends \RuntimeException {
   /**
    * Instantiate new shell exception.
    *
-   * @global \MovLib\Kernel $kernel
    * @param string $command
    *   The executed command.
    * @param mixed $output [optional]
@@ -40,7 +39,6 @@ final class ShellException extends \RuntimeException {
    *   Any previously thrown exception for chaining.
    */
   public function __construct($command, $output = null, $previous = null) {
-    global $kernel;
     $message = $code = null;
 
     if (is_integer($output)) {

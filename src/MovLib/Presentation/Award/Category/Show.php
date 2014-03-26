@@ -40,12 +40,9 @@ class Show extends \MovLib\Presentation\Award\Category\AbstractBase {
   /**
    * Instantiate new award presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
-    global $i18n, $kernel;
     $this->award         = new Award((integer) $_SERVER["AWARD_ID"]);
     $this->awardCategory = new AwardCategory((integer) $_SERVER["AWARD_CATEGORY_ID"]);
     $routeArgs           = [ $this->awardCategory->awardId, $this->awardCategory->id ];
@@ -57,9 +54,9 @@ class Show extends \MovLib\Presentation\Award\Category\AbstractBase {
     $this->initPage($this->awardCategory->name);
     $this->initLanguageLinks("/award/{0}/category/{1}", $routeArgs);
     $this->initBreadcrumb([
-      [ $i18n->rp("/awards"), $i18n->t("Awards") ],
+      [ $this->intl->rp("/awards"), $this->intl->t("Awards") ],
       [ $this->award->route, $this->award->name ],
-      [ $i18n->rp("/award/{0}/categories", [ $this->award->id ]), $i18n->t("Categories") ],
+      [ $this->intl->rp("/award/{0}/categories", [ $this->award->id ]), $this->intl->t("Categories") ],
     ]);
     $this->sidebarInit();
 
@@ -71,12 +68,8 @@ class Show extends \MovLib\Presentation\Award\Category\AbstractBase {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   protected function getPageContent() {
-    global $i18n, $kernel;
-
     // Enhance the page title with microdata.
     $this->schemaType = "Intangible";
     $this->pageTitle  = "<span property='name'>{$this->awardCategory->name}</span>";
@@ -89,16 +82,16 @@ class Show extends \MovLib\Presentation\Award\Category\AbstractBase {
     $info = null;
 
     if ($this->awardCategory->firstAwardingYear && $this->awardCategory->lastAwardingYear) {
-      $info .= "<span>{$i18n->t("from {0} to {1}", [
+      $info .= "<span>{$this->intl->t("from {0} to {1}", [
         $this->awardCategory->firstAwardingYear,
         $this->awardCategory->lastAwardingYear
       ])}</span>";
     }
     else if ($this->awardCategory->firstAwardingYear) {
-      $info .= "<span>{$i18n->t("since {0}", [ $this->awardCategory->firstAwardingYear ])}</span>";
+      $info .= "<span>{$this->intl->t("since {0}", [ $this->awardCategory->firstAwardingYear ])}</span>";
     }
     else if ($this->awardCategory->lastAwardingYear) {
-      $info .= "<span>{$i18n->t("until {0}", [ $this->awardCategory->lastAwardingYear ])}</span>";
+      $info .= "<span>{$this->intl->t("until {0}", [ $this->awardCategory->lastAwardingYear ])}</span>";
     }
 
     // Construct the wikipedia link.
@@ -106,7 +99,7 @@ class Show extends \MovLib\Presentation\Award\Category\AbstractBase {
       if ($info) {
         $info .= "<br>";
       }
-      $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->award->wikipedia}' itemprop='sameAs' target='_blank'>{$i18n->t("Wikipedia Article")}</a>";
+      $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->award->wikipedia}' itemprop='sameAs' target='_blank'>{$this->intl->t("Wikipedia Article")}</a>";
     }
 
     $this->headingBefore = "<div class='r'><div class='s s10'>";
@@ -120,7 +113,7 @@ class Show extends \MovLib\Presentation\Award\Category\AbstractBase {
     // Description section
     if ($this->awardCategory->description) {
       $content .=
-        $this->getSection("description", $i18n->t("Description"), $this->htmlDecode($this->awardCategory->description))
+        $this->getSection("description", $this->intl->t("Description"), $this->htmlDecode($this->awardCategory->description))
       ;
     }
 
@@ -129,8 +122,8 @@ class Show extends \MovLib\Presentation\Award\Category\AbstractBase {
     }
 
     return new Alert(
-      $i18n->t("{sitename} has no further details about this award category.", [ "sitename"    => $kernel->siteName ]),
-      $i18n->t("No Data Available"),
+      $this->intl->t("{sitename} has no further details about this award category.", [ "sitename"    => $this->config->siteName ]),
+      $this->intl->t("No Data Available"),
       Alert::SEVERITY_INFO
     );
   }

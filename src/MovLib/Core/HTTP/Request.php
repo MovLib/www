@@ -153,11 +153,10 @@ final class Request {
   /**
    * Instantiate new client request object.
    *
-   * @global \MovLib\Core\I18n $i18n
+   * @param \MovLib\Core\Intl $intl
+   *   Active intl instance.
    */
-  public function __construct() {
-    global $i18n;
-
+  public function __construct(\MovLib\Core\Intl $intl) {
     $this->cookies       =& $_COOKIE;
     $this->files         =& $_FILES;
     $this->hostname      =  $_SERVER["SERVER_NAME"];
@@ -178,14 +177,14 @@ final class Request {
     // Careful, it wouldn't make much sense to tell the client to read our privacy policy and at the same time block
     // that page. Therefore we have to make sure that the client without IP address and/or user agent string is at least
     // able to go to that page.
-    $privacyPolicyRoute = $i18n->r("/privacy-policy");
+    $privacyPolicyRoute = $intl->r("/privacy-policy");
     if ($privacyPolicyRoute != $this->path && $this->remoteAddress === false || $this->userAgent === false) {
       throw new Forbidden(
-        "<p>{$i18n->t("IP address or user agent string is invalid or empty.")}</p>" .
-        "<p>{$i18n->t(
+        "<p>{$intl->t("IP address or user agent string is invalid or empty.")}</p>" .
+        "<p>{$intl->t(
           "Please note that you have to submit your IP address and user agent string to identify yourself as being " .
           "human; should you have privacy concerns read our {privacy_policy}.",
-          [ "privacy_policy" => "<a href='{$privacyPolicyRoute}'>{$i18n->t("Privacy Policy")}</a>" ]
+          [ "privacy_policy" => "<a href='{$privacyPolicyRoute}'>{$intl->t("Privacy Policy")}</a>" ]
         )}</p>"
       );
     }

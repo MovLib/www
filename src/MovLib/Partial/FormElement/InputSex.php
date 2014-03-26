@@ -53,7 +53,6 @@ final class InputSex extends \MovLib\Partial\FormElement\RadioGroup {
   /**
    * Instantiate new input sex element.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param string $id
    *   {@inheritdoc}
    * @param string $label
@@ -67,11 +66,10 @@ final class InputSex extends \MovLib\Partial\FormElement\RadioGroup {
    *
    */
   public function __construct($id, $label, &$value, $help = null, $helpPopup = false) {
-    global $i18n;
     parent::__construct($id, $label, [
-      self::FEMALE  => $i18n->t("Female"),
-      self::MALE    => $i18n->t("Male"),
-      self::UNKNOWN => $i18n->t("Unknown"),
+      self::FEMALE  => $this->intl->t("Female"),
+      self::MALE    => $this->intl->t("Male"),
+      self::UNKNOWN => $this->intl->t("Unknown"),
     ], $value);
     if ($helpPopup) {
       $this->attributes["#help-popup"] = $help;

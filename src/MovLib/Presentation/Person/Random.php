@@ -50,20 +50,17 @@ class Random {
   /**
    * Redirect to random person presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   public function __construct() {
-    global $i18n, $kernel;
     $this->personId = Person::getRandomPersonId();
     if (isset($this->personId)) {
-      throw new SeeOtherRedirect($i18n->r("/person/{0}", [ $this->personId ]));
+      throw new SeeOtherRedirect($this->intl->r("/person/{0}", [ $this->personId ]));
     }
     else {
       $kernel->alerts .= new Alert(
-        $i18n->t("There is currently no person in our database"),
-        $i18n->t("Check back later"),
+        $this->intl->t("There is currently no person in our database"),
+        $this->intl->t("Check back later"),
         Alert::SEVERITY_INFO
       );
       throw new SeeOtherRedirect("/");

@@ -70,13 +70,10 @@ class AwardListing extends \MovLib\Presentation\AbstractBase {
   /**
    * Get the string representation of the listing.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The string representation of the listing.
    */
   public function __toString() {
-    global $i18n;
-
     // @devStart
     // @codeCoverageIgnoreStart
     try {
@@ -88,7 +85,7 @@ class AwardListing extends \MovLib\Presentation\AbstractBase {
         // @devStart
         // @codeCoverageIgnoreStart
         if (!($award instanceof \MovLib\Data\Award)) {
-          throw new \LogicException($i18n->t("\$award has to be a valid award object!"));
+          throw new \LogicException($this->intl->t("\$award has to be a valid award object!"));
         }
         // @codeCoverageIgnoreEnd
         // @devEnd
@@ -101,12 +98,12 @@ class AwardListing extends \MovLib\Presentation\AbstractBase {
 
       if (!$this->noItemsText) {
         $this->noItemsText = new Alert(
-          $i18n->t(
+          $this->intl->t(
             "We couldn’t find any award matching your filter criteria, or there simply isn’t any award available." .
             "Would you like to {0}create a new entry{1}?",
-            [ "<a href='{$i18n->r("/award/create")}'>", "</a>" ]
+            [ "<a href='{$this->intl->r("/award/create")}'>", "</a>" ]
           ),
-          $i18n->t("No Companies"),
+          $this->intl->t("No Companies"),
           Alert::SEVERITY_INFO
         );
       }
@@ -127,7 +124,6 @@ class AwardListing extends \MovLib\Presentation\AbstractBase {
   /**
    * Format a award list item.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param \MovLib\Data\Company\FullCompany $award
    *   The award to format.
    * @param mixed $listItem [optional]
@@ -136,20 +132,18 @@ class AwardListing extends \MovLib\Presentation\AbstractBase {
    *   The formatted award list item.
    */
   final protected function formatListItem($award, $listItem = null) {
-    global $i18n;
-
     // Put award dates together.
     $awardDates = null;
     if ($award->firstAwardingYear || $award->lastAwardingYear) {
       $awardDates    = "<br><span class='small'>";
       if ($award->firstAwardingYear && $award->lastAwardingYear) {
-        $awardDates .= $i18n->t("from {0} to {1}", [ $award->firstAwardingYear, $award->lastAwardingYear ]);
+        $awardDates .= $this->intl->t("from {0} to {1}", [ $award->firstAwardingYear, $award->lastAwardingYear ]);
       }
       else if ($award->firstAwardingYear) {
-        $awardDates .= $i18n->t("since {0}", [ $award->firstAwardingYear ]);
+        $awardDates .= $this->intl->t("since {0}", [ $award->firstAwardingYear ]);
       }
       else if ($award->lastAwardingYear) {
-        $awardDates .= $i18n->t("until {0}", [ $award->lastAwardingYear ]);
+        $awardDates .= $this->intl->t("until {0}", [ $award->lastAwardingYear ]);
       }
       $awardDates   .= "</span>";
     }

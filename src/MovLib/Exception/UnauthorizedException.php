@@ -34,14 +34,8 @@ final class UnauthorizedException extends \RuntimeException implements \MovLib\E
 
   /**
    * {@inheritdoc}
-   * @global \MovLib\Core\Config $config
-   * @global \MovLib\Core\I18n $i18n
-   * @global \MovLib\Presentation\AbstractPresenter $presenter
-   * @global \MovLib\Core\HTTP\Request $request
-   * @global \MovLib\Core\HTTP\Response $response
    */
   public function getPresentation() {
-    global $config, $i18n, $presenter, $request, $response;
     header("WWW-Authenticate: {$config->siteName} location='{$i18n->r("/profile/sign-in")}'", true, 401);
 
     // Never cache an unauthorized response.

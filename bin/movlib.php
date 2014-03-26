@@ -29,20 +29,43 @@
 
 // Create symbolic links if called directly.
 if (basename($_SERVER["SCRIPT_FILENAME"]) == basename(__FILE__) && realpath($_SERVER["SCRIPT_FILENAME"]) == __FILE__) {
-  if (posix_getuid() !== 0) {
-    trigger_error("Creation of symbolic links only works as root (or sudo).", E_USER_ERROR);
-  }
-  foreach ([ "admin", "dev", "install" ] as $binary) {
-    $binary = "/usr/local/bin/mov{$binary}";
-    if (!is_link($binary)) {
-      symlink(__FILE__, $binary);
+  if (count($argv) === 0) {
+    if (posix_getuid() !== 0) {
+      trigger_error("Creation of symbolic links only works as root (or sudo).", E_USER_ERROR);
     }
+
+    /**
+     * Write message to console output.
+     *
+     * @global array $argv
+     * @param string $message
+     *   The message to write.
+     */
+    $write = function ($message) {
+      global $argv;
+      foreach ([ "-v", "-vv", "-vvv", "--verbose" ] as $verbose) {
+        if (in_array($verbose, $argv)) {
+          echo $message , PHP_EOL;
+          return;
+        }
+      }
+    };
+
+    // Create symbolic links for all three binaries.
+    // - "admin" is the default command
+    // - "dev" is only available in development environments
+    // - "install" is for various installation tasks that are needed in production and in development
+    foreach ([ "admin", "dev", "install" ] as $binary) {
+      $binary = "/usr/local/bin/mov{$binary}";
+      $write("Creating symbolic link for {$binary}");
+      if (!is_link($binary)) {
+        symlink(__FILE__, $binary);
+      }
+    }
+
+    exit();
   }
-  exit("Successfully created symbolic links.");
 }
 
-// Assume that we were invoked via one of the symbolic links.
-$autoloader = require dirname(__DIR__) . "/lib/autoload.php";
-$kernel     = new \MovLib\Core\Kernel();
-$kernel->boot(dirname(__DIR__));
-(new \MovLib\Console\Application(basename($_SERVER["PHP_SELF"], ".php")))->run();
+require dirname(__DIR__) . "/lib/autoload.php";
+(new \MovLib\Core\Kernel())->bootCLI(dirname(__DIR__), basename($_SERVER["PHP_SELF"], ".php"));

@@ -58,23 +58,18 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
   /**
    * Instantiate new user email settings presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\Session $session
    * @throws \MovLib\Presentation\Error\Unauthorized
    */
   public function __construct() {
-    global $i18n, $kernel, $session;
-
     // Disallow caching of email settings.
     session_cache_limiter("nocache");
 
     // We call both auth-methods the session has to ensure that the error message we display is as accurate as possible.
-    $session->checkAuthorization($i18n->t("You need to sign in to change your email address."));
-    $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
+    $session->checkAuthorization($this->intl->t("You need to sign in to change your email address."));
+    $session->checkAuthorizationTimestamp($this->intl->t("Please sign in again to verify the legitimacy of this request."));
 
     // Translate and set the page title.
-    $this->init($i18n->t("Email Settings"), "/profile/email-settings", [[ $i18n->r("/profile"), $i18n->t("Profile") ]]);
+    $this->init($this->intl->t("Email Settings"), "/profile/email-settings", [[ $this->intl->r("/profile"), $this->intl->t("Profile") ]]);
 
     // Validate the token if the page was requested via GET and a token is actually present.
     if ($kernel->requestMethod == "GET" && !empty($_GET["token"])) {
@@ -82,19 +77,19 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
     }
 
     // Field to enter the new email address.
-    $this->email = new InputEmail("email", $i18n->t("Email Address"), [ "required" => true ]);
-    $this->email->setHelp($i18n->t(
+    $this->email = new InputEmail("email", $this->intl->t("Email Address"), [ "required" => true ]);
+    $this->email->setHelp($this->intl->t(
       "MovLib takes your privacy seriously. That’s why your email address will never show up in public. In fact, it " .
       "stays top secret like your password. If you’d like to manage when to receive messages from MovLib go to your " .
       "{0}notification settings{1}.",
-      [ "<a href='{$i18n->r("/profile/notification-settings")}'>", "</a>" ]
+      [ "<a href='{$this->intl->r("/profile/notification-settings")}'>", "</a>" ]
     ));
 
     // Initialize the actual form of this page.
     $this->form  = new Form($this, [ $this->email ]);
 
     // The submit button.
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Change"), [ "class" => "btn btn-large btn-success" ]);
+    $this->form->actionElements[] = new InputSubmit($this->intl->t("Change"), [ "class" => "btn btn-large btn-success" ]);
   }
 
 
@@ -105,19 +100,15 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
    * @inheritdoc
    */
   protected function getPageContent() {
-    global $i18n;
-    $currentEmail           = new Alert($i18n->t("Your current email address is {0}.", [ $this->placeholder($this->user->email) ]));
+    $currentEmail           = new Alert($this->intl->t("Your current email address is {0}.", [ $this->placeholder($this->user->email) ]));
     $currentEmail->severity = Alert::SEVERITY_INFO;
     return "{$currentEmail}{$this->form}";
   }
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   protected function valid() {
-    global $i18n, $kernel;
     $kernel->sendEmail(new EmailChange($this->user, $this->email->value));
 
     // The request has been accepted, but further action is required to complete it.
@@ -125,15 +116,15 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
 
     // Explain to the user where to find this further action to complete the request.
     $this->alerts .= new Alert(
-      $i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value) ]),
-      $i18n->t("Successfully Requested Email Change"),
+      $this->intl->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value) ]),
+      $this->intl->t("Successfully Requested Email Change"),
       Alert::SEVERITY_SUCCESS
     );
 
     // Also explain that this change is no immidiate action and that our system is still using the old email address.
     $this->alerts .= new Alert(
-      $i18n->t("You have to sign in with your old email address until you’ve successfully confirmed your email change via the link that we’ve just sent you."),
-      $i18n->t("Important!"),
+      $this->intl->t("You have to sign in with your old email address until you’ve successfully confirmed your email change via the link that we’ve just sent you."),
+      $this->intl->t("Important!"),
       Alert::SEVERITY_INFO
     );
 
@@ -146,21 +137,18 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
    * The redirect exception is thrown if the supplied data is valid. The user will be redirected to her or his personal
    * dashboard.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param null|array $errors
    *   {@inheritdoc}
    * @return this
    */
   public function validate($errors) {
-    global $i18n;
-
     // Check if the user re-entered the email she or he is already using, if not check if this email address is taken
     // by another user. If a user enters a email address that is already in use, this might imply that the user has
     // multiple accounts. Although it's never good having user's with multiple accounts, there isn't much we can do
     // against it and punishing somebody (at this point for example) would be senseless. Just tell the user that this
     // address is taken and carry on.
     if ($this->user->email == $this->email->value) {
-      $errors[] = $i18n->t("You are already using this email address.");
+      $errors[] = $this->intl->t("You are already using this email address.");
     }
     // Check if this email address is already in use by another user. Entering an already used email address might imply
     // that the user has multiple accounts. Although it's never good having user's with multiple accounts, there isn't
@@ -169,9 +157,9 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
     // anyone use any email we already have in our system. A user experiencing this kind of problem should contact us
     // directly.
     elseif ($this->user->checkEmail($this->email->value) === true) {
-      $errors[] = $i18n->t("This email address is already is use, please choose another one.");
-      $errors[] = $i18n->t("If you feel that receiving this error is a mistake please {0}contact us{1}.", [
-        "<a href='{$i18n->r("/contact")}'>", "</a>"
+      $errors[] = $this->intl->t("This email address is already is use, please choose another one.");
+      $errors[] = $this->intl->t("If you feel that receiving this error is a mistake please {0}contact us{1}.", [
+        "<a href='{$this->intl->r("/contact")}'>", "</a>"
       ]);
     }
 
@@ -185,20 +173,16 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
   /**
    * Validate the submitted authentication token and update the user's email address.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\User\Session $session
    * @return this
    * @throws \MovLib\Presentation\Error\Unauthorized
    */
   protected function validateToken() {
-    global $i18n, $kernel;
     $tmp = new Temporary();
 
     if (($data = $tmp->get($_GET["token"])) === false || empty($data["user_id"]) || empty($data["new_email"])) {
       $kernel->alerts .= new Alert(
-        $i18n->t("Your confirmation token is invalid or expired, please fill out the form again."),
-        $i18n->t("Token Invalid"),
+        $this->intl->t("Your confirmation token is invalid or expired, please fill out the form again."),
+        $this->intl->t("Token Invalid"),
         Alert::SEVERITY_ERROR
       );
       throw new SeeOtherRedirect($kernel->requestPath);
@@ -207,8 +191,8 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
     if ($data["user_id"] !== $this->user->id) {
       $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
       throw new Unauthorized(
-        $i18n->t("The confirmation token is invalid, please sign in again and request a new token."),
-        $i18n->t("Token Invalid"),
+        $this->intl->t("The confirmation token is invalid, please sign in again and request a new token."),
+        $this->intl->t("Token Invalid"),
         Alert::SEVERITY_ERROR,
         true
       );
@@ -218,8 +202,8 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
     $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
 
     $this->alerts .= new Alert(
-      $i18n->t("Your email address was successfully changed. Please use your new email address to sign in from now on."),
-      $i18n->t("Email Changed Successfully"),
+      $this->intl->t("Your email address was successfully changed. Please use your new email address to sign in from now on."),
+      $this->intl->t("Email Changed Successfully"),
       Alert::SEVERITY_SUCCESS
     );
 

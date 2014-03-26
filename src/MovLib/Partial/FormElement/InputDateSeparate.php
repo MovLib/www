@@ -38,7 +38,6 @@ class InputDateSeparate extends \MovLib\Partial\FormElement\AbstractFormElement 
   /**
    * Instantiate new date input with day, month and year fields.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param string $id
    *   The date's global unique identifier.
    * @param string $label
@@ -107,7 +106,6 @@ class InputDateSeparate extends \MovLib\Partial\FormElement\AbstractFormElement 
    *   The input date separate form element.
    */
   public function __toString() {
-    global $i18n;
     // @devStart
     // @codeCoverageIgnoreStart
     try {
@@ -126,9 +124,9 @@ class InputDateSeparate extends \MovLib\Partial\FormElement\AbstractFormElement 
       return
         "{$this->required}{$this->helpPopup}<fieldset{$this->expandTagAttributes($this->attributes)}>" .
           "<legend>{$this->label}</legend>" .
-          "<label class='s s2'><span class='vh'>{$i18n->t("Year")}</span><input{$this->expandTagAttributes($attributes["y"])}></label>" .
-          "<label class='s s1'><span class='vh'>{$i18n->t("Month")}</span><input{$this->expandTagAttributes($attributes["m"])}></label>" .
-          "<label class='s s1'><span class='vh'>{$i18n->t("Day")}</span><input{$this->expandTagAttributes($attributes["d"])}></label>" .
+          "<label class='s s2'><span class='vh'>{$this->intl->t("Year")}</span><input{$this->expandTagAttributes($attributes["y"])}></label>" .
+          "<label class='s s1'><span class='vh'>{$this->intl->t("Month")}</span><input{$this->expandTagAttributes($attributes["m"])}></label>" .
+          "<label class='s s1'><span class='vh'>{$this->intl->t("Day")}</span><input{$this->expandTagAttributes($attributes["d"])}></label>" .
         "</fieldset>"
       ;
 
@@ -149,29 +147,26 @@ class InputDateSeparate extends \MovLib\Partial\FormElement\AbstractFormElement 
   /**
    * Get the rendered date separate input element.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The rendered date separate input element.
    */
   protected function render() {
-    global $i18n;
-
     // Always add CSS class for proper styling.
     $this->addClass("date-separate", $this->attributes);
 
     return
       "{$this->helpPopup}<fieldset{$this->expandTagAttributes($this->attributes)}><legend>{$this->label}</legend><p>" .
         "<label class='s s1'>" .
-          "<span class='vh'>{$i18n->t("Day")}</span>" .
-          "<input id='{$this->id}-day' max='31' min='1' name='{$this->id}-day' placeholder='{$i18n->t("dd")}' type='number' value='{$this->day}'>" .
+          "<span class='vh'>{$this->intl->t("Day")}</span>" .
+          "<input id='{$this->id}-day' max='31' min='1' name='{$this->id}-day' placeholder='{$this->intl->t("dd")}' type='number' value='{$this->day}'>" .
         "</label>" .
         "<label class='s s1'>" .
-          "<span class='vh'>{$i18n->t("Month")}</span>" .
-          "<input id='{$this->id}-month' max='12' min='1' name='{$this->id}-month' placeholder='{$i18n->t("mm")}' type='number' value='{$this->month}'>" .
+          "<span class='vh'>{$this->intl->t("Month")}</span>" .
+          "<input id='{$this->id}-month' max='12' min='1' name='{$this->id}-month' placeholder='{$this->intl->t("mm")}' type='number' value='{$this->month}'>" .
         "</label>" .
         "<label class='s s2'>" .
-          "<span class='vh'>{$i18n->t("Year")}</span>" .
-          "<input id='{$this->id}-year' max='{$this->yearMax}' min='{$this->yearMin}' name='{$this->id}-year' placeholder='{$i18n->t("yyyy")}' type='number' value='{$this->year}'>" .
+          "<span class='vh'>{$this->intl->t("Year")}</span>" .
+          "<input id='{$this->id}-year' max='{$this->yearMax}' min='{$this->yearMin}' name='{$this->id}-year' placeholder='{$this->intl->t("yyyy")}' type='number' value='{$this->year}'>" .
         "</label>" .
       "</p></fieldset>"
     ;
@@ -180,29 +175,26 @@ class InputDateSeparate extends \MovLib\Partial\FormElement\AbstractFormElement 
   /**
    * Validate the user submitted date.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return this
    * @throws \MovLib\Exception\ValidationException
    */
   public function validate() {
-    global $i18n;
-
     // Validate if the field is mandatory.
     if (!$this->day && !$this->month && !$this->year) {
       if ($this->required === true) {
-        throw new ValidationException($i18n->t("The “{0}” date is mandatory.", [ $this->label ]));
+        throw new ValidationException($this->intl->t("The “{0}” date is mandatory.", [ $this->label ]));
       }
       return $this;
     }
 
     // Month and year are mandatory when a day is present.
     if ($this->day && (!$this->month || !$this->year)) {
-      throw new ValidationException($i18n->t("Month and Year are mandatory in “{0}” date.", [ $this->label ]));
+      throw new ValidationException($this->intl->t("Month and Year are mandatory in “{0}” date.", [ $this->label ]));
     }
 
     // Year is mandatory when a month is present.
     if ($this->month && !$this->year) {
-      throw new ValidationException($i18n->t("Year is mandatory in “{0}” date.", [ $this->label ]));
+      throw new ValidationException($this->intl->t("Year is mandatory in “{0}” date.", [ $this->label ]));
     }
 
     // Always validate the year right away against the request range.
@@ -218,7 +210,7 @@ class InputDateSeparate extends \MovLib\Partial\FormElement\AbstractFormElement 
       $this->value = "{$this->year}-{$this->month}-{$this->day}";
       $date        = \DateTime::createFromFormat(DATE_W3C, $this->value);
       if ($date === false || ($errors = $date->getLastErrors() && ($errors["error_count"] !== 0 || $errors["warning_count"] !== 0))) {
-        throw new ValidationException($i18n->t("The “{0}” date is invalid.", [ $this->label ]));
+        throw new ValidationException($this->intl->t("The “{0}” date is invalid.", [ $this->label ]));
       }
     }
     elseif ($this->month) {

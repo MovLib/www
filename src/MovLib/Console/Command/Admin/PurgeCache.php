@@ -40,14 +40,12 @@ class PurgeCache extends \MovLib\Console\Command\AbstractCommand {
   }
 
   /**
-   * {@inheritdoc}
-   * @global \MovLib\Core\FileSystem $fs
+   * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    global $fs;
     $this->writeVerbose("Purging presentation cache...", self::MESSAGE_TYPE_COMMENT);
     /* @var $fileinfo \SplFileInfo */
-    foreach ($fs->getRecursiveIterator("dr://var/cache") as $fileinfo) {
+    foreach ($this->fs->getRecursiveIterator("dr://var/cache") as $fileinfo) {
       $path = $fileinfo->getPathname();
       if ($fileinfo->isDir()) {
         $this->writeDebug("Deleting directory <comment>{$path}</comment>");

@@ -54,11 +54,35 @@ abstract class AbstractLocalStreamWrapper {
   public $context;
 
   /**
+   * Canonical absolute path to the document root.
+   *
+   * @see \MovLib\Core\FileSystem::__construct()
+   * @var string
+   */
+  public static $documentRoot;
+
+  /**
+   * The process group, only used in CLI.
+   *
+   * @see \MovLib\Core\FileSystem::setProcessOwner()
+   * @var null|string
+   */
+  public static $group;
+
+  /**
    * Generic resource handle.
    *
    * @var null|resource
    */
   public $handle;
+
+  /**
+   * Whether this process is privileged or not, only used in CLI.
+   *
+   * @see \MovLib\Core\FileSystem::setProcessOwner()
+   * @var boolean
+   */
+  public static $privileged = false;
 
   /**
    * The stream wrapper's scheme.
@@ -74,6 +98,14 @@ abstract class AbstractLocalStreamWrapper {
    * @var string
    */
   public $uri;
+
+  /**
+   * The process user, only used in CLI.
+   *
+   * @see \MovLib\Core\FileSystem::setProcessOwner()
+   * @var null|string
+   */
+  public static $user;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -93,6 +125,18 @@ abstract class AbstractLocalStreamWrapper {
 
   // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
 
+
+  /**
+   * Get the external path for this stream wrapper.
+   *
+   * @param \MovLib\Core\FileSystem $fs
+   *   File system instance for path encoding.
+   * @param string $uri [optional]
+   *   The URI to get the external path for.
+   * @return string
+   *   The external path for this stream wrapper.
+   */
+  abstract public function getExternalPath(\MovLib\Core\FileSystem $fs, $uri = null);
 
   /**
    * Get the canonical absolute path to the directory the stream wrapper is responsible for.
@@ -131,8 +175,6 @@ abstract class AbstractLocalStreamWrapper {
    * <b>NOTE</b><br>
    * You cannot remove special bits with this method.
    *
-   * @global \MovLib\Core\Config $config
-   * @global \MovLib\Core\Kernel $kernel
    * @param string $realpath
    *   The file's real path.
    * @param integer $mode
@@ -141,12 +183,14 @@ abstract class AbstractLocalStreamWrapper {
    *   <code>TRUE</code> on success or <code>FALSE</code> on failure.
    */
   public function chmod($realpath, $mode) {
-    global $kernel;
     $status = chmod($realpath, $mode);
-    if ($kernel->privileged) {
-      global $config;
-      chown($realpath, $config->user);
-      chgrp($realpath, $config->group);
+    if (isset($this->context["privileged"]) && $this->context["privileged"]) {
+      if (isset($this->context["user"])) {
+        chown($this->realpath(), $this->context["user"]);
+      }
+      if (isset($this->context["group"])) {
+        chgrp($this->realpath(), $this->context["group"]);
+      }
     }
     clearstatcache(true, $realpath);
     return $status;
@@ -243,6 +287,8 @@ abstract class AbstractLocalStreamWrapper {
   /**
    * Get the name of the directory from a given URI.
    *
+   * @staticvar array $dirnames
+   *   Used to cache directory names.
    * @param string $uri
    *   Absolute URI of the file.
    * @return string
@@ -250,15 +296,19 @@ abstract class AbstractLocalStreamWrapper {
    * @throws \MovLib\Exception\StreamException
    */
   public function dirname($uri = null) {
+    static $dirnames = [];
     try {
       if (!$uri) {
         $uri = $this->uri;
       }
-      $dirname = dirname($this->getTarget($uri));
-      if ($dirname == ".") {
-        $dirname = "";
+      if (isset($dirnames[$uri])) {
+        return $dirnames[$uri];
       }
-      return "{$this->scheme}://{$dirname}";
+      if (($dirnames[$uri] = dirname($this->getTarget($uri))) == ".") {
+        $dirnames[$uri] = "";
+      }
+      $scheme = explode("://", $uri, 2)[0];
+      return "{$scheme}://{$dirnames[$uri]}";
     }
     catch (\ErrorException $e) {
       throw new StreamException("Couldn't get directory name of {$uri}", null, $e);
@@ -275,9 +325,13 @@ abstract class AbstractLocalStreamWrapper {
    * @throws \MovLib\Exception\StreamException
    */
   protected function getTarget($uri = null) {
+    static $targets = [];
     try {
       if (!$uri) {
         $uri = $this->uri;
+      }
+      if (isset($targets[$uri])) {
+        return $targets[$uri];
       }
       return trim(explode("://", $uri, 2)[1], "\\/");
     }
@@ -446,26 +500,20 @@ abstract class AbstractLocalStreamWrapper {
    * Close stream.
    *
    * @link http://php.net/manual/streamwrapper.stream-close.php
-   * @global \MovLib\Core\Config $config
-   * @global \MovLib\Core\Kernel $kernel
    * @return boolean
    *   <code>TRUE</code> on success or <code>FALSE</code> on failure.
    * @throws \MovLib\Exception\StreamException
    */
   public function stream_close() {
-    global $kernel;
     try {
       $status = fclose($this->handle);
-      if ($kernel->privileged) {
-        global $config;
+      if (isset($this->context["privileged"]) && $this->context["privileged"]) {
         if (is_dir($this->uri)) {
           chmod($this->uri, FileSystem::MODE_DIR);
         }
         elseif (is_file($this->uri)) {
           chmod($this->uri, FileSystem::MODE_FILE);
         }
-        chown($this->uri, $config->user);
-        chgrp($this->uri, $config->group);
       }
       return $status;
     }

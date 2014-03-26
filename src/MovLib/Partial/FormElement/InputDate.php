@@ -70,7 +70,6 @@ class InputDate extends \MovLib\Partial\FormElement\AbstractInput {
   /**
    * Get the input date form element.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The input date form element.
    */
@@ -90,7 +89,6 @@ class InputDate extends \MovLib\Partial\FormElement\AbstractInput {
   /**
    * Validate the submitted date.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param string $text
    *   The user submitted text to validate.
    * @param mixed $errors
@@ -99,23 +97,21 @@ class InputDate extends \MovLib\Partial\FormElement\AbstractInput {
    *   The valid and sanitized text.
    */
   protected function validateValue($date, &$errors) {
-    global $i18n;
-
     // Try to parse the date according to the W3C standard.
     $date = \DateTime::createFromFormat(Date::FORMAT_W3C, $date);
 
     // Check if parsing the date according to the format failed.
     if ($date === false || (($errors = $date->getLastErrors()) && ($errors["error_count"] !== 0 || $errors["warning_count"] !== 0))) {
-      $errors = $i18n->t("The “{0}” date is invalid, only the following format is valid: {format}.", [ $this->label, "format" => Date::FORMAT_W3C ]);
+      $errors = $this->intl->t("The “{0}” date is invalid, only the following format is valid: {format}.", [ $this->label, "format" => Date::FORMAT_W3C ]);
     }
 
     // Validate maximum date value if present and only if we have no errors so far.
     if (!$errors && isset($this->attributes["max"])) {
       $max = \DateTime::createFromFormat(Date::FORMAT_W3C, $this->attributes["max"]);
       if ($date > $max) {
-        $errors = $i18n->t("The date {0} must not be greater than {1}.", [
-          \IntlDateFormatter::create($i18n->locale, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE)->format($date),
-          \IntlDateFormatter::create($i18n->locale, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE)->format($max),
+        $errors = $this->intl->t("The date {0} must not be greater than {1}.", [
+          \IntlDateFormatter::create($this->intl->locale, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE)->format($date),
+          \IntlDateFormatter::create($this->intl->locale, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE)->format($max),
         ]);
       }
     }
@@ -124,9 +120,9 @@ class InputDate extends \MovLib\Partial\FormElement\AbstractInput {
     if (!$errors && isset($this->attributes["min"])) {
       $min = \DateTime::createFromFormat(Date::FORMAT_W3C, $this->attributes["min"]);
       if ($date < $min) {
-        $errors = $i18n->t("The date {0} must not be less than {1}.", [
-          \IntlDateFormatter::create($i18n->locale, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE)->format($date),
-          \IntlDateFormatter::create($i18n->locale, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE)->format($min),
+        $errors = $this->intl->t("The date {0} must not be less than {1}.", [
+          \IntlDateFormatter::create($this->intl->locale, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE)->format($date),
+          \IntlDateFormatter::create($this->intl->locale, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE)->format($min),
         ]);
       }
     }

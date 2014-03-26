@@ -17,6 +17,11 @@
  */
 namespace MovLib\Console\Command;
 
+use \MovLib\Core\Config;
+use \MovLib\Core\FileSystem;
+use \MovLib\Core\Intl;
+use \MovLib\Core\Log;
+use \MovLib\Core\Kernel;
 use \MovLib\Core\Shell;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\Output;
@@ -84,11 +89,53 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
 
 
   /**
+   * Active global configuration instance.
+   *
+   * @var \MovLib\Core\Config
+   */
+  protected $config;
+
+  /**
+   * Active file system instance.
+   *
+   * @var \MovLib\Core\FileSystem
+   */
+  protected $fs;
+
+  /**
    * Input interface to read from the console.
    *
    * @var \Symfony\Component\Console\Input\InputInterface
    */
   protected $input;
+
+  /**
+   * Active intl instance.
+   *
+   * @var \MovLib\Core\Intl
+   */
+  protected $intl;
+
+  /**
+   * Active CLI kernel instance.
+   *
+   * @var \MovLib\Core\Kernel
+   */
+  protected $kernel;
+
+  /**
+   * Active log instance.
+   *
+   * @var \MovLib\Core\Log
+   */
+  protected $log;
+
+  /**
+   * Whether the current process is executed with elevated privileges or not.
+   *
+   * @var boolean
+   */
+  protected $privileged = false;
 
   /**
    * Symfony progress helper.
@@ -106,7 +153,30 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
   protected $output;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Property Getters
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new CLI command.
+   *
+   * @param \MovLib\Core\Kernel $kernel
+   * @param \MovLib\Core\Config $config
+   * @param \MovLib\Core\Log $log
+   * @param \MovLib\Core\FileSystem $fs
+   * @param \MovLib\Core\Intl $intl
+   */
+  public function __construct(Kernel $kernel, Config $config, Log $log, FileSystem $fs, Intl $intl) {
+    parent::__construct();
+    $this->config     = $config;
+    $this->fs         = $fs;
+    $this->intl       = $intl;
+    $this->kernel     = $kernel;
+    $this->log        = $log;
+    $this->privileged = posix_getuid() === 0;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
@@ -153,10 +223,6 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
     return $this;
   }
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
   /**
    * Ask a question.
    *
@@ -195,7 +261,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
   final protected function askConfirmation($question, $default = true) {
     if ($this->isInteractive() === true) {
       $defaultDisplay = $default ? "y" : "n";
-      return $this->getHelperSet()->get('dialog')->askConfirmation(
+      return $this->getHelperSet()->get("dialog")->askConfirmation(
         $this->output,
         "<question>{$question}</question> [default: {$defaultDisplay}] ",
         $default
@@ -241,14 +307,12 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
   /**
    * Change the current working directory.
    *
-   * @global \MovLib\Core\FileSystem $fs
    * @param string $directory
    *   Canonical absolute path to the new working directory.
    * @return this
    */
   final protected function changeWorkingDirectory($directory) {
-    global $fs;
-    if (getcwd() != ($directory = $fs->realpath($directory))) {
+    if (getcwd() != ($directory = $this->fs->realpath($directory))) {
       $this->writeDebug("Changeing working directory to <comment>{$directory}</comment>");
       chdir($directory);
     }
@@ -295,10 +359,10 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
     }
     $this->writeVeryVerbose($command, self::MESSAGE_TYPE_COMMENT);
     if ($this->output->getVerbosity() >= Output::VERBOSITY_DEBUG) {
-      Shell::executeDisplayOutput($command);
+      $this->getShell()->executeDisplayOutput($command);
     }
     else {
-      Shell::execute($command);
+      $this->getShell()->execute($command);
     }
     return $this;
   }
@@ -319,6 +383,22 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
         $this->interaction = !$options["no-interaction"];
       }
     }
+  }
+
+  /**
+   * Get a shell instance.
+   *
+   * @staticvar \MovLib\Core\Shell $shell
+   *   Used to cache the shell.
+   * @return \MovLib\Core\Shell
+   *   A shell instance.
+   */
+  protected function getShell() {
+    static $shell = null;
+    if (!$shell) {
+      $shell = new Shell();
+    }
+    return $shell;
   }
 
   /**

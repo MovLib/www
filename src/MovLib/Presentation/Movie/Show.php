@@ -62,13 +62,9 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Instatiate new single movie presentation page.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
-    global $i18n, $kernel;
-
     // Try to load the full movie.
     $this->movie = new FullMovie((integer) $_SERVER["MOVIE_ID"]);
 
@@ -78,22 +74,22 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
 
     // Initialize all presentation parts.
     $this->initPage($this->movie->displayTitleWithYear);
-    $this->initBreadcrumb([[ $i18n->rp("/movies"), $i18n->t("Movies") ]]);
+    $this->initBreadcrumb([[ $this->intl->rp("/movies"), $this->intl->t("Movies") ]]);
     $this->initLanguageLinks("/movie/{0}", [ $this->movie->id ]);
     $routeArgs = [ $this->movie->id ];
-    $this->routeEdit = $i18n->r("/movie/{0}/edit", $routeArgs);
+    $this->routeEdit = $this->intl->r("/movie/{0}/edit", $routeArgs);
     $this->sidebarInit([
-      [ $this->movie->route, $i18n->t("View"), [ "class" => "ico ico-view" ] ],
-      [ $i18n->r("/movie/{0}/discussion", $routeArgs), $i18n->t("Discuss"), [
+      [ $this->movie->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
+      [ $this->intl->r("/movie/{0}/discussion", $routeArgs), $this->intl->t("Discuss"), [
         "class" => "ico ico-discussion",
         "property" => "discussionUrl"
       ] ],
-      [ $this->routeEdit, $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
-      [ $i18n->r("/movie/{0}/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history" ] ],
-      [ $i18n->r("/movie/{0}/delete", $routeArgs), $i18n->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
+      [ $this->routeEdit, $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
+      [ $this->intl->r("/movie/{0}/history", $routeArgs), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
+      [ $this->intl->r("/movie/{0}/delete", $routeArgs), $this->intl->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
 
-      [ $i18n->r("/movie/{0}/cast", $routeArgs), $i18n->t("Cast"), [ "class" => "ico ico-person" ] ],
-      [ $i18n->r("/movie/{0}/crew", $routeArgs), $i18n->t("Crew"), [ "class" => "ico ico-company separator" ] ],
+      [ $this->intl->r("/movie/{0}/cast", $routeArgs), $this->intl->t("Cast"), [ "class" => "ico ico-person" ] ],
+      [ $this->intl->r("/movie/{0}/crew", $routeArgs), $this->intl->t("Crew"), [ "class" => "ico ico-company separator" ] ],
     ]);
   }
 
@@ -104,13 +100,11 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Get the movie's formatted countries.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The movie's formatted countries.
    * @throws \MovLib\Exception\DatabaseException
    */
   protected function getCountries() {
-    global $i18n;
     $countries = null;
     $result    = $this->movie->getCountries();
     while ($row = $result->fetch_row()) {
@@ -120,7 +114,7 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
       $countries .= new Country($row[0], [ "property" => "contentLocation"]);
     }
     if (!$countries) {
-      $countries = $i18n->t(
+      $countries = $this->intl->t(
         "No countries assigned yet, {0}add countries{1}?",
         [ "<a href='{$this->routeEdit}'>", "</a>" ]
       );
@@ -131,16 +125,14 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Get the movie's formatted genres.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The movie's formatted genres.
    * @throws \MovLib\Exception\DatabaseException
    */
   protected function getGenres() {
-    global $i18n;
     $genres = null;
     $result = $this->movie->getGenres();
-    $route  = $i18n->r("/genre/{0}");
+    $route  = $this->intl->r("/genre/{0}");
     while ($row = $result->fetch_assoc()) {
       if ($genres) {
         $genres .= ", ";
@@ -149,18 +141,15 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
       $genres      .= "<a href='{$row["route"]}' property='genre'>{$row["name"]}</a>";
     }
     if (!$genres) {
-      return $i18n->t("No genres assigned yet, {0}add genres{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]);
+      return $this->intl->t("No genres assigned yet, {0}add genres{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]);
     }
     return $genres;
   }
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\User\Session $session
    */
   protected function getPageContent() {
-    global $i18n, $session;
     $this->schemaType = "Movie";
 
 
@@ -178,12 +167,12 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
       $this->pageTitle = "<span property='alternateName'>{$this->movie->displayTitle}</span>";
     }
     if ($this->movie->year) {
-      $this->pageTitle = $i18n->t("{0} ({1})", [
+      $this->pageTitle = $this->intl->t("{0} ({1})", [
         $this->pageTitle,
         // @todo Add full publishing date to content attribute.
         (new Date("{$this->movie->year}-00-00"))->format(
           [ "property" => "datePublished"],
-          $i18n->rp("/year/{0}/movies", [ $this->movie->year ]))
+          $this->intl->rp("/year/{0}/movies", [ $this->movie->year ]))
        ]);
     }
 
@@ -201,11 +190,11 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
 
     // The five available ratings.
     $ratings = [
-      1 => $i18n->t("Awful"),
-      2 => $i18n->t("Bad"),
-      3 => $i18n->t("Okay"),
-      4 => $i18n->t("Fine"),
-      5 => $i18n->t("Awesome"),
+      1 => $this->intl->t("Awful"),
+      2 => $this->intl->t("Bad"),
+      3 => $this->intl->t("Okay"),
+      4 => $this->intl->t("Fine"),
+      5 => $this->intl->t("Awesome"),
     ];
 
     // Build the stars that show the currently signed in user's rating and allow her or him to rate this movie.
@@ -215,7 +204,7 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
       $rated  = $i <= $userRating ? " class='rated'" : null;
       $stars .=
         "<button{$rated} name='rating' type='submit' value='{$i}' title='{$ratings[$i]}'>" .
-          "<span class='vh'>{$i18n->t("with {0, plural, one {one star} other {# stars}}", [ $i ])} </span>" .
+          "<span class='vh'>{$this->intl->t("with {0, plural, one {one star} other {# stars}}", [ $i ])} </span>" .
         "</button>"
       ;
     }
@@ -223,23 +212,23 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
     // Build an explanation based on available rating data. We can't use Intl plural forms here because we have to
     // enclose the various integer values in microdata.
     if ($this->movie->votes === 0) {
-      $ratingSummary = $i18n->t("No one has rated this movie so far, be the first.");
+      $ratingSummary = $this->intl->t("No one has rated this movie so far, be the first.");
     }
     elseif ($this->movie->votes === 1 && $userRating) {
-      $ratingSummary = $i18n->t("You’re the only one who rated this movie (yet).");
+      $ratingSummary = $this->intl->t("You’re the only one who rated this movie (yet).");
     }
     else {
-      $rating = "<span property='ratingValue'>{$i18n->format("{0,number}", [ $this->movie->ratingMean ])}</span>";
+      $rating = "<span property='ratingValue'>{$this->intl->format("{0,number}", [ $this->movie->ratingMean ])}</span>";
       $votes  = "<span property='ratingCount'>{$this->movie->votes}</span>";
       if ($this->movie->votes === 1) {
-        $ratingSummary = $i18n->t("Rated by {votes} user with {rating}.", [ "rating" => $rating, "votes" => $votes ]);
+        $ratingSummary = $this->intl->t("Rated by {votes} user with {rating}.", [ "rating" => $rating, "votes" => $votes ]);
       }
       else {
-        $ratingSummary = $i18n->t("Rated by {votes} users with a {0}mean rating{1} of {rating}.", [
-          "<a href='{$i18n->r(
+        $ratingSummary = $this->intl->t("Rated by {votes} users with a {0}mean rating{1} of {rating}.", [
+          "<a href='{$this->intl->r(
             "/movie/{0}/rating-demographics",
             [ $this->movie->id ]
-          )}' title='{$i18n->t("View the rating demographics.")}'>",
+          )}' title='{$this->intl->t("View the rating demographics.")}'>",
           "</a>",
           "rating" => $rating,
           "votes"  => $votes,
@@ -255,24 +244,24 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
       if ($directors) {
         $directors .= ", ";
       }
-      $directors .= "<span property='director' typeof='Person'><a href='{$i18n->r(
+      $directors .= "<span property='director' typeof='Person'><a href='{$this->intl->r(
         "/person/{0}",
         [ $directorsResult[$i]["id"]]
       )}' property='name'>{$directorsResult[$i]["name"]}</a></span>";
     }
     if ($directors) {
       if ($c > 1) {
-        $directorLabel = $i18n->t("{0}:", [ $i18n->t("Directors") ]);
+        $directorLabel = $this->intl->t("{0}:", [ $this->intl->t("Directors") ]);
       }
       else {
-        $directorLabel = $i18n->t("{0}:", [ $directorsResult[0]["job_name"] ]);
+        $directorLabel = $this->intl->t("{0}:", [ $directorsResult[0]["job_name"] ]);
       }
       $directors =
         "<small class='dtr'><span class='dtc'>{$directorLabel}</span><span class='dtc'>{$directors}</span></small>"
       ;
     }
     else {
-      $directors = $i18n->t("No directors assigned yet, {0}add directors{1}?", [
+      $directors = $this->intl->t("No directors assigned yet, {0}add directors{1}?", [
         "<a href='{$this->routeEdit}'>",
         "</a>"
       ]);
@@ -286,19 +275,19 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
       if ($cast) {
         $cast .= ", ";
       }
-      $cast .= "<span property='actor' typeof='Person'><a href='{$i18n->r(
+      $cast .= "<span property='actor' typeof='Person'><a href='{$this->intl->r(
         "/person/{0}",
         [ $castResult[$i]["id"]]
       )}' property='url'><span property='name'>{$castResult[$i]["name"]}</span></a></span>";
     }
     if ($cast) {
-      $cast = "<small class='dtr'><span class='dtc'>{$i18n->t(
+      $cast = "<small class='dtr'><span class='dtc'>{$this->intl->t(
         "{0}:",
-        [ $i18n->t("Cast") ]
+        [ $this->intl->t("Cast") ]
       )}</span><span class='dtc'>{$cast}, …</span></small>";
     }
     else {
-      $cast = $i18n->t("No cast assigned yet, {0}add cast{1}?", [
+      $cast = $this->intl->t("No cast assigned yet, {0}add cast{1}?", [
         "<a href='{$this->routeEdit}'>",
         "</a>"
       ]);
@@ -309,16 +298,16 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
 
     // But it all together after the closing title.
     if ($this->movie->originalTitle) {
-      $this->headingAfter .= "<p>{$i18n->t("{0} ({1})", [
+      $this->headingAfter .= "<p>{$this->intl->t("{0} ({1})", [
         "<span property='name'{$this->lang($this->movie->originalTitleLanguageCode)}>{$this->movie->originalTitle}</span>",
-        "<i>{$i18n->t("original title")}</i>",
+        "<i>{$this->intl->t("original title")}</i>",
       ])}</p>";
     }
 
-    $ratingMean = \NumberFormatter::create($i18n->locale, \NumberFormatter::DECIMAL)->format($this->movie->ratingMean);
+    $ratingMean = \NumberFormatter::create($this->intl->locale, \NumberFormatter::DECIMAL)->format($this->movie->ratingMean);
     $this->headingAfter .=
       "{$this->formOpen()}<fieldset id='movie-rating'>" .
-        "<legend class='vh'>{$i18n->t("Rate this movie")}</legend> " .
+        "<legend class='vh'>{$this->intl->t("Rate this movie")}</legend> " .
         "<div aria-hidden='true' class='back'><span></span><span></span><span></span><span></span><span></span></div>" .
         "<div class='front'>{$stars}</div>" .
       "</fieldset>{$this->formClose()}" .
@@ -326,15 +315,15 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
       "<div class='dt'>" .
         "{$directors}{$cast}" .
         "<small class='dtr'>" .
-          "<span class='dtc'>{$i18n->t("{0}:", [ $i18n->t("Runtime") ])}</span>" .
+          "<span class='dtc'>{$this->intl->t("{0}:", [ $this->intl->t("Runtime") ])}</span>" .
           "<span class='dtc'>{$runtime}</span>" .
         "</small>" .
         "<small class='dtr'>" .
-          "<span class='dtc'>{$i18n->t("{0}:", [ $i18n->t("Countries") ])}</span>" .
+          "<span class='dtc'>{$this->intl->t("{0}:", [ $this->intl->t("Countries") ])}</span>" .
           "<span class='dtc'>{$this->getCountries()}</span>" .
         "</small>" .
         "<small class='dtr'>" .
-          "<span class='dtc'>{$i18n->t("{0}:", [ $i18n->t("Genres") ])}</span>" .
+          "<span class='dtc'>{$this->intl->t("{0}:", [ $this->intl->t("Genres") ])}</span>" .
           "<span class='dtc'>{$this->getGenres()}</span>" .
         "</small>" .
       "</div></div>" . // close .span (@see headingBefore)
@@ -351,15 +340,15 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
 
 
     $sections["synopsis"] = [
-      $i18n->t("Synopsis"),
+      $this->intl->t("Synopsis"),
       empty($this->movie->synopsis)
-        ? $i18n->t("No synopsis available, {0}write synopsis{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ])
+        ? $this->intl->t("No synopsis available, {0}write synopsis{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ])
         : $this->htmlDecode($this->movie->synopsis)
       ,
     ];
 
     $sections["releases"] = [
-      $i18n->t("Releases"),
+      $this->intl->t("Releases"),
       new Alert("Not implemented yet!"),
     ];
 
@@ -375,18 +364,18 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
     }
     else {
       $trailers = new Alert(
-        $i18n->t("No trailers available, {0}add trailers{1}?",[ "<a href='{$this->routeEdit}'>", "</a>" ]),
+        $this->intl->t("No trailers available, {0}add trailers{1}?",[ "<a href='{$this->routeEdit}'>", "</a>" ]),
         null,
         Alert::SEVERITY_INFO
       );
     }
     $sections["trailers"] = [
-      $i18n->t("Trailers"),
+      $this->intl->t("Trailers"),
       $trailers,
     ];
 
     $sections["reviews"] = [
-      $i18n->t("Reviews"),
+      $this->intl->t("Reviews"),
       new Alert("Not implemented yet!"),
     ];
 
@@ -401,21 +390,16 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Validate the user's rating and update the database.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\User\Session $session
    * @return this
    */
   protected function formValid() {
-    global $i18n, $kernel, $session;
-
     if ($session->isAuthenticated === false) {
       $this->alerts .= new Alert(
-        $i18n->t("Please {sign_in} or {join} to rate this movie.", [
-          "sign_in" => "<a href='{$i18n->r("/profile/sign-in")}'>{$i18n->t("Sign In")}</a>",
-          "join"    => "<a href='{$i18n->r("/profile/join")}'>{$i18n->t(
+        $this->intl->t("Please {sign_in} or {join} to rate this movie.", [
+          "sign_in" => "<a href='{$this->intl->r("/profile/sign-in")}'>{$this->intl->t("Sign In")}</a>",
+          "join"    => "<a href='{$this->intl->r("/profile/join")}'>{$this->intl->t(
             "Join {sitename}",
-            [ "sitename" => $kernel->siteName ]
+            [ "sitename" => $this->config->siteName ]
           )}</a>",
         ]),
         null,
@@ -431,7 +415,7 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
         $this->movie->rate($rating);
       }
       else {
-        $this->checkErrors($i18n->t(
+        $this->checkErrors($this->intl->t(
           "The submitted rating isn’t valid. Valid ratings range from: {min} to {max}",
           [ "min" => 1, "max" => 5 ]
         ));

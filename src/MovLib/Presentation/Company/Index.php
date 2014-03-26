@@ -42,18 +42,15 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Instantiate new latest companies presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
-    $this->initPage($i18n->t("Companies"));
+    $this->initPage($this->intl->t("Companies"));
     $this->initBreadcrumb();
     $this->initLanguageLinks("/companies", null, true);
     $this->paginationInit(Company::getTotalCount());
     $this->sidebarInit([
       [ $kernel->requestPath, $this->title, [ "class" => "ico ico-company" ] ],
-      [ $i18n->r("/company/random"), $i18n->t("Random") ],
+      [ $this->intl->r("/company/random"), $this->intl->t("Random") ],
     ]);
   }
 
@@ -62,23 +59,20 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function getPageContent() {
-    global $i18n;
-
     $this->headingBefore =
-      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/company/create")}'>{$i18n->t("Create New Company")}</a>"
+      "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/company/create")}'>{$this->intl->t("Create New Company")}</a>"
     ;
 
     $result      = Company::getCompanies($this->paginationOffset, $this->paginationLimit);
     $noItemText  = new Alert(
-      $i18n->t(
+      $this->intl->t(
         "We couldn’t find any company matching your filter criteria, or there simply aren’t any companies available."
-      ), $i18n->t("No Companies"), Alert::SEVERITY_INFO
+      ), $this->intl->t("No Companies"), Alert::SEVERITY_INFO
     );
     $noItemText .=
-      $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/company/create")}'>", "</a>" ]);
+      $this->intl->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$this->intl->r("/company/create")}'>", "</a>" ]);
 
     return new CompanyIndexListing($result, $noItemText);
   }

@@ -100,13 +100,10 @@ class ImageUpload extends \MovLib\Presentation\Movie\AbstractBase {
   /**
    * Instantiate new movie image upload presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
-    global $i18n;
-
     // Try to load movie and image.
     $this->movie = new Movie((integer) $_SERVER["MOVIE_ID"]);
     $this->class = "\\MovLib\\Data\\Image\\Movie{$_SERVER["IMAGE_CLASS"]}";
@@ -115,15 +112,15 @@ class ImageUpload extends \MovLib\Presentation\Movie\AbstractBase {
     // Translate title once.
     switch ($this->image->routeKey) {
       case "poster":
-        $title = $i18n->t("Upload new poster for {title}");
+        $title = $this->intl->t("Upload new poster for {title}");
         break;
 
       case "lobby-card":
-        $title = $i18n->t("Upload new lobby card for {title}");
+        $title = $this->intl->t("Upload new lobby card for {title}");
         break;
 
       case "backdrop":
-        $title = $i18n->t("Upload new backdrop for {title}");
+        $title = $this->intl->t("Upload new backdrop for {title}");
         break;
     }
 
@@ -133,20 +130,20 @@ class ImageUpload extends \MovLib\Presentation\Movie\AbstractBase {
 
     // Initialize the rest of the page.
     $this->initLanguageLinks("/movie/{0}/{$this->image->routeKey}/upload", [ $this->movie->id ]);
-    $this->initBreadcrumb([[ $i18n->rp("/movie/{0}/{$this->image->routeKeyPlural}", [ $this->movie->id ]), $this->image->namePlural ]]);
-    $this->breadcrumbTitle = $i18n->t("Upload");
+    $this->initBreadcrumb([[ $this->intl->rp("/movie/{0}/{$this->image->routeKeyPlural}", [ $this->movie->id ]), $this->image->namePlural ]]);
+    $this->breadcrumbTitle = $this->intl->t("Upload");
     $this->initSidebar();
 
     // Initialize the upload form.
     $this->inputImage             = new InputImage("image", $this->image->name, $this->image, [ "required" => true ]);
-    $this->inputDescription       = new InputHTML("description", $i18n->t("Description"), $this->image->description);
+    $this->inputDescription       = new InputHTML("description", $this->intl->t("Description"), $this->image->description);
     $this->inputDescription->allowExternalLinks()->allowLists();
-    $this->inputCountryCode       = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->image->countryCode);
-    $this->inputLanguageCode      = new Select("language", $i18n->t("Language"), Language::getLanguages(), $this->image->languageCode, [ "required" => true ]);
-    $this->inputPublishedDate     = new InputDateSeparate("date", $i18n->t("Publishing Date"), $this->image->publishingDate, null, [ "year_max" => date("Y"), "year_min" => 1800 ]);
+    $this->inputCountryCode       = new Select("country", $this->intl->t("Country"), Country::getCountries(), $this->image->countryCode);
+    $this->inputLanguageCode      = new Select("language", $this->intl->t("Language"), Language::getLanguages(), $this->image->languageCode, [ "required" => true ]);
+    $this->inputPublishedDate     = new InputDateSeparate("date", $this->intl->t("Publishing Date"), $this->image->publishingDate, null, [ "year_max" => date("Y"), "year_min" => 1800 ]);
     $this->form                   = new Form($this, [ $this->inputImage, $this->inputDescription, $this->inputCountryCode, $this->inputLanguageCode, $this->inputPublishedDate ]);
     $this->form->multipart();
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Upload"), [ "class" => "btn btn-large btn-success" ]);
+    $this->form->actionElements[] = new InputSubmit($this->intl->t("Upload"), [ "class" => "btn btn-large btn-success" ]);
   }
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -155,27 +152,23 @@ class ImageUpload extends \MovLib\Presentation\Movie\AbstractBase {
   /**
    * Get the page's content.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The page's content.
    */
   protected function getPageContent() {
-    global $i18n;
-    return "{$this->form}<p>{$i18n->t(
+    return "{$this->form}<p>{$this->intl->t(
       "By clicking on upload you confirm that you created this photo or scan yourself. For more information about the " .
       "licensing of your contributions read our {terms_of_use}.",
-      [ "terms_of_use" => "<a href='{$i18n->r("/terms-of-use")}'>{$i18n->t("Terms of Use")}</a>" ]
+      [ "terms_of_use" => "<a href='{$this->intl->r("/terms-of-use")}'>{$this->intl->t("Terms of Use")}</a>" ]
     )}</p>";
   }
 
   /**
    * Upload image after form validation.
    *
-   * @global \MovLib\Data\User\Session $session
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   protected function valid() {
-    global $session;
     $this->image->description    = $this->inputDescription->value;
     $this->image->countryCode    = $this->inputCountryCode->value;
     $this->image->languageCode   = $this->inputLanguageCode->value;

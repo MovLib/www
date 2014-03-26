@@ -17,21 +17,20 @@
  */
 namespace MovLib\Core;
 
+use \MovLib\Console\Application;
 use \MovLib\Core\Config;
-use \MovLib\Core\Database;
+use \MovLib\Core\DIContainer;
 use \MovLib\Core\FileSystem;
-use \MovLib\Core\HTTP\Cache;
+use \MovLib\Core\HTTP\DIContainerHTTP;
 use \MovLib\Core\HTTP\Request;
 use \MovLib\Core\HTTP\Response;
 use \MovLib\Core\HTTP\Session;
-use \MovLib\Core\I18n;
+use \MovLib\Core\Intl;
 use \MovLib\Core\Log;
-use \MovLib\Presentation\Stacktrace;
+use \MovLib\Mail\Mailer;
 
 /**
- * The kernel is the core of MovLib itself.
- *
- * This class is responsible for building the base system that is available to all components of the MovLib software.
+ * The MovLib kernel.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -55,143 +54,157 @@ final class Kernel {
   protected $delayedMethods = [];
 
   /**
-   * Whether this kernel is handling a CLI process or not.
+   * Dependency injection container.
    *
-   * @var boolean
+   * @var \MovLib\Core\DIContainer
    */
-  public $cli = false;
+  protected $diContainer;
 
+  // @devStart
+  // @codeCoverageIgnoreStart
   /**
-   * Whether this kernel is handling a HTTP request/response or not.
+   * Whether the kernel has already booted or not.
    *
    * @var boolean
    */
-  public $http = false;
-
-  /**
-   * Whether this kernel is executed in privileged mode (root or sudo) or not.
-   *
-   * @var boolean
-   */
-  public $privileged = false;
-
-  /**
-   * Whether executed via Windows or not, only used in console context.
-   *
-   * @var boolean
-   */
-  public $windows = false;
+  protected $booted = false;
+  // @codeCoverageIgnoreEnd
+  // @devEnd
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * Instantiate new MovLib kernel.
+   * Boot kernel.
    *
-   * @global \MovLib\Core\HTTP\Cache $cache
-   * @global \MovLib\Core\Config $config
-   * @global \MovLib\Core\Database $db
-   * @global \MovLib\Core\FileSystem $fs
-   * @global \MovLib\Core\I18n $i18n
-   * @global \MovLib\Core\Kernel $kernel
-   * @global \MovLib\Core\HTTP\Request $request
-   * @global \MovLib\Core\HTTP\Response $response
-   * @global \MovLib\Core\HTTP\Session $session
    * @param string $documentRoot
    *   The real document root path.
+   * @return this
    */
-  public function boot($documentRoot) {
-    global $config, $db, $fs, $i18n;
-
-    // Determine the environment before attempting to boot.
-    $this->http = !($this->cli = PHP_SAPI == "cli");
-
-    // Transform all PHP errors to exceptions.
-    set_error_handler([ $this, "errorHandler" ]);
-
-    // Always try to create a nice output, for developers and clients, in HTTP mode. NOTE: must be registered before
-    // any booting starts because any booting might fail!
-    if ($this->http) {
-      set_exception_handler([ $this, "exceptionHandler" ]);
-      register_shutdown_function([ $this, "fatalErrorHandler" ]);
-      ini_set("display_errors", false);
+  protected function boot($documentRoot) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if ($this->booted) {
+      throw new \LogicException("Kernel already booted!");
     }
+    $this->booted = true;
+    // @codeCoverageIgnoreEnd
+    // @devEnd
 
-    $fs = new FileSystem($documentRoot);
-    $fs->registerStreamWrappers();
+    $this->diContainer->kernel = $this;
 
-    $config = file_exists(Config::URI) ? unserialize(file_get_contents(Config::URI)) : new Config();
-    if (empty($_SERVER["LANGUAGE_CODE"])) {
-      $_SERVER["LANGUAGE_CODE"] = $config->defaultLanguageCode;
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($documentRoot) || !is_string($documentRoot) || is_link($documentRoot) || realpath($documentRoot) === false) {
+      throw new \InvalidArgumentException("\$documentRoot cannot be empty, must be of type string and point to an existing directory.");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    // Build absolute path to the serialized config file and use it if present, if not fall back to the default config.
+    $serializedConfig = $documentRoot . Config::PATH;
+    if (file_exists($serializedConfig)) {
+      $this->diContainer->config = unserialize(file_get_contents($serializedConfig));
+    }
+    else {
+      $this->diContainer->config = new Config();
     }
     // @devStart
     // @codeCoverageIgnoreStart
     // @todo REMOVE ME as soon as we have no coming soon page!
-    $config->hostname = "alpha.movlib.org";
+    $this->diContainer->config->hostname = "alpha.movlib.org";
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-    $db   = new Database($config->database);
-    $i18n = new I18n($_SERVER["LANGUAGE_CODE"], $config->defaultLocale, $config->locales, $db);
+    return $this;
+  }
 
-    $config->siteSlogan            = $i18n->t($config->siteSlogan);
-    $args                          = [ "sitename" => $config->siteName, "slogan" => $config->siteSlogan ];
-    $config->siteNameAndSlogan     = $i18n->t($config->siteNameAndSlogan, $args);
-    $config->siteNameAndSloganHTML = $i18n->t($config->siteNameAndSloganHTML, $args);
+  /**
+   * Boot kernel to CLI mode.
+   *
+   * @param string $documentRoot
+   *   The real document root path.
+   * @param string $basename
+   *   The base name of the invoked symbolic link.
+   * @return this
+   */
+  public function bootCLI($documentRoot, $basename) {
+    $this->diContainer       = new DIContainer();
+    $this->boot($documentRoot);
+    $this->diContainer->log  = new Log("{$this->diContainer->config->siteName}CLI", $this->diContainer->config, false);
+    $this->diContainer->fs   = new FileSystem($documentRoot, $this->diContainer->log);
+    $this->diContainer->intl = new Intl($this->diContainer->config->defaultLocale, $this->diContainer->config->defaultLocale, $this->diContainer->config->locales);
+    $this->diContainer->fs->setProcessOwner($this->diContainer->config->user, $this->diContainer->config->group);
+    (new Application($basename, $this, $this->diContainer->config, $this->diContainer->log, $this->fs, $this->diContainer->intl))->run();
+    $this->shutdown();
+    return $this;
+  }
 
-    // Determine if we're booting for a HTTP request.
-    if ($this->http) {
-      // Instantiate HTTP objects.
-      global $cache, $request, $response, $session;
-      $request  = new Request();
-      $cache    = new Cache();
-      $session  = new Session();
-      $response = new Response();
+  /**
+   * Boot kernel to HTTP mode.
+   *
+   * <b>NOTE</b><br>
+   * The HTTP kernel shuts down automatically!
+   *
+   * @param string $documentRoot
+   *   The real document root path.
+   * @return this
+   */
+  public function bootHTTP($documentRoot) {
+    $this->diContainer = new DIContainerHTTP();
+    $this->boot($documentRoot);
+    set_error_handler([ $this, "errorHandler" ]);
+    set_exception_handler([ $this, "exceptionHandler" ]);
+    register_shutdown_function([ $this, "fatalErrorHandler" ]);
+    ini_set("display_errors", false);
 
-      // From here it's save to disable the display errors feature from PHP.
-      $session->resume();
-      $presentation = $response->respond($config->siteName);
-      $session->shutdown();
+    $this->diContainer->log      = new Log($_SERVER["SERVER_NAME"], $this->diContainer->config, true);
+    $this->diContainer->fs       = new FileSystem($documentRoot, $this->diContainer->log);
+    $this->diContainer->intl     = new Intl($_SERVER["LANGUAGE_CODE"], $this->diContainer->config->defaultLocale, $this->diContainer->config->locales);
+    $this->diContainer->request  = new Request($this->diContainer->intl);
+    $this->diContainer->response = new Response($this->diContainer->request->method);
+    $this->diContainer->session  = new Session($this->diContainer->log, $this->diContainer->response, $this->diContainer->request->remoteAddress, $this->diContainer->config->timeZone);
 
-      // @devStart
-      // @codeCoverageIgnoreStart
-      Log::debug("Response Time: " . (microtime(true) - $request->timeFloat));
-      // @codeCoverageIgnoreEnd
-      // @devEnd
+    // @todo NOT GOOD! We have to move this somewhere save and find a solution for the dynamic translation.
+    $this->diContainer->config->siteSlogan            = $this->diContainer->intl->t($this->diContainer->config->siteSlogan);
+    $args                                             = [ "sitename" => $this->diContainer->config->siteName, "slogan" => $this->diContainer->config->siteSlogan ];
+    $this->diContainer->config->siteNameAndSlogan     = $this->diContainer->intl->t($this->diContainer->config->siteNameAndSlogan, $args);
+    $this->diContainer->config->siteNameAndSloganHTML = $this->diContainer->intl->t($this->diContainer->config->siteNameAndSloganHTML, $args);
 
-      // Send the response to the client.
-      echo $presentation;
-      if (fastcgi_finish_request() === false) {
-        Log::error("FastCGI finish request failure");
-      }
-
-      // Shutdown the system.
-      $this->bench("response", 0.75);
-      $cache->store($presentation);
+    try {
+      $this->diContainer->session->resume();
+      $presenterClass = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
+      /* @var $presenter \MovLib\Presentation\AbstractPresenter */
+      $this->diContainer->presenter = new $presenterClass($this->diContainer);
+      $this->diContainer->presenter->init();
+      echo $this->diContainer->presenter->getPresentation();
     }
-    // Check if we're booting for a CLI request.
-    else {
-      // Binaries might be executed via privileged user accounts (root or sudo) and is even required for very few
-      // commands. It's very important to check for this because files might have the wrong owners otherwise.
-      $this->privileged = posix_getuid() === 0;
-
-      // It's important to differentiate between our default environment (Linux) and Windows in console context.
-      $this->windows = defined("PHP_WINDOWS_VERSION_MAJOR");
+    catch (ClientException $exception) {
+      echo $exception->getPresentation();
     }
 
-    $this->executeDelayedMethods();
-    $fs->deleteRegisteredFiles();
-
-    if ($this->http) {
-      $this->bench("shutdown", 0.5);
+    // @devStart
+    // @codeCoverageIgnoreStart
+    $this->diContainer->log->debug("Response Time: " . (microtime(true) - $this->diContainer->request->timeFloat));
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    if (fastcgi_finish_request() === false) {
+      $this->diContainer->log->error("FastCGI finish request failure");
     }
+    $this->diContainer->session->shutdown();
+    $this->bench("response", 0.75);
+    $this->diContainer->response->cache();
+    (new Mailer())->sendEmailStack($this->diContainer->config, $this->diContainer->log);
+    $this->shutdown();
+    $this->bench("shutdown", 0.5);
+
+    return $this;
   }
 
   /**
    * Benchmark code execution against the request's start time.
    *
-   * @global \MovLib\Core\HTTP\Request $request
    * @param string $what
    *   Short description of what is being benchmarked.
    * @param float $target
@@ -199,10 +212,19 @@ final class Kernel {
    * @return this
    */
   protected function bench($what, $target) {
-    global $request;
-    if (($time = microtime(true) - $request->timeFloat) > $target) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($what) || !is_string($what)) {
+      throw new \InvalidArgumentException("\$what cannot be empty and must be of type string.");
+    }
+    if (empty($target) || !is_numeric($target)) {
+      throw new \InvalidArgumentException("\$target cannot be empty and must be of type number.");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    if (($time = microtime(true) - $this->diContainer->request->timeFloat) > $target) {
       // We don't use the logger at this point, because we always want these events to be logged.
-      error_log("Slow {$what} with {$time} for {$request->uri}");
+      error_log("Slow {$what} with {$time} for {$this->diContainer->request->uri}");
     }
     return $this;
   }
@@ -253,14 +275,40 @@ final class Kernel {
   /**
    * Used to catch uncaught exceptions.
    *
-   * @global \MovLib\Core\Config $config
    * @param \Exception $exception
    *   The exception that wasn't caught.
    */
   public function exceptionHandler($exception) {
-    global $config;
-    Log::critical($exception);
-    exit((new Stacktrace($config->siteName, $exception))->getPresentation());
+    error_log($exception);
+    if (!headers_sent()) {
+      header("Content-Type: text/plain");
+    }
+
+    // ASCII art source: http://www.chris.com/ASCII/index.php?art=animals/insects/other
+    echo <<<EOT
+# -------------------------------------------------------------------------------------------------------------------- #
+#                                                                                                                      #
+#                   UNRECOVERABLE FATAL ERROR! Please report @ https://github.com/MovLib/www/issues                    #
+#                                                                                                                      #
+# -------------------------------------------------------------------------------------------------------------------- #
+
+{$exception}
+
+
+                 \   /
+                 .\-/.
+             /\  () ()  /\
+            /  \ /~-~\ /  \
+                y  Y  V
+          ,-^-./   |   \,-^-.  Don't Bug
+         /    {    |    }    \   Me!!!
+               \   |   /
+               /\  A  /\
+              /  \/ \/  \
+             /           \ ∫VaMp FiNaL / crw
+EOT;
+    fastcgi_finish_request();
+    exit();
   }
 
   /**
@@ -274,7 +322,7 @@ final class Kernel {
         call_user_func_array($callable, (array) $params);
       }
       catch (Exception $e) {
-        Log::error($e);
+        $this->error($e);
       }
     }
     return $this;
@@ -317,39 +365,19 @@ final class Kernel {
         $property->setValue($exception, $error[$propertyName]);
       }
 
-      // Use PHP's native logger to log this exception.
-      error_log($exception);
-      if (!headers_sent()) {
-        header("Content-Type: text/plain");
-      }
-
-      // ASCII art source: http://www.chris.com/ASCII/index.php?art=animals/insects/other
-      echo <<<EOT
-# -------------------------------------------------------------------------------------------------------------------- #
-#                                                                                                                      #
-#                   UNRECOVERABLE FATAL ERROR! Please report @ https://github.com/MovLib/www/issues                    #
-#                                                                                                                      #
-# -------------------------------------------------------------------------------------------------------------------- #
-
-{$exception}
-
-
-                 \   /
-                 .\-/.
-             /\  () ()  /\
-            /  \ /~-~\ /  \
-                y  Y  V
-          ,-^-./   |   \,-^-.  Don't Bug
-         /    {    |    }    \   Me!!!
-               \   |   /
-               /\  A  /\
-              /  \/ \/  \
-             /           \ ∫VaMp FiNaL / crw
-EOT;
-      if (function_exists("fastcgi_finish_request")) {
-        fastcgi_finish_request();
-      }
+      $this->exceptionHandler($exception);
     }
+  }
+
+  /**
+   * Shut the kernel down.
+   *
+   * @return this
+   */
+  protected function shutdown() {
+    $this->executeDelayedMethods();
+    $this->diContainer->fs->deleteRegisteredFiles();
+    return $this;
   }
 
 }

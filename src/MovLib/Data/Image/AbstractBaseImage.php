@@ -301,7 +301,6 @@ abstract class AbstractBaseImage {
    * <b>NOTE</b>
    * This method will always return the absolute path to the image, no matter if it exists or not.
    *
-   * @global \MovLib\Kernel $kernel
    * @param mixed $style [optional]
    *   The style for which you want the path, if no style is given (default) the path to the original file is returned.
    * @return string
@@ -309,8 +308,6 @@ abstract class AbstractBaseImage {
    * @throws \LogicException
    */
   protected function getPath($style = null) {
-    global $kernel;
-
     // We always have to generate the absolute path to the image within our persistent storage, doesn't matter if it
     // exists or not, as it may be requested to move or convert an image that was just uploaded. Of course we need the
     // directory, filename and the extension to do so. The concrete image is responsible for this.
@@ -330,7 +327,6 @@ abstract class AbstractBaseImage {
   /**
    * Get the absolute URL to the image.
    *
-   * @global \MovLib\Kernel $kernel
    * @staticvar array $placeholders
    *   Used to cache placeholder URLs.
    * @param mixed $style [optional]
@@ -346,7 +342,7 @@ abstract class AbstractBaseImage {
       if (!isset($placeholders[$this->placeholder])) {
         $placeholders[$this->placeholder] = StreamWrapperFactory::create(
           "asset://img/{$this->placeholder}.{$this->placeholderExtension}"
-        )->getExternalURL();
+        )->getExternalPath();
       }
       return $placeholders[$this->placeholder];
     }
@@ -368,7 +364,6 @@ abstract class AbstractBaseImage {
       // The file's name might still contain characters that aren't save to use in HTML or in requests.
       $this->filenameEncoded = rawurlencode($this->filename);
     }
-    global $kernel;
     return "//{$kernel->domainStatic}/upload/{$this->directory}/{$this->filenameEncoded}.{$style}.{$this->extension}?{$this->changed}";
   }
 

@@ -21,12 +21,12 @@ namespace MovLib\Partial;
  * Represents an HTML alert message which can be used inline or attached to a pages heading.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright Â© 2013 MovLib
+ * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Alert extends \MovLib\Presentation\AbstractBase {
+final class Alert {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -65,18 +65,11 @@ class Alert extends \MovLib\Presentation\AbstractBase {
 
 
   /**
-   * The alert's attributes array.
-   *
-   * @var array
-   */
-  public $attributes = [ "class" => "alert" ];
-
-  /**
    * The alert's message.
    *
    * @var string
    */
-  public $message;
+  protected $message;
 
   /**
    * The alert's severity level.
@@ -86,14 +79,14 @@ class Alert extends \MovLib\Presentation\AbstractBase {
    *
    * @var string
    */
-  public $severity;
+  protected $severity;
 
   /**
    * The alert's title.
    *
    * @var string
    */
-  public $title;
+  protected $title;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -110,9 +103,11 @@ class Alert extends \MovLib\Presentation\AbstractBase {
    *   The alert's severity level, default to no severity which is the CSS default. Use the class constants.
    */
   public function __construct($message, $title = null, $severity = null) {
-    $this->message  = $message;
-    $this->title    = $title;
-    $this->severity = $severity;
+    $this->message   = $message;
+    $this->severity  = $severity;
+    if ($title) {
+      $this->title = "<h4 class='title'>{$this->title}</h4>";
+    }
   }
 
   /**
@@ -124,17 +119,7 @@ class Alert extends \MovLib\Presentation\AbstractBase {
    *   HTML representation of this alert message.
    */
   public function __toString() {
-    try {
-    $title  = $this->title ? "<h4 class='title'>{$this->title}</h4>" : null;
-    if ($this->severity) {
-      $this->addClass($this->severity, $this->attributes);
-    }
-    $this->attributes["role"] = "alert";
-    return "<div{$this->expandTagAttributes($this->attributes)}><div class='c'>{$title}{$this->message}</div></div>";
-    }
-    catch (\Exception $e) {
-      return "<pre>{$e}</pre>";
-    }
+    return "<div class='alert{$this->severity}' role='alert'><div class='c'>{$this->title}{$this->message}</div></div>";
   }
 
 }

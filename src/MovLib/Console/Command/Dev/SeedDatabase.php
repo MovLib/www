@@ -72,11 +72,8 @@ final class SeedDatabase extends \MovLib\Console\Command\AbstractCommand {
 
   /**
    * {@inheritdoc}
-   * @global \MovLib\Core\Database $db
-   * @global \MovLib\Core\FileSystem $fs
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    global $db, $fs;
     $scripts = $input->getArgument("script");
 
     if (($key = array_search("schema", $scripts)) !== false) {

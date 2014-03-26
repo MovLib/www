@@ -44,13 +44,10 @@ class FixPermissions extends \MovLib\Console\Command\AbstractCommand {
 
   /**
    * {@inheritdoc}
-   * @global \MovLib\Core\FileSystem $fs
-   * @global \MovLib\Core\Kernel $kernel
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    global $fs, $kernel;
     // Fixing permissions of all files only works reliable if executed as privileged user.
-    if ($kernel->privileged === false) {
+    if (!$this->privileged) {
       $this->write(
         "You're executing this command as non privileged user which should work, if you get permission denied errors " .
         "execute as root or via sudo, but you should definitely check which files caused the problem.",
@@ -67,7 +64,7 @@ class FixPermissions extends \MovLib\Console\Command\AbstractCommand {
       $this->writeVerbose("New URI is <comment>{$uri}</comment>");
     }
 
-    if ($fs->realpath($uri) === false) {
+    if ($this->fs->realpath($uri) === false) {
       throw new \InvalidArgumentException("The passed URI '{$uri}' doesn't exist");
     }
 
@@ -80,13 +77,13 @@ class FixPermissions extends \MovLib\Console\Command\AbstractCommand {
     else {
       $this->writeVerbose("Fixing file and directory permission...");
       /* @var $fileinfo \SplFileInfo */
-      foreach ($fs->getRecursiveIterator($uri) as $fileinfo) {
+      foreach ($this->fs->getRecursiveIterator($uri) as $fileinfo) {
         $this->fixDirectoryOrFile($fileinfo);
       }
       $this->writeVeryVerbose("Fixed file and directory permissions...");
 
       // Only fix binaries if we're privileged and matching against the document root.
-      if ($kernel->privileged && $uri == "dr://") {
+      if ($this->privileged && $uri == "dr://") {
         $this->writeVerbose("Fixing binary permissions...");
         foreach ([ "bin", "vendor/bin", "etc/init.d" ] as $binaryDirectory) {
           $binaryDirectory = "dr://{$binaryDirectory}";

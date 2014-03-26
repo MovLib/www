@@ -46,8 +46,6 @@ final class PersonCastListing extends \MovLib\Partial\Listing\PersonListing {
   // @devEnd
 
   public function __toString() {
-    global $i18n;
-
     // @devStart
     // @codeCoverageIgnoreStart
     try {
@@ -64,7 +62,7 @@ final class PersonCastListing extends \MovLib\Partial\Listing\PersonListing {
 
       if (!$this->noItemsText) {
         $this->noItemsText = new Alert(
-          $i18n->t("No cast assigned yet, please edit this page to provide this information."),
+          $this->intl->t("No cast assigned yet, please edit this page to provide this information."),
           null,
           Alert::SEVERITY_INFO
         );
@@ -87,7 +85,6 @@ final class PersonCastListing extends \MovLib\Partial\Listing\PersonListing {
   /**
    * Get additional content to display on a person list item.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param \MovLib\Data\Person\FullPerson $person
    *   {@inheritdoc}
    * @param \MovLib\Stub\Data\Movie\MoviePerson $moviePerson [optional]
@@ -96,8 +93,6 @@ final class PersonCastListing extends \MovLib\Partial\Listing\PersonListing {
    *   {@inheritdoc}
    */
   protected function getAdditionalContent($person, $moviePerson = null) {
-    global $i18n;
-
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($person instanceof \MovLib\Data\Person\Person)) {
@@ -114,7 +109,7 @@ final class PersonCastListing extends \MovLib\Partial\Listing\PersonListing {
       }
 
       if ($role->id) {
-        $roles .= "<a href='{$i18n->r("/person/{0}", [ $role->id ])}'>{$role->name}</a>";
+        $roles .= "<a href='{$this->intl->r("/person/{0}", [ $role->id ])}'>{$role->name}</a>";
       }
       else {
         $roles .= $role->name;
@@ -122,7 +117,7 @@ final class PersonCastListing extends \MovLib\Partial\Listing\PersonListing {
     }
 
     if ($roles) {
-      return "<small><em>{$i18n->t("as")}</em> {$roles}</small>";
+      return "<small><em>{$this->intl->t("as")}</em> {$roles}</small>";
     }
   }
 

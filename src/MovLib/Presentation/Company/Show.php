@@ -39,16 +39,13 @@ class Show extends \MovLib\Presentation\Company\AbstractBase {
   /**
    * Instantiate new company presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
-    global $i18n, $kernel;
     $this->company = new FullCompany((integer) $_SERVER["COMPANY_ID"]);
     $this->initPage($this->company->name);
     $this->initLanguageLinks("/company/{0}", [ $this->company->id]);
-    $this->initBreadcrumb([[ $i18n->rp("/companies"), $i18n->t("Companies") ]]);
+    $this->initBreadcrumb([[ $this->intl->rp("/companies"), $this->intl->t("Companies") ]]);
     $this->sidebarInit();
 
     $kernel->stylesheets[] = "company";
@@ -59,11 +56,8 @@ class Show extends \MovLib\Presentation\Company\AbstractBase {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function getPageContent() {
-    global $i18n;
-
     // Enhance the page title with microdata.
     $this->schemaType = "Corporation";
     $this->pageTitle  = "<span property='name'>{$this->company->name}</span>";
@@ -75,11 +69,11 @@ class Show extends \MovLib\Presentation\Company\AbstractBase {
     // Put the company information together.
     $info = null;
     if ($this->company->foundingDate && $this->company->defunctDate) {
-      $info .= (new Date($this->company->foundingDate))->format([ "itemprop" => "foundingDate", "title" => $i18n->t("Founding Date") ]);
-      $info .= " – " . (new Date($this->company->defunctDate))->format([ "title" => $i18n->t("Defunct Date") ]);
+      $info .= (new Date($this->company->foundingDate))->format([ "itemprop" => "foundingDate", "title" => $this->intl->t("Founding Date") ]);
+      $info .= " – " . (new Date($this->company->defunctDate))->format([ "title" => $this->intl->t("Defunct Date") ]);
     }
     else if ($this->company->foundingDate) {
-      $info .= "{$i18n->t("Founded")}: " . (new Date($this->company->foundingDate))->format([ "itemprop" => "foundingDate", "title" => $i18n->t("Founding Date") ]);
+      $info .= "{$this->intl->t("Founded")}: " . (new Date($this->company->foundingDate))->format([ "itemprop" => "foundingDate", "title" => $this->intl->t("Founding Date") ]);
     }
     if ($this->company->place) {
       $info .= "<br><span itemprop='location'>". new Place($this->company->place) . "</span>";
@@ -90,7 +84,7 @@ class Show extends \MovLib\Presentation\Company\AbstractBase {
       if ($info) {
         $info .= "<br>";
       }
-      $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->company->wikipedia}' itemprop='sameAs' target='_blank'>{$i18n->t("Wikipedia Article")}</a>";
+      $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->company->wikipedia}' itemprop='sameAs' target='_blank'>{$this->intl->t("Wikipedia Article")}</a>";
     }
 
     $headerImage = $this->getImage($this->company->getStyle(FullCompany::STYLE_SPAN_02), true, [ "itemprop" => "image" ]);
@@ -104,7 +98,7 @@ class Show extends \MovLib\Presentation\Company\AbstractBase {
     $content = null;
     // Description section
     if ($this->company->description) {
-      $content .= $this->getSection("description", $i18n->t("Description"), $this->htmlDecode($this->company->description));
+      $content .= $this->getSection("description", $this->intl->t("Description"), $this->htmlDecode($this->company->description));
     }
 
     // Additional names section.
@@ -115,7 +109,7 @@ class Show extends \MovLib\Presentation\Company\AbstractBase {
       for ($i = 0; $i < $c; ++$i) {
         $aliases .= "<li class='mb10 s s10' property='additionalName'>{$companyAliases[$i]}</li>";
       }
-      $content .= $this->getSection("aliases", $i18n->t("Also Known As"), "<ul class='grid-list r'>{$aliases}</ul>");
+      $content .= $this->getSection("aliases", $this->intl->t("Also Known As"), "<ul class='grid-list r'>{$aliases}</ul>");
     }
 
      // External links section.
@@ -127,7 +121,7 @@ class Show extends \MovLib\Presentation\Company\AbstractBase {
         $hostname = str_replace("www.", "", parse_url($companyLinks[$i], PHP_URL_HOST));
         $links .= "<li class='mb10 s s10'><a href='{$companyLinks[$i]}' property='url' rel='nofollow' target='_blank'>{$hostname}</a></li>";
       }
-      $content .= $this->getSection("links", $i18n->t("External Links"), "<ul class='grid-list r'>{$links}</ul>");
+      $content .= $this->getSection("links", $this->intl->t("External Links"), "<ul class='grid-list r'>{$links}</ul>");
     }
 
     if ($content) {
@@ -135,8 +129,8 @@ class Show extends \MovLib\Presentation\Company\AbstractBase {
     }
 
     return new Alert(
-      $i18n->t("{sitename} has no further details about this company.", [ "sitename"    => $kernel->siteName ]),
-      $i18n->t("No Data Available"),
+      $this->intl->t("{sitename} has no further details about this company.", [ "sitename"    => $this->config->siteName ]),
+      $this->intl->t("No Data Available"),
       Alert::SEVERITY_INFO
     );
   }

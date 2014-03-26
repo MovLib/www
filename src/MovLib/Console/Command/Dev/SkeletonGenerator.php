@@ -99,11 +99,8 @@ class SkeletonGenerator extends \MovLib\Console\Command\AbstractCommand {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Tool\Kernel $kernel
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    global $kernel;
-
     // We need to fix the permissions after generating the skeletons, therefor we need elevated privileges.
     $this->checkPrivileges();
 
@@ -166,14 +163,11 @@ class SkeletonGenerator extends \MovLib\Console\Command\AbstractCommand {
   /**
    * Generate a new skeleton or extend an existing one.
    *
-   * @global \MovLib\Tool\Kernel $kernel
    * @param string $file
    *   Absolute path to the source file.
    * @return this
    */
   protected function generateSkeleton($file) {
-    global $kernel;
-
     // Every test file has the same path as the source file, the only reside in a different directory. All source files
     // are in "src" and all test files in "test", therefore we have to replace that portion of the part. Every test
     // file ends on Test, this is per convention from PHPUnit, therefor we simply replace the ".php" file extension,

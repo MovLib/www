@@ -94,13 +94,10 @@ class PersonListing extends \MovLib\Presentation\AbstractBase {
   /**
    * Get the string representation of the listing.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The string representation of the listing.
    */
   public function __toString() {
-    global $i18n;
-
     // @devStart
     // @codeCoverageIgnoreStart
     try {
@@ -118,12 +115,12 @@ class PersonListing extends \MovLib\Presentation\AbstractBase {
 
       if (!$this->noItemsText) {
         $this->noItemsText = new Alert(
-          $i18n->t(
+          $this->intl->t(
             "We couldn’t find any persons matching your filter criteria, or there simply aren’t any persons available." .
             " Would you like to {0}create a new entry{1}?",
-            [ "<a href='{$i18n->r("/person/create")}'>", "</a>" ]
+            [ "<a href='{$this->intl->r("/person/create")}'>", "</a>" ]
           ),
-          $i18n->t("No Persons"),
+          $this->intl->t("No Persons"),
           Alert::SEVERITY_INFO
         );
       }
@@ -146,7 +143,6 @@ class PersonListing extends \MovLib\Presentation\AbstractBase {
   /**
    * Format a person list item.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param \MovLib\Data\Person\FullPerson $person
    *   The person to format.
    * @param mixed $listItem [optional]
@@ -155,13 +151,11 @@ class PersonListing extends \MovLib\Presentation\AbstractBase {
    *   The formatted person list item.
    */
   final protected function formatListItem($person, $listItem = null) {
-    global $i18n;
-
     $bornName = null;
     if ($person->bornName) {
-      $bornName = "<small>{$i18n->t("{0} ({1})", [
+      $bornName = "<small>{$this->intl->t("{0} ({1})", [
         "<span property='additionalName'>{$person->bornName}</span>",
-        "<i>{$i18n->t("born name")}</i>",
+        "<i>{$this->intl->t("born name")}</i>",
       ])}</small>";
     }
 

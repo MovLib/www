@@ -17,6 +17,7 @@
  */
 namespace MovLib\Console\Command\Admin;
 
+use \MovLib\Console\AdminDatabase;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -33,7 +34,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
 class Database extends \MovLib\Console\Command\AbstractCommand {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
+  // ------------------------------------------------------------------------------------------------------------------- Constants
 
 
   /**
@@ -41,14 +42,14 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
    *
    * @var string
    */
-  protected $pathBackup = "dr://var/backups";
+  const BACKUP_URI = "dr://var/backups";
 
   /**
    * The directory containing the migration scripts.
    *
    * @var string
    */
-  protected $pathMigration = "dr://var/migrations";
+  const MIGRATION_URI = "dr://var/migrations";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods

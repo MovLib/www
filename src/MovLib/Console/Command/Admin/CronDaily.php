@@ -17,6 +17,7 @@
  */
 namespace MovLib\Console\Command\Admin;
 
+use \MovLib\Console\AdminDatabase;
 use \MovLib\Core\Log;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Exception\ShellException;
@@ -49,29 +50,24 @@ class CronDaily extends \MovLib\Console\Command\AbstractCommand {
    * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    $this->purgeTemporaryTable();
-    $this->purgeTemporaryUploads();
-    return 0;
+    try {
+      $this->purgeTemporaryTable();
+      $this->purgeTemporaryUploads();
+    }
+    catch (\Exception $e) {
+      $this->log->error($e);
+    }
+    return (integer) isset($e);
   }
 
   /**
    * Purge all data from the temporary table.
    *
-   * @global \MovLib\Core\Database $db
    * @return this
    */
   public function purgeTemporaryTable() {
-    global $db;
-    try {
-      $this->writeVerbose("Purging temporary database table...");
-
-      $daily = "DELETE FROM `tmp` WHERE DATEDIFF(CURRENT_TIMESTAMP, `created`) > 0 AND `ttl` = '@daily'";
-      $this->writeDebug("mysql> <comment>{$daily};</comment>");
-      $db->query($daily);
-    }
-    catch (DatabaseException $e) {
-      Log::error($e);
-    }
+    $this->writeDebug("Purging temporary table for <comment>@daily</comment> entries...");
+    (new AdminDatabase())->purgeTemporaryTable("@daily");
     return $this;
   }
 
@@ -81,14 +77,10 @@ class CronDaily extends \MovLib\Console\Command\AbstractCommand {
    * @return this
    */
   public function purgeTemporaryUploads() {
-    try {
-      $this->writeVerbose("Purging temporary uploads directory...");
-      $this->exec("find '" . ini_get("upload_tmp_dir") . "' -type f -mtime +1 -exec rm -f {} \\;");
-    }
-    catch (ShellException $e) {
-      Log::error($e);
-    }
-    return $this;
+    return $this
+      ->writeVerbose("Purging temporary uploads directory...")
+      ->exec("find '" . ini_get("upload_tmp_dir") . "' -type f -mtime +1 -exec rm -f {} \\;")
+    ;
   }
 
 }

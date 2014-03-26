@@ -38,8 +38,6 @@ class AwardMovieListing extends \MovLib\Partial\Listing\MovieListing {
    * @inheritdoc
    */
   public function __toString() {
-    global $i18n;
-
     // @devStart
     // @codeCoverageIgnoreStart
     try {
@@ -56,8 +54,8 @@ class AwardMovieListing extends \MovLib\Partial\Listing\MovieListing {
 
       if (!$this->noItemsText) {
         $this->noItemsText = (string) new Alert(
-          $i18n->t("No movies match your search criteria."),
-          $i18n->t("No Movies"),
+          $this->intl->t("No movies match your search criteria."),
+          $this->intl->t("No Movies"),
           Alert::SEVERITY_INFO
         );
       }
@@ -78,25 +76,22 @@ class AwardMovieListing extends \MovLib\Partial\Listing\MovieListing {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function getAdditionalContent($movie, $listItem) {
-    global $i18n;
-
     // @devStart
     // @codeCoverageIgnoreStart
     if (!isset($movie->wonCount)) {
-      throw new \LogicException($i18n->t("\$movie->wonCount has to be set!"));
+      throw new \LogicException($this->intl->t("\$movie->wonCount has to be set!"));
     }
     if (!isset($movie->nominationCount)) {
-      throw new \LogicException($i18n->t("\$movie->nominationCount has to be set!"));
+      throw new \LogicException($this->intl->t("\$movie->nominationCount has to be set!"));
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
 
     return
-      "<span class='label small'>{$i18n->t("{0}x won", [ $movie->wonCount ])}</span>" .
-      "<span class='label small'>{$i18n->t("{0}x nominated", [ $movie->nominationCount ])}</span>"
+      "<span class='label small'>{$this->intl->t("{0}x won", [ $movie->wonCount ])}</span>" .
+      "<span class='label small'>{$this->intl->t("{0}x nominated", [ $movie->nominationCount ])}</span>"
     ;
   }
 

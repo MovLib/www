@@ -17,8 +17,11 @@
  */
 namespace MovLib\Console\Command\Install;
 
+use \MovLib\Core\Config;
 use \MovLib\Core\FileSystem;
-use \MovLib\Core\I18n;
+use \MovLib\Core\Intl;
+use \MovLib\Core\Kernel;
+use \MovLib\Core\Log;
 use \MovLib\Core\Shell;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
@@ -66,12 +69,10 @@ abstract class AbstractIntlCommand extends \MovLib\Console\Command\AbstractComma
 
 
   /**
-   * {@inheritdoc}
-   * @global \MovLib\Core\Config $config
+   * @inheritdoc
    */
-  public function __construct($name = null) {
-    global $config;
-    parent::__construct($name);
+  public function __construct(Kernel $kernel, Config $config, Log $log, FileSystem $fs, Intl $intl) {
+    parent::__construct($kernel, $config, $log, $fs, $intl);
     $this->addArgument(
       "locale",
       InputArgument::IS_ARRAY | InputArgument::OPTIONAL,
@@ -114,16 +115,12 @@ abstract class AbstractIntlCommand extends \MovLib\Console\Command\AbstractComma
 
   /**
    * {@inheritdoc}
-   * @global \MovLib\Core\Config $config
-   * @global \MovLib\Core\I18n $i18n
    * @param \Symfony\Component\Console\Input\InputInterface $input {@inheritdoc}
    * @param \Symfony\Component\Console\Output\OutputInterface $output {@inheritdoc}
    * @return integer {@inheritdoc}
    * @throws \InvalidArgumentException
    */
   final protected function execute(InputInterface $input, OutputInterface $output) {
-    global $config, $i18n;
-
     // Build array containing all desired locales.
     $args = $input->getArgument("locale");
     if (in_array("all", $args)) {
@@ -160,8 +157,6 @@ abstract class AbstractIntlCommand extends \MovLib\Console\Command\AbstractComma
   /**
    * Get resource bundle from the Intl ICU sources.
    *
-   * @global \MovLib\Core\FileSystem $fs
-   * @global \MovLib\Core\I18n $i18n
    * @param string $dataSourceDirectoryName
    *   The name of the Intl ICU data source directory to generate the desired resource bundle.
    *
@@ -175,8 +170,6 @@ abstract class AbstractIntlCommand extends \MovLib\Console\Command\AbstractComma
    * @throws \InvalidArgumentException
    */
   final protected function getResourceBundle($dataSourceDirectoryName) {
-    global $fs, $i18n;
-
     $source     = self::ICU_SOURCE_DATE_DIR . "/{$dataSourceDirectoryName}";
     $version    = $this->getVersion();
 
@@ -235,12 +228,10 @@ abstract class AbstractIntlCommand extends \MovLib\Console\Command\AbstractComma
   /**
    * Export the Intl ICU source data directory via SVN.
    *
-   * @global \MovLib\Core\FileSystem $fs
    * @return this
    * @throws \MovLib\Exception\ShellException
    */
   final protected function svnExport() {
-    global $fs;
     $srcRealpath = $fs->realpath(self::ICU_SOURCE_DATE_DIR);
     $version     = $this->getVersion();
 

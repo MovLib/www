@@ -59,19 +59,16 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Instantiate new users show presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
     $this->users = new Users();
-    $this->initPage($i18n->t("Users"));
+    $this->initPage($this->intl->t("Users"));
     $this->initBreadcrumb();
     $this->initLanguageLinks("/users", null, true);
     $this->paginationInit($this->users->getTotalCount());
     $this->sidebarInit([
       [ $kernel->requestPath, $this->title ],
-      [ $i18n->r("/user/random"), $i18n->t("Random")],
+      [ $this->intl->r("/user/random"), $this->intl->t("Random")],
     ]);
   }
 
@@ -81,17 +78,13 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\Kernel $kernel
-   * @global \MovLib\Data\User\Session $session
    */
   protected function getPageContent() {
-    global $i18n, $kernel, $session;
     if ($session->isAuthenticated === false) {
       $this->headingBefore =
-        "<a class='btn btn-large btn-success fr' href='{$i18n->r("/profile/join")}'>{$i18n->t(
+        "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/profile/join")}'>{$this->intl->t(
           "Join {sitename}",
-          [ "sitename" => $kernel->siteName ]
+          [ "sitename" => $this->config->siteName ]
         )}</a>"
       ;
     }

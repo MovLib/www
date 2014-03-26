@@ -80,11 +80,8 @@ final class SeedAspectRatios extends \MovLib\Console\Command\Install\AbstractInt
 
   /**
    * {@inheritdoc}
-   * @global \MovLib\Core\I18n $i18n
    */
   protected function translate() {
-    global $i18n;
-
     $numberFormatter = new \NumberFormatter($i18n->locale, \NumberFormatter::DECIMAL, "#0.###");
     $translations    = null;
     foreach ($this->aspectRatios as $intl => $info) {

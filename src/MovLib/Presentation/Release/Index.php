@@ -34,27 +34,22 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Presentation\TraitSidebar;
 
   public function __construct() {
-    global $i18n;
-    $this->initPage($i18n->t("Releases"));
+    $this->initPage($this->intl->t("Releases"));
     $this->initLanguageLinks("/releases", null, true);
     $this->initBreadcrumb();
     $this->sidebarInit([
-      [ $i18n->rp("/releases"), $i18n->t("Releases"), [ "class" => "ico ico-release" ] ],
-      [ $i18n->r("/release/random"), $i18n->t("Random") ],
+      [ $this->intl->rp("/releases"), $this->intl->t("Releases"), [ "class" => "ico ico-release" ] ],
+      [ $this->intl->r("/release/random"), $this->intl->t("Random") ],
     ]);
   }
 
   /**
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   protected function getPageContent() {
-    global $i18n, $kernel;
-
     $list = null;
     $releasesResult = Release::getReleases();
-    $releaseRoute = $i18n->r("/release/{0}");
+    $releaseRoute = $this->intl->r("/release/{0}");
 
     /* @var $release \MovLib\Data\Release\Release */
     while ($release = $releasesResult->fetch_object("\\MovLib\\Data\\Release\\Release")) {

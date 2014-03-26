@@ -20,7 +20,7 @@ namespace MovLib\Core;
 use \MovLib\Exception\DatabaseException;
 
 /**
- * Defines the database object.
+ * Defines the database object and base class for almost all data classes.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -28,7 +28,7 @@ use \MovLib\Exception\DatabaseException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Database {
+class Database {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -39,7 +39,7 @@ final class Database {
    *
    * @var \array
    */
-  protected static $connections = [];
+  private static $connections = [];
 
   /**
    * Associative array containing language specific collation strings.
@@ -51,7 +51,7 @@ final class Database {
    *
    * @var array
    */
-  public $collations = [
+  protected $collations = [
     "en" => null,
     "de" => " COLLATE utf8mb4_german2_ci",
   ];
@@ -61,7 +61,7 @@ final class Database {
    *
    * @var string
    */
-  protected $database;
+  private $database = "movlib";
 
   /**
    * The current MySQLi connection.
@@ -77,21 +77,14 @@ final class Database {
    *
    * @var \ReflectionFunction
    */
-  protected static $stmtBindParam;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+  private static $stmtBindParam;
 
   /**
-   * Instantiate new database object.
+   * Whether a transaction is active or not.
    *
-   * @param string $database
-   *   Name of the database to connect to.
+   * @var boolean
    */
-  public function __construct($database) {
-    $this->database = $database;
-  }
+  protected $transactionActive = false;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -103,7 +96,7 @@ final class Database {
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected function connect() {
+  private function connect() {
     if (!isset(self::$connections[$this->database])) {
       // A cached reflection function is faster than call_user_func_array()!
       if (!self::$stmtBindParam) {
@@ -137,7 +130,7 @@ final class Database {
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function multiQuery($queries, $foreignKeyChecks = true) {
+  final protected function multiQuery($queries, $foreignKeyChecks = true) {
     // Obviously we can only execute string queries.
     if (!is_string($queries)) {
       $type = gettype($queries);
@@ -200,7 +193,7 @@ final class Database {
    * @return \mysqli_stmt
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function query($query, $types = null, array $params = null) {
+  final protected function query($query, $types = null, array $params = null) {
     if (!$this->mysqli) {
       $this->connect();
     }
@@ -225,16 +218,6 @@ final class Database {
   }
 
   /**
-   * Whether a transaction is active or not.
-   *
-   * @return boolean
-   *   <code>TRUE</code> if a transaction is active, otherwise <code>FALSE</code>.
-   */
-  public function transactionActive() {
-    return $this->transactionActive;
-  }
-
-  /**
    * Commit current transaction.
    *
    * @param int $flags [optional]
@@ -242,7 +225,7 @@ final class Database {
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function transactionCommit($flags = MYSQLI_TRANS_COR_AND_NO_CHAIN) {
+  final protected function transactionCommit($flags = MYSQLI_TRANS_COR_AND_NO_CHAIN) {
     if ($this->transactionActive === false) {
       throw new DatabaseException("No active transaction, nothing to commit.");
     }
@@ -262,7 +245,7 @@ final class Database {
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function transactionRollback($flags = MYSQLI_TRANS_COR_AND_NO_CHAIN) {
+  final protected function transactionRollback($flags = MYSQLI_TRANS_COR_AND_NO_CHAIN) {
     if ($this->transactionActive === false) {
       throw new DatabaseException("No active transaction, nothing to rollback.");
     }
@@ -283,13 +266,32 @@ final class Database {
    * @return this
    * @throws \MovLib\Data\DatabaseException
    */
-  public function transactionStart($flags = MYSQLI_TRANS_START_READ_WRITE) {
+  final protected function transactionStart($flags = MYSQLI_TRANS_START_READ_WRITE) {
     if (!$this->mysqli) {
       $this->connect();
     }
     if (($this->transactionActive = $this->mysqli->begin_transaction($flags)) === false) {
       throw new DatabaseException("Could not start transaction", $this->mysqli->error, $this->mysqli->errno);
     }
+    return $this;
+  }
+
+  /**
+   * Change the database in use.
+   *
+   * @param string $name
+   *   The name of the new database to use.
+   * @return this
+   */
+  final public function useDatabase($name) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($name) || !is_string($name)) {
+      throw new \InvalidArgumentException("\$name cannot be empty and must be of type string.");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    $this->database = $name;
     return $this;
   }
 

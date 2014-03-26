@@ -49,12 +49,9 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Instantiate new system page presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
-    global $i18n;
-
     $this->systemPage = new SystemPage((integer) $_SERVER["SYSTEM_PAGE_ID"]);
     $this->initPage($this->systemPage->title);
     $this->initLanguageLinks($this->systemPage->route);
@@ -64,7 +61,7 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
     $systemPages = SystemPage::getSystemPages();
     /* @var $systemPage \MovLib\Data\SystemPage */
     while ($systemPage = $systemPages->fetch_object("\\MovLib\\Data\\SystemPage")) {
-      $menuitems[] = [ $i18n->r($systemPage->route), $systemPage->title ];
+      $menuitems[] = [ $this->intl->r($systemPage->route), $systemPage->title ];
     }
     $this->sidebarInit($menuitems);
   }

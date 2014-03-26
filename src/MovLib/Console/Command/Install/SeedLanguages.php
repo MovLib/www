@@ -17,7 +17,7 @@
  */
 namespace MovLib\Console\Command\Install;
 
-use \MovLib\Core\I18n;
+use \MovLib\Core\Intl;
 
 /**
  * Seed languages.
@@ -90,11 +90,8 @@ class SeedLanguages extends \MovLib\Console\Command\Install\AbstractIntlCommand 
 
   /**
    * {@inheritdoc}
-   * @global \MovLib\Core\I18n $i18n
    */
   protected function translate() {
-    global $i18n;
-
     // Translate all available languages to the desired locale.
     $languages = [];
     foreach ($this->codes as $code) {
@@ -102,11 +99,11 @@ class SeedLanguages extends \MovLib\Console\Command\Install\AbstractIntlCommand 
     }
 
     // Add the two special language codes.
-    $languages[I18n::CODE_NON_LINGUISTIC] = $i18n->t("Silent");
-    $languages[I18n::CODE_OTHER]          = $i18n->t("Other");
+    $languages[Intl::CODE_NON_LINGUISTIC] = $i18n->t("Silent");
+    $languages[Intl::CODE_OTHER]          = $i18n->t("Other");
 
     // Prepare search array which helps us to identify which special language codes don't have a native translation.
-    $noNative = [ I18n::CODE_NON_LINGUISTIC, I18n::CODE_OTHER ];
+    $noNative = [ Intl::CODE_NON_LINGUISTIC, Intl::CODE_OTHER ];
 
     // Sort the translated language according to their translated names.
     $i18n->getCollator()->asort($languages);

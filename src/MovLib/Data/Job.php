@@ -105,14 +105,11 @@ class Job extends \MovLib\Data\Database {
   /**
    * Instantiate new job.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param integer $id [optional]
    *   The job's unique identifier, omit to create empty instance.
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct($id = null) {
-    global $db, $i18n;
     if ($id) {
       $query = self::getQuery();
       $stmt = $db->query("
@@ -148,8 +145,6 @@ class Job extends \MovLib\Data\Database {
   /**
    * Get all jobs matching the offset and row count.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param integer $offset
    *   The offset in the result.
    * @param integer $rowCount
@@ -158,7 +153,6 @@ class Job extends \MovLib\Data\Database {
    *   The query result.
    */
   public static function getJobs($offset, $rowCount) {
-    global $db, $i18n;
     $query = self::getQuery();
     return $db->query("
       {$query}
@@ -173,13 +167,11 @@ class Job extends \MovLib\Data\Database {
   /**
    * The count of movies connected with this job.
    *
-   * @global \MovLib\Data\Database $db
    * @return integer
    *   The count.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMoviesCount() {
-    global $db;
     return $db->query(
       "SELECT count(DISTINCT `movie_id`) as `count` FROM `movies_crew` WHERE `job_id` = ?", "d", [ $this->id ]
     )->get_result()->fetch_assoc()["count"];
@@ -188,14 +180,11 @@ class Job extends \MovLib\Data\Database {
  /**
    * Get the mysqli result for all movies that are connected with this job.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return \mysqli_result
    *   The mysqli result for all movies that are connected with this job.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMoviesResult() {
-    global $db, $i18n;
     return $db->query(
       "SELECT
         `movies`.`id` AS `id`,
@@ -230,14 +219,12 @@ class Job extends \MovLib\Data\Database {
   /**
    * Get the default query.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @staticvar string $query
    *   Used to cache the default query.
    * @return string
    *   The default query.
    */
   protected static function getQuery() {
-    global $i18n;
     static $query = null;
     if (!$query) {
       $query =
@@ -257,13 +244,11 @@ class Job extends \MovLib\Data\Database {
   /**
    * Get random job identifier.
    *
-   * @global \MovLib\Data\Database $db
    * @return integer|null
    *   Random job identifier, or <code>NULL</code> on failure.
    * @throws \MovLib\Exception\DatabaseException
    */
   public static function getRandomJobId() {
-    global $db;
     $result = $db->query("SELECT `id` FROM `jobs` WHERE `jobs`.`deleted` = false ORDER BY RAND() LIMIT 1")->get_result()->fetch_row();
     if (isset($result[0])) {
       return $result[0];
@@ -273,13 +258,11 @@ class Job extends \MovLib\Data\Database {
   /**
    * The count of series connected with this job.
    *
-   * @global \MovLib\Data\Database $db
    * @return integer
    *   The count.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getSeriesCount() {
-    global $db;
     return $db->query(
       "SELECT count(DISTINCT `series_id`) as `count` FROM `episodes_crew` WHERE `job_id` = ?", "d", [ $this->id ]
     )->get_result()->fetch_assoc()["count"];
@@ -288,14 +271,12 @@ class Job extends \MovLib\Data\Database {
   /**
    * Get the count of all jobs.
    *
-   * @global \MovLib\Data\Database $db
    * @staticvar null|integer $count
    *   The amount of all jobs.
    * @return integer
    *   The amount of all jobs.
    */
   public static function getTotalCount() {
-    global $db;
     static $count = null;
     if (!$count) {
       $count = $db->query("SELECT COUNT(`id`) FROM `jobs` WHERE `deleted` = false LIMIT 1")->get_result()->fetch_row()[0];
@@ -306,11 +287,8 @@ class Job extends \MovLib\Data\Database {
   /**
    * Initialize job.
    *
-   * @global type $i18n
    */
   protected function init() {
-    global $i18n;
-
     $this->deleted  = (boolean) $this->deleted;
     $this->routeKey = "/job/{0}";
     $this->route    = $i18n->r($this->routeKey, [ $this->id ]);

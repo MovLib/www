@@ -72,16 +72,14 @@ abstract class AspectRatio {
    * All available aspect ratios in the current locale.
    *
    * @todo Generate formatted aspect ratios for each system language offline, like with the other stuff.
-   * @global \MovLib\Data\I18n $i18n
    * @return array
    *   All available aspect ratios in the current locale.
    */
   final public static function getAspectRatios() {
     if (!self::$formatted) {
-      global $i18n;
       $c = count(self::$aspectRatios);
       for ($i = 0; $i < $c; ++$i) {
-        self::$formatted[self::$aspectRatios[$i]] = $i18n->format(
+        self::$formatted[self::$aspectRatios[$i]] = $this->intl->format(
           "{0,number}:{1,number,integer}",
           explode(":", self::$aspectRatios[$i], 2)
         );

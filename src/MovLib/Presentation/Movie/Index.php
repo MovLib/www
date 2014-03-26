@@ -40,17 +40,15 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Instantiate new latest movies presentation
    *
-   * @global \MovLib\Data\I18n $i18n
    */
   public function __construct() {
-    global $i18n;
-    $this->initPage($i18n->t("Movies"));
+    $this->initPage($this->intl->t("Movies"));
     $this->initBreadcrumb();
     $this->initLanguageLinks("/movies", null, true);
     $this->sidebarInit([
-      [ $i18n->rp("/movies"), $i18n->t("Movies"), [ "class" => "ico ico-movie" ] ],
-      [ $i18n->rp("/movies/charts"), $i18n->t("Charts") ],
-      [ $i18n->r("/movie/random"), $i18n->t("Random") ],
+      [ $this->intl->rp("/movies"), $this->intl->t("Movies"), [ "class" => "ico ico-movie" ] ],
+      [ $this->intl->rp("/movies/charts"), $this->intl->t("Charts") ],
+      [ $this->intl->r("/movie/random"), $this->intl->t("Random") ],
     ]);
     $this->paginationInit(Movie::getMoviesCount());
   }
@@ -61,15 +59,12 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Get the presentation's page content.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The presentation's page content.
    */
   protected function getPageContent() {
-    global $i18n;
-
     // Ensure it's easy for users to find the page where the can create new movies.
-    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/movie/create")}'>{$i18n->t("Create New Movie")}</a>";
+    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/movie/create")}'>{$this->intl->t("Create New Movie")}</a>";
 
     return new MoviesPartial(Movie::getMovies($this->paginationOffset, $this->paginationLimit));
   }

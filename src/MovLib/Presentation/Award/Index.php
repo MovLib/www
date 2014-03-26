@@ -41,18 +41,15 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Instantiate new latest awards presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
-    $this->initPage($i18n->t("Awards"));
+    $this->initPage($this->intl->t("Awards"));
     $this->initBreadcrumb();
     $this->initLanguageLinks("/awards", null, true);
     $this->paginationInit(Award::getTotalCount());
     $this->sidebarInit([
       [ $kernel->requestPath, $this->title, [ "class" => "ico ico-award" ] ],
-      [ $i18n->r("/award/random"), $i18n->t("Random") ],
+      [ $this->intl->r("/award/random"), $this->intl->t("Random") ],
     ]);
   }
 
@@ -64,20 +61,18 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
    * @inheritdoc
    */
   protected function getPageContent() {
-    global $i18n;
-
     $this->headingBefore =
-      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/award/create")}'>{$i18n->t("Create New Award")}</a>"
+      "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/award/create")}'>{$this->intl->t("Create New Award")}</a>"
     ;
 
     $result      = Award::getAwards($this->paginationOffset, $this->paginationLimit);
     $noItemText  = new Alert(
-      $i18n->t(
+      $this->intl->t(
         "We couldn’t find any awards matching your filter criteria, or there simply aren’t any awards available."
-      ), $i18n->t("No Awards"), Alert::SEVERITY_INFO
+      ), $this->intl->t("No Awards"), Alert::SEVERITY_INFO
     );
     $noItemText .=
-      $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/award/create")}'>", "</a>" ]);
+      $this->intl->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$this->intl->r("/award/create")}'>", "</a>" ]);
 
     return new AwardIndexListing($result, $noItemText);
   }

@@ -89,12 +89,11 @@ abstract class AbstractListing extends \MovLib\Presentation\AbstractBase {
    *   The string representation of the list.
    */
   public function __toString() {
-    global $i18n;
     try {
       return $this->render();
     }
     catch (\Exception $e) {
-      return (string) new Alert("<pre>{$e}</pre>", $i18n->t("Error Rendering List"), Alert::SEVERITY_ERROR);
+      return (string) new Alert("<pre>{$e}</pre>", $this->intl->t("Error Rendering List"), Alert::SEVERITY_ERROR);
     }
   }
 

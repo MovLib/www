@@ -38,15 +38,11 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Instantiate new series create presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
-
-    $this->initPage($i18n->t("Create Series"));
-    $this->initBreadcrumb([ [ $i18n->rp("/series"), $i18n->t("Series") ] ]);
-    $this->breadcrumbTitle = $i18n->t("Create");
+    $this->initPage($this->intl->t("Create Series"));
+    $this->initBreadcrumb([ [ $this->intl->rp("/series"), $this->intl->t("Series") ] ]);
+    $this->breadcrumbTitle = $this->intl->t("Create");
     $this->initLanguageLinks("/series/create");
 
     $kernel->stylesheets[] = "series";
@@ -58,13 +54,11 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function getContent() {
-    global $i18n;
     return new Alert(
-      $i18n->t("The create series feature isn’t implemented yet."),
-      $i18n->t("Check back later"),
+      $this->intl->t("The create series feature isn’t implemented yet."),
+      $this->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     );
   }

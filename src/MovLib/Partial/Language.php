@@ -63,7 +63,6 @@ final class Language extends \MovLib\Presentation\AbstractBase {
   /**
    * Instantiate new language partial.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param string $code
    *   The ISO 639-1 code of the language.
    * @param array $attributes [optional]
@@ -72,16 +71,15 @@ final class Language extends \MovLib\Presentation\AbstractBase {
    *   The tag that should be used to wrap this language, defaults to <code>"span"</code>.
    */
   public function __construct($code, array $attributes = null, $tag = "span") {
-    global $i18n;
     $this->attributes             = $attributes;
     $this->attributes[]           = "itemscope";
     $this->attributes["itemtype"] = "http://schema.org/Language";
-    $this->language               = $i18n->getTranslations("languages")[$code];
+    $this->language               = $this->intl->getTranslations("languages")[$code];
     $this->tag                    = $tag;
 
     // The special code xx isn't valid if we use it as lang attribute, but the ISO 639-2 code zxx is, make sure we use
     // the right language code.
-    if ($this->language->code != $i18n->languageCode) {
+    if ($this->language->code != $this->intl->languageCode) {
       $this->attributes["lang"] = $this->language->code == "xx" ? "zxx" : $this->language->code;
     }
   }
@@ -102,7 +100,6 @@ final class Language extends \MovLib\Presentation\AbstractBase {
   /**
    * Get select form element to select a language.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param string $value
    *   The form element's value.
    * @param array $attributes [optional]
@@ -110,13 +107,12 @@ final class Language extends \MovLib\Presentation\AbstractBase {
    * @param string $id [optional]
    *   The form element's unique identifier, defaults to <code>"language"</code>.
    * @param string $label [optional]
-   *   The form element's translated label, default to <code>$i18n->t("Language")</code>.
+   *   The form element's translated label, default to <code>$this->intl->t("Language")</code>.
    * @return \MovLib\Presentation\Partial\FormElement\Select
    *   The select form element to select a language.
    */
   public static function getSelectFormElement(&$value, array $attributes = null, $id = "language", $label = null) {
-    global $i18n;
-    return new Select($id, $label ?: $i18n->t("Language"), self::getLanguages(), $value, $attributes);
+    return new Select($id, $label ?: $this->intl->t("Language"), self::getLanguages(), $value, $attributes);
   }
 
 }

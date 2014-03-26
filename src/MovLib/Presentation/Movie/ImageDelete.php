@@ -32,13 +32,12 @@ use \MovLib\Data\Movie\Movie;
 class ImageDelete extends \MovLib\Presentation\Movie\AbstractBase {
 
   public function __construct() {
-    global $i18n;
     $this->movie = new Movie($_SERVER["MOVIE_ID"]);
     $this->initPage("Delete Image");
     $this->initBreadcrumb();
     $this->alerts .= new Alert(
-      $i18n->t("The delete image feature isn’t implemented yet."),
-      $i18n->t("Check back later"),
+      $this->intl->t("The delete image feature isn’t implemented yet."),
+      $this->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     );
   }

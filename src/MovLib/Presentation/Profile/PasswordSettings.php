@@ -64,22 +64,17 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
   /**
    * Instantiate new user password settings presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\User\Session $session
    */
   public function __construct() {
-    global $i18n, $kernel, $session;
-
     // Disallow caching of password settings.
     session_cache_limiter("nocache");
 
     // We call both auth-methods the session has to ensure that the error message we display is as accurate as possible.
-    $session->checkAuthorization($i18n->t("You need to sign in to change your password."));
-    $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
+    $session->checkAuthorization($this->intl->t("You need to sign in to change your password."));
+    $session->checkAuthorizationTimestamp($this->intl->t("Please sign in again to verify the legitimacy of this request."));
 
     // Translate and set the page title.
-    $this->init($i18n->t("Password Settings"), "/profile/password-settings", [[ $i18n->r("/profile"), $i18n->t("Profile") ]]);
+    $this->init($this->intl->t("Password Settings"), "/profile/password-settings", [[ $this->intl->r("/profile"), $this->intl->t("Profile") ]]);
 
     // Validate the token if the page was requested via GET and a token is actually present.
     if ($kernel->requestMethod == "GET" && !empty($_GET["token"])) {
@@ -87,13 +82,13 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
     }
 
     // First field to enter the new password.
-    $this->newPassword = new InputPassword("new-password", $i18n->t("New Password"), [
-      "placeholder" => $i18n->t("Enter your new password"),
+    $this->newPassword = new InputPassword("new-password", $this->intl->t("New Password"), [
+      "placeholder" => $this->intl->t("Enter your new password"),
     ]);
 
     // Second field to enter the new password for confirmation.
-    $this->newPasswordConfirm = new InputPassword("new-password-confirm", $i18n->t("Confirm Password"), [
-      "placeholder" => $i18n->t("Enter your new password again"),
+    $this->newPasswordConfirm = new InputPassword("new-password-confirm", $this->intl->t("Confirm Password"), [
+      "placeholder" => $this->intl->t("Enter your new password again"),
     ]);
 
     // Initialize the actual form of this page.
@@ -101,7 +96,7 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
     $this->form->attributes["autocomplete"] = "off";
 
     // The submit button.
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Change"), [ "class" => "btn btn-large btn-success" ]);
+    $this->form->actionElements[] = new InputSubmit($this->intl->t("Change"), [ "class" => "btn btn-large btn-success" ]);
   }
 
 
@@ -110,19 +105,15 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
 
   /**
    * @inhertidoc
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function getBreadcrumbs() {
-    global $i18n;
-    return [[ $i18n->r("/profile"), $i18n->t("Profile") ]];
+    return [[ $this->intl->r("/profile"), $this->intl->t("Profile") ]];
   }
 
   /**
    * @inheritdoc
    */
   protected function getPageContent() {
-    global $i18n;
-
     // Generate a KeePass like random password for the user.
     $randomPassword = `pwgen -cnBv 20 1`;
     if (empty($randomPassword)) {
@@ -131,17 +122,17 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
     }
     else {
       $passwordInfo = new Alert(
-        "<p>{$i18n->t("Choose a strong password to secure your account.")}</p>" .
-        "<p>{$i18n->t(
+        "<p>{$this->intl->t("Choose a strong password to secure your account.")}</p>" .
+        "<p>{$this->intl->t(
           "A password must contain lowercase and uppercase letters, numbers, and must be at least " .
           "{0,number,integer} characters long.",
           [ $this->newPassword->minimumPasswordLength ]
         )}</p>" .
-        "<p>{$i18n->t(
+        "<p>{$this->intl->t(
           "As little help we generated the following password for you: {random_password}",
           [ "random_password" => "<code>{$randomPassword}</code>" ]
         )}</p>",
-        $i18n->t("Tip"),
+        $this->intl->t("Tip"),
         Alert::SEVERITY_INFO
       );
     }
@@ -151,11 +142,8 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   protected function valid() {
-    global $i18n, $kernel;
     $kernel->sendEmail(new PasswordChangeEmail($this->user, $this->newPassword->value));
 
     // The request has been accepted, but further action is required to complete it.
@@ -163,15 +151,15 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
 
     // Explain to the user where to find this further action to complete the request.
     $this->alerts .= new Alert(
-      $i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->user->email) ]),
-      $i18n->t("Successfully Requested Password Change"),
+      $this->intl->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->user->email) ]),
+      $this->intl->t("Successfully Requested Password Change"),
       Alert::SEVERITY_SUCCESS
     );
 
     // Also explain that this change is no immidiate action and that our system is still using the old password.
     $this->alerts .= new Alert(
-      $i18n->t("You have to sign in with your old password until you’ve successfully confirmed your password change via the link we’ve just sent you."),
-      $i18n->t("Important!"),
+      $this->intl->t("You have to sign in with your old password until you’ve successfully confirmed your password change via the link we’ve just sent you."),
+      $this->intl->t("Important!"),
       Alert::SEVERITY_INFO
     );
 
@@ -183,19 +171,16 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
    * @todo OWASP and other sources recommend to store a password history for each user and check that the new password
    *       isn't one of the old passwords. This would increase the account's security a lot. Anyone willing to implement
    *       this is very welcome.
-   * @global \MovLib\Data\I18n $i18n
    * @param null|array $errors
    *   {@inheritdoc}
    * @return this
    */
   public function validate($errors) {
-    global $i18n;
-
     // Both password's have to be equal.
     if ($this->newPassword->value != $this->newPasswordConfirm->value) {
       $this->newPassword->invalid();
       $this->newPasswordConfirm->invalid();
-      $errors[] = $i18n->t("The confirmation password doesn’t match the new password, please try again.");
+      $errors[] = $this->intl->t("The confirmation password doesn’t match the new password, please try again.");
     }
 
     // Instantiate full user object if we have no errors so far.
@@ -204,7 +189,7 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
       if ($this->user->verifyPassword($this->newPassword->value) === true) {
         $this->newPassword->invalid();
         $this->newPasswordConfirm->invalid();
-        $errors[] = $i18n->t("Your new password equals your existing password, please enter a new one.");
+        $errors[] = $this->intl->t("Your new password equals your existing password, please enter a new one.");
       }
     }
 
@@ -219,21 +204,17 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
   /**
    * Validate the submitted authentication token and update the user's password.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\Session $session
    * @return this
    * @throws \MovLib\Presentation\Error\Unauthorized
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   protected function validateToken() {
-    global $i18n, $kernel, $session;
     $tmp = new Temporary();
 
     if (($data = $tmp->get($_GET["token"])) === false || empty($data["user_id"]) || empty($data["new_password"])) {
       $kernel->alerts .= new Alert(
-        $i18n->t("Your confirmation token is invalid or expired, please fill out the form again."),
-        $i18n->t("Token Invalid"),
+        $this->intl->t("Your confirmation token is invalid or expired, please fill out the form again."),
+        $this->intl->t("Token Invalid"),
         Alert::SEVERITY_ERROR
       );
       throw new SeeOtherRedirect($kernel->requestPath);
@@ -242,8 +223,8 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
     if ($data["user_id"] !== $session->userId) {
       $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
       throw new Unauthorized(
-        $i18n->t("The confirmation token is invalid, please sign in again and request a new token."),
-        $i18n->t("Token Invalid"),
+        $this->intl->t("The confirmation token is invalid, please sign in again and request a new token."),
+        $this->intl->t("Token Invalid"),
         Alert::SEVERITY_ERROR,
         true
       );
@@ -253,8 +234,8 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
     $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
 
     $this->alerts .= new Alert(
-      $i18n->t("Your password was successfully changed. Please use your new password to sign in from now on."),
-      $i18n->t("Password Changed Successfully"),
+      $this->intl->t("Your password was successfully changed. Please use your new password to sign in from now on."),
+      $this->intl->t("Password Changed Successfully"),
       Alert::SEVERITY_SUCCESS
     );
 

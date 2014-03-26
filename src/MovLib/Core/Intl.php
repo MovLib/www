@@ -30,7 +30,7 @@ use \MovLib\Data\Collator;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class I18n {
+final class Intl extends \MovLib\Core\Database {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -92,13 +92,6 @@ final class I18n {
 
 
   /**
-   * Database instance.
-   *
-   * @var \MovLib\Core\Database
-   */
-  protected $db;
-
-  /**
    * The default language code.
    *
    * @var string
@@ -145,8 +138,8 @@ final class I18n {
   /**
    * Used to cache translations.
    *
-   * @see I18n::getTranslations()
-   * @see I18n::translate()
+   * @see Intl::getTranslations()
+   * @see Intl::translate()
    * @var array
    */
   protected static $translations = [];
@@ -165,11 +158,9 @@ final class I18n {
    * @param array $systemLocales
    *   All available locales of this system, the associative array's keys must be the language code and the value the
    *   locale.
-   * @param \MovLib\Core\Database $db
-   *   Database instance.
    * @throws \InvalidArgumentException
    */
-  public function __construct($locale, $defaultLocale, array $systemLocales, Database $db) {
+  public function __construct($locale, $defaultLocale, array $systemLocales) {
     // @devStart
     // @codeCoverageIgnoreStart
     foreach ([ "locale", "defaultLocale" ] as $param) {
@@ -182,7 +173,6 @@ final class I18n {
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    $this->db                  = $db;
     $this->defaultLocale       = $defaultLocale;
     $this->defaultLanguageCode = "{$defaultLocale[0]}{$defaultLocale[1]}";
     $this->systemLocales       = $systemLocales;
@@ -301,7 +291,7 @@ final class I18n {
    */
   public function insertMessage($message, $comment = null) {
     // We want to make sure that this message isn't already stored in the database.
-    $result = $this->db->query(
+    $result = $this->query(
       "SELECT `message_id` FROM `messages` WHERE `message` = ? LIMIT 1",
       "s",
       [ $message ]
@@ -310,7 +300,7 @@ final class I18n {
     // Only insert if above query didn't return any result.
     if (empty($result)) {
       // Insert the message into the database.
-      $this->db->query(
+      $this->query(
         "INSERT INTO `messages` (`message`, `comment`, `dyn_translations`) VALUES (?, ?, '')",
         "ss",
         [ $message, $comment ]
@@ -380,12 +370,12 @@ final class I18n {
    */
   public function setLocale($locale) {
     if (isset($this->systemLocales[$locale])) {
-      $this->locale       = $locale;
-      $this->languageCode = "{$locale[0]}{$locale[1]}";
-    }
-    elseif (in_array($locale, $this->systemLocales)) {
       $this->locale       = $this->systemLocales[$locale];
       $this->languageCode = $locale;
+    }
+    elseif (in_array($locale, $this->systemLocales)) {
+      $this->locale       = $locale;
+      $this->languageCode = "{$locale[0]}{$locale[1]}";
     }
     else {
       throw new \InvalidArgumentException(
@@ -484,7 +474,7 @@ final class I18n {
       if (empty(self::$translations[$this->locale][$context][$pattern])) {
         // Fetch translations from database for message context.
         if ($context == "messages") {
-          list(self::$translations[$this->locale][$context][$pattern]) = $this->db->query(
+          list(self::$translations[$this->locale][$context][$pattern]) = $this->query(
             "SELECT COLUMN_GET(`dyn_translations`, ? AS CHAR) FROM `messages` WHERE `message` = ? LIMIT 1",
             "ss",
             [ $this->languageCode, $pattern ]

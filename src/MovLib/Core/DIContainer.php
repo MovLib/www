@@ -15,47 +15,59 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Profile;
-
-use \MovLib\Presentation\Partial\Alert;
+namespace MovLib\Core;
 
 /**
- * Allows a user to manage her or his notification settings.
+ * @todo Description of DependencyInjectionContainer
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class NotificationSettings extends \MovLib\Presentation\Profile\Show {
+class DIContainer {
 
   /**
-   * Instantiate new user notification settings presentation.
+   * Active global configuration instance.
    *
-   * @throws \MovLib\Presentation\Error\Unauthorized
+   * @var \MovLib\Core\Config
    */
-  public function __construct() {
-    $session->checkAuthorization($this->intl->t("You must be signed in to change your notification settings."));
-    $this->init($this->intl->t("Notification Settings"), "/profile/notification-settings", [[ $this->intl->r("/profile"), $this->intl->t("Profile") ]]);
-  }
+  public $config;
 
   /**
-   * @inhertidoc
+   * Active file system instance.
+   *
+   * @var \MovLib\Core\FileSystem
    */
-  protected function getBreadcrumbs() {
-    return [[ $this->intl->r("/profile"), $this->intl->t("Profile") ]];
-  }
+  public $fs;
 
   /**
-   * @inheritdoc
+   * Active intl instance.
+   *
+   * @var \MovLib\Core\Intl
    */
-  protected function getPageContent() {
-    return new Alert(
-      $this->intl->t("The notification system isn’t implemented yet."),
-      $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    );
-  }
+  public $intl;
+
+  /**
+   * Active kernel instance.
+   *
+   * @var \MovLib\Core\Kernel
+   */
+  public $kernel;
+
+  /**
+   * Active logger instance.
+   *
+   * @var \MovLib\Core\Log
+   */
+  public $log;
+
+  /**
+   * The presenting presenter.
+   *
+   * @var \MovLib\Presentation\AbstractPresenter
+   */
+  public $presenter;
 
 }

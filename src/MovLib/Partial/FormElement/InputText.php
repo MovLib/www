@@ -60,7 +60,6 @@ class InputText extends \MovLib\Partial\FormElement\AbstractInput {
   /**
    * Validate the submitted text.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param string $text
    *   The user submitted text to validate.
    * @param mixed $errors
@@ -69,16 +68,14 @@ class InputText extends \MovLib\Partial\FormElement\AbstractInput {
    *   The valid and sanitized text.
    */
   protected function validateValue($text, &$errors) {
-    global $i18n;
-
     // Validate that the input string is valid UTF-8.
     if (preg_match("//u", $text) === false) {
-      $errors[self::ERROR_UNICODE] = $i18n->t("The “{0}” field contains invalid UTF-8 characters.", [ $this->label ]);
+      $errors[self::ERROR_UNICODE] = $this->intl->t("The “{0}” field contains invalid UTF-8 characters.", [ $this->label ]);
     }
 
     // Let PHP validate the string again and strip any low special ASCII characters (e.g. NULL byte).
     if ($text != filter_var($text, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW)) {
-      $errors[self::ERROR_LOW_ASCII] = $i18n->t("The “{0}” field contains illegal low ASCII characters.", [ $this->label ]);
+      $errors[self::ERROR_LOW_ASCII] = $this->intl->t("The “{0}” field contains illegal low ASCII characters.", [ $this->label ]);
     }
 
     // Only attempt to sanitize the string further if we have no errors so far.

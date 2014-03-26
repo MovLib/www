@@ -38,15 +38,12 @@ class Movies extends \MovLib\Presentation\Award\AbstractBase {
   /**
    * Instantiate new award movie presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
     $this->award = new Award((integer) $_SERVER["AWARD_ID"]);
-    $this->initPage($i18n->t("Movies with {0}", [ $this->award->name ]));
-    $this->pageTitle       = $i18n->t("Movies with {0}", [ "<a href='{$this->award->route}'>{$this->award->name}</a>" ]);
-    $this->breadcrumbTitle = $i18n->t("Movies");
+    $this->initPage($this->intl->t("Movies with {0}", [ $this->award->name ]));
+    $this->pageTitle       = $this->intl->t("Movies with {0}", [ "<a href='{$this->award->route}'>{$this->award->name}</a>" ]);
+    $this->breadcrumbTitle = $this->intl->t("Movies");
     $this->initLanguageLinks("/award/{0}/movies", [ $this->award->id ], true);
     $this->initAwardBreadcrumb();
     $this->sidebarInit();

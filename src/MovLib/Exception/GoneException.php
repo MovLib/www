@@ -31,10 +31,8 @@ final class GoneException extends \RuntimeException implements \MovLib\Exception
 
   /**
    * {@inheritdoc}
-   * @global \MovLib\Presentation\AbstractPresenter $page
    */
   public function getPresentation() {
-    global $presenter;
     http_response_code(410);
     $content = $presenter->getGoneContent();
     $header  = $presenter->getHeader();

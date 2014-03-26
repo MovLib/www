@@ -101,9 +101,6 @@ final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
   /**
    * Instantiate new input form element of type file.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\User\Session $session
    * @param string $id
    *   The form element's global unique identifier.
    * @param string $label
@@ -115,8 +112,6 @@ final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
    * @throws \MovLib\Presentation\Error\Unauthorized
    */
   public function __construct($id, $label, $concreteImage, array $attributes = null) {
-    global $i18n, $kernel, $session;
-
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($concreteImage instanceof AbstractBaseImage)) {
@@ -127,9 +122,9 @@ final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
 
     // Only authenticated users are allowed to upload images.
     if ($session->isAuthenticated === false) {
-      throw new Unauthorized($i18n->t(
+      throw new Unauthorized($this->intl->t(
         "You must be signed in to upload images. If you don’t have an account yet why not {0}join {sitename}{1}?.",
-        [ "<a href='{$i18n->r("/profile/join")}'>", "</a>", "sitename" => $kernel->siteName ]
+        [ "<a href='{$this->intl->r("/profile/join")}'>", "</a>", "sitename" => $kernel->siteName ]
       ));
     }
 
@@ -147,7 +142,7 @@ final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
 
     list($this->maxFilesizeFormatted, $this->maxFilesizeUnit) = $this->formatBytes($this->maxFilesize);
 
-    $this->setHelp($i18n->t("Image must be larger than {width} × {height} pixels and less than {size,number,integer} {unit}. Allowed image types: JPG and PNG", [
+    $this->setHelp($this->intl->t("Image must be larger than {width} × {height} pixels and less than {size,number,integer} {unit}. Allowed image types: JPG and PNG", [
       "width"  => $this->minWidth,
       "height" => $this->minHeight,
       "size"   => $this->maxFilesizeFormatted,
@@ -156,32 +151,29 @@ final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
 
     // Translate some error messages right away, we need them in render() and in validate()
     $this->errorMessages = [
-      "preview" => $i18n->t("The image you see is only a preview, you still have to submit the form."),
-      "large"   => $i18n->t("The image you are trying to upload is too large, it must be {size,number,integer} {unit} or smaller.", [
+      "preview" => $this->intl->t("The image you see is only a preview, you still have to submit the form."),
+      "large"   => $this->intl->t("The image you are trying to upload is too large, it must be {size,number,integer} {unit} or smaller.", [
         "size" => $this->maxFilesizeFormatted,
         "unit" => $this->maxFilesizeUnit,
       ]),
-      "quality" => $i18n->t(
+      "quality" => $this->intl->t(
         "New images should have a better quality than already existing images, this includes the resolution. The " .
         "current image’s resolution is {width} × {height} and your new image’s is {width_new} × {height_new} pixels. " .
         "Please confirm that your upload has a better quality than the existing one despite the fact of smaller dimensions.",
         [ "width" => $this->image->width, "height" => $this->image->height ]
       ),
-      "small"   => $i18n->t("The image is too small, it must be larger than {width} × {height} pixels.", [
+      "small"   => $this->intl->t("The image is too small, it must be larger than {width} × {height} pixels.", [
         "height" => $this->minHeight,
         "width"  => $this->minWidth,
       ]),
-      "type"    => $i18n->t("Unsupported image type and/or corrupt image, the following types are supported: JPG and PNG"),
+      "type"    => $this->intl->t("Unsupported image type and/or corrupt image, the following types are supported: JPG and PNG"),
     ];
   }
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function render() {
-    global $i18n;
-
     $JSON     = json_encode($this->errorMessages);
     $height   = $this->image->height ? " data-height='{$this->image->height}'" : null;
     $width    = $this->image->width  ? " data-width='{$this->image->width}'"   : null;
@@ -191,7 +183,7 @@ final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
         "<script type='application/json'>{$JSON}</script>" .
         "<div class='s s2 preview'>{$this->getImage($this->image->getStyle(AbstractBaseImage::STYLE_SPAN_02), false)}</div>" .
         "<div class='s s8'>{$this->required}{$this->helpPopup}<label for='{$this->id}'>{$this->label}</label>" .
-          "<span class='btn input-file'><span aria-hidden='true'>{$i18n->t("Choose Image …")}</span>" .
+          "<span class='btn input-file'><span aria-hidden='true'>{$this->intl->t("Choose Image …")}</span>" .
             "<input id='{$this->id}' name='{$this->id}' type='file' accept='image/jpeg,image/png'{$this->expandTagAttributes($this->attributes)}>" .
           "</span>{$this->inputFileAfter}" .
         "</div>" .

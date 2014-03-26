@@ -79,11 +79,8 @@ class SeedCountries extends \MovLib\Console\Command\Install\AbstractIntlCommand 
 
   /**
    * {@inheritdoc}
-   * @global \MovLib\Core\I18n $i18n
    */
   protected function translate() {
-    global $i18n;
-
     $countries = [];
     foreach ($this->codes as $code) {
       $countries[$code] = \Locale::getDisplayRegion("xx-{$code}", $i18n->locale);

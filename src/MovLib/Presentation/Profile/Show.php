@@ -50,14 +50,11 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Instantiate new user show presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\Session $session
    * @throws \MovLib\Presentation\Error\Unauthorized
    */
   public function __construct() {
-    global $i18n, $session;
-    $session->checkAuthorization($i18n->t("You must be signed in to view your profile."));
-    $this->init($i18n->t("Profile"), "/profile");
+    $session->checkAuthorization($this->intl->t("You must be signed in to view your profile."));
+    $this->init($this->intl->t("Profile"), "/profile");
   }
 
 
@@ -67,27 +64,25 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Get the page's content.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The page's content.
    */
   protected function getPageContent() {
-    global $i18n;
     $joined = new DateTime($this->user->created);
     $visited = new DateTime($this->user->access);
     return
-      "<h2>{$i18n->t("Your Account Summary")}</h2>" .
+      "<h2>{$this->intl->t("Your Account Summary")}</h2>" .
       "<div class='r'>" .
         "<dl class='dl--horizontal s s7'>" .
-          "<dt>{$i18n->t("Username")}</dt><dd>{$this->user->name}</dd>" .
-          "<dt>{$i18n->t("User ID")}</dt><dd>{$this->user->id}</dd>" .
-          "<dt>{$i18n->t("Edits")}</dt><dd>{$this->user->edits}</dd>" .
-          "<dt>{$i18n->t("Reputation")}</dt><dd>{$this->user->reputation}</dd>" .
-          "<dt>{$i18n->t("Email Address")}</dt><dd>{$this->user->email}</dd>" .
-          "<dt>{$i18n->t("Joined")}</dt><dd>{$joined}</dd>" .
-          "<dt>{$i18n->t("Last visit")}</dt><dd>{$visited}</dd>" .
+          "<dt>{$this->intl->t("Username")}</dt><dd>{$this->user->name}</dd>" .
+          "<dt>{$this->intl->t("User ID")}</dt><dd>{$this->user->id}</dd>" .
+          "<dt>{$this->intl->t("Edits")}</dt><dd>{$this->user->edits}</dd>" .
+          "<dt>{$this->intl->t("Reputation")}</dt><dd>{$this->user->reputation}</dd>" .
+          "<dt>{$this->intl->t("Email Address")}</dt><dd>{$this->user->email}</dd>" .
+          "<dt>{$this->intl->t("Joined")}</dt><dd>{$joined}</dd>" .
+          "<dt>{$this->intl->t("Last visit")}</dt><dd>{$visited}</dd>" .
         "</dl>" .
-        "<div class='s s2'>{$this->getImage($this->user->getStyle(), $i18n->r("/user/{0}", [ $this->user->filename ]))}</div>" .
+        "<div class='s s2'>{$this->getImage($this->user->getStyle(), $this->intl->r("/user/{0}", [ $this->user->filename ]))}</div>" .
       "</div>"
     ;
   }
@@ -107,23 +102,22 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
    * @return this
    */
   protected function init($title, $route, array $breadcrumbs = []) {
-    global $i18n, $session;
     $this->initPage($title);
     $this->initBreadcrumb($breadcrumbs);
     $this->initLanguageLinks($route);
 
     $sidebar = [
-      [ $i18n->r("/profile"), $i18n->t("Profile"), [ "class" => "ico ico-user" ] ],
-      [ $i18n->r("/profile/messages"), $i18n->t("Messages"), [ "class" => "ico ico-email" ] ],
-      [ $i18n->r("/profile/collection"), $i18n->t("Collection"), [ "class" => "ico ico-release" ] ],
-      [ $i18n->r("/profile/wantlist"), $i18n->t("Wantlist"), [ "class" => "ico ico-heart" ] ],
-      [ $i18n->r("/profile/lists"), $i18n->t("Lists"), [ "class" => "ico ico-ul" ] ],
-      [ $i18n->r("/profile/watchlist"), $i18n->t("Watchlist"), [ "class" => "separator ico ico-view" ] ],
-      [ $i18n->r("/profile/account-settings"), $i18n->t("Account"), [ "class" => "ico ico-settings" ] ],
-      [ $i18n->r("/profile/notification-settings"), $i18n->t("Notifications"), [ "class" => "ico ico-notification" ] ],
-      [ $i18n->r("/profile/email-settings"), $i18n->t("Email"), [ "class" => "ico ico-email" ] ],
-      [ $i18n->r("/profile/password-settings"), $i18n->t("Password"), [ "class" => "ico ico-lock" ] ],
-      [ $i18n->r("/profile/danger-zone"), $i18n->t("Danger Zone"), [ "class" => "ico ico-alert" ] ],
+      [ $this->intl->r("/profile"), $this->intl->t("Profile"), [ "class" => "ico ico-user" ] ],
+      [ $this->intl->r("/profile/messages"), $this->intl->t("Messages"), [ "class" => "ico ico-email" ] ],
+      [ $this->intl->r("/profile/collection"), $this->intl->t("Collection"), [ "class" => "ico ico-release" ] ],
+      [ $this->intl->r("/profile/wantlist"), $this->intl->t("Wantlist"), [ "class" => "ico ico-heart" ] ],
+      [ $this->intl->r("/profile/lists"), $this->intl->t("Lists"), [ "class" => "ico ico-ul" ] ],
+      [ $this->intl->r("/profile/watchlist"), $this->intl->t("Watchlist"), [ "class" => "separator ico ico-view" ] ],
+      [ $this->intl->r("/profile/account-settings"), $this->intl->t("Account"), [ "class" => "ico ico-settings" ] ],
+      [ $this->intl->r("/profile/notification-settings"), $this->intl->t("Notifications"), [ "class" => "ico ico-notification" ] ],
+      [ $this->intl->r("/profile/email-settings"), $this->intl->t("Email"), [ "class" => "ico ico-email" ] ],
+      [ $this->intl->r("/profile/password-settings"), $this->intl->t("Password"), [ "class" => "ico ico-lock" ] ],
+      [ $this->intl->r("/profile/danger-zone"), $this->intl->t("Danger Zone"), [ "class" => "ico ico-alert" ] ],
     ];
     $this->sidebarInit($sidebar);
 

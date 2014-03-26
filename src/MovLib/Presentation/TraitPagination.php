@@ -126,7 +126,6 @@ trait TraitPagination {
    * @return this
    */
   final protected function paginationInit($resultsTotalCount) {
-    global $i18n, $kernel;
     // @devStart
     // @codeCoverageIgnoreStart
     if (!method_exists($this, "initPage")) {
@@ -158,7 +157,7 @@ trait TraitPagination {
     $this->bodyClasses .= " pagination";
 
     // Validate the user submitted page query string.
-    $this->paginationCurrentPage = filter_input(INPUT_GET, $i18n->r("page"), FILTER_VALIDATE_INT, [
+    $this->paginationCurrentPage = filter_input(INPUT_GET, $this->intl->r("page"), FILTER_VALIDATE_INT, [
       "options" => [ "default" => 1, "min_range" => 1 ]
     ]);
 
@@ -171,7 +170,7 @@ trait TraitPagination {
       $this->paginationOffset = ($this->paginationCurrentPage - 1) * $this->paginationLimit;
 
       // Extend the page's breadcrumb and title with information about the current pagination page.
-      $title = $i18n->t("Page {0, number, integer}", [ $this->paginationCurrentPage ]);
+      $title = $this->intl->t("Page {0, number, integer}", [ $this->paginationCurrentPage ]);
       $this->breadcrumb->menuitems[] = [ $kernel->requestURI, $title ];
       $this->title .= " {$title}";
     }
@@ -191,19 +190,19 @@ trait TraitPagination {
 
       // Create the complete route string with the translated page query once. Initialize the page array and substract
       // one from the current page's index.
-      $route = "{$kernel->requestPath}?{$i18n->r("page")}=";
+      $route = "{$kernel->requestPath}?{$this->intl->r("page")}=";
       $pages = [];
       $x     = $this->paginationCurrentPage - 1;
 
       // Generate the previous link if it isn't the first page.
       if ($x >= 1) {
         // Only include the query string if we aren't linking to the very first page.
-        $pages[] = [ ($x > 1 ? "{$route}{$x}" : $kernel->requestPath), "<span class='ico ico-chevron-left small'></span> {$i18n->t("previous")}", [ "class" => "pager", "rel" => "previous" ] ];
+        $pages[] = [ ($x > 1 ? "{$route}{$x}" : $kernel->requestPath), "<span class='ico ico-chevron-left small'></span> {$this->intl->t("previous")}", [ "class" => "pager", "rel" => "previous" ] ];
       }
       // We totally mute this pagination item for screen readers and alike because it has no value anymore for them. But
       // we keep it on normal screens to ensure that the pagination navigation always looks the same on all pages.
       else {
-        $pages[] = "<span class='mute pager' aria-hidden='true'><span class='ico ico-chevron-left small'></span> {$i18n->t("previous")}</span>";
+        $pages[] = "<span class='mute pager' aria-hidden='true'><span class='ico ico-chevron-left small'></span> {$this->intl->t("previous")}</span>";
       }
 
       // Always add the first page to the pagination for fast jumps to the beginning.
@@ -218,7 +217,7 @@ trait TraitPagination {
         $x = 3;
       }
       else {
-        $pages[] = "<span class='mute pager'>{$i18n->t("…")}</span>";
+        $pages[] = "<span class='mute pager'>{$this->intl->t("…")}</span>";
         $x--;
       }
 
@@ -239,7 +238,7 @@ trait TraitPagination {
           $pages[] = [ "{$route}{$secondLast}", $secondLast ];
         }
         else {
-          $pages[] = "<span class='mute pager'>{$i18n->t("…")}</span>";
+          $pages[] = "<span class='mute pager'>{$this->intl->t("…")}</span>";
         }
 
         // Always add the last page to the pagination for fast traveling.
@@ -249,18 +248,18 @@ trait TraitPagination {
       // Check if we have a next page and perform the same logic as we used for the previous link.
       if ($this->paginationCurrentPage < $this->paginationTotalPages) {
         $next    = $this->paginationCurrentPage + 1;
-        $pages[] = [ "{$route}{$next}", "{$i18n->t("next")} <span class='ico ico-chevron-right small'></span>", [ "class" => "pager", "rel" => "next" ] ];
+        $pages[] = [ "{$route}{$next}", "{$this->intl->t("next")} <span class='ico ico-chevron-right small'></span>", [ "class" => "pager", "rel" => "next" ] ];
       }
       else {
-        $pages[] = "<span class='mute pager' aria-hidden='true'>{$i18n->t("next")} <span class='ico ico-chevron-right small'></span></span>";
+        $pages[] = "<span class='mute pager' aria-hidden='true'>{$this->intl->t("next")} <span class='ico ico-chevron-right small'></span></span>";
       }
 
-      $pagination = new Navigation($i18n->t("Pagination"), $pages, [ "id" => "pagination-nav" ]);
+      $pagination = new Navigation($this->intl->t("Pagination"), $pages, [ "id" => "pagination-nav" ]);
     }
 
     // Tampering with the actual navigation partial of the pagination isn't allowed, the concrete class only has the
     // string representation to output it in its content area.
-    $this->contentAfter = "<div class='c'><div class='r'><div class='s s10 o2'>{$pagination}<small class='tac'>{$i18n->t(
+    $this->contentAfter = "<div class='c'><div class='r'><div class='s s10 o2'>{$pagination}<small class='tac'>{$this->intl->t(
       "Results from {from,number,integer} to {to,number,integer} of {total,number,integer} results.", [
         "from"  => $this->paginationOffset + 1,
         "to"    => $to,

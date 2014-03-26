@@ -85,14 +85,11 @@ class DateTime extends \MovLib\Presentation\AbstractBase {
   /**
    * Get the string representation of this (date)time.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\User\Session $session
    * @return string
    *   The string representation of this (date)time.
    */
   public function __toString() {
-    global $i18n, $session;
-    $time = new \IntlDateFormatter($i18n->locale, $this->dateFormat, $this->timeFormat, $session->userTimeZone);
+    $time = new \IntlDateFormatter($this->intl->locale, $this->dateFormat, $this->timeFormat, $session->userTimeZone);
     return "<time{$this->expandTagAttributes($this->attributes)}>{$time->format($this->dateTime)}</time>";
   }
 

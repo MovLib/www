@@ -39,22 +39,19 @@ class History extends \MovLib\Presentation\Award\Category\AbstractBase {
   /**
    * Instantiate new award category history presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
     $this->award         = new Award((integer) $_SERVER["AWARD_ID"]);
     $this->awardCategory = new AwardCategory((integer) $_SERVER["AWARD_CATEGORY_ID"]);
     $routeArgs           = [ $this->awardCategory->awardId, $this->awardCategory->id ];
 
     if ($this->award->id != $this->awardCategory->awardId) {
-      throw new SeeOtherRedirect($i18n->r("/award/{0}/category/{1}/history", $routeArgs));
+      throw new SeeOtherRedirect($this->intl->r("/award/{0}/category/{1}/history", $routeArgs));
     }
 
-    $this->initPage($i18n->t("History"));
+    $this->initPage($this->intl->t("History"));
     $this->pageTitle     =
-      $i18n->t("History of {0}", [ "<a href='{$this->awardCategory->route}'>{$this->awardCategory->name}</a>" ])
+      $this->intl->t("History of {0}", [ "<a href='{$this->awardCategory->route}'>{$this->awardCategory->name}</a>" ])
     ;
     $this->initLanguageLinks("/award/{0}/category/{1}/history", [ $this->award->id, $this->awardCategory->id ]);
     $this->initAwardCategoryBreadcrumb();
@@ -69,12 +66,10 @@ class History extends \MovLib\Presentation\Award\Category\AbstractBase {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    * @return \MovLib\Presentation\Partial\Alert
    */
   protected function getPageContent() {
-    global $i18n;
-    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("award category history") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Presentation\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("award category history") ]), $this->intl->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
   }
 
 }

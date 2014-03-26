@@ -63,12 +63,11 @@ class InputLinesURL extends \MovLib\Partial\FormElement\InputURL {
    * @inheritdoc
    */
   public function validate() {
-    global $i18n;
     // Check for required input.
     if (empty($this->value)) {
       $this->valueRaw = null;
       if (in_array("required", $this->attributes)) {
-        throw new ValidationException($i18n->t("The “{0}” text field is mandatory.", [ $this->label ]));
+        throw new ValidationException($this->intl->t("The “{0}” text field is mandatory.", [ $this->label ]));
       }
       return $this;
     }

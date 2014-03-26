@@ -31,14 +31,15 @@ final class DocumentRootStreamWrapper extends \MovLib\Core\StreamWrapper\Abstrac
   /**
    * @inheritdoc
    */
+  public function getExternalPath(\MovLib\Core\FileSystem $fs, $uri = null) {
+    return $fs->urlEncodePath($this->getTarget($uri));
+  }
+
+  /**
+   * @inheritdoc
+   */
   public function getPath() {
-    static $path;
-    if ($path) {
-      return $path;
-    }
-    /* @var $fs \MovLib\Core\FileSystem */
-    global $fs;
-    return ($path = $fs->documentRoot);
+    return self::$documentRoot;
   }
 
 }

@@ -15,54 +15,13 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation;
+namespace MovLib\Partial;
 
 use \MovLib\Partial\Alert;
 use \MovLib\Partial\FormElement\AbstractInputFile;
 
 /**
- * Add form to presentation.
- *
- * @see \MovLib\Presentation\AbstractBase
- *
- * @method string a($route, $text, array $attributes = null, $ignoreQuery = true)
- * @method this addClass($class, array &$attributes = null)
- * @method string collapseWhitespace($string)
- * @method string expandTagAttributes(array $attributes)
- * @method string getImage($style, $route = true, array $attributes = null, array $anchorAttributes = null)
- * @method string htmlDecode($text)
- * @method string htmlDecodeEntities($text)
- * @method string htmlEncode($text)
- * @method string lang($lang)
- * @method string normalizeLineFeeds($text)
- * @method string placeholder($text)
- *
- * @see \MovLib\Presentation\AbstractPresenter
- *
- * @property string $alerts
- * @property string $bodyClasses
- * @property \MovLib\Presentation\Partial\Navigation $breadcrumb
- * @property string $breadcrumbTitle
- * @property string $contentAfter
- * @property string $contentBefore
- * @property string $headingBefore
- * @property string $headingAfter
- * @property string $headingSchemaProperty
- * @property-read string $id
- * @property-read array $languageLinks
- * @property-read array $namespace
- * @property-read string $pageTitle
- * @property-read string $schemaType
- * @property-read string $title
- * @method string getContent()
- * @method string getFooter()
- * @method string getHeader()
- * @method string getHeadTitle()
- * @method string getPresentation()
- * @method string getMainContent()
- * @method this initBreadcrumb()
- * @method this initLanguageLinks($route, array $args = null, $plural = false, $query = null)
- * @method this initPage($title)
+ * Defines basic POST form.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -70,7 +29,7 @@ use \MovLib\Partial\FormElement\AbstractInputFile;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-trait TraitForm {
+final class Form {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -81,14 +40,14 @@ trait TraitForm {
    *
    * @var string
    */
-  private $formActionElements;
+  protected $actionElements;
 
   /**
    * The form's attributes array.
    *
    * @var array
    */
-  private $formAttributes;
+  protected $attributes;
 
   /**
    * The form's auto-validate elements.
@@ -97,25 +56,67 @@ trait TraitForm {
    *   Keep visibility at protected and allow implementing class to access the various form elements.
    * @var array
    */
-  protected $formElements;
+  protected $elements;
 
   /**
    * The form's hidden elements (e.g. CSRF).
    *
    * @var string
    */
-  private $formHiddenElements;
+  protected $hiddenElements;
+
+  /**
+   * The active intl instance.
+   *
+   * @var \MovLib\Core\Intl
+   */
+  protected $intl;
+
+  /**
+   * The presenting presenter.
+   *
+   * @var \MovLib\Presentation\AbstractPresenter
+   */
+  protected $presenter;
+
+  /**
+   * The active request.
+   *
+   * @var \MovLib\Core\HTTP\Request
+   */
+  protected $request;
+
+  /**
+   * The active session.
+   *
+   * @var \MovLib\Core\HTTP\Session
+   */
+  protected $session;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * The submitted form has no auto-validation errors, continue normal program flow.
+   * Instantiate new form.
    *
-   * @return this
+   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   *   HTTP dependency injection container.
+   * @param string $id [optional]
+   *   Set the form's global unique identifier, defaults to the presenting presenter's identifier.
    */
-  abstract protected function formValid();
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id = null) {
+    $this->intl      = $diContainerHTTP->intl;
+    $this->presenter = $diContainerHTTP->presenter;
+    $this->request   = $diContainerHTTP->request;
+    $this->session   = $diContainerHTTP->session;
+    if ($id) {
+      $this->id = $id;
+    }
+    else {
+      $this->id = $this->presenter->id;
+    }
+  }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -139,7 +140,7 @@ trait TraitForm {
    *   </ul>
    * @return this
    */
-  final protected function formAddAction($text, array $attributes = []) {
+  public function addAction($text, array $attributes = []) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($text)) {
@@ -156,10 +157,10 @@ trait TraitForm {
     isset($attributes["type"]) || ($attributes["type"] = "submit");
 
     // Always encode characters with special meaning in HTML.
-    $attributes["value"] = $this->htmlEncode($text);
+    $attributes["value"] = $this->presenter->htmlEncode($text);
 
     // Put it all together and add it to this form's action elements.
-    $this->formActionElements .= "<input{$this->expandTagAttributes($attributes)}>";
+    $this->actionElements .= "<input{$this->presenter->expandTagAttributes($attributes)}>";
 
     return $this;
   }
@@ -167,14 +168,14 @@ trait TraitForm {
   /**
    * Add form element to this page's form.
    *
-   * @param \MovLib\Presentation\Partial\FormElement\AbstractFormElement $formElement
+   * @param \MovLib\Partial\FormElement\AbstractFormElement $formElement
    *   The form element to add.
    * @return this
    */
-  final protected function formAddElement(\MovLib\Partial\FormElement\AbstractFormElement $formElement) {
+  public function addElement(\MovLib\Partial\FormElement\AbstractFormElement $formElement) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (isset($this->formElements[$formElement->id])) {
+    if (isset($this->elements[$formElement->id])) {
       throw new \LogicException("This form already contains an element with the identifier '{$formElement->id}'.");
     }
     // @codeCoverageIgnoreEnd
@@ -182,11 +183,11 @@ trait TraitForm {
 
     // Auto change to multipart form if we have an input file form element present.
     if ($formElement instanceof AbstractInputFile) {
-      $this->formAttributes["enctype"] = "multipart/form-data";
+      $this->attributes["enctype"] = "multipart/form-data";
     }
 
     // Add the form element to class scope.
-    $this->formElements[$formElement->id] = $formElement;
+    $this->elements[$formElement->id] = $formElement;
 
     return $this;
   }
@@ -200,13 +201,13 @@ trait TraitForm {
    *   The hidden form element's value.
    * @return this
    */
-  final protected function formAddHidden($name, $value) {
+  public function addHiddenElement($name, $value) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($name)) {
       throw new \InvalidArgumentException("The \$name of a hidden form element cannot be empty.");
     }
-    if (strpos($this->formHiddenElements, $name) !== false) {
+    if (strpos($this->hiddenElements, "name='{$name}'") !== false) {
       throw new \LogicException("The \$name of a hidden form element has to be unique, '{$name}' is already present in this form.");
     }
     if (empty($value)) {
@@ -214,7 +215,7 @@ trait TraitForm {
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    $this->formHiddenElements .= "<input name='{$name}' type='hidden' value='{$this->htmlEncode($value)}'>";
+    $this->hiddenElements .= "<input name='{$name}' type='hidden' value='{$this->presenter->htmlEncode($value)}'>";
     return $this;
   }
 
@@ -224,8 +225,8 @@ trait TraitForm {
    * @return string
    *   The form's action elements and closing tag.
    */
-  protected function formClose() {
-    if (($actions = $this->formActionElements)) {
+  public function close() {
+    if (($actions = $this->actionElements)) {
       $actions = "<p class='actions'>{$actions}</p>";
     }
     return "{$actions}</form>";
@@ -234,9 +235,8 @@ trait TraitForm {
   /**
    * Initialize the form.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Core\HTTP\Request $request
-   * @global \MovLib\Data\User\Session $session
+   * @param callable $validCallback
+   *   Callable to call if the form is valid. The callable will be invoked without any arguments.
    * @param array $attributes [optional]
    *   The form's additional attributes, the following attributes are always set:
    *   <ul>
@@ -244,15 +244,14 @@ trait TraitForm {
    *     <li><code>"action"</code> is set to <var>$kernel->requestURI</var> if not set</li>
    *     <li><code>"method"</code> is always set to <code>"post"</code></li>
    *   </ul>
+   * @param callable $invalidCallback [optional]
+   *   Callable to call if the form is invalid. The callable will get the errors as first parameter and you have to
+   *   return the same array.
    * @return this
    */
-  final protected function formInit(array $attributes = null) {
-    global $i18n, $request, $session;
+  public function init(callable $validCallback, array $attributes = null, callable $invalidCallback = null) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (!method_exists($this, "initPage")) {
-      throw new \LogicException("You can only use the form trait within a presenting page class");
-    }
     foreach ([ "accept-charset", "method" ] as $attribute) {
       if (isset($attributes[$attribute])) {
         throw new \LogicException("You must not set the '{$attribute}' attribute of a form");
@@ -262,33 +261,35 @@ trait TraitForm {
     // @devEnd
 
     // Export attribute to class scope and add default attributes.
-    $this->formAttributes                   = $attributes;
-    $this->formAttributes["accept-charset"] = "utf-8";
-    $this->formAttributes["method"]         = "post";
-    isset($this->formAttributes["action"]) || ($this->formAttributes["action"] = $request->uri);
+    $this->attributes                   = $attributes;
+    $this->attributes["accept-charset"] = "utf-8";
+    $this->attributes["method"]         = "post";
+    if (empty($this->attributes["action"])) {
+      $this->attributes["action"] = $this->request->uri;
+    }
 
     // Validate the form if we're receiving it.
-    if (isset($_POST["form_id"]) && $_POST["form_id"] == $this->id) {
+    if (isset($this->request->post["form_id"]) && $this->request->post["form_id"] == $this->id) {
       // Validate the form's token if we have an active session.
-      if ($session->active === true) {
+      if ($this->session->active === true) {
         // Assume that we don't have a form token stored in the user's session.
         $formToken = false;
 
         // If we have create local copy of it and remove it from the user's session, we want to ensure that this token
         // cannot be re-used for this form.
-        if (isset($session["form_tokens"][$this->id])) {
-          $formToken = $session["form_tokens"][$this->id];
-          unset($session["form_tokens"][$this->id]);
+        if (isset($this->session->data["form_tokens"][$this->id])) {
+          $formToken = $this->session->data["form_tokens"][$this->id];
+          unset($this->session->data["form_tokens"][$this->id]);
         }
 
         // Check if we have a token for this form in session and submitted via HTTP plus compare both tokens.
         if ($formToken === false || empty($_POST["form_token"]) || $_POST["form_token"] != $formToken) {
           // Give the user the chance to re-submit this form.
           $this->alerts .= new Alert(
-            "<p>{$i18n->t("The form has become outdated. Copy any unsaved work in the form below and then {0}reload this page{1}.", [
-              "<a href='{$request->uri}'>", "</a>",
+            "<p>{$this->intl->t("The form has become outdated. Copy any unsaved work in the form below and then {0}reload this page{1}.", [
+              "<a href='{$this->request->uri}'>", "</a>",
             ])}</p>",
-            $i18n->t("Form Outdated"),
+            $this->intl->t("Form Outdated"),
             Alert::SEVERITY_ERROR
           );
           return $this;
@@ -300,7 +301,7 @@ trait TraitForm {
 
       // Iterate through all form elements and validate them.
       /* @var $formElement \MovLib\Presentation\Partial\FormElement\AbstractFormElement */
-      foreach ($this->formElements as $formElement) {
+      foreach ($this->elements as $formElement) {
         // Used to collect the error messages of this specific form element.
         $error = null;
 
@@ -316,7 +317,9 @@ trait TraitForm {
       }
 
       // Allow concrete classes to extend the validation process or alter certain error messages.
-      $this->hookFormValidation($errors);
+      if (isset($this->invalidCallback)) {
+        $errors = $invalidCallback($errors);
+      }
 
       // If we have errors at this point export them and abort.
       if ($errors) {
@@ -329,11 +332,11 @@ trait TraitForm {
         $errors = implode("</p><p>", $errors);
 
         // Finally export all error messages combined in a single alert message.
-        $this->alerts .= new Alert("<p>{$errors}</p>", $i18n->t("Validation Error"), Alert::SEVERITY_ERROR);
+        $this->alerts .= new Alert("<p>{$errors}</p>", $this->intl->t("Validation Error"), Alert::SEVERITY_ERROR);
       }
       // If no errors were found continue processing.
       else {
-        $this->formValid();
+        $validCallback();
       }
     }
 
@@ -346,20 +349,18 @@ trait TraitForm {
    * @return string
    *   The form's hidden elements and opening tag.
    */
-  protected function formOpen() {
-    global $session;
-
+  public function open() {
     // Add the globally unique page's identifier as form identifier to the presentation.
-    $this->formHiddenElements .= "<input name='form_id' type='hidden' value='{$this->id}'>";
+    $this->hiddenElements .= "<input name='form_id' type='hidden' value='{$this->id}'>";
 
     // Generate one-time CSRF token for this form and add it to the user's session, the user can only have a single
     // token per unique form.
-    if ($session->active === true) {
-      $session["form_tokens"][$this->id] = hash("sha512", openssl_random_pseudo_bytes(1024));
-      $this->formHiddenElements .= "<input name='form_token' type='hidden' value='{$session["form_tokens"][$this->id]}'>";
+    if ($this->session->active === true) {
+      $this->session->data["form_tokens"][$this->id] = hash("sha512", openssl_random_pseudo_bytes(1024));
+      $this->hiddenElements .= "<input name='form_token' type='hidden' value='{$this->session->data["form_tokens"][$this->id]}'>";
     }
 
-    return "<form{$this->expandTagAttributes($this->formAttributes)}>{$this->formHiddenElements}";
+    return "<form{$this->presenter->expandTagAttributes($this->attributes)}>{$this->hiddenElements}";
   }
 
   /**
@@ -368,27 +369,9 @@ trait TraitForm {
    * @return string
    *   The form including all elements.
    */
-  protected function formRender() {
-    $elements = implode($this->formElements);
-    return "{$this->formOpen()}{$elements}{$this->formClose()}";
-  }
-
-  /**
-   * Continue form validation process after auto-validation.
-   *
-   * This hook is called after all form elements have been auto-validated. It allows concrete classes to extend the
-   * validation process or alter error messages of specific form elements.
-   *
-   * @param null|array $errors
-   *   <code>NULL</code> if no errors were found so far. Otherwise it is an associative array where each key is they
-   *   unique identifier of the form element that contains errors. Each form elements offset contains a numeric array
-   *   where the key is defined via the classe's <var>ERROR_*</var> constants and the value is the default error
-   *   message as defined in the form element's validation method. Use the <var>ERROR_*</var> to check for certain
-   *   errors.
-   * @return this
-   */
-  protected function hookFormValidation(&$errors) {
-    return $this;
+  public function render() {
+    $elements = implode($this->elements);
+    return "{$this->open()}{$elements}{$this->close()}";
   }
 
 }

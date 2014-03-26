@@ -103,7 +103,6 @@ class MovieTitle extends \MovLib\Data\Database {
    *
    * If no <var>$from</var> or <var>$value</var> is given, an empty movie title model will be created.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param string $from [optional]
    *   Defines how the object should be filled with data, use the various <var>FROM_*</var> class constants.
    * @param mixed $value [optional]
@@ -111,7 +110,6 @@ class MovieTitle extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\CountryException
    */
   public function __construct($from = null, $value = null) {
-    global $i18n;
     if ($from && $value) {
       $stmt = $this->query(
         "SELECT

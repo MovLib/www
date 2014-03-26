@@ -33,31 +33,28 @@ trait TraitPerson {
   /**
    * Construct life date information for display.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param \MovLib\Data\Person\Person $person
    *   The person to format.
    * @return null|string
    *   The formatted life dates or <code>NULL</code> if none were present.
    */
   public function getLifeDates($person) {
-    global $i18n;
-
     $lifeDates = null;
     if ($person->birthDate || $person->deathDate) {
       if ($person->birthDate) {
         $birthDate = (new Date($person->birthDate))->format([
           "property" => "birthDate",
-          "title" => $i18n->t("Date of Birth")
+          "title" => $this->intl->t("Date of Birth")
         ]);
       }
       else {
-        $birthDate = "<em title='{$i18n->t("Date of Birth")}'>{$i18n->t("unknown")}</em>";
+        $birthDate = "<em title='{$this->intl->t("Date of Birth")}'>{$this->intl->t("unknown")}</em>";
       }
 
       if ($person->deathDate) {
-        $lifeDates = $i18n->t("{0}–{1}", [
+        $lifeDates = $this->intl->t("{0}–{1}", [
           $birthDate,
-          (new Date($person->deathDate))->format([ "property" => "deathDate", "title" => $i18n->t("Date of Death") ])
+          (new Date($person->deathDate))->format([ "property" => "deathDate", "title" => $this->intl->t("Date of Death") ])
         ]);
       }
       else {

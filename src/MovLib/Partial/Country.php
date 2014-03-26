@@ -70,10 +70,9 @@ final class Country extends \MovLib\Presentation\AbstractBase {
    *   The tag that should be used to wrap this country, defaults to <code>"span"</code>.
    */
   public function __construct($code, array $attributes = null, $tag = "span") {
-    global $i18n;
     $this->attributes           = $attributes;
     $this->attributes["typeof"] = "http://schema.org/Country";
-    $this->country              = $i18n->getTranslations("countries")[$code];
+    $this->country              = $this->intl->getTranslations("countries")[$code];
     $this->tag                  = $tag;
   }
 
@@ -111,7 +110,6 @@ final class Country extends \MovLib\Presentation\AbstractBase {
   /**
    * Get select form element to select a country.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param string $value
    *   The form element's value.
    * @param array $attributes [optional]
@@ -119,13 +117,12 @@ final class Country extends \MovLib\Presentation\AbstractBase {
    * @param string $id [optional]
    *   The form element's unique identifier, defaults to <code>"country"</code>.
    * @param string $label [optional]
-   *   The form element's translated label, default to <code>$i18n->t("Country")</code>.
+   *   The form element's translated label, default to <code>$this->intl->t("Country")</code>.
    * @return \MovLib\Presentation\Partial\FormElement\Select
    *   The select form element to select a country.
    */
   public static function getSelectFormElement(&$value, array $attributes = null, $id = "country", $label = null) {
-    global $i18n;
-    return new Select($id, $label ?: $i18n->t("Country"), self::getCountries(), $value, $attributes);
+    return new Select($id, $label ?: $this->intl->t("Country"), self::getCountries(), $value, $attributes);
   }
 
 }

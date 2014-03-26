@@ -101,15 +101,12 @@ class FullPerson extends \MovLib\Data\Person\Person {
   /**
    * Intantiate new Person.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param integer $id
    *   The person's unique ID to load.
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct($id = null) {
-    global $db, $i18n;
     // Try to load the person for the given identifier.
     if ($id) {
       $this->id = $id;
@@ -191,13 +188,10 @@ class FullPerson extends \MovLib\Data\Person\Person {
    * Insert a new person into the database.
    *
    * @todo Index data with Elastic.
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return $this
    * @throws \MovLib\Exception\DatabaseException
    */
   public function create() {
-    global $db, $i18n;
     $this->id = $db->query(
       "INSERT INTO `persons` SET
         `created` = CURRENT_TIMESTAMP,
@@ -259,14 +253,11 @@ class FullPerson extends \MovLib\Data\Person\Person {
   /**
    * Get the person's aliases as numeric array.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return null|array
    *   Numeric array containing the person's aliases or <code>NULL</code> if none were found.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getAliases() {
-    global $db, $i18n;
     if ($this->aliases === false) {
       $this->aliases = null;
       $result = $db->query(
@@ -314,14 +305,11 @@ class FullPerson extends \MovLib\Data\Person\Person {
   /**
    * Get the person's external links as numeric array.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return null|array
    *   Numeric array containing the person's external links or <code>NULL</code> if none were found.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getLinks() {
-    global $db, $i18n;
     if ($this->links === false) {
       $this->links = null;
       $result = $db->query(
@@ -339,14 +327,11 @@ class FullPerson extends \MovLib\Data\Person\Person {
   /**
    * Get the mysqli result for the person's movie cast.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return \mysqli_result
    *   The result containing the {@see \MovLib\Data\Movie\Cast} objects.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMovieCast() {
-    global $db, $i18n;
     return $db->query(
       "SELECT
         `id`,
@@ -366,14 +351,11 @@ class FullPerson extends \MovLib\Data\Person\Person {
   /**
    * Get the mysqli result for the person's movie crew.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return \mysqli_result
    *   The result containing the {@see \MovLib\Data\Movie\Crew} objects.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMovieCrew() {
-    global $db, $i18n;
     return $db->query(
       "SELECT
         `mc`.`id`,
@@ -396,8 +378,6 @@ class FullPerson extends \MovLib\Data\Person\Person {
   /**
    * Get all movies this person has appeared in.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return null|array
    *   The movies this person has worked on or <code>NULL</code> if none were found.
    *
@@ -406,7 +386,6 @@ class FullPerson extends \MovLib\Data\Person\Person {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMovies() {
-    global $db, $i18n;
     $result = $db->query(
       "SELECT
         `movies`.`id` AS `movie_id`,

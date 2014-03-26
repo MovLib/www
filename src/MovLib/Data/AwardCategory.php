@@ -112,14 +112,11 @@ class AwardCategory extends \MovLib\Data\Database {
   /**
    * Instantiate new award category.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param integer $id [optional]
    *   The award category's unique identifier, omit to create empty instance.
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct($id = null) {
-    global $db, $i18n;
     if ($id) {
       $query = self::getQuery();
       $stmt = $db->query("
@@ -157,12 +154,10 @@ class AwardCategory extends \MovLib\Data\Database {
   /**
    * The count of movies with this award category.
    *
-   * @global \MovLib\Data\Database $db
    * @return integer
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMoviesCount() {
-    global $db;
     return $db->query(
       "SELECT count(DISTINCT `movie_id`) as `count` FROM `movies_awards` WHERE `award_category_id` = ?", "d", [ $this->id ]
     )->get_result()->fetch_assoc()["count"];
@@ -172,14 +167,11 @@ class AwardCategory extends \MovLib\Data\Database {
    * Get the mysqli result for all movies that are of this award.
    *
   *  @todo Implement
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return \mysqli_result
    *   The mysqli result for all movies that are of this award.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMoviesResult() {
-    global $db, $i18n;
     $result = $db->query(
       "SELECT
         `movies`.`id`,
@@ -243,14 +235,12 @@ class AwardCategory extends \MovLib\Data\Database {
   /**
    * Get the default query.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @staticvar string $query
    *   Used to cache the default query.
    * @return string
    *   The default query.
    */
   public static function getQuery() {
-    global $i18n;
     static $query = null;
     if (!$query) {
       $query =
@@ -272,23 +262,17 @@ class AwardCategory extends \MovLib\Data\Database {
    * The count of movies with this award category.
    *
    * @todo Implement when series are implemented.
-   * @global \MovLib\Data\Database $db
    * @return integer
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getSeriesCount() {
-    global $db;
-    return 0;
   }
 
   /**
    * Initialize award.
    *
-   * @global type $i18n
    */
   protected function init() {
-    global $i18n;
-
     $this->deleted  = (boolean) $this->deleted;
     $this->routeKey = "/award/{0}/category/{1}";
     $this->route    = $i18n->r($this->routeKey, [ $this->awardId, $this->id ]);

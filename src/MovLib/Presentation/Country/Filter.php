@@ -72,7 +72,6 @@ class Filter extends \MovLib\Presentation\AbstractPresenter {
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
-    global $i18n;
     $this->filter  = self::$filters[$_SERVER["FILTER"]];
 
     // IMPORTANT!
@@ -81,31 +80,31 @@ class Filter extends \MovLib\Presentation\AbstractPresenter {
     // words that are already translated. We normally never pass parameters to i18n because we can't parse them, but
     // all of the filters are within our translation database from other places, that's why it works here. We have to
     // use the switch solution if we have any special words (e.g. containing a space) in the fitler.
-    $this->filterName = $i18n->t(ucfirst($this->filter));
+    $this->filterName = $this->intl->t(ucfirst($this->filter));
 //    switch ($this->filter) {
 //      case "movies":
-//        $this->filterName = $i18n->t("Movies");
+//        $this->filterName = $this->intl->t("Movies");
 //        break;
 //
 //      case "series":
-//        $this->filterName = $i18n->t("Series");
+//        $this->filterName = $this->intl->t("Series");
 //        break;
 //
 //      case "releases":
-//        $this->filterName = $i18n->t("Releases");
+//        $this->filterName = $this->intl->t("Releases");
 //        break;
 //
 //      case "persons":
-//        $this->filterName = $i18n->t("Persons");
+//        $this->filterName = $this->intl->t("Persons");
 //        break;
 //
 //      case "companies":
-//        $this->filterName = $i18n->t("Companies");
+//        $this->filterName = $this->intl->t("Companies");
 //        break;
 //    }
 
     $this->country = new Country(strtoupper($_SERVER["ID"]));
-    $this->initPage($i18n->t("{entity_name} from {country_name}", [
+    $this->initPage($this->intl->t("{entity_name} from {country_name}", [
       "entity_name"  => $this->filterName,
       "country_name" => $this->country->name,
     ]));

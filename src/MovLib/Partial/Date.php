@@ -217,26 +217,23 @@ class Date extends \MovLib\Presentation\AbstractBase {
   /**
    * Get the localized formatted date.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param integer $datetype [optional]
    *   Any of the {@see \IntlDateFormatter} constants, defaults to {@see \IntlDateFormatter::MEDIUM}.
    * @return string
    *   The localized and formatted date.
    */
   public function intlFormat($datetype = \IntlDateFormatter::MEDIUM) {
-    global $i18n;
-
     // Month and day are empty, return year.
     if ($this->dateInfo["month"] === 0 && $this->dateInfo["day"] === 0) {
       return $this->dateInfo["year"];
     }
 
     $date = $this->dateValue;
-    $fmt  = new \IntlDateFormatter($i18n->locale, $datetype, \IntlDateFormatter::NONE);
+    $fmt  = new \IntlDateFormatter($this->intl->locale, $datetype, \IntlDateFormatter::NONE);
 
     // Day is missing, use format strings provided by this class.
     if ($this->dateInfo["month"] !== 0 && $this->dateInfo["day"] === 0) {
-      $fmt->setPattern(self::$dateFormats[$i18n->languageCode][$datetype]);
+      $fmt->setPattern(self::$dateFormats[$this->intl->languageCode][$datetype]);
       $date = "{$this->dateInfo["year"]}-{$this->dateInfo["month"]}-01";
     }
 

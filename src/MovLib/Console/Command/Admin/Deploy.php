@@ -109,14 +109,12 @@ class Deploy extends \MovLib\Console\Command\AbstractCommand {
   /**
    * Generate cache buster strings for all assets.
    *
-   * @global \MovLib\Core\Kernel $kernel
    * @staticvar array $extensions
    *   Numeric array containing extensions to be hashed.
    * @return this
    * @throws \RuntimeException
    */
   protected function calculateCacheBusters() {
-    global $kernel;
     $this->write("Calculating cache buster hashes...");
 
     // Purge the Kernel's cache buster array.
@@ -127,7 +125,6 @@ class Deploy extends \MovLib\Console\Command\AbstractCommand {
 
     // Create cache busters for all CSS and JS files.
     $this->globRecursive("{$this->pathPublic}/asset", function ($splFileInfo) {
-      global $kernel;
       $realPath  = $splFileInfo->getRealPath();
       $extension = $splFileInfo->getExtension();
       $basename  = substr($splFileInfo->getBasename($extension), 0, -1);
@@ -137,7 +134,6 @@ class Deploy extends \MovLib\Console\Command\AbstractCommand {
 
     // Create cache busters for all images.
     $this->globRecursive("{$this->pathPublic}/asset/img", function ($splFileInfo) {
-      global $kernel;
       $realPath  = $splFileInfo->getRealPath();
       $extension = $splFileInfo->getExtension();
       $basename  = str_replace("{$this->pathPublic}/asset/img/", "", substr($realPath, 0, -4));
@@ -166,13 +162,10 @@ class Deploy extends \MovLib\Console\Command\AbstractCommand {
   /**
    * Change repository.
    *
-   * @global \MovLib\Tool\Kernel $kernel
    * @return this
    * @throws \RuntimeException
    */
   protected function changeRepository() {
-    global $kernel;
-
     $this->write("Attempting to find symbolic link...");
     $this->shellExecute("find / -not -path '/proc*' -type l -xtype d -lname '{$kernel->documentRoot}'", $output);
     if (empty($output)) {
@@ -555,13 +548,10 @@ class Deploy extends \MovLib\Console\Command\AbstractCommand {
    *
    * Clone the repository, delete git and test files, run composer and bower and fix permissions.
    *
-   * @global \MovLib\Kernel $kernel
    * @return this
    * @throws \RuntimeException
    */
   protected function prepareRepository() {
-    global $kernel;
-
     $commands = [
       "git clone {$this->origin} {$this->pathRepository}",
       "chown {$kernel->phpUser}:{$kernel->phpGroup} {$this->pathRepository}",

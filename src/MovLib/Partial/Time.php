@@ -77,14 +77,11 @@ class Time extends \MovLib\Presentation\AbstractBase {
   /**
    * Get the string representation of this (date)time.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\User\Session $session
    * @return string
    *   The string representation of this (date)time.
    */
   public function __toString() {
-    global $i18n, $session;
-    $time = new \IntlDateFormatter($i18n->locale, \IntlDateFormatter::NONE, $this->timeFormat, $session->userTimeZone);
+    $time = new \IntlDateFormatter($this->intl->locale, \IntlDateFormatter::NONE, $this->timeFormat, $session->userTimeZone);
     return "<time>{$time->format($this->time)}</time>";
   }
 
@@ -98,40 +95,38 @@ class Time extends \MovLib\Presentation\AbstractBase {
    * The usage of magic numbers is intended, these calculations will never change!
    *
    * @link http://stackoverflow.com/questions/11
-   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   Relative string representation of the time.
    */
   public function formatRelative() {
-    global $i18n;
     $delta = $_SERVER["REQUEST_TIME"] - $this->time->getTimestamp();
     if ($delta < 60) {
-      return $delta < 2 ? $i18n->t("one second ago") : $i18n->t("{0,number,integer} seconds ago", [ $delta ]);
+      return $delta < 2 ? $this->intl->t("one second ago") : $this->intl->t("{0,number,integer} seconds ago", [ $delta ]);
     }
     if ($delta < 120) {
-      return $i18n->t("a minute ago");
+      return $this->intl->t("a minute ago");
     }
     if ($delta < 2700) { // 45 minutes
-      return $i18n->t("{0,number,integer} minutes ago", [ ($delta / 60) ]);
+      return $this->intl->t("{0,number,integer} minutes ago", [ ($delta / 60) ]);
     }
     if ($delta < 5400) { // 90 minutes
-      return $i18n->t("an hour ago");
+      return $this->intl->t("an hour ago");
     }
     if ($delta < 86400) { // 1 day
-      return $i18n->t("{0,number,integer} hours ago", [ ($delta / 3600) ]);
+      return $this->intl->t("{0,number,integer} hours ago", [ ($delta / 3600) ]);
     }
     if ($delta < 172800) { // 2 days
-      return $i18n->t("yesterday");
+      return $this->intl->t("yesterday");
     }
     if ($delta < 2592000) { // 30 days
-      return $i18n->t("{0,number,integer} days ago", [ ($delta / 86400) ]);
+      return $this->intl->t("{0,number,integer} days ago", [ ($delta / 86400) ]);
     }
     if ($delta < 3.15569e7) { // 1 year
       $months = $delta / 2592000;
-      return $months < 2 ? $i18n->t("one month ago") : $i18n->t("{0,number,integer} months ago", [ $months ]);
+      return $months < 2 ? $this->intl->t("one month ago") : $this->intl->t("{0,number,integer} months ago", [ $months ]);
     }
     $years = $delta / 3.15569e7;
-    return $years < 2 ? $i18n->t("one year ago") : $i18n->t("{0,number,integer} years ago", [ $years ]);
+    return $years < 2 ? $this->intl->t("one year ago") : $this->intl->t("{0,number,integer} years ago", [ $years ]);
   }
 
 }

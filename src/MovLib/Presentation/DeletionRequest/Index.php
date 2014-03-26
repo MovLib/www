@@ -36,20 +36,16 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Get the deletion requests page content.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\User\Session $session
    * @return string
    *   The deletion requests page content.
    * @throws \MovLib\Exception\DatabaseException
    */
   protected function getPageContent() {
-    global $i18n, $session;
-
     // @todo Check user reputation, for now limited to admins.
-    $session->checkAuthorizationAdmin($i18n->t("Only administrators can handle deletion requests."));
+    $session->checkAuthorizationAdmin($this->intl->t("Only administrators can handle deletion requests."));
 
     // Initialize presentation basics.
-    $this->initPage($i18n->t("Deletion Requests"));
+    $this->initPage($this->intl->t("Deletion Requests"));
     $this->initLanguageLinks("/deletion-requests", null, true);
     $this->initBreadcrumb();
 
@@ -58,15 +54,15 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
     $duplicate = DeletionRequest::REASON_DUPLICATE;
     $other     = DeletionRequest::REASON_OTHER;
     $menuitems = [
-      0          => [ $i18n->rp("/deletion-requests"), $i18n->t("All") ],
-      $spam      => [ "{$i18n->rp("/deletion-requests")}?{$i18n->r("reason")}={$spam}", $i18n->t("Spam") ],
-      $duplicate => [ "{$i18n->rp("/deletion-requests")}?{$i18n->r("reason")}={$duplicate}", $i18n->t("Duplicate") ],
-      $other     => [ "{$i18n->rp("/deletion-requests")}?{$i18n->r("reason")}={$other}", $i18n->t("Other") ],
+      0          => [ $this->intl->rp("/deletion-requests"), $this->intl->t("All") ],
+      $spam      => [ "{$this->intl->rp("/deletion-requests")}?{$this->intl->r("reason")}={$spam}", $this->intl->t("Spam") ],
+      $duplicate => [ "{$this->intl->rp("/deletion-requests")}?{$this->intl->r("reason")}={$duplicate}", $this->intl->t("Duplicate") ],
+      $other     => [ "{$this->intl->rp("/deletion-requests")}?{$this->intl->r("reason")}={$other}", $this->intl->t("Other") ],
     ];
 
     // Extract possible filters from the requested URL.
-    $reasonId     = filter_input(INPUT_GET, $i18n->r("reason"), FILTER_VALIDATE_INT, [ "options" => [ "min_range" => 1 ] ]);
-    $languageCode = filter_input(INPUT_GET, $i18n->r("language_code"), FILTER_VALIDATE_REGEXP, [ "options" => [ "default" => null, "regexp" => "/[a-z][a-z]/" ] ]);
+    $reasonId     = filter_input(INPUT_GET, $this->intl->r("reason"), FILTER_VALIDATE_INT, [ "options" => [ "min_range" => 1 ] ]);
+    $languageCode = filter_input(INPUT_GET, $this->intl->r("language_code"), FILTER_VALIDATE_REGEXP, [ "options" => [ "default" => null, "regexp" => "/[a-z][a-z]/" ] ]);
 
     // Initialize the sidebar with the sorted menuitems and ignore the query string within
     // the requested URI for determining which tab is active.
@@ -77,8 +73,8 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
     $this->paginationInit(DeletionRequest::getCount($reasonId, $languageCode));
     if ($this->paginationTotalResults === 0) {
       return new Alert(
-        $i18n->t("Great, not a single deletion request is waiting for approval."),
-        $i18n->t("No Deletion Requests"),
+        $this->intl->t("Great, not a single deletion request is waiting for approval."),
+        $this->intl->t("No Deletion Requests"),
         Alert::SEVERITY_SUCCESS
       );
     }
@@ -89,18 +85,18 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
 
     /* @var $deletionRequest \MovLib\Data\DeletionRequest */
     while ($deletionRequest = $requests->fetch_object("\\MovLib\\Data\\DeletionRequest")) {
-      $dateTime    = $i18n->formatDate($deletionRequest->created, null, \IntlDateFormatter::SHORT, \IntlDateFormatter::SHORT);
-      $contentLink = "<a href='{$deletionRequest->routes[$i18n->languageCode]}'>";
+      $dateTime    = $this->intl->formatDate($deletionRequest->created, null, \IntlDateFormatter::SHORT, \IntlDateFormatter::SHORT);
+      $contentLink = "<a href='{$deletionRequest->routes[$this->intl->languageCode]}'>";
       $user        = "<a href='{$deletionRequest->user->route}'>{$deletionRequest->user->name}</a>";
 
       // The content is already filtered, no need to state the reason with each entry.
       if ($reasonId) {
-        $list .= $i18n->t("{date}: {user} has requested that {0}this content{1} should be deleted.", [
+        $list .= $this->intl->t("{date}: {user} has requested that {0}this content{1} should be deleted.", [
           "date" => $dateTime, "user" => $user, $contentLink, "</a>",
         ]);
       }
       else {
-        $list .= $i18n->t("{date}: {user} has requested that {0}this content{1} should be deleted for the reason: “{reason}”", [
+        $list .= $this->intl->t("{date}: {user} has requested that {0}this content{1} should be deleted for the reason: “{reason}”", [
           "date" => $dateTime, "user" => $user, $contentLink, "</a>", "reason" => $deletionRequest->reason,
         ]);
       }
@@ -110,7 +106,7 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
 
     $requests->free();
 
-    return "<div id='filter' class='tar'>{$i18n->t("You can filter the deletion requests via the sidebar menu.")}</div><ol class='no-list'>{$list}</ol>";
+    return "<div id='filter' class='tar'>{$this->intl->t("You can filter the deletion requests via the sidebar menu.")}</div><ol class='no-list'>{$list}</ol>";
   }
 
 }

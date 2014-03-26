@@ -38,8 +38,6 @@ final class CompanyMovieListing extends \MovLib\Partial\Listing\MovieListing {
    * @inheritdoc
    */
   public function __toString() {
-    global $i18n;
-
     // @devStart
     // @codeCoverageIgnoreStart
     try {
@@ -56,8 +54,8 @@ final class CompanyMovieListing extends \MovLib\Partial\Listing\MovieListing {
 
       if (!$this->noItemsText) {
         $this->noItemsText = (string) new Alert(
-          $i18n->t("No movies match your search criteria."),
-          $i18n->t("No Movies"),
+          $this->intl->t("No movies match your search criteria."),
+          $this->intl->t("No Movies"),
           Alert::SEVERITY_INFO
         );
       }
@@ -78,22 +76,19 @@ final class CompanyMovieListing extends \MovLib\Partial\Listing\MovieListing {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function getAdditionalContent($movie, $listItem) {
-    global $i18n;
-
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($movie->jobIds)) {
-      throw new \LogicException($i18n->t("\$movie->jobIds can not be empty!"));
+      throw new \LogicException($this->intl->t("\$movie->jobIds can not be empty!"));
     }
 
     if (empty($movie->jobTitles)) {
-      throw new \LogicException($i18n->t("\$movie->jobTitles can not be empty!"));
+      throw new \LogicException($this->intl->t("\$movie->jobTitles can not be empty!"));
     }
     if (count($movie->jobTitles) != count($movie->jobIds)) {
-      throw new \LogicException($i18n->t("The count of \$movie->jobTitles and \$movie->jobIds has to be equal!"));
+      throw new \LogicException($this->intl->t("The count of \$movie->jobTitles and \$movie->jobIds has to be equal!"));
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -102,7 +97,7 @@ final class CompanyMovieListing extends \MovLib\Partial\Listing\MovieListing {
     $c = count($movie->jobTitles);
     for ($i = 0; $i < $c; ++$i) {
       $jobsDone .=
-        "<a class='label' href='{$i18n->r("/job/{0}", [ $movie->jobIds[$i] ])}'>{$movie->jobTitles[$i]}</a>"
+        "<a class='label' href='{$this->intl->r("/job/{0}", [ $movie->jobIds[$i] ])}'>{$movie->jobTitles[$i]}</a>"
       ;
     }
 

@@ -15,44 +15,30 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Partial\Listing;
-
+namespace MovLib\Console;
 
 /**
- * List for movie instances that have won or were nominatet for an award.
+ * Database for administration tasks.
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @author Richard Fussenegger <richard@fussenegger.info>
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class AwardCategoryMovieListing extends \MovLib\Partial\Listing\AwardMovieListing {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
+final class AdminDatabase extends \MovLib\Core\Database {
 
   /**
-   * @inheritdoc
+   * Purge entries with given TTL from the temporary table.
+   *
+   * @param string $ttl
+   *   The TTL of the entries to purge.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
    */
-  protected function getAdditionalContent($movie, $listItem) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (!isset($movie->won)) {
-      throw new \LogicException($this->intl->t("\$movie->won has to be set!"));
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
-    if ($movie->won) {
-      $wonOrNominated = $this->intl->t("won");
-    }
-    else {
-      $wonOrNominated = $this->intl->t("nominated");
-    }
-
-    return "<span class='label small'>{$wonOrNominated}</span>";
+  public function purgeTemporaryTable($ttl) {
+    $this->query("DELETE FROM `tmp` WHERE DATEDIFF(CURRENT_TIMESTAMP, `created`) > 0 AND `ttl` = ?", "s", [ $ttl ]);
+    return $this;
   }
 
 }

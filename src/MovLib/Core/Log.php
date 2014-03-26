@@ -38,6 +38,74 @@ use \Monolog\Processor\IntrospectionProcessor;
  */
 final class Log {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * Logger system in use.
+   *
+   * @var \Monolog\Logger
+   */
+  protected $logger;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new logger.
+   *
+   * @param string $name
+   *   The log entry's name, use hostname for HTTP and process title's for CLI.
+   * @param \MovLib\Core\Config $config
+   *   Active global configuration instance.
+   * @param boolean $http
+   *   Whether this logger is executing in HTTP context or not.
+   */
+  public function __construct($name, \MovLib\Core\Config $config, $http) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($name) || !is_string($name)) {
+      throw new \InvalidArgumentException("\$name cannot be empty and must be of type string.");
+    }
+    if (!is_bool($http)) {
+      throw new \InvalidArgumentException("\$http must be of type boolean.");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    $mailer = new NativeMailerHandler(
+      $config->emailDevelopers,
+      "IMPORTANT! {$config->siteName} is experiencing problems!",
+      $config->emailFrom,
+      Logger::CRITICAL,
+      true,
+      2048
+    );
+    $mailer->setContentType("text/html");
+    $mailer->setFormatter(new HtmlFormatter());
+
+    // DEBUG upwards will be logged to the error log.
+    $errorLog = new ErrorLogHandler();
+    $errorLog->setFormatter(new LineFormatter("%channel% %level_name%: %message% %context% %extra%\n", null, true));
+
+    // Always use the fingers crossed handler to ensure that we have as much information as possible.
+    $handlers = [
+      new FingersCrossedHandler($mailer, Logger::CRITICAL),
+      new FingersCrossedHandler($errorLog, Logger::ERROR),
+    ];
+
+    // DEBUG, INFO, and NOTICE are sent to the client's browser if not in production and executed via php-fpm.
+    if ($http && !$config->production) {
+      $handlers[] = new FirePHPHandler();
+      $errorLog->setLevel(Logger::WARNING);
+    }
+
+    // Instantiate the new logger and store it in the static variable of this method for later usage.
+    $this->logger = new Logger($name, $handlers, [ new IntrospectionProcessor(Logger::WARNING) ]);
+  }
+
   /**
    * Action must be taken immediately.
    *
@@ -54,8 +122,8 @@ final class Log {
    * @return boolean
    *   Whether the record has been processed.
    */
-  public static function alert($message, array $context = []) {
-    return self::log(Logger::ALERT, $message, $context);
+  public function alert($message, array $context = []) {
+    return $this->logger->addRecord(Logger::ALERT, $message, $context);
   }
 
   /**
@@ -74,8 +142,8 @@ final class Log {
    * @return boolean
    *   Whether the record has been processed.
    */
-  public static function critical($message, array $context = []) {
-    return self::log(Logger::CRITICAL, $message, $context);
+  public function critical($message, array $context = []) {
+    return $this->logger->addRecord(Logger::CRITICAL, $message, $context);
   }
 
   /**
@@ -91,8 +159,8 @@ final class Log {
    * @return boolean
    *   Whether the record has been processed.
    */
-  public static function debug($message, array $context = []) {
-    return self::log(Logger::DEBUG, $message, $context);
+  public function debug($message, array $context = []) {
+    return $this->logger->addRecord(Logger::DEBUG, $message, $context);
   }
 
   /**
@@ -108,8 +176,8 @@ final class Log {
    * @return boolean
    *   Whether the record has been processed.
    */
-  public static function emergency($message, array $context = []) {
-    return self::log(Logger::EMERGENCY, $message, $context);
+  public function emergency($message, array $context = []) {
+    return $this->logger->addRecord(Logger::EMERGENCY, $message, $context);
   }
 
   /**
@@ -125,8 +193,8 @@ final class Log {
    * @return boolean
    *   Whether the record has been processed.
    */
-  public static function error($message, array $context = []) {
-    return self::log(Logger::ERROR, $message, $context);
+  public function error($message, array $context = []) {
+    return $this->logger->addRecord(Logger::ERROR, $message, $context);
   }
 
   /**
@@ -145,14 +213,13 @@ final class Log {
    * @return boolean
    *   Whether the record has been processed.
    */
-  public static function info($message, array $context = []) {
-    return self::log(Logger::INFO, $message, $context);
+  public function info($message, array $context = []) {
+    return $this->logger->addRecord(Logger::INFO, $message, $context);
   }
 
   /**
    * Log a message with arbitraty level.
    *
-   * @global \MovLib\Kernel $kernel
    * @staticvar \Monolog\Logger $logger
    *   Used to cache the logger instance in use.
    * @param mixed $level
@@ -166,60 +233,8 @@ final class Log {
    * @return boolean
    *   Whether the record has been processed.
    */
-  public static function log($level, $message, array $context = []) {
-    static $logger = null;
-
-    // Instantiate logger if we have no instance yet.
-    if (!$logger) {
-      /* @var $config \MovLib\Core\Config */
-      /* @var $kernel \MovLib\Core\Kernel */
-      /* @var $request \MovLib\Core\HTTP\Request */
-      global $config, $kernel, $request;
-      // CRITICAL upwards triggers sending of email.
-      $mailer = new NativeMailerHandler(
-        $config->emailDevelopers,
-        "IMPORTANT! {$config->siteName} is experiencing problems!",
-        $config->emailFrom,
-        Logger::CRITICAL,
-        true,
-        2048
-      );
-      $mailer->setContentType("text/html");
-      $mailer->setFormatter(new HtmlFormatter());
-
-      // DEBUG upwards will be logged to the error log.
-      $errorLog = new ErrorLogHandler();
-      $errorLog->setFormatter(new LineFormatter("%channel% %level_name%: %message% %context% %extra%\n", null, true));
-
-      // Always use the fingers crossed handler to ensure that we have as much information as possible.
-      $handlers = [
-        new FingersCrossedHandler($mailer, Logger::CRITICAL),
-        new FingersCrossedHandler($errorLog, Logger::ERROR),
-      ];
-
-      // DEBUG, INFO, and NOTICE are sent to the client's browser if not in production and executed via php-fpm.
-      if ($config->production === false && $kernel->http === true) {
-        $handlers[] = new FirePHPHandler();
-        $errorLog->setLevel(Logger::WARNING);
-      }
-
-      // Try to find an appropriate name for the log entries base on the currently available environment.
-      if (isset($request->hostname)) {
-        $name = $request->hostname;
-      }
-      elseif ($kernel->cli) {
-        $name = cli_get_process_title();
-      }
-      else {
-        $name = "Unknown Environment";
-      }
-
-      // Instantiate the new logger and store it in the static variable of this method for later usage.
-      $logger = new Logger($name, $handlers, [ new IntrospectionProcessor(Logger::WARNING) ]);
-    }
-
-    // Log the message as requested.
-    return $logger->log($level, $message, $context);
+  public function log($level, $message, array $context = []) {
+    return $this->logger->addRecord($level, $message, $context);
   }
 
   /**
@@ -235,8 +250,8 @@ final class Log {
    * @return boolean
    *   Whether the record has been processed.
    */
-  public static function notice($message, array $context = []) {
-    return self::log(Logger::NOTICE, $message, $context);
+  public function notice($message, array $context = []) {
+    return $this->logger->addRecord(Logger::NOTICE, $message, $context);
   }
 
   /**
@@ -255,8 +270,8 @@ final class Log {
    * @return boolean
    *   Whether the record has been processed.
    */
-  public static function warning($message, array $context = []) {
-    return self::log(Logger::WARNING, $message, $context);
+  public function warning($message, array $context = []) {
+    return $this->logger->addRecord(Logger::WARNING, $message, $context);
   }
 
 }

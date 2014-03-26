@@ -64,16 +64,12 @@ abstract class AbstractInputFile extends \MovLib\Partial\FormElement\AbstractFor
   /**
    * Validate the form element's submitted file.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\User\Session $session
    * @param array $errors
    *   Array to collect error messages.
    * @return this
    * @throws \MovLib\Presentation\Error\Unauthorized
    */
   public function validate(&$errors) {
-    global $i18n, $session;
-
     // Only authenticated user's are allowed to upload files, directly abort if we encounter this error.
     if ($session->isAuthenticated === false) {
       throw new Unauthorized;
@@ -88,7 +84,7 @@ abstract class AbstractInputFile extends \MovLib\Partial\FormElement\AbstractFor
       $this->value = null;
 
       // The missing file is an error if this field is required.
-      $this->required && ($errors[self::ERROR_REQUIRED] = $i18n->t("The “{0}” file is required.", [ $this->label ]));
+      $this->required && ($errors[self::ERROR_REQUIRED] = $this->intl->t("The “{0}” file is required.", [ $this->label ]));
     }
     // Continue file upload if PHP reported no error and the file was really uploaded via HTTP POST.
     elseif ($uploadedFile->error === UPLOAD_ERR_OK && is_uploaded_file($uploadedFile->path) === true) {
@@ -99,19 +95,19 @@ abstract class AbstractInputFile extends \MovLib\Partial\FormElement\AbstractFor
       switch ($uploadedFile->error) {
         case UPLOAD_ERR_INI_SIZE:
         case UPLOAD_ERR_FORM_SIZE:
-          $errors[self::ERROR_SIZE] = $i18n->t(
+          $errors[self::ERROR_SIZE] = $this->intl->t(
             "The uploaded file is too large, it must be: {maxsize} or less",
-            [ "maxsize" => $i18n->formatBytes(ini_get("upload_max_filesize")) ]
+            [ "maxsize" => $this->intl->formatBytes(ini_get("upload_max_filesize")) ]
           );
           break;
 
         case UPLOAD_ERR_PARTIAL:
-          $errors[self::ERROR_PARTIAL] = $i18n->t("The upload didn’t complete, please try again.");
+          $errors[self::ERROR_PARTIAL] = $this->intl->t("The upload didn’t complete, please try again.");
           break;
 
         // Unknown is more than good enough at this point, the user doesn't have to know the specific error!
         default:
-          $errors[self::ERROR_UNKNOWN] = $i18n->t("An unknown problem was encountered while processing your upload, please try again.");
+          $errors[self::ERROR_UNKNOWN] = $this->intl->t("An unknown problem was encountered while processing your upload, please try again.");
 
           // Be sure to log this error.
           $reasons = [

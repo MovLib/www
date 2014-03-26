@@ -142,7 +142,6 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
   /**
    * Instantiate new HTML form element.
    *
-   * @global \MovLib\Kernel $kernel
    * @param string $id
    *   The text's global identifier.
    * @param string $label
@@ -153,7 +152,6 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
    *   Additional attributes for the text, defaults to <code>NULL</code> (no additional attributes).
    */
   public function __construct($id, $label, $value = null, array $attributes = null) {
-    global $kernel;
     parent::__construct($id, $label, $value, $attributes);
     // We don't need the JS, because we only use <textarea> for now. This will change when InputHTML is finished.
     //    $kernel->javascripts[]              = "InputHTML";
@@ -170,7 +168,7 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
    * We will need it again once the WYSIWYG editor works. For now we'll stick with a plain <textarea>.
    */
 //  protected function render() {
-//    global $i18n;
+//    global $this->intl;
 //
 //    // We need to alter the div attributes in order to make them valid for this kind of HTML element. The div element
 //    // also needs a class for easy identification via CSS and JS whilst the textarea doesn't need anything because the
@@ -192,7 +190,7 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
 //
 //    // Use default placeholder text if none was provided.
 //    if (!isset($this->attributes["placeholder"])) {
-//      $this->attributes["placeholder"] = $i18n->t("Enter “{0}” text here …", [ $this->label ]);
+//      $this->attributes["placeholder"] = $this->intl->t("Enter “{0}” text here …", [ $this->label ]);
 //    }
 //    // Unset the placeholder in the div attributes, since this attribute is not allowed by HTML standard.
 //    else {
@@ -208,44 +206,44 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
 //    // Check if any heading is allowed (checking against level 6 is enough as it's always part of the party if any level
 //    // is allowed) and include the block level selector if we have any. Ommit if no headings are allowed.
 //    if (isset($this->allowedTags["h6"])) {
-//      $editor .= "<li data-handler='formatBlock' data-tag='p' href=''>{$i18n->t("Paragraph")}</li>";
+//      $editor .= "<li data-handler='formatBlock' data-tag='p' href=''>{$this->intl->t("Paragraph")}</li>";
 //      for ($i = 2; $i <= 6; ++$i) {
 //        if (isset($this->allowedTags["h{$i}"])) {
-//          $editor .= "<li data-handler='formatBlock' data-tag='h{$i}' href=''>{$i18n->t("Heading {0, number, integer}", [ $i ])}</li>";
+//          $editor .= "<li data-handler='formatBlock' data-tag='h{$i}' href=''>{$this->intl->t("Heading {0, number, integer}", [ $i ])}</li>";
 //        }
 //      }
-//      $editor = "<div class='btn formats' data-handler='formats'><span class='expander'>{$i18n->t("Paragraph")}</span><ul class='concealed no-list'>{$editor}</ul></div>";
+//      $editor = "<div class='btn formats' data-handler='formats'><span class='expander'>{$this->intl->t("Paragraph")}</span><ul class='concealed no-list'>{$editor}</ul></div>";
 //    }
 //
 //    $external = $this->allowExternalLinks === true ? " external" : null;
 //    $editor .=
 //      // Add the font styles.
-//      "<span class='btn ico ico-bold' data-handler='formatInline' data-tag='bold'><span class='vh'>{$i18n->t("Bold")}</span></span>" .
-//      "<span class='btn ico ico-italic' data-handler='formatInline' data-tag='italic'><span class='vh'>{$i18n->t("Italic")}</span></span>" .
+//      "<span class='btn ico ico-bold' data-handler='formatInline' data-tag='bold'><span class='vh'>{$this->intl->t("Bold")}</span></span>" .
+//      "<span class='btn ico ico-italic' data-handler='formatInline' data-tag='italic'><span class='vh'>{$this->intl->t("Italic")}</span></span>" .
 //      // Add the alignment buttons.
-//      "<span class='btn ico ico-align-left' data-direction='left' data-handler='align'><span class='vh'>{$i18n->t("Align left")}</span></span>" .
-//      "<span class='btn ico ico-align-center' data-direction='center' data-handler='align'><span class='vh'>{$i18n->t("Align center")}</span></span>" .
-//      "<span class='btn ico ico-align-right' data-direction='right' data-handler='align'><span class='vh'>{$i18n->t("Align right")}</span></span>" .
+//      "<span class='btn ico ico-align-left' data-direction='left' data-handler='align'><span class='vh'>{$this->intl->t("Align left")}</span></span>" .
+//      "<span class='btn ico ico-align-center' data-direction='center' data-handler='align'><span class='vh'>{$this->intl->t("Align center")}</span></span>" .
+//      "<span class='btn ico ico-align-right' data-direction='right' data-handler='align'><span class='vh'>{$this->intl->t("Align right")}</span></span>" .
 //      // Add the insert section according to configuration.
-//      "<span class='btn ico ico-link{$external}' data-handler='link'><span class='vh'>{$i18n->t("Insert link")}</span></span>" .
-//      "<span class='btn ico ico-unlink' data-handler='formatInline' data-tag='unlink'><span class='vh'>{$i18n->t("Unlink selection")}</span></span>"
+//      "<span class='btn ico ico-link{$external}' data-handler='link'><span class='vh'>{$this->intl->t("Insert link")}</span></span>" .
+//      "<span class='btn ico ico-unlink' data-handler='formatInline' data-tag='unlink'><span class='vh'>{$this->intl->t("Unlink selection")}</span></span>"
 //    ;
 //
 //    if (isset($this->allowedTags["blockquote"])) {
-//      $editor .= "<span class='btn ico ico-quotation' data-handler='quotation'><span class='vh'>{$i18n->t("Insert quotation")}</span></span>";
+//      $editor .= "<span class='btn ico ico-quotation' data-handler='quotation'><span class='vh'>{$this->intl->t("Insert quotation")}</span></span>";
 //    }
 //
 //    if (isset($this->allowedTags["figure"])) {
-//      $editor .= "<span class='btn ico ico-image' data-handler='image'><span class='vh'>{$i18n->t("Insert image")}</span></span>";
+//      $editor .= "<span class='btn ico ico-image' data-handler='image'><span class='vh'>{$this->intl->t("Insert image")}</span></span>";
 //    }
 //
 //    // Add list section, if lists are allowed.
 //    if (isset($this->allowedTags["ul"])) {
 //      $editor .=
-//        "<span class='btn ico ico-ul' data-handler='list'><span class='vh'>{$i18n->t("Insert unordered list")}</span></span>" .
-//        "<span class='btn ico ico-ol' data-handler='list'><span class='vh'>{$i18n->t("Insert ordered list")}</span></span>" .
-//        "<span class='btn ico ico-indent-left' data-direction='left' data-handler='indent'><span class='vh'>{$i18n->t("Indent list item left")}</span></span>" .
-//        "<span class='btn ico ico-indent-right' data-direction='right' data-handler='indent'><span class='vh'>{$i18n->t("Indent list item right")}</span></span>"
+//        "<span class='btn ico ico-ul' data-handler='list'><span class='vh'>{$this->intl->t("Insert unordered list")}</span></span>" .
+//        "<span class='btn ico ico-ol' data-handler='list'><span class='vh'>{$this->intl->t("Insert ordered list")}</span></span>" .
+//        "<span class='btn ico ico-indent-left' data-direction='left' data-handler='indent'><span class='vh'>{$this->intl->t("Indent list item left")}</span></span>" .
+//        "<span class='btn ico ico-indent-right' data-direction='right' data-handler='indent'><span class='vh'>{$this->intl->t("Indent list item right")}</span></span>"
 //      ;
 //    }
 //
@@ -320,12 +318,8 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function validate() {
-    global $i18n, $kernel;
-
     // Validate if this from element is required, if it isn't the value will be NULL and we abort.
     parent::validate();
     if (!$this->value) {
@@ -342,7 +336,7 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
       }
     }
     catch (\ErrorException $e) {
-      throw new ValidationException($i18n->t("Invalid HTML in “{label}” text.", [ "label" => $this->label ]));
+      throw new ValidationException($this->intl->t("Invalid HTML in “{label}” text.", [ "label" => $this->label ]));
     }
 
     // Validate DOM and normalize Unicode.
@@ -365,7 +359,7 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
     }
     catch (\ErrorException $e) {
       error_log($e);
-      throw new ValidationException($i18n->t("Invalid HTML after the validation in “{label}” text.", [ "label" => $this->label ]));
+      throw new ValidationException($this->intl->t("Invalid HTML after the validation in “{label}” text.", [ "label" => $this->label ]));
     }
     // @codeCoverageIgnoreEnd
 
@@ -378,26 +372,23 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
   /**
    * Validates and sanitizes HTML anchors.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @param \tidyNode $node
    *   The anchor.
    * @return string
    *   The tag name with the validated attributes.
    */
   protected function validateA($node) {
-    global $i18n, $kernel;
     $attributes  = [];
     $validateURL = null;
 
     // Check if the <code>href</code> attribute was set and validate the URL.
     if (!isset($node->attribute) || empty($node->attribute["href"])) {
-      throw new ValidationException($i18n->t("Links without a link target in “{label}” text.", [ "label" => $this->label ]));
+      throw new ValidationException($this->intl->t("Links without a link target in “{label}” text.", [ "label" => $this->label ]));
     }
 
     // Parse and validate the parts of the URL.
     if (($parts = parse_url($node->attribute["href"])) === false || !isset($parts["host"])) {
-      throw new ValidationException($i18n->t(
+      throw new ValidationException($this->intl->t(
         "Invalid link in “{label}” text ({link_url}).",
         [ "label" => $this->label, "link_url" => "<code>{$kernel->htmlEncode($node->attribute["href"])}</code>" ]
       ));
@@ -414,7 +405,7 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
     // If external links are not allowed, abort.
     else {
       if ($this->allowExternalLinks === false) {
-        throw new ValidationException($i18n->t("No external links are allowed in “{label}” text.", [ "label" => $this->label ]));
+        throw new ValidationException($this->intl->t("No external links are allowed in “{label}” text.", [ "label" => $this->label ]));
       }
       if (isset($parts["scheme"]) && ($parts["scheme"] == "http" || $parts["scheme"] == "https")) {
         $attributes["href"] = "{$parts["scheme"]}://";
@@ -440,20 +431,20 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
 
     // Validate user, password and port, since we don't allow them.
     if (isset($parts["user"]) || isset($parts["pass"])) {
-      throw new ValidationException($i18n->t(
+      throw new ValidationException($this->intl->t(
         "Credentials are not allowed in “{label}” text ({link_url}).",
         [ "label" => $this->label, "link_url" => "<code>{$kernel->htmlEncode($node->attribute["href"])}</code>" ]
       ));
     }
     if (isset($parts["port"])) {
-      throw new ValidationException($i18n->t(
+      throw new ValidationException($this->intl->t(
         "Ports are not allowed in “{label}” text ({link_url}).",
         [ "label" => $this->label, "link_url" => "<code>{$kernel->htmlEncode($node->attribute["href"])}</code>" ]
       ));
     }
 
     if (filter_var($validateURL, FILTER_VALIDATE_URL, FILTER_REQUIRE_SCALAR | FILTER_FLAG_HOST_REQUIRED) === false) {
-      throw new ValidationException($i18n->t(
+      throw new ValidationException($this->intl->t(
         "Invalid link in “{label}” text ({link_url}).",
         [ "label" => $this->label, "link_url" => "<code>{$kernel->htmlEncode($node->attribute["href"])}</code>" ]
       ));
@@ -465,7 +456,6 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
   /**
    * Validate <code><blockquote></code>.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param \tidyNode $node
    *   The blockquote node to validate.
    * @return string
@@ -473,7 +463,6 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
    * @throws \MovLib\Exception\ValidationException
    */
   protected function validateBlockquote($node) {
-    global $i18n;
     $this->blockquote      = true;
     $this->insertLastChild = "blockquote";
 
@@ -496,12 +485,12 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
     }
     // A <blockquote> without a <cite> is invalid.
     else {
-      throw new ValidationException($i18n->t("The “{label}” text contains a quotation without source.", [ "label" => $this->label ]));
+      throw new ValidationException($this->intl->t("The “{label}” text contains a quotation without source.", [ "label" => $this->label ]));
     }
 
     // Do not allow quotations without content.
     if (!isset($node->child[0])) {
-      throw new ValidationException($i18n->t("The “{label}” text contains quotation without text.", [ "label" => $this->label ]));
+      throw new ValidationException($this->intl->t("The “{label}” text contains quotation without text.", [ "label" => $this->label ]));
     }
 
     return "blockquote{$this->validateUserClasses($node)}";
@@ -510,8 +499,6 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
   /**
    * Validate a DOM tree starting at <code>$node</code>.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @param \tidyNode $node
    *   The node to start from.
    * @param array $allowedTags
@@ -523,7 +510,6 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
    * @throws ValidationException
    */
   protected function validateDOM($node, &$allowedTags, &$level = 0) {
-    global $i18n, $kernel;
     $nodes       = [ $level => [ $node]];
     $endTags     = [];
     $output      = null;
@@ -543,7 +529,7 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
           elseif (isset($allowedTags[$node->name])) {
             // If we're already inside <blockquote>, ensure it doesn't contain any disallowed elements.
             if ($this->blockquote === true && isset($this->blockquoteDisallowedTags[$node->name])) {
-              throw new ValidationException($i18n->t("Found disallowed tag {tag} in quotation.", [ "tag" => "<code>&lt;{$node->name}&gt;</code>" ]));
+              throw new ValidationException($this->intl->t("Found disallowed tag {tag} in quotation.", [ "tag" => "<code>&lt;{$node->name}&gt;</code>" ]));
             }
 
             // Stack a closing tag to the current level, if needed.
@@ -571,10 +557,10 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
           else {
             $allowedTagsList = implode(" ", $allowedTags);
             if ($this->figure === true) {
-              throw new ValidationException($i18n->t("Found disallowed HTML tags in image caption, allowed tags are: {taglist}", [ "taglist" => "<code>{$allowedTagsList}</code>" ]));
+              throw new ValidationException($this->intl->t("Found disallowed HTML tags in image caption, allowed tags are: {taglist}", [ "taglist" => "<code>{$allowedTagsList}</code>" ]));
             }
             else {
-              throw new ValidationException($i18n->t("Found disallowed HTML tags, allowed tags are: {taglist}", [ "taglist" => "<code>{$allowedTagsList}</code>" ]));
+              throw new ValidationException($this->intl->t("Found disallowed HTML tags, allowed tags are: {taglist}", [ "taglist" => "<code>{$allowedTagsList}</code>" ]));
             }
           }
         }
@@ -620,8 +606,6 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
    *
    * @todo We have to keep reference of images in texts in order to update their cache buster string and remove them
    *       if the image is deleted.
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @param \tidyNode $node
    *   The figure node to validate.
    * @param integer $level
@@ -631,18 +615,17 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
    * @throws ValidationException
    */
   protected function validateFigure($node) {
-    global $i18n, $kernel;
     $this->insertLastChild = "figure";
     $this->figure          = true;
 
     // Of course we can communicate the caption as seperate element, as it's visible to the user.
     if (count($node->child) !== 2 || $node->child[1]->name != "figcaption" || empty($node->child[1]->child)) {
-      throw new ValidationException($i18n->t("The image caption is mandatory and cannot be empty."));
+      throw new ValidationException($this->intl->t("The image caption is mandatory and cannot be empty."));
     }
     // Always communicate the <figure> element as image, the actual implementation isn't the user's concern and might
     // change with future web technologies.
     elseif ($node->child[0]->name != "img" || empty($node->child[0]->attribute["src"])) {
-      throw new ValidationException($i18n->t("The image is mandatory and cannot be empty."));
+      throw new ValidationException($this->intl->t("The image is mandatory and cannot be empty."));
     }
 
     // Validate the caption.
@@ -661,12 +644,12 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
 
     // Validate the image's src URL.
     if (($url = parse_url($node->child[0]->attribute["src"])) === false || !isset($url["host"])) {
-      throw new ValidationException($i18n->t("Image URL seems to be invalid."));
+      throw new ValidationException($this->intl->t("Image URL seems to be invalid."));
     }
 
     // If a host is present check if it's from MovLib.
     if (isset($url["host"]) && $url["host"] != $kernel->domainStatic && strpos($url["host"], ".{$kernel->domainDefault}") === false) {
-      throw new ValidationException($i18n->t("Only images from {movlib} are allowed.", [ "movlib" => $kernel->siteName ]));
+      throw new ValidationException($this->intl->t("Only images from {movlib} are allowed.", [ "movlib" => $kernel->siteName ]));
     }
 
     // Check that the image actually exists and set width and height.
@@ -674,7 +657,7 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
       $imgAttributes = getimagesize("{$kernel->documentRoot}/public{$url["path"]}")[3];
     }
     catch (\ErrorException $e) {
-      throw new ValidationException($i18n->t("Image doesn’t exist ({image_src}).", [ "image_src" => "<code>{$node->child[0]->attribute["src"]}</code>" ]));
+      throw new ValidationException($this->intl->t("Image doesn’t exist ({image_src}).", [ "image_src" => "<code>{$node->child[0]->attribute["src"]}</code>" ]));
     }
 
     // Build the image tag.
@@ -747,7 +730,6 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
   /**
    * Validate that the node only contains allowed user CSS classes.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param \tidyNode $node
    *   The node to validate.
    * @return null|string
@@ -755,11 +737,10 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
    * @throws \MovLib\Exception\ValidationException
    */
   protected function validateUserClasses($node) {
-    global $i18n;
     if (isset($node->attribute) && !empty($node->attribute["class"])) {
       if (!isset($this->userClasses[$node->attribute["class"]])) {
         $classes = implode(" ", array_keys($this->userClasses));
-        throw new ValidationException($i18n->t(
+        throw new ValidationException($this->intl->t(
           "Disallowed CSS classes in “{label}” text, allowed values are: {classes}",
           [ "label" => $this->label, "classes" => "<code>{$classes}</code>" ]
         ));

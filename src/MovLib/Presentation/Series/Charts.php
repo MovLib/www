@@ -36,15 +36,14 @@ class Charts extends \MovLib\Presentation\AbstractPresenter {
 
 
   public function __construct() {
-   global $i18n;
-    $this->initPage($i18n->t("Series Charts"));
-    $this->initBreadcrumb([ [ $i18n->rp("/series"), $i18n->t("Series") ] ]);
-    $this->breadcrumbTitle = $i18n->t("Charts");
+    $this->initPage($this->intl->t("Series Charts"));
+    $this->initBreadcrumb([ [ $this->intl->rp("/series"), $this->intl->t("Series") ] ]);
+    $this->breadcrumbTitle = $this->intl->t("Charts");
     $this->initLanguageLinks("/series/charts", null, true);
     $this->sidebarInit([
-      [ $i18n->rp("/series"), $i18n->t("Series"), [ "class" => "ico ico-series" ] ],
-      [ $i18n->rp("/series/charts"), $i18n->t("Charts") ],
-      [ $i18n->r("/series/random"), $i18n->t("Random") ],
+      [ $this->intl->rp("/series"), $this->intl->t("Series"), [ "class" => "ico ico-series" ] ],
+      [ $this->intl->rp("/series/charts"), $this->intl->t("Charts") ],
+      [ $this->intl->r("/series/random"), $this->intl->t("Random") ],
     ]);
   }
 
@@ -55,15 +54,13 @@ class Charts extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Get the presentation's page content.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The presentation's page content.
    */
   protected function getPageContent() {
-    global $i18n;
     return new Alert(
-      $i18n->t("The series charts feature isn’t implemented yet."),
-      $i18n->t("Check back later"),
+      $this->intl->t("The series charts feature isn’t implemented yet."),
+      $this->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     );
   }

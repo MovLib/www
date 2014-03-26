@@ -84,7 +84,6 @@ class Duration extends \MovLib\Presentation\AbstractBase {
    *
    * @internal
    *   Keep calculations in constructor, the {@see __toString()} method cannot throw exceptions!
-   * @global \MovLib\Data\I18n $i18n
    * @param integer $seconds
    *   The duration in seconds.
    * @param array $attributes [optional]
@@ -93,7 +92,6 @@ class Duration extends \MovLib\Presentation\AbstractBase {
    *   How to format the text, use the class constants.
    */
   public function __construct($seconds, array $attributes = null, $format = self::EXACT) {
-    global $i18n;
     $this->attributes = $attributes;
     $this->duration   = $seconds;
 
@@ -118,7 +116,7 @@ class Duration extends \MovLib\Presentation\AbstractBase {
     }
     // @todo Can't we translate the unit with Intl ICU? Couldn't find anything.
     else {
-      $this->text = $i18n->t("{0, number, integer} min.", [ ceil($this->duration / 60) ]);
+      $this->text = $this->intl->t("{0, number, integer} min.", [ ceil($this->duration / 60) ]);
     }
   }
 

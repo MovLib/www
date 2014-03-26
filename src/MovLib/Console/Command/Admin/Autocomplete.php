@@ -54,14 +54,10 @@ class Autocomplete extends \MovLib\Console\Command\AbstractCommand {
   }
 
   /**
-   * {@inheritdoc}
-   * @global \MovLib\Core\FileSystem $fs
-   * @global \MovLib\Core\Kernel $kernel
+   * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    global $fs, $kernel;
-
-    if (!$kernel->privileged) {
+    if (!$this->privileged) {
       throw new \RuntimeException(
         "Please execute this command as root or via sudo, otherwise it's not possible to move the generated autocompletion " .
         "files to the global bash completion folder."
@@ -73,12 +69,12 @@ class Autocomplete extends \MovLib\Console\Command\AbstractCommand {
     if (in_array("all", $apps)) {
       $this->writeVerbose("Found special keyword <comment>all</comment>, generating translations for all system locales");
       $apps = [];
-      foreach (new \RegexIterator(new \DirectoryIterator("dr://bin"), "/mov[a-z]+\.php$/") as $fileinfo) {
+      foreach (new \RegexIterator(new \DirectoryIterator("/usr/bin/local"), "/mov[a-z]+$/") as $fileinfo) {
         $apps[] = $fileinfo->getBasename(".php");
       }
     }
 
-    $vendor = $fs->realpath("dr://vendor");
+    $vendor = $this->fs->realpath("dr://vendor");
 
     foreach ($apps as $app) {
       $this->writeVerbose("Generating autocompletion for <comment>{$app}</comment>");
@@ -94,7 +90,7 @@ class Autocomplete extends \MovLib\Console\Command\AbstractCommand {
       $this->exec("php {$autocomplete} dump '{$app}' > '{$app}'", "dr://tmp");
 
       // We have to call realpath at this point, because it's not possible to move a file around wrapper types.
-      rename($fs->realpath("dr://tmp/{$app}"), "/etc/bash_completion.d/{$app}");
+      rename($this->fs->realpath("dr://tmp/{$app}"), "/etc/bash_completion.d/{$app}");
     }
 
     // Although our process is running as the user who started it, it's still a different session and we can't simply

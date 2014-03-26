@@ -41,7 +41,6 @@ class ListEnvironments extends \MovLib\Console\Command\AbstractCommand {
 
   /**
    * {@inheritdoc}
-   * @global \MovLib\Tool\Kernel $kernel
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $this->write("Available environments:\n", self::MESSAGE_TYPE_COMMENT);

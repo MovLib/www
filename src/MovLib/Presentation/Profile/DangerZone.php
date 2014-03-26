@@ -77,23 +77,18 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
   /**
    * Instantiate new user danger zone settings presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\User\Session $session
    * @throws \MovLib\Presentation\Error\Unauthorized
    */
   public function __construct() {
-    global $i18n, $kernel, $session;
-
     // Disallow caching of danger zone settings.
     session_cache_limiter("nocache");
 
     // We call both auth-methods the session has to ensure that the error message we display is as accurate as possible.
-    $session->checkAuthorization($i18n->t("You need to sign in to access the danger zone."));
-    $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
+    $session->checkAuthorization($this->intl->t("You need to sign in to access the danger zone."));
+    $session->checkAuthorizationTimestamp($this->intl->t("Please sign in again to verify the legitimacy of this request."));
 
     $kernel->stylesheets[] = "danger-zone";
-    $this->init($i18n->t("Danger Zone"), "/profile/danger-zone", [[ $i18n->r("/profile"), $i18n->t("Profile") ]]);
+    $this->init($this->intl->t("Danger Zone"), "/profile/danger-zone", [[ $this->intl->r("/profile"), $this->intl->t("Profile") ]]);
 
     if (!empty($_GET["token"])) {
       $this->validateToken();
@@ -103,11 +98,11 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
     // table containing the sessions listing was built. Deleted sessions would still be displayed!
     $this->formSessions = new Form($this, [], "{$this->id}-sessions", "deleteSession");
 
-    $buttonText     = $i18n->t("Terminate");
-    $buttonTitle    = $i18n->t("Terminate this session, the associated user agent will be signed out immediately.");
+    $buttonText     = $this->intl->t("Terminate");
+    $buttonTitle    = $this->intl->t("Terminate this session, the associated user agent will be signed out immediately.");
     $activeSessions = $session->getActiveSessions();
     while ($activeSession = $activeSessions->fetch_assoc()) {
-      $activeSession["authentication"] = $i18n->formatDate($activeSession["authentication"], $this->user->timeZoneIdentifier, \IntlDateFormatter::SHORT, \IntlDateFormatter::SHORT);
+      $activeSession["authentication"] = $this->intl->formatDate($activeSession["authentication"], $this->user->timeZoneIdentifier, \IntlDateFormatter::SHORT, \IntlDateFormatter::SHORT);
       $activeSession["ip_address"]     = inet_ntop($activeSession["ip_address"]);
       $active                          = null;
 
@@ -119,8 +114,8 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
         "value" => $activeSession["id"],
       ];
       if ($activeSession["id"] == $session->id) {
-        $btnAttributes["title"] = $i18n->t("If you use this button all your active session will be terminated and you’ll be signe out!");
-        $btnText                = $i18n->t("Sign Out");
+        $btnAttributes["title"] = $this->intl->t("If you use this button all your active session will be terminated and you’ll be signe out!");
+        $btnText                = $this->intl->t("Sign Out");
       }
       else {
         $btnAttributes["title"] = $buttonTitle;
@@ -138,7 +133,7 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
     }
 
     $this->form                   = new Form($this);
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Delete"), [ "class" => "btn btn-large btn-danger" ]);
+    $this->form->actionElements[] = new InputSubmit($this->intl->t("Delete"), [ "class" => "btn btn-large btn-danger" ]);
   }
 
 
@@ -147,41 +142,34 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
 
   /**
    * @inhertidoc
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function getBreadcrumbs() {
-    global $i18n;
-    return [[ $i18n->r("/profile"), $i18n->t("Profile") ]];
+    return [[ $this->intl->r("/profile"), $this->intl->t("Profile") ]];
   }
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   protected function getPageContent() {
-    global $i18n, $kernel;
-    return
-
       // Session Form
-      "<h2>{$i18n->t("Active Sessions")}</h2>{$this->formSessions->open()}<table class='table-hover' id='profile-sessions'>" .
-        "<caption>{$i18n->t(
+      "<h2>{$this->intl->t("Active Sessions")}</h2>{$this->formSessions->open()}<table class='table-hover' id='profile-sessions'>" .
+        "<caption>{$this->intl->t(
           "The following table contains a listing of all your active sessions. You can terminate any session by " .
           "clicking on the button to the right. Your current session is highlighted with a yellow background color " .
           "and the button reads “sign out” instead of “terminate”. If you have the feeling that some sessions that are " .
           "listed weren’t initiated by you, terminate them and consider to {0}set a new password{1} to ensure that " .
           "nobody else has access to your account.",
-          [ "<a href='{$i18n->r("/profile/password-settings")}'>", "</a>" ]
-        )}</caption><thead><tr><th>{$i18n->t(
+          [ "<a href='{$this->intl->r("/profile/password-settings")}'>", "</a>" ]
+        )}</caption><thead><tr><th>{$this->intl->t(
           "Sign In Time"
-        )}</th><th>{$i18n->t(
+        )}</th><th>{$this->intl->t(
           "User Agent"
-        )}</th><th>{$i18n->t(
+        )}</th><th>{$this->intl->t(
           "IP address"
         )}</th><th></th></tr></thead><tbody>{$this->sessionsTable}</tbody></table>{$this->formSessions->close()}" .
 
       // Deletion Form
-      "<h2>{$i18n->t("Delete Account")}</h2><p>{$i18n->t(
+      "<h2>{$this->intl->t("Delete Account")}</h2><p>{$this->intl->t(
         "If you want to delete your account—for whatever reason—click the button below. All your personal data is " .
         "purged from our system and this action is final. Please note that all your contributions and your username " .
         "will stay in our system. You agreed to release all your contributions to the {0} database along with an " .
@@ -189,31 +177,27 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
         "stays with the username you’ve initially chosen. This doesn’t include any reviews of yours which have no " .
         "open license, they are deleted as well and lost forever. Again, this action is final and there’s no way for " .
         "you to reclaim your account after deletion!"
-      , [ $kernel->siteName ])}</p>{$this->form}"
+      , [ $this->config->siteName ])}</p>{$this->form}"
     ;
   }
 
   /**
    * Attempt to delete the session identified by the submitted session ID from Memcached and our persistent storage.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\User\Session $session
    * @return this
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   public function deleteSession() {
-    global $i18n, $session;
-
     // Nothing to do if we have no session ID.
     if (empty($_POST["session_id"])) {
-      $this->checkErrors($i18n->t("The submitted session ID was invalid."));
+      $this->checkErrors($this->intl->t("The submitted session ID was invalid."));
       return $this;
     }
 
     // Delete own session means sign out.
     if ($_POST["session_id"] == $session->id) {
       $session->destroy(true);
-      throw new SeeOtherRedirect($i18n->r("/profile/sign-in"));
+      throw new SeeOtherRedirect($this->intl->r("/profile/sign-in"));
     }
 
     // Delete the session from Memcached and our persistent storage.
@@ -224,12 +208,8 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   protected function valid() {
-    global $i18n, $kernel;
-
     // Send the email for verification of this action.
     $kernel->sendEmail(new Deletion($this->user));
 
@@ -238,15 +218,15 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
 
     // Let the user know where to find the instructions to complete the request.
     $this->alerts .= new Alert(
-      $i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->user->email) ]),
-      $i18n->t("Successfully Requested Deletion"),
+      $this->intl->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->user->email) ]),
+      $this->intl->t("Successfully Requested Deletion"),
       Alert::SEVERITY_SUCCESS
     );
 
     // Make sure the user really understand what to do.
     $this->alerts .= new Alert(
-      $i18n->t("You have to follow the link that we just sent to you via email to complete this action."),
-      $i18n->t("Important!"),
+      $this->intl->t("You have to follow the link that we just sent to you via email to complete this action."),
+      $this->intl->t("Important!"),
       Alert::SEVERITY_INFO
     );
 
@@ -256,19 +236,15 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
   /**
    * Validate the submitted authentication token and delete the user's account.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\User\Session $session
    * @return this
    */
   protected function validateToken() {
-    global $i18n, $kernel, $session;
     $tmp = new Temporary();
 
     if (($data = $tmp->get($_GET["token"])) === false || empty($data["user_id"]) || empty($data["deletion"])) {
       $kernel->alerts .= new Alert(
-        $i18n->t("Your confirmation token is invalid or expired, please fill out the form again."),
-        $i18n->t("Token Invalid"),
+        $this->intl->t("Your confirmation token is invalid or expired, please fill out the form again."),
+        $this->intl->t("Token Invalid"),
         Alert::SEVERITY_ERROR
       );
       throw new SeeOtherRedirect($kernel->requestPath);
@@ -277,8 +253,8 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
     if ($data["user_id"] !== $session->userId) {
       $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
       throw new Unauthorized(
-        $i18n->t("The confirmation token is invalid, please sign in again and request a new token."),
-        $i18n->t("Token Invalid"),
+        $this->intl->t("The confirmation token is invalid, please sign in again and request a new token."),
+        $this->intl->t("Token Invalid"),
         Alert::SEVERITY_ERROR,
         true
       );
@@ -290,8 +266,8 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
     $session->destroy();
 
     $kernel->alerts .= new Alert(
-      $i18n->t("Your account has been purged from our system. We’re very sorry to see you leave."),
-      $i18n->t("Account Deletion Successfull"),
+      $this->intl->t("Your account has been purged from our system. We’re very sorry to see you leave."),
+      $this->intl->t("Account Deletion Successfull"),
       Alert::SEVERITY_SUCCESS
     );
 

@@ -132,14 +132,12 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   /**
    * Instantiate new history model from given ID.
    *
-   * @global \MovLib\Kernel $kernel
    * @param int $id
    *   The id of the object to be versioned.
    * @param string $context [optional]
    *   The directory in which the repository is found.
    */
   public function __construct($id, $context = "history") {
-    global $kernel;
     $this->context = $context;
     $this->type = $this->getShortName();
     $this->id = $id;
@@ -153,15 +151,12 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   /**
    * Commit staged files.
    *
-   * @global \Movlib\Data\Session $session
    * @param string $message
    *   The commit message.
    * @return this
    * @throws \RuntimeException
    */
   private function commitFiles($message) {
-    global $session;
-
     if (empty($this->getDirtyFiles())) {
       throw new RuntimeException("No changed files to commit!", self::E_NOTHING_TO_COMMIT);
     }
@@ -434,12 +429,10 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   /**
    * Hide a repository.
    *
-   * @global \MovLib\Kernel $kernel
    * @return this
    * @throws \RuntimeException
    */
   private function hideRepository() {
-    global $kernel;
     $newPath = "{$kernel->documentRoot}/private/{$this->context}/{$this->type}/.{$this->id}";
     if (is_dir($newPath)) {
       throw new RuntimeException("Repository already hidden", self::E_REPOSITORY_IN_USE);
@@ -571,12 +564,10 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   /**
    * Unhide a repository.
    *
-   * @global \MovLib\Kernel $kernel
    * @return this
    * @throws \RuntimeException
    */
   private function unhideRepository() {
-    global $kernel;
     $newPath = "{$kernel->documentRoot}/private/{$this->context}/{$this->type}/{$this->id}";
     if (is_dir($newPath)) {
       throw new RuntimeException("Repository not hidden");

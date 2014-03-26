@@ -33,15 +33,13 @@ class Series extends \MovLib\Presentation\Person\AbstractBase {
   /**
    * Instantiate new person series presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
-    global $i18n;
     $this->person = new FullPerson((integer) $_SERVER["PERSON_ID"]);
-    $this->initPage($i18n->t("Series with {0}", [ $this->person->name ]));
-    $this->pageTitle        = $i18n->t("Series with {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
-    $this->breadcrumbTitle  = $i18n->t("Series");
+    $this->initPage($this->intl->t("Series with {0}", [ $this->person->name ]));
+    $this->pageTitle        = $this->intl->t("Series with {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
+    $this->breadcrumbTitle  = $this->intl->t("Series");
     $this->initLanguageLinks("/person/{0}/series", [ $this->person->id ], true);
     $this->initPersonBreadcrumb();
     $this->sidebarInit();
@@ -51,8 +49,7 @@ class Series extends \MovLib\Presentation\Person\AbstractBase {
    * @inheritdoc
    */
   protected function getPageContent() {
-    global $i18n;
-    return new \MovLib\Presentation\Partial\Alert($i18n->t("Not implemented yet."), null, \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Presentation\Partial\Alert($this->intl->t("Not implemented yet."), null, \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
   }
 
 }

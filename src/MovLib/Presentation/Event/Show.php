@@ -41,21 +41,17 @@ class Show extends \MovLib\Presentation\Event\AbstractBase {
   /**
    * Instantiate new event presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @throws \MovLib\Presentation\Error\NotFound
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   public function __construct() {
-    global $i18n, $kernel;
-
     $this->event = new Event((integer) $_SERVER["EVENT_ID"]);
     $this->award = new Award($this->event->awardId);
 
     $this->initPage($this->event->name);
     $this->initLanguageLinks("/event/{0}", [ $this->event->id ]);
     $this->initBreadcrumb([
-      [ $i18n->rp("/events"), $i18n->t("Events") ],
+      [ $this->intl->rp("/events"), $this->intl->t("Events") ],
     ]);
     $this->sidebarInit();
 
@@ -67,12 +63,8 @@ class Show extends \MovLib\Presentation\Event\AbstractBase {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   protected function getPageContent() {
-    global $i18n, $kernel;
-
     // Enhance the page title with microdata.
     $this->schemaType = "Intangible";
     $this->pageTitle  = "<span property='name'>{$this->event->name}</span>";
@@ -84,28 +76,28 @@ class Show extends \MovLib\Presentation\Event\AbstractBase {
     // Put the event information together.
     $info = null;
     if (($this->event->startDate && $this->event->endDate) && ($this->event->startDate != $this->event->endDate)) {
-      $info .= "{$i18n->t("from {0} to {1}", [
+      $info .= "{$this->intl->t("from {0} to {1}", [
         (new Date($this->event->startDate))->format(),
         (new Date($this->event->endDate))->format()
       ])} ";
     }
     else if ($this->event->startDate) {
-      $info .= "{$i18n->t("on {0}", [ (new Date($this->event->startDate))->format() ])} ";
+      $info .= "{$this->intl->t("on {0}", [ (new Date($this->event->startDate))->format() ])} ";
     }
     if ($this->event->place) {
       if ($info) {
         $info .= "<br>";
       }
-      $info .= $i18n->t("in {0}", [ new Place($this->event->place) ]);
+      $info .= $this->intl->t("in {0}", [ new Place($this->event->place) ]);
     }
-    $info   .= "<br>{$i18n->t("Award")}: <a href='{$this->award->route}'>{$this->award->name}</a>";
+    $info   .= "<br>{$this->intl->t("Award")}: <a href='{$this->award->route}'>{$this->award->name}</a>";
 
     // Construct the wikipedia link.
     if ($this->event->wikipedia) {
       if ($info) {
         $info .= "<br>";
       }
-      $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->event->wikipedia}' itemprop='sameAs' target='_blank'>{$i18n->t("Wikipedia Article")}</a>";
+      $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->event->wikipedia}' itemprop='sameAs' target='_blank'>{$this->intl->t("Wikipedia Article")}</a>";
     }
 
     $headerImage = $this->getImage($this->award->getStyle(Award::STYLE_SPAN_02), $this->award->route, [ "itemprop" => "image" ]);
@@ -120,7 +112,7 @@ class Show extends \MovLib\Presentation\Event\AbstractBase {
     // Description section
     if ($this->event->description) {
       $content .=
-        $this->getSection("description", $i18n->t("Description"), $this->htmlDecode($this->event->description))
+        $this->getSection("description", $this->intl->t("Description"), $this->htmlDecode($this->event->description))
       ;
     }
 
@@ -133,7 +125,7 @@ class Show extends \MovLib\Presentation\Event\AbstractBase {
         $hostname = str_replace("www.", "", parse_url($awardLinks[$i], PHP_URL_HOST));
         $links .= "<li class='mb10 s s10'><a href='{$awardLinks[$i]}' property='url' rel='nofollow' target='_blank'>{$hostname}</a></li>";
       }
-      $content .= $this->getSection("links", $i18n->t("External Links"), "<ul class='grid-list r'>{$links}</ul>");
+      $content .= $this->getSection("links", $this->intl->t("External Links"), "<ul class='grid-list r'>{$links}</ul>");
     }
 
     if ($content) {
@@ -141,8 +133,8 @@ class Show extends \MovLib\Presentation\Event\AbstractBase {
     }
 
     return new Alert(
-      $i18n->t("{sitename} has no further details about this award event.", [ "sitename"    => $kernel->siteName ]),
-      $i18n->t("No Data Available"),
+      $this->intl->t("{sitename} has no further details about this award event.", [ "sitename"    => $this->config->siteName ]),
+      $this->intl->t("No Data Available"),
       Alert::SEVERITY_INFO
     );
   }

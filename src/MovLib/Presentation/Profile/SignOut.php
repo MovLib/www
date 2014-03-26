@@ -34,22 +34,18 @@ class SignOut {
   /**
    * Instantiate new sign out presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\User\Session $session
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   public function __construct() {
-    global $i18n, $kernel, $session;
     if ($session->isAuthenticated === true) {
       $session->destroy(true);
       $kernel->alerts .= new Alert(
-        $i18n->t("We hope to see you again soon."),
-        $i18n->t("Sign Out Successfull"),
+        $this->intl->t("We hope to see you again soon."),
+        $this->intl->t("Sign Out Successfull"),
         Alert::SEVERITY_SUCCESS
       );
     }
-    throw new SeeOtherRedirect($i18n->r("/profile/sign-in"));
+    throw new SeeOtherRedirect($this->intl->r("/profile/sign-in"));
   }
 
 }

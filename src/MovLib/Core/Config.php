@@ -33,11 +33,19 @@ class Config {
 
 
   /**
-   * URI to the serialized configuration file.
+   * Document root relative path to the serialized configuration file.
    *
    * @var string
    */
-  const URI = "dr://etc/movlib/movlib.ser";
+  const PATH = "/etc/movlib/movlib.ser";
+
+  /**
+   * URI to the serialized configuration file.
+   *
+   * @todo We can reuse the PATH constant in PHP 5.6
+   * @var string
+   */
+  const URI = "dr:///etc/movlib/movlib.ser";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

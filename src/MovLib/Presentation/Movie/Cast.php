@@ -34,14 +34,12 @@ class Cast extends \MovLib\Presentation\Movie\AbstractBase {
   /**
    * Instantiate new movie cast presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
    */
   public function __construct() {
-    global $i18n;
     $this->movie = new FullMovie($_SERVER["MOVIE_ID"]);
-    $this->initPage($i18n->t("Cast"));
+    $this->initPage($this->intl->t("Cast"));
     $this->initBreadcrumb();
-    $this->pageTitle = $i18n->t(
+    $this->pageTitle = $this->intl->t(
       "Cast of {0}",
       [ "<a href='{$this->movie->route}' property='url'><span property='name'>{$this->movie->displayTitleWithYear}</span></a>" ]
     );
@@ -52,14 +50,12 @@ class Cast extends \MovLib\Presentation\Movie\AbstractBase {
   /**
    * @inheritdoc
    *
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function getPageContent() {
-    global $i18n;
     $this->schemaType = "Movie";
 
     $cast = new PersonCastListing($this->movie->getCast(), "actor");
-    return "<div id='cast'><h2>{$i18n->t("Cast")}</h2>{$cast}</div>";
+    return "<div id='cast'><h2>{$this->intl->t("Cast")}</h2>{$cast}</div>";
   }
 
 }

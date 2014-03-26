@@ -65,7 +65,6 @@ final class Nginx extends \MovLib\Console\Command\Install\AbstractInstallCommand
   /**
    * Download source files for compilation of nginx.
    *
-   * @global \MovLib\Tool\Kernel $kernel
    * @param array $paths
    *   Used to collect canonical absolute paths to the downloaded source files.
    * @param string $nginxVersion
@@ -77,7 +76,6 @@ final class Nginx extends \MovLib\Console\Command\Install\AbstractInstallCommand
    * @return this
    */
   protected function downloadSources(array &$paths, $nginxVersion, $opensslVersion, $pcreVersion) {
-    global $kernel;
     foreach ([
       "nginx"   => "http://nginx.org/download/nginx-{$nginxVersion}.tar.gz",
       "openssl" => "http://www.openssl.org/source/openssl-{$opensslVersion}.tar.gz",
@@ -110,13 +108,11 @@ final class Nginx extends \MovLib\Console\Command\Install\AbstractInstallCommand
   /**
    * Get the nginx configuration.
    *
-   * @global \MovLib\Tool\Kernel $kernel
    * @return \MovLib\Stub\Configuration\Nginx
    *   The global nginx configuration.
    * @throws \LogicException
    */
   protected function getConfiguration() {
-    global $kernel;
     if (empty($kernel->configuration->nginx)) {
       throw new \LogicException("Missing {$this->getName()} configuration in global configuration file!");
     }

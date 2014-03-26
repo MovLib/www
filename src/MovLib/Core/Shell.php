@@ -28,7 +28,7 @@ use \MovLib\Exception\ShellException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class Shell {
+final class Shell {
 
   /**
    * Execute external command.
@@ -36,7 +36,6 @@ abstract class Shell {
    * This method behaves the same as PHP's <code>exec()</code> function, the only differences are that it redirects
    * <i>stderr</i> to <i>stdin</i> and surpresses any output, even upon error. Instead of returning the last
    *
-   * @global \MovLib\Kernel $kernel
    * @param string $command
    *   The command to execute.
    * @param null|array $output [output]
@@ -51,7 +50,7 @@ abstract class Shell {
    *   The exit status code of the command.
    * @throws \MovLib\Exception\ShellException
    */
-  final public static function execute($command, &$output = null, $exception = true) {
+  public function execute($command, &$output = null, $exception = true) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($command) || !is_string($command)) {
@@ -104,7 +103,7 @@ abstract class Shell {
    *   The command to execute detached.
    * @throws \MovLib\Exception\ShellException
    */
-  final public static function executeDetached($command) {
+  public function executeDetached($command) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($command) || !is_string($command)) {
@@ -138,11 +137,10 @@ abstract class Shell {
    *   The actual return code of the command.
    * @throws \MovLib\Exception\ShellException
    */
-  final public static function executeDisplayOutput($command, $exception = true) {
+  public function executeDisplayOutput($command, $exception = true) {
     // @devStart
     // @codeCoverageIngoreStart
-    global $kernel;
-    if ($kernel->http) {
+    if (PHP_SAPI != "cli") {
       throw new \LogicException("Don't use the Shell::executeDisplayOutput() method in FastCGI context");
     }
     if (empty($command) || !is_string($command)) {

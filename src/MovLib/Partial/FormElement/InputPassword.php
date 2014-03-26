@@ -75,14 +75,12 @@ final class InputPassword extends \MovLib\Partial\FormElement\AbstractInput {
   /**
    * Get the input password form element.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The input text form element.
    */
   public function __toString() {
-    global $i18n;
     $this->attributes["pattern"] = self::PATTERN;
-    $this->attributes["title"]   = $i18n->t("A password must contain lowercase and uppercase letters, numbers, and must be at least {0,number,integer} characters long.", [ self::MIN_LENGTH ]);
+    $this->attributes["title"]   = $this->intl->t("A password must contain lowercase and uppercase letters, numbers, and must be at least {0,number,integer} characters long.", [ self::MIN_LENGTH ]);
     return parent::__toString();
   }
 
@@ -93,7 +91,6 @@ final class InputPassword extends \MovLib\Partial\FormElement\AbstractInput {
   /**
    * Validate the submitted raw password.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param string $rawPassword
    *   The user submitted raw password to validate.
    * @param mixed $errors
@@ -102,16 +99,14 @@ final class InputPassword extends \MovLib\Partial\FormElement\AbstractInput {
    *   The valid raw password.
    */
   protected function validateValue($rawPassword, &$errors) {
-    global $i18n;
-
     // Check that the password exceeds the minimum password length.
     if (mb_strlen($rawPassword) < self::MIN_LENGTH) {
-      $errors[self::ERROR_LENGTH] = $i18n->t("The password is too short: it must be {0,number,integer} characters or more.", [ self::MIN_LENGTH ]);
+      $errors[self::ERROR_LENGTH] = $this->intl->t("The password is too short: it must be {0,number,integer} characters or more.", [ self::MIN_LENGTH ]);
     }
 
     // Check that the password is complex enough.
     if (preg_match("/" . self::PATTERN . "/", $rawPassword) == false) {
-      $errors[self::ERROR_COMPLEXITY] = $i18n->t("The password is not complex enough: it must contain numbers plus lowercase and uppercase letters.");
+      $errors[self::ERROR_COMPLEXITY] = $this->intl->t("The password is not complex enough: it must contain numbers plus lowercase and uppercase letters.");
     }
 
     return $rawPassword;

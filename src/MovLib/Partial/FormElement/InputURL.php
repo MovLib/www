@@ -113,14 +113,12 @@ class InputURL extends \MovLib\Partial\FormElement\AbstractInput {
   /**
    * Get the input URL form element.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The input URL form element.
    */
   public function __toString() {
-    global $i18n;
     $this->attributes["pattern"] = self::PATTERN;
-    $this->attributes["title"]   = $i18n->t("The URL must start with either http:// or https:// and continue with a valid domain (username, password and port are not allowed)");
+    $this->attributes["title"]   = $this->intl->t("The URL must start with either http:// or https:// and continue with a valid domain (username, password and port are not allowed)");
     if (!isset($this->attributes["placeholder"])) {
       $this->attributes["placeholder"] = "http(s)://";
     }
@@ -134,8 +132,6 @@ class InputURL extends \MovLib\Partial\FormElement\AbstractInput {
   /**
    * Validate the submitted URL.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @param string $url
    *   The user submitted url to validate.
    * @param null|array $errors
@@ -144,12 +140,10 @@ class InputURL extends \MovLib\Partial\FormElement\AbstractInput {
    *   The valid URL.
    */
   protected function validateValue($url, &$errors) {
-    global $i18n, $kernel;
-
     // Split the URL into separate parts for easy validation and proper escaping. parse_url() returns FALSE if it fails,
     // but it's more or less close to impossible to reach that goal. Still, if it happens directly abort.
     if (($parts = parse_url($url)) === false) {
-      $errors[self::ERROR_MALFORMED] = $i18n->t("The URL is invalid.");
+      $errors[self::ERROR_MALFORMED] = $this->intl->t("The URL is invalid.");
       return $url;
     }
 
@@ -159,16 +153,16 @@ class InputURL extends \MovLib\Partial\FormElement\AbstractInput {
     // always pasting absolute URLs (e.g. with the placeholder attribute as you can see above in the getPresentation()
     // method).
     if (empty($parts["scheme"]) || empty($parts["host"])) {
-      $errors[self::ERROR_SCHEME_OR_HOST] = $i18n->t("Scheme (protocol) and host are mandatory in a URL.");
+      $errors[self::ERROR_SCHEME_OR_HOST] = $this->intl->t("Scheme (protocol) and host are mandatory in a URL.");
     }
     // Only HTTP and HTTPS are considered valid schemes.
     elseif ($parts["scheme"] != "http" && $parts["scheme"] != "https") {
-      $errors[self::ERROR_SCHEME] = $i18n->t("Scheme (protocol) must be of type HTTP or HTTPS.");
+      $errors[self::ERROR_SCHEME] = $this->intl->t("Scheme (protocol) must be of type HTTP or HTTPS.");
     }
     // Check for valid TLD.
     elseif (preg_match("/\.[a-z]{2,6}$/", $parts["host"]) == false) {
-      $errors[self::ERROR_TLD] = $i18n->t("The URL must have a valid {0}TLD{1}.", [
-        "<abbr title='{$i18n->t("Top-level domain")}'>",
+      $errors[self::ERROR_TLD] = $this->intl->t("The URL must have a valid {0}TLD{1}.", [
+        "<abbr title='{$this->intl->t("Top-level domain")}'>",
         "</abbr>",
       ]);
     }
@@ -180,13 +174,13 @@ class InputURL extends \MovLib\Partial\FormElement\AbstractInput {
 
     // Check if this is an external URL.
     if (strpos($parts["host"], $kernel->domainDefault) === false && isset($this->attributes["data-allow-external"]) && $this->attributes["data-allow-external"] != true) {
-      $errors[self::ERROR_EXTERNAL] = $i18n->t("External URLs are not allowed.");
+      $errors[self::ERROR_EXTERNAL] = $this->intl->t("External URLs are not allowed.");
     }
 
     // If any of the following parts is present the complete URL is considered invalid. No reputable website is
     // using non-standard ports, they simply wouldn't be accessible for the majority of surfers.
     if (isset($parts["port"]) || isset($parts["user"]) || isset($parts["pass"])) {
-      $errors[self::ERROR_PARTS] = $i18n->t("The URL contains illegal parts. Port, usernames and passwords are not allowed!");
+      $errors[self::ERROR_PARTS] = $this->intl->t("The URL contains illegal parts. Port, usernames and passwords are not allowed!");
     }
 
     // Don't bother rebuilding the URL if we the URL isn't valid.
@@ -218,7 +212,7 @@ class InputURL extends \MovLib\Partial\FormElement\AbstractInput {
 
       // And last but not least validate it again including all the optional parts.
       if (($issetQuery === true || $issetFragment === true) && filter_var($url, FILTER_VALIDATE_URL) === false) {
-        $errors[self::ERROR_MALFORMED] = $i18n->t("The URL is invalid.");
+        $errors[self::ERROR_MALFORMED] = $this->intl->t("The URL is invalid.");
       }
     }
     // No path at all, add a slash to ensure that the link points to the homepage.
@@ -246,7 +240,7 @@ class InputURL extends \MovLib\Partial\FormElement\AbstractInput {
       $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
       curl_close($ch);
       if ($code !== 200) {
-        $errors[self::ERROR_REACHABILITY] = $i18n->t("The URL doesn’t exists (more specifically isn’t reachable).");
+        $errors[self::ERROR_REACHABILITY] = $this->intl->t("The URL doesn’t exists (more specifically isn’t reachable).");
       }
     }
 

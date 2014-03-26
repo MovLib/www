@@ -141,14 +141,11 @@ class Event extends \MovLib\Data\Database {
   /**
    * Instantiate new award event.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param integer $id [optional]
    *   The award event's unique identifier, omit to create empty instance.
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct($id = null) {
-    global $db, $i18n;
     if ($id) {
       $query = self::getQuery();
       $stmt = $db->query("
@@ -190,8 +187,6 @@ class Event extends \MovLib\Data\Database {
  /**
    * Get all events matching the offset and row count.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param integer $offset
    *   The offset in the result.
    * @param integer $rowCount
@@ -201,7 +196,6 @@ class Event extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   public static function getEvents($offset, $rowCount) {
-    global $db, $i18n;
     $query = self::getQuery();
     return $db->query("
         {$query}
@@ -215,12 +209,10 @@ class Event extends \MovLib\Data\Database {
   /**
    * The count of movies connected to this award event.
    *
-   * @global \MovLib\Data\Database $db
    * @return integer
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMoviesCount() {
-    global $db;
     return $db->query(
       "SELECT count(DISTINCT `movie_id`) as `count` FROM `movies_awards` WHERE `award_event_id` = ?", "d", [ $this->id ]
     )->get_result()->fetch_assoc()["count"];
@@ -229,14 +221,11 @@ class Event extends \MovLib\Data\Database {
  /**
    * Get the mysqli result for all movies connected to this event.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return \mysqli_result
    *   The mysqli result for all movies connected to this event.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMoviesResult() {
-    global $db, $i18n;
     $result = $db->query(
       "SELECT
         `movies`.`id`,
@@ -308,14 +297,12 @@ class Event extends \MovLib\Data\Database {
   /**
    * Get the default query.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @staticvar string $query
    *   Used to cache the default query.
    * @return string
    *   The default query.
    */
   public static function getQuery() {
-    global $i18n;
     static $query = null;
     if (!$query) {
       $query =
@@ -341,13 +328,11 @@ class Event extends \MovLib\Data\Database {
   /**
    * Get random event identifier.
    *
-   * @global \MovLib\Data\Database $db
    * @return integer|null
    *   Random event identifier, or <code>NULL</code> on failure.
    * @throws \MovLib\Exception\DatabaseException
    */
   public static function getRandomEventId() {
-    global $db;
     $query = "SELECT `id` FROM `awards_events` WHERE `deleted` = false ORDER BY RAND() LIMIT 1";
     if ($result = $db->query($query)->get_result()) {
       return $result->fetch_assoc()["id"];
@@ -368,7 +353,6 @@ class Event extends \MovLib\Data\Database {
   /**
    * Get the total count of all events.
    *
-   * @global \MovLib\Data\Database $db
    * @staticvar null|integer $count
    *   The total amount of events which haven't been deleted.
    * @return integer
@@ -376,7 +360,6 @@ class Event extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   public static function getTotalCount() {
-    global $db;
     static $count = null;
     if (!$count) {
       $count = $db->query("SELECT COUNT(`id`) FROM `awards_events` WHERE `deleted` = false LIMIT 1")->get_result()->fetch_row()[0];
@@ -387,11 +370,8 @@ class Event extends \MovLib\Data\Database {
   /**
    * Initialize event.
    *
-   * @global type $i18n
    */
   protected function init() {
-    global $i18n;
-
     if ($this->place) {
       $this->place = new Place($this->place);
     }

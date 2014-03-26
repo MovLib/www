@@ -29,7 +29,7 @@ use \MovLib\Partial\Navigation;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
+abstract class AbstractPresenter {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -64,6 +64,13 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
   protected $breadcrumbTitle;
 
   /**
+   * Active global config instance.
+   *
+   * @var \MovLib\Core\Config
+   */
+  protected $config;
+
+  /**
    * HTML that should be included after the page's content.
    *
    * @var string
@@ -76,6 +83,20 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
    * @var string
    */
   protected $contentBefore;
+
+  /**
+   * The active dependency injection container.
+   *
+   * @var \MovLib\Core\HTTP\DIContainerHTTP
+   */
+  protected $diContainerHTTP;
+
+  /**
+   * Active file system instance.
+   *
+   * @var \MovLib\Core\FileSystem
+   */
+  protected $fs;
 
   /**
    * Additional elements for the <code><head></code> element.
@@ -121,11 +142,11 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
   public $id;
 
   /**
-   * Numeric array containing all JavaScript module names that should be loaded with this presentation.
+   * Active intl instance.
    *
-   * @var array
+   * @var \MovLib\Core\Intl
    */
-  public $javascripts = [];
+  protected $intl;
 
   /**
    * Settings to pass along with this presentation.
@@ -133,6 +154,20 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
    * @var array
    */
   public $javascriptSettings = [];
+
+  /**
+   * Numeric array containing all JavaScript module names that should be loaded with this presentation.
+   *
+   * @var array
+   */
+  public $javascripts = [];
+
+  /**
+   * Active kernel instance.
+   *
+   * @var \MovLib\Core\Kernel
+   */
+  protected $kernel;
 
   /**
    * The page's translated routes.
@@ -166,6 +201,27 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
   protected $schemaType;
 
   /**
+   * Active HTTP session instance.
+   *
+   * @var \MovLib\Core\HTTP\Session
+   */
+  protected $session;
+
+  /**
+   * Active HTTP request instance.
+   *
+   * @var \MovLib\Core\HTTP\Request
+   */
+  protected $request;
+
+  /**
+   * Active HTTP response instance.
+   *
+   * @var \MovLib\Core\HTTP\Response
+   */
+  protected $response;
+
+  /**
    * The site's name.
    *
    * @var string
@@ -193,12 +249,19 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
   /**
    * Instantiate new presenter object.
    *
-   * @param string $siteName
-   *   The site's name.
+   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   *   HTTP dependency injection container.
+   * @throws \Exception
    */
-  public function __construct($siteName) {
-    $this->siteName = $siteName;
-    $this->init();
+  final public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+    $this->diContainerHTTP = $diContainerHTTP;
+    $this->config          = $diContainerHTTP->config;
+    $this->fs              = $diContainerHTTP->fs;
+    $this->intl            = $diContainerHTTP->intl;
+    $this->kernel          = $diContainerHTTP->kernel;
+    $this->request         = $diContainerHTTP->request;
+    $this->response        = $diContainerHTTP->response;
+    $this->session         = $diContainerHTTP->session;
   }
 
 
@@ -206,24 +269,173 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
 
 
   /**
-   * Get the presentation's page content.
+   * Get the presentation.
    *
-   * @internal
-   *   The reference implementation doesn't add any breadcrumbs to the trail!
    * @return string
+   *   The presentation.
    */
-  abstract public function getContent();
+  abstract protected function getContent();
 
   /**
    * Initialize the presentation.
    *
    * @return this
    */
-  abstract protected function init();
+  abstract public function init();
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  /**
+   * Generate an internal link.
+   *
+   * This method should be used if you link to a page, but can't predict or know if this might be the page the user is
+   * currently viewing. We don't want any links within a document to itself, but there are various reasons why you might
+   * need that. Please use common sense. In general you should simply create the anchor element instead of calling this
+   * method.
+   *
+   * @link http://www.w3.org/TR/html5/text-level-semantics.html#the-a-element
+   * @link http://www.nngroup.com/articles/avoid-within-page-links/ Avoid Within-Page Links
+   * @param string $route
+   *   The original English route.
+   * @param string $text
+   *   The translated text that should appear as link on the page.
+   * @param array $attributes [optional]
+   *   Additional attributes that should be applied to the link element.
+   * @param boolean $ignoreQuery [optional]
+   *   Whether to ignore the query string while checking if the link should be marked active or not. Default is to
+   *   ignore the query string.
+   * @return string
+   *   The internal link ready for print.
+   */
+  final public function a($route, $text, array $attributes = null, $ignoreQuery = true) {
+    // We don't want any links to the current page (as per W3C recommendation). We also have to ensure that the anchors
+    // aren't tabbed to, therefor we completely remove the href attribute. While we're at it we also remove the title
+    // attribute because it doesn't add any value for screen readers without any target (plus the user is actually on
+    // this very page).
+    if ($route == $this->request->uri) {
+      // Remove all attributes which aren't allowed on an anchor with empty href attribute.
+      $unset = [ "download", "href", "hreflang", "rel", "target", "type" ];
+      for ($i = 0; $i < 6; ++$i) {
+        if (isset($attributes[$unset[$i]])) {
+          unset($attributes[$unset[$i]]);
+        }
+      }
+      // Ensure that this anchor is still "tabable".
+      $attributes["tabindex"] = "0";
+      $attributes["title"]    = $this->intl->t("You’re currently viewing this page.");
+      $this->addClass("active", $attributes);
+    }
+    else {
+      // We also have to mark the current anchor as active if the caller requested that we ignore the query part of the
+      // URI (default behaviour of this method). We keep the title attribute in this case as it's a clickable link.
+      if ($ignoreQuery === true && $route == $this->request->path) {
+        $this->addClass("active", $attributes);
+      }
+
+      // Add the route to the anchor element.
+      $attributes["href"] = $this->fs->urlEncodePath($route);
+    }
+
+    // Put it all together.
+    return "<a{$this->expandTagAttributes($attributes)}>{$text}</a>";
+  }
+
+  /**
+   * Add CSS class(es) to attributes array of an element.
+   *
+   * This method is useful if you're dealing with an element and you don't know if any CSS class(es) have already been
+   * added to it's attributes array.
+   *
+   * @param string $class
+   *   The CSS class(es) that should be added to the element's attributes array.
+   * @param array $attributes [optional]
+   *   The attributes array of the element to which the CSS class(es) should be added.
+   * @return this
+   */
+  final public function addClass($class, array &$attributes = null) {
+    $attributes["class"] = empty($attributes["class"]) ? $class : "{$attributes["class"]} {$class}";
+    return $this;
+  }
+
+  /**
+   * Collapse all kinds of whitespace characters to a single space.
+   *
+   * @param string $string
+   *   The string to collapse.
+   * @return string
+   *   The collapsed string.
+   */
+  final public function collapseWhitespace($string) {
+    return trim(preg_replace("/\s\s+/m", " ", preg_replace("/[\n\r\t\x{00}\x{0B}]+/m", " ", $string)));
+  }
+
+  /**
+   * Expand the given attributes array to string.
+   *
+   * Many page elements aren't easily created by directly typing the string in the source code. Instead the have to go
+   * through many staged of processing. We use associative arrays to allow all stages of processing to alter the
+   * elemtns attributes before the element is finally printed. This method will expand these associative arrays to a
+   * string that can be used to finally print the element.
+   *
+   * <b>Usage Example:</b>
+   * <pre>$attributes = [ "class" => "css-class", "id" => "css-id" ];
+   * echo "<div{$this->expandAttributes($attributes)}></div>";</pre>
+   *
+   * @param null|array $attributes
+   *   Associative array containing the elements attributes. If no attributes are present (e.g. you're handling an
+   *   object which sometimes has attributes but not always) an empty string will be returned.
+   * @return string
+   *   String representation of the attributes array, or empty string if no attributes are present.
+   */
+  final public function expandTagAttributes($attributes) {
+    // Only expand if we have something to expand.
+    if ($attributes) {
+      // Local variables used to collect the expanded tag attributes.
+      $expanded = null;
+
+      // Go through all attributes and expand them.
+      foreach ($attributes as $name => $value) {
+        // Special handling of boolean attributes, only include them if they are true and do not include the value.
+        if ($value === (boolean) $value) {
+          $value && ($expanded .= " {$name}");
+        }
+        // Special handling of empty attributes (added to the attributes array without any key).
+        elseif ($name === (integer) $name) {
+          // @devStart
+          // @codeCoverageIgnoreStart
+          if (empty($value)) {
+            throw new \LogicException("The value of an empty attribute (numeric key) cannot be empty");
+          }
+          // @codeCoverageIgnoreEnd
+          // @devEnd
+          $expanded .= " {$value}";
+        }
+        // All other attributes are treated equally, but only if they have a value. But beware that the alt attribute
+        // is an exception to this rule.
+        elseif ($name == "alt" || !empty($value)) {
+          // @devStart
+          // @codeCoverageIgnoreStart
+          if (empty($name)) {
+            throw new \LogicException("An attribute's name cannot be empty");
+          }
+          // @codeCoverageIgnoreEnd
+          // @devEnd
+
+          // Only output the language attribute if it differs from the current document language.
+          if ($name == "lang") {
+            $expanded .= $this->lang($value);
+          }
+          else {
+            $expanded .= " {$name}='{$this->htmlEncode($value)}'";
+          }
+        }
+      }
+
+      return $expanded;
+    }
+  }
 
   /**
    * Get the external URL of the given URI.
@@ -245,18 +457,16 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
       // @devEnd
       $scheme = explode($uri, "://", 2)[0];
       if (empty($streamWrappers[$scheme])) {
-        /* @var $fs \MovLib\Core\FileSystem */
-        global $fs;
-        $streamWrappers[$scheme] = $fs->getStreamWrapper($uri);
+        $streamWrappers[$scheme] = $this->fs->getStreamWrapper($uri);
       }
       // @devStart
       // @codeCoverageIgnoreStart
-      if (empty($streamWrappers[$scheme]) || !method_exists($streamWrappers[$scheme], "getExternalURL")) {
+      if (empty($streamWrappers[$scheme]) || !method_exists($streamWrappers[$scheme], "getExternalPath")) {
         throw new \LogicException("There is not external URL available for your URI '{$uri}'.");
       }
       // @codeCoverageIgnoreEnd
       // @devEnd
-      $uris[$uri] = $streamWrappers[$scheme]->getExternalURL($uri);
+      $uris[$uri] = $streamWrappers[$scheme]->getExternalPath($this->fs, $uri);
     }
     return $uris[$uri];
   }
@@ -264,47 +474,43 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
   /**
    * Get the reference footer.
    *
-   * @global \MovLib\Core\Config $config
-   * @global \MovLib\Core\I18n $i18n
    * @return string
    *   The reference footer.
    */
-  public function getFooter() {
-    global $config, $i18n;
-
+  protected function getFooter() {
     // Only build the language links if we have routes to build them. For example the internal server error page doesn't
     // need language links ;)
     if ($this->languageLinks) {
-      $languages     = $i18n->getTranslations("languages");
+      $languages     = $this->intl->getTranslations("languages");
       $languageLinks = $currentLanguageName = $teamOffset = null;
       foreach ($this->languageLinks as $code => $route) {
         $language = $languages[$code];
-        if ($code == $i18n->languageCode) {
+        if ($code == $this->intl->languageCode) {
           $currentLanguageName = $language->name;
           $languageLinks[$language->name] =
-            "<a class='active' href='{$route}' tabindex='0' title='{$i18n->t("You’re currently viewing this page.")}'>{$language->name}</a>"
+            "<a class='active' href='{$route}' tabindex='0' title='{$this->intl->t("You’re currently viewing this page.")}'>{$language->name}</a>"
           ;
         }
         else {
           $languageLinks[$language->name] =
-            "<a href='//{$code}.{$config->hostname}{$route}'>{$i18n->t("{0} ({1})", [
+            "<a href='//{$code}.{$this->config->hostname}{$route}'>{$this->intl->t("{0} ({1})", [
               $language->name, "<span lang='{$language->code}'>{$language->native}</span>"
             ])}</a>"
           ;
         }
       }
 
-      $i18n->getCollator()->ksort($languageLinks);
+      $this->intl->getCollator()->ksort($languageLinks);
       $languageLinks = implode(" ", $languageLinks);
 
       $languageLinks =
         "<section class='last s s4'>" .
           "<div class='popup'>" .
-            "<div class='content'><h2>{$i18n->t("Choose your language")}</h2><small>{$i18n->t(
+            "<div class='content'><h2>{$this->intl->t("Choose your language")}</h2><small>{$this->intl->t(
               "Is your language missing in our list? {0}Help us translate {sitename}.{1}",
-              [ "<a href='{$i18n->r("/localize")}'>", "</a>", "sitename" => $this->siteName ]
+              [ "<a href='{$this->intl->r("/localize")}'>", "</a>", "sitename" => $this->config->siteName ]
             )}</small>{$languageLinks}</div>" .
-            "<a class='ico ico-languages' id='f-language' tabindex='0'>{$i18n->t("Language")}: {$currentLanguageName}</a>" .
+            "<a class='ico ico-languages' id='f-language' tabindex='0'>{$this->intl->t("Language")}: {$currentLanguageName}</a>" .
           "</div>" .
         "</section>"
       ;
@@ -317,19 +523,19 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
 
     return
       "<footer id='f' role='contentinfo'>" .
-        "<h1 class='vh'>{$i18n->t("Infos all around {sitename}", [ "sitename" => $this->siteName ])}</h1>" .
+        "<h1 class='vh'>{$this->intl->t("Infos all around {sitename}", [ "sitename" => $this->config->siteName ])}</h1>" .
         "<div class='c'><div class='r'>" .
           "<section class='s s12'>" .
-            "<h3 class='vh'>{$i18n->t("Copyright and licensing information")}</h3>" .
-            "<p id='f-copyright'><span class='ico ico-cc'></span> <span class='ico ico-cc-zero'></span> {$i18n->t(
+            "<h3 class='vh'>{$this->intl->t("Copyright and licensing information")}</h3>" .
+            "<p id='f-copyright'><span class='ico ico-cc'></span> <span class='ico ico-cc-zero'></span> {$this->intl->t(
               "Database data is available under the {0}Creative Commons — CC0 1.0 Universal{1} license.",
-              [ "<a href='https://creativecommons.org/publicdomain/zero/1.0/deed.{$i18n->languageCode}' rel='license'>", "</a>" ]
-            )}<br>{$i18n->t(
+              [ "<a href='https://creativecommons.org/publicdomain/zero/1.0/deed.{$this->intl->languageCode}' rel='license'>", "</a>" ]
+            )}<br>{$this->intl->t(
               "Additional terms may apply for third-party content, please refer to any license or copyright information that is additionaly stated."
             )}</p>" .
           "</section>" .
           "<section id='f-logos' class='s s12 tac'>" .
-            "<h3 class='vh'>{$i18n->t("Sponsors and external resources")}</h3>" .
+            "<h3 class='vh'>{$this->intl->t("Sponsors and external resources")}</h3>" .
             "<a class='no-link' href='http://www.fh-salzburg.ac.at/' target='_blank'>" .
               "<img alt='Fachhochschule Salzburg' height='30' src='{$this->getExternalURL("asset://img/footer/fachhochschule-salzburg.svg")}' width='48'>" .
             "</a>" .
@@ -338,14 +544,14 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
             "</a>" .
           "</section>" .
           $languageLinks .
-          "<section id='f-team' class='last{$teamOffset} s s4 tac'><h3>{$this->a($i18n->r("/team"), $i18n->t("Made with {love} in Austria", [
-            "love" => "<span class='ico ico-heart'></span><span class='vh'>{$i18n->t("love")}</span>"
+          "<section id='f-team' class='last{$teamOffset} s s4 tac'><h3>{$this->a($this->intl->r("/team"), $this->intl->t("Made with {love} in Austria", [
+            "love" => "<span class='ico ico-heart'></span><span class='vh'>{$this->intl->t("love")}</span>"
           ]))}</h3></section>" .
           "<section class='last s s4 tar'>" .
-            "<h3 class='vh'>{$i18n->t("Legal Links")}</h3>" .
-            "{$this->a($i18n->r("/impressum"), $i18n->t("Impressum"))} · " .
-            "{$this->a($i18n->r("/privacy-policy"), $i18n->t("Privacy Policy"))} · " .
-            "{$this->a($i18n->r("/terms-of-use"), $i18n->t("Terms of Use"))}" .
+            "<h3 class='vh'>{$this->intl->t("Legal Links")}</h3>" .
+            "{$this->a($this->intl->r("/impressum"), $this->intl->t("Impressum"))} · " .
+            "{$this->a($this->intl->r("/privacy-policy"), $this->intl->t("Privacy Policy"))} · " .
+            "{$this->a($this->intl->r("/terms-of-use"), $this->intl->t("Terms of Use"))}" .
           "</section>" .
         "</div>" .
       "</div></footer>"
@@ -355,27 +561,22 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
   /**
    * Get the reference header, including logo, navigations and search form.
    *
-   * @global \MovLib\Core\I18n $i18n
-   * @global \MovLib\Core\HTTP\Request $request
-   * @global \MovLib\Core\HTTP\Session $session
    * @return string
    *   The reference header.
    */
-  public function getHeader() {
-    global $i18n, $request, $session;
-
+  protected function getHeader() {
     $exploreNavigation =
       "<ul class='o1 sm2 no-list'>" .
-        "<li>{$this->a($i18n->rp("/movies"), $i18n->t("Movies"), [ "class" => "ico ico-movie" ])}</li>" .
-        "<li>{$this->a($i18n->rp("/series"), $i18n->t("Series"), [ "class" => "ico ico-series" ])}</li>" .
-        "<li>{$this->a($i18n->rp("/releases"), $i18n->t("Releases"), [ "class" => "ico ico-release" ])}</li>" .
-        "<li>{$this->a($i18n->rp("/persons"), $i18n->t("Persons"), [ "class" => "ico ico-person" ])}</li>" .
-        "<li>{$this->a($i18n->rp("/companies"), $i18n->t("Companies"), [ "class" => "ico ico-company" ])}</li>" .
-        "<li>{$this->a($i18n->rp("/awards"), $i18n->t("Awards"), [ "class" => "ico ico-award" ])}</li>" .
-        "<li>{$this->a($i18n->rp("/events"), $i18n->t("Events"), [ "class" => "ico ico-event" ])}</li>" .
-        "<li>{$this->a($i18n->rp("/genres"), $i18n->t("Genres"), [ "class" => "ico ico-genre" ])}</li>" .
-        "<li>{$this->a($i18n->rp("/jobs"), $i18n->t("Jobs"), [ "class" => "ico ico-job" ])}</li>" .
-        "<li class='separator'>{$this->a($i18n->r("/help"), $i18n->t("Help"), [ "class" => "ico ico-help" ])}</li>" .
+        "<li>{$this->a($this->intl->rp("/movies"), $this->intl->t("Movies"), [ "class" => "ico ico-movie" ])}</li>" .
+        "<li>{$this->a($this->intl->rp("/series"), $this->intl->t("Series"), [ "class" => "ico ico-series" ])}</li>" .
+        "<li>{$this->a($this->intl->rp("/releases"), $this->intl->t("Releases"), [ "class" => "ico ico-release" ])}</li>" .
+        "<li>{$this->a($this->intl->rp("/persons"), $this->intl->t("Persons"), [ "class" => "ico ico-person" ])}</li>" .
+        "<li>{$this->a($this->intl->rp("/companies"), $this->intl->t("Companies"), [ "class" => "ico ico-company" ])}</li>" .
+        "<li>{$this->a($this->intl->rp("/awards"), $this->intl->t("Awards"), [ "class" => "ico ico-award" ])}</li>" .
+        "<li>{$this->a($this->intl->rp("/events"), $this->intl->t("Events"), [ "class" => "ico ico-event" ])}</li>" .
+        "<li>{$this->a($this->intl->rp("/genres"), $this->intl->t("Genres"), [ "class" => "ico ico-genre" ])}</li>" .
+        "<li>{$this->a($this->intl->rp("/jobs"), $this->intl->t("Jobs"), [ "class" => "ico ico-job" ])}</li>" .
+        "<li class='separator'>{$this->a($this->intl->r("/help"), $this->intl->t("Help"), [ "class" => "ico ico-help" ])}</li>" .
       "</ul>"
     ;
 
@@ -388,34 +589,34 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
 
     $communityNavigation =
       "<ul class='o1 sm2 no-list'>" .
-        "<li>{$this->a($i18n->rp("/users"), $i18n->t("Explore Users"), [ "class" => "ico ico-person" ])}</li>" .
-        "<li class='separator'>{$this->a($i18n->rp("/deletion-requests"), $i18n->t("Deletion Requests"), [ "class" => "ico ico-delete" ])}</li>" .
+        "<li>{$this->a($this->intl->rp("/users"), $this->intl->t("Explore Users"), [ "class" => "ico ico-person" ])}</li>" .
+        "<li class='separator'>{$this->a($this->intl->rp("/deletion-requests"), $this->intl->t("Deletion Requests"), [ "class" => "ico ico-delete" ])}</li>" .
       "</ul>"
     ;
 
-    if ($session->isAuthenticated === true) {
-      $userIcon = "<div class='clicker ico ico-settings authenticated'>{$this->getImage($session->userAvatar, false)}<span class='badge'>2</span></div>";
+    if ($this->session->isAuthenticated === true) {
+      $userIcon = "<div class='clicker ico ico-settings authenticated'>{$this->getImage($this->session->userAvatar, false)}<span class='badge'>2</span></div>";
       $userNavigation =
         "<ul class='o1 sm2 no-list'>" .
-          "<li>{$this->a($i18n->r("/profile/messages"), $i18n->t("Messages"), [ "class" => "ico ico-email" ])}</li>" .
-          "<li>{$this->a($i18n->r("/profile/collection"), $i18n->t("Collection"), [ "class" => "ico ico-release" ])}</li>" .
-          "<li>{$this->a($i18n->r("/profile/wantlist"), $i18n->t("Wantlist"), [ "class" => "ico ico-heart" ])}</li>" .
-          "<li>{$this->a($i18n->r("/profile/lists"), $i18n->t("Lists"), [ "class" => "ico ico-ul" ])}</li>" .
-          "<li>{$this->a($i18n->r("/profile/watchlist"), $i18n->t("Watchlist"), [ "class" => "ico ico-view" ])}</li>" .
-          "<li class='separator'>{$this->a($i18n->r("/profile"), $i18n->t("Profile"), [ "class" => "ico ico-user" ])}</li>" .
-          "<li>{$this->a($i18n->r("/profile/account-settings"), $i18n->t("Settings"), [ "class" => "ico ico-settings" ])}</li>" .
-          "<li class='separator name'>{$session->userName}</li>" .
-          "<li>{$this->a($i18n->r("/profile/sign-out"), $i18n->t("Sign Out"), [ "class" => "danger" ])}</li>" .
+          "<li>{$this->a($this->intl->r("/profile/messages"), $this->intl->t("Messages"), [ "class" => "ico ico-email" ])}</li>" .
+          "<li>{$this->a($this->intl->r("/profile/collection"), $this->intl->t("Collection"), [ "class" => "ico ico-release" ])}</li>" .
+          "<li>{$this->a($this->intl->r("/profile/wantlist"), $this->intl->t("Wantlist"), [ "class" => "ico ico-heart" ])}</li>" .
+          "<li>{$this->a($this->intl->r("/profile/lists"), $this->intl->t("Lists"), [ "class" => "ico ico-ul" ])}</li>" .
+          "<li>{$this->a($this->intl->r("/profile/watchlist"), $this->intl->t("Watchlist"), [ "class" => "ico ico-view" ])}</li>" .
+          "<li class='separator'>{$this->a($this->intl->r("/profile"), $this->intl->t("Profile"), [ "class" => "ico ico-user" ])}</li>" .
+          "<li>{$this->a($this->intl->r("/profile/account-settings"), $this->intl->t("Settings"), [ "class" => "ico ico-settings" ])}</li>" .
+          "<li class='separator name'>{$this->session->userName}</li>" .
+          "<li>{$this->a($this->intl->r("/profile/sign-out"), $this->intl->t("Sign Out"), [ "class" => "danger" ])}</li>" .
         "</ul>" .
-        $this->getImage($session->userAvatar, $i18n->r("/profile"));
+        $this->getImage($this->session->userAvatar, $this->intl->r("/profile"));
     }
     else {
       $userIcon = "<div class='btn btn-inverse clicker ico ico-user-add'></div>";
       $userNavigation =
         "<ul class='o1 sm2 no-list'>" .
-          "<li>{$this->a($i18n->r("/profile/sign-in"), $i18n->t("Sign In"))}</li>" .
-          "<li>{$this->a($i18n->r("/profile/join"), $i18n->t("Join"))}</li>" .
-          "<li>{$this->a($i18n->r("/profile/reset-password"), $i18n->t("Forgot Password"))}</li>" .
+          "<li>{$this->a($this->intl->r("/profile/sign-in"), $this->intl->t("Sign In"))}</li>" .
+          "<li>{$this->a($this->intl->r("/profile/join"), $this->intl->t("Join"))}</li>" .
+          "<li>{$this->a($this->intl->r("/profile/reset-password"), $this->intl->t("Forgot Password"))}</li>" .
         "</ul>"
       ;
     }
@@ -427,38 +628,38 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
         // wants us to use multiple <h1>s for multiple sections, so here we go. The header is always the MovLib header.
         "<h1 class='s s3'>{$this->a(
           "/",
-          "<img alt='' height='42' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='42'> {$this->siteName}",
-          [ "id" => "l", "title" => $i18n->t("Go back to the home page.") ]
+          "<img alt='' height='42' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='42'> {$this->config->siteName}",
+          [ "id" => "l", "title" => $this->intl->t("Go back to the home page.") ]
         )}</h1>" .
         "<div class='s s9'>" .
           "<nav aria-expanded='false' aria-haspopup='true' class='expander main-nav' id='explore-nav' role='navigation' tabindex='0'>" .
-            "<h2 class='visible clicker'>{$i18n->t("Explore")}</h2>" .
+            "<h2 class='visible clicker'>{$this->intl->t("Explore")}</h2>" .
             "<div class='concealed s sm3'>" .
               $exploreNavigation .
             "</div>" .
           "</nav>" .
           "<nav aria-expanded='false' aria-haspopup='true' class='expander main-nav' id='marketplace-nav' role='navigation' tabindex='0'>" .
-            "<h2 class='visible clicker'>{$i18n->t("Marketplace")}</h2>" .
+            "<h2 class='visible clicker'>{$this->intl->t("Marketplace")}</h2>" .
             "<div class='concealed s sm3'>" .
               $marketplaceNavigation .
             "</div>" .
           "</nav>" .
           "<nav aria-expanded='false' aria-haspopup='true' class='expander main-nav' id='community-nav' role='navigation' tabindex='0'>" .
-            "<h2 class='visible clicker'>{$i18n->t("Community")}</h2>" .
+            "<h2 class='visible clicker'>{$this->intl->t("Community")}</h2>" .
             "<div class='concealed s sm3'>" .
               $communityNavigation .
             "</div>" .
           "</nav>" .
-          "<form action='{$i18n->r("/search")}' class='s' id='s' method='get' role='search'>" .
-            "<button class='ico ico-search' tabindex='2' type='submit'><span class='vh'>{$i18n->t(
+          "<form action='{$this->intl->r("/search")}' class='s' id='s' method='get' role='search'>" .
+            "<button class='ico ico-search' tabindex='2' type='submit'><span class='vh'>{$this->intl->t(
               "Start searching for the entered keyword."
             )}</span></button>" .
-            "<input name='q' required tabindex='1' title='{$i18n->t(
+            "<input name='q' required tabindex='1' title='{$this->intl->t(
               "Enter the search term you wish to search for and hit enter."
-            )}' type='search' value='{$request->getQuery("q")}'>" .
+            )}' type='search' value='{$this->request->getQuery("q")}'>" .
           "</form>" .
           "<nav aria-expanded='false' aria-haspopup='true' class='expander main-nav' id='user-nav' role='navigation' tabindex='0'>" .
-            "<h2 class='vh'>{$i18n->t("User Navigation")}</h2>{$userIcon}" .
+            "<h2 class='vh'>{$this->intl->t("User Navigation")}</h2>{$userIcon}" .
             "<div class='concealed s sm3'>{$userNavigation}</div>" .
           "</nav>" .
         "</div>" .
@@ -472,14 +673,11 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
    * Formats the title of this page for the <code><title></code>-element. A special separator string is used before
    * appending the sitename.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @return string
    *   The head title.
    */
   protected function getHeadTitle() {
-    global $config, $i18n;
-    return $i18n->t("{page_title} — {sitename}", [ "page_title" => $this->title, "sitename" => $this->siteName ]);
+    return $this->intl->t("{page_title} — {sitename}", [ "page_title" => $this->title, "sitename" => $this->config->siteName ]);
   }
 
   /**
@@ -495,15 +693,9 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
    * <i>getPresentation() must not throw an exception</i> message would be displayed (fatal error of course, so you get
    * nothing).
    *
-   * @global \MovLib\Core\Config $config
-   * @global \MovLib\Core\I18n $i18n
-   * @global \MovLib\Core\Request $request
-   * @global \MovLib\Core\Session $session
    * @return string
    */
   public function getPresentation() {
-    global $config, $i18n, $request, $session;
-
     // Allow the presentation to alter presentation in getContent() method.
     $content = $this->getMainContent($this->getContent());
 
@@ -515,19 +707,19 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
     }
 
     // Apply additional CSS class if the current request is made from a signed in user.
-    if ($session->isAuthenticated === true) {
+    if ($this->session->isAuthenticated === true) {
       $this->bodyClasses .= " authenticated";
     }
 
     // Build the JavaScript settings JSON.
-    $this->javascriptSettings["hostnameStatic"] = $config->hostnameStatic;
+    $this->javascriptSettings["hostnameStatic"] = $this->config->hostnameStatic;
     $c = count($this->javascripts);
     for ($i = 0; $i < $c; ++$i) {
       $this->javascriptSettings["modules"][$this->javascripts[$i]] = $this->getExternalURL("asset://js/module/{$this->javascripts[$i]}.js");
     }
     $jsSettings = json_encode($this->javascriptSettings, JSON_UNESCAPED_UNICODE);
 
-    $htmlAttr = " dir='{$i18n->direction}' id='nojs' lang='{$i18n->languageCode}' prefix='og: http://ogp.me/ns#'";
+    $htmlAttr = " dir='{$this->intl->direction}' id='nojs' lang='{$this->intl->languageCode}' prefix='og: http://ogp.me/ns#'";
     $logo256  = $this->getExternalURL("asset://img/logo/256.png");
     $title    = $this->getHeadTitle();
 
@@ -549,15 +741,15 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
         "<link href='{$this->getExternalURL("asset://img/logo/24.png")}' rel='icon' sizes='24x24' type='image/png'>" .
         "<link href='{$this->getExternalURL("asset://img/logo/16.png")}' rel='icon' sizes='16x16' type='image/png'>" .
         "<link href='https://plus.google.com/115387876584819891316?rel=publisher' property='publisher'>" .
-        "<meta property='og:description' content='{$i18n->t("The free online movie database that anyone can edit.")}'>" .
-        "<meta property='og:image' content='{$request->scheme}:{$logo256}'>" .
-        "<meta property='og:site_name' content='{$this->siteName}'>" .
+        "<meta property='og:description' content='{$this->intl->t("The free online movie database that anyone can edit.")}'>" .
+        "<meta property='og:image' content='{$this->request->scheme}:{$logo256}'>" .
+        "<meta property='og:site_name' content='{$this->config->siteName}'>" .
         "<meta property='og:title' content='{$title}'>" .
         "<meta property='og:type' content='website'>" .
-        "<meta property='og:url' content='{$request->scheme}://{$config->hostname}{$request->uri}'>" .
-        "<meta name='application-name' content='{$this->siteName}'>" .
-        "<meta name='msapplication-tooltip' content='{$config->siteSlogan}'>" .
-        "<meta name='msapplication-starturl' content='{$request->scheme}://{$config->hostname}/'>" .
+        "<meta property='og:url' content='{$this->request->scheme}://{$this->config->hostname}{$this->request->uri}'>" .
+        "<meta name='application-name' content='{$this->config->siteName}'>" .
+        "<meta name='msapplication-tooltip' content='{$this->config->siteSlogan}'>" .
+        "<meta name='msapplication-starturl' content='{$this->request->scheme}://{$this->config->hostname}/'>" .
         "<meta name='msapplication-navbutton-color' content='#ffffff'>" .
         // @todo Add opensearch tag (rel="search").
         $this->headElements .
@@ -570,23 +762,81 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
   }
 
   /**
+   * Get the raw HTML string.
+   *
+   * @param string $text
+   *   The encoded HTML string that should be decoded.
+   * @return string
+   *   The raw HTML string.
+   */
+  final public function htmlDecode($text) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($text) || !is_string($text)) {
+      throw new \InvalidArgumentException("\$text cannot be empty and must be of type string.");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    return htmlspecialchars_decode($text, ENT_QUOTES | ENT_HTML5);
+  }
+
+  /**
+   * Decodes all HTML entities including numerical ones to regular UTF-8 bytes.
+   *
+   * Double-escaped entities will only be decoded once (<code>"&amp;lt;"</code> becomes <code>"&lt;"</code>, not
+   * <code>"<"</code>). Be careful when using this function, as it will revert previous sanitization efforts
+   * (<code>"&lt;script&gt;"</code> will become <code>"<script>"</code>).
+   *
+   * @param string $text
+   *   The text to decode entities in.
+   * @return string
+   *   <var>$text</var> with all HTML entities decoded.
+   */
+  final public function htmlDecodeEntities($text) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($text) || !is_string($text)) {
+      throw new \InvalidArgumentException("\$text cannot be empty and must be of type string.");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    return html_entity_decode($text, ENT_QUOTES | ENT_HTML5);
+  }
+
+  /**
+   * Encode special characters in a plain-text string for display as HTML.
+   *
+   * <b>Always</b> use this method before displaying any plain-text string to the user.
+   *
+   * @param string $text
+   *   The plain-text string to process.
+   * @return string
+   *   <var>$text</var> with encoded HTML special characters.
+   */
+  final public function htmlEncode($text) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($text) || !(is_string($text) || is_numeric($text))) {
+      throw new \InvalidArgumentException("\$text cannot be empty and must be of type string.");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    return htmlspecialchars($text, ENT_QUOTES | ENT_HTML5);
+  }
+
+  /**
    * Get the wrapped content, including heading.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Core\HTTP\Request $request
-   * @return string
-   *   The wrapped content, including heading.
+   * @param string $content
+   *   The presentation's content.
    */
-  public function getMainContent($content) {
-    global $i18n, $kernel, $request;
-
+  protected function getMainContent($content) {
     // Allow the presentation to set a heading that includes HTML mark-up.
     $title = $this->pageTitle ?: $this->title;
 
     // Add the current page to the breadcrumb.
     if ($this->breadcrumb) {
-      $this->breadcrumb->menuitems[] = [ $request->path, $this->breadcrumbTitle ?: $this->title ];
+      $this->breadcrumb->menuitems[] = [ $this->request->path, $this->breadcrumbTitle ?: $this->title ];
     }
 
     // The schema for the complete page content.
@@ -601,7 +851,10 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
       $headingprop = " property='{$this->headingSchemaProperty}'";
     }
 
-    $noscript = new Alert($i18n->t("Please activate JavaScript in your browser to experience our website with all its features."), $i18n->t("JavaScript Disabled"));
+    $noscript = new Alert(
+      $this->intl->t("Please activate JavaScript in your browser to experience our website with all its features."),
+      $this->intl->t("JavaScript Disabled")
+    );
 
     // Render the page's main element (note that we still include the ARIA role "main" at this point because not all
     // user agents support the new HTML5 element yet).
@@ -616,37 +869,32 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
     ;
   }
 
-  public function getSidebar($content) {
-
-  }
-
   /**
    * Initialize the page's breadcrumb.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param array $breadcrumbs [optional]
    *   Numeric array containing additional breadcrumbs to put between home and the current page.
    * @return this
    */
   protected function initBreadcrumb(array $breadcrumbs = []) {
-    global $i18n;
-
     // Initialize the breadcrumb navigation and always include the home page's link and the currently displayed page.
-    $trail       = [[ "/", $i18n->t("Home"), [ "title" => $i18n->t("Go back to the home page.") ] ] ];
-    $c           = count($breadcrumbs);
+    $trail = [[ "/", $this->intl->t("Home"), [ "title" => $this->intl->t("Go back to the home page.") ] ]];
+
+    // Put the breadcrumb's trails together for the navigation.
+    $c = count($breadcrumbs);
     for ($i = 0; $i < $c; ++$i) {
       // 0 => route
       // 1 => linktext
       // 2 => attributes
       if (mb_strlen($breadcrumbs[$i][1]) > 25) {
         $breadcrumbs[$i][2]["title"] = $breadcrumbs[$i][1];
-        $breadcrumbs[$i][1]          = mb_strimwidth($breadcrumbs[$i][1], 0, 25, $i18n->t("…"));
+        $breadcrumbs[$i][1]          = mb_strimwidth($breadcrumbs[$i][1], 0, 25, $this->intl->t("…"));
       }
       $trail[] = $breadcrumbs[$i];
     }
 
     // Create the actual navigation with the trail we just built.
-    $this->breadcrumb       = new Navigation($i18n->t("You are here: "), $trail, [ "class" => "c", "id" => "b" ]);
+    $this->breadcrumb = new Navigation($this->intl->t("You are here: "), $trail, [ "class" => "c", "id" => "b" ]);
     $this->breadcrumb->glue = " › ";
 
     return $this;
@@ -655,8 +903,6 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
   /**
    * Initialize the language links for the current page.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @param string $route
    *   The key of this route.
    * @param array $args [optional]
@@ -668,35 +914,28 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
    * @return this
    */
   final protected function initLanguageLinks($route, array $args = null, $plural = false, $query = null) {
-    global $i18n, $config;
-
-    // Not pretty but efficient, only check once if we have plural form or singular.
+    // Not pretty but efficient, only check once if we have plural or singular form.
     if ($plural === true) {
-      foreach ($kernel->systemLanguages as $code => $locale) {
-        $this->languageLinks[$code] = "{$i18n->rp($route, $args, $locale)}{$query}";
+      foreach ($this->intl->systemLocales as $code => $locale) {
+        $this->languageLinks[$code] = "{$this->intl->rp($route, $args, $locale)}{$query}";
       }
     }
     else {
-      foreach ($kernel->systemLanguages as $code => $locale) {
-        $this->languageLinks[$code] = "{$i18n->r($route, $args, $locale)}{$query}";
+      foreach ($this->intl->systemLocales as $code => $locale) {
+        $this->languageLinks[$code] = "{$this->intl->r($route, $args, $locale)}{$query}";
       }
     }
-
     return $this;
   }
 
   /**
    * Initialize the page.
    *
-   * @global \MovLib\Data\Cache $cache
-   * @global \MovLib\Kernel $kernel
    * @param string $title
    *   The already translated title of this page.
    * @return this
    */
   final protected function initPage($title) {
-    global $cache, $kernel;
-
     // The substr() removes the \MovLib\Presentation\ part!
     $className         = strtolower(substr(get_class($this), 20));
     $this->namespace   = explode("\\", $className);
@@ -704,17 +943,22 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
     $this->bodyClasses = strtr($className, "\\", " ");
     $this->id          = strtr($className, "\\", "-");
     $this->title       = $title;
-
-    // Add all alerts that are stored in a cookie to the current presentation. The page is automatically not cacheable
-    // anymore because we're displaying alert messages, we also remove the cookie directly after displaying the alerts
-    // to ensure that subsequent requests can be cached.
-    if (isset($_COOKIE["alerts"])) {
-      $cache->cacheable = false;
-      $this->alerts    .= $_COOKIE["alerts"];
-      $kernel->cookieDelete("alerts");
-    }
-
     return $this;
+  }
+
+  /**
+   * Get global <code>lang</code> attribute for any HTML tag if language differs from current display language.
+   *
+   * @param string $lang
+   *   The ISO alpha-2 language code of the entity you want to display and have compared to the current language.
+   * @return null|string
+   *   <code>NULL</code> if given <var>$lang</var> matches current display language, otherwise the global <code>lang</code>
+   *   attribute ready for print (e.g. <code>" lang='de'"</code>).
+   */
+  final public function lang($lang) {
+    if ($lang != $this->intl->languageCode) {
+      return " lang='{$this->htmlEncode($lang)}'";
+    }
   }
 
   /**
@@ -727,6 +971,45 @@ abstract class AbstractPresenter extends \MovLib\Presentation\AbstractBase {
   final protected function next($route) {
     $this->headElements .= "<link rel='next' href='{$route}'>";
     return $this;
+  }
+
+  /**
+   * Normalize all kinds of line feeds to *NIX style (real LF).
+   *
+   * @link http://stackoverflow.com/a/7836692/1251219 How to replace different newline styles in PHP the smartest way?
+   * @param string $text
+   *   The text to normalize.
+   * @return string
+   *   The normalized text.
+   */
+  final public function normalizeLineFeeds($text) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($text) || !is_string($text)) {
+      throw new \InvalidArgumentException("\$text cannot be empty and must be of type string.");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    return preg_replace("/\R/u", "\n", $text);
+  }
+
+  /**
+   * Formats text for emphasized display in a placeholder inside a sentence.
+   *
+   * @param string $text
+   *   The text to format (plain-text).
+   * @return string
+   *   The formatted text (html).
+   */
+  final public function placeholder($text) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($text) || !is_string($text)) {
+      throw new \InvalidArgumentException("\$text cannot be empty and must be of type string.");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    return "<em class='placeholder'>{$this->htmlEncode($text)}</em>";
   }
 
   /**

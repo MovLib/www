@@ -80,13 +80,11 @@ final class CompanyIndexListing extends \MovLib\Partial\Listing\CompanyListing {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    */
   public function __construct($listItems, $noItemsText = null) {
-    global $i18n;
-    $this->moviesTitle   = $i18n->t("Movies");
-    $this->releasesTitle = $i18n->t("Releases");
-    $this->seriesTitle   = $i18n->t("Series");
+    $this->moviesTitle   = $this->intl->t("Movies");
+    $this->releasesTitle = $this->intl->t("Releases");
+    $this->seriesTitle   = $this->intl->t("Series");
     parent::__construct($listItems, $noItemsText);
   }
 
@@ -96,11 +94,8 @@ final class CompanyIndexListing extends \MovLib\Partial\Listing\CompanyListing {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function getAdditionalContent($company, $listItem) {
-    global $i18n;
-
     // @devStart
     // @codeCoverageIgnoreStart
     if(!($company instanceof \MovLib\Data\Company\Company)) {
@@ -110,13 +105,13 @@ final class CompanyIndexListing extends \MovLib\Partial\Listing\CompanyListing {
     // @devEnd
 
     if (!isset($this->firstMovieRoute)) {
-      $this->firstMovieRoute = $i18n->rp("{$company->routeKey}/movies");
+      $this->firstMovieRoute = $this->intl->rp("{$company->routeKey}/movies");
     }
     if (!isset($this->firstReleaseRoute)) {
-      $this->firstReleaseRoute = $i18n->rp("{$company->routeKey}/releases");
+      $this->firstReleaseRoute = $this->intl->rp("{$company->routeKey}/releases");
     }
     if (!isset($this->firstSeriesRoute)) {
-      $this->firstSeriesRoute = $i18n->rp("{$company->routeKey}/series");
+      $this->firstSeriesRoute = $this->intl->rp("{$company->routeKey}/series");
     }
 
     $currentMovieRoute   = str_replace("{0}", $company->id, $this->firstMovieRoute);
@@ -125,13 +120,13 @@ final class CompanyIndexListing extends \MovLib\Partial\Listing\CompanyListing {
 
     return
       "<span class='fr'>" .
-        "<a class='ico ico-movie label' href='{$currentMovieRoute}' title='{$i18n->t("Movies")}'>" .
+        "<a class='ico ico-movie label' href='{$currentMovieRoute}' title='{$this->intl->t("Movies")}'>" .
           " &nbsp; {$company->getMoviesCount()}" .
         "</a>" .
-        "<a class='ico ico-series label' href='{$currentSeriesRoute}' title='{$i18n->t("Series")}'>" .
+        "<a class='ico ico-series label' href='{$currentSeriesRoute}' title='{$this->intl->t("Series")}'>" .
           " &nbsp; {$company->getSeriesCount()}" .
         "</a>" .
-        "<a class='ico ico-release label' href='{$currentReleaseRoute}' title='{$i18n->t("Releases")}'>" .
+        "<a class='ico ico-release label' href='{$currentReleaseRoute}' title='{$this->intl->t("Releases")}'>" .
           " &nbsp; {$company->getSeriesCount()}" .
         "</a>" .
       "</span>"

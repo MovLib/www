@@ -152,15 +152,12 @@ class Award extends \MovLib\Data\Image\AbstractImage {
   /**
    * Instantiate new award.
    *
-   * @global \MovLib\Data\Database $db
    * @param integer $id [optional]
    *   The award's unique identifier, leave empty to create empty instance.
    * @throws \MovLib\Presentation\Error\NotFound
    * @throws \MovLib\Exception\DatabaseException
    */
   public function __construct($id = null) {
-    global $db, $i18n;
-
     // Try to load award based on given identifier.
     if ($id) {
       $query = self::getQuery();
@@ -215,8 +212,6 @@ class Award extends \MovLib\Data\Image\AbstractImage {
   /**
    * Get all awards matching the offset and row count.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param integer $offset
    *   The offset in the result.
    * @param integer $rowCount
@@ -226,7 +221,6 @@ class Award extends \MovLib\Data\Image\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   public static function getAwards($offset, $rowCount) {
-    global $db, $i18n;
     $query = self::getQuery();
     return $db->query("
         {$query}
@@ -240,7 +234,6 @@ class Award extends \MovLib\Data\Image\AbstractImage {
   /**
    * The total count of award categories which are not deleted..
    *
-   * @global \MovLib\Data\Database $db
    * @staticvar null|integer $count
    *   The total amount of award categories which haven't been deleted.
    * @return integer
@@ -248,7 +241,6 @@ class Award extends \MovLib\Data\Image\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getCategoriesCount() {
-    global $db;
     static $count = null;
     if (!$count) {
       $count = $db->query(
@@ -261,7 +253,6 @@ class Award extends \MovLib\Data\Image\AbstractImage {
   /**
    * The total count of award events which are not deleted.
    *
-   * @global \MovLib\Data\Database $db
    * @staticvar null|integer $count
    *   The total amount of award events which haven't been deleted.
    * @return integer
@@ -269,7 +260,6 @@ class Award extends \MovLib\Data\Image\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getEventsCount() {
-    global $db;
     static $count = null;
     if (!$count) {
       $count = $db->query(
@@ -282,14 +272,10 @@ class Award extends \MovLib\Data\Image\AbstractImage {
   /**
    * Get all award events.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return \mysqli_result
    *   The query result.
    */
   public function getEventsResult() {
-    global $db, $i18n;
-
     $query = Event::getQuery();
     return $db->query("
       {$query}
@@ -303,14 +289,10 @@ class Award extends \MovLib\Data\Image\AbstractImage {
   /**
    * Get all award categories.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return \mysqli_result
    *   The query result.
    */
   public function getCategoriesResult() {
-    global $db, $i18n;
-
     $query = AwardCategory::getQuery();
     return $db->query("
       {$query}
@@ -324,13 +306,11 @@ class Award extends \MovLib\Data\Image\AbstractImage {
   /**
    * The total count of movies that received this award.
    *
-   * @global \MovLib\Data\Database $db
    * @return integer
    *   The total count of movies.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMoviesCount() {
-    global $db;
     return $db->query(
         "SELECT count(DISTINCT `movie_id`) as `count` FROM `movies_awards` WHERE `award_id` = ?", "d", [ $this->id ]
       )->get_result()->fetch_assoc()["count"];
@@ -340,14 +320,11 @@ class Award extends \MovLib\Data\Image\AbstractImage {
    * Get the mysqli result for all movies that have received this award.
    *
    * @todo Implement
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return \mysqli_result
    *   The mysqli result for all movies that have received this award.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMoviesResult() {
-    global $db, $i18n;
     $result = $db->query(
       "SELECT
         `movies`.`id`,
@@ -419,14 +396,12 @@ class Award extends \MovLib\Data\Image\AbstractImage {
   /**
    * Get the default query.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @staticvar string $query
    *   Used to cache the default query.
    * @return string
    *   The default query.
    */
   protected static function getQuery() {
-    global $i18n;
     static $query = null;
     if (!$query) {
       $query =
@@ -457,13 +432,11 @@ class Award extends \MovLib\Data\Image\AbstractImage {
   /**
    * Get random award identifier.
    *
-   * @global \MovLib\Data\Database $db
    * @return integer|null
    *   Random award identifier, or <code>NULL</code> on failure.
    * @throws \MovLib\Exception\DatabaseException
    */
   public static function getRandomAwardId() {
-    global $db;
     $query = "SELECT `id` FROM `awards` WHERE `awards`.`deleted` = false ORDER BY RAND() LIMIT 1";
     if ($result = $db->query($query)->get_result()) {
       return $result->fetch_assoc()["id"];
@@ -474,7 +447,6 @@ class Award extends \MovLib\Data\Image\AbstractImage {
    * The count of series that received this award.
    *
    * @todo Implement when series are implemented
-   * @global \MovLib\Data\Database $db
    * @return integer
    * @throws \MovLib\Exception\DatabaseException
    */
@@ -486,8 +458,6 @@ class Award extends \MovLib\Data\Image\AbstractImage {
    * Get the mysqli result for all series that have received this award.
    *
    * @todo Implement when series are implemented
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return \mysqli_result
    *   The mysqli result for all series that have received this award.
    * @throws \MovLib\Exception\DatabaseException
@@ -499,7 +469,6 @@ class Award extends \MovLib\Data\Image\AbstractImage {
   /**
    * Get the count of all awards.
    *
-   * @global \MovLib\Data\Database $db
    * @staticvar null|integer $count
    *   The total amount of awards which haven't been deleted.
    * @return integer
@@ -507,7 +476,6 @@ class Award extends \MovLib\Data\Image\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   public static function getTotalCount() {
-    global $db;
     static $count = null;
     if (!$count) {
       $count = $db->query("SELECT COUNT(`id`) FROM `awards` WHERE `deleted` = false LIMIT 1")->get_result()->fetch_row()[0];
@@ -518,11 +486,8 @@ class Award extends \MovLib\Data\Image\AbstractImage {
   /**
    * Initialize the award with its icon, deleted flag and translate the route.
    *
-   * @global type $i18n
    */
   protected function init() {
-    global $i18n;
-
     $this->aliases  = $this->aliases ? unserialize($this->aliases) : [];
     $this->links    = $this->links ? unserialize($this->links) : [];
 
@@ -558,8 +523,6 @@ class Award extends \MovLib\Data\Image\AbstractImage {
    /**
    * Generate all supported image styles.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param string $source
    *   Absolute path to the uploaded image.
    * @param boolean $regenerate [optional]
@@ -568,8 +531,6 @@ class Award extends \MovLib\Data\Image\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   protected function generateStyles($source, $regenerate = false) {
-    global $db, $i18n;
-
     // Generate the various image's styles and always go from best quality down to worst quality.
     $this->convert($source, self::STYLE_SPAN_03, self::STYLE_SPAN_03, self::STYLE_SPAN_03, true);
     $this->convert($source, self::STYLE_SPAN_02, self::STYLE_SPAN_02, self::STYLE_SPAN_02, true);
@@ -617,7 +578,6 @@ class Award extends \MovLib\Data\Image\AbstractImage {
    * Set deletion request identifier.
    *
    * @todo Implement deletion request
-   * @global \MovLib\Data\Database $db
    * @param integer $id
    *   The deletion request's unique identifier to set.
    * @return this

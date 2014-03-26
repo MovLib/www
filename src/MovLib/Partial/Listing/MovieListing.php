@@ -79,13 +79,10 @@ class MovieListing extends \MovLib\Presentation\AbstractBase {
   /**
    * Get the string representation of the listing.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The string representation of the listing.
    */
   public function __toString() {
-    global $i18n;
-
     // @devStart
     // @codeCoverageIgnoreStart
     try {
@@ -103,8 +100,8 @@ class MovieListing extends \MovLib\Presentation\AbstractBase {
 
       if (!$this->noItemsText) {
         $this->noItemsText = (string) new Alert(
-          $i18n->t("No movies match your search criteria."),
-          $i18n->t("No Movies"),
+          $this->intl->t("No movies match your search criteria."),
+          $this->intl->t("No Movies"),
           Alert::SEVERITY_INFO
         );
       }
@@ -126,7 +123,6 @@ class MovieListing extends \MovLib\Presentation\AbstractBase {
   /**
    * Format a movie list item.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param \MovLib\Data\Movie\FullMovie $movie
    *   The movie to format.
    * @param mixed $listItem [optional]
@@ -135,11 +131,9 @@ class MovieListing extends \MovLib\Presentation\AbstractBase {
    *   The formatted movie list item.
    */
   final protected function formatListItem($movie, $listItem = null) {
-    global $i18n;
-
     // Format the genres.
     $genres     = null;
-    $genreRoute = $i18n->r("/genre/{0}");
+    $genreRoute = $this->intl->r("/genre/{0}");
     $result     = $movie->getGenres();
     while ($row = $result->fetch_assoc()) {
       if ($genres) {
@@ -149,7 +143,7 @@ class MovieListing extends \MovLib\Presentation\AbstractBase {
       $genres .= "<a class='label' href='{$route}'>{$row["name"]}</a>";
     }
     if ($genres) {
-      $genres = "<small><span class='vh'>{$i18n->t("Genres: ")}</span>{$genres}</small>";
+      $genres = "<small><span class='vh'>{$this->intl->t("Genres: ")}</span>{$genres}</small>";
     }
 
     // Put the movie list entry together.
@@ -188,8 +182,7 @@ class MovieListing extends \MovLib\Presentation\AbstractBase {
    *   The formatted rating content.
    */
   protected function getRatingContent($movie) {
-    global $i18n;
-    $rating = \NumberFormatter::create($i18n->locale, \NumberFormatter::DECIMAL)->format($movie->ratingMean);
+    $rating = \NumberFormatter::create($this->intl->locale, \NumberFormatter::DECIMAL)->format($movie->ratingMean);
     return "<span class='s s1 rating-mean tac'>{$rating}</span>";
   }
 

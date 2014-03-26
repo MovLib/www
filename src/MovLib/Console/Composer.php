@@ -15,9 +15,8 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Tool;
+namespace MovLib\Core;
 
-use \MovLib\Data\StreamWrapper\StreamWrapperFactory;
 use \Composer\Script\Event;
 
 /**
@@ -65,12 +64,10 @@ class Composer {
   /**
    * Instantiate new Composer object.
    *
-   * @global \MovLib\Tool\Kernel $kernel
    * @param \Composer\Script\Event $event
    *   The fired composer event.
    */
   public function __construct(Event $event) {
-    global $kernel;
     if (!$kernel) {
       $kernel = new \MovLib\Tool\Kernel(true);
     }
@@ -85,14 +82,11 @@ class Composer {
   /**
    * Create symbolic link for apigen executable.
    *
-   * @global \MovLib\Tool\Kernel $kernel
    * @param string $fullName
    *   The package's full name including name and slash.
    * @return this
    */
   public function apigen($fullName) {
-    global $kernel;
-
     $bin = "/usr/local/bin/apigen";
     if ($kernel->isWindows === false && !is_link($bin)) {
       symlink($this->dr->realpath("dr://vendor/{$fullName}/apigen.php", $bin));
@@ -115,15 +109,11 @@ class Composer {
   /**
    * Install phpMyAdmin.
    *
-   * @global \MovLib\Tool\Kernel $kernel
-   * @global \MovLib\Tool\Database $db
    * @param string $fullName
    *   The packages full name including the name and slash.
    * @return this
    */
   public function phpmyadmin($fullName) {
-    global $kernel, $db;
-
     // Create symbolic link to our phpMyAdmin configuration.
     $target = "dr://vendor/{$fullName}/config.inc.php";
     if ($kernel->isWindows === false && !is_link($target)) {
@@ -139,13 +129,11 @@ class Composer {
   /**
    * Create symbolic link for phpunit executable.
    *
-   * @global \MovLib\Tool\Kernel $kernel
    * @param string $fullName
    *   The packages full name including the name and slash.
    * @return this
    */
   public function phpunit($fullName) {
-    global $kernel;
     $bin = "/usr/local/bin/phpunit";
     if ($kernel->isWindows === false && !is_link($bin)) {
       symlink($this->dr->realpath("dr://vendor/{$fullName}/composer/bin/phpunit"), $bin);

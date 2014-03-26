@@ -39,20 +39,16 @@ class Movies extends \MovLib\Presentation\Event\AbstractBase {
   /**
    * Instantiate new event movie presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
-
     $this->event   = new Event((integer) $_SERVER["EVENT_ID"]);
     $this->award = new Award($this->event->awardId);
 
-    $this->initPage($i18n->t("Movies with {0}", [ $this->event->name ]));
+    $this->initPage($this->intl->t("Movies with {0}", [ $this->event->name ]));
     $this->pageTitle    =
-      $i18n->t("Movies with {0}", [ "<a href='{$this->event->route}'>{$this->event->name}</a>" ])
+      $this->intl->t("Movies with {0}", [ "<a href='{$this->event->route}'>{$this->event->name}</a>" ])
     ;
-    $this->breadcrumbTitle = $i18n->t("Movies");
+    $this->breadcrumbTitle = $this->intl->t("Movies");
     $this->initLanguageLinks("/event/{0}/movies", [ $this->event->id ], true);
     $this->initEventBreadcrumb();
     $this->sidebarInit();

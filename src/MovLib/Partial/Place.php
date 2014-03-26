@@ -43,14 +43,12 @@ class Place extends \MovLib\Presentation\AbstractBase {
   }
 
   public function __toString() {
-    global $i18n;
-    return
       "<{$this->tag}{$this->expandTagAttributes($this->attributes)}>" .
         "<span property='geo' typeof='http://schema.org/GeoCoordinates'>" .
           "<meta property='latitude' content='{$this->place->latitude}'>" .
           "<meta property='longitude' content='{$this->place->longitude}'>" .
         "</span>" .
-        $i18n->t("{0}, {1}", [
+        $this->intl->t("{0}, {1}", [
           "<span property='name'>{$this->place->name}</span>",
           new Country($this->place->countryCode, [ "property" => "containedIn" ]),
         ]) .

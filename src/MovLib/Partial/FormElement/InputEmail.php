@@ -83,15 +83,13 @@ final class InputEmail extends \MovLib\Partial\FormElement\AbstractInput {
   /**
    * Get the input email form element.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The input email form element.
    */
   public function __toString() {
-    global $i18n;
     $this->attributes["maxlength"] = self::MAX_LENGTH;
     $this->attributes["pattern"]   = self::PATTERN;
-    $this->attributes["title"]     = $i18n->t("An email address in the format [local]@[host].[tld] with a maximum of {0,number,integer} characters", [ self::MAX_LENGTH ]);
+    $this->attributes["title"]     = $this->intl->t("An email address in the format [local]@[host].[tld] with a maximum of {0,number,integer} characters", [ self::MAX_LENGTH ]);
     return parent::__toString();
   }
 
@@ -102,7 +100,6 @@ final class InputEmail extends \MovLib\Partial\FormElement\AbstractInput {
   /**
    * Validate the submitted email address.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param string $email
    *   The user submitted email to validate.
    * @param null|array $errors
@@ -111,16 +108,14 @@ final class InputEmail extends \MovLib\Partial\FormElement\AbstractInput {
    *   The valid email address.
    */
   protected function validateValue($email, &$errors) {
-    global $i18n;
-
     // No need for multi-byte functions, utf-8 is not allowed in emails.
     if (strlen($email) > self::MAX_LENGTH) {
-      $errors[self::ERROR_LENGTH] = $i18n->t("The email address is too long: it must be {0,number,integer} or less.", [ self::MAX_LENGTH ]);
+      $errors[self::ERROR_LENGTH] = $this->intl->t("The email address is too long: it must be {0,number,integer} or less.", [ self::MAX_LENGTH ]);
     }
 
     // Use PHP's built-in validation function.
     if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
-      $errors[self::ERROR_SYNTAX] = $i18n->t("The email address is invalid.");
+      $errors[self::ERROR_SYNTAX] = $this->intl->t("The email address is invalid.");
     }
 
     // Only attempt to validate the reachability if the email address is valid.
@@ -135,7 +130,7 @@ final class InputEmail extends \MovLib\Partial\FormElement\AbstractInput {
       // in the order of their weight for the current operation. An A record is for IPv4 hosts, an AAAA record is for
       // IPv6 hosts and the MX record is for mail servers only.
       if (checkdnsrr($host, "A") === false && checkdnsrr($host, "AAAA") === false && checkdnsrr($host, "MX") === false) {
-        $errors[self::ERROR_DNS] = $i18n->t("The email address is unreachable.");
+        $errors[self::ERROR_DNS] = $this->intl->t("The email address is unreachable.");
       }
     }
 

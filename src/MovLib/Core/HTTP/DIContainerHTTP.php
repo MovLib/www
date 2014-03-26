@@ -15,47 +15,38 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Profile;
-
-use \MovLib\Presentation\Partial\Alert;
+namespace MovLib\Core\HTTP;
 
 /**
- * Allows a user to manage her or his notification settings.
+ * @todo Description of DependencyInjectionContainer
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class NotificationSettings extends \MovLib\Presentation\Profile\Show {
+class DIContainerHTTP extends \MovLib\Core\DIContainer {
 
   /**
-   * Instantiate new user notification settings presentation.
+   * Active request instance, <code>NULL</code> in CLI context.
    *
-   * @throws \MovLib\Presentation\Error\Unauthorized
+   * @var \MovLib\Core\HTTP\Request|null
    */
-  public function __construct() {
-    $session->checkAuthorization($this->intl->t("You must be signed in to change your notification settings."));
-    $this->init($this->intl->t("Notification Settings"), "/profile/notification-settings", [[ $this->intl->r("/profile"), $this->intl->t("Profile") ]]);
-  }
+  public $request;
 
   /**
-   * @inhertidoc
+   * Active response instance, <code>NULL</code> in CLI context.
+   *
+   * @var \MovLib\Core\HTTP\Response|null
    */
-  protected function getBreadcrumbs() {
-    return [[ $this->intl->r("/profile"), $this->intl->t("Profile") ]];
-  }
+  public $response;
 
   /**
-   * @inheritdoc
+   * Active session instance, <code>NULL</code> in CLI context.
+   *
+   * @var \MovLib\Core\HTTP\Session|null
    */
-  protected function getPageContent() {
-    return new Alert(
-      $this->intl->t("The notification system isn’t implemented yet."),
-      $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    );
-  }
+  public $session;
 
 }

@@ -59,32 +59,30 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Build content for gone page.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return $this
    * @throws \LogicException
    */
   protected function goneGetContent() {
-    global $i18n;
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->award instanceof \MovLib\Data\Award)) {
-      throw new \LogicException($i18n->t("\$this->award has to be a valid award object!"));
+      throw new \LogicException($this->intl->t("\$this->award has to be a valid award object!"));
     }
     if (!($this->awardCategory instanceof \MovLib\Data\AwardCategory)) {
-      throw new \LogicException($i18n->t("\$this->awardCategory has to be a valid award category object!"));
+      throw new \LogicException($this->intl->t("\$this->awardCategory has to be a valid award category object!"));
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
 
     $routeArgs = [ $this->award->id, $this->awardCategory->id ];
 
-    $this->goneAlertMessage = $i18n->t(
+    $this->goneAlertMessage = $this->intl->t(
         "The award category and all its content have been deleted. Take a look at the {0}history{2} or {1}discussion{2} page " .
         "for further information. Please discuss with the person responsible for this deletion before " .
         "you restore this entry from its {0}history{2}.",
         [
-          "<a href='{$i18n->r("/award/{0}/category/{1}/history", $routeArgs)}'>",
-          "<a href='{$i18n->r("/award/{0}/category/{1}/discussion", $routeArgs)}'>",
+          "<a href='{$this->intl->r("/award/{0}/category/{1}/history", $routeArgs)}'>",
+          "<a href='{$this->intl->r("/award/{0}/category/{1}/discussion", $routeArgs)}'>",
           "</a>"
         ]
       );
@@ -94,27 +92,25 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Init award category breadcrumb.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return $this
    * @throws \LogicException
    */
   protected function initAwardCategoryBreadcrumb() {
-    global $i18n;
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->award instanceof \MovLib\Data\Award)) {
-      throw new \LogicException($i18n->t("\$this->award has to be a valid award object!"));
+      throw new \LogicException($this->intl->t("\$this->award has to be a valid award object!"));
     }
     if (!($this->awardCategory instanceof \MovLib\Data\AwardCategory)) {
-      throw new \LogicException($i18n->t("\$this->awardCategory has to be a valid award category object!"));
+      throw new \LogicException($this->intl->t("\$this->awardCategory has to be a valid award category object!"));
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
 
     return $this->initBreadcrumb([
-      [ $i18n->rp("/awards"), $i18n->t("Awards") ],
+      [ $this->intl->rp("/awards"), $this->intl->t("Awards") ],
       [ $this->award->route, $this->award->name ],
-      [ $i18n->rp("/award/{0}/categories", [ $this->award->id ]), $i18n->t("Categories") ],
+      [ $this->intl->rp("/award/{0}/categories", [ $this->award->id ]), $this->intl->t("Categories") ],
       [ $this->awardCategory->route, $this->awardCategory->name ],
     ]);
   }
@@ -122,19 +118,17 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Init award sidebar.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return $this
    * @throws \LogicException
    */
   protected function sidebarInit() {
-    global $i18n;
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->award instanceof \MovLib\Data\Award)) {
-      throw new \LogicException($i18n->t("\$this->award has to be a valid award object!"));
+      throw new \LogicException($this->intl->t("\$this->award has to be a valid award object!"));
     }
     if (!($this->awardCategory instanceof \MovLib\Data\AwardCategory)) {
-      throw new \LogicException($i18n->t("\$this->awardCategory has to be a valid award category object!"));
+      throw new \LogicException($this->intl->t("\$this->awardCategory has to be a valid award category object!"));
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -145,21 +139,21 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
     // Reduce the sidebar if the award was deleted.
     if ($this->award->deleted === true) {
       return $this->traitSidebarInit([
-        [ $this->awardCategory->route, $i18n->t("View"), [ "class" => "ico ico-view" ] ],
-        [ $i18n->r("/award/{0}/category/{1}/discussion", $routeArgs), $i18n->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
-        [ $i18n->r("/award/{0}/category/{1}/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history" ] ]
+        [ $this->awardCategory->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
+        [ $this->intl->r("/award/{0}/category/{1}/discussion", $routeArgs), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
+        [ $this->intl->r("/award/{0}/category/{1}/history", $routeArgs), $this->intl->t("History"), [ "class" => "ico ico-history" ] ]
       ]);
     }
 
     return $this->traitSidebarInit([
-      [ $this->awardCategory->route, $i18n->t("View"), [ "class" => "ico ico-view" ] ],
-      [ $i18n->r("/award/{0}/category/{1}/discussion", $routeArgs), $i18n->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
-      [ $i18n->r("/award/{0}/category/{1}/edit", $routeArgs), $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
-      [ $i18n->r("/award/{0}/category/{1}/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history" ] ],
-      [ $i18n->r("/award/{0}/category/{1}/delete", $routeArgs), $i18n->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
+      [ $this->awardCategory->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
+      [ $this->intl->r("/award/{0}/category/{1}/discussion", $routeArgs), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
+      [ $this->intl->r("/award/{0}/category/{1}/edit", $routeArgs), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
+      [ $this->intl->r("/award/{0}/category/{1}/history", $routeArgs), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
+      [ $this->intl->r("/award/{0}/category/{1}/delete", $routeArgs), $this->intl->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
 
-      [ $i18n->rp("/award/{0}/category/{1}/movies", $routeArgs), "{$i18n->t("Movies")} <span class='fr'>{$i18n->format("{0,number}", [ $this->award->getMoviesCount() ])}</span>", [ "class" => "ico ico-movie" ] ],
-      [ $i18n->rp("/award/{0}/category/{1}/series", $routeArgs), "{$i18n->t("Series")} <span class='fr'>{$i18n->format("{0,number}", [ $this->award->getSeriesCount() ])}</span>", [ "class" => "ico ico-series separator" ] ],
+      [ $this->intl->rp("/award/{0}/category/{1}/movies", $routeArgs), "{$this->intl->t("Movies")} <span class='fr'>{$this->intl->format("{0,number}", [ $this->award->getMoviesCount() ])}</span>", [ "class" => "ico ico-movie" ] ],
+      [ $this->intl->rp("/award/{0}/category/{1}/series", $routeArgs), "{$this->intl->t("Series")} <span class='fr'>{$this->intl->format("{0,number}", [ $this->award->getSeriesCount() ])}</span>", [ "class" => "ico ico-series separator" ] ],
     ]);
   }
 

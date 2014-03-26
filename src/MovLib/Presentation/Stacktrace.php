@@ -45,54 +45,23 @@ class Stacktrace extends \MovLib\Presentation\AbstractPresenter {
    */
   protected $exception;
 
-  /**
-   * Whether this was a fatal error or not.
-   *
-   * @var boolean
-   */
-  protected $fatal;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new stacktrace presentation page.
-   *
-   * @param \Exception $exception
-   *   The exception that should be presented. Any instance that inherits from PHP's built in exception class is okay.
-   * @param boolean $fatal [optional]
-   *   If set to <code>TRUE</code> title will say <i>Fatal Error</i> instead of the name of the exception, defaults to
-   *   <code>FALSE</code>.
-   */
-  public function __construct($siteName, $exception, $fatal = false) {
-    http_response_code(500);
-    $this->exception = $exception;
-    $this->fatal     = $fatal;
-    parent::__construct($siteName);
-  }
-
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
    * @inheritdoc
-   * @global \MovLib\Core\Config $config
-   * @global \MovLib\Core\I18n $i18n
-   * @return string
    */
   public function getContent() {
-    global $config, $i18n;
     $stacktrace = new Alert(
-      "<div id='stacktrace-details'><div class='title'><i class='ico ico-info'></i> {$i18n->t(
+      "<div id='stacktrace-details'><div class='title'><i class='ico ico-info'></i> {$this->intl->t(
         "{exception_message} in {class} on line {line, number}", [
           "exception_message" => nl2br($this->exception->getMessage(), false),
-          "class"             => str_replace([ $config->documentRoot, "/src/" ], "", $this->exception->getFile()),
+          "class"             => str_replace([ $this->fs->documentRoot, "/src/" ], "", $this->exception->getFile()),
           "line"              => $this->exception->getLine(),
         ]
       )}</div><table>{$this->formatStacktrace($this->exception->getTrace())}</table></div>",
-      $i18n->t("Stacktrace for {0}", [ $this->placeholder($this->fatal === true ? "Fatal Error" : get_class($this->exception)) ]),
+      $this->intl->t("Stacktrace for {0}", [ $this->placeholder(get_class($this->exception)) ]),
       Alert::SEVERITY_INFO
     );
     return "<div class='c'>{$stacktrace}</div>";
@@ -148,14 +117,12 @@ class Stacktrace extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Format the stacktrace entry's file name.
    *
-   * @global \MovLib\Core\Config $config
    * @param array $stacktrace
    *   The stacktrace entry.
    * @return string
    *   The stacktrace entry's formatted file name.
    */
   protected function formatFileName(array &$stacktrace) {
-    global $config;
     if (empty($stacktrace["file"])) {
       return "<em>unknown</em>";
     }
@@ -180,7 +147,6 @@ class Stacktrace extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Format the given stacktrace.
    *
-   * @global \MovLib\Kernel $kernel
    * @param array $stacktrace
    *   The array returned by the getter.
    * @return string
@@ -243,22 +209,31 @@ class Stacktrace extends \MovLib\Presentation\AbstractPresenter {
   }
 
   /**
-   * {@inheritdoc}
-   * @global \MovLib\Core\I18n $i18n
-   * @global \MovLib\Core\HTTP\Response $response
+   * @inheritdoc
    */
   protected function init() {
-    global $i18n, $response;
-    $this->initPage($i18n->t("Internal Server Error"));
+    http_response_code(500);
+    $this->initPage($this->intl->t("Internal Server Error"));
     $this->initBreadcrumb();
-
-    $response->cacheable = false;
+    $this->response->cacheable = false;
     $this->stylesheets[] = "stacktrace";
-    $this->alerts       .= new Alert(
-      $i18n->t("This error was reported to the system administrators, it should be fixed in no time. Please try again in a few minutes."),
-      $i18n->t("An unexpected condition which prevented us from fulfilling the request was encountered."),
+    $this->alerts .= new Alert(
+      $this->intl->t("This error was reported to the system administrators, it should be fixed in no time. Please try again in a few minutes."),
+      $this->intl->t("An unexpected condition which prevented us from fulfilling the request was encountered."),
       Alert::SEVERITY_ERROR
     );
+    return $this;
+  }
+
+  /**
+   * Set the exception that should be presented.
+   *
+   * @param \Exception $exception
+   *   The exception that should be presented.
+   */
+  public function setException(\Exception $exception) {
+    $this->exception = $exception;
+    return $this;
   }
 
 }

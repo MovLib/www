@@ -194,14 +194,12 @@ class Memcached {
   /**
    * Check if this IP attempted to execute an event too many times.
    *
-   * @global \MovLib\Kernel $kernel
    * @param string $event
    *   The event identifier (e.g. presentation identifier, <code>$presentation->id</code>).
    * @return this
    * @throws \MemcachedException
    */
   public function isRemoteAddressFlooding($event) {
-    global $kernel;
     if ($this->isFlooding("{$event}{$kernel->remoteAddress}", self::FLOODING_IP_MAX) === true) {
       $message = "Flooding: too many attempts to invoke event from remote address.";
       $e       = new \MemcachedException($message);

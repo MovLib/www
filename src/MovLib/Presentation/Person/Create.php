@@ -124,26 +124,22 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Instantiate new person create presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
+    $this->initPage($this->intl->t("Create Person"));
+    $this->initBreadcrumb([ [ $this->intl->rp("/persons"), $this->intl->t("Persons") ] ]);
 
-    $this->initPage($i18n->t("Create Person"));
-    $this->initBreadcrumb([ [ $i18n->rp("/persons"), $i18n->t("Persons") ] ]);
-
-    $this->inputName      = new InputText("name", $i18n->t("Name"), [ "placeholder" => $i18n->t("Enter the person's name"), "required" => true ]);
-    $this->inputBornName  = new InputText("born-name", $i18n->t("Born as"), [ "placeholder" => $i18n->t("Enter the person's birth name") ]);
+    $this->inputName      = new InputText("name", $this->intl->t("Name"), [ "placeholder" => $this->intl->t("Enter the person's name"), "required" => true ]);
+    $this->inputBornName  = new InputText("born-name", $this->intl->t("Born as"), [ "placeholder" => $this->intl->t("Enter the person's birth name") ]);
     $dateOptions          = [ "year_max" => date("Y"), "year_min" => 1800 ];
-    $this->inputBirthDate = new InputDateSeparate("birthdate", $i18n->t("Date of Birth"), null, [ "class" => "s s6" ], $dateOptions);
-    $this->inputDeathDate = new InputDateSeparate("deathdate", $i18n->t("Date of Death"), null, [ "class" => "s s6" ], $dateOptions);
-    $this->inputSex       = new RadioGroup("sex", $i18n->t("Sex"), [ 2 => $i18n->t("Female"), 1 => $i18n->t("Male"), 0 => $i18n->t("Unknown") ], 0);
-    $this->inputWikipedia = new InputURL("wikipedia", $i18n->t("Wikipedia URL"), [ "data-allow-external" => true ]);
-    $this->inputAliases   = new InputLinesText("aliases", $i18n->t("Additional Names"), [ "placeholder" => $i18n->t("Please supply one name per line") ]);
-    $this->inputBiography = new InputHTML("biography", $i18n->t("Biography"), null, [ "placeholder" => $i18n->t("Enter the person's biography here") ]);
+    $this->inputBirthDate = new InputDateSeparate("birthdate", $this->intl->t("Date of Birth"), null, [ "class" => "s s6" ], $dateOptions);
+    $this->inputDeathDate = new InputDateSeparate("deathdate", $this->intl->t("Date of Death"), null, [ "class" => "s s6" ], $dateOptions);
+    $this->inputSex       = new RadioGroup("sex", $this->intl->t("Sex"), [ 2 => $this->intl->t("Female"), 1 => $this->intl->t("Male"), 0 => $this->intl->t("Unknown") ], 0);
+    $this->inputWikipedia = new InputURL("wikipedia", $this->intl->t("Wikipedia URL"), [ "data-allow-external" => true ]);
+    $this->inputAliases   = new InputLinesText("aliases", $this->intl->t("Additional Names"), [ "placeholder" => $this->intl->t("Please supply one name per line") ]);
+    $this->inputBiography = new InputHTML("biography", $this->intl->t("Biography"), null, [ "placeholder" => $this->intl->t("Enter the person's biography here") ]);
     $this->inputBiography->allowBlockqoutes()->allowImages()->allowLists();
-    $this->inputLinks     = new InputLinesURL("links", $i18n->t("External Links"), [ "data-allow-external" => true, "placeholder" => $i18n->t("Please supply one URL per line") ]);
+    $this->inputLinks     = new InputLinesURL("links", $this->intl->t("External Links"), [ "data-allow-external" => true, "placeholder" => $this->intl->t("Please supply one URL per line") ]);
     $this->form           = new Form($this, [
       $this->inputName,
       $this->inputBiography,
@@ -155,8 +151,8 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
       $this->inputWikipedia,
       $this->inputLinks,
     ]);
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Create Person"), [ "class" => "btn btn-large btn-success", "id" => "submit-create" ]);
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Create and Upload Image"), [ "class" => "btn btn-large btn-success", "id" => "submit-upload" ]);
+    $this->form->actionElements[] = new InputSubmit($this->intl->t("Create Person"), [ "class" => "btn btn-large btn-success", "id" => "submit-create" ]);
+    $this->form->actionElements[] = new InputSubmit($this->intl->t("Create and Upload Image"), [ "class" => "btn btn-large btn-success", "id" => "submit-upload" ]);
     $kernel->stylesheets[] = "person";
   }
 
@@ -185,14 +181,10 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   protected function valid() {
-    global $i18n, $kernel;
-
     $person            = new FullPerson();
     $person->aliases   = $this->inputAliases->value;
     $person->biography = $this->inputBiography->value;
@@ -207,16 +199,16 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
     $person->create();
 
     $kernel->alerts .= new Alert(
-      $i18n->t(
+      $this->intl->t(
         "If you want, you can {0}upload a photo{1} right away.",
         [ "<a href='{$person->displayPhoto->route}'>", "</a>" ]
       ),
-      $i18n->t("Person Created Successfully"),
+      $this->intl->t("Person Created Successfully"),
       Alert::SEVERITY_SUCCESS
     );
 
     // Redirect to Show presentation or upload form, depending on the button clicked.
-    if ($_POST["submit"] == $i18n->t("Create Person")) {
+    if ($_POST["submit"] == $this->intl->t("Create Person")) {
       $route = $person->route;
     }
     else {
@@ -228,11 +220,8 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    */
   public function validate($errors) {
-    global $i18n;
-
     // Guardian pattern.
     if ($this->checkErrors($errors) === true) {
       return $this;
@@ -244,7 +233,7 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
     }
 
     if ($searchResult && !isset($_POST["confirmation"])) {
-      $this->form->elements[] = new InputCheckbox("confirmation", $i18n->t("I confirm that this person is new"));
+      $this->form->elements[] = new InputCheckbox("confirmation", $this->intl->t("I confirm that this person is new"));
       return $this;
     }
 

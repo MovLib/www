@@ -89,13 +89,10 @@ class EntityListing extends \MovLib\Presentation\AbstractBase {
   /**
    * Get the string representation of the listing.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The string representation of the listing.
    */
   public function __toString() {
-    global $i18n;
-
     // @devStart
     // @codeCoverageIgnoreStart
     try {
@@ -128,7 +125,6 @@ class EntityListing extends \MovLib\Presentation\AbstractBase {
   /**
    * Format list item.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param mixed $entity
    *   The entity to format.
    * @param mixed $listItem [optional]

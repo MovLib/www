@@ -33,11 +33,8 @@ final class ForbiddenException extends \RuntimeException implements \MovLib\Exce
 
   /**
    * {@inheritdoc}
-   * @global \MovLib\Core\I18n $i18n
-   * @global \MovLib\Presentation\AbstractPresenter $presenter
    */
   public function getPresentation() {
-    global $i18n, $presenter;
     http_response_code(403);
     if (empty($this->message)) {
       $this->message = $i18n->t(

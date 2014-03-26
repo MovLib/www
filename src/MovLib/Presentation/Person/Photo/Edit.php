@@ -61,44 +61,41 @@ class Edit extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Instantiate new Photo Edit presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\User\Session $session
    */
   public function __construct() {
-    global $i18n, $session;
-    $session->checkAuthorization($i18n->t("Only registered users are allowed to upload images."));
+    $session->checkAuthorization($this->intl->t("Only registered users are allowed to upload images."));
     $this->person = new Person($_SERVER["PERSON_ID"]);
     $this->initLanguageLinks("/person{0}/photo/upload", [ $this->person->id ]);
 
     if ($this->person->displayPhoto->imageExists) {
-      $title     = $i18n->t("Edit photo of {0}", [ $this->person->name ]);
-      $pageTitle = $i18n->t("Edit photo of {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
+      $title     = $this->intl->t("Edit photo of {0}", [ $this->person->name ]);
+      $pageTitle = $this->intl->t("Edit photo of {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
       $this->sidebarInit([
-        [ $i18n->r("/person/{0}/photo", [ $this->person->id ]), $i18n->t("View"), [ "class" => "ico ico-view" ] ],
-        [ $i18n->r("/person/{0}/photo/edit", [ $this->person->id ]), $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
-        [ $i18n->r("/person/{0}/photo/history", [ $this->person->id ]), $i18n->t("History"), [ "class" => "ico ico-history" ] ],
-        [ $i18n->r("/person/{0}/photo/delete", [ $this->person->id ]), $i18n->t("Delete"), [ "class" => "ico ico-delete" ] ],
+        [ $this->intl->r("/person/{0}/photo", [ $this->person->id ]), $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
+        [ $this->intl->r("/person/{0}/photo/edit", [ $this->person->id ]), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
+        [ $this->intl->r("/person/{0}/photo/history", [ $this->person->id ]), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
+        [ $this->intl->r("/person/{0}/photo/delete", [ $this->person->id ]), $this->intl->t("Delete"), [ "class" => "ico ico-delete" ] ],
       ]);
     }
     else {
-      $title     = $i18n->t("Upload photo for {0}", [ $this->person->name ]);
-      $pageTitle = $i18n->t("Upload photo for {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
+      $title     = $this->intl->t("Upload photo for {0}", [ $this->person->name ]);
+      $pageTitle = $this->intl->t("Upload photo for {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
     }
     $this->initPage($title);
 
     $this->initBreadcrumb([
-      [ $i18n->rp("/persons"), $i18n->t("Persons") ],
+      [ $this->intl->rp("/persons"), $this->intl->t("Persons") ],
       [$this->person->route, $this->person->name ],
-      [ $i18n->r("/person/{0}/photo", [ $this->person->id ]), $i18n->t("Photo") ]
+      [ $this->intl->r("/person/{0}/photo", [ $this->person->id ]), $this->intl->t("Photo") ]
     ]);
 
-    $this->inputImage = new InputImage("photo", $i18n->t("Photo"), $this->person->displayPhoto);
+    $this->inputImage = new InputImage("photo", $this->intl->t("Photo"), $this->person->displayPhoto);
 
     $this->inputDescription = new InputHTML(
       "description",
-      $i18n->t("Description"),
+      $this->intl->t("Description"),
       $this->person->displayPhoto->description,
-      [ "placeholder" => $i18n->t("Please enter a detailed description of this photo."), "required" => "required" ]
+      [ "placeholder" => $this->intl->t("Please enter a detailed description of this photo."), "required" => "required" ]
     );
 
     $this->form = new Form($this, [
@@ -112,9 +109,8 @@ class Edit extends \MovLib\Presentation\AbstractPresenter {
    * @inheritdoc
    */
   protected function getPageContent() {
-    global $i18n;
     // @todo: Remove alert and insert concrete content.
-    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("edit person photo") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Presentation\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("edit person photo") ]), $this->intl->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
 //    return $this->form;
   }
 

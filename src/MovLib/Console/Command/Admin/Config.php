@@ -56,12 +56,10 @@ final class Config extends \MovLib\Console\Command\AbstractCommand {
   }
 
   /**
-   * {@inheritdoc}
-   * @global \MovLib\Core\Config $config
+   * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    global $config;
-    $configClone = clone $config;
+    $configClone = clone $this->config;
 
     if ($input->getOption("delete")) {
       $this->delete();
@@ -86,12 +84,12 @@ final class Config extends \MovLib\Console\Command\AbstractCommand {
       }
     }
 
-    if ($input->getOption("save") || $configClone !== $config) {
+    if ($input->getOption("save") && $configClone !== $this->config) {
       $this->save();
     }
 
     if ($input->getOption("list")) {
-      $this->show(array_keys(get_object_vars($config)));
+      $this->show(array_keys(get_object_vars($this->config)));
     }
 
     return 0;
@@ -100,20 +98,17 @@ final class Config extends \MovLib\Console\Command\AbstractCommand {
   /**
    * Delete the current configuration object and re-create default configuration.
    *
-   * @global \MovLib\Core\Config $config
    * @return this
    */
   protected function delete() {
-    global $config;
     $this->writeDebug("Deleting global configuration and reseting to default configuration");
-    $config = new DefaultConfig();
+    $this->config = new DefaultConfig();
     return $this;
   }
 
   /**
    * Load given configuration file and set as new global configuration.
    *
-   * @global \MovLib\Core\Config $config
    * @param string $className
    *   The name of the class that should be loaded.
    * @return this
@@ -121,7 +116,6 @@ final class Config extends \MovLib\Console\Command\AbstractCommand {
    * @throws \LogicException
    */
   protected function loadClass($className) {
-    global $config;
     $className = "\\MovLib\\Core\\Config\\" . ucfirst($className);
     if (!class_exists($className)) {
       throw new \InvalidArgumentException("Configuration '{$className}' doesn't exist.");
@@ -130,38 +124,34 @@ final class Config extends \MovLib\Console\Command\AbstractCommand {
       throw new \LogicException("Configuration '{$className}' must extend '\\MovLib\\Core\\Config'");
     }
     $this->writeDebug("Loading new configuration from class <comment>{$className}</comment>");
-    $config = new $className();
+    $this->config = new $className();
     return $this;
   }
 
   /**
    * Reset a configuration setting to its default value.
    *
-   * @global \MovLib\Core\Config $config
    * @param string $configKey
    *   The configuration setting's key to reset.
    * @return this
    */
   protected function reset($configKey) {
-    global $config;
-    if (!property_exists($config, $configKey)) {
+    if (!property_exists($this->config, $configKey)) {
       throw new \InvalidArgumentException("Configuration setting '{$configKey}' doesn't exist.");
     }
-    $config->$configKey = (new DefaultConfig())->$configKey;
+    $this->config->$configKey = (new DefaultConfig())->$configKey;
     return $this;
   }
 
   /**
    * Save the current configuration object.
    *
-   * @global \MovLib\Core\Config $config
    * @return this
    */
   protected function save() {
-    global $config;
     mkdir(dirname(DefaultConfig::URI));
     $this->writeVerbose("Saving current global configuration to <comment>" . DefaultConfig::URI . "</comment>");
-    file_put_contents(DefaultConfig::URI, serialize($config));
+    file_put_contents(DefaultConfig::URI, serialize($this->config));
     $this->writeDebug("Successfully saved current global configuration to <comment>" . DefaultConfig::URI. "</comment>");
     return $this;
   }
@@ -169,7 +159,6 @@ final class Config extends \MovLib\Console\Command\AbstractCommand {
   /**
    * Set configuration setting.
    *
-   * @global \MovLib\Core\Config $config
    * @param string $configKey
    *   The configuration key to set.
    * @param mixed $values
@@ -177,11 +166,9 @@ final class Config extends \MovLib\Console\Command\AbstractCommand {
    * @return this
    */
   protected function set($configKey, $values) {
-    global $config;
-
     $value = trim(var_export($values, true));
     $this->writeVerbose("Setting configuration key <comment>{$configKey}</comment> to value <info>{$value}</info>");
-    switch (($type = gettype($config->$configKey))) {
+    switch (($type = gettype($this->config->$configKey))) {
       case "array":
         break;
 
@@ -195,11 +182,11 @@ final class Config extends \MovLib\Console\Command\AbstractCommand {
         settype($values, $type);
     }
 
-    if (method_exists($config, "set{$configKey}")) {
-      $config->{"set{$configKey}"}($values);
+    if (method_exists($this->config, "set{$configKey}")) {
+      $this->config->{"set{$configKey}"}($values);
     }
     else {
-      $config->$configKey = $values;
+      $this->config->$configKey = $values;
     }
 
     return $this;
@@ -213,32 +200,38 @@ final class Config extends \MovLib\Console\Command\AbstractCommand {
    * @return this
    */
   protected function show($configKeys) {
-    global $config;
-
-    $rows = [];
+    $xdebug = function_exists("xdebug_var_dump");
+    $rows   = [];
     foreach ((array) $configKeys as $configKey) {
-      $value = trim(var_export($config->$configKey, true));
-      switch (gettype($config->$configKey)) {
-        case "boolean":
-          if ($config->$configKey === true) {
-            $color = "green";
-          }
-          else {
-            $color = "red";
-          }
-          $value = "<fg={$color}>{$value}</fg={$color}>";
-          break;
-
-        case "integer":
-        case "double":
-          $value = "<fg=cyan>{$value}</fg=cyan>";
-          break;
-
-        case "string";
-          $value = "<fg=yellow>{$value}</fg=yellow>";
-          break;
+      if ($xdebug) {
+        ob_start();
+        xdebug_var_dump($this->config->$configKey);
+        $rows[] = [ "<comment>{$configKey}</comment>", trim(ob_get_clean()) ];
       }
-      $rows[] = [ $configKey, $value ];
+      else {
+        $value = trim(var_export($this->config->$configKey, true));
+        switch (gettype($this->config->$configKey)) {
+          case "boolean":
+            if ($this->config->$configKey === true) {
+              $color = "green";
+            }
+            else {
+              $color = "red";
+            }
+            $value = "<fg={$color}>{$value}</fg={$color}>";
+            break;
+
+          case "integer":
+          case "double":
+            $value = "<fg=cyan>{$value}</fg=cyan>";
+            break;
+
+          case "string";
+            $value = "<fg=yellow>{$value}</fg=yellow>";
+            break;
+        }
+        $rows[] = [ $configKey, $value ];
+      }
     }
 
     /* @var $table \Symfony\Component\Console\Helper\Table */

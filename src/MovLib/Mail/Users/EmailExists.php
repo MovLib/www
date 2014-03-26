@@ -52,8 +52,8 @@ class EmailExists extends \MovLib\Mail\AbstractEmail {
    * @param string $email
    *   The valid email address of the existing user.
    */
-  public function __construct($email) {
-    $this->recipient = $email;
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $email) {
+    parent::__construct($diContainerHTTP, $email, $this->intl->t("Forgot Your Password?"));
   }
 
 
@@ -63,13 +63,10 @@ class EmailExists extends \MovLib\Mail\AbstractEmail {
   /**
    * Initialize email properties.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return this
    */
   public function init() {
-    global $i18n;
-    $this->subject = $i18n->t("Forgot Your Password?");
-    $this->name    = (new User(User::FROM_EMAIL, $this->recipient))->name;
+    $this->name = (new User(User::FROM_EMAIL, $this->recipient))->name;
     return $this;
   }
 
@@ -77,13 +74,11 @@ class EmailExists extends \MovLib\Mail\AbstractEmail {
    * @inheritdoc
    */
   public function getHTML() {
-    global $kernel, $i18n;
-    return
-      "<p>{$i18n->t("Hi {0}!", [ $this->name ])}</p>" .
-      "<p>{$i18n->t("You (or someone else) tried to sign up a new account with this email address. If you forgot your password go to the {0}reset password{1} page to request a new one.", [
-        "<a href='{$kernel->scheme}://{$kernel->hostname}{$i18n->r("/user/reset-password")}'>", "</a>"
+      "<p>{$this->intl->t("Hi {0}!", [ $this->name ])}</p>" .
+      "<p>{$this->intl->t("You (or someone else) tried to sign up a new account with this email address. If you forgot your password go to the {0}reset password{1} page to request a new one.", [
+        "<a href='{$this->diContainer->request->scheme}://{$this->diContainer->request->hostname}{$this->intl->r("/user/reset-password")}'>", "</a>"
       ])}</p>" .
-      "<p>{$i18n->t("If it wasn’t you who requested this action simply ignore this message.")}</p>"
+      "<p>{$this->intl->t("If it wasn’t you who requested this action simply ignore this message.")}</p>"
     ;
   }
 
@@ -91,15 +86,14 @@ class EmailExists extends \MovLib\Mail\AbstractEmail {
    * @inheritdoc
    */
   public function getPlainText() {
-    global $kernel, $i18n;
     return <<<EOT
-{$i18n->t("Hi {0}!", [ $this->name ])}
+{$this->intl->t("Hi {0}!", [ $this->name ])}
 
-{$i18n->t("You (or someone else) tried to sign up a new account with this email address. If you forgot your password go to the reset password page to request a new one.")}
+{$this->intl->t("You (or someone else) tried to sign up a new account with this email address. If you forgot your password go to the reset password page to request a new one.")}
 
-{$kernel->scheme}://{$kernel->hostname}{$i18n->r("/user/reset-password")}
+{$this->diContainer->request->scheme}://{$this->diContainer->request->hostname}{$this->intl->r("/user/reset-password")}
 
-{$i18n->t("If it wasn’t you who requested this action simply ignore this message.")}
+{$this->intl->t("If it wasn’t you who requested this action simply ignore this message.")}
 EOT;
   }
 }

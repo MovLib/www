@@ -115,14 +115,10 @@ class Image extends \MovLib\Presentation\Movie\AbstractBase {
   /**
    * Instantiate new movie image presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
-    global $i18n, $kernel;
-
     // Try to load the movie and export all variables to class scope.
     $this->movie = new Movie((integer) $_SERVER[ "MOVIE_ID" ]);
     $this->class = "\\MovLib\\Data\\Image\\Movie{$_SERVER["IMAGE_CLASS"]}";
@@ -217,18 +213,18 @@ class Image extends \MovLib\Presentation\Movie\AbstractBase {
     }
 
     // Initialize the breadcrumb ...
-    $this->initBreadcrumb([[ $i18n->rp("/movie/{0}/{$this->image->routeKeyPlural}", [ $this->movie->id ]), $this->image->namePlural ]]);
+    $this->initBreadcrumb([[ $this->intl->rp("/movie/{0}/{$this->image->routeKeyPlural}", [ $this->movie->id ]), $this->image->namePlural ]]);
     $this->breadcrumbTitle = "{$this->image->name} {$this->current}";
 
     // Translate title once, we don't need Intl formatting for the numbers.
-    $title  = $i18n->t("{image_name} {current} of {total} from {title}");
+    $title  = $this->intl->t("{image_name} {current} of {total} from {title}");
     $search = [ "{image_name}", "{current}", "{total}", "{title}" ];
 
     // ... initialize page and extend the page's visible title with a link and micro-data ...
     $this->initPage(str_replace($search, [ $this->image->name, $this->current, $this->count, $this->movie->displayTitleWithYear ], $title));
     $pageTitle = "<span itemprop='name'{$this->lang($this->movie->displayTitleLanguageCode)}>{$this->movie->displayTitle}</span>";
     if ($this->movie->year) {
-      $pageTitle = $i18n->t("{0} ({1})", [ $pageTitle, "<span itemprop='datePublished'>{$this->movie->year}</span>" ]);
+      $pageTitle = $this->intl->t("{0} ({1})", [ $pageTitle, "<span itemprop='datePublished'>{$this->movie->year}</span>" ]);
     }
     $this->pageTitle = str_replace($search, [
       $this->image->name,
@@ -255,35 +251,31 @@ class Image extends \MovLib\Presentation\Movie\AbstractBase {
   /**
    * Get the page's content.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @return string
    */
   protected function getPageContent() {
-    global $i18n, $kernel;
-
     // Add large button to the header to ensure that nobody has to search for the upload page.
-    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/movie/{0}/{$this->image->routeKey}/upload", [ $this->movie->id ])}'>{$i18n->t("Upload New")}</a>";
+    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/movie/{0}/{$this->image->routeKey}/upload", [ $this->movie->id ])}'>{$this->intl->t("Upload New")}</a>";
 
     // Format the optional fields.
     $dl = null;
     if (!empty($this->image->description)) {
-      $dl .= "<dt>{$i18n->t("Description")}</dt><dd itemprop='description'>{$this->htmlDecode($this->image->description)}</dd>";
+      $dl .= "<dt>{$this->intl->t("Description")}</dt><dd itemprop='description'>{$this->htmlDecode($this->image->description)}</dd>";
     }
     if (!empty($this->image->publishingDate)) {
       $date = new Date($this->image->publishingDate);
-      $dl  .= "<dt>{$i18n->t("Publishing Date")}</dt><dd>{$date->format([ "itemprop" => "datePublished" ])}</dd>";
+      $dl  .= "<dt>{$this->intl->t("Publishing Date")}</dt><dd>{$date->format([ "itemprop" => "datePublished" ])}</dd>";
     }
     if (!empty($this->image->authors)) {
-      $dl .= "<dt>{$i18n->t("Author")}</dt><dd itemprop='copyrightHolder'>{$this->htmlDecode($this->image->authors)}</dd>";
+      $dl .= "<dt>{$this->intl->t("Author")}</dt><dd itemprop='copyrightHolder'>{$this->htmlDecode($this->image->authors)}</dd>";
     }
     if ($this->image->countryCode) {
       $country = (new Country($this->image->countryCode, [ "itemprop" => "contentLocation" ]))->getFlag(true);
-      $dl     .= "<dt>{$i18n->t("Country")}</dt><dd>{$country}</dd>";
+      $dl     .= "<dt>{$this->intl->t("Country")}</dt><dd>{$country}</dd>";
     }
     if ($this->image->languageCode && $this->image->languageCode != "xx") {
       $language = new Language($this->image->languageCode, [ "itemprop" => "inLanguage" ]);
-      $dl      .= "<dt>{$i18n->t("Language")}</dt><dd>{$language}</dd>";
+      $dl      .= "<dt>{$this->intl->t("Language")}</dt><dd>{$language}</dd>";
     }
     $uploader = new User(User::FROM_ID, $this->image->uploaderId);
     $dateTime = new DateTime($this->image->changed, [ "itemprop" => "uploadDate" ]);
@@ -291,8 +283,8 @@ class Image extends \MovLib\Presentation\Movie\AbstractBase {
     $offers = null;
     // @todo Build shop links
     if (!$offers) {
-      $offers = "<dd>{$i18n->t("No links have been added to this {image_name}, {0}add one{1}?", [
-        "<a href='{$i18n->r("/movie/{0}/{$this->image->routeKey}/{1}/edit", [
+      $offers = "<dd>{$this->intl->t("No links have been added to this {image_name}, {0}add one{1}?", [
+        "<a href='{$this->intl->r("/movie/{0}/{$this->image->routeKey}/{1}/edit", [
           $this->movie->id, $this->image->id,
         ])}'>", "</a>", "image_name" => $this->image->name,
       ])}</dd>";
@@ -304,9 +296,9 @@ class Image extends \MovLib\Presentation\Movie\AbstractBase {
       "<div class='c' id='imagedetails'>" .
         "<script>{$this->streamJSON}</script>" .
         "<div class='cf stream'>" .
-          "<a{$this->expandTagAttributes($this->streamPrevious)}><span class='vh'>{$i18n->t("Previous {image_name}", [ "image_name" => $this->image->name ])}</span></a>" .
+          "<a{$this->expandTagAttributes($this->streamPrevious)}><span class='vh'>{$this->intl->t("Previous {image_name}", [ "image_name" => $this->image->name ])}</span></a>" .
           $this->streamImages .
-          "<a{$this->expandTagAttributes($this->streamNext)}><span class='vh'>{$i18n->t("Next {image_name}", [ "image_name" => $this->image->name ])}</span></a>" .
+          "<a{$this->expandTagAttributes($this->streamNext)}><span class='vh'>{$this->intl->t("Next {image_name}", [ "image_name" => $this->image->name ])}</span></a>" .
         "</div>" .
         TraitDeletionRequest::getDeletionRequestedAlert($this->image->deletionId) .
         "<div class='r wrapper'>" .
@@ -318,14 +310,14 @@ class Image extends \MovLib\Presentation\Movie\AbstractBase {
           )}</div>" .
           "<dl class='s s4 description'>" .
             $dl .
-            "<dt>{$i18n->t("Provided by")}</dt><dd><a href='{$uploader->route}' itemprop='creator provider'>{$uploader->name}</a></dd>" .
-            "<dt>{$i18n->t("Dimensions")}</dt><dd>{$i18n->t("{width} × {height}", [
-              "width"  => "<span itemprop='width'>{$this->image->width}&nbsp;<abbr title='{$i18n->t("Pixel")}'>px</abbr></span>",
-              "height" => "<span itemprop='height'>{$this->image->height}&nbsp;<abbr title='{$i18n->t("Pixel")}'>px</abbr></span>",
+            "<dt>{$this->intl->t("Provided by")}</dt><dd><a href='{$uploader->route}' itemprop='creator provider'>{$uploader->name}</a></dd>" .
+            "<dt>{$this->intl->t("Dimensions")}</dt><dd>{$this->intl->t("{width} × {height}", [
+              "width"  => "<span itemprop='width'>{$this->image->width}&nbsp;<abbr title='{$this->intl->t("Pixel")}'>px</abbr></span>",
+              "height" => "<span itemprop='height'>{$this->image->height}&nbsp;<abbr title='{$this->intl->t("Pixel")}'>px</abbr></span>",
             ])}</dd>" .
-            "<dt>{$i18n->t("File size")}</dt><dd itemprop='contentSize'>{$i18n->t("{0,number} {1}", $this->formatBytes($this->image->filesize))}</dd>" .
-            "<dt>{$i18n->t("Upload on")}</dt><dd>{$dateTime}</dd>" .
-            "<dt>{$i18n->t("Buy this {image_name}", [ "image_name" => $this->image->name ])}</dt>{$offers}" .
+            "<dt>{$this->intl->t("File size")}</dt><dd itemprop='contentSize'>{$this->intl->t("{0,number} {1}", $this->formatBytes($this->image->filesize))}</dd>" .
+            "<dt>{$this->intl->t("Upload on")}</dt><dd>{$dateTime}</dd>" .
+            "<dt>{$this->intl->t("Buy this {image_name}", [ "image_name" => $this->image->name ])}</dt>{$offers}" .
           "</dl>" .
         "</div>" .
       "</div>"
@@ -335,17 +327,15 @@ class Image extends \MovLib\Presentation\Movie\AbstractBase {
   /**
    * Initialize the movie image presentation's sidebar.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return this
    */
   protected function initSidebar() {
-    global $i18n;
     $args = [ $this->movie->id, $this->image->id ];
     return $this->sidebarInit([
-      [ $this->image->route, $i18n->t("View"), [ "class" => "ico ico-view" ] ],
-      [ $i18n->r("/movie/{0}/{$this->image->routeKey}/{1}/edit", $args), $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
-      [ $i18n->r("/movie/{0}/{$this->image->routeKey}/{1}/history", $args), $i18n->t("History"), [ "class" => "ico ico-history" ] ],
-      [ $i18n->r("/movie/{0}/{$this->image->routeKey}/{1}/delete", $args), $i18n->t("Delete"), [ "class" => "delete ico ico-delete" ] ]
+      [ $this->image->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
+      [ $this->intl->r("/movie/{0}/{$this->image->routeKey}/{1}/edit", $args), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
+      [ $this->intl->r("/movie/{0}/{$this->image->routeKey}/{1}/history", $args), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
+      [ $this->intl->r("/movie/{0}/{$this->image->routeKey}/{1}/delete", $args), $this->intl->t("Delete"), [ "class" => "delete ico ico-delete" ] ]
     ]);
   }
 

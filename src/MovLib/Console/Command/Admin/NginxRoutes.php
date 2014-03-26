@@ -17,7 +17,6 @@
  */
 namespace MovLib\Console\Command\Admin;
 
-use \MovLib\Core\I18n;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -121,29 +120,22 @@ class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
   }
 
   /**
-   * {@inheritdoc}
-   * @global \MovLib\Core\Config $config
-   * @global \MovLib\Core\Database $db
-   * @global \MovLib\Core\FileSystem $fs
-   * @global \MovLib\Core\I18n $i18n
-   * @global \MovLib\Core\Kernel $kernel
+   * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     // Don't remove the $db variable just because it's unused, it's used in the included routes.php file!
-    global $config, $db, $fs, $i18n, $kernel;
-
     $this->writeVerbose("Starting to translate and compile nginx routes ...", self::MESSAGE_TYPE_COMMENT);
 
     $this->writeDebug("Creating <comment>" . self::ROUTES_URI . "</comment>");
     mkdir(self::ROUTES_URI);
 
-    $locales = implode("</comment>, <comment>", $config->locales);
+    $locales = implode("</comment>, <comment>", $this->config->locales);
     $this->writeDebug("Generating routes for all system locales: <comment>{$locales}</comment>");
 
-    foreach ($config->locales as $locale) {
+    foreach ($this->config->locales as $locale) {
       $translatedRoutes = null;
-      $i18n->setLocale($locale);
-      $this->writeDebug("Generating routes for system locale <comment>{$i18n->locale}</comment>");
+      $this->intl->setLocale($locale);
+      $this->writeDebug("Generating routes for system locale <comment>{$this->intl->locale}</comment>");
 
       $this->writeDebug("Started output buffering, here be dragons\n\n...\n");
       $obStart = ob_start(function ($buffer) use (&$translatedRoutes) {
@@ -171,19 +163,19 @@ class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
       }
       $this->writeDebug("\nEnded output buffering =)");
 
-      $this->writeDebug("Writing translated routing file for <comment>{$i18n->locale}</comment>");
-      file_put_contents("dr://etc/nginx/sites/conf/routes/{$i18n->languageCode}.conf", $translatedRoutes);
+      $this->writeDebug("Writing translated routing file for <comment>{$this->intl->locale}</comment>");
+      file_put_contents("dr://etc/nginx/sites/conf/routes/{$this->intl->languageCode}.conf", $translatedRoutes);
 
       foreach ([ "singular", "plural" ] as $form) {
-        if (!empty($this->{"empty{$form}Translations"}[$i18n->locale])) {
-          $this->write("The following {$i18n->locale} {$form} form(s) still need translation:", self::MESSAGE_TYPE_ERROR);
-          $this->write($this->{"empty{$form}Translations"}[$i18n->locale], self::MESSAGE_TYPE_COMMENT);
+        if (!empty($this->{"empty{$form}Translations"}[$this->intl->locale])) {
+          $this->write("The following {$this->intl->locale} {$form} form(s) still need translation:", self::MESSAGE_TYPE_ERROR);
+          $this->write($this->{"empty{$form}Translations"}[$this->intl->locale], self::MESSAGE_TYPE_COMMENT);
         }
       }
     }
 
     // Reload nginx and load the newly translated routes.
-    if ($kernel->privileged) {
+    if ($this->privileged) {
       $this->exec("nginx -t");
       $this->exec("service nginx reload");
     }
@@ -193,7 +185,7 @@ class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
 
     // Make sure that the previously set language code is set again globally in case other commands are executed with
     // the same instance.
-    $i18n->setLocale($i18n->defaultLocale);
+    $this->intl->setLocale($this->intl->defaultLocale);
 
     // Let the user know that everything went fine.
     $this->writeVerbose("Successfully translated and compiled routes, plus reloaded nginx!", self::MESSAGE_TYPE_INFO);
@@ -204,8 +196,6 @@ class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
   /**
    * Get translated and formatted route.
    *
-   * @global \MovLib\Core\Config $config
-   * @global \MovLib\Core\I18n $i18n
    * @staticvar array $routes
    *   Use to cache the routes.
    * @param string $pattern
@@ -219,7 +209,6 @@ class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
    *   The translated and formatted route.
    */
   protected function getTranslatedRoute($pattern, $context, array &$args = null) {
-    global $config, $i18n;
     static $routes = [];
 
     // @devStart
@@ -237,18 +226,18 @@ class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
     // @devEnd
 
     // We only need to translate the route if it isn't in the default locale.
-    if ($i18n->locale != $config->defaultLocale) {
+    if ($this->intl->locale != $this->config->defaultLocale) {
       // Check if we already have the route translations for this locale cached.
-      if (empty($routes[$i18n->locale][$context])) {
-        $routes[$i18n->locale][$context] = require "dr://var/i18n/{$i18n->locale}/routes/{$context}.php";
+      if (empty($routes[$this->intl->locale][$context])) {
+        $routes[$this->intl->locale][$context] = require "dr://var/i18n/{$this->intl->locale}/routes/{$context}.php";
       }
 
       // Check if we have a translation for this route and use it if we have one.
-      if (empty($routes[$i18n->locale][$context][$pattern])) {
-        $this->{"empty{$context}Translations"}[$i18n->locale][$pattern] = $pattern;
+      if (empty($routes[$this->intl->locale][$context][$pattern])) {
+        $this->{"empty{$context}Translations"}[$this->intl->locale][$pattern] = $pattern;
       }
       else {
-        $pattern = $routes[$i18n->locale][$context][$pattern];
+        $pattern = $routes[$this->intl->locale][$context][$pattern];
       }
     }
 
@@ -260,7 +249,7 @@ class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
 
     // Let the message formatter replace any placeholder tokens if we have arguments at this point.
     if (!empty($args)) {
-      return \MessageFormatter::formatMessage($i18n->locale, $pattern, $args);
+      return \MessageFormatter::formatMessage($this->intl->locale, $pattern, $args);
     }
 
     return $pattern;

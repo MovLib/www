@@ -53,7 +53,6 @@ class License extends \MovLib\Presentation\AbstractBase {
   /**
    * Instantiate new license partial.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param string $id
    *   The unique license identifier.
    * @param array $attributes [optional]
@@ -86,25 +85,23 @@ class License extends \MovLib\Presentation\AbstractBase {
   /**
    * Get all supported and translated licenses.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @staticvar array $licenses
    *   Associative array used for caching.
    * @return array
    *   All supported and translated licenses.
    */
   public static function getLicenses() {
-    global $i18n;
     static $licenses = null;
 
     // If we haven't built the array for this locale build it.
-    if (!isset($licenses[$i18n->locale])) {
+    if (!isset($licenses[$this->intl->locale])) {
       $result = \MovLib\Data\License::getLicensesResult();
       while ($license = $result->fetch_assoc()) {
-        $licenses[$i18n->locale][$license["id"]] = $i18n->t("{0} ({1})", [ $license["abbreviation"], $license["name"] ]);
+        $licenses[$this->intl->locale][$license["id"]] = $this->intl->t("{0} ({1})", [ $license["abbreviation"], $license["name"] ]);
       }
     }
 
-    return $licenses[$i18n->locale];
+    return $licenses[$this->intl->locale];
   }
 
 }

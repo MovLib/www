@@ -55,11 +55,8 @@ final class Cache {
   /**
    * Instantiate new cache instance.
    *
-   * @global \MovLib\Core\I18n $i18n
-   * @global \MovLib\Core\HTTP\Request $request
    */
   public function __construct() {
-    global $i18n, $request;
     $this->uri = "dr://var/cache/{$i18n->languageCode}{$request->path}";
     if ($request->path == "/") {
       $this->uri .= $_SERVER["PRESENTER"];
@@ -113,15 +110,11 @@ final class Cache {
   /**
    * Save given presentation to persistent cache.
    *
-   * @global \MovLib\Core\FileSystem $fs
-   * @global \MovLib\Core\HTTP\Response $response
-   * @global \MovLib\Core\HTTP\Session $session
    * @param string $presentation
    *   The presentation to cache.
    * @return this
    */
   public function save($presentation) {
-    global $fs, $response, $session;
     if ($response->cacheable && $_SERVER["REQEUEST_METHOD"] == "GET" && !$session->isAuthenticated && !is_file($this->uri)) {
       try {
         $tmp           = "dr://tmp/" . basename($this->uri) . $_SERVER["REQUEST_TIME_FLOAT"];

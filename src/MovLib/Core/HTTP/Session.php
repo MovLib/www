@@ -17,7 +17,6 @@
  */
 namespace MovLib\Core\HTTP;
 
-use \MovLib\Core\Log;
 use \MovLib\Data\User\User;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Exception\UnauthorizedException;
@@ -39,7 +38,7 @@ use \MovLib\Exception\UnauthorizedException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Session {
+final class Session extends \MovLib\Core\Database {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -149,6 +148,13 @@ final class Session {
   public $isAuthenticated = false;
 
   /**
+   * Active log instance.
+   *
+   * @var \MovLib\Core\Log
+   */
+  protected $log;
+
+  /**
    * The session's name.
    *
    * @var string
@@ -190,14 +196,21 @@ final class Session {
   /**
    * Instantiate new HTTP session object.
    *
-   * @global \MovLib\Core\Config $config
-   * @global \MovLib\Core\HTTP\Request $request
+   * @param \MovLib\Core\Log $log
+   *   Active log instance.
+   * @param \MovLib\Core\HTTP\Response $response
+   *   Active response instance.
+   * @param string $remoteAddress
+   *   The client's remote address.
+   * @param string $timeZone
+   *   The default time zone.
    */
-  public function __construct() {
-    global $config, $request;
+  public function __construct(\MovLib\Core\Log $log, \MovLib\Core\HTTP\Response $response, $remoteAddress, $timeZone) {
     $this->data         =& $_SESSION;
-    $this->userName     =  $request->remoteAddress;
-    $this->userTimeZone =  $config->timeZone;
+    $this->log          = $log;
+    $this->response     = $response;
+    $this->userName     = $remoteAddress;
+    $this->userTimeZone = $timeZone;
   }
 
 
@@ -207,7 +220,6 @@ final class Session {
   /**
    * Authenticate a user.
    *
-   * @global \MovLib\Kernel $kernel
    * @param string $email
    *   The user submitted email address.
    * @param string $rawPassword
@@ -218,8 +230,6 @@ final class Session {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function authenticate($email, $rawPassword) {
-    global $kernel;
-
     // Load necessary user data from storage (if we have any).
     $user = new FullUser(User::FROM_EMAIL, $email);
 
@@ -317,14 +327,12 @@ final class Session {
    * Deletes this session from our session database.
    *
    * @delayed
-   * @global \MovLib\Data\Database $db
    * @param string|array $sessionId [optional]
    *   The unique session ID(s) that should be deleted. If no ID is passed along the current session ID of this instance
    *   will be used. If a numeric array is passed all values are treated as session IDs and deleted.
    * @return this
    */
   public function delete($sessionId = null) {
-    global $db;
     try {
       if (!isset($sessionId)) {
         $result = $db
@@ -380,14 +388,11 @@ final class Session {
    * is sent, requesting the user's user agent to delete this session cookie. As you know, this is something that is
    * up to the user, that's why it's important for us to delete this session (or all sessions) from all our storage devices.
    *
-   * @global \MovLib\Kernel $kernel
    * @param boolean $deleteAllSessions [optional]
    *   <code>TRUE</code> to delete all sessions. Defaults to <code>FALSE</code>
    * @return this
    */
   public function destroy($deleteAllSessions = false) {
-    global $kernel;
-
     // Only execute the following if this request was made through nginx.
     if ($kernel->fastCGI === true) {
       // Remove all data associated with this session.
@@ -435,7 +440,6 @@ final class Session {
   /**
    * Retrieve a list of all active sessions.
    *
-   * @global \MovLib\Data\Database $db
    * @return \mysqli_result
    *   Mysqli result ontaining all sessions currently stored in the persistent session storage for the currently signed
    *   in user. Each entry in the result set contains the following names in the projection:
@@ -448,7 +452,6 @@ final class Session {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getActiveSessions() {
-    global $db;
     return $db->query(
       "SELECT `id`, UNIX_TIMESTAMP(`authentication`) AS `authentication`, `ip_address`, `user_agent` FROM `sessions` WHERE `user_id` = ?",
       "d",
@@ -460,12 +463,9 @@ final class Session {
    * Insert newly created session into persistent session storage.
    *
    * @delayed
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Kernel $kernel
    * @return this
    */
   public function insert() {
-    global $db, $kernel;
     try {
       $db->query(
         "INSERT INTO `sessions` (`id`, `user_id`, `user_agent`, `ip_address`, `authentication`) VALUES (?, ?, ?, ?, FROM_UNIXTIME(?))",
@@ -484,12 +484,10 @@ final class Session {
    *
    * @staticvar boolean $isAdmin
    *   Used to cache the result.
-   * @global \MovLib\Data\Database $db
    * @return boolean
    *   <code>TRUE</code> if the current user is an administrator, otherwise <code>FALSE</code>.
    */
   public function isAdmin() {
-    global $db;
     static $isAdmin = null;
     if ($this->isAuthenticated === true) {
       if (!$isAdmin) {
@@ -514,7 +512,6 @@ final class Session {
   /**
    * Test after every authentication if the password needs to be rehashed.
    *
-   * @global \MovLib\Kernel $kernel
    * @delayed
    * @param string $password
    *   The hashed password.
@@ -525,7 +522,6 @@ final class Session {
    * @throws \DomainException
    */
   public function passwordNeedsRehash($password, $rawPassword) {
-    global $kernel;
     if (password_needs_rehash($password, PASSWORD_DEFAULT, $kernel->passwordOptions) === true) {
       try {
         $user     = new FullUser(FullUser::FROM_ID, $this->userId);
@@ -542,11 +538,9 @@ final class Session {
   /**
    * Regenerate session ID and update persistent storage.
    *
-   * @global \MovLib\Kernel $kernel
    * @return this
    */
   protected function regenerate() {
-    global $kernel;
     // @devStart
     // @codeCoverageIgnoreStart
     Log::debug("Regenerating Session ID");
@@ -571,14 +565,19 @@ final class Session {
   /**
    * Resume existing HTTP session.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Core\HTTP\Request $request
    * @return this
    * @throws \MemcachedException
    * @throws \MovLib\Exception\DatabaseException
    */
   public function resume() {
-    global $db, $request;
+    // Add all alerts that are stored in a cookie to the current presentation. The page is automatically not cacheable
+    // anymore because we're displaying alert messages, we also remove the cookie directly after displaying the alerts
+    // to ensure that subsequent requests can be cached.
+//    if (isset($_COOKIE["alerts"])) {
+//      $cache->cacheable = false;
+//      $this->alerts    .= $_COOKIE["alerts"];
+//      $this->kernel->cookieDelete("alerts");
+//    }
 
     // Only attempt to load the session if a non-empty session ID is present. Anonymous user's don't get any session to
     // ensure that HTTP proxies are able to cache anonymous pageviews.
@@ -670,14 +669,11 @@ final class Session {
   /**
    * Shutdown the currently active session and start one for anonymous users if we have to.
    *
-   * @global \MovLib\Kernel $kernel
    * @return this
    * @throws \MemcachedException
    * @throws \DomainException
    */
   public function shutdown() {
-    global $kernel;
-
     // Absolutely no session data is present (default state).
     if (empty($this->data)) {
       // Destroy this session if one is active without any data associated to it.
@@ -708,12 +704,10 @@ final class Session {
   /**
    * Forcefully start new or resume session and keep previously set session data (if any).
    *
-   * @global \MovLib\Kernel $kernel
    * @return this
    * @throws \MemcachedException
    */
   protected function start() {
-    global $kernel;
     // Only attempt to start a new session if we're operating via php-fpm.
     if ($kernel->fastCGI === true) {
       // Create backup of existing session data (if any).
@@ -753,14 +747,11 @@ final class Session {
    * Update the ID of a session in our persistent session store.
    *
    * @delayed
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Kernel $kernel
    * @param string $oldId
    *   The old session ID that should be updated.
    * @return this
    */
   public function update($oldId) {
-    global $db, $kernel;
     try {
       $db->query(
         "UPDATE `sessions` SET `id` = ?, `ip_address` = ?, `user_agent` = ? WHERE `id` = ? AND `user_id` = ?",
@@ -777,11 +768,9 @@ final class Session {
   /**
    * Update the user's access time.
    *
-   * @global \MovLib\Data\Database $db
    * @return this
    */
   public function updateUserAccess() {
-    global $db;
     try {
       $db->query("UPDATE `users` SET `access` = CURRENT_TIMESTAMP WHERE `id` = ?", "d", [ $this->userId ]);
     }

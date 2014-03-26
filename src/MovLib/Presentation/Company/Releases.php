@@ -37,15 +37,12 @@ class Releases extends \MovLib\Presentation\Company\AbstractBase {
   /**
    * Instantiate new company releases presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
     $this->company = new FullCompany((integer) $_SERVER["COMPANY_ID"]);
-    $this->initPage($i18n->t("Releases from {0}", [ $this->company->name ]));
-    $this->pageTitle       = $i18n->t("Releases from {0}", [ "<a href='{$this->company->route}'>{$this->company->name}</a>" ]);
-    $this->breadcrumbTitle = $i18n->t("Releases");
+    $this->initPage($this->intl->t("Releases from {0}", [ $this->company->name ]));
+    $this->pageTitle       = $this->intl->t("Releases from {0}", [ "<a href='{$this->company->route}'>{$this->company->name}</a>" ]);
+    $this->breadcrumbTitle = $this->intl->t("Releases");
     $this->initLanguageLinks("/company/{0}/releases", [ $this->company->id ], true);
     $this->initCompanyBreadcrumb();
     $this->sidebarInit();
@@ -59,12 +56,10 @@ class Releases extends \MovLib\Presentation\Company\AbstractBase {
 
  /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    * @return \MovLib\Presentation\Partial\Alert
    */
   protected function getPageContent() {
-    global $i18n;
-    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("releases with company") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Presentation\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("releases with company") ]), $this->intl->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
   }
 
 }

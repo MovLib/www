@@ -32,15 +32,14 @@ use \MovLib\Presentation\Partial\Alert;
 class Discussion extends \MovLib\Presentation\Movie\AbstractBase {
 
   public function __construct() {
-    global $i18n;
     $this->movie = new Movie($_SERVER["MOVIE_ID"]);
-    $this->initPage($i18n->t("Discuss {title}", [ "title" => $this->movie->displayTitleWithYear ]));
+    $this->initPage($this->intl->t("Discuss {title}", [ "title" => $this->movie->displayTitleWithYear ]));
     $this->initLanguageLinks("/movie/{0}/discussion", [ $this->movie->id ]);
     $this->initBreadcrumb();
-    $this->breadcrumbTitle = $i18n->t("Discuss");
+    $this->breadcrumbTitle = $this->intl->t("Discuss");
     $this->alerts .= new Alert(
-      $i18n->t("The discuss movie feature isn’t implemented yet."),
-      $i18n->t("Check back later"),
+      $this->intl->t("The discuss movie feature isn’t implemented yet."),
+      $this->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     );
   }

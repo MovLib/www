@@ -76,15 +76,12 @@ class Place {
   /**
    * Intantiate new Place.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param integer $id
    *   The place's unique ID to load.
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct($id = null) {
-    global $db, $i18n;
     // Try to load the place for the given identifier.
     if ($id) {
       $this->id = $id;

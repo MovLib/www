@@ -46,7 +46,6 @@ class InputFloat extends \MovLib\Partial\FormElement\AbstractInputNumber {
   /**
    * Validate the submitted float.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param string $value
    *   The user submitted float to validate.
    * @param mixed $errors
@@ -55,20 +54,18 @@ class InputFloat extends \MovLib\Partial\FormElement\AbstractInputNumber {
    *   The valid and sanitized float.
    */
   protected function validateValue($value, &$errors) {
-    global $i18n;
-
     // Make sure that the value is an actual integer value.
     if (($float = filter_var($value, FILTER_VALIDATE_FLOAT)) === false) {
-      $errors[self::ERROR_INVALID] = $i18n->t("The “{0}” field must be an integer.", [ $this->label ]);
+      $errors[self::ERROR_INVALID] = $this->intl->t("The “{0}” field must be an integer.", [ $this->label ]);
       return $value;
     }
 
     // We validate the range in an extra block because we want to display proper error messages.
     if (isset($this->attributes["max"]) && $float > $this->attributes["max"]) {
-      $errors[self::ERROR_MAX] = $i18n->t("The “{0}” is too large, the value must be {1,number} or less.", [ $this->attributes["max"] ]);
+      $errors[self::ERROR_MAX] = $this->intl->t("The “{0}” is too large, the value must be {1,number} or less.", [ $this->attributes["max"] ]);
     }
     elseif (isset($this->attributes["min"]) && $float < $this->attributes["min"]) {
-      $errors[self::ERROR_MIN] = $i18n->t("The “{0}” is too low, the value must be {1,number} or more.", [ $this->attributes["min"] ]);
+      $errors[self::ERROR_MIN] = $this->intl->t("The “{0}” is too low, the value must be {1,number} or more.", [ $this->attributes["min"] ]);
     }
 
     return $float;

@@ -143,8 +143,6 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
   /**
    * Instantiate new movie image.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param integer|null $id
    *   The movie image's unique identifier.
    * @param integer|null $movieId
@@ -163,8 +161,6 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct($id, $movieId, $movieTitle, $name, $namePlural, $routeKey, $routePluralKey) {
-    global $db, $i18n;
-
     // Export route information to class scope.
     $this->routeKey       = $this->placeholder = $routeKey;
     $this->routeKeyPlural = $routePluralKey;
@@ -265,13 +261,10 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
   /**
    * Update the image's properties.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
   public function commit() {
-    global $db, $i18n;
     $db->query(
       "UPDATE `" . static::TABLE_NAME . "` SET
         `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, ?, ?),
@@ -291,8 +284,6 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
    *
    * @todo User with enough reputation should be able to remove the image without leaving traces as well.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\User\Session $session
    * @param boolean $shred [optional]
    *   Whether the image should be removed traceless or not, defaults to keep traces.
    * @return this
@@ -300,8 +291,6 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
    * @throws \RuntimeException
    */
   public function delete($shred = false) {
-    global $db, $session;
-
     // Only attempt to delete this image if we have a regular deletion request.
     if (!isset($this->deletionId)) {
       throw new \RuntimeException;
@@ -328,7 +317,6 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
   /**
    * Get all movie images.
    *
-   * @global \MovLib\Data\Database $db
    * @param integer $movieId [optional]
    *   Filter images by movie identifier, defaults to no filtering.
    * @param integer $offset [optional]
@@ -347,7 +335,6 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   public static function getImages($movieId = null, $offset = null, $rowCount = null, $orderBy = "created", $sortOrder = "ASC", $deleted = false) {
-    global $db;
     $query  = $types = null;
     $params = [];
 
@@ -396,7 +383,6 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
   /**
    * Get total movie images count.
    *
-   * @global \MovLib\Data\Database $db
    * @param integer $movieId [optional]
    *   Filter images by movie identifier, defaults to no filtering.
    * @param boolean|null $deleted [optional]
@@ -407,7 +393,6 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   public static function getCount($movieId = null, $deleted = false) {
-    global $db;
     $where  = $types = null;
     $params = [];
 
@@ -432,8 +417,6 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
   /**
    * Generate all supported image styles.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param string $source
    *   Absolute path to the uploaded image.
    * @param boolean $regenerate [optional]
@@ -442,8 +425,6 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   protected function generateStyles($source, $regenerate = false) {
-    global $db, $i18n;
-
     try {
       // Start transaction and prepare database record if this is a new upload.
       $db->transactionStart();
@@ -541,14 +522,12 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
   /**
    * Set deletion request identifier.
    *
-   * @global \MovLib\Data\Database $db
    * @param integer $id
    *   The deletion request's unique identifier to set.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
   public function setDeletionRequest($id) {
-    global $db;
     $db->query(
       "UPDATE `" . static::TABLE_NAME . "` SET `deletion_request_id` = ? WHERE `id` = ? AND `movie_id` = ?",
       "didi",

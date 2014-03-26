@@ -87,7 +87,6 @@ class SeedCurrencies extends \MovLib\Console\Command\Install\AbstractIntlCommand
 
   /**
    * {@inheritdoc}
-   * @global \MovLib\Core\I18n $i18n
    */
   protected function translate() {
     $resourceBundle = $this->getResourceBundle("curr");

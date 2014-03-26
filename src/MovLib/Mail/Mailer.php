@@ -17,8 +17,6 @@
  */
 namespace MovLib\Mail;
 
-use \MovLib\Core\Log;
-
 /**
  * Mailer system.
  *
@@ -28,7 +26,7 @@ use \MovLib\Core\Log;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Mailer extends \MovLib\Presentation\AbstractBase {
+final class Mailer {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -44,6 +42,13 @@ class Mailer extends \MovLib\Presentation\AbstractBase {
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
+
+  /**
+   * Active global configuration instance.
+   *
+   * @var \MovLib\Core\Config
+   */
+  protected $config;
 
   /**
    * The email we are currently sending.
@@ -108,45 +113,38 @@ class Mailer extends \MovLib\Presentation\AbstractBase {
   /**
    * Get the base64 encoded plain text message.
    *
-   * @global \MovLib\Core\Config $config
    * @return string
    *   The base64 encoded plain text message.
    */
   protected function getBase64EncodedPlainText() {
-    global $config;
     return base64_encode($this->wordwrap(
-      "{{$this->email->getPlainText()}\n\n--\n{$config->siteName}\n"
+      "{{$this->email->getPlainText()}\n\n--\n{$this->config->siteName}\n"
     ));
   }
 
   /**
    * Get the default from name.
    *
-   * @global \MovLib\Core\Config $config
    * @return string
    *   The default from name.
    */
   protected function getFromName() {
-    global $config;
-    return mb_encode_mimeheader($config->siteNameAndSlogan);
+    return mb_encode_mimeheader($this->config->siteNameAndSlogan);
   }
 
   /**
    * Get the additional email headers.
    *
-   * @global \MovLib\Core\Config $config
    * @return string
    *   The additional email headers.
    */
   protected function getHeaders() {
-    global $config;
-
     $headers = <<<EOT
 Auto-Submitted: auto-generated
 Content-Type: multipart/alternative;
 \tboundary="{$this->messageID}"
-From: "{$this->getFromName()}" <{$config->emailFrom}>
-Message-ID: <{$this->messageID}@{$config->hostname}>
+From: "{$this->getFromName()}" <{$this->config->emailFrom}>
+Message-ID: <{$this->messageID}@{$this->config->hostname}>
 MIME-Version: 1.0
 Precedence: bulk
 EOT;
@@ -189,13 +187,11 @@ EOT;
   /**
    * Get the additional <code>mail()</code> parameters.
    *
-   * @global \MovLib\Core\Config $config
    * @return string
    *   The additional <code>mail()</code> parameters.
    */
   protected function getParameters() {
-    global $config;
-    return "-f {$config->emailFrom}";
+    return "-f {$this->config->emailFrom}";
   }
 
   /**
@@ -426,24 +422,32 @@ EOT;
   /**
    * Send the given email.
    *
+   * @param \MovLib\Core\Kernel $kernel
+   *   The active kernel instance.
    * @param \MovLib\Data\AbstractEmail $email
    *   The email to send.
+   * @return this
    */
-  public static function send(\MovLib\Mail\AbstractEmail $email) {
+  public function send(\MovLib\Core\Kernel $kernel, \MovLib\Mail\AbstractEmail $email) {
     if (empty(self::$emailStack)) {
       /* @var $kernel \MovLib\Core\Kernel */
-      global $kernel;
-      $kernel->delayMethodCall([ new Mailer(), "sendEmailStack" ]);
+      $kernel->delayMethodCall([ $this, "sendEmailStack" ]);
     }
     self::$emailStack[] = $email;
+    return $this;
   }
 
   /**
    * Send all stacked emails.
    *
+   * @param \MovLib\Core\Config $config
+   *   Active global configuration instance.
+   * @param \MovLib\Core\Log $log
+   *   Active log instance.
    * @return this
    */
-  public function sendEmailStack() {
+  public function sendEmailStack(\MovLib\Core\Kernel $kernel, \MovLib\Core\Config $config, \MovLib\Core\Log $log) {
+    $this->config = $config;
     foreach (self::$emailStack as $email) {
       try {
         $this->email     = $email;
@@ -454,7 +458,7 @@ EOT;
         mail($this->getRecipient(), $this->getSubject(), $this->getMessage(), $this->getHeaders(), $this->getParameters());
       }
       catch (\Exception $e) {
-        Log::error($e);
+        $log->error($e);
       }
     }
     return $this;

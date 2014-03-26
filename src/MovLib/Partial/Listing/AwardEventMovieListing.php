@@ -38,40 +38,37 @@ class AwardEventMovieListing extends \MovLib\Partial\Listing\AwardMovieListing {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function getAdditionalContent($movie, $listItem) {
-    global $i18n;
-
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($movie->awardCategoryIds)) {
-      throw new \LogicException($i18n->t("\$movie->awardCategoryIds can not be empty!"));
+      throw new \LogicException($this->intl->t("\$movie->awardCategoryIds can not be empty!"));
     }
     if (empty($movie->awardCategoryWon)) {
-      throw new \LogicException($i18n->t("\$movie->awardCategoryWon can not be empty!"));
+      throw new \LogicException($this->intl->t("\$movie->awardCategoryWon can not be empty!"));
     }
     if (empty($movie->awardedCompanyIds)) {
-      throw new \LogicException($i18n->t("\$movie->awardedCompanyIds can not be empty!"));
+      throw new \LogicException($this->intl->t("\$movie->awardedCompanyIds can not be empty!"));
     }
     if (empty($movie->awardedPersonIds)) {
-      throw new \LogicException($i18n->t("\$movie->awardedPersonIds can not be empty!"));
+      throw new \LogicException($this->intl->t("\$movie->awardedPersonIds can not be empty!"));
     }
     if (count($movie->awardCategoryIds) != count($movie->awardCategoryWon)) {
-      throw new \LogicException($i18n->t("The count of \$movie->awardCategoryIds and \$movie->awardCategoryWon has to be equal!"));
+      throw new \LogicException($this->intl->t("The count of \$movie->awardCategoryIds and \$movie->awardCategoryWon has to be equal!"));
     }
     if (count($movie->awardCategoryIds) != count($movie->awardedCompanyIds)) {
-      throw new \LogicException($i18n->t("The count of \$movie->awardCategoryIds and \$movie->awardedCompanyIds has to be equal!"));
+      throw new \LogicException($this->intl->t("The count of \$movie->awardCategoryIds and \$movie->awardedCompanyIds has to be equal!"));
     }
     if (count($movie->awardCategoryIds) != count($movie->awardedPersonIds)) {
-      throw new \LogicException($i18n->t("The count of \$movie->awardCategoryIds and \$movie->awardedPersonIds has to be equal!"));
+      throw new \LogicException($this->intl->t("The count of \$movie->awardCategoryIds and \$movie->awardedPersonIds has to be equal!"));
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
 
     $awards       = null;
-    $hasWon       = $i18n->t("has won");
-    $wasNominated = $i18n->t("was nominated in");
+    $hasWon       = $this->intl->t("has won");
+    $wasNominated = $this->intl->t("was nominated in");
     $c            = count($movie->awardCategoryIds);
     for ($i = 0; $i < $c; ++$i) {
       $who = $how = $what = null;

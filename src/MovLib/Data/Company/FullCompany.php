@@ -92,15 +92,12 @@ class FullCompany extends \MovLib\Data\Company\Company {
   /**
    * Intantiate new Company.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param integer $id
    *   The company's unique ID to load.
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct($id = null) {
-    global $db, $i18n;
     // Try to load the company for the given identifier.
     if ($id) {
       $this->id = $id;
@@ -176,13 +173,10 @@ class FullCompany extends \MovLib\Data\Company\Company {
    * Insert a new company into the database.
    *
    * @todo Index data with Elastic.
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return $this
    * @throws \MovLib\Exception\DatabaseException
    */
   public function create() {
-    global $db, $i18n;
     $this->id = $db->query(
       "INSERT INTO `companies` SET
         `aliases` = ?,
@@ -215,14 +209,11 @@ class FullCompany extends \MovLib\Data\Company\Company {
   /**
    * Get the mysqli result for all movies this company was involved.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return \mysqli_result
    *   The mysqli result for all movies of this company.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMovieResult() {
-    global $db, $i18n;
     $result = $db->query(
       "SELECT
         `movies`.`id`,
@@ -289,13 +280,11 @@ class FullCompany extends \MovLib\Data\Company\Company {
   /**
    * Get the mysqli result for all releases this company was involved.
    *
-   * @global \MovLib\Data\Database $db
    * @return \mysqli_result
    *   The mysqli result for all releases of this company.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getReleasesResult() {
-    global $db;
     return $db->query(
       "SELECT
         `master_releases_labels`.`company_id` AS `company_id`,
@@ -313,7 +302,6 @@ class FullCompany extends \MovLib\Data\Company\Company {
    * Get the mysqli result for all series this company was involved.
    *
    * @todo Implement when series are implemented
-   * @global \MovLib\Data\Database $db
    * @return \mysqli_result
    *   The mysqli result for all series of this company.
    * @throws \MovLib\Exception\DatabaseException

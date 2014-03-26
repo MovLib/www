@@ -50,21 +50,17 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Instantiate new award category create presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
-
     $this->award = new Award((integer) $_SERVER["AWARD_ID"]);
 
-    $this->initPage($i18n->t("Create Category"));
+    $this->initPage($this->intl->t("Create Category"));
     $this->initBreadcrumb([
-      [ $i18n->rp("/awards"), $i18n->t("Awards") ],
+      [ $this->intl->rp("/awards"), $this->intl->t("Awards") ],
       [ $this->award->route, $this->award->name ],
-      [ $i18n->rp("/award/{0}/categories", [ $this->award->id ]), $i18n->t("Categories") ],
+      [ $this->intl->rp("/award/{0}/categories", [ $this->award->id ]), $this->intl->t("Categories") ],
     ]);
-    $this->breadcrumbTitle = $i18n->t("Create");
+    $this->breadcrumbTitle = $this->intl->t("Create");
     $this->initLanguageLinks("/award/{0}/category/create", [ (integer) $_SERVER["AWARD_ID"] ]);
 
     $kernel->stylesheets[] = "award";
@@ -76,13 +72,11 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function getContent() {
-    global $i18n;
     return new Alert(
-      $i18n->t("The create award category feature isn’t implemented yet."),
-      $i18n->t("Check back later"),
+      $this->intl->t("The create award category feature isn’t implemented yet."),
+      $this->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     );
   }

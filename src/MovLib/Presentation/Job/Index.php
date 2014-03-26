@@ -41,18 +41,15 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Instantiate new jobs show presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
-    $this->initPage($i18n->t("Jobs"));
+    $this->initPage($this->intl->t("Jobs"));
     $this->initBreadcrumb();
     $this->initLanguageLinks("/jobs", null, true);
     $this->paginationInit(Job::getTotalCount());
     $this->sidebarInit([
       [ $kernel->requestPath, $this->title, [ "class" => "ico ico-job" ] ],
-      [ $i18n->r("/job/random"), $i18n->t("Random") ],
+      [ $this->intl->r("/job/random"), $this->intl->t("Random") ],
     ]);
   }
 
@@ -64,23 +61,21 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
    * @inheritdoc
    */
   protected function getPageContent() {
-    global $i18n;
-
     $this->headingBefore =
-      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/job/create")}'>{$i18n->t("Create New Job")}</a>"
+      "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/job/create")}'>{$this->intl->t("Create New Job")}</a>"
     ;
 
     $result      = Job::getJobs($this->paginationOffset, $this->paginationLimit);
     $noItemText  = new Alert(
-      $i18n->t(
+      $this->intl->t(
         "We couldn’t find any job matching your filter criteria, or there simply aren’t any jobs available."
-      ), $i18n->t("No Jobs"), Alert::SEVERITY_INFO
+      ), $this->intl->t("No Jobs"), Alert::SEVERITY_INFO
     );
     $noItemText .=
-      $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/job/create")}'>", "</a>" ]);
+      $this->intl->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$this->intl->r("/job/create")}'>", "</a>" ]);
 
-    $moviesRoute = $i18n->rp("/job/{0}/movies", [ "{{ id }}" ]);
-    $seriesRoute = $i18n->rp("/job/{0}/series", [ "{{ id }}" ]);
+    $moviesRoute = $this->intl->rp("/job/{0}/movies", [ "{{ id }}" ]);
+    $seriesRoute = $this->intl->rp("/job/{0}/series", [ "{{ id }}" ]);
 
     return new EntityIndexListing($result, $noItemText, "Job", $moviesRoute, $seriesRoute);
   }

@@ -38,16 +38,13 @@ class Show extends \MovLib\Presentation\Award\AbstractBase {
   /**
    * Instantiate new award presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
-    global $i18n, $kernel;
     $this->award = new Award((integer) $_SERVER["AWARD_ID"]);
     $this->initPage($this->award->name);
     $this->initLanguageLinks("/award/{0}", [ $this->award->id]);
-    $this->initBreadcrumb([[ $i18n->rp("/awards"), $i18n->t("Awards") ]]);
+    $this->initBreadcrumb([[ $this->intl->rp("/awards"), $this->intl->t("Awards") ]]);
     $this->sidebarInit();
 
     $kernel->stylesheets[] = "award";
@@ -58,12 +55,8 @@ class Show extends \MovLib\Presentation\Award\AbstractBase {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   protected function getPageContent() {
-    global $i18n, $kernel;
-
     // Enhance the page title with microdata.
     $this->schemaType = "Intangible";
     $this->pageTitle  = "<span property='name'>{$this->award->name}</span>";
@@ -77,14 +70,14 @@ class Show extends \MovLib\Presentation\Award\AbstractBase {
 
     if ($this->award->firstAwardingYear && $this->award->lastAwardingYear) {
       $info .=
-        "<span>{$i18n->t("from {0} to {1}", [ $this->award->firstAwardingYear, $this->award->lastAwardingYear ])}</span>"
+        "<span>{$this->intl->t("from {0} to {1}", [ $this->award->firstAwardingYear, $this->award->lastAwardingYear ])}</span>"
       ;
     }
     else if ($this->award->firstAwardingYear) {
-      $info .= "<span>{$i18n->t("since {0}", [ $this->award->firstAwardingYear ])}</span>";
+      $info .= "<span>{$this->intl->t("since {0}", [ $this->award->firstAwardingYear ])}</span>";
     }
     else if ($this->award->lastAwardingYear) {
-      $info .= "<span>{$i18n->t("until {0}", [ $this->award->lastAwardingYear ])}</span>";
+      $info .= "<span>{$this->intl->t("until {0}", [ $this->award->lastAwardingYear ])}</span>";
     }
 
     // Construct the wikipedia link.
@@ -92,7 +85,7 @@ class Show extends \MovLib\Presentation\Award\AbstractBase {
       if ($info) {
         $info .= "<br>";
       }
-      $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->award->wikipedia}' itemprop='sameAs' target='_blank'>{$i18n->t("Wikipedia Article")}</a>";
+      $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->award->wikipedia}' itemprop='sameAs' target='_blank'>{$this->intl->t("Wikipedia Article")}</a>";
     }
 
     $headerImage = $this->getImage($this->award->getStyle(Award::STYLE_SPAN_02), true, [ "itemprop" => "image" ]);
@@ -106,7 +99,7 @@ class Show extends \MovLib\Presentation\Award\AbstractBase {
     $content = null;
     // Description section
     if ($this->award->description) {
-      $content .= $this->getSection("description", $i18n->t("Description"), $this->htmlDecode($this->award->description));
+      $content .= $this->getSection("description", $this->intl->t("Description"), $this->htmlDecode($this->award->description));
     }
 
     // Additional names section.
@@ -117,7 +110,7 @@ class Show extends \MovLib\Presentation\Award\AbstractBase {
       for ($i = 0; $i < $c; ++$i) {
         $aliases .= "<li class='mb10 s s10' property='additionalName'>{$awardAliases[$i]}</li>";
       }
-      $content .= $this->getSection("aliases", $i18n->t("Also Known As"), "<ul class='grid-list r'>{$aliases}</ul>");
+      $content .= $this->getSection("aliases", $this->intl->t("Also Known As"), "<ul class='grid-list r'>{$aliases}</ul>");
     }
 
      // External links section.
@@ -129,7 +122,7 @@ class Show extends \MovLib\Presentation\Award\AbstractBase {
         $hostname = str_replace("www.", "", parse_url($awardLinks[$i], PHP_URL_HOST));
         $links .= "<li class='mb10 s s10'><a href='{$awardLinks[$i]}' property='url' rel='nofollow' target='_blank'>{$hostname}</a></li>";
       }
-      $content .= $this->getSection("links", $i18n->t("External Links"), "<ul class='grid-list r'>{$links}</ul>");
+      $content .= $this->getSection("links", $this->intl->t("External Links"), "<ul class='grid-list r'>{$links}</ul>");
     }
 
     if ($content) {
@@ -137,8 +130,8 @@ class Show extends \MovLib\Presentation\Award\AbstractBase {
     }
 
     return new Alert(
-      $i18n->t("{sitename} has no further details about this award.", [ "sitename"    => $kernel->siteName ]),
-      $i18n->t("No Data Available"),
+      $this->intl->t("{sitename} has no further details about this award.", [ "sitename"    => $this->config->siteName ]),
+      $this->intl->t("No Data Available"),
       Alert::SEVERITY_INFO
     );
   }

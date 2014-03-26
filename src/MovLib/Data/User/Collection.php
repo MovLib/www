@@ -46,24 +46,20 @@ class Collection extends \MovLib\Data\Database {
   /**
    * Handling of movie collections.
    * 
-   * @global \MovLib\Data\User\Session $session
    */
   public function __construct() {
-    global $session;
     $this->userId = $session->userId;
   }
   
   /**
    * Get all available media conditions.
    * 
-   * @global \MovLib\Data\I18n $i18n
    * @staticvar array $mediaConditions
    *   Associative array with translated media conditions.
    * @return array
    *   Array with translated media conditions.
    */
   public static function getMediaConditions() {
-    global $i18n;
     static $mediaConditions = null;
     if (!isset($mediaConditions[$i18n->languageCode])) {
       $mediaConditions[$i18n->languageCode] = [
@@ -83,14 +79,12 @@ class Collection extends \MovLib\Data\Database {
   /**
    * Get all available sleeve conditions.
    * 
-   * @global \MovLib\Data\I18n $i18n
    * @staticvar array $sleeveConditions
    *   Associative array with translated sleeve conditions.
    * @return array
    *   Array with translated sleeve conditions.
    */
   public static function getSleeveConditions() {
-    global $i18n;
     static $sleeveConditions = null;
     if (!isset($sleeveConditions[$i18n->languageCode])) {
       $sleeveConditions[$i18n->languageCode] = [

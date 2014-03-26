@@ -17,6 +17,12 @@
  */
 namespace MovLib\Console;
 
+use \MovLib\Core\Config;
+use \MovLib\Core\FileSystem;
+use \MovLib\Core\Intl;
+use \MovLib\Core\Kernel;
+use \MovLib\Core\Log;
+
 /**
  * MovLib Command Line Interface Application.
  *
@@ -35,23 +41,26 @@ final class Application extends \Symfony\Component\Console\Application {
   /**
    * Instantiate new MovLib CLI application.
    *
-   * @global \MovLib\Core\Config $config
    * @param string $basename
    *   The basename of the executed binary (without extension).
    */
-  public function __construct($basename) {
-    global $config;
+  public function __construct($basename, Kernel $kernel, Config $config, Log $log, FileSystem $fs, Intl $intl) {
     parent::__construct($basename, $config->version);
     cli_set_process_title($basename);
 
+    // Guess the directory containing the commands, if the result is "Lig" then the "movlib.php" binary was invoked
+    // directly and we simply assume that "Admin" was meant.
     $commandDirectory = ucfirst(str_replace("mov", "", $basename));
+    if ($commandDirectory == "Lib") {
+      $commandDirectory = "Admin";
+    }
 
     /* @var $fileinfo \SplFileInfo */
     foreach (new \RegexIterator(new \DirectoryIterator("dr://src/MovLib/Console/Command/{$commandDirectory}"), "/\.php/") as $fileinfo) {
       $command   = "\\MovLib\\Console\\Command\\{$commandDirectory}\\{$fileinfo->getBasename(".php")}";
       $reflector = new \ReflectionClass($command);
       if ($reflector->isInstantiable() && $reflector->isSubclassOf("\\Symfony\\Component\\Console\\Command\\Command")) {
-        $this->add(new $command());
+        $this->add(new $command($kernel, $config, $log, $fs, $intl));
       }
     }
   }

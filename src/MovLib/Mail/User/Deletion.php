@@ -76,19 +76,16 @@ class Deletion extends \MovLib\Mail\AbstractEmail {
   /**
    * Initialize email properties.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @return this
    */
   public function init() {
-    global $i18n, $kernel;
     $this->recipient = $this->user->email;
-    $this->subject   = $i18n->t("Reqeusted Deletion");
+    $this->subject   = $this->intl->t("Reqeusted Deletion");
     $token           = (new Temporary())->set([
       "user_id"  => $this->user->id,
       "deletion" => true,
     ]);
-    $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$kernel->requestURI}?{$i18n->r("token")}={$token}";
+    $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$kernel->requestURI}?{$this->intl->r("token")}={$token}";
     return $this;
   }
 
@@ -96,19 +93,17 @@ class Deletion extends \MovLib\Mail\AbstractEmail {
    * @inheritdoc
    */
   public function getHTML() {
-    global $i18n;
-    return
-      "<p>{$i18n->t("Hi {0}!", [ $this->user->name ])}</p>" .
-      "<p>{$i18n->t("You (or someone else) requested to delete your account.")} {$i18n->t("You may now confirm this action by {0}clicking this link{1}.", [
+      "<p>{$this->intl->t("Hi {0}!", [ $this->user->name ])}</p>" .
+      "<p>{$this->intl->t("You (or someone else) requested to delete your account.")} {$this->intl->t("You may now confirm this action by {0}clicking this link{1}.", [
         "<a href='{$this->link}'>",
         "</a>"
       ])}</p>" .
-      "<p>{$i18n->t("This link can only be used once within the next 24 hours.")} {$i18n->t(
+      "<p>{$this->intl->t("This link can only be used once within the next 24 hours.")} {$this->intl->t(
         "Once you click the link above your account will be deleted and all your personal data will be purged. " .
         "Please note that you won’t be able to sign in anymore and there is no possibility to reclaim your account " .
         "later on."
       )}<br>" .
-      "{$i18n->t("If it wasn’t you who requested this action simply ignore this message.")}</p>"
+      "{$this->intl->t("If it wasn’t you who requested this action simply ignore this message.")}</p>"
     ;
   }
 
@@ -116,20 +111,19 @@ class Deletion extends \MovLib\Mail\AbstractEmail {
    * @inheritdoc
    */
   public function getPlainText() {
-    global $i18n;
     return <<<EOT
-{$i18n->t("Hi {0}!", [ $this->user->name ])}
+{$this->intl->t("Hi {0}!", [ $this->user->name ])}
 
-{$i18n->t("You (or someone else) requested to deactivate your account.")} {$i18n->t("You may now confirm this action by clicking the following link or copying and pasting it to your browser:")}
+{$this->intl->t("You (or someone else) requested to deactivate your account.")} {$this->intl->t("You may now confirm this action by clicking the following link or copying and pasting it to your browser:")}
 
 {$this->link}
 
-{$i18n->t("This link can only be used once within the next 24 hours.")} {$i18n->t(
+{$this->intl->t("This link can only be used once within the next 24 hours.")} {$this->intl->t(
   "Once you click the link above your account will be deleted and all your personal data will be purged. " .
   "Please note that you won’t be able to sign in anymore and there is no possibility to reclaim your account " .
   "later on."
 )}
-{$i18n->t("If it wasn’t you who requested this action simply ignore this message.")}
+{$this->intl->t("If it wasn’t you who requested this action simply ignore this message.")}
 EOT;
   }
 

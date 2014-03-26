@@ -37,12 +37,8 @@ final class LanguageSelection extends \MovLib\Presentation\AbstractPresenter {
 
   /**
    * {@inheritdoc}
-   * @global \MovLib\Core\Config $config
-   * @global \MovLib\Core\I18n $i18n
    */
   public function getContent() {
-    global $config, $i18n;
-
     $prerender = $menuitems = null;
     foreach ($config->locales as $code => $locale) {
       $href = "//{$code}.{$config->hostname}/";
@@ -52,23 +48,20 @@ final class LanguageSelection extends \MovLib\Presentation\AbstractPresenter {
       $menuitems[] = [ $href, \Locale::getDisplayLanguage($locale, $code), [ "lang" => $code ] ];
     }
 
-    $navigation       = new Navigation($i18n->t("Available Languages"), $menuitems, [ "class" => "well well-lg" ]);
+    $navigation       = new Navigation($this->intl->t("Available Languages"), $menuitems, [ "class" => "well well-lg" ]);
     $navigation->glue = " / ";
 
-    return "{$prerender}<p>{$i18n->t("Please select your preferred language from the following list.")}</p>{$navigation}";
+    return "{$prerender}<p>{$this->intl->t("Please select your preferred language from the following list.")}</p>{$navigation}";
   }
 
   /**
    * {@inheritdoc}
-   * @global \MovLib\Core\I18n $i18n
    */
   public function getFooter() {
-    global $i18n;
-    return
-      "<footer id='f'><div class='c'><div class='r'><p>{$i18n->t(
+      "<footer id='f'><div class='c'><div class='r'><p>{$this->intl->t(
         "Is your language missing from our list? Help us translate {sitename} to your language. More information can " .
         "be found at {0}our translation portal{1}.",
-        [ "<a href='{$i18n->r("/localize")}'>", "</a>", "sitename" => $this->siteName ]
+        [ "<a href='{$this->intl->r("/localize")}'>", "</a>", "sitename" => $this->config->siteName ]
       )}</p></div></div></footer>"
     ;
   }
@@ -80,11 +73,8 @@ final class LanguageSelection extends \MovLib\Presentation\AbstractPresenter {
 
   /**
    * {@inheritdoc}
-   * @global \MovLib\Core\Config $config
    */
   public function getMainContent($content) {
-    global $config;
-    return
       "<main class='{$this->id}-content' id='m' role='main'><div class='c'>" .
         "<h1 class='cf'>" .
           "<img alt='' height='192' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='192'>" .
@@ -96,13 +86,10 @@ final class LanguageSelection extends \MovLib\Presentation\AbstractPresenter {
 
   /**
    * {@inheritdoc}
-   * @global \MovLib\Core\Config $config
-   * @global \MovLib\Core\I18n $i18n
    */
   protected function init() {
-    global $config, $i18n;
-    $this->initPage($i18n->t("Language Selection"));
-    $this->next("//{$i18n->languageCode}.{$config->hostname}/");
+    $this->initPage($this->intl->t("Language Selection"));
+    $this->next("//{$this->intl->languageCode}.{$config->hostname}/");
     $this->stylesheets[] = "language-selection";
   }
 

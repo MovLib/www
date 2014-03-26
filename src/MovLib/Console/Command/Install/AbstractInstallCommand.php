@@ -31,20 +31,20 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\AbstractCommand {
+abstract class AbstractInstallCommand extends \MovLib\Console\Command\AbstractCommand {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
-  /**
-   * @inheritdoc
-   */
-  public function __construct($name = null) {
-    parent::__construct($name);
-    $this->addOption("environment", "e", InputOption::VALUE_OPTIONAL, "The environment we're currenlty working with.", "dist");
-    $this->addOption("keep", "k", InputOption::VALUE_NONE, "Keep downloaded source files on disc.");
-  }
+//  /**
+//   * @inheritdoc
+//   */
+//  public function __construct($name = null) {
+//    parent::__construct($name);
+//    $this->addOption("environment", "e", InputOption::VALUE_OPTIONAL, "The environment we're currenlty working with.", "dist");
+//    $this->addOption("keep", "k", InputOption::VALUE_NONE, "Keep downloaded source files on disc.");
+//  }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
@@ -79,7 +79,6 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
   /**
    * Install package with checkinstall command.
    *
-   * @global \MovLib\Tool\Kernel $kernel
    * @param type $directory
    * @param type $name
    * @param type $version
@@ -87,8 +86,6 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
    * @return type
    */
   final protected function checkinstall($directory, $name, $version, array $arguments = []) {
-    global $kernel;
-
     if (strpos($name, "movlib-") === false) {
       $this->writeDebug("Adding 'movlib-' to package name, which results in 'movlib-{$name}'...");
       $name = "movlib-{$name}";
@@ -165,7 +162,6 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
   /**
    * Download a file.
    *
-   * @global \MovLib\Tool\Kernel $kernel
    * @param string $url
    *   The URL of the file to download.
    * @param null|string $destination [optional]
@@ -181,8 +177,6 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
    * @throws \RuntimeException
    */
   final protected function download($url, $destination = null, $name = null, $delete = null) {
-    global $kernel;
-
     if (!isset($name)) {
       $name = basename($url, ".git");
     }
@@ -230,11 +224,8 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
 
   /**
    * @inheritdoc
-   * @global \MovLib\Tool\Kernel $kernel
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    global $kernel;
-
     $this->writeDebug("Generating global configuration...", self::MESSAGE_TYPE_COMMENT);
     $etc = "{$kernel->documentRoot}/etc/movlib";
     $env = $input->getOption("environment");
@@ -283,7 +274,6 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
   /**
    * Extract given source archive to target directory.
    *
-   * @global \MovLib\Tool\Kernel $kernel
    * @param string $source
    *   Absolute path to the source archive.
    * @param null|string $target [optional]
@@ -299,8 +289,6 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
    * @throws \UnexpectedValueException
    */
   final protected function extract($source, $target = null, $delete = null) {
-    global $kernel;
-
     if (realpath($source) === false) {
       throw new \UnexpectedValueException("\$source must point to an existing archive on the local file system");
     }
@@ -336,7 +324,6 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
   /**
    * Expland placeholder tokens.
    *
-   * @global \MovLib\Tool\Kernel $kernel
    * @param string|array $placeholders
    *   The string or array containing the placeholders.
    * @param array $tokens
@@ -345,7 +332,6 @@ abstract class AbstractInstallCommand extends \MovLib\Tool\Console\Command\Abstr
    * @throws \RuntimeException
    */
   final public function expandPlaceholderTokens(&$placeholders, array $tokens) {
-    global $kernel;
     $tokens = array_merge([
       "user"  => $kernel->configuration->user,
       "group" => $kernel->configuration->group,

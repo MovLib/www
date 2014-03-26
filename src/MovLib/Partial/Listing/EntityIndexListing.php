@@ -76,10 +76,8 @@ class EntityIndexListing extends \MovLib\Partial\Listing\EntityListing {
    * @param string $seriesRoute
    *   The translated entity series route containing <code>{{ id }}</code> as placeholder for
    *   the entity id (e.g. "/award/1/category/{{ id }}/series".
-   * @global \MovLib\Data\I18n $i18n
    */
   public function __construct($listItems, $noItemsText, $entityName, $moviesRoute, $seriesRoute) {
-    global $i18n;
     // @devStart
     // @codeCoverageIgnoreStart
     if (method_exists("\\MovLib\\Data\\{$entityName}", "getMoviesCount") === false) {
@@ -95,9 +93,9 @@ class EntityIndexListing extends \MovLib\Partial\Listing\EntityListing {
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    $this->moviesTitle = $i18n->t("Movies");
+    $this->moviesTitle = $this->intl->t("Movies");
     $this->moviesRoute = $moviesRoute;
-    $this->seriesTitle = $i18n->t("Series");
+    $this->seriesTitle = $this->intl->t("Series");
     $this->seriesRoute = $seriesRoute;
     parent::__construct($listItems, $noItemsText, $entityName);
   }

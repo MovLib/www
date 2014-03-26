@@ -47,8 +47,6 @@ final class PersonMovieListing extends \MovLib\Partial\Listing\MovieListing {
    * @inheritdoc
    */
   public function __toString() {
-    global $i18n;
-
     // @devStart
     // @codeCoverageIgnoreStart
     try {
@@ -64,8 +62,8 @@ final class PersonMovieListing extends \MovLib\Partial\Listing\MovieListing {
 
       if ($this->noItemsText) {
         $this->noItemsText = new Alert(
-          $i18n->t("This person hasn’t worked on any movies yet."),
-          $i18n->t("No Movies"),
+          $this->intl->t("This person hasn’t worked on any movies yet."),
+          $this->intl->t("No Movies"),
           Alert::SEVERITY_INFO
         );
       }
@@ -83,15 +81,12 @@ final class PersonMovieListing extends \MovLib\Partial\Listing\MovieListing {
 
   /**
    * {@inheritdoc}
-   * @global \MovLib\Data\I18n $i18n
    * @param \MovLib\Data\Movie\FullMovie $movie
    *   {@inheritdoc}
    * @param \MovLib\Stub\Data\Person\PersonMovie $personMovie
    *   The list item containing all director, role and job information.
    */
   protected function getAdditionalContent($movie, $personMovie = null) {
-    global $i18n;
-
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($movie instanceof \MovLib\Data\Movie\FullMovie)) {
@@ -103,7 +98,7 @@ final class PersonMovieListing extends \MovLib\Partial\Listing\MovieListing {
     $jobs = null;
 
     if (isset($personMovie->director)) {
-      $jobs .= "<li><a href='{$i18n->r("/job/{0}", [ $personMovie->director->id ])}'>{$personMovie->director->title}</a></li>";
+      $jobs .= "<li><a href='{$this->intl->r("/job/{0}", [ $personMovie->director->id ])}'>{$personMovie->director->title}</a></li>";
     }
 
     // Construct cast info.
@@ -114,20 +109,20 @@ final class PersonMovieListing extends \MovLib\Partial\Listing\MovieListing {
           $roles .= ", ";
         }
         if ($id) {
-          $roles .= "<a href='{$i18n->r("/person/{0}", [ $id ])}'>{$name}</a>";
+          $roles .= "<a href='{$this->intl->r("/person/{0}", [ $id ])}'>{$name}</a>";
         }
         else {
           $roles .= $name;
         }
       }
       if ($roles) {
-        $roles = " <em>{$i18n->t("as")}</em> {$roles}";
+        $roles = " <em>{$this->intl->t("as")}</em> {$roles}";
       }
-      $jobs .= "<li><a href='{$i18n->r("/job/{0}", [ $personMovie->cast->id ])}'>{$personMovie->cast->title}</a>{$roles}</li>";
+      $jobs .= "<li><a href='{$this->intl->r("/job/{0}", [ $personMovie->cast->id ])}'>{$personMovie->cast->title}</a>{$roles}</li>";
     }
 
     foreach ($personMovie->jobs as $id => $title) {
-      $jobs .= "<li><a href='{$i18n->r("/job/{0}", [ $id ])}'>{$title}</a></li>";
+      $jobs .= "<li><a href='{$this->intl->r("/job/{0}", [ $id ])}'>{$title}</a></li>";
     }
 
     if ($jobs) {

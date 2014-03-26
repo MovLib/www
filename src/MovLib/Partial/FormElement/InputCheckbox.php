@@ -90,14 +90,11 @@ final class InputCheckbox extends \MovLib\Partial\FormElement\AbstractFormElemen
   /**
    * Validate the form element's submitted value.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param array $errors
    *   Array to collect error messages.
    * @return this
    */
   public function validate(&$errors) {
-    global $i18n;
-
     // A single checkbox only has two states: checked and not checked
     $this->value = !empty($_POST[$this->id]);
 
@@ -105,7 +102,7 @@ final class InputCheckbox extends \MovLib\Partial\FormElement\AbstractFormElemen
     // are usually much longer than labels of other input elements. Presentations should override this and display a
     // meaningful error message.
     if ($this->value === false && $this->required) {
-      $errors[self::ERROR_REQUIRED] = $i18n->t("The checkbox is required.");
+      $errors[self::ERROR_REQUIRED] = $this->intl->t("The checkbox is required.");
     }
 
     return $this;

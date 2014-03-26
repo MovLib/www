@@ -63,7 +63,6 @@ class PasswordChange extends \MovLib\Mail\AbstractEmail {
   /**
    * Instantiate new user password change email.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param \MovLib\Data\Full $user
    *   The user who requested the password change.
    * @param string $rawPassword
@@ -91,14 +90,11 @@ class PasswordChange extends \MovLib\Mail\AbstractEmail {
   /**
    * Initialize email properties.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @return this
    */
   public function init() {
-    global $i18n, $kernel;
     $this->recipient = $this->user->email;
-    $this->subject   = $i18n->t("Requested Password Change");
+    $this->subject   = $this->intl->t("Requested Password Change");
     $token           = (new Temporary())->set([
       "user_id"      => $this->user->id,
       "new_password" => $this->user->hashPassword($this->rawPassword),
@@ -109,36 +105,31 @@ class PasswordChange extends \MovLib\Mail\AbstractEmail {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    */
   public function getHTML() {
-    global $i18n;
-    return
-      "<p>{$i18n->t("Hi {0}!", [ $this->user->name ])}</p>" .
-      "<p>{$i18n->t("You (or someone else) requested to change your account’s password.")} {$i18n->t("You may now confirm this action by {0}clicking this link{1}.", [
+      "<p>{$this->intl->t("Hi {0}!", [ $this->user->name ])}</p>" .
+      "<p>{$this->intl->t("You (or someone else) requested to change your account’s password.")} {$this->intl->t("You may now confirm this action by {0}clicking this link{1}.", [
         "<a href='{$this->link}'>",
         "</a>"
       ])}</p>" .
-      "<p>{$i18n->t("This link can only be used once within the next 24 hours.")} {$i18n->t("Once you click the link above, you won’t be able to sign in with your old password.")}<br>" .
-      "{$i18n->t("If it wasn’t you who requested this action simply ignore this message.")}</p>"
+      "<p>{$this->intl->t("This link can only be used once within the next 24 hours.")} {$this->intl->t("Once you click the link above, you won’t be able to sign in with your old password.")}<br>" .
+      "{$this->intl->t("If it wasn’t you who requested this action simply ignore this message.")}</p>"
     ;
   }
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    */
   public function getPlainText() {
-    global $i18n;
     return <<<EOT
-{$i18n->t("Hi {0}!", [ $this->user->name ])}
+{$this->intl->t("Hi {0}!", [ $this->user->name ])}
 
-{$i18n->t("You (or someone else) requested to change your account’s password.")} {$i18n->t("You may now confirm this action by clicking the following link or copying and pasting it to your browser:")}
+{$this->intl->t("You (or someone else) requested to change your account’s password.")} {$this->intl->t("You may now confirm this action by clicking the following link or copying and pasting it to your browser:")}
 
 {$this->link}
 
-{$i18n->t("This link can only be used once within the next 24 hours.")} {$i18n->t("Once you click the link above, you won’t be able to sign in with your old password.")}
-{$i18n->t("If it wasn’t you who requested this action simply ignore this message.")}
+{$this->intl->t("This link can only be used once within the next 24 hours.")} {$this->intl->t("Once you click the link above, you won’t be able to sign in with your old password.")}
+{$this->intl->t("If it wasn’t you who requested this action simply ignore this message.")}
 EOT;
   }
 

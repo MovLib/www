@@ -28,7 +28,7 @@ namespace MovLib\Mail;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractEmail extends \MovLib\Presentation\AbstractBase {
+abstract class AbstractEmail {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -51,6 +51,20 @@ abstract class AbstractEmail extends \MovLib\Presentation\AbstractBase {
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
+
+  /**
+   * The dependency injection container.
+   *
+   * @var \MovLib\Core\DIContainer
+   */
+  protected $diContainer;
+
+  /**
+   * Active intl instance.
+   *
+   * @var \MovLib\Core\Intl
+   */
+  protected $intl;
 
   /**
    * The email's priority.
@@ -85,9 +99,10 @@ abstract class AbstractEmail extends \MovLib\Presentation\AbstractBase {
    * @param string $subject
    *   The email's subject, must comply with {@link http://www.ietf.org/rfc/rfc2047.txt RFC 2047}.
    */
-  public function __construct($recipient, $subject) {
-    $this->recipient = $recipient;
-    $this->subject   = $subject;
+  public function __construct(\MovLib\Core\DIContainer $diContainer, $recipient, $subject) {
+    $this->diContainer = $diContainer;
+    $this->recipient   = $recipient;
+    $this->subject     = $subject;
   }
 
 

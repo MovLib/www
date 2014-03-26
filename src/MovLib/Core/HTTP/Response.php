@@ -57,8 +57,8 @@ final class Response {
   /**
    * Instantiate new HTTP request object.
    */
-  public function __construct() {
-    $this->cacheable = $_SERVER["REQUEST_METHOD"] == "GET";
+  public function __construct($requestMethod) {
+    $this->cacheable = $requestMethod == "GET";
   }
 
 
@@ -68,8 +68,6 @@ final class Response {
   /**
    * Create cookie.
    *
-   * @global \MovLib\Core\Config $config
-   * @global \MovLib\Core\HTTP\Request $request
    * @param string $identifier
    *   The cookie's global unique identifier.
    * @param mixed $value
@@ -83,7 +81,6 @@ final class Response {
    * @return this
    */
   public function createCookie($identifier, $value, $expire = 0, $httpOnly = false) {
-    global $config, $request;
     setcookie($identifier, $value, $expire, "/", $config->hostname, $request->https, $httpOnly);
     return $this;
   }
@@ -105,15 +102,12 @@ final class Response {
   /**
    * Get the response.
    *
-   * @global \MovLib\Presentation\AbstractPresenter $presenter
    * @param string $siteName
    *   The site's name.
    * @return string
    *   The response.
    */
   public function respond($siteName) {
-    global $presenter;
-
     try {
       $className = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
       $presenter = new $className($siteName);

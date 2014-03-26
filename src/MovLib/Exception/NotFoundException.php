@@ -36,12 +36,10 @@ final class NotFoundException extends \RuntimeException implements \MovLib\Excep
   /**
    * Get the exception's content.
    *
-   * @global \MovLib\Presentation\AbstractPresenter $presenter
    * @return string
    *   The exception's content.
    */
   public function getContent() {
-    global $i18n, $presenter;
     http_response_code(404);
     return;
   }

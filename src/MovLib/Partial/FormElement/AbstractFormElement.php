@@ -27,7 +27,7 @@ namespace MovLib\Partial\FormElement;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
+abstract class AbstractFormElement {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -52,11 +52,25 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
   protected $attributes;
 
   /**
+   * The global config instance.
+   *
+   * @var \MovLib\Core\Config
+   */
+  protected $config;
+
+  /**
    * Attribute used to collect error messages during validation.
    *
    * @var mixed
    */
   protected $errors;
+
+  /**
+   * The active file system instance.
+   *
+   * @var \MovLib\Core\FileSystem
+   */
+  protected $fs;
 
   /**
    * The form element's help popup (if any).
@@ -82,6 +96,20 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
   public $id;
 
   /**
+   * The active intl instance.
+   *
+   * @var \MovLib\Core\Intl
+   */
+  protected $intl;
+
+  /**
+   * The active kernel instance.
+   *
+   * @var \MovLib\Core\Kernel
+   */
+  protected $kernel;
+
+  /**
    * The form element's label content.
    *
    * @var string
@@ -89,11 +117,39 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
   protected $label;
 
   /**
+   * The presenting presenter.
+   *
+   * @var \MovLib\Presentation\AbstractPresenter
+   */
+  protected $presenter;
+
+  /**
+   * The active request instance.
+   *
+   * @var \MovLib\Core\HTTP\Request
+   */
+  protected $request;
+
+  /**
    * Contains a popup that describes that this form element is required.
    *
    * @var string
    */
   protected $required;
+
+  /**
+   * The active response instance.
+   *
+   * @var \MovLib\Core\HTTP\Response
+   */
+  protected $response;
+
+  /**
+   * The active session instance.
+   *
+   * @var \MovLib\Core\HTTP\Session
+   */
+  protected $session;
 
   /**
    * The form element's atomic value.
@@ -109,6 +165,8 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
   /**
    * Instantiate new form element.
    *
+   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   *   HTTP dependency injection container.
    * @param string $id
    *   The form element's unique global identifier.
    * @param string $label
@@ -117,10 +175,16 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    *   The form element's atomic value.
    * @param array $attributes [optional]
    *   The form element's attributes array, defaults to <code>NULL</code> (no additional attributes).
-   * @global \MovLib\Data\I18n $i18n
    */
-  public function __construct($id, $label, &$value, array $attributes = null) {
-    global $i18n;
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, &$value, array $attributes = null) {
+    $this->config    = $diContainerHTTP->config;
+    $this->fs        = $diContainerHTTP->fs;
+    $this->intl      = $diContainerHTTP->intl;
+    $this->kernel    = $diContainerHTTP->kernel;
+    $this->presenter = $diContainerHTTP->presenter;
+    $this->request   = $diContainerHTTP->request;
+    $this->response  = $diContainerHTTP->response;
+    $this->session   = $diContainerHTTP->session;
 
     // @devStart
     // @codeCoverageIgnoreStart
@@ -146,7 +210,7 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
     $ariaDescribedby = null;
     if (isset($this->attributes["required"])) {
       $ariaDescribedby[] = "required";
-      $this->required    = "<div class='fr ico ico-alert popup' id='{$this->id}-required' role='note'><small class='content'>{$i18n->t("This field is required.")}</small></div>";
+      $this->required    = "<div class='fr ico ico-alert popup' id='{$this->id}-required' role='note'><small class='content'>{$this->intl->t("This field is required.")}</small></div>";
     }
 
     // Add help popup to form element.
@@ -202,21 +266,18 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
   /**
    * Validate the form element's submitted value.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param array $errors
    *   Array to collect error messages.
    * @return this
    */
   public function validate(&$errors) {
-    global $i18n;
-
     // Check if a value was submitted for this form element.
     if (empty($_POST[$this->id])) {
       // Make sure that the value is really NULL and not an empty string or similar (important for storing).
       $this->value = null;
 
       // If this is a required field, empty values are not permited.
-      $this->required && ($errors[self::ERROR_REQUIRED] = $i18n->t("The “{0}” field is required.", [ $this->label ]));
+      $this->required && ($errors[self::ERROR_REQUIRED] = $this->intl->t("The “{0}” field is required.", [ $this->label ]));
     }
     // Let the concrete class validate the value if we have one.
     else {

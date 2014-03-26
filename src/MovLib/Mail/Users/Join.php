@@ -85,15 +85,12 @@ class Join extends \MovLib\Mail\AbstractEmail {
    *
    * @internal
    *   We base64 encode the email address because it looks akward having your own email address as part of a URL.
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @return this
    */
   public function init() {
-    global $i18n, $kernel;
     $this->recipient = $this->user->email;
-    $this->subject   = $i18n->t("Welcome to {0}!", [ $kernel->siteName ]);
-    $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$i18n->r("/profile/join")}?{$i18n->r("token")}=" . rawurlencode(base64_encode($this->recipient));
+    $this->subject   = $this->intl->t("Welcome to {0}!", [ $kernel->siteName ]);
+    $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$this->intl->r("/profile/join")}?{$this->intl->r("token")}=" . rawurlencode(base64_encode($this->recipient));
     $key             = "jointoken{$this->user->email}";
     $tmp             = new Temporary();
     $user            = $tmp->get($key);
@@ -108,49 +105,42 @@ class Join extends \MovLib\Mail\AbstractEmail {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function getHTML() {
-    global $i18n, $kernel;
-    return
-      "<p>{$i18n->t("Hi {username}!", [ "username" => $this->user->name ])}</p>" .
-      "<p>{$i18n->t("Thank you for joining {0}. You may now sign in and activate your new account by {1}clicking this link{2}.", [
+      "<p>{$this->intl->t("Hi {username}!", [ "username" => $this->user->name ])}</p>" .
+      "<p>{$this->intl->t("Thank you for joining {0}. You may now sign in and activate your new account by {1}clicking this link{2}.", [
         $kernel->siteName,
         "<a href='{$this->link}'>",
         "</a>"
       ])}</p>" .
-      "<p>{$i18n->t("This link can only be used once within the next 24 hours.")}<br>" .
-      "{$i18n->t("You will be able to sign in with the following data:")}</p>" .
+      "<p>{$this->intl->t("This link can only be used once within the next 24 hours.")}<br>" .
+      "{$this->intl->t("You will be able to sign in with the following data:")}</p>" .
       "<table>" .
-        "<tr><td>{$i18n->t("Email Address")}:</td><td>{$this->user->email}</td><tr>" .
-        "<tr><td>{$i18n->t("Password")}:</td><td><em>{$i18n->t("Your secret password")}</em></td></tr>" .
+        "<tr><td>{$this->intl->t("Email Address")}:</td><td>{$this->user->email}</td><tr>" .
+        "<tr><td>{$this->intl->t("Password")}:</td><td><em>{$this->intl->t("Your secret password")}</em></td></tr>" .
       "</table>" .
-      "<p>{$i18n->t("If it wasn’t you who requested this action simply ignore this message.")}</p>"
+      "<p>{$this->intl->t("If it wasn’t you who requested this action simply ignore this message.")}</p>"
     ;
   }
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function getPlainText() {
-    global $i18n, $kernel;
     return <<<EOT
-{$i18n->t("Hi {username}!", [ "username" => $this->user->name ])}
+{$this->intl->t("Hi {username}!", [ "username" => $this->user->name ])}
 
-{$i18n->t("Thank your for joining {sitename}. You may now sign in and activate your new account by clicking the following link or copying and pasting it to your browser:", [ "sitename" => $kernel->siteName ])}
+{$this->intl->t("Thank your for joining {sitename}. You may now sign in and activate your new account by clicking the following link or copying and pasting it to your browser:", [ "sitename" => $kernel->siteName ])}
 
 {$this->link}
 
-{$i18n->t("This link can only be used once within the next 24 hours.")}
-{$i18n->t("You will be able to sign in with the following data:")}
+{$this->intl->t("This link can only be used once within the next 24 hours.")}
+{$this->intl->t("You will be able to sign in with the following data:")}
 
-{$i18n->t("Email Address")}:  '{$this->user->email}'
-{$i18n->t("Password")}:       '{$i18n->t("Your secret password")}'
+{$this->intl->t("Email Address")}:  '{$this->user->email}'
+{$this->intl->t("Password")}:       '{$this->intl->t("Your secret password")}'
 
-{$i18n->t("If it wasn’t you who requested this action simply ignore this message.")}
+{$this->intl->t("If it wasn’t you who requested this action simply ignore this message.")}
 EOT;
   }
 

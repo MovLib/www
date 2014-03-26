@@ -40,23 +40,21 @@ trait TraitGone {
   /**
    * Get the content for gone pages.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return \MovLib\Presentation\Partial\Alert
    *   The gone alert message.
    */
   protected function goneGetContent() {
-    global $i18n;
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($this->goneAlertMessage)) {
-      throw new \LogicException($i18n->t("You have to provide a message for the gone page!"));
+      throw new \LogicException($this->intl->t("You have to provide a message for the gone page!"));
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
 
     return new Alert(
-      "<p>{$i18n->t("The deletion message is provided below for reference.")}</p><p>{$this->goneAlertMessage}</p>",
-      $i18n->t("This page has been deleted."),
+      "<p>{$this->intl->t("The deletion message is provided below for reference.")}</p><p>{$this->goneAlertMessage}</p>",
+      $this->intl->t("This page has been deleted."),
       Alert::SEVERITY_ERROR
     );
   }

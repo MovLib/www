@@ -169,16 +169,12 @@ class Movie {
   /**
    * Instantiate new movie.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\Database $db
    * @param integer $id [optional]
    *   The movie's unique identifier to load, defaults to no identifier which creates an empty movie object.
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct($id = null) {
-    global $i18n, $db;
-
     // Try to load the movie if an identifier was passed to the constructor.
     if ($id) {
       $query = self::$query;
@@ -214,8 +210,6 @@ class Movie {
    * Get paginated movies result.
    *
    * @internal The returned {@see \mysqli_result} is prepared for direct instantiating via fetch object of this class.
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param integer $offset
    *   The offset, usually provided by the pagination trait.
    * @param integer $rowCount
@@ -224,7 +218,6 @@ class Movie {
    *   Paginated movies result.
    */
   public static function getMovies($offset, $rowCount) {
-    global $db, $i18n;
     $query = self::$query;
     return $db->query("{$query} WHERE `movies`.`deleted` = false ORDER BY `movies`.`id` DESC LIMIT ? OFFSET ?", "ssii", [
       $i18n->languageCode, $i18n->languageCode, $rowCount, $offset
@@ -234,7 +227,6 @@ class Movie {
   /**
    * Get total movies count.
    *
-   * @global \MovLib\Data\Database $db
    * @param null|boolean $deleted [optional]
    *   Pass <code>TRUE</code> to count only deleted movies, <code>NULL</code> to count absolutely all movies and
    *   <code>FALSE</code> (default) to count only undeleted movies.
@@ -243,8 +235,6 @@ class Movie {
    * @throws \MovLib\Exception\DatabaseException
    */
   public static function getMoviesCount($deleted = false) {
-    global $db;
-
     // It's not a problem that we aren't usign a prepared statement to insert the deleted state because 99% of all
     // queries calling this method will use the default.
     $where = null;
@@ -259,13 +249,11 @@ class Movie {
   /**
    * Get random movie identifier.
    *
-   * @global \MovLib\Data\Database $db
    * @return integer|null
    *   Random movie identifier, or <code>NULL</code> on failure.
    * @throws \MovLib\Exception\DatabaseException
    */
   public static function getRandomMovieId() {
-    global $db;
     $result = $db->query("SELECT `id` FROM `movies` WHERE `deleted` = false ORDER BY RAND() LIMIT 1")->get_result()->fetch_row();
     if (isset($result[0])) {
       return $result[0];
@@ -275,8 +263,6 @@ class Movie {
   /**
    * Get the rating of a specific user for this movie.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\User\Session $session
    * @param integer $userId
    *   The user's ID to get the rating for.
    * @return null|integer
@@ -284,8 +270,6 @@ class Movie {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getUserRating($userId) {
-    global $db;
-
     // Guardian pattern.
     if ($this->userRating !== false) {
       return [ "rating" => $this->userRating, "created" => $this->userRatingCreated ];
@@ -302,14 +286,11 @@ class Movie {
   /**
    * Fetch rated movies for a user.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param integer $userId
    *   The user's ID to fetch the ratings for.
    * @return \mysqli_result
    */
   public static function getUserRatings($userId) {
-    global $db, $i18n;
     return $db->query(
       "SELECT
         `movies`.`id`,
@@ -350,14 +331,10 @@ class Movie {
   /**
    * Initialize the loaded movie.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
   public function init() {
-    global $db, $i18n;
-
     // Build the route to the movie.
     $this->route = $i18n->r("/movie/{0}", [ $this->id ]);
 

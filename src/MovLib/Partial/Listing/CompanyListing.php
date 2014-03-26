@@ -71,13 +71,10 @@ class CompanyListing extends \MovLib\Presentation\AbstractBase {
   /**
    * Get the string representation of the listing.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The string representation of the listing.
    */
   public function __toString() {
-    global $i18n;
-
     // @devStart
     // @codeCoverageIgnoreStart
     try {
@@ -89,7 +86,7 @@ class CompanyListing extends \MovLib\Presentation\AbstractBase {
         // @devStart
         // @codeCoverageIgnoreStart
         if (!($company instanceof \MovLib\Data\Company\Company)) {
-          throw new \LogicException($i18n->t("\$company has to be a valid company object!"));
+          throw new \LogicException($this->intl->t("\$company has to be a valid company object!"));
         }
         // @codeCoverageIgnoreEnd
         // @devEnd
@@ -102,12 +99,12 @@ class CompanyListing extends \MovLib\Presentation\AbstractBase {
 
       if (!$this->noItemsText) {
         $this->noItemsText = new Alert(
-          $i18n->t(
+          $this->intl->t(
             "We couldn’t find any company matching your filter criteria, or there simply isn’t any company available." .
             "Would you like to {0}create a new entry{1}?",
-            [ "<a href='{$i18n->r("/company/create")}'>", "</a>" ]
+            [ "<a href='{$this->intl->r("/company/create")}'>", "</a>" ]
           ),
-          $i18n->t("No Companies"),
+          $this->intl->t("No Companies"),
           Alert::SEVERITY_INFO
         );
       }
@@ -128,7 +125,6 @@ class CompanyListing extends \MovLib\Presentation\AbstractBase {
   /**
    * Format a company list item.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param \MovLib\Data\Company\FullCompany $company
    *   The company to format.
    * @param mixed $listItem [optional]
@@ -137,8 +133,6 @@ class CompanyListing extends \MovLib\Presentation\AbstractBase {
    *   The formatted company list item.
    */
   final protected function formatListItem($company, $listItem = null) {
-    global $i18n;
-
     // Put company dates together.
     $companyDates = null;
     if ($company->foundingDate || $company->defunctDate) {
@@ -146,14 +140,14 @@ class CompanyListing extends \MovLib\Presentation\AbstractBase {
       if ($company->foundingDate) {
         $companyDates .= (new Date($company->foundingDate))->format([
           "property" => "foundingDate",
-          "title" => $i18n->t("Founding Date")
+          "title" => $this->intl->t("Founding Date")
         ]);
       }
       else {
-        $companyDates .= $i18n->t("{0}unknown{1}", [ "<em title='{$i18n->t("Founding Date")}'>", "</em>" ]);
+        $companyDates .= $this->intl->t("{0}unknown{1}", [ "<em title='{$this->intl->t("Founding Date")}'>", "</em>" ]);
       }
       if ($company->defunctDate) {
-        $companyDates .= " – " . (new Date($company->defunctDate))->format([ "title" => $i18n->t("Defunct Date") ]);
+        $companyDates .= " – " . (new Date($company->defunctDate))->format([ "title" => $this->intl->t("Defunct Date") ]);
       }
       $companyDates   .= "</span>";
     }

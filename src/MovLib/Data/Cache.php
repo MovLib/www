@@ -57,11 +57,8 @@ final class Cache {
   /**
    * Instantiate new cache instance.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
     $this->uri = "dr://var/cache/{$i18n->languageCode}{$kernel->requestPath}";
     if ($kernel->requestPath == "/") {
       $this->uri .= $_SERVER["PRESENTER"];
@@ -101,13 +98,11 @@ final class Cache {
   /**
    * Save new cached version of current presentation.
    *
-   * @global \MovLib\Data\User\Session $session
    * @param string $presentation
    *   The complete presentation to cache.
    * @return this
    */
   public function save($presentation) {
-    global $session;
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($presentation)) {

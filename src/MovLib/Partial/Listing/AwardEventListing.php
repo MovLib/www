@@ -37,21 +37,18 @@ final class AwardEventListing extends \MovLib\Partial\Listing\EntityIndexListing
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function getAdditionalContent($event, $listItem) {
-    global $i18n;
-
     // @devStart
     // @codeCoverageIgnoreStart
     if(!($event instanceof $this->entity)) {
       throw new \InvalidArgumentException("\$event must be of type {$this->entity}");
     }
     if (!isset($event->place)) {
-      throw new \LogicException($i18n->t("\$event->place has to be set!"));
+      throw new \LogicException($this->intl->t("\$event->place has to be set!"));
     }
     if (!isset($event->startDate)) {
-      throw new \LogicException($i18n->t("\$event->startDate has to be set!"));
+      throw new \LogicException($this->intl->t("\$event->startDate has to be set!"));
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -62,16 +59,16 @@ final class AwardEventListing extends \MovLib\Partial\Listing\EntityIndexListing
     // Put the event information together.
     $info = null;
     if (($event->startDate && $event->endDate) && ($event->startDate != $event->endDate)) {
-      $info .= "{$i18n->t("from {0} to {1}", [
+      $info .= "{$this->intl->t("from {0} to {1}", [
         (new Date($event->startDate))->format(),
         (new Date($event->endDate))->format()
       ])} ";
     }
     else if ($event->startDate) {
-      $info .= "{$i18n->t("on {0}", [ (new Date($event->startDate))->format() ])} ";
+      $info .= "{$this->intl->t("on {0}", [ (new Date($event->startDate))->format() ])} ";
     }
     if ($event->place) {
-      $info .= $i18n->t("in {0}", [ new Place($event->place) ]);
+      $info .= $this->intl->t("in {0}", [ new Place($event->place) ]);
     }
 
     return

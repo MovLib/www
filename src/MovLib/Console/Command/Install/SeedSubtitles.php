@@ -17,7 +17,7 @@
  */
 namespace MovLib\Console\Command\Install;
 
-use \MovLib\Core\I18n;
+use \MovLib\Core\Intl;
 
 /**
  * Seed subtitles.
@@ -40,11 +40,8 @@ class SeedSubtitles extends \MovLib\Console\Command\Install\SeedLanguages {
 
   /**
    * {@inheritdoc}
-   * @global \MovLib\Core\I18n $i18n
    */
   protected function translate() {
-    global $i18n;
-
     // Translate all available languages to the desired locale.
     $languages = [];
     foreach ($this->codes as $code) {
@@ -52,12 +49,12 @@ class SeedSubtitles extends \MovLib\Console\Command\Install\SeedLanguages {
     }
 
     // Add the two special language codes.
-    $languages[I18n::CODE_COMMENTARY] = $i18n->t("Commentary");
-    $languages[I18n::CODE_FACT]       = $i18n->t("Facts");
-    $languages[I18n::CODE_OTHER]      = $i18n->t("Other");
+    $languages[Intl::CODE_COMMENTARY] = $i18n->t("Commentary");
+    $languages[Intl::CODE_FACT]       = $i18n->t("Facts");
+    $languages[Intl::CODE_OTHER]      = $i18n->t("Other");
 
     // Prepare search array which helps us to identify which special language codes don't have a native translation.
-    $noNative = [ I18n::CODE_COMMENTARY, I18n::CODE_FACT, I18n::CODE_OTHER ];
+    $noNative = [ Intl::CODE_COMMENTARY, Intl::CODE_FACT, Intl::CODE_OTHER ];
 
     // Sort the translated language according to their translated names.
     $i18n->getCollator()->asort($languages);

@@ -32,45 +32,43 @@ class Home extends \MovLib\Presentation\AbstractPresenter {
 
   /**
    * {@inheritdoc}
-   * @global \MovLib\Core\I18n $i18n
    */
   public function getContent() {
-    global $i18n;
     $articles = [];
 
-    $articles[$i18n->t("Movies")] = "<p>{$i18n->t(
+    $articles[$this->intl->t("Movies")] = "<p>{$this->intl->t(
       "Discover new and old movies, find out about all related details like who was the director, when and where was " .
       "it released, what releases are available, find poster and lobby card art, plus many, many more …"
     )}</p>";
 
-    $articles[$i18n->t("Persons")] = "<p>{$i18n->t(
+    $articles[$this->intl->t("Persons")] = "<p>{$this->intl->t(
       "You always wanted to collect all movies of a specific director, actor or any other movie related person? This " .
       "is the place for you to go. Find out all details about the person you admire, or simply add them yourself if " .
       "you are an expert."
     )}</p>";
 
-    $articles[$i18n->t("Marketplace")] = "<p>{$i18n->t(
+    $articles[$this->intl->t("Marketplace")] = "<p>{$this->intl->t(
       "Searching for a specific release? Our marketplace is free, open, and built upon the exact release database. " .
       "This makes it easy for sellers to list their inventory and buyers are able to specify the exact version they " .
       "want."
     )}</p>";
 
-    $articles[$i18n->t("Releases")] = "<p>{$i18n->t(
+    $articles[$this->intl->t("Releases")] = "<p>{$this->intl->t(
       "Insert text here …"
     )}</p>";
 
-    $articles[$i18n->t("My {sitename}", [ "sitename" => $this->siteName ])] = "<p>{$i18n->t(
+    $articles[$this->intl->t("My {sitename}", [ "sitename" => $this->config->siteName ])] = "<p>{$this->intl->t(
       "Insert text here …"
-    )}</p><p><a class='btn btn-success btn-large' href='{$i18n->r("/profile/join")}'>{$i18n->t(
-      "Join {sitename}", [ "sitename" => $this->siteName ])
+    )}</p><p><a class='btn btn-success btn-large' href='{$this->intl->r("/profile/join")}'>{$this->intl->t(
+      "Join {sitename}", [ "sitename" => $this->config->siteName ])
     }</a></p>";
 
-    $articles["<abbr title='{$i18n->t("Application Programming Interface")}'>{$i18n->t("API")}</abbr>"] = "<p>{$i18n->t(
+    $articles["<abbr title='{$this->intl->t("Application Programming Interface")}'>{$this->intl->t("API")}</abbr>"] = "<p>{$this->intl->t(
       "The {sitename} API is a REST interface to access the free movie library. Specifically designed for all " .
       "developers out there. We want to keep the barrier as low as possible and ensure that everybody can use the " .
       "data we all collect here at {sitename}.",
-      [ "sitename" => $this->siteName ]
-    )}</p><p><a class='btn btn-primary btn-large' href='{$i18n->r("/help/api")}'>{$i18n->t(
+      [ "sitename" => $this->config->siteName ]
+    )}</p><p><a class='btn btn-primary btn-large' href='{$this->intl->r("/help/api")}'>{$this->intl->t(
       "Read the API documentation"
     )}</a></p>";
 
@@ -84,29 +82,23 @@ class Home extends \MovLib\Presentation\AbstractPresenter {
 
   /**
    * {@inheritdoc}
-   * @global \MovLib\Core\Config $config
    */
   protected function getHeadTitle() {
-    global $config;
-    return $config->siteNameAndSlogan;
   }
 
   /**
    * @inheritdoc
-   * @global \MovLib\Core\I18n $i18n
    */
   public function getMainContent($content) {
-    global $i18n;
-
     $noscript = new Alert(
-      $i18n->t("Please activate JavaScript in your browser to experience our website with all its features."),
-      $i18n->t("JavaScript Disabled")
+      $this->intl->t("Please activate JavaScript in your browser to experience our website with all its features."),
+      $this->intl->t("JavaScript Disabled")
     );
 
     return
       "<main id='m' role='main'>" .
         "<div id='banner'>" .
-          "<h2 class='c'>{$i18n->t("Do you like movies?{0}Great, so do we!", [ "<br>" ])}</h2>" .
+          "<h2 class='c'>{$this->intl->t("Do you like movies?{0}Great, so do we!", [ "<br>" ])}</h2>" .
         "</div>" .
         "<noscript>{$noscript}</noscript>{$this->alerts}" .
       "</main>"
@@ -117,7 +109,7 @@ class Home extends \MovLib\Presentation\AbstractPresenter {
    * @inheritdoc
    */
   protected function init() {
-    $this->initPage($this->siteName);
+    $this->initPage($this->config->siteName);
     $this->initLanguageLinks("/");
     $this->initBreadcrumb();
     // A link to the current page would be redundant!

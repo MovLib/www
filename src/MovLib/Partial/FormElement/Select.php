@@ -90,12 +90,10 @@ class Select extends \MovLib\Partial\FormElement\AbstractFormElement {
   /**
    * Get the select form element.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The select form element.
    */
   public function __toString() {
-    global $i18n;
     // @devStart
     // @codeCoverageIgnoreStart
     try {
@@ -105,11 +103,11 @@ class Select extends \MovLib\Partial\FormElement\AbstractFormElement {
       //  The first child option element of a select element with a required attribute and without a multiple attribute,
       //  and whose size is 1, must have either an empty value attribute, or must have no text content.
       if ($this->required) {
-        $options = "<option disabled value=''>{$i18n->t("Please Select…")}</option>";
+        $options = "<option disabled value=''>{$this->intl->t("Please Select…")}</option>";
       }
       else {
         $selected = empty($this->value) ? " selected" : null;
-        $options = "<option{$selected} value=''>{$i18n->t("None")}</option>";
+        $options = "<option{$selected} value=''>{$this->intl->t("None")}</option>";
       }
       foreach ($this->options as $value => $option) {
         $attributes = [];
@@ -146,7 +144,6 @@ class Select extends \MovLib\Partial\FormElement\AbstractFormElement {
   /**
    * Validate the user submitted choice.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param string $choice
    *   The user submitted choice.
    * @param null|array $errors
@@ -155,14 +152,12 @@ class Select extends \MovLib\Partial\FormElement\AbstractFormElement {
    *   The user submitted choice (with the correct type).
    */
   protected function validateValue($choice, &$errors) {
-    global $i18n;
-
     // Cast the submitted choice to the correct type.
     settype($choice, gettype(key($this->options)));
 
     // Make sure that the choice is really available and valid.
     if (!isset($this->options[$choice])) {
-      $errors[self::ERROR_CHOICE] = $i18n->t("{0} isn’t a valid choice.", [ $this->placeholder($choice) ]);
+      $errors[self::ERROR_CHOICE] = $this->intl->t("{0} isn’t a valid choice.", [ $this->placeholder($choice) ]);
     }
 
     return $choice;
