@@ -41,7 +41,7 @@ final class SeedDatabase extends \MovLib\Console\Command\AbstractCommand {
    *
    * @var string
    */
-  protected $schema = "dr://conf/mariadb/movlib.sql";
+  protected $schema = "dr://etc/mysql/movlib.sql";
 
   /**
    * URI to the SQL script directory.
