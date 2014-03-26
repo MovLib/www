@@ -29,12 +29,12 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class ForbiddenException extends \RuntimeException implements ClientException {
+final class ForbiddenException extends \RuntimeException implements \MovLib\Exception\ClientException {
 
   /**
    * {@inheritdoc}
    * @global \MovLib\Core\I18n $i18n
-   * @global \MovLib\Presentation\Page $presenter
+   * @global \MovLib\Presentation\AbstractPresenter $presenter
    */
   public function getPresentation() {
     global $i18n, $presenter;

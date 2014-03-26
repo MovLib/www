@@ -36,7 +36,7 @@ use \MovLib\Presentation\Partial\Navigation;
  * @method string normalizeLineFeeds($text)
  * @method string placeholder($text)
  *
- * @see \MovLib\Presentation\Page
+ * @see \MovLib\Presentation\AbstractPresenter
  *
  * @property string $alerts
  * @property string $bodyClasses

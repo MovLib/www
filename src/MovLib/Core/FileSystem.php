@@ -167,40 +167,6 @@ final class FileSystem {
   }
 
   /**
-   * Get the external URL of the given URI.
-   *
-   * @param string $uri
-   *   The URI to get the external URL for.
-   * @return string
-   *   The external URL of the given URI.
-   */
-  public function getExternalURL($uri) {
-    static $streamWrappers = [], $uris = [];
-    if (isset($uris[$uri])) {
-      return $uris[$uri];
-    }
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (strpos($uri, "://") === false) {
-      throw new \LogicException("\$uri must be a valid URI in the form <scheme>://<path>.");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    $scheme = explode($uri, "://", 2)[0];
-    if (isset($streamWrappers[$scheme])) {
-      $streamWrappers[$scheme] = $this->getStreamWrapper($uri);
-    }
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (!method_exists($streamWrappers[$scheme], "getExternalURL")) {
-      throw new \LogicException("There is not external URL available for your URI '{$uri}'.");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    return ($uris[$uri] = $streamWrappers[$scheme]->getExternalURL());
-  }
-
-  /**
    * Get a recursive iterator to iterate through directories.
    *
    * The return iterator is suitable for usage with a <code>foreach</code> loop and will return childs first and skipt

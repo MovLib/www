@@ -34,7 +34,7 @@ namespace MovLib\Console\Command\Install;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class SeedCurrencies extends AbstractIntlCommand {
+class SeedCurrencies extends \MovLib\Console\Command\Install\AbstractIntlCommand {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

@@ -26,7 +26,7 @@ namespace MovLib\Presentation;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ErrorPage extends \MovLib\Presentation\Page {
+class ErrorPage extends \MovLib\Presentation\AbstractPresenter {
 
   /**
    * Instantiate new empty page.

@@ -31,12 +31,12 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class NotFoundException extends \RuntimeException implements ClientException {
+final class NotFoundException extends \RuntimeException implements \MovLib\Exception\ClientException {
 
   /**
    * Get the exception's content.
    *
-   * @global \MovLib\Presentation\Page $presenter
+   * @global \MovLib\Presentation\AbstractPresenter $presenter
    * @return string
    *   The exception's content.
    */

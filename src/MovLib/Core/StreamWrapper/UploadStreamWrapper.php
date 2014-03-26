@@ -26,7 +26,7 @@ namespace MovLib\Core\StreamWrapper;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class UploadStreamWrapper extends AbstractLocalStreamWrapper {
+final class UploadStreamWrapper extends \MovLib\Core\StreamWrapper\AbstractLocalStreamWrapper {
 
   /**
    * Get the external path of the given URI.
@@ -36,7 +36,7 @@ final class UploadStreamWrapper extends AbstractLocalStreamWrapper {
    * @return string
    *   The external path of the given URI.
    */
-  public function getExternalPath($uri = null) {
+  public function getExternalURL($uri = null) {
     return "/upload/{$this->getTarget($uri)}";
   }
 

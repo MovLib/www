@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation;
 
-use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Partial\Alert;
 
 /**
  * The stacktrace presentation is used if everything else fails.
@@ -32,7 +32,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Stacktrace extends \MovLib\Presentation\Page {
+class Stacktrace extends \MovLib\Presentation\AbstractPresenter {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -59,29 +59,17 @@ class Stacktrace extends \MovLib\Presentation\Page {
   /**
    * Instantiate new stacktrace presentation page.
    *
-   * @global \MovLib\Core\I18n $i18n
-   * @global \MovLib\Core\HTTP\Response $response
    * @param \Exception $exception
    *   The exception that should be presented. Any instance that inherits from PHP's built in exception class is okay.
    * @param boolean $fatal [optional]
    *   If set to <code>TRUE</code> title will say <i>Fatal Error</i> instead of the name of the exception, defaults to
    *   <code>FALSE</code>.
    */
-  public function __construct($exception, $fatal = false) {
-    global $i18n, $response;
+  public function __construct($siteName, $exception, $fatal = false) {
     http_response_code(500);
-    $this->initPage($i18n->t("Internal Server Error"));
-    $this->initBreadcrumb();
-
-    $response->cacheable = false;
-    $this->stylesheets[] = "stacktrace";
-    $this->exception     = $exception;
-    $this->fatal         = $fatal;
-    $this->alerts       .= new Alert(
-      $i18n->t("This error was reported to the system administrators, it should be fixed in no time. Please try again in a few minutes."),
-      $i18n->t("An unexpected condition which prevented us from fulfilling the request was encountered."),
-      Alert::SEVERITY_ERROR
-    );
+    $this->exception = $exception;
+    $this->fatal     = $fatal;
+    parent::__construct($siteName);
   }
 
 
@@ -252,6 +240,25 @@ class Stacktrace extends \MovLib\Presentation\Page {
       return "::";
     }
     return (string) $stacktrace["type"];
+  }
+
+  /**
+   * {@inheritdoc}
+   * @global \MovLib\Core\I18n $i18n
+   * @global \MovLib\Core\HTTP\Response $response
+   */
+  protected function init() {
+    global $i18n, $response;
+    $this->initPage($i18n->t("Internal Server Error"));
+    $this->initBreadcrumb();
+
+    $response->cacheable = false;
+    $this->stylesheets[] = "stacktrace";
+    $this->alerts       .= new Alert(
+      $i18n->t("This error was reported to the system administrators, it should be fixed in no time. Please try again in a few minutes."),
+      $i18n->t("An unexpected condition which prevented us from fulfilling the request was encountered."),
+      Alert::SEVERITY_ERROR
+    );
   }
 
 }

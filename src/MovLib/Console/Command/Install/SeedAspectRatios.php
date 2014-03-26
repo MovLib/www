@@ -26,7 +26,7 @@ namespace MovLib\Console\Command\Install;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class SeedAspectRatios extends AbstractIntlCommand {
+final class SeedAspectRatios extends \MovLib\Console\Command\Install\AbstractIntlCommand {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

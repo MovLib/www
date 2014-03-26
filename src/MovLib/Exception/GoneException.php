@@ -27,11 +27,11 @@ namespace MovLib\Exception;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class GoneException extends \RuntimeException implements ClientException {
+final class GoneException extends \RuntimeException implements \MovLib\Exception\ClientException {
 
   /**
    * {@inheritdoc}
-   * @global \MovLib\Presentation\Page $page
+   * @global \MovLib\Presentation\AbstractPresenter $page
    */
   public function getPresentation() {
     global $presenter;

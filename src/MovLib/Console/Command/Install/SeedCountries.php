@@ -26,7 +26,7 @@ namespace MovLib\Console\Command\Install;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class SeedCountries extends AbstractIntlCommand {
+class SeedCountries extends \MovLib\Console\Command\Install\AbstractIntlCommand {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

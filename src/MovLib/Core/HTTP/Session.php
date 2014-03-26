@@ -39,7 +39,7 @@ use \MovLib\Exception\UnauthorizedException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Session implements \ArrayAccess {
+final class Session {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -789,38 +789,6 @@ final class Session implements \ArrayAccess {
       Log::critical($e);
     }
     return $this;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function offsetExists($offset) {
-    return isset($this->data[$offset]);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function &offsetGet($offset) {
-    return $this->data[$offset];
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function offsetSet($offset, $value) {
-    $this->data[$offset] = $value;
-    $this->active      = true;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function offsetUnset($offset) {
-    unset($this->data[$offset]);
-    if (empty($this->data)) {
-      $this->destroy();
-    }
   }
 
 }

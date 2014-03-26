@@ -17,8 +17,8 @@
  */
 namespace MovLib\Presentation;
 
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\FormElement\AbstractInputFile;
+use \MovLib\Partial\Alert;
+use \MovLib\Partial\FormElement\AbstractInputFile;
 
 /**
  * Add form to presentation.
@@ -37,7 +37,7 @@ use \MovLib\Presentation\Partial\FormElement\AbstractInputFile;
  * @method string normalizeLineFeeds($text)
  * @method string placeholder($text)
  *
- * @see \MovLib\Presentation\Page
+ * @see \MovLib\Presentation\AbstractPresenter
  *
  * @property string $alerts
  * @property string $bodyClasses
@@ -139,7 +139,7 @@ trait TraitForm {
    *   </ul>
    * @return this
    */
-  final protected function formAddAction($text, $attributes = []) {
+  final protected function formAddAction($text, array $attributes = []) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($text)) {
@@ -171,12 +171,9 @@ trait TraitForm {
    *   The form element to add.
    * @return this
    */
-  final protected function formAddElement($formElement) {
+  final protected function formAddElement(\MovLib\Partial\FormElement\AbstractFormElement $formElement) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (!($formElement instanceof \MovLib\Presentation\Partial\FormElement\AbstractFormElement)) {
-      throw new \InvalidArgumentException("Any form element must inherit from \\MovLib\\Presentation\\Partial\\FormElement\\AbstractFormElement");
-    }
     if (isset($this->formElements[$formElement->id])) {
       throw new \LogicException("This form already contains an element with the identifier '{$formElement->id}'.");
     }
@@ -238,7 +235,7 @@ trait TraitForm {
    * Initialize the form.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Core\HTTP\Request $request
    * @global \MovLib\Data\User\Session $session
    * @param array $attributes [optional]
    *   The form's additional attributes, the following attributes are always set:
@@ -250,7 +247,7 @@ trait TraitForm {
    * @return this
    */
   final protected function formInit(array $attributes = null) {
-    global $i18n, $kernel, $session;
+    global $i18n, $request, $session;
     // @devStart
     // @codeCoverageIgnoreStart
     if (!method_exists($this, "initPage")) {
@@ -268,7 +265,7 @@ trait TraitForm {
     $this->formAttributes                   = $attributes;
     $this->formAttributes["accept-charset"] = "utf-8";
     $this->formAttributes["method"]         = "post";
-    isset($this->formAttributes["action"]) || ($this->formAttributes["action"] = $kernel->requestURI);
+    isset($this->formAttributes["action"]) || ($this->formAttributes["action"] = $request->uri);
 
     // Validate the form if we're receiving it.
     if (isset($_POST["form_id"]) && $_POST["form_id"] == $this->id) {
@@ -289,7 +286,7 @@ trait TraitForm {
           // Give the user the chance to re-submit this form.
           $this->alerts .= new Alert(
             "<p>{$i18n->t("The form has become outdated. Copy any unsaved work in the form below and then {0}reload this page{1}.", [
-              "<a href='{$kernel->requestURI}'>", "</a>",
+              "<a href='{$request->uri}'>", "</a>",
             ])}</p>",
             $i18n->t("Form Outdated"),
             Alert::SEVERITY_ERROR

@@ -191,4 +191,18 @@ final class Request {
     }
   }
 
+  /**
+   * Get query key.
+   *
+   * @param string $key
+   *   The name of the key to get from the query string.
+   * @return mixed
+   *   The query key's value.
+   */
+  public function getQuery($key) {
+    if (isset($this->query[$key])) {
+      return $this->query[$key];
+    }
+  }
+
 }

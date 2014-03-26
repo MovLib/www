@@ -184,6 +184,7 @@ class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
 
     // Reload nginx and load the newly translated routes.
     if ($kernel->privileged) {
+      $this->exec("nginx -t");
       $this->exec("service nginx reload");
     }
     else {

@@ -36,7 +36,7 @@ use \MovLib\Core\I18n;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class SeedLanguages extends AbstractIntlCommand {
+class SeedLanguages extends \MovLib\Console\Command\Install\AbstractIntlCommand {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

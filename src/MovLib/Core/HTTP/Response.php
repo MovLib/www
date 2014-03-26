@@ -105,23 +105,25 @@ final class Response {
   /**
    * Get the response.
    *
-   * @global \MovLib\Presentation\Page $presenter
+   * @global \MovLib\Presentation\AbstractPresenter $presenter
+   * @param string $siteName
+   *   The site's name.
    * @return string
    *   The response.
    */
-  public function respond() {
+  public function respond($siteName) {
     global $presenter;
 
     try {
       $className = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
-      $presenter = new $className();
+      $presenter = new $className($siteName);
       $content   = $presenter->getContent();
     }
     catch (ClientException $e) {
       return $e->getPresentation();
     }
     catch (\Exception $e) {
-      $presenter = new Stacktrace($e);
+      $presenter = new Stacktrace($siteName, $e);
       $content   = $presenter->getContent();
     }
 

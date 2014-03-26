@@ -25,7 +25,7 @@ use \MovLib\Presentation\Partial\Alert;
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  */
-class History extends \MovLib\Presentation\Page {
+class History extends \MovLib\Presentation\AbstractPresenter {
 
   public function __construct() {
     global $i18n;

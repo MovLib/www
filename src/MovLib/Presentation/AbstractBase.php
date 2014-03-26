@@ -83,7 +83,9 @@ abstract class AbstractBase {
       }
 
       // Add the route to the anchor element.
-      $attributes["href"] = $this->urlEncodePath($route);
+      /* @var $fs \MovLib\Core\FileSystem */
+      global $fs;
+      $attributes["href"] = $fs->urlEncodePath($route);
     }
 
     // Put it all together.
@@ -226,69 +228,6 @@ abstract class AbstractBase {
   }
 
   /**
-   * Get the web accessible URL for given URI.
-   *
-   * @staticvar array $wrappers
-   *   Used to cache stream wrapper instance for generation of external paths.
-   * @staticvar array $uris
-   *   Used to cache generated URIs.
-   * @param string $uri
-   *   Absolute URI for which to get the web accessible URL (e.g. <code>"asset://img/logo/vector.svg"</code>).
-   * @return string
-   *   The web accessible URL for given URI.
-   */
-  final protected function getURL($uri) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (empty($uri) || !is_string($uri)) {
-      throw new \InvalidArgumentException("\$uri cannot be empty and must be of type string");
-    }
-    if (strpos($uri, "?") !== false || strpos($uri, "#") !== false) {
-      \MovLib\Data\Log::debug(
-        "Be careful including query strings and/or fragments in URIs passed to " . static::class . "::getURL() " .
-        "because they might be encoded to URL entities. If this is what you needed/wanted ignore this message."
-      );
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
-    $scheme = parse_url($uri, PHP_URL_SCHEME);
-
-    if (!$scheme) {
-      // Allow for:
-      //   - root-relative URIs (e.g. /robots.txt in https://movlib.org/robots.txt)
-      //   - protocol-relative URIs (e.g. //robots.txt which is expanded to https://movlib.org/robots.txt)
-      if ($scheme[0] == "/") {
-        return $uri;
-      }
-
-      // No scheme and not root, assume root.
-      return "/{$this->urlEncodePath($uri)}";
-    }
-    // If the URI already has HTTP or HTTPS scheme do nothing.
-    elseif ($scheme == "http" || $scheme == "https") {
-      return $uri;
-    }
-
-    static $wrappers = [], $uris = [];
-
-    // Assume that we actually have a stream wrapper handling this kind of scheme.
-    if (!isset($wrappers[$scheme])) {
-      /* @var $fs \MovLib\Core\FileSystem */
-      global $fs;
-      $wrappers[$scheme] = $fs->getStreamWrapper($uri);
-    }
-
-    if (!isset($uris[$uri])) {
-      /* @var $config \MovLib\Core\Config */
-      global $config;
-      $uris[$uri] = "{$config->hostnameStatic}{$this->urlEncodePath($wrappers[$scheme]->getExternalPath())}";
-    }
-
-    return $uris[$uri];
-  }
-
-  /**
    * Get the raw HTML string.
    *
    * @param string $text
@@ -343,7 +282,7 @@ abstract class AbstractBase {
   final protected function htmlEncode($text) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (empty($text) || !is_string($text)) {
+    if (empty($text) || !(is_string($text) || is_numeric($text))) {
       throw new \InvalidArgumentException("\$text cannot be empty and must be of type string.");
     }
     // @codeCoverageIgnoreEnd
@@ -405,25 +344,6 @@ abstract class AbstractBase {
     // @codeCoverageIgnoreEnd
     // @devEnd
     return "<em class='placeholder'>{$this->htmlEncode($text)}</em>";
-  }
-
-  /**
-   * Encode URL path preserving slashes.
-   *
-   * @param string $path
-   *   The URL path to encode.
-   * @return string
-   *   The encoded URL path.
-   */
-  final protected function urlEncodePath($path) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (empty($path) || !is_string($path)) {
-      throw new \InvalidArgumentException("\$path cannot be empty and must be of type string.");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    return str_replace("%2F", "/", rawurlencode($path));
   }
 
 }

@@ -26,6 +26,7 @@ use \MovLib\Core\HTTP\Response;
 use \MovLib\Core\HTTP\Session;
 use \MovLib\Core\I18n;
 use \MovLib\Core\Log;
+use \MovLib\Presentation\Stacktrace;
 
 /**
  * The kernel is the core of MovLib itself.
@@ -121,9 +122,18 @@ final class Kernel {
     $fs->registerStreamWrappers();
 
     $config = file_exists(Config::URI) ? unserialize(file_get_contents(Config::URI)) : new Config();
+    if (empty($_SERVER["LANGUAGE_CODE"])) {
+      $_SERVER["LANGUAGE_CODE"] = $config->defaultLanguageCode;
+    }
+    // @devStart
+    // @codeCoverageIgnoreStart
+    // @todo REMOVE ME as soon as we have no coming soon page!
+    $config->hostname = "alpha.movlib.org";
+    // @codeCoverageIgnoreEnd
+    // @devEnd
 
     $db   = new Database($config->database);
-    $i18n = new I18n();
+    $i18n = new I18n($_SERVER["LANGUAGE_CODE"], $config->defaultLocale, $config->locales);
 
     $config->siteSlogan            = $i18n->t($config->siteSlogan);
     $args                          = [ "sitename" => $config->siteName, "slogan" => $config->siteSlogan ];
@@ -141,7 +151,7 @@ final class Kernel {
 
       // From here it's save to disable the display errors feature from PHP.
       $session->resume();
-      $presentation = $response->respond();
+      $presentation = $response->respond($config->siteName);
       $session->shutdown();
 
       // @devStart
@@ -243,12 +253,14 @@ final class Kernel {
   /**
    * Used to catch uncaught exceptions.
    *
+   * @global \MovLib\Core\Config $config
    * @param \Exception $exception
    *   The exception that wasn't caught.
    */
   public function exceptionHandler($exception) {
+    global $config;
     Log::critical($exception);
-    exit((new \MovLib\Presentation\Stacktrace($exception))->getPresentation());
+    exit((new Stacktrace($config->siteName, $exception))->getPresentation());
   }
 
   /**

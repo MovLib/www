@@ -26,7 +26,7 @@ namespace MovLib\Core\StreamWrapper;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class AssetStreamWrapper extends AbstractLocalStreamWrapper {
+final class AssetStreamWrapper extends \MovLib\Core\StreamWrapper\AbstractLocalStreamWrapper {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -63,7 +63,7 @@ final class AssetStreamWrapper extends AbstractLocalStreamWrapper {
    * @return string
    *   The external path of the given URI.
    */
-  public function getExternalPath($uri = null) {
+  public function getExternalURL($uri = null) {
     global $config, $fs;
 
     $target    = $this->getTarget($uri);
@@ -94,7 +94,7 @@ final class AssetStreamWrapper extends AbstractLocalStreamWrapper {
 
     /* @var $fs \MovLib\Core\FileSystem */
     global $fs;
-    return ($path = "{$fs->documentRoot}/public/asset");
+    return ($path = "{$fs->documentRoot}/var/public/asset");
   }
 
 }

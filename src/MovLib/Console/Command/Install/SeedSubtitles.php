@@ -28,7 +28,7 @@ use \MovLib\Core\I18n;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class SeedSubtitles extends SeedLanguages {
+class SeedSubtitles extends \MovLib\Console\Command\Install\SeedLanguages {
 
   /**
    * @inheritdoc

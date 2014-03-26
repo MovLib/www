@@ -29,7 +29,7 @@ use \MovLib\Presentation\Partial\Listing\MovieListing as MoviesPartial;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\Page {
+class Index extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Presentation\TraitSidebar;
   use \MovLib\Presentation\TraitPagination;
 

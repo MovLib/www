@@ -26,7 +26,7 @@ namespace MovLib\Core\StreamWrapper;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class DocumentRootStreamWrapper extends AbstractLocalStreamWrapper {
+final class DocumentRootStreamWrapper extends \MovLib\Core\StreamWrapper\AbstractLocalStreamWrapper {
 
   /**
    * @inheritdoc

@@ -35,7 +35,7 @@ use \MovLib\Presentation\Redirect\SeeOther;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class ResetPassword extends \MovLib\Presentation\Page {
+final class ResetPassword extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Presentation\TraitForm;
 
 

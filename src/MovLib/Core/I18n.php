@@ -92,6 +92,20 @@ final class I18n {
 
 
   /**
+   * The default language code.
+   *
+   * @var string
+   */
+  public $defaultLanguageCode;
+
+  /**
+   * The default locale.
+   *
+   * @var string
+   */
+  public $defaultLocale;
+
+  /**
    * The languages direction.
    *
    * @todo Implement right-to-left language detection.
@@ -115,6 +129,13 @@ final class I18n {
   public $locale;
 
   /**
+   * All available system locales.
+   *
+   * @var array
+   */
+  public $systemLocales;
+
+  /**
    * Used to cache translations.
    *
    * @see I18n::getTranslations()
@@ -130,41 +151,42 @@ final class I18n {
   /**
    * Instantiate new I18n object.
    *
-   * @global \MovLib\Core\Config $config
-   * @param $locale [optional]
-   *   The desired system locale or language code.
+   * @param string $locale
+   *   The locale of this instance.
+   * @param string $defaultLocale
+   *   The default system locale.
+   * @param array $systemLocales
+   *   All available locales of this system, the associative array's keys must be the language code and the value the
+   *   locale.
+   * @throws \InvalidArgumentException
    */
-  public function __construct($locale = null) {
-    global $config;
-
+  public function __construct($locale, $defaultLocale, array $systemLocales) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (isset($locale) && (empty($locale) || !is_string($locale))) {
-      throw new \InvalidArgumentException("\$locale cannot be empty and must be of type string.");
+    foreach ([ "locale", "defaultLocale" ] as $param) {
+      if (empty(${$param}) || !is_string(${$param})) {
+        throw new \InvalidArgumentException("\${$param} cannot be empty and must be of type string.");
+      }
+    }
+    if (empty($systemLocales)) {
+      throw new \InvalidArgumentException("\$systemLocales cannot be empty.");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
+    $this->defaultLocale       = $defaultLocale;
+    $this->defaultLanguageCode = "{$defaultLocale[0]}{$defaultLocale[1]}";
+    $this->systemLocales       = $systemLocales;
 
-    if ($locale) {
-      if (isset($config->locales[$locale])) {
-        $this->locale       = $config->locales[$locale];
-        $this->languageCode = "{$locale[0]}{$locale[1]}";
-      }
-      elseif (in_array($locale, $config->locales)) {
-        $this->locale       = $locale;
-        $this->languageCode = "{$locale[0]}{$locale[1]}";
-      }
-      else {
-        throw new \InvalidArgumentException("No valid system locale found for '{$locale}'.");
-      }
+    if (isset($systemLocales[$locale])) {
+      $this->locale       = $locale;
+      $this->languageCode = "{$locale[0]}{$locale[1]}";
     }
-    elseif (isset($_SERVER["LANGUAGE_CODE"]) && isset($config->locales[$_SERVER["LANGUAGE_CODE"]])) {
-      $this->locale       = $config->locales[$_SERVER["LANGUAGE_CODE"]];
-      $this->languageCode = $_SERVER["LANGUAGE_CODE"];
+    elseif (in_array($locale, $systemLocales)) {
+      $this->locale       = $systemLocales[$locale];
+      $this->languageCode = $locale;
     }
     else {
-      $this->locale       = $config->defaultLocale;
-      $this->languageCode = "{$config->defaultLocale[0]}{$config->defaultLocale[1]}";
+      throw new \InvalidArgumentException("\$locale ({$locale}) must be a valid system locale: " . implode(", ", $systemLocales));
     }
   }
 

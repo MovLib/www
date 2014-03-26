@@ -32,7 +32,7 @@ use \Symfony\Component\Console\Output\ConsoleOutput;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Nginx extends AbstractInstallCommand {
+final class Nginx extends \MovLib\Console\Command\Install\AbstractInstallCommand {
 
   /**
    * @inheritdoc
