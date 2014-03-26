@@ -1,3 +1,10 @@
-* text eol=lf
-*.mwb binary
+# Set default behaviour, in case users don't have core.autocrlf set.
+* text=auto eol=lf
+
+# Denote all files that are truly binary and should not be modified.
+*.eot binary
 *.exe binary
+*.jpg binary
+*.mwb binary
+*.png binary
+*.ttf binary
