@@ -43,7 +43,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class SeedImport extends \MovLib\Console\Command\Dev\AbstractDevCommand {
+class SeedImport extends \MovLib\Console\Command\AbstractCommand {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
