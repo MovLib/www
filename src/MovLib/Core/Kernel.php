@@ -97,16 +97,27 @@ final class Kernel {
    * @global \MovLib\Core\HTTP\Request $request
    * @global \MovLib\Core\HTTP\Response $response
    * @global \MovLib\Core\HTTP\Session $session
-   * @throws \Exception
+   * @param string $documentRoot
+   *   The real document root path.
    */
-  public function boot() {
+  public function boot($documentRoot) {
     global $config, $db, $fs, $i18n;
+
+    // Determine the environment before attempting to boot.
+    $this->http = !($this->cli = PHP_SAPI == "cli");
 
     // Transform all PHP errors to exceptions.
     set_error_handler([ $this, "errorHandler" ]);
-    set_exception_handler([ $this, "exceptionHandler" ]);
 
-    $fs = new FileSystem();
+    // Always try to create a nice output, for developers and clients, in HTTP mode. NOTE: must be registered before
+    // any booting starts because any booting might fail!
+    if ($this->http) {
+      set_exception_handler([ $this, "exceptionHandler" ]);
+      register_shutdown_function([ $this, "fatalErrorHandler" ]);
+      ini_set("display_errors", false);
+    }
+
+    $fs = new FileSystem($documentRoot);
     $fs->registerStreamWrappers();
 
     $config = file_exists(Config::URI) ? unserialize(file_get_contents(Config::URI)) : new Config();
@@ -114,12 +125,13 @@ final class Kernel {
     $db   = new Database($config->database);
     $i18n = new I18n();
 
-    // Determine if we're booting for a HTTP request.
-    if (($this->http = PHP_SAPI == "fpm-fcgi")) {
-      // Always try to create a nice output, for developers and clients.
-      register_shutdown_function([ $this, "fatalErrorHandler" ]);
-      ini_set("display_errors", false);
+    $config->siteSlogan            = $i18n->t($config->siteSlogan);
+    $args                          = [ "sitename" => $config->siteName, "slogan" => $config->siteSlogan ];
+    $config->siteNameAndSlogan     = $i18n->t($config->siteNameAndSlogan, $args);
+    $config->siteNameAndSloganHTML = $i18n->t($config->siteNameAndSloganHTML, $args);
 
+    // Determine if we're booting for a HTTP request.
+    if ($this->http) {
       // Instantiate HTTP objects.
       global $cache, $request, $response, $session;
       $request  = new Request();
@@ -149,17 +161,13 @@ final class Kernel {
       $cache->store($presentation);
     }
     // Check if we're booting for a CLI request.
-    elseif (($this->cli = PHP_SAPI == "cli")) {
+    else {
       // Binaries might be executed via privileged user accounts (root or sudo) and is even required for very few
       // commands. It's very important to check for this because files might have the wrong owners otherwise.
       $this->privileged = posix_getuid() === 0;
 
       // It's important to differentiate between our default environment (Linux) and Windows in console context.
       $this->windows = defined("PHP_WINDOWS_VERSION_MAJOR");
-    }
-    // If none of the above held true abort execution.
-    else {
-      throw new \DomainException("The MovLib Kernel is currently only supporting HTTP and CLI usage.");
     }
 
     $this->executeDelayedMethods();
@@ -240,7 +248,7 @@ final class Kernel {
    */
   public function exceptionHandler($exception) {
     Log::critical($exception);
-    exit($this->getStacktrace($exception));
+    exit((new \MovLib\Presentation\Stacktrace($exception))->getPresentation());
   }
 
   /**
@@ -297,40 +305,14 @@ final class Kernel {
         $property->setValue($exception, $error[$propertyName]);
       }
 
-      Log::emergency($exception);
-      echo $this->getStacktrace($exception, true);
-    }
-  }
-
-  /**
-   * Get stacktrac presentation for given stacktrace.
-   *
-   * @global \MovLib\Core\FileSystem $fs
-   * @global \MovLib\Core\Config $config
-   * @global \MovLib\Core\I18n $i18n
-   * @global \MovLib\Core\HTTP\Request $request
-   * @global \MovLib\Core\HTTP\Response $response
-   * @global \MovLib\Core\HTTP\Session $session
-   * @param \Exception $exception
-   *   The exception to get the stacktrace for.
-   * @param boolean $fatal
-   *   Whether this is a fatal error or not.
-   * @return string
-   *   The stacktrace presentation or a <code>"text/plain"</code> representation of the exception.
-   */
-  protected function getStacktrace(\Exception $exception, $fatal = false) {
-    global $fs, $config, $i18n, $request, $response, $session;
-    ini_set("display_errors", true);
-    try {
-      if (isset($fs) && isset($config) && isset($i18n) && isset($request) && isset($response) && isset($session)) {
-        return (new \MovLib\Presentation\Stacktrace($exception, $fatal))->getPresentation();
-      }
-    }
-    catch (\Exception $e) {
-      if ($this->http && !headers_sent()) {
+      // Use PHP's native logger to log this exception.
+      error_log($exception);
+      if (!headers_sent()) {
         header("Content-Type: text/plain");
       }
-      return <<<EOT
+
+      // ASCII art source: http://www.chris.com/ASCII/index.php?art=animals/insects/other
+      echo <<<EOT
 # -------------------------------------------------------------------------------------------------------------------- #
 #                                                                                                                      #
 #                   UNRECOVERABLE FATAL ERROR! Please report @ https://github.com/MovLib/www/issues                    #
@@ -352,7 +334,9 @@ final class Kernel {
               /  \/ \/  \
              /           \ ∫VaMp FiNaL / crw
 EOT;
-      // ASCII art source: http://www.chris.com/ASCII/index.php?art=animals/insects/other
+      if (function_exists("fastcgi_finish_request")) {
+        fastcgi_finish_request();
+      }
     }
   }
 

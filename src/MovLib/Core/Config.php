@@ -158,11 +158,33 @@ class Config {
   public $production = false;
 
   /**
-   * The site name.
+   * The site's name.
    *
    * @var string
    */
   public $siteName = "MovLib";
+
+  /**
+   * The site name including the slogan and punctuation, e.g. <code>"MovLib, the free movie library."</code>.
+   *
+   * @var string
+   */
+  public $siteNameAndSlogan = "{sitename}, {slogan}.";
+
+  /**
+   * The site name including the slogan, punctuation and HTML, e.g. <code>"MovLib <small>the <em>free</em> movie
+   * library.</small>"</code>.
+   *
+   * @var string
+   */
+  public $siteNameAndSloganHTML = "{sitename} <small>the <em>free</em> movie library.</small>";
+
+  /**
+   * The site slogan, e.g. <code>"the free movie library"</code>.
+   *
+   * @var string
+   */
+  public $siteSlogan = "the free movie library";
 
   /**
    * The default time zone.
