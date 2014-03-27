@@ -18,9 +18,9 @@
 namespace MovLib\Presentation\Release;
 
 use \MovLib\Data\Release\Release;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Country;
-use \MovLib\Presentation\Partial\Date;
+use \MovLib\Partial\Alert;
+use \MovLib\Partial\Country;
+use \MovLib\Partial\Date;
 
 /**
  * Latest releases.
@@ -36,23 +36,6 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Presentation\TraitSidebar;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new latest releases presentation.
-   */
-  public function __construct() {
-    $this->initPage($this->intl->t("Releases"));
-    $this->initLanguageLinks("/releases", null, true);
-    $this->initBreadcrumb();
-    $this->sidebarInit([
-      [ $this->intl->rp("/releases"), $this->intl->t("Releases"), [ "class" => "ico ico-release" ] ],
-      [ $this->intl->r("/release/random"), $this->intl->t("Random") ],
-    ]);
-  }
-
-
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
@@ -61,10 +44,10 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
    */
   protected function getPageContent() {
     $list           = null;
-    $releasesResult = Release::getReleases();
-    $releaseRoute   = this->intl->r("/release/{0}");
-    $releaseTitle   = this->intl->t("{0} ({1})");
-    $date           = new Date();
+    $releasesResult = (new Release())->getReleases();
+    $releaseRoute   = $this->intl->r("/release/{0}");
+    $releaseTitle   = $this->intl->t("{0} ({1})");
+    $date           = new Date($this);
 
     /* @var $release \MovLib\Data\Release\Release */
     while ($release = $releasesResult->fetch_object("\\MovLib\\Data\\Release\\Release")) {
@@ -78,9 +61,9 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
       $formats = [];
       $release->mediaCounts = unserialize($release->mediaCounts);
       foreach ($release->mediaCounts as $format => $count) {
-        $formats[] = $i18n->t("{0} × {1}", [ $count, $format ]);
+        $formats[] = $this->intl->t("{0} × {1}", [ $count, $format ]);
       }
-      $formats = "<small>{$i18n->t("({0})", [ implode(", ", $formats) ])}</small>";
+      $formats = "<small>{$this->intl->t("({0})", [ implode(", ", $formats) ])}</small>";
 
       $labels = null;
       $labelsResult = $release->getLabels();
@@ -89,7 +72,7 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
           if ($labels) {
             $labels .= "<br>";
           }
-          $labelInfo["name"] = "<a href='{$i18n->r("/company/{0}", [ $labelInfo["id"] ])}'>{$labelInfo["name"]}</a>";
+          $labelInfo["name"] = "<a href='{$this->intl->r("/company/{0}", [ $labelInfo["id"] ])}'>{$labelInfo["name"]}</a>";
           if ($labelInfo["catalog_number"]) {
             $labelInfo["name"] = str_replace(
               [ "{0}", "{1}" ],
@@ -104,14 +87,14 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
       $publishingDates = null;
       if ($release->publishingDateRental) {
         $date->setDate($release->publishingDateRental);
-        $release->publishingDateRental = "<small>{$i18n->t("{0} (Rental)", [ $date->format() ])}</small>";
+        $release->publishingDateRental = "<small>{$this->intl->t("{0} (Rental)", [ $date->format() ])}</small>";
       }
       if ($release->publishingDateSale) {
         $date->setDate($release->publishingDateSale);
-        $release->publishingDateSale = "<small>{$i18n->t("{0} (Sale)", [ $date->format() ])}</small>";
+        $release->publishingDateSale = "<small>{$this->intl->t("{0} (Sale)", [ $date->format() ])}</small>";
       }
 
-      $country = new Country($release->countryCode);
+      $country = new Country($this->intl, $this, $release->countryCode);
 
       $list .=
         "<tr>" .
@@ -137,19 +120,32 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
           "</colgroup>" .
           "<thead class='tal'><tr>" .
             "<th></th>" . // Spacer for image
-            "<th>{$i18n->t("Title")}</th>" .
-            "<th>{$i18n->t("Label")}</th>" .
-            "<th>{$i18n->t("Published")}</th>" .
+            "<th>{$this->intl->t("Title")}</th>" .
+            "<th>{$this->intl->t("Label")}</th>" .
+            "<th>{$this->intl->t("Published")}</th>" .
             "<th></th>" . // Country
         "</tr></thead><tbody>{$list}</tbody></table>"
       ;
     }
 
     return new Alert(
-      $i18n->t("No releases match your search criteria."),
-      $i18n->t("No Releases"),
+      $this->intl->t("No releases match your search criteria."),
+      $this->intl->t("No Releases"),
       Alert::SEVERITY_INFO
     );
+  }
+
+  /**
+   * Initialize latest releases presentation.
+   */
+  public function init() {
+    $this->initPage($this->intl->t("Releases"));
+    $this->initLanguageLinks("/releases", null, true);
+    $this->initBreadcrumb();
+    $this->sidebarInit([
+      [ $this->intl->rp("/releases"), $this->intl->t("Releases"), [ "class" => "ico ico-release" ] ],
+      [ $this->intl->r("/release/random"), $this->intl->t("Random") ],
+    ]);
   }
 
 }

@@ -28,7 +28,7 @@ use \MovLib\Presentation\Error\NotFound;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Release {
+class Release extends \MovLib\Core\Database {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -180,14 +180,14 @@ class Release {
   public function __construct($id = null) {
     // Try to load the release for the given identifier.
     if ($id) {
-      $result = $db->query(
+      $result = $this->query(
         "SELECT
           `releases`.`changed`,
           `releases`.`created`,
           `releases`.`country_code`,
           IFNULL(
             COLUMN_GET(`releases`.`dyn_notes`, ? AS BINARY),
-            COLUMN_GET(`releases`.`dyn_notes`, {$i18n->defaultLanguageCode} AS BINARY)
+            COLUMN_GET(`releases`.`dyn_notes`, {$this->intl->defaultLanguageCode} AS BINARY)
           ) AS `notes`,
           `releases`.`title`,
           `releases`.`publishing_date_rental`,
@@ -200,7 +200,7 @@ class Release {
           `media`.`bootleg` AS `medium_bootleg`,
           IFNULL(
             COLUMN_GET(`media`.`dyn_notes`, ? AS BINARY),
-            COLUMN_GET(`media`.`dyn_notes`, {$i18n->defaultLanguageCode} AS BINARY)
+            COLUMN_GET(`media`.`dyn_notes`, {$this->intl->defaultLanguageCode} AS BINARY)
           ) AS `medium_notes`,
           `media`.`bin_format` AS `medium_format`,
           `media_movies`.`movie_id`,
@@ -239,7 +239,7 @@ class Release {
           ON `companies`.`id` = `releases_label`.`company_id`
         WHERE `releases`.`id` = ?",
         "sdsdd",
-        [ $i18n->languageCode, $id, $i18n->languageCode, $id, $id ]
+        [ $this->intl->languageCode, $id, $this->intl->languageCode, $id, $id ]
       )->get_result();
 
       while ($row = $result->fetch_object()) {
@@ -260,17 +260,13 @@ class Release {
   /**
    * Get the release's labels as associative arrays.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
-   *
    * @return array
    *   Numeric array containing the labels.
    *
    *   Format: [ "id" => LABEL_ID, "name" => LABEL_NAME, "catalog_number" => CATALOG_NUMBER ]
    */
   public function getLabels() {
-    global $db, $i18n;
-    return $db->query(
+    return $this->query(
       "SELECT
         `companies`.`id`,
         `companies`.`name`,
@@ -279,7 +275,7 @@ class Release {
       INNER JOIN `companies`
         ON `companies`.`id` = `releases_labels`.`company_id`
       WHERE `releases_labels`.`release_id` = ?
-      ORDER BY `companies`.`name`{$db->collations[$i18n->languageCode]} ASC",
+      ORDER BY `companies`.`name`{$this->collations[$this->intl->languageCode]} ASC",
       "d",
       [ $this->id ]
     )->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -296,8 +292,8 @@ class Release {
    * @return \mysqli_result
    *   Paginated releases result.
    */
-  public static function getReleases($offset = 0, $rowCount = 8) {
-    return $db->query(
+  public function getReleases($offset = 0, $rowCount = 8) {
+    return $this->query(
       "SELECT
         `releases`.`id`,
         `releases`.`changed`,
