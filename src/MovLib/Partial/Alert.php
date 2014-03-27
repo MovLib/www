@@ -106,7 +106,7 @@ final class Alert {
     $this->message   = $message;
     $this->severity  = $severity;
     if ($title) {
-      $this->title = "<h4 class='title'>{$this->title}</h4>";
+      $this->title = "<h4 class='title'>{$title}</h4>";
     }
   }
 

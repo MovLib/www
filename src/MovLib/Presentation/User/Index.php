@@ -17,8 +17,8 @@
  */
 namespace MovLib\Presentation\User;
 
-use \MovLib\Data\User\User;
-use \MovLib\Data\User\Users;
+use \MovLib\Partial\Alert;
+use \MovLib\Data\UserSet;
 
 /**
  * Latest users.
@@ -39,48 +39,22 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
 
 
   /**
-   * The users database instance.
+   * User set containing all user's we want to present.
    *
-   * @var \MovLib\Data\User\Users
+   * @var \MovLib\Data\UserSet
    */
-  protected $users;
-
-  /**
-   * The translated route to user page's.
-   *
-   * @var string
-   */
-  protected $userRoute;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new users show presentation.
-   *
-   */
-  public function __construct() {
-    $this->users = new Users();
-    $this->initPage($this->intl->t("Users"));
-    $this->initBreadcrumb();
-    $this->initLanguageLinks("/users", null, true);
-    $this->paginationInit($this->users->getTotalCount());
-    $this->sidebarInit([
-      [ $kernel->requestPath, $this->title ],
-      [ $this->intl->r("/user/random"), $this->intl->t("Random")],
-    ]);
-  }
+  protected $userSet;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function getPageContent() {
-    if ($session->isAuthenticated === false) {
+    // Add a join button to the page's header if the user isn't signe in.
+    if ($this->session->isAuthenticated === false) {
       $this->headingBefore =
         "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/profile/join")}'>{$this->intl->t(
           "Join {sitename}",
@@ -88,18 +62,47 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
         )}</a>"
       ;
     }
-    $list  = null;
-    $users = $this->users->getOrderedByCreatedResult($this->paginationOffset, $this->paginationLimit);
-    /* @var $user \MovLib\Data\User\User */
-    while ($user = $users->fetch_object("\\MovLib\\Data\\User\\User")) {
+
+    // Fetch all users from the database and build the listing.
+    $list = null;
+    $userResult = $this->userSet->getOrdered("`created` DESC", $this->paginationOffset, $this->paginationLimit);
+    /* @var $user \MovLib\Data\User */
+    while ($user = $userResult->fetch_object("\\MovLib\\Data\\User", [ $this->diContainerHTTP ])) {
+      $user->initFetchObject();
       $list .=
         "<li class='hover-item r' typeof='Person'>" .
-          $this->getImage($user->getStyle(User::STYLE_SPAN_01), $user->route, [ "property" => "image" ], [ "class" => "s s1" ]) .
+          // @todo Display avatar
+          //"<img alt='' src='{$this->getExternalURL("asset://logo/vector.svg")}' width='60' height='60'>" .
           "<span class='s'><a href='{$user->route}' property='url'><span property='name'>{$user->name}</span></a></span>" .
         "</li>"
       ;
     }
-    return "<ol class='hover-list no-list'>{$list}</ol>";
+    $userResult->free();
+
+    if ($list) {
+      return "<ol class='hover-list no-list'>{$list}</ol>";
+    }
+
+    return new Alert(
+      $this->intl->t("We couldn't find any users matching your filter criteria, or there simply isn’t any user available."),
+      $this->intl->t("No Users")
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function init() {
+    $this->response->cacheable = false;
+    $this->userSet = new UserSet($this->diContainerHTTP);
+    $this->initPage($this->intl->t("Users"));
+    $this->initBreadcrumb();
+    $this->initLanguageLinks("/users", null, true);
+    $this->paginationInit($this->userSet);
+    $this->sidebarInit([
+      [ $this->request->path, $this->title, [ "class" => "ico ico-user" ] ],
+      [ $this->intl->r("/user/random"), $this->intl->t("Random") ],
+    ]);
   }
 
 }

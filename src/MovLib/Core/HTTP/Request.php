@@ -167,12 +167,12 @@ final class Request {
     $this->protocol      =  $_SERVER["SERVER_PROTOCOL"];
     $this->query         =& $_GET;
     $this->queryString   =  $_SERVER["QUERY_STRING"];
-    $this->remoteAddress =  filter_var($_SERVER["REMOTE_ADDR"], FILTER_VALIDATE_IP, FILTER_REQUIRE_SCALAR);
+    $this->remoteAddress =  $this->filterInput(INPUT_SERVER, "REMOTE_ADDR", FILTER_VALIDATE_IP, FILTER_REQUIRE_SCALAR);
     $this->scheme        =  $_SERVER["SCHEME"];
     $this->time          =  $_SERVER["REQUEST_TIME"];
     $this->timeFloat     =  $_SERVER["REQUEST_TIME_FLOAT"];
     $this->uri           =  $_SERVER["QUERY_STRING"];
-    $this->userAgent     =  filter_var($_SERVER["HTTP_USER_AGENT"], FILTER_SANITIZE_STRING, FILTER_REQUIRE_SCALAR | FILTER_FLAG_STRIP_LOW);
+    $this->userAgent     =  $this->filterInput(INPUT_SERVER, "HTTP_USER_AGENT", FILTER_SANITIZE_STRING, FILTER_REQUIRE_SCALAR | FILTER_FLAG_STRIP_LOW);
 
     // Careful, it wouldn't make much sense to tell the client to read our privacy policy and at the same time block
     // that page. Therefore we have to make sure that the client without IP address and/or user agent string is at least
@@ -190,18 +190,52 @@ final class Request {
     }
   }
 
+  // @codeCoverageIgnoreStart
   /**
-   * Get query key.
+   * Get variable from input by name.
    *
-   * @param string $key
-   *   The name of the key to get from the query string.
-   * @return mixed
-   *   The query key's value.
+   * This is a proxy method for {@see filter_input()} that allows us to utilize PHP's built in filter mechanism and
+   * unit testing our implementations.
+   *
+   * @link http://php.net/manual/function.filter-input.php
+   * @param integer $type
+   *   One of <code>INPUT_GET</code>, <code>INPUT_POST</code>, <code>INPUT_COOKIE</code>, <code>INPUT_SERVER</code>, or
+   *   <code>INPUT_ENV</code>.
+   * @param string $name
+   *   The name of the variable to get.
+   * @param integer $filter [optional]
+   *   The identifier of the filter to apply
+   * @param type $options
    */
-  public function getQuery($key) {
-    if (isset($this->query[$key])) {
-      return $this->query[$key];
-    }
+  public function filterInput($type, $name, $filter = FILTER_DEFAULT, $options = null) {
+    return filter_input($type, $name, $filter, $options);
   }
+  // @codeCoverageIgnoreEnd
+
+  // @codeCoverageIgnoreStart
+  /**
+   * Get variables from input and filter them.
+   *
+   * This is a proxy method for {@see filter_input_array()} that allows us to utilize PHP's built in filter mechanism
+   * and unit testing our implementations.
+   *
+   * @link http://php.net/manual/function.filter-input-array.php
+   * @param integer $type
+   *   One of <code>INPUT_GET</code>, <code>INPUT_POST</code>, <code>INPUT_COOKIE</code>, <code>INPUT_SERVER</code>, or
+   *   <code>INPUT_ENV</code>.
+   * @param array $definition
+   *   See original documentation for more information.
+   * @param boolean $addEmpty [optional]
+   *   Add missing keys as <code>NULL</code> to the return value.
+   * @return array|null
+   *   Array containing the values of the requested variables on success, <code>FALSE</code> on failure. An array value
+   *   will be <code>FALSE</code> if the filter fails, <code>NULL</code> if the variable isn't set. If the flag
+   *   <var>FILTER_NULL_ON_FAILURE</var> is used, it returns <code>FALSE</code> if the variable is not set and
+   *   <code>NULL</code> if the filter fails.
+   */
+  public function filterInputArray($type, array $definition, $addEmpty = true) {
+    return filter_input_array($type, $definition, $addEmpty);
+  }
+  // @codeCoverageIgnoreEnd
 
 }

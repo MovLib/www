@@ -179,6 +179,13 @@ abstract class AbstractPresenter {
   protected $languageLinks;
 
   /**
+   * The active log instance.
+   *
+   * @var \MovLib\Core\Log
+   */
+  protected $log;
+
+  /**
    * Contains the namespace parts as array.
    *
    * @var array
@@ -259,6 +266,7 @@ abstract class AbstractPresenter {
     $this->fs              = $diContainerHTTP->fs;
     $this->intl            = $diContainerHTTP->intl;
     $this->kernel          = $diContainerHTTP->kernel;
+    $this->log             = $diContainerHTTP->log;
     $this->request         = $diContainerHTTP->request;
     $this->response        = $diContainerHTTP->response;
     $this->session         = $diContainerHTTP->session;
@@ -621,6 +629,8 @@ abstract class AbstractPresenter {
       ;
     }
 
+    $searchQuery = $this->request->filterInput(INPUT_GET, "q", FILTER_SANITIZE_STRING, FILTER_REQUIRE_SCALAR | FILTER_FLAG_STRIP_LOW);
+
     return
       // No skip-to-content link! We have proper headings, semantic HTML5 elements and proper ARIA landmarks!
       "<header id='h' role='banner'><div class='c'><div class='r'>" .
@@ -656,7 +666,7 @@ abstract class AbstractPresenter {
             )}</span></button>" .
             "<input name='q' required tabindex='1' title='{$this->intl->t(
               "Enter the search term you wish to search for and hit enter."
-            )}' type='search' value='{$this->request->getQuery("q")}'>" .
+            )}' type='search' value='{$searchQuery}'>" .
           "</form>" .
           "<nav aria-expanded='false' aria-haspopup='true' class='expander main-nav' id='user-nav' role='navigation' tabindex='0'>" .
             "<h2 class='vh'>{$this->intl->t("User Navigation")}</h2>{$userIcon}" .

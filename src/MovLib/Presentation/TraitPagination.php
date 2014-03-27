@@ -22,19 +22,6 @@ use \MovLib\Presentation\Partial\Navigation;
 /**
  * Add pagination support to presentation.
  *
- * @see \MovLib\Presentation\AbstractBase
- *
- * @method string a($route, $text, array $attributes = null, $ignoreQuery = true)
- * @method this addClass($class, array &$attributes = null)
- * @method string collapseWhitespace($string)
- * @method string expandTagAttributes(array $attributes)
- * @method string getImage($style, $route = true, array $attributes = null, array $anchorAttributes = null)
- * @method string htmlDecode($text)
- * @method string htmlDecodeEntities($text)
- * @method string htmlEncode($text)
- * @method string lang($lang)
- * @method string normalizeLineFeeds($text)
- * @method string placeholder($text)
  *
  * @see \MovLib\Presentation\AbstractPresenter
  *
@@ -51,8 +38,19 @@ use \MovLib\Presentation\Partial\Navigation;
  * @property-read array $languageLinks
  * @property-read array $namespace
  * @property-read string $pageTitle
+ * @property-read \MovLib\Core\HTTP\Request $request
  * @property-read string $schemaType
  * @property-read string $title
+ * @method string a($route, $text, array $attributes = null, $ignoreQuery = true)
+ * @method this addClass($class, array &$attributes = null)
+ * @method string collapseWhitespace($string)
+ * @method string expandTagAttributes(array $attributes)
+ * @method string htmlDecode($text)
+ * @method string htmlDecodeEntities($text)
+ * @method string htmlEncode($text)
+ * @method string lang($lang)
+ * @method string normalizeLineFeeds($text)
+ * @method string placeholder($text)
  * @method string getContent()
  * @method string getFooter()
  * @method string getHeader()
@@ -114,6 +112,13 @@ trait TraitPagination {
    */
   protected $paginationTotalResults = 0;
 
+  /**
+   * The set that the pagination is presenting.
+   *
+   * @var \MovLib\Data\SetInterface
+   */
+  private $set;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
@@ -121,18 +126,15 @@ trait TraitPagination {
   /**
    * Initialize the pagination.
    *
-   * @param integer $resultsTotalCount
-   *   The total results count.
+   * @param \MovLib\Data\SetInterface $set
+   *   The set that is going to be displayed.
    * @return this
    */
-  final protected function paginationInit($resultsTotalCount) {
+  final protected function paginationInit(\MovLib\Data\SetInterface $set) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (!method_exists($this, "initPage")) {
-      throw new \LogicException("You can only use the pagination trait within a presenting page class");
-    }
-    if (!is_int($resultsTotalCount) || $resultsTotalCount < 0) {
-      throw new \InvalidArgumentException("\$resultsTotalCount passed to pagination init must be non empty, type integer, and positive");
+    if (!($this instanceof \MovLib\Presentation\AbstractPresenter)) {
+      throw new \LogicException("You can only use the pagination trait within a presenter class");
     }
     if (empty($this->title)) {
       throw new \LogicException("You have to initialize the page before you initialize the pagination trait");
@@ -146,10 +148,10 @@ trait TraitPagination {
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-    $this->paginationTotalResults = $resultsTotalCount;
+    $this->set = $set;
 
     // No need to get started if we only have one (or no) result.
-    if ($resultsTotalCount < 2) {
+    if (($this->paginationTotalResults = $set->getCount()) < 2) {
       return $this;
     }
 
@@ -157,7 +159,7 @@ trait TraitPagination {
     $this->bodyClasses .= " pagination";
 
     // Validate the user submitted page query string.
-    $this->paginationCurrentPage = filter_input(INPUT_GET, $this->intl->r("page"), FILTER_VALIDATE_INT, [
+    $this->paginationCurrentPage = $this->request->filterInput(INPUT_GET, $this->intl->r("page"), FILTER_VALIDATE_INT, [
       "options" => [ "default" => 1, "min_range" => 1 ]
     ]);
 
@@ -171,7 +173,7 @@ trait TraitPagination {
 
       // Extend the page's breadcrumb and title with information about the current pagination page.
       $title = $this->intl->t("Page {0, number, integer}", [ $this->paginationCurrentPage ]);
-      $this->breadcrumb->menuitems[] = [ $kernel->requestURI, $title ];
+      $this->breadcrumb->menuitems[] = [ $this->request->uri, $title ];
       $this->title .= " {$title}";
     }
 
@@ -190,14 +192,18 @@ trait TraitPagination {
 
       // Create the complete route string with the translated page query once. Initialize the page array and substract
       // one from the current page's index.
-      $route = "{$kernel->requestPath}?{$this->intl->r("page")}=";
+      $route = "{$this->request->path}?{$this->intl->r("page")}=";
       $pages = [];
       $x     = $this->paginationCurrentPage - 1;
 
       // Generate the previous link if it isn't the first page.
       if ($x >= 1) {
         // Only include the query string if we aren't linking to the very first page.
-        $pages[] = [ ($x > 1 ? "{$route}{$x}" : $kernel->requestPath), "<span class='ico ico-chevron-left small'></span> {$this->intl->t("previous")}", [ "class" => "pager", "rel" => "previous" ] ];
+        $pages[] = [
+          ($x > 1 ? "{$route}{$x}" : $this->request->path),
+          "<span class='ico ico-chevron-left small'></span> {$this->intl->t("previous")}",
+          [ "class" => "pager", "rel" => "previous" ],
+        ];
       }
       // We totally mute this pagination item for screen readers and alike because it has no value anymore for them. But
       // we keep it on normal screens to ensure that the pagination navigation always looks the same on all pages.
@@ -206,7 +212,7 @@ trait TraitPagination {
       }
 
       // Always add the first page to the pagination for fast jumps to the beginning.
-      $pages[] = [ $kernel->requestPath, "1", [ "rel" => "first" ] ];
+      $pages[] = [ $this->request->path, "1", [ "rel" => "first" ] ];
       if ($x <= 1) {
         $x = 2;
       }
@@ -254,7 +260,7 @@ trait TraitPagination {
         $pages[] = "<span class='mute pager' aria-hidden='true'>{$this->intl->t("next")} <span class='ico ico-chevron-right small'></span></span>";
       }
 
-      $pagination = new Navigation($this->intl->t("Pagination"), $pages, [ "id" => "pagination-nav" ]);
+      $pagination = new Navigation($this, $this->intl->t("Pagination"), $pages, [ "id" => "pagination-nav" ]);
     }
 
     // Tampering with the actual navigation partial of the pagination isn't allowed, the concrete class only has the

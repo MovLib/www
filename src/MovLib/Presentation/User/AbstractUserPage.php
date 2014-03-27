@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\User;
 
-use \MovLib\Data\User\FullUser;
+use \MovLib\Data\User;
 
 /**
  * @todo Description of AbstractUserPage
@@ -36,37 +36,9 @@ abstract class AbstractUserPage extends \MovLib\Presentation\AbstractPresenter {
 
 
   /**
-   * The user's collection route.
+   * Empty user instance.
    *
-   * @var string
-   */
-  protected $routeCollection;
-
-  /**
-   * The user's contact route.
-   *
-   * @var string
-   */
-  protected $routeContact;
-
-  /**
-   * The user's uploads route.
-   *
-   * @var string
-   */
-  protected $routeUploads;
-
-  /**
-   * The translated route to the users page.
-   *
-   * @var string
-   */
-  protected $routeUsers;
-
-  /**
-   * The user we are currently displaying.
-   *
-   * @var \MovLib\Data\User\FullUser
+   * @var \MovLib\Data\User
    */
   protected $user;
 
