@@ -99,4 +99,25 @@ final class AdminDatabase extends \MovLib\Core\Database {
     return $this;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function transactionCommit($flags = MYSQLI_TRANS_COR_AND_NO_CHAIN) {
+    return parent::transactionCommit($flags);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function transactionRollback($flags = MYSQLI_TRANS_COR_AND_NO_CHAIN) {
+    return parent::transactionRollback($flags);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function transactionStart($flags = MYSQLI_TRANS_START_READ_WRITE) {
+    return parent::transactionStart($flags);
+  }
+
 }

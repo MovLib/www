@@ -18,8 +18,6 @@
 namespace MovLib\Data\User;
 
 use \MovLib\Data\Currency;
-use \MovLib\Data\FileSystem;
-use \MovLib\Data\Log;
 use \MovLib\Presentation\Error\NotFound;
 
 /**
@@ -162,89 +160,6 @@ class FullUser extends \MovLib\Data\User\User {
   public $website;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new user.
-   *
-   * If no <var>$from</var> or <var>$value</var> is given, an empty user model will be created.
-   *
-   * @param string $from [optional]
-   *   Defines how the object should be filled with data, use the various <var>FROM_*</var> class constants.
-   * @param mixed $value [optional]
-   *   Data to identify the user, see the various <var>FROM_*</var> class constants.
-   * @throws \MovLib\Presentation\Error\NotFound
-   */
-  public function __construct($from = null, $value = null) {
-    if ($from && $value) {
-      $stmt = $db->query(
-        "SELECT
-          `id`,
-          `name`,
-          UNIX_TIMESTAMP(`access`),
-          `birthdate`,
-          `country_code`,
-          UNIX_TIMESTAMP(`created`),
-          `currency_code`,
-          COLUMN_GET(`dyn_about_me`, '{$i18n->languageCode}' AS BINARY),
-          `edits`,
-          `email`,
-          UNIX_TIMESTAMP(`image_changed`),
-          `image_extension`,
-          `password`,
-          `private`,
-          `profile_views`,
-          `real_name`,
-          `reputation`,
-          `sex`,
-          `system_language_code`,
-          `time_zone_identifier`,
-          `website`
-        FROM `users`
-        WHERE `{$from}` = ?",
-        $this->types[$from],
-        [ $value ]
-      );
-      $stmt->bind_result(
-        $this->id,
-        $this->name,
-        $this->access,
-        $this->birthday,
-        $this->countryCode,
-        $this->created,
-        $this->currencyCode,
-        $this->aboutMe,
-        $this->edits,
-        $this->email,
-        $this->changed,
-        $this->extension,
-        $this->password,
-        $this->private,
-        $this->profileViews,
-        $this->realName,
-        $this->reputation,
-        $this->sex,
-        $this->systemLanguageCode,
-        $this->timeZoneIdentifier,
-        $this->website
-      );
-      if (!$stmt->fetch()) {
-        throw new NotFound;
-      }
-      $stmt->close();
-    }
-
-    if ($this->id) {
-      $this->init();
-      $this->private = (boolean) $this->private;
-      if (!$this->currencyCode) {
-        $this->currencyCode = Currency::getDefaultCode();
-      }
-    }
-  }
-
-
   // ------------------------------------------------------------------------------------------------------------------- Public Methods
 
 
@@ -257,7 +172,7 @@ class FullUser extends \MovLib\Data\User\User {
    *   <code>TRUE</code> if this email address is already in use, otherwise <code>FALSE</code>.
    */
   public function checkEmail($email) {
-    return !empty($db->query("SELECT `id` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ])->get_result()->fetch_row());
+    return !empty($this->query("SELECT `id` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ])->get_result()->fetch_row());
   }
 
   /**
@@ -269,7 +184,7 @@ class FullUser extends \MovLib\Data\User\User {
    *   <code>TRUE</code> if this name is already in use, otherwise <code>FALSE</code>.
    */
   public function checkName($username) {
-    return !empty($db->query("SELECT `id` FROM `users` WHERE `name` = ? LIMIT 1", "s", [ $username ])->get_result()->fetch_row());
+    return !empty($this->query("SELECT `id` FROM `users` WHERE `name` = ? LIMIT 1", "s", [ $username ])->get_result()->fetch_row());
   }
 
   /**
@@ -279,7 +194,7 @@ class FullUser extends \MovLib\Data\User\User {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function commit() {
-    $db->query(
+    $this->query(
       "UPDATE `users` SET
         `birthdate`            = ?,
         `country_code`         = ?,
@@ -326,7 +241,7 @@ class FullUser extends \MovLib\Data\User\User {
   public function deleteAccount() {
     $this->deleteAvatar();
 
-    $db->query(
+    $this->query(
       "UPDATE `users` SET
         `email`                = NULL,
         `password`             = NULL,
@@ -386,7 +301,7 @@ class FullUser extends \MovLib\Data\User\User {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getTotalCollectionCount() {
-    return $db->query("SELECT COUNT(*) FROM `users_collections` WHERE `user_id` = ? LIMIT 1", "d", [ $this->id ])->get_result()->fetch_row()[0];
+    return $this->query("SELECT COUNT(*) FROM `users_collections` WHERE `user_id` = ? LIMIT 1", "d", [ $this->id ])->get_result()->fetch_row()[0];
   }
 
   /**
@@ -397,7 +312,7 @@ class FullUser extends \MovLib\Data\User\User {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getTotalRatingsCount() {
-    return $db->query("SELECT COUNT(*) FROM `movies_ratings` WHERE `user_id` = ? LIMIT 1", "d", [ $this->id ])->get_result()->fetch_row()[0];
+    return $this->query("SELECT COUNT(*) FROM `movies_ratings` WHERE `user_id` = ? LIMIT 1", "d", [ $this->id ])->get_result()->fetch_row()[0];
   }
 
   /**
@@ -409,7 +324,7 @@ class FullUser extends \MovLib\Data\User\User {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getTotalUploadsCount() {
-    return $db->query(
+    return $this->query(
       "SELECT
       (SELECT COUNT(*) FROM `posters` WHERE `uploader_id` = ?)
       +
@@ -434,7 +349,81 @@ class FullUser extends \MovLib\Data\User\User {
    *   The <var>$rawPassword</var> hash.
    */
   public function hashPassword($rawPassword) {
-    return password_hash($rawPassword, $config->passwordAlgorithm, $config->passwordOptions);
+    return password_hash($rawPassword, $this->config->passwordAlgorithm, $this->config->passwordOptions);
+  }
+
+  /**
+   * Instantiate new user.
+   *
+   * If no <var>$from</var> or <var>$value</var> is given, an empty user model will be created.
+   *
+   * @param string $from [optional]
+   *   Defines how the object should be filled with data, use the various <var>FROM_*</var> class constants.
+   * @param mixed $value [optional]
+   *   Data to identify the user, see the various <var>FROM_*</var> class constants.
+   * @throws \MovLib\Presentation\Error\NotFound
+   */
+  public function init($from, $value) {
+    $stmt = $this->query(
+      "SELECT
+        `id`,
+        `name`,
+        UNIX_TIMESTAMP(`access`),
+        `birthdate`,
+        `country_code`,
+        UNIX_TIMESTAMP(`created`),
+        `currency_code`,
+        COLUMN_GET(`dyn_about_me`, '{$i18n->languageCode}' AS BINARY),
+        `edits`,
+        `email`,
+        UNIX_TIMESTAMP(`image_changed`),
+        `image_extension`,
+        `password`,
+        `private`,
+        `profile_views`,
+        `real_name`,
+        `reputation`,
+        `sex`,
+        `system_language_code`,
+        `time_zone_identifier`,
+        `website`
+      FROM `users`
+      WHERE `{$from}` = ?",
+      $this->types[$from],
+      [ $value ]
+    );
+    $stmt->bind_result(
+      $this->id,
+      $this->name,
+      $this->access,
+      $this->birthday,
+      $this->countryCode,
+      $this->created,
+      $this->currencyCode,
+      $this->aboutMe,
+      $this->edits,
+      $this->email,
+      $this->changed,
+      $this->extension,
+      $this->password,
+      $this->private,
+      $this->profileViews,
+      $this->realName,
+      $this->reputation,
+      $this->sex,
+      $this->systemLanguageCode,
+      $this->timeZoneIdentifier,
+      $this->website
+    );
+    if (!$stmt->fetch()) {
+      throw new NotFound;
+    }
+    $stmt->close();
+    $this->initFetchObject();
+    $this->private = (boolean) $this->private;
+    if (!$this->currencyCode) {
+      $this->currencyCode = Currency::getDefaultCode();
+    }
   }
 
   /**
@@ -452,7 +441,7 @@ class FullUser extends \MovLib\Data\User\User {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function join() {
-    $stmt = $db->query(
+    $stmt = $this->query(
       "INSERT INTO `users` (`dyn_about_me`, `email`, `name`, `password`, `system_language_code`) VALUES ('', ?, ?, ?, ?)",
       "ssss",
       [ $this->email, $this->name, $this->password, $i18n->languageCode ]
@@ -470,7 +459,7 @@ class FullUser extends \MovLib\Data\User\User {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function updateEmail($email) {
-    $db->query("UPDATE `users` SET `email` = ? WHERE `id` = ?", "sd", [ $email, $this->id ]);
+    $this->query("UPDATE `users` SET `email` = ? WHERE `id` = ?", "sd", [ $email, $this->id ]);
     $this->email = $email;
     return $this;
   }
@@ -484,7 +473,7 @@ class FullUser extends \MovLib\Data\User\User {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function updatePassword($password) {
-    return $db->query("UPDATE `users` SET `password` = ? WHERE `id` = ?", "sd", [ $password, $this->id ]);
+    return $this->query("UPDATE `users` SET `password` = ? WHERE `id` = ?", "sd", [ $password, $this->id ]);
   }
 
   /**

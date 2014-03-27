@@ -17,6 +17,7 @@
  */
 namespace MovLib\Console\Command\Dev;
 
+use \MovLib\Console\AdminDatabase;
 use \MovLib\Data\User\FullUser;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
@@ -31,7 +32,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class RandomUser extends \MovLib\Console\Command\AbstractCommand {
+abstract class RandomUser extends \MovLib\Console\Command\AbstractCommand {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -133,20 +134,22 @@ class RandomUser extends \MovLib\Console\Command\AbstractCommand {
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $this->amount = (integer) $input->getArgument("amount");
+    $db = new AdminDatabase($this->diContainer);
 
     $this->write("Preparing to generate <comment>{$this->amount}</comment> random users ...");
-    $this->setUsernames();
-    $values          = $params          = $usersWithAvatar = null;
+    $this->setUsernames($db);
+    $values = $params = $usersWithAvatar = null;
+
     $this->progressStart($this->amount);
-    $user            = new FullUser();
-    $min             = strtotime("-1 year");
-    $max             = time();
+    $user = new FullUser($this->diContainer);
+    $min  = strtotime("-1 year");
+    $max  = time();
 
     $this->write("Creating <comment>{$this->amount}</comment> random users ...");
     for ($i = 0; $i < $this->amount; ++$i) {
       $created = mt_rand($min, $max);
       $name    = $this->getRandomUsername();
-      $values .= "(FROM_UNIXTIME(?), ?, FROM_UNIXTIME(?), '', ?, ?, ?, '{$i18n->defaultLanguageCode}'),";
+      $values .= "(FROM_UNIXTIME(?), ?, FROM_UNIXTIME(?), '', ?, ?, ?, '{$this->intl->defaultLanguageCode}'),";
       if ($i % 6 !== 0) {
         $params[]          = $created;
         $params[]          = "jpg";
@@ -156,7 +159,7 @@ class RandomUser extends \MovLib\Console\Command\AbstractCommand {
         $params[] = $params[] = null;
       }
       $params[] = $created;
-      $params[] = "{$name}@{$config->hostname}";
+      $params[] = "{$name}@{$this->config->hostname}";
       $params[] = $name;
       $params[] = $user->hashPassword($name);
       $this->progressAdvance();
@@ -192,7 +195,7 @@ class RandomUser extends \MovLib\Console\Command\AbstractCommand {
       $in = rtrim(str_repeat("?,", $c), ",");
       $result = $db->query("SELECT `id`, `name` FROM `users` WHERE `name` IN ({$in})", str_repeat("s", $c), $usersWithAvatar)->get_result();
       while ($row = $result->fetch_assoc()) {
-        $user->filename = $fs->sanitizeFilename($row["name"]);
+        $user->filename = $this->fs->sanitizeFilename($row["name"]);
         $convert = new \ReflectionMethod($user, "convert");
         $convert->setAccessible(true);
         $convert->invoke($user, $tmp, FullUser::STYLE_SPAN_02);
@@ -213,10 +216,12 @@ class RandomUser extends \MovLib\Console\Command\AbstractCommand {
    *
    * The usernames we generate have to be absolutely unique, therefor we have to know all the usernames that are in use.
    *
+   * @param \MovLib\Console\AdminDatabase $db
+   *   Admin database instance.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected function setUsernames() {
+  protected function setUsernames(AdminDatabase $db) {
     if (($result = $db->query("SELECT `name` FROM `users`")->get_result())) {
       while ($user = $result->fetch_row()) {
         $this->usernames[] = $user[0];

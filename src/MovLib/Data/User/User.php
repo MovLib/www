@@ -28,7 +28,7 @@ use \MovLib\Data\Image\Style;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class User extends \MovLib\Data\Image\AbstractBaseImage {
+class User extends \MovLib\Core\Database {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -146,40 +146,6 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
   ];
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new user.
-   *
-   * If no <var>$from</var> or <var>$value</var> is given, an empty user model will be created.
-   *
-   * @param string $from [optional]
-   *   Defines how the object should be filled with data, use the various <var>FROM_*</var> class constants.
-   * @param mixed $value [optional]
-   *   Data to identify the user, see the various <var>FROM_*</var> class constants.
-   * @throws \OutOfBoundsException
-   */
-  public function __construct($from = null, $value = null) {
-    if ($from && $value) {
-      $stmt = $db->query(
-        "SELECT `id`, `name`, `time_zone_identifier`, UNIX_TIMESTAMP(`image_changed`), `image_extension` FROM `users` WHERE `{$from}` = ?",
-        $this->types[$from],
-        [ $value ]
-      );
-      $stmt->bind_result($this->id, $this->name, $this->timeZoneIdentifier, $this->changed, $this->extension);
-      if (!$stmt->fetch()) {
-        throw new \OutOfBoundsException("Couldn't find user for {$from} '{$value}'");
-      }
-      $stmt->close();
-    }
-
-    if ($this->id) {
-      $this->init();
-    }
-  }
-
-
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
@@ -189,7 +155,7 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
    * @return this
    */
   public function commit() {
-    $db->query(
+    $this->query(
       "UPDATE `users` SET `image_changed` = FROM_UNIXTIME(?), `image_extension` = ? WHERE `id` = ?",
       "ssd",
       [ $this->changed, $this->extension, $this->id ]
@@ -206,7 +172,7 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
    */
   public static function getRandomUserName() {
     $query = "SELECT `name` FROM `users` ORDER BY RAND() LIMIT 1";
-    if ($result = $db->query($query)->get_result()) {
+    if ($result = $this->query($query)->get_result()) {
       return $result->fetch_assoc()["name"];
     }
   }
@@ -234,11 +200,37 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
   }
 
   /**
+   * Instantiate new user.
+   *
+   * If no <var>$from</var> or <var>$value</var> is given, an empty user model will be created.
+   *
+   * @param string $from [optional]
+   *   Defines how the object should be filled with data, use the various <var>FROM_*</var> class constants.
+   * @param mixed $value [optional]
+   *   Data to identify the user, see the various <var>FROM_*</var> class constants.
+   * @throws \OutOfBoundsException
+   */
+  public function init($from, $value) {
+    $stmt = $this->query(
+      "SELECT `id`, `name`, `time_zone_identifier`, UNIX_TIMESTAMP(`image_changed`), `image_extension` FROM `users` WHERE `{$from}` = ?",
+      $this->types[$from],
+      [ $value ]
+    );
+    $stmt->bind_result($this->id, $this->name, $this->timeZoneIdentifier, $this->changed, $this->extension);
+    if (!$stmt->fetch()) {
+      throw new \OutOfBoundsException("Couldn't find user for {$from} '{$value}'");
+    }
+    $stmt->close();
+
+    $this->initFetchObject();
+  }
+
+  /**
    * Initialize image properties and user page route.
    *
    * @return this
    */
-  public function init() {
+  public function initFetchObject() {
     $this->imageExists   = (boolean) $this->changed;
     $this->filename = mb_strtolower($this->name);
     $this->route    = $i18n->r("/user/{0}", [ $this->filename ]);

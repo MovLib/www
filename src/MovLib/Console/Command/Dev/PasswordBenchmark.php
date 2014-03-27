@@ -52,7 +52,7 @@ class PasswordBenchmark extends \MovLib\Console\Command\AbstractCommand {
     do {
       $cost++;
       $start  = microtime(true);
-      password_hash("password-benchmark", PASSWORD_DEFAULT, [ "cost" => $cost ]);
+      password_hash("password-benchmark", $this->config->passwordAlgorithm, $this->config->passwordOptions);
       $end    = microtime(true);
       $actual = $end - $start;
       $this->progressAdvance();

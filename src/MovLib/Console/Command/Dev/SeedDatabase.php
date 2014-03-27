@@ -17,6 +17,7 @@
  */
 namespace MovLib\Console\Command\Dev;
 
+use \MovLib\Console\AdminDatabase;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -78,7 +79,7 @@ final class SeedDatabase extends \MovLib\Console\Command\AbstractCommand {
 
     if (($key = array_search("schema", $scripts)) !== false) {
       $this->writeVerbose("Importing database schema <comment>{$this->schema}</comment>");
-      $this->exec("mysql < '{$fs->realpath($this->schema)}'");
+      $this->exec("mysql < '{$this->fs->realpath($this->schema)}'");
       $this->writeVerbose("Successfully importend database schema!", self::MESSAGE_TYPE_INFO);
       unset($scripts[$key]);
       $scripts = [ "all" ];
@@ -104,6 +105,7 @@ final class SeedDatabase extends \MovLib\Console\Command\AbstractCommand {
     }
 
     $this->writeVerbose("Importing individual SQL scripts...");
+    $db = new AdminDatabase($this->diContainer);
     foreach ($scripts as $script) {
       $script = "{$this->scriptDirectory}/{$script}.sql";
       $this->writeDebug("Importing <comment>{$script}</comment>");
