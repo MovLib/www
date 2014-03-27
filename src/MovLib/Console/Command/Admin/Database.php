@@ -17,7 +17,6 @@
  */
 namespace MovLib\Console\Command\Admin;
 
-use \MovLib\Console\AdminDatabase;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -56,7 +55,7 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
 
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function configure() {
     $this->setName("database");
@@ -67,7 +66,7 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     foreach ($input->getOptions() as $method => $execute) {

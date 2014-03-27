@@ -220,7 +220,7 @@ class Deploy extends \MovLib\Console\Command\AbstractCommand {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function configure() {
     $this->setName("deploy");
@@ -228,7 +228,7 @@ class Deploy extends \MovLib\Console\Command\AbstractCommand {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     // Only root (sudo) can deploy!

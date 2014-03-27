@@ -92,7 +92,7 @@ class RandomUser extends \MovLib\Console\Command\AbstractCommand {
 
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function configure() {
     $this->setName("create-random-users");

@@ -31,7 +31,7 @@ use \MovLib\Partial\Alert;
 final class Home extends \MovLib\Presentation\AbstractPresenter {
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getContent() {
     $articles = [];
@@ -81,12 +81,14 @@ final class Home extends \MovLib\Presentation\AbstractPresenter {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  protected function getHeadTitle() {}
+  protected function getHeadTitle() {
+    return $this->config->siteName;
+  }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getMainContent($content) {
     $noscript = new Alert(
@@ -105,7 +107,7 @@ final class Home extends \MovLib\Presentation\AbstractPresenter {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function init() {
     $this->initPage($this->config->siteName);

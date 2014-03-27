@@ -129,7 +129,7 @@ class SeedImport extends \MovLib\Console\Command\AbstractCommand {
 
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function configure() {
     $this->setName("seed-import");
@@ -237,7 +237,7 @@ class SeedImport extends \MovLib\Console\Command\AbstractCommand {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $this->seedPath = "{$kernel->documentRoot}{$this->seedPath}";

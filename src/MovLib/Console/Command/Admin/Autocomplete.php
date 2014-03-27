@@ -33,7 +33,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
 class Autocomplete extends \MovLib\Console\Command\AbstractCommand {
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function configure() {
     $this->setName("gen-autocompletion");
@@ -54,7 +54,7 @@ class Autocomplete extends \MovLib\Console\Command\AbstractCommand {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     if (!$this->privileged) {
@@ -69,21 +69,21 @@ class Autocomplete extends \MovLib\Console\Command\AbstractCommand {
     if (in_array("all", $apps)) {
       $this->writeVerbose("Found special keyword <comment>all</comment>, generating translations for all system locales");
       $apps = [];
-      foreach (new \RegexIterator(new \DirectoryIterator("/usr/bin/local"), "/mov[a-z]+$/") as $fileinfo) {
+      foreach (new \RegexIterator(new \DirectoryIterator("/usr/local/bin"), "/mov[a-z]+$/") as $fileinfo) {
         $apps[] = $fileinfo->getBasename(".php");
       }
     }
 
-    $vendor = $this->fs->realpath("dr://vendor");
+    $lib = $this->fs->realpath("dr://lib");
 
     foreach ($apps as $app) {
       $this->writeVerbose("Generating autocompletion for <comment>{$app}</comment>");
 
       // Create the autocompletion project if it doesn't exist yet.
-      $autocomplete = "{$vendor}/symfony-console-autocomplete/bin/autocomplete";
+      $autocomplete = "{$lib}/symfony-console-autocomplete/bin/autocomplete";
       $this->exec("which '{$app}'");
       if (is_file($autocomplete) === false) {
-        $this->exec("composer create-project bamarni/symfony-console-autocomplete -s dev", $vendor);
+        $this->exec("composer create-project bamarni/symfony-console-autocomplete -s dev", $lib);
       }
 
       // Create the autocompletion dump of the desired application.

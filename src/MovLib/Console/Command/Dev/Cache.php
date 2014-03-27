@@ -34,7 +34,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
 class Cache extends \MovLib\Console\Command\AbstractCommand {
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function configure() {
     $this->setName("cache");
@@ -43,7 +43,7 @@ class Cache extends \MovLib\Console\Command\AbstractCommand {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $foundOption = false;

@@ -64,7 +64,7 @@ abstract class AbstractIntlCommand extends \MovLib\Console\Command\AbstractComma
 
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function __construct(DIContainer $diContainer) {
     parent::__construct($diContainer);

@@ -33,7 +33,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
 class PasswordBenchmark extends \MovLib\Console\Command\AbstractCommand {
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function configure() {
     $this->setName("password-benchmark");
@@ -42,7 +42,7 @@ class PasswordBenchmark extends \MovLib\Console\Command\AbstractCommand {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $timeTarget = $input->getArgument("time-target");

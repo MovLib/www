@@ -81,7 +81,7 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
 
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function getContent() {
     return
@@ -102,7 +102,7 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function getFooter() {
     return
@@ -129,21 +129,21 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function getHeader() {
     return "";
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function getHeadTitle() {
     return $this->config->siteNameAndSlogan;
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function getMainContent($content) {
     return
@@ -157,7 +157,7 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
   }
 
   /**
-   * The submitted form has no auto-validation errors, continue normal program flow.
+   * Submitted email address is valid, add the email address to our subscribers.
    *
    * @return this
    */

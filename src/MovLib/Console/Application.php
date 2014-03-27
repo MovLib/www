@@ -37,12 +37,12 @@ final class Application extends \Symfony\Component\Console\Application {
   /**
    * Instantiate new MovLib CLI application.
    *
-   * @param string $basename
-   *   The basename of the executed binary (without extension).
    * @param \MovLib\Core\DIContainer $diContainer
    *   The dependency injection container.
+   * @param string $basename
+   *   The basename of the executed binary (without extension).
    */
-  public function __construct($basename, DIContainer $diContainer) {
+  public function __construct(DIContainer $diContainer, $basename) {
     parent::__construct($basename, $diContainer->config->version);
     cli_set_process_title($basename);
 

@@ -29,7 +29,7 @@ namespace MovLib\Console;
 final class AdminDatabase extends \MovLib\Core\Database {
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function query($query, $types = null, array $params = null) {
     return parent::query($query, $types, $params);
@@ -96,19 +96,6 @@ final class AdminDatabase extends \MovLib\Core\Database {
       $this->query("SET foreign_key_checks = 1");
     }
 
-    return $this;
-  }
-
-  /**
-   * Purge entries with given TTL from the temporary table.
-   *
-   * @param string $ttl
-   *   The TTL of the entries to purge.
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function purgeTemporaryTable($ttl) {
-    $this->query("DELETE FROM `tmp` WHERE DATEDIFF(CURRENT_TIMESTAMP, `created`) > 0 AND `ttl` = ?", "s", [ $ttl ]);
     return $this;
   }
 

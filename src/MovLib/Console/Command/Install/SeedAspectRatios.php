@@ -71,7 +71,7 @@ final class SeedAspectRatios extends \MovLib\Console\Command\Install\AbstractInt
 
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function configure() {
     $this->setName("seed-aspect-ratios");

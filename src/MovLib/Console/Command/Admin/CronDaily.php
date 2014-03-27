@@ -18,9 +18,6 @@
 namespace MovLib\Console\Command\Admin;
 
 use \MovLib\Console\AdminDatabase;
-use \MovLib\Core\Log;
-use \MovLib\Exception\DatabaseException;
-use \MovLib\Exception\ShellException;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -39,7 +36,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
 class CronDaily extends \MovLib\Console\Command\AbstractCommand {
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function configure() {
     $this->setName("cron-daily");
@@ -47,7 +44,7 @@ class CronDaily extends \MovLib\Console\Command\AbstractCommand {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     try {
@@ -66,8 +63,11 @@ class CronDaily extends \MovLib\Console\Command\AbstractCommand {
    * @return this
    */
   public function purgeTemporaryTable() {
-    $this->writeDebug("Purging temporary table for <comment>@daily</comment> entries...");
-    (new AdminDatabase())->purgeTemporaryTable("@daily");
+    $ttl   = "@daily";
+    $query = "DELETE FROM `tmp` WHERE DATEDIFF(CURRENT_TIMESTAMP, `created`) > 0 AND `ttl` = '{$ttl}'";
+    $this->writeDebug("Purging temporary table for <comment>{$ttl}</comment> entries...");
+    $this->writeDebug("mysql> <comment>{$query};</comment>");
+    (new AdminDatabase($this->diContainer))->query($query);
     return $this;
   }
 

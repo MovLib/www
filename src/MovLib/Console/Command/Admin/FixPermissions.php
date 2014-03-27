@@ -17,6 +17,7 @@
  */
 namespace MovLib\Console\Command\Admin;
 
+use \MovLib\Console\Command\Install\Nginx;
 use \MovLib\Core\FileSystem;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
@@ -34,7 +35,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
 class FixPermissions extends \MovLib\Console\Command\AbstractCommand {
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function configure() {
     $this->setName("fix-permissions");
@@ -47,7 +48,7 @@ class FixPermissions extends \MovLib\Console\Command\AbstractCommand {
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     // Fixing permissions of all files only works reliable if executed as privileged user.
-    if (!$this->privileged) {
+    if (!$this->fs->privileged) {
       $this->write(
         "You're executing this command as non privileged user which should work, if you get permission denied errors " .
         "execute as root or via sudo, but you should definitely check which files caused the problem.",
@@ -68,13 +69,7 @@ class FixPermissions extends \MovLib\Console\Command\AbstractCommand {
       throw new \InvalidArgumentException("The passed URI '{$uri}' doesn't exist");
     }
 
-    if (is_file($uri)) {
-      $fileinfo = new \SplFileInfo($uri);
-      if ($this->fixBinary($fileinfo) === false) {
-        $this->fixDirectoryOrFile($uri);
-      }
-    }
-    else {
+    if (is_dir($uri)) {
       $this->writeVerbose("Fixing file and directory permission...");
       /* @var $fileinfo \SplFileInfo */
       foreach ($this->fs->getRecursiveIterator($uri) as $fileinfo) {
@@ -83,9 +78,9 @@ class FixPermissions extends \MovLib\Console\Command\AbstractCommand {
       $this->writeVeryVerbose("Fixed file and directory permissions...");
 
       // Only fix binaries if we're privileged and matching against the document root.
-      if ($this->privileged && $uri == "dr://") {
+      if ($this->fs->privileged && $uri == "dr://") {
         $this->writeVerbose("Fixing binary permissions...");
-        foreach ([ "bin", "vendor/bin", "etc/init.d" ] as $binaryDirectory) {
+        foreach ([ "bin", "lib/bin", "etc/init.d" ] as $binaryDirectory) {
           $binaryDirectory = "dr://{$binaryDirectory}";
           if (is_dir($binaryDirectory)) {
             foreach (new \DirectoryIterator($binaryDirectory) as $fileinfo) {
@@ -101,6 +96,15 @@ class FixPermissions extends \MovLib\Console\Command\AbstractCommand {
 
       $this->writeVerbose("Fixed permissions in <comment>{$uri}</comment>", self::MESSAGE_TYPE_INFO);
     }
+    elseif (is_file($uri) || is_link($uri)) {
+      $fileinfo = new \SplFileInfo($uri);
+      if ($this->fixBinary($fileinfo) === false) {
+        $this->fixDirectoryOrFile($fileinfo, false);
+      }
+    }
+    else {
+      throw new \RuntimeException("Cannot fix '{$uri}', unknown type of file.");
+    }
 
     return 0;
   }
@@ -112,10 +116,18 @@ class FixPermissions extends \MovLib\Console\Command\AbstractCommand {
    *   Absolute path of the file that is going to be fixed.
    * @param integer $mode
    *   The mode you are applying (octal).
+   * @param boolean $ignoreKeys [optional]
+   *   Whether to ignore the HTTPS keys and certificate warnings or not, defaults to <code>TRUE</code> (ignore).
    * @return boolean
    *   <code>TRUE</code> if permissions were fixed, otherwise <code>FALSE</code>.
    */
-  protected function fix($path, $mode) {
+  protected function fix($path, $mode, $ignoreKeys = true) {
+    if (strpos($path, Nginx::HTTPS_KEY_DIR_URI) !== false) {
+      if ($ignoreKeys === false) {
+        $this->write([ "You cannot change permissions of HTTPS keys and certificates!" ], self::MESSAGE_TYPE_ERROR);
+      }
+      return false;
+    }
     $this->writeDebug(sprintf("Fixing <comment>{$path}</comment> [<comment>%04o</comment>]", $mode));
     // Owner and group are directly fixed in the stream wrapper!
     return chmod($path, $mode);
@@ -158,17 +170,19 @@ class FixPermissions extends \MovLib\Console\Command\AbstractCommand {
    *
    * @param \SplFileInfo $fileinfo
    *   The fileinfo instance of the current loop.
+   * @param boolean $ignoreKeys [optional]
+   *   Whether to ignore the HTTPS keys and certificate warnings or not, defaults to <code>TRUE</code> (ignore).
    * @return boolean
    *   <code>TRUE</code> if permissions were fixed, otherwise <code>FALSE</code>.
    */
-  protected function fixDirectoryOrFile($fileinfo) {
+  protected function fixDirectoryOrFile($fileinfo, $ignoreKeys = true) {
     $path = $fileinfo->getPathname();
 
     if ($fileinfo->isDir()) {
-      return $this->fix($path, FileSystem::MODE_DIR);
+      return $this->fix($path, FileSystem::MODE_DIR, $ignoreKeys);
     }
     elseif ($fileinfo->isFile()) {
-      return $this->fix($path, FileSystem::MODE_FILE);
+      return $this->fix($path, FileSystem::MODE_FILE, $ignoreKeys);
     }
 
     return false;

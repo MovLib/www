@@ -17,10 +17,12 @@
  */
 namespace MovLib\Console\Command\Install;
 
+use \MovLib\Console\Command\Admin\NginxRoutes;
 use \MovLib\Data\FileSystem;
-use \MovLib\Tool\Console\Command\Production\NginxRoutes;
+use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\StringInput;
 use \Symfony\Component\Console\Output\ConsoleOutput;
+use \Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Install nginx.
@@ -34,8 +36,23 @@ use \Symfony\Component\Console\Output\ConsoleOutput;
  */
 final class Nginx extends \MovLib\Console\Command\Install\AbstractInstallCommand {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
   /**
-   * @inheritdoc
+   * URI to the directory that contains the HTTPS keys and certificates.
+   *
+   * @var string
+   */
+  const HTTPS_KEY_DIR_URI = "dr://etc/nginx/https/keys";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * {@inheritdoc}
    */
   protected function configure() {
     $this->setName("nginx");
@@ -92,14 +109,77 @@ final class Nginx extends \MovLib\Console\Command\Install\AbstractInstallCommand
         $path      = "{$directory}/{$basename}";
         $this->exec("tar --extract --gzip --file '{$archive}'", $directory);
         if ($this->input->getOption("keep") === false) {
-          $kernel->registerFileForDeletion($archive);
-          $kernel->registerFileForDeletion($path);
+          $this->kernel->registerFileForDeletion($archive);
+          $this->kernel->registerFileForDeletion($path);
         }
       }
       elseif (pathinfo($url, PATHINFO_EXTENSION) != "git") {
         $path = $this->extract($path);
       }
       $paths[$name] = $path;
+    }
+
+    return $this;
+  }
+
+  /**
+   * Import HTTPS keys and certificates.
+   *
+   * @param \Symfony\Component\Console\Output\OutputInterface $output [optional]
+   *   Output instance for writing to console.
+   * @return this
+   * @throws \RuntimeException
+   *   If no keys and certificates were found in the root's home directory.
+   */
+  public function importKeysAndCertificates(OutputInterface $output = null) {
+    if ($output) {
+      $this->output = $output;
+    }
+
+    if ($this->fs->privileged) {
+      $this->writeVerbose("Importing HTTPS keys and certificates...");
+
+      if (!is_dir(self::HTTPS_KEY_DIR_URI) || $this->fs->isDirectoryEmpty(self::HTTPS_KEY_DIR_URI)) {
+        $this->writeVeryVerbose("Key and certificate directory is empty...");
+
+        $rootKeys = "/root/keys";
+        if (is_dir($rootKeys) && !$this->fs->isDirectoryEmpty($rootKeys)) {
+          $this->writeVeryVerbose("Found key and certificate directory in root's home...");
+
+          if (!is_dir(self::HTTPS_KEY_DIR_URI)) {
+            $this->writeDebug("Creating directory <comment>" . self::HTTPS_KEY_DIR_URI . "</comment>");
+            mkdir(self::HTTPS_KEY_DIR_URI, 0660);
+            chown(self::HTTPS_KEY_DIR_URI, "root");
+            chgrp(self::HTTPS_KEY_DIR_URI, "root");
+          }
+          $httpsKeysRealpath = $this->fs->realpath(self::HTTPS_KEY_DIR_URI);
+
+          $this->writeDebug("Going through <comment>{$rootKeys}</comment>");
+          /* @var $fileinfo \SplFileInfo */
+          foreach ($this->fs->getRecursiveIterator($rootKeys, \RecursiveIteratorIterator::SELF_FIRST) as $fileinfo) {
+            $source      = $fileinfo->getRealPath();
+            $destination = str_replace($rootKeys, $httpsKeysRealpath, $source);
+            if ($fileinfo->isDir()) {
+              $this->writeDebug("Creating directory <comment>{$destination}</comment>");
+              mkdir($destination, 0770);
+              chown($destination, "root");
+              chgrp($destination, "root");
+            }
+            else {
+              $this->writeDebug("Copying <comment>{$source}</comment> to <comment>{$destination}</comment>");
+              copy($source, $destination);
+              chmod($destination, 0660);
+              chown($destination, "root");
+              chgrp($destination, "root");
+            }
+          }
+
+          $this->writeVerbose("<info>Successfully copied all keys and certificates!");
+        }
+        else {
+          throw new \RuntimeException("Couldn't find HTTPS keys and certificates in '{$rootKeys}'.");
+        }
+      }
     }
 
     return $this;
@@ -113,10 +193,10 @@ final class Nginx extends \MovLib\Console\Command\Install\AbstractInstallCommand
    * @throws \LogicException
    */
   protected function getConfiguration() {
-    if (empty($kernel->configuration->nginx)) {
+    if (empty($this->kernel->configuration->nginx)) {
       throw new \LogicException("Missing {$this->getName()} configuration in global configuration file!");
     }
-    return $kernel->configuration->nginx;
+    return $this->kernel->configuration->nginx;
   }
 
   /**
@@ -151,11 +231,11 @@ final class Nginx extends \MovLib\Console\Command\Install\AbstractInstallCommand
 
     if (file_exists($this->etcTarget)) {
       $this->writeDebug("Deleting default {$name} configuration...");
-      FileSystem::delete($this->etcTarget);
+      unlink($this->etcTarget);
     }
 
     $this->writeDebug("Linking {$name} configuration...");
-    FileSystem::createSymbolicLink($this->etcSource, $this->etcTarget);
+    $this->fs->symlink($this->etcSource, $this->etcTarget);
     $this->exec("make upgrade && make clean", $sourceDirectories[$name]);
 
     (new NginxRoutes())->run(new StringInput(""), new ConsoleOutput($this->output->getVerbosity()));

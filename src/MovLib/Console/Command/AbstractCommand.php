@@ -237,7 +237,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   The answer or <var>$default</var> if user requested no interaction or quiet execution.
    */
   final protected function ask($question, $default = null, array $autocomplete = null) {
-    if ($this->isInteractive() === true) {
+    if ($this->input->isInteractive()) {
       $defaultDisplay = $default ? " [default: {$default}]" : null;
       return $this->getHelperSet()->get('dialog')->ask(
         $this->output,
@@ -260,7 +260,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   The answer or <var>$default</var> if user requested no interaction or quiet execution.
    */
   final protected function askConfirmation($question, $default = true) {
-    if ($this->isInteractive() === true) {
+    if ($this->input->isInteractive()) {
       $defaultDisplay = $default ? "y" : "n";
       return $this->getHelperSet()->get("dialog")->askConfirmation(
         $this->output,
@@ -286,7 +286,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   The answer or <var>$default</var> if user requested no interaction or quiet execution.
    */
   final protected function askWithChoices($text, $default = null, array $choices = null, array $choiceExplanations = null) {
-    if ($this->isInteractive() === true) {
+    if ($this->input->isInteractive()) {
       $this->write($text, self::MESSAGE_TYPE_COMMENT)->write("Possible choices are:\n", self::MESSAGE_TYPE_COMMENT);
       if ($choices && $choiceExplanations){
         $c = count($choices);
@@ -321,27 +321,12 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function initialize(InputInterface $input, OutputInterface $output) {
     $this->input  = $input;
     $this->output = $output;
     return $this;
-  }
-
-  /**
-   * Check if current output is interactive.
-   *
-   * @staticvar boolean $interactive
-   * @return boolean
-   *   <code>TRUE</code> if current output is interactive, otherwise <code>FALSE</code>.
-   */
-  final protected function isInteractive() {
-    static $interactive = null;
-    if (!$interactive) {
-      $interactive = !$this->input->getOption("no-interaction");
-    }
-    return $interactive;
   }
 
   /**
@@ -369,24 +354,6 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
   }
 
   /**
-   * Automatically called by Symfony if this command was called.
-   *
-   * @param InputInterface $input
-   *   The active input instance.
-   * @param OutputInterface $output
-   *   The active output instance.
-   * @return array
-   *   The input options array.
-   */
-  protected function execute(InputInterface $input, OutputInterface $output) {
-    if (($options = $input->getOptions())) {
-      if (isset($options["no-interaction"])) {
-        $this->interaction = !$options["no-interaction"];
-      }
-    }
-  }
-
-  /**
    * Get a shell instance.
    *
    * @staticvar \MovLib\Core\Shell $shell
@@ -400,33 +367,6 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
       $shell = new Shell();
     }
     return $shell;
-  }
-
-  /**
-   * Recursive glob that finds all php files in the given directory.
-   *
-   * @param string $path
-   *   Absolut path to glob.
-   * @param callable $callback
-   *   Callable to call on each iteration.
-   * @param string|array $extension [optional]
-   *   The extension of files to search for, either as string containing a single extension or a numeric array with
-   *   multiple extensions, defaults to <code>"php"</code>.
-   * @return this
-   */
-  protected function globRecursive($path, $callback, $extension = "php") {
-    if ($extension !== (array) $extension) {
-      $extension = [ $extension ];
-    }
-
-    /* @var $splFileInfo \SplFileInfo */
-    foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path), \RecursiveIteratorIterator::SELF_FIRST) as $splFileInfo) {
-      if ($splFileInfo->isFile() && in_array($splFileInfo->getExtension(), $extension)) {
-        call_user_func($callback, $splFileInfo);
-      }
-    }
-
-    return $this;
   }
 
   /**

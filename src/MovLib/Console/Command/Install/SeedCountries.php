@@ -70,7 +70,7 @@ class SeedCountries extends \MovLib\Console\Command\Install\AbstractIntlCommand 
 
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function configure() {
     $this->setName("seed-countries");

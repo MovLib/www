@@ -35,7 +35,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
 final class Config extends \MovLib\Console\Command\AbstractCommand {
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function configure() {
     $this->setName("config");
@@ -56,7 +56,7 @@ final class Config extends \MovLib\Console\Command\AbstractCommand {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $configClone = clone $this->config;

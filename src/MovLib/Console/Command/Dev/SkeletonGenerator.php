@@ -90,7 +90,7 @@ class SkeletonGenerator extends \MovLib\Console\Command\AbstractCommand {
 
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function configure() {
     $this->setName("skeleton-generator");
@@ -98,7 +98,7 @@ class SkeletonGenerator extends \MovLib\Console\Command\AbstractCommand {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     // We need to fix the permissions after generating the skeletons, therefor we need elevated privileges.

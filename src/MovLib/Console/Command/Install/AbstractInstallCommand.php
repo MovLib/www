@@ -38,7 +38,7 @@ abstract class AbstractInstallCommand extends \MovLib\Console\Command\AbstractCo
 
 
 //  /**
-//   * @inheritdoc
+//   * {@inheritdoc}
 //   */
 //  public function __construct($name = null) {
 //    parent::__construct($name);
@@ -223,7 +223,7 @@ abstract class AbstractInstallCommand extends \MovLib\Console\Command\AbstractCo
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $this->writeDebug("Generating global configuration...", self::MESSAGE_TYPE_COMMENT);

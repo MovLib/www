@@ -62,7 +62,7 @@ final class SeedDatabase extends \MovLib\Console\Command\AbstractCommand {
 
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function configure() {
     $this->setName("seed-database");

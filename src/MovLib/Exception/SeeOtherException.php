@@ -15,13 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Console\Command\Admin;
-
-use \Symfony\Component\Console\Input\InputInterface;
-use \Symfony\Component\Console\Output\OutputInterface;
+namespace MovLib\Exception;
 
 /**
- * List all available environments.
+ * @todo Description of SeeOtherException
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -29,27 +26,10 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ListEnvironments extends \MovLib\Console\Command\AbstractCommand {
+class SeeOtherException extends \MovLib\Exception\RedirectException implements \MovLib\Exception\ClientException {
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function configure() {
-    $this->setName("list-environments");
-    $this->setDescription("List all available environments.");
-  }
+  public function getPresentation() {
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function execute(InputInterface $input, OutputInterface $output) {
-    $output->write("<info>Available environments:</info>\n\n");
-    /* @var $fileinfo \SplFileInfo */
-    foreach (new \RegexIterator(new \DirectoryIterator("dr://src/MovLib/Core/Config"), "/\.php$/") as $fileinfo) {
-      $output->write("  - {$fileinfo->getBasename(".php")}");
-    }
-    $output->write("\n\n<comment>NOTE</comment> that all environments are merged with the dist environment configuration.\n\n");
-    return 0;
   }
 
 }

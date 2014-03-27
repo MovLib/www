@@ -31,7 +31,7 @@ use \MovLib\Core\Intl;
 class SeedSubtitles extends \MovLib\Console\Command\Install\SeedLanguages {
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function configure() {
     $this->setName("seed-subtitles");
@@ -39,7 +39,7 @@ class SeedSubtitles extends \MovLib\Console\Command\Install\SeedLanguages {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function translate() {
     // Translate all available languages to the desired locale.

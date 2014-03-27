@@ -18,6 +18,7 @@
 namespace MovLib\Console\Command\Admin;
 
 use \MovLib\Console\AdminDatabase;
+use \MovLib\Console\Command\Install\Nginx;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -120,7 +121,7 @@ class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function configure() {
     $this->setName("nginx-routes");
@@ -128,7 +129,7 @@ class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $this->db = new AdminDatabase($this->diContainer);
@@ -186,38 +187,7 @@ class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
 
     // Reload nginx and load the newly translated routes.
     if ($this->privileged) {
-      $httpsKeys = "dr://etc/nginx/https/keys";
-      if (!is_dir($httpsKeys) || $this->fs->isDirectoryEmpty($httpsKeys)) {
-        $rootKeys = "/root/keys";
-        if (is_dir($rootKeys) && !$this->fs->isDirectoryEmpty($rootKeys)) {
-          mkdir($httpsKeys, 0660);
-          chown($httpsKeys, "root");
-          chgrp($httpsKeys, "root");
-          $httpsKeysRealpath = $this->fs->realpath($httpsKeys);
-          /* @var $fileinfo \SplFileInfo */
-          foreach ($this->fs->getRecursiveIterator($rootKeys, \RecursiveIteratorIterator::SELF_FIRST) as $fileinfo) {
-            $source      = $fileinfo->getRealPath();
-            $destination = str_replace($rootKeys, $httpsKeysRealpath, $source);
-            if ($fileinfo->isDir()) {
-              $this->writeDebug("Creating directory <comment>{$destination}</comment>");
-              mkdir($destination, 0770);
-              chown($destination, "root");
-              chgrp($destination, "root");
-            }
-            else {
-              $this->writeDebug("Copying <comment>{$source}</comment> to <comment>{$destination}</comment>");
-              copy($source, $destination);
-              chmod($destination, 0660);
-              chown($destination, "root");
-              chgrp($destination, "root");
-            }
-          }
-        }
-        else {
-          throw new \RuntimeException("Couldn't find HTTPS keys and certificates in '{$rootKeys}'.");
-        }
-      }
-
+      (new Nginx($this->diContainer))->importKeysAndCertificates($output);
       $this->exec("nginx -t");
       $this->exec("service nginx reload");
     }

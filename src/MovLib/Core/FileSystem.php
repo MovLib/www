@@ -67,14 +67,14 @@ final class FileSystem {
    *
    * @var string
    */
-  protected $documentRoot;
+  public $documentRoot;
 
   /**
    * The process group.
    *
    * @var string
    */
-  protected $group;
+  public $group;
 
   /**
    * Whether this process has elevated privileges or not.
@@ -82,7 +82,7 @@ final class FileSystem {
    * @see FileSystem::setProcessOwner()
    * @var boolean
    */
-  protected $privileged = false;
+  public $privileged = false;
 
   /**
    * List of files that should be deleted on shutdown.
@@ -107,7 +107,7 @@ final class FileSystem {
    *
    * @var string
    */
-  protected $user;
+  public $user;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -288,7 +288,7 @@ final class FileSystem {
    *   <code>TRUE</code> if the directory is empty, <code>FALSE</code> otherwise.
    */
   public function isDirectoryEmpty($uri) {
-    return (count(glob("{$uri}/*")) === 0);
+    return (count(glob("{$this->realpath($uri)}/*")) === 0);
   }
 
   /**

@@ -36,7 +36,7 @@ use \MovLib\Partial\Navigation;
 final class LanguageSelection extends \MovLib\Presentation\AbstractPresenter {
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function getContent() {
     $prerender = $menuitems = null;
@@ -55,7 +55,7 @@ final class LanguageSelection extends \MovLib\Presentation\AbstractPresenter {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function getFooter() {
     return
@@ -68,12 +68,12 @@ final class LanguageSelection extends \MovLib\Presentation\AbstractPresenter {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function getHeader() {}
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function getMainContent($content) {
     return
@@ -87,7 +87,7 @@ final class LanguageSelection extends \MovLib\Presentation\AbstractPresenter {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function init() {
     $this->initPage($this->intl->t("Language Selection"));

@@ -136,7 +136,7 @@ final class Kernel {
     $this->diContainer->fs   = new FileSystem($documentRoot, $this->diContainer->log);
     $this->diContainer->intl = new Intl($this->diContainer->config->defaultLocale, $this->diContainer->config->defaultLocale, $this->diContainer->config->locales);
     $this->diContainer->fs->setProcessOwner($this->diContainer->config->user, $this->diContainer->config->group);
-    (new Application($basename, $this->diContainer))->run();
+    (new Application($this->diContainer, $basename))->run();
     $this->shutdown();
     return $this;
   }

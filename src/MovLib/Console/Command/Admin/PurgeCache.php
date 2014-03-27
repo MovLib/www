@@ -32,7 +32,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
 class PurgeCache extends \MovLib\Console\Command\AbstractCommand {
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function configure() {
     $this->setName("purge-cache");
@@ -40,10 +40,10 @@ class PurgeCache extends \MovLib\Console\Command\AbstractCommand {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    $this->writeVerbose("Purging presentation cache...", self::MESSAGE_TYPE_COMMENT);
+    $this->writeVerbose("<comment>Purging presentation cache...</comment>");
     /* @var $fileinfo \SplFileInfo */
     foreach ($this->fs->getRecursiveIterator("dr://var/cache") as $fileinfo) {
       $path = $fileinfo->getPathname();
@@ -56,7 +56,7 @@ class PurgeCache extends \MovLib\Console\Command\AbstractCommand {
         unlink($path);
       }
     }
-    $this->writeVerbose("Successfuly purged the presentation cache!", self::MESSAGE_TYPE_INFO);
+    $this->writeVerbose("<info>Successfuly purged the presentation cache!</info>");
     return 0;
   }
 
