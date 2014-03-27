@@ -40,10 +40,8 @@ class Home extends \MovLib\Presentation\Tool\Page {
   /**
    * Instantiate new tools homepage.
    *
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $kernel;
     $kernel->stylesheets[] = "tool";
     $this->initPage("Tools");
     $this->initBreadcrumb();
@@ -57,18 +55,15 @@ class Home extends \MovLib\Presentation\Tool\Page {
    * @inheritdoc
    */
   protected function getContent() {
-    global $kernel, $i18n;
-
     $tools = new Navigation("Tools", [
-      [ "ApiGen", "public/doc/", "{$i18n->t("Have a look at the source code documentation.")} {$i18n->t("Generated once a day.")}", false ],
-      [ "PHPInfo", "phpinfo", $i18n->t("Have a look at the current PHP configuration, extensions, etc."), false ],
-      [ "phpMyAdmin", "phpmyadmin/", $i18n->t("Easily manage the database via the phpMyAdmin web interface."), true ],
-      [ "Coverage", "public/coverage/", "{$i18n->t("Have a look at the unit test code coverage reports.")} {$i18n->t("Generated once a day.")}", false ],
+      [ "ApiGen", "public/doc/", "{$this->intl->t("Have a look at the source code documentation.")} {$this->intl->t("Generated once a day.")}", false ],
+      [ "PHPInfo", "phpinfo", $this->intl->t("Have a look at the current PHP configuration, extensions, etc."), false ],
+      [ "phpMyAdmin", "phpmyadmin/", $this->intl->t("Easily manage the database via the phpMyAdmin web interface."), true ],
+      [ "Coverage", "public/coverage/", "{$this->intl->t("Have a look at the unit test code coverage reports.")} {$this->intl->t("Generated once a day.")}", false ],
       // @todo Either our tests are broken or VisualPHPUnit is broken ... impossible to get this working.
-      //[ "VisualPHPUnit", $i18n->t("Run PHPUnit tests via the VisualPHPUnit web interface."), true ],
+      //[ "VisualPHPUnit", $this->intl->t("Run PHPUnit tests via the VisualPHPUnit web interface."), true ],
     ], [ "class" => "list-group" ]);
     $tools->callback = function ($tool) {
-      global $kernel;
       $route = "/{$tool[1]}";
       $label = [ "info", "open" ];
       if ($tool[3] === true) {
@@ -92,7 +87,7 @@ class Home extends \MovLib\Presentation\Tool\Page {
       $devs .= "<a href='{$route}'>{$text}</a>";
     }
     if ($devs) {
-      $devs = "<small>{$i18n->t("Developer specific coverage reports:")}</small> {$devs}</small>";
+      $devs = "<small>{$this->intl->t("Developer specific coverage reports:")}</small> {$devs}</small>";
     }
 
     return "<div class='c'>{$tools}{$devs}</div>";

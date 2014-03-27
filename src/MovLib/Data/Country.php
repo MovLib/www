@@ -78,8 +78,6 @@ class Country {
   /**
    * Get all supported and translated countries.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @staticvar array $countries
    *   Associative array used for caching.
    * @param array $filter [optional]
@@ -88,7 +86,6 @@ class Country {
    *   All supported and translated countries.
    */
   public static function getCountries(array $filter = null) {
-    global $i18n, $kernel;
     static $countries = null;
 
     // Fetch (pre-sorted) and cache all available country's for the current display language.

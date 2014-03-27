@@ -40,24 +40,21 @@ class Movies extends \MovLib\Presentation\Award\Category\AbstractBase {
   /**
    * Instantiate new award category movie presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
     $this->award         = new Award((integer) $_SERVER["AWARD_ID"]);
     $this->awardCategory = new AwardCategory((integer) $_SERVER["AWARD_CATEGORY_ID"]);
     $routeArgs           = [ $this->awardCategory->awardId, $this->awardCategory->id ];
 
     if ($this->award->id != $this->awardCategory->awardId) {
-      throw new SeeOtherRedirect($i18n->rp("/award/{0}/category/{1}/movies", $routeArgs));
+      throw new SeeOtherRedirect($this->intl->rp("/award/{0}/category/{1}/movies", $routeArgs));
     }
 
-    $this->initPage($i18n->t("Movies with {0}", [ $this->awardCategory->name ]));
+    $this->initPage($this->intl->t("Movies with {0}", [ $this->awardCategory->name ]));
     $this->pageTitle     =
-      $i18n->t("Movies with {0}", [ "<a href='{$this->awardCategory->route}'>{$this->awardCategory->name}</a>" ])
+      $this->intl->t("Movies with {0}", [ "<a href='{$this->awardCategory->route}'>{$this->awardCategory->name}</a>" ])
     ;
-    $this->breadcrumbTitle = $i18n->t("Movies");
+    $this->breadcrumbTitle = $this->intl->t("Movies");
     $this->initLanguageLinks("/award/{0}/category/{1}/movies", [ $this->award->id, $this->awardCategory->id ], true);
     $this->initAwardCategoryBreadcrumb();
     $this->sidebarInit();

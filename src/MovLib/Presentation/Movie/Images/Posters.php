@@ -31,13 +31,11 @@ class Posters extends \MovLib\Presentation\Movie\Images\AbstractBase {
   /**
    * Instantiate new posters presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
-    global $i18n;
-    parent::__construct("Poster", $i18n->t("Poster"), $i18n->t("Posters"), "poster", "posters");
+    parent::__construct("Poster", $this->intl->t("Poster"), $this->intl->t("Posters"), "poster", "posters");
   }
 
 }

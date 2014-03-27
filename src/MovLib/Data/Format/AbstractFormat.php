@@ -83,7 +83,6 @@ abstract class AbstractFormat {
   /**
    * Get a list of all available color formats.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return array
    *   The available color formats.
    *
@@ -91,7 +90,6 @@ abstract class AbstractFormat {
    *   being the tranlation.
    */
   final public function getColorFormats() {
-    global $i18n;
     return [
       "Technicolor" => "Technicolor",
       "Eastmancolor" => "Eastmancolor",

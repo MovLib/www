@@ -44,14 +44,12 @@ class Create extends \MovLib\Presentation\Movie\AbstractBase {
   /**
    * Instantiate new delete movie presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
    */
   public function __construct() {
-    global $i18n;
     $this->movie = new FullMovie();
-    $this->initPage($i18n->t("Create New Movie"));
+    $this->initPage($this->intl->t("Create New Movie"));
     $this->initLanguageLinks("/movie/create");
-    $this->breadcrumbTitle = $i18n->t("Create");
+    $this->breadcrumbTitle = $this->intl->t("Create");
     $this->initBreadcrumb();
   }
 
@@ -63,10 +61,9 @@ class Create extends \MovLib\Presentation\Movie\AbstractBase {
    * @inheritdoc
    */
   protected function getContent() {
-    global $i18n;
     $this->alerts .= new Alert(
-      $i18n->t("The create movie feature isn’t implemented yet."),
-      $i18n->t("Check back later"),
+      $this->intl->t("The create movie feature isn’t implemented yet."),
+      $this->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     );
   }

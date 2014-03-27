@@ -31,10 +31,8 @@ class PHPInfo extends \MovLib\Presentation\Tool\Page {
   /**
    * Instantiate new phpinfo() presentation.
    *
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $kernel;
     $kernel->stylesheets[] = "tool";
     $this->initPage("PHPInfo");
     $this->initBreadcrumb();

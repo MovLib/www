@@ -28,24 +28,22 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\Page {
+class Index extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Presentation\TraitSidebar;
 
   public function __construct() {
-    global $i18n;
-    $this->initPage($i18n->t("Help"));
+    $this->initPage($this->intl->t("Help"));
     $this->initLanguageLinks("/help", null, true);
     $this->initBreadcrumb();
     $this->sidebarInit([
-      [ $this->languageLinks[$i18n->languageCode], $i18n->t("Help"), [ "class" => "ico ico-help" ] ],
+      [ $this->languageLinks[$this->intl->languageCode], $this->intl->t("Help"), [ "class" => "ico ico-help" ] ],
     ]);
   }
 
   protected function getPageContent() {
-    global $i18n;
     return new Alert(
-      $i18n->t("The help isn’t implemented yet."),
-      $i18n->t("Check back later"),
+      $this->intl->t("The help isn’t implemented yet."),
+      $this->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     );
   }

@@ -157,11 +157,9 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
   /**
    * Create the private and public upload directories for this image.
    *
-   * @global \MovLib\Kernel $kernel
    * @return this
    */
   protected function createDirectories() {
-    global $kernel;
     FileSystem::createDirectory("{$kernel->documentRoot}/private/upload/{$this->directory}", true);
     FileSystem::createDirectory("{$kernel->documentRoot}/public/upload/{$this->directory}", true);
     return $this;
@@ -170,12 +168,9 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
   /**
    * Delete all image styles and the directory.
    *
-   * @global \MovLib\Kernel $kernel
    * @return this
    */
   protected function deleteImageStyles() {
-    global $kernel;
-
     // Unserialize the styles if they are still serialized.
     if ($this->style !== (array) $this->styles) {
       $this->styles = unserialize($this->styles);
@@ -256,7 +251,6 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
   /**
    * Upload the <var>$source</var>, overriding any existing image.
    *
-   * @global \MovLib\Kernel $kernel
    * @param string $source
    *   Absolute path to the uploaded image.
    * @param string $extension
@@ -270,8 +264,6 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
    * @throws \RuntimeException
    */
   public function upload($source, $extension, $height, $width) {
-    global $kernel;
-
     // We have to export the extension to class scope in order to move the original image.
     $this->extension = $extension;
 

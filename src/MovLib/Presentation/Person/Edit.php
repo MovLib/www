@@ -33,20 +33,17 @@ class Edit extends \MovLib\Presentation\Person\AbstractBase {
   /**
    * Instantiate new person edit presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
    */
   public function __construct() {
-    global $i18n;
     $this->person = new Person((integer) $_SERVER["PERSON_ID"]);
-    $this->initPage($i18n->t("Edit"));
-    $this->pageTitle        = $i18n->t("Edit {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
+    $this->initPage($this->intl->t("Edit"));
+    $this->pageTitle        = $this->intl->t("Edit {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
     $this->initLanguageLinks("/person/{0}/edit", [ $this->person->id ]);
     $this->initPersonBreadcrumb();
     $this->sidebarInit();
   }
 
   protected function getPageContent() {
-    global $i18n;
-    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("edit person") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Presentation\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("edit person") ]), $this->intl->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
   }
 }

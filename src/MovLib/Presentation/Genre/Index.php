@@ -30,7 +30,7 @@ use \MovLib\Presentation\Partial\Listing\EntityIndexListing;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\Page {
+class Index extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Presentation\TraitPagination;
   use \MovLib\Presentation\TraitSidebar;
 
@@ -41,18 +41,15 @@ class Index extends \MovLib\Presentation\Page {
   /**
    * Instantiate new genre index presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
-    $this->initPage($i18n->t("Genres"));
+    $this->initPage($this->intl->t("Genres"));
     $this->initBreadcrumb();
     $this->initLanguageLinks("/genres", null, true);
     $this->paginationInit(Genre::getTotalCount());
     $this->sidebarInit([
       [ $kernel->requestPath, $this->title, [ "class" => "ico ico-genre" ] ],
-      [ $i18n->r("/genre/random"), $i18n->t("Random") ],
+      [ $this->intl->r("/genre/random"), $this->intl->t("Random") ],
     ]);
   }
 
@@ -64,23 +61,21 @@ class Index extends \MovLib\Presentation\Page {
    * @inheritdoc
    */
   protected function getPageContent() {
-    global $i18n;
-
     $this->headingBefore =
-      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/genre/create")}'>{$i18n->t("Create New Genre")}</a>"
+      "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/genre/create")}'>{$this->intl->t("Create New Genre")}</a>"
     ;
 
     $result      = Genre::getGenres($this->paginationOffset, $this->paginationLimit);
     $noItemText  = new Alert(
-      $i18n->t(
+      $this->intl->t(
         "We couldn’t find any genre matching your filter criteria, or there simply aren’t any genres available."
-      ), $i18n->t("No Genres"), Alert::SEVERITY_INFO
+      ), $this->intl->t("No Genres"), Alert::SEVERITY_INFO
     );
     $noItemText .=
-      $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/genre/create")}'>", "</a>" ]);
+      $this->intl->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$this->intl->r("/genre/create")}'>", "</a>" ]);
 
-    $moviesRoute = $i18n->rp("/genre/{0}/movies", [ "{{ id }}" ]);
-    $seriesRoute = $i18n->rp("/genre/{0}/series", [ "{{ id }}" ]);
+    $moviesRoute = $this->intl->rp("/genre/{0}/movies", [ "{{ id }}" ]);
+    $seriesRoute = $this->intl->rp("/genre/{0}/series", [ "{{ id }}" ]);
 
     return new EntityIndexListing($result, $noItemText, "Genre", $moviesRoute, $seriesRoute);
   }

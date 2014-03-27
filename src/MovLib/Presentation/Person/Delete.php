@@ -33,20 +33,17 @@ class Delete extends \MovLib\Presentation\Person\AbstractBase {
   /**
    * Instantiate new person edit presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
    */
   public function __construct() {
-    global $i18n;
   $this->person = new Person((integer) $_SERVER["PERSON_ID"]);
-    $this->initPage($i18n->t("Delete"));
-    $this->pageTitle        = $i18n->t("Delete {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
+    $this->initPage($this->intl->t("Delete"));
+    $this->pageTitle        = $this->intl->t("Delete {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
     $this->initLanguageLinks("/person/{0}/delete", [ $this->person->id ]);
     $this->initPersonBreadcrumb();
     $this->sidebarInit();
   }
 
   protected function getPageContent() {
-    global $i18n;
-    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("delete person") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Presentation\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("delete person") ]), $this->intl->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
   }
 }

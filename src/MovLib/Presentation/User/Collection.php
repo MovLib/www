@@ -34,25 +34,22 @@ class Collection extends \MovLib\Presentation\User\AbstractUserPage {
   /**
    * Instantiate new user collection presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
    */
   public function __construct(){
-    global $i18n;
     $this->init();
-    $this->initPage($i18n->t("Collection {0}", [ $this->user->name ]));
+    $this->initPage($this->intl->t("Collection {0}", [ $this->user->name ]));
     $this->initLanguageLinks("/user/{0}/collection", [ $this->user->name ]);
-    $this->pageTitle       = $i18n->t("Collection of {username}", [ "username" => "<a href='{$this->user->route}'>{$this->user->name}</a>" ]);
-    $this->breadcrumbTitle = $i18n->t("Collection");
+    $this->pageTitle       = $this->intl->t("Collection of {username}", [ "username" => "<a href='{$this->user->route}'>{$this->user->name}</a>" ]);
+    $this->breadcrumbTitle = $this->intl->t("Collection");
   }
 
   /**
    * @inheritdoc
    */
   protected function getPageContent(){
-    global $i18n;
     $this->alerts .= new Alert(
-      $i18n->t("The user collection feature isn’t implemented yet."),
-      $i18n->t("Check back later"),
+      $this->intl->t("The user collection feature isn’t implemented yet."),
+      $this->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     );
   }

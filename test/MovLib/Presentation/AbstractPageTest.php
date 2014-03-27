@@ -29,7 +29,7 @@ class AbstractPageTest extends \MovLib\TestCase {
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-  /** @var \MovLib\Presentation\Page */
+  /** @var \MovLib\Presentation\AbstractPresenter */
   private $abstractPage;
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures

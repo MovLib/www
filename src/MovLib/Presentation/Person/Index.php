@@ -29,7 +29,7 @@ use \MovLib\Presentation\Partial\Listing\PersonLifeDateListing;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\Page {
+class Index extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Presentation\TraitSidebar;
   use \MovLib\Presentation\TraitPagination;
 
@@ -40,19 +40,17 @@ class Index extends \MovLib\Presentation\Page {
   /**
    * Instantiate new latest persons presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
    */
   public function __construct() {
-    global $i18n;
-    $this->initPage($i18n->t("Persons"));
+    $this->initPage($this->intl->t("Persons"));
     $this->initBreadcrumb();
     $this->initLanguageLinks("/persons", null, true);
     $this->sidebarInit([
-      [ $i18n->rp("/persons"), $i18n->t("Persons"), [ "class" => "ico ico-person" ] ],
-      [ $i18n->r("/person/random"), $i18n->t("Random") ],
+      [ $this->intl->rp("/persons"), $this->intl->t("Persons"), [ "class" => "ico ico-person" ] ],
+      [ $this->intl->r("/person/random"), $this->intl->t("Random") ],
     ]);
     $this->paginationInit(Person::getTotalCount());
-    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/person/create")}'>{$i18n->t("Create New Person")}</a>";
+    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/person/create")}'>{$this->intl->t("Create New Person")}</a>";
   }
 
 

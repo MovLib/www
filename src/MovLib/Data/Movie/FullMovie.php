@@ -57,15 +57,12 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
   /**
    * Instantiate full movie by given identifier.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param integer $id
    *   The movie's unique identifier to load.
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct($id = null) {
-    global $db, $i18n;
     if ($id) {
       $this->id = $id;
       $stmt = $db->query(
@@ -137,16 +134,12 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
   /**
    * Get the movie's cast.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return null|array
    *   Associative array containing the cast or <code>NULL</code> if no cast was found.
    *
    *   The array contains person's identifiers as keys and {@see \MovLib\Stub\Data\Movie\MoviePerson} objecs as values.
    */
   public function getCast() {
-    global $db, $i18n;
-
     $result = $db->query(
       "SELECT
         `movies_cast`.`person_id`,
@@ -215,21 +208,17 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
   /**
    * Get the movie's countries.
    *
-   * @global \MovLib\Data\Database $db
    * @return \mysqli_result
    *   The movie's countries.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getCountries() {
-    global $db;
     return $db->query("SELECT `country_code` FROM `movies_countries` WHERE `movie_id` = ?", "d", [ $this->id ])->get_result();
   }
 
   /**
    * Get only the most basic information about the movie's cast.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param integer $limit [optional]
    *   The number of cast members to retrieve.
    * @return null|array
@@ -238,7 +227,6 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
    *   Every entry contains the offset "id", "name" and "nickname" for the corresponding properties of a person.
    */
   public function getCastLimited($limit = 5) {
-    global $db, $i18n;
     $result = $db->query(
       "SELECT DISTINCT
         `persons`.`id`,
@@ -261,15 +249,11 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
   /**
    * Get the movie's crew grouped by job.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return null|array
    *   Associative array containing the job identifiers as key and {@see \MovLib\Stub\Data\Movie\MovieCrew} objects as
    *   values or <code>NULL</code> if no crew was found.
    */
   public function getCrew() {
-    global $db, $i18n;
-
     $result = $db->query(
       "SELECT
         `jobs`.`id` AS `job_id`,
@@ -346,14 +330,11 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
    * Get the sorted movie's directors.
    *
    * @todo Order directors by weight not by name!
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return \mysqli_result
    *   The  sorted movie's directors.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getDirectors() {
-    global $db, $i18n;
     return $db->query(
       "SELECT
         `persons`.`id`,
@@ -377,8 +358,6 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
   /**
    * Get only the most basic information about the movie's directors.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return null|array
    *   The sorted numeric array of the movie's directors or <code>NULL</code> if there are no directors.
    *
@@ -386,7 +365,6 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getDirectorsLimited() {
-    global $db, $i18n;
     return $db->query(
       "SELECT
         `persons`.`id`,
@@ -421,14 +399,11 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
   /**
    * Get the translated and sorted movie's genres.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return \mysqli_result
    *   The translated and sorted movie's genres.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getGenres() {
-    global $db, $i18n;
     return $db->query(
       "SELECT
         `genres`.`id`,
@@ -445,14 +420,11 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
   /**
    * Get the mysqli result for the movie's languages.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return \mysqli_result
    *   The mysqli result for the movie's languages.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getLanguages() {
-    global $db;
     return $db->query(
       "SELECT `language_code` FROM `movies_languages` WHERE `movie_id` = ?",
       "d",
@@ -465,14 +437,11 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
    *
    * The key is the already translated text of the trailer, the value is the trailer's url.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return array
    *   The sorted array of movie's trailers.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getTrailers() {
-    global $db, $i18n;
     $result = $db->query(
       "SELECT
         IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS BINARY), COLUMN_GET(`dyn_descriptions`, '{$i18n->defaultLanguageCode}' AS BINARY)) AS `description`,
@@ -505,8 +474,6 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
   /**
    * Rate this movie.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\User\Session $session
    * @param integer $rating
    *   The user's rating for this movie.
    * @return this
@@ -514,8 +481,6 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function rate($rating) {
-    global $db, $session;
-
     // Insert or update the user's rating for this movie.
     if ($this->getUserRating() === null) {
       $db->query("INSERT INTO `movies_ratings` SET `movie_id` = ?, `user_id` = ?, `rating` = ?", "ddi", [ $this->id, $session->userId, $rating ])->close();

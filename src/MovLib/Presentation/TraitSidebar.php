@@ -36,7 +36,7 @@ use \MovLib\Presentation\Partial\Navigation;
  * @method string normalizeLineFeeds($text)
  * @method string placeholder($text)
  *
- * @see \MovLib\Presentation\Page
+ * @see \MovLib\Presentation\AbstractPresenter
  *
  * @property string $alerts
  * @property string $bodyClasses
@@ -108,12 +108,10 @@ trait TraitSidebar {
   /**
    * Implement the content getter and insert the sidebar.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The presentation's content wrapped in a container and including the sidebar.
    */
   protected function getContent() {
-    global $i18n;
     // Allow implementing class to alter the sidebar within the getPageContent method.
     $content = $this->getPageContent();
 
@@ -135,7 +133,7 @@ trait TraitSidebar {
 
     return
       "<div class='c sidebar-c{$containerClass}'><div class='r sidebar-r'>" .
-        "<aside id='sidebar' class='{$sidebarClass}' role='complementary'><h2 class='vh'>{$i18n->t("Sidebar")}</h2>{$this->sidebarNavigation}</aside>" .
+        "<aside id='sidebar' class='{$sidebarClass}' role='complementary'><h2 class='vh'>{$this->intl->t("Sidebar")}</h2>{$this->sidebarNavigation}</aside>" .
         "<div class='page-content s {$contentClass}'>{$content}</div>" .
       "</div></div>"
     ;
@@ -148,14 +146,11 @@ trait TraitSidebar {
    * This ensures that sections are highlighted to be active when the user is visiting them. They'll still be clickable
    * though.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @param array $menuitems
    *   The sidebar navigation's menuitems.
    * @return this
    */
   final protected function sidebarInit($menuitems) {
-    global $i18n;
     // @devStart
     // @codeCoverageIgnoreStart
     if (!method_exists($this, "initPage")) {
@@ -168,7 +163,7 @@ trait TraitSidebar {
     // @devEnd
 
     $this->bodyClasses                     .= " sidebar";
-    $this->sidebarNavigation                = new Navigation($i18n->t("Secondary Navigation"), $menuitems, [ "id" => "sidebar-nav" ]);
+    $this->sidebarNavigation                = new Navigation($this->intl->t("Secondary Navigation"), $menuitems, [ "id" => "sidebar-nav" ]);
     $this->sidebarNavigation->ignoreQuery   = true;
     $this->sidebarNavigation->unorderedList = true; // For CSS styling.
 

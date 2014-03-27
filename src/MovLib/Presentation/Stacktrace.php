@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation;
 
-use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Partial\Alert;
 
 /**
  * The stacktrace presentation is used if everything else fails.
@@ -32,7 +32,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Stacktrace extends \MovLib\Presentation\Page {
+class Stacktrace extends \MovLib\Presentation\AbstractPresenter {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -45,68 +45,23 @@ class Stacktrace extends \MovLib\Presentation\Page {
    */
   protected $exception;
 
-  /**
-   * Whether this was a fatal error or not.
-   *
-   * @var boolean
-   */
-  protected $fatal;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new stacktrace presentation page.
-   *
-   * @global \MovLib\Data\Cache $cache
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @param \Exception $exception
-   *   The exception that should be presented. Any instance that inherits from PHP's built in exception class is okay.
-   * @param boolean $fatal [optional]
-   *   If set to <code>TRUE</code> title will say <i>Fatal Error</i> instead of the name of the exception, defaults to
-   *   <code>FALSE</code>.
-   */
-  public function __construct($exception, $fatal = false) {
-    global $cache, $i18n, $kernel;
-    http_response_code(500);
-    $this->initPage($i18n->t("Internal Server Error"));
-    $this->initBreadcrumb();
-    if (isset($cache)) {
-      $cache->cacheable = false;
-    }
-    $kernel->stylesheets[] = "stacktrace";
-    $this->exception       = $exception;
-    $this->fatal           = $fatal;
-    $this->alerts         .= new Alert(
-      $i18n->t("This error was reported to the system administrators, it should be fixed in no time. Please try again in a few minutes."),
-      $i18n->t("An unexpected condition which prevented us from fulfilling the request was encountered."),
-      Alert::SEVERITY_ERROR
-    );
-  }
-
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @return string
    */
-  protected function getContent() {
-    global $i18n, $kernel;
+  public function getContent() {
     $stacktrace = new Alert(
-      "<div id='stacktrace-details'><div class='title'><i class='ico ico-info'></i> {$i18n->t(
+      "<div id='stacktrace-details'><div class='title'><i class='ico ico-info'></i> {$this->intl->t(
         "{exception_message} in {class} on line {line, number}", [
           "exception_message" => nl2br($this->exception->getMessage(), false),
-          "class"             => str_replace([ $kernel->documentRoot, "/src/" ], "", $this->exception->getFile()),
+          "class"             => str_replace([ $this->fs->documentRoot, "/src/" ], "", $this->exception->getFile()),
           "line"              => $this->exception->getLine(),
         ]
       )}</div><table>{$this->formatStacktrace($this->exception->getTrace())}</table></div>",
-      $i18n->t("Stacktrace for {0}", [ $this->placeholder($this->fatal === true ? "Fatal Error" : get_class($this->exception)) ]),
+      $this->intl->t("Stacktrace for {0}", [ $this->placeholder(get_class($this->exception)) ]),
       Alert::SEVERITY_INFO
     );
     return "<div class='c'>{$stacktrace}</div>";
@@ -162,18 +117,16 @@ class Stacktrace extends \MovLib\Presentation\Page {
   /**
    * Format the stacktrace entry's file name.
    *
-   * @global \MovLib\Kernel $kernel
    * @param array $stacktrace
    *   The stacktrace entry.
    * @return string
    *   The stacktrace entry's formatted file name.
    */
   protected function formatFileName(array &$stacktrace) {
-    global $kernel;
     if (empty($stacktrace["file"])) {
       return "<em>unknown</em>";
     }
-    return str_replace([ $kernel->documentRoot, "/src/" ], "", $stacktrace["file"]);
+    return str_replace([ $config->documentRoot, "/src/" ], "", $stacktrace["file"]);
   }
 
   /**
@@ -194,7 +147,6 @@ class Stacktrace extends \MovLib\Presentation\Page {
   /**
    * Format the given stacktrace.
    *
-   * @global \MovLib\Kernel $kernel
    * @param array $stacktrace
    *   The array returned by the getter.
    * @return string
@@ -254,6 +206,34 @@ class Stacktrace extends \MovLib\Presentation\Page {
       return "::";
     }
     return (string) $stacktrace["type"];
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected function init() {
+    http_response_code(500);
+    $this->initPage($this->intl->t("Internal Server Error"));
+    $this->initBreadcrumb();
+    $this->response->cacheable = false;
+    $this->stylesheets[] = "stacktrace";
+    $this->alerts .= new Alert(
+      $this->intl->t("This error was reported to the system administrators, it should be fixed in no time. Please try again in a few minutes."),
+      $this->intl->t("An unexpected condition which prevented us from fulfilling the request was encountered."),
+      Alert::SEVERITY_ERROR
+    );
+    return $this;
+  }
+
+  /**
+   * Set the exception that should be presented.
+   *
+   * @param \Exception $exception
+   *   The exception that should be presented.
+   */
+  public function setException(\Exception $exception) {
+    $this->exception = $exception;
+    return $this;
   }
 
 }

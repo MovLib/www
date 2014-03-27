@@ -26,38 +26,32 @@ namespace MovLib\Presentation\Tool;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Page extends \MovLib\Presentation\Page {
+class Page extends \MovLib\Presentation\AbstractPresenter {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Tool\Kernel $kernel
    */
   protected function getFooter() {
-    global $i18n, $kernel;
     $year = date("Y");
     return
       "<footer id='f' role='contentinfo'><div class='c'><p>" .
-        "© {$year} {$kernel->siteName}™ " .
-        "<a href='mailto:{$kernel->emailWebmaster}'>{$i18n->t("Contact")}</a> " .
-        "<a href='//{$kernel->domainStatic}/asset/ssl/ca.crt'>{$i18n->t("CA Certificate")}</a> " .
-        "<a target='_blank' href='https://github.com/MovLib'>GitHub {$i18n->t("Project")}</a>" .
+        "© {$year} {$this->config->siteName}™ " .
+        "<a href='mailto:{$kernel->emailWebmaster}'>{$this->intl->t("Contact")}</a> " .
+        "<a href='//{$kernel->domainStatic}/asset/ssl/ca.crt'>{$this->intl->t("CA Certificate")}</a> " .
+        "<a target='_blank' href='https://github.com/MovLib'>GitHub {$this->intl->t("Project")}</a>" .
       "</p></div></footer>"
     ;
   }
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Tool\Kernel $kernel
    */
   protected function getHeader() {
-    global $kernel;
     $l = $this->getURL("asset://img/logo/tools-vector.svg");
     return
       "<header id='header' role='banner'><div class='c'><div class='r'>" .
-        "<h1 class='s s3'>{$this->a("/", "<img height='42' src='{$l}' width='42'> {$kernel->siteName}", [ "id" => "logo" ])}</h1>" .
-        "<div class='s s9'><h2><a href='//{$kernel->domainDefault}/'>{$kernel->siteName}</a></h2></div>" .
+        "<h1 class='s s3'>{$this->a("/", "<img height='42' src='{$l}' width='42'> {$this->config->siteName}", [ "id" => "logo" ])}</h1>" .
+        "<div class='s s9'><h2><a href='//{$kernel->domainDefault}/'>{$this->config->siteName}</a></h2></div>" .
       "</div></div></header>"
     ;
   }

@@ -26,7 +26,7 @@ namespace MovLib\Presentation\Person;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractBase extends \MovLib\Presentation\Page {
+abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Presentation\TraitGone {
     goneGetContent as private traitGetGoneContent;
   }
@@ -50,24 +50,23 @@ abstract class AbstractBase extends \MovLib\Presentation\Page {
 
 
   protected function goneGetContent() {
-    global $i18n;
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->person instanceof \MovLib\Data\Person\Person)) {
-      throw new \LogicException($i18n->t("\$this->person has to be a valid person object!"));
+      throw new \LogicException($this->intl->t("\$this->person has to be a valid person object!"));
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
 
     $routeArgs = [ $this->person->id ];
 
-    $this->goneAlertMessage = $i18n->t(
+    $this->goneAlertMessage = $this->intl->t(
         "The person and all its content have been deleted. A look at the edit {0}history{2} or {1}discussion{2} " .
         "will explain why that is the case. Please discuss with the person responsible for this deletion before " .
         "you restore this entry from its {0}history{2}.",
         [
-          "<a href='{$i18n->r("/person/{0}/history", $routeArgs)}'>",
-          "<a href='{$i18n->r("/person/{0}/discussion", $routeArgs)}'>",
+          "<a href='{$this->intl->r("/person/{0}/history", $routeArgs)}'>",
+          "<a href='{$this->intl->r("/person/{0}/discussion", $routeArgs)}'>",
           "</a>"
         ]
       );
@@ -75,27 +74,25 @@ abstract class AbstractBase extends \MovLib\Presentation\Page {
   }
 
   protected function initPersonBreadcrumb() {
-    global $i18n;
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->person instanceof \MovLib\Data\Person\Person)) {
-      throw new \LogicException($i18n->t("\$this->person has to be a valid person object!"));
+      throw new \LogicException($this->intl->t("\$this->person has to be a valid person object!"));
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
 
     return $this->initBreadcrumb([
-      [ $i18n->rp("/persons"), $i18n->t("Persons") ],
+      [ $this->intl->rp("/persons"), $this->intl->t("Persons") ],
       [ $this->person->route, $this->person->name ]
     ]);
   }
 
   protected function sidebarInit() {
-    global $i18n;
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->person instanceof \MovLib\Data\Person\Person)) {
-      throw new \LogicException($i18n->t("\$this->person has to be a valid person object!"));
+      throw new \LogicException($this->intl->t("\$this->person has to be a valid person object!"));
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -106,21 +103,21 @@ abstract class AbstractBase extends \MovLib\Presentation\Page {
     // Reduce the sidebar if the person was deleted.
     if ($this->person->deleted === true) {
       return $this->traitSidebarInit([
-        [ $i18n->r("/person/{0}/discussion", $routeArgs), $i18n->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
-        [ $i18n->r("/person/{0}/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history" ] ]
+        [ $this->intl->r("/person/{0}/discussion", $routeArgs), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
+        [ $this->intl->r("/person/{0}/history", $routeArgs), $this->intl->t("History"), [ "class" => "ico ico-history" ] ]
       ]);
     }
 
     return $this->traitSidebarInit([
-      [ $this->person->route, $i18n->t("View"), [ "class" => "ico ico-view" ] ],
-      [ $i18n->r("/person/{0}/discussion", $routeArgs), $i18n->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
-      [ $i18n->r("/person/{0}/edit", $routeArgs), $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
-      [ $i18n->r("/person/{0}/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history" ] ],
-      [ $i18n->r("/person/{0}/delete", $routeArgs), $i18n->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
+      [ $this->person->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
+      [ $this->intl->r("/person/{0}/discussion", $routeArgs), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
+      [ $this->intl->r("/person/{0}/edit", $routeArgs), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
+      [ $this->intl->r("/person/{0}/history", $routeArgs), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
+      [ $this->intl->r("/person/{0}/delete", $routeArgs), $this->intl->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
 
-      [ $i18n->rp("/person/{0}/movies", $routeArgs), "{$i18n->t("Movies")} <span class='fr'>{$i18n->format("{0,number}", [ $this->person->getMoviesCount() ])}</span>", [ "class" => "ico ico-movie" ] ],
-      [ $i18n->rp("/person/{0}/series", $routeArgs), "{$i18n->t("Series")} <span class='fr'>{$i18n->format("{0,number}", [ $this->person->getSeriesCount() ])}</span>", [ "class" => "ico ico-series" ] ],
-      [ $i18n->rp("/person/{0}/releases", $routeArgs), "{$i18n->t("Releases")} <span class='fr'>{$i18n->format("{0,number}", [ $this->person->getReleasesCount() ])}</span>", [ "class" => "ico ico-release separator" ] ],
+      [ $this->intl->rp("/person/{0}/movies", $routeArgs), "{$this->intl->t("Movies")} <span class='fr'>{$this->intl->format("{0,number}", [ $this->person->getMoviesCount() ])}</span>", [ "class" => "ico ico-movie" ] ],
+      [ $this->intl->rp("/person/{0}/series", $routeArgs), "{$this->intl->t("Series")} <span class='fr'>{$this->intl->format("{0,number}", [ $this->person->getSeriesCount() ])}</span>", [ "class" => "ico ico-series" ] ],
+      [ $this->intl->rp("/person/{0}/releases", $routeArgs), "{$this->intl->t("Releases")} <span class='fr'>{$this->intl->format("{0,number}", [ $this->person->getReleasesCount() ])}</span>", [ "class" => "ico ico-release separator" ] ],
     ]);
   }
 

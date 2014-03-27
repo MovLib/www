@@ -132,15 +132,12 @@ class Person extends \MovLib\Data\Image\AbstractImage {
   /**
    * Instantiate new person.
    *
-   * @global \MovLib\Data\Database $db
    * @param integer $id [optional]
    *   The unique person's identifier to load, leave empty to create empty instance.
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct($id = null) {
-    global $db;
-
     // Try to load the person for the given identifier.
     if ($id) {
       $stmt = $db->query(
@@ -204,13 +201,11 @@ class Person extends \MovLib\Data\Image\AbstractImage {
   /**
    * Get the total number of the movies this person has appeared in.
    *
-   * @global \MovLib\Data\Database $db
    * @return integer
    *   The count of the person's unique movies.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMoviesCount() {
-    global $db;
     $ids = $db->query(
       "SELECT DISTINCT
         `movies`.`id`
@@ -235,8 +230,6 @@ class Person extends \MovLib\Data\Image\AbstractImage {
   /**
    * Get all movies matching the offset and row count.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param integer $offset
    *   The offset in the result.
    * @param integer $rowCount
@@ -246,7 +239,6 @@ class Person extends \MovLib\Data\Image\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   public static function getPersons($offset, $rowCount) {
-    global $db, $i18n;
     return $db->query(
       "SELECT
         `id`,
@@ -277,13 +269,11 @@ class Person extends \MovLib\Data\Image\AbstractImage {
   /**
    * Get random person id.
    *
-   * @global \MovLib\Data\Database $db
    * @return integer|null
    *   Random person id or null in case of failure.
    * @throws \MovLib\Exception\DatabaseException
    */
   public static function getRandomPersonId() {
-    global $db;
     $query = "SELECT `id` FROM `persons` WHERE `persons`.`deleted` = false ORDER BY RAND() LIMIT 1";
     if ($result = $db->query($query)->get_result()) {
       return $result->fetch_assoc()["id"];
@@ -294,7 +284,6 @@ class Person extends \MovLib\Data\Image\AbstractImage {
    * Get the total number of the releases this person has worked on.
    *
    * @todo Implement when releases are implemented.
-   * @global \MovLib\Data\Database $db
    * @return integer
    *   The count of the person's unique releases.
    */
@@ -306,7 +295,6 @@ class Person extends \MovLib\Data\Image\AbstractImage {
    * Get the total number of the series this person has appeared in.
    *
    * @todo Implement when series are implemented.
-   * @global \MovLib\Data\Database $db
    * @return integer
    *   The count of the person's unique series.
    */
@@ -317,7 +305,6 @@ class Person extends \MovLib\Data\Image\AbstractImage {
   /**
    * Get the count of all persons who haven't been deleted.
    *
-   * @global \MovLib\Data\Database $db
    * @staticvar null|integer $count
    *   The count of all persons who haven't been deleted.
    * @return integer
@@ -325,7 +312,6 @@ class Person extends \MovLib\Data\Image\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   public static function getTotalCount() {
-    global $db;
     static $count = null;
     if (!$count) {
       $count = $db->query("SELECT COUNT(`id`) FROM `persons` WHERE `deleted` = false LIMIT 1")->get_result()->fetch_row()[0];
@@ -336,15 +322,12 @@ class Person extends \MovLib\Data\Image\AbstractImage {
   /**
    * Get the translated and gendered job title.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param integer $id
    *   The job's identifier.
    * @return string
    *   The translated and gendered job title.
    */
   public function getJobTitle($id) {
-    global $db, $i18n;
     if (!isset($this->jobTranslations[$id])) {
       $this->jobTranslations[$id] = $db->query(
         "SELECT
@@ -373,11 +356,8 @@ class Person extends \MovLib\Data\Image\AbstractImage {
   /**
    * Initialize the person with their image, deleted flag and translate their route.
    *
-   * @global \MovLib\Data\I18n $i18n
    */
   public function init() {
-    global $i18n;
-
     $this->deleted = (boolean) $this->deleted;
     $this->route   = $i18n->r("/person/{0}", [ $this->id]);
     $key           = "edit";
@@ -408,8 +388,6 @@ class Person extends \MovLib\Data\Image\AbstractImage {
   /**
    * Generate all supported image styles.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param string $source
    *   Absolute path to the uploaded image.
    * @param boolean $regenerate [optional]
@@ -418,8 +396,6 @@ class Person extends \MovLib\Data\Image\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   protected function generateStyles($source, $regenerate = false) {
-    global $db, $i18n;
-
     // Generate the various image's styles and always go from best quality down to worst quality.
     $this->convert($source, self::STYLE_SPAN_03, self::STYLE_SPAN_03, self::STYLE_SPAN_03, true);
     $this->convert($source, self::STYLE_SPAN_02, self::STYLE_SPAN_02, self::STYLE_SPAN_02, true);
@@ -467,7 +443,6 @@ class Person extends \MovLib\Data\Image\AbstractImage {
    * Set deletion request identifier.
    *
    * @todo Implement deletion request
-   * @global \MovLib\Data\Database $db
    * @param integer $id
    *   The deletion request's unique identifier to set.
    * @return this

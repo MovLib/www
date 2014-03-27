@@ -50,20 +50,17 @@ class Random {
   /**
    * Redirect to random job presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   public function __construct() {
-    global $i18n, $kernel;
     $this->jobId = Job::getRandomJobId();
     if (isset($this->jobId)) {
-      throw new SeeOtherRedirect($i18n->r("/job/{0}", [ $this->jobId ]));
+      throw new SeeOtherRedirect($this->intl->r("/job/{0}", [ $this->jobId ]));
     }
     else {
       $kernel->alerts .= new Alert(
-        $i18n->t("There is currently no job in our database."),
-        $i18n->t("Check back later"),
+        $this->intl->t("There is currently no job in our database."),
+        $this->intl->t("Check back later"),
         Alert::SEVERITY_INFO
       );
       throw new SeeOtherRedirect("/");

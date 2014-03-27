@@ -50,20 +50,17 @@ class Random {
   /**
    * Redirect to random genre presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   public function __construct() {
-    global $i18n, $kernel;
     $this->genreId = Genre::getRandomGenreId();
     if (isset($this->genreId)) {
-      throw new SeeOtherRedirect($i18n->r("/genre/{0}", [ $this->genreId ]));
+      throw new SeeOtherRedirect($this->intl->r("/genre/{0}", [ $this->genreId ]));
     }
     else {
       $kernel->alerts .= new Alert(
-        $i18n->t("There is currently no genre in our database."),
-        $i18n->t("Check back later"),
+        $this->intl->t("There is currently no genre in our database."),
+        $this->intl->t("Check back later"),
         Alert::SEVERITY_INFO
       );
       throw new SeeOtherRedirect("/");

@@ -31,7 +31,7 @@ use \MovLib\Presentation\Redirect\SeeOther;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class SignIn extends \MovLib\Presentation\Page {
+final class SignIn extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Presentation\TraitForm;
 
 
@@ -60,63 +60,58 @@ final class SignIn extends \MovLib\Presentation\Page {
   /**
    * Instantiate new sign in presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\User\Session $session
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   public function __construct() {
-    global $i18n, $kernel, $session;
-
     // We need to know the translated version of the sign in route for comparison.
     $this->initLanguageLinks("/profile/sign-in");
 
     // Snatch the current requested URI if a redirect was requested and no redirect is already active. We have to build
     // the complete target URI to ensure that this presenter will receive the submitted form, but at the same time we
     // want to enable ourself to redirect the user after successful sign in to the page she or he requested.
-    if ($kernel->requestURI != $this->languageLinks[$i18n->languageCode]) {
+    if ($kernel->requestURI != $this->languageLinks[$this->intl->languageCode]) {
       if (empty($_GET["redirect_to"])) {
         $_GET["redirect_to"] = $kernel->requestURI;
       }
     }
     // If the user is logged in, but didn't request to be signed out, redirect her or him to the personal dashboard.
     elseif ($session->isAuthenticated === true) {
-      throw new SeeOther($i18n->r("/my"));
+      throw new SeeOther($this->intl->r("/my"));
     }
 
     // Ensure all views are using the correct path info to render themselves.
-    $kernel->requestURI = $kernel->requestPath = $this->languageLinks[$i18n->languageCode];
+    $kernel->requestURI = $kernel->requestPath = $this->languageLinks[$this->intl->languageCode];
 
     // Append the URL to the action attribute of our form.
-    $redirectToKey = $i18n->r("redirect_to");
-    if (!empty($_GET[$redirectToKey]) && $_GET[$redirectToKey] != $this->languageLinks[$i18n->languageCode]) {
+    $redirectToKey = $this->intl->r("redirect_to");
+    if (!empty($_GET[$redirectToKey]) && $_GET[$redirectToKey] != $this->languageLinks[$this->intl->languageCode]) {
       $redirectTo          = rawurlencode(rawurldecode($_GET[$redirectToKey]));
       $kernel->requestURI .= "?{$redirectToKey}={$redirectTo}";
     }
 
     // Start rendering the page.
-    $this->initPage($i18n->t("Sign In"));
-    $this->initBreadcrumb([[ $i18n->rp("/users"), $i18n->t("Users") ]]);
+    $this->initPage($this->intl->t("Sign In"));
+    $this->initBreadcrumb([[ $this->intl->rp("/users"), $this->intl->t("Users") ]]);
     $this->breadcrumb->ignoreQuery = true;
 
-    $this->headingBefore = "<a class='btn btn-large btn-primary fr' href='{$i18n->r("/profile/join")}'>{$i18n->t(
+    $this->headingBefore = "<a class='btn btn-large btn-primary fr' href='{$this->intl->r("/profile/join")}'>{$this->intl->t(
       "Join {sitename}",
-      [ "sitename" => $kernel->siteName ]
+      [ "sitename" => $this->config->siteName ]
     )}</a>";
 
-    $this->formAddElement(new InputEmail("email", $i18n->t("Email Address"), $this->email, [
-      "#help-text"  => "<a href='{$i18n->r("/profile/reset-password")}'>{$i18n->t("Forgot your password?")}</a>",
+    $this->formAddElement(new InputEmail("email", $this->intl->t("Email Address"), $this->email, [
+      "#help-text"  => "<a href='{$this->intl->r("/profile/reset-password")}'>{$this->intl->t("Forgot your password?")}</a>",
       "autofocus"   => true,
-      "placeholder" => $i18n->t("Enter your email address"),
+      "placeholder" => $this->intl->t("Enter your email address"),
       "required"    => true,
     ]));
 
-    $this->formAddElement(new InputPassword("password", $i18n->t("Password"), $this->rawPassword, [
-      "placeholder" => $i18n->t("Enter your password"),
+    $this->formAddElement(new InputPassword("password", $this->intl->t("Password"), $this->rawPassword, [
+      "placeholder" => $this->intl->t("Enter your password"),
       "required"    => true,
     ]));
 
-    $this->formAddAction($i18n->t("Sign In"), [ "class" => "btn btn-large btn-success" ]);
+    $this->formAddAction($this->intl->t("Sign In"), [ "class" => "btn btn-large btn-success" ]);
 
     $this->formInit([ "class" => "s s6 o3" ]);
   }
@@ -131,25 +126,20 @@ final class SignIn extends \MovLib\Presentation\Page {
   /**
    * {@inheritdoc}
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\User\Session $session
    * @return this
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   protected function formValid() {
-    global $i18n, $kernel, $session;
-
     if ($session->authenticate($this->email, $this->rawPassword) === true) {
       $kernel->alerts .= new Alert(
-        $i18n->t("Successfully Signed In"),
-        $i18n->t("Welcome back {username}!", [ "username" => $session->userName ]),
+        $this->intl->t("Successfully Signed In"),
+        $this->intl->t("Welcome back {username}!", [ "username" => $session->userName ]),
         Alert::SEVERITY_SUCCESS
       );
-      throw new SeeOther(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/my"));
+      throw new SeeOther(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $this->intl->r("/my"));
     }
 
-    $this->formInvalid($i18n->t("We either don’t know the email address, or the password was wrong."));
+    $this->formInvalid($this->intl->t("We either don’t know the email address, or the password was wrong."));
     return $this;
   }
 

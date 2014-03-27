@@ -170,8 +170,6 @@ class FullUser extends \MovLib\Data\User\User {
    *
    * If no <var>$from</var> or <var>$value</var> is given, an empty user model will be created.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param string $from [optional]
    *   Defines how the object should be filled with data, use the various <var>FROM_*</var> class constants.
    * @param mixed $value [optional]
@@ -179,8 +177,6 @@ class FullUser extends \MovLib\Data\User\User {
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct($from = null, $value = null) {
-    global $db, $i18n;
-
     if ($from && $value) {
       $stmt = $db->query(
         "SELECT
@@ -255,40 +251,34 @@ class FullUser extends \MovLib\Data\User\User {
   /**
    * Check if this email address is already in use.
    *
-   * @global \MovLib\Data\Database $db
    * @param string $email
    *   The email address to look up.
    * @return boolean
    *   <code>TRUE</code> if this email address is already in use, otherwise <code>FALSE</code>.
    */
   public function checkEmail($email) {
-    global $db;
     return !empty($db->query("SELECT `id` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ])->get_result()->fetch_row());
   }
 
   /**
    * Check if this name is already in use.
    *
-   * @global \MovLib\Data\Database $db
    * @param string $username
    *   The username to look up.
    * @return boolean
    *   <code>TRUE</code> if this name is already in use, otherwise <code>FALSE</code>.
    */
   public function checkName($username) {
-    global $db;
     return !empty($db->query("SELECT `id` FROM `users` WHERE `name` = ? LIMIT 1", "s", [ $username ])->get_result()->fetch_row());
   }
 
   /**
    * Update the user model in the database with the data of the current class instance.
    *
-   * @global \MovLib\Data\Database $db
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
   public function commit() {
-    global $db, $i18n;
     $db->query(
       "UPDATE `users` SET
         `birthdate`            = ?,
@@ -330,13 +320,10 @@ class FullUser extends \MovLib\Data\User\User {
    *
    * @todo   Delete avatar.
    *
-   * @global \MovLib\Data\Database $db
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
   public function deleteAccount() {
-    global $db;
-
     $this->deleteAvatar();
 
     $db->query(
@@ -371,11 +358,9 @@ class FullUser extends \MovLib\Data\User\User {
   /**
    * Delete the user's avatar image and all styles of it.
    *
-   * @global \MovLib\Data\User\Session $session
    * @return this
    */
   public function deleteAvatar() {
-    global $session;
     if ($this->imageExists == true) {
       foreach ([ self::STYLE_SPAN_02, self::STYLE_SPAN_01, self::STYLE_HEADER_USER_NAVIGATION ] as $style) {
         try {
@@ -396,26 +381,22 @@ class FullUser extends \MovLib\Data\User\User {
    * Get the user's total collection count.
    *
    * @todo We should propably save this within the user table.
-   * @global \MovLib\Data\Database $db
    * @return integer
    *   The user's total collection count.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getTotalCollectionCount() {
-    global $db;
     return $db->query("SELECT COUNT(*) FROM `users_collections` WHERE `user_id` = ? LIMIT 1", "d", [ $this->id ])->get_result()->fetch_row()[0];
   }
 
   /**
    * Get the user's total count of movie ratings.
    *
-   * @global \MovLib\Data\Database $db
    * @return integer
    *   The user's total count of movie ratings.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getTotalRatingsCount() {
-    global $db;
     return $db->query("SELECT COUNT(*) FROM `movies_ratings` WHERE `user_id` = ? LIMIT 1", "d", [ $this->id ])->get_result()->fetch_row()[0];
   }
 
@@ -423,13 +404,11 @@ class FullUser extends \MovLib\Data\User\User {
    * Get the user's total count of all uploaded images.
    *
    * @todo We should propably save this within the user table.
-   * @global \MovLib\Data\Database $db
    * @return integer
    *   The user's total count of all uploaded images.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getTotalUploadsCount() {
-    global $db;
     return $db->query(
       "SELECT
       (SELECT COUNT(*) FROM `posters` WHERE `uploader_id` = ?)
@@ -449,15 +428,13 @@ class FullUser extends \MovLib\Data\User\User {
   /**
    * Get the <var>$rawPassword</var> hash.
    *
-   * @global \MovLib\Kernel $kernel
    * @param string $rawPassword
    *   The user supplied raw password.
    * @return string
    *   The <var>$rawPassword</var> hash.
    */
   public function hashPassword($rawPassword) {
-    global $kernel;
-    return password_hash($rawPassword, PASSWORD_DEFAULT, $kernel->passwordOptions);
+    return password_hash($rawPassword, $config->passwordAlgorithm, $config->passwordOptions);
   }
 
   /**
@@ -471,13 +448,10 @@ class FullUser extends \MovLib\Data\User\User {
    * newly joined user. This is the desired behavior during our joining process, because we want to display the password
    * settings page within the user's account directly.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
   public function join() {
-    global $db, $i18n;
     $stmt = $db->query(
       "INSERT INTO `users` (`dyn_about_me`, `email`, `name`, `password`, `system_language_code`) VALUES ('', ?, ?, ?, ?)",
       "ssss",
@@ -490,14 +464,12 @@ class FullUser extends \MovLib\Data\User\User {
   /**
    * Change the user's email address.
    *
-   * @global \MovLib\Data\Database $db
    * @param string $email
    *   The new email address.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
   public function updateEmail($email) {
-    global $db;
     $db->query("UPDATE `users` SET `email` = ? WHERE `id` = ?", "sd", [ $email, $this->id ]);
     $this->email = $email;
     return $this;
@@ -506,14 +478,12 @@ class FullUser extends \MovLib\Data\User\User {
   /**
    * Change the user's password.
    *
-   * @global \MovLib\Data\Database $db
    * @param string $password
    *   The new hashed password.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
   public function updatePassword($password) {
-    global $db;
     return $db->query("UPDATE `users` SET `password` = ? WHERE `id` = ?", "sd", [ $password, $this->id ]);
   }
 

@@ -30,7 +30,7 @@ use \MovLib\Presentation\Redirect\SeeOther;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractBase extends \MovLib\Presentation\Page {
+abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Presentation\TraitSidebar;
 
   /**
@@ -47,8 +47,6 @@ abstract class AbstractBase extends \MovLib\Presentation\Page {
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   public function __construct() {
-    global $i18n;
-
     // Try to load person data.
     $this->person = new Person($_SERVER["PERSON_ID"]);
 
@@ -59,16 +57,16 @@ abstract class AbstractBase extends \MovLib\Presentation\Page {
 
     // Initialize breadcrumbs.
     $this->initBreadcrumb([
-      [ $i18n->rp("/persons"), $i18n->t("Persons") ],
+      [ $this->intl->rp("/persons"), $this->intl->t("Persons") ],
       [ $this->person->route, $this->person->name ],
     ]);
 
     // Initialize sidebar navigation.
     $this->sidebarInit([
-        [ $i18n->r("/person/{0}/photo", [ $this->person->id ]), $i18n->t("View"), [ "class" => "ico ico-view" ] ],
-        [ $i18n->r("/person/{0}/photo/edit", [ $this->person->id ]), $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
-        [ $i18n->r("/person/{0}/photo/history", [ $this->person->id ]), $i18n->t("History"), [ "class" => "ico ico-history" ] ],
-        [ $i18n->r("/person/{0}/photo/delete", [ $this->person->id ]), $i18n->t("Delete"), [ "class" => "ico ico-delete" ] ],
+        [ $this->intl->r("/person/{0}/photo", [ $this->person->id ]), $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
+        [ $this->intl->r("/person/{0}/photo/edit", [ $this->person->id ]), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
+        [ $this->intl->r("/person/{0}/photo/history", [ $this->person->id ]), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
+        [ $this->intl->r("/person/{0}/photo/delete", [ $this->person->id ]), $this->intl->t("Delete"), [ "class" => "ico ico-delete" ] ],
     ]);
   }
 }

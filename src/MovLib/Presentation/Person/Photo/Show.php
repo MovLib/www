@@ -34,14 +34,10 @@ class Photo extends \MovLib\Presentation\Person\Photo\AbstractBase {
   /**
    * Instantiate new Person Photo presentation.
    *
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\I18n $i18n
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   public function __construct() {
-    global $i18n, $kernel;
-
     // Try to load person data.
     $this->person = new Person($_SERVER["PERSON_ID"]);
 
@@ -54,23 +50,23 @@ class Photo extends \MovLib\Presentation\Person\Photo\AbstractBase {
 
     // Initialize breadcrumbs.
     $this->initBreadcrumb([
-      [ $i18n->rp("/persons"), $i18n->t("Persons") ],
+      [ $this->intl->rp("/persons"), $this->intl->t("Persons") ],
       [ $this->person->route, $this->person->name ],
     ]);
 
     // Initialize sidebar navigation.
     $this->sidebarInit([
-        [ $i18n->r("/person/{0}/photo", $routeArgs), $i18n->t("View"), [ "class" => "ico ico-view" ] ],
-        [ $i18n->r("/person/{0}/photo/edit", $routeArgs), $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
-        [ $i18n->r("/person/{0}/photo/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history" ] ],
-        [ $i18n->r("/person/{0}/photo/delete", $routeArgs), $i18n->t("Delete"), [ "class" => "ico ico-delete" ] ],
+        [ $this->intl->r("/person/{0}/photo", $routeArgs), $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
+        [ $this->intl->r("/person/{0}/photo/edit", $routeArgs), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
+        [ $this->intl->r("/person/{0}/photo/history", $routeArgs), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
+        [ $this->intl->r("/person/{0}/photo/delete", $routeArgs), $this->intl->t("Delete"), [ "class" => "ico ico-delete" ] ],
     ]);
 
     // Initialize language links.
     $this->initLanguageLinks("/person/{0}/photo", $routeArgs);
 
     // Initialize page titles.
-    $title = $i18n->t("Photo of {person_name}");
+    $title = $this->intl->t("Photo of {person_name}");
     $search = "{person_name}";
     $this->initPage(str_replace($search, $this->person->name, $title));
     $this->pageTitle = str_replace(
@@ -89,7 +85,6 @@ class Photo extends \MovLib\Presentation\Person\Photo\AbstractBase {
    * @inheritdoc
    */
   protected function getPageContent() {
-    global $i18n;
     // @todo: No photo -> display upload link and no sidebar.
     return
     "<meta itemprop='representativeOfPage' content='true'>" .
@@ -103,14 +98,14 @@ class Photo extends \MovLib\Presentation\Person\Photo\AbstractBase {
           )}</div>" .
           "<dl class='s s4 description'>" .
             $dl .
-            "<dt>{$i18n->t("Provided by")}</dt><dd><a href='{$uploader->route}' itemprop='creator provider'>{$uploader->name}</a></dd>" .
-            "<dt>{$i18n->t("Dimensions")}</dt><dd>{$i18n->t("{width} × {height}", [
-              "width"  => "<span itemprop='width'>{$this->image->width}&nbsp;<abbr title='{$i18n->t("Pixel")}'>px</abbr></span>",
-              "height" => "<span itemprop='height'>{$this->image->height}&nbsp;<abbr title='{$i18n->t("Pixel")}'>px</abbr></span>",
+            "<dt>{$this->intl->t("Provided by")}</dt><dd><a href='{$uploader->route}' itemprop='creator provider'>{$uploader->name}</a></dd>" .
+            "<dt>{$this->intl->t("Dimensions")}</dt><dd>{$this->intl->t("{width} × {height}", [
+              "width"  => "<span itemprop='width'>{$this->image->width}&nbsp;<abbr title='{$this->intl->t("Pixel")}'>px</abbr></span>",
+              "height" => "<span itemprop='height'>{$this->image->height}&nbsp;<abbr title='{$this->intl->t("Pixel")}'>px</abbr></span>",
             ])}</dd>" .
-            "<dt>{$i18n->t("File size")}</dt><dd itemprop='contentSize'>{$i18n->t("{0,number} {1}", $this->formatBytes($this->image->filesize))}</dd>" .
-            "<dt>{$i18n->t("Upload on")}</dt><dd>{$dateTime}</dd>" .
-            "<dt>{$i18n->t("Buy this {image_name}", [ "image_name" => $this->image->name ])}</dt>{$offers}" .
+            "<dt>{$this->intl->t("File size")}</dt><dd itemprop='contentSize'>{$this->intl->t("{0,number} {1}", $this->formatBytes($this->image->filesize))}</dd>" .
+            "<dt>{$this->intl->t("Upload on")}</dt><dd>{$dateTime}</dd>" .
+            "<dt>{$this->intl->t("Buy this {image_name}", [ "image_name" => $this->image->name ])}</dt>{$offers}" .
           "</dl>" .
         "</div>" .
       "</div>"

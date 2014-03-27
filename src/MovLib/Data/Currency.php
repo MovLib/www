@@ -98,26 +98,22 @@ class Currency {
   /**
    * Get the ISO 4217 alpha-3 code of the default locale.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The ISO 4217 alpha-3 code of the default locale.
    */
   public static function getDefaultCode() {
-    global $i18n;
     return self::getFormatter($i18n->defaultLocale)->getTextAttribute(\NumberFormatter::CURRENCY_CODE);
   }
 
   /**
    * Get currency formatter for current locale.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @staticvar array $nf
    *   Associative array used for caching.
    * @return \NumberFormatter
    *   Number formatter for the current locale.
    */
   public static function getFormatter() {
-    global $i18n;
     static $nf = null;
     if (!isset($nf[$i18n->locale])) {
       $nf[$i18n->locale] = new \NumberFormatter($i18n->locale, \NumberFormatter::CURRENCY);
@@ -128,15 +124,12 @@ class Currency {
   /**
    * Get all supported and translated currencies.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @staticvar array $currencies
    *   Associative array used for caching.
    * @return array
    *   All supported and translated currencies.
    */
   public static function getCurrencies() {
-    global $i18n, $kernel;
     static $currencies = null;
     if (!isset($currencies[$i18n->locale])) {
       $currencies[$i18n->locale] = require "{$kernel->pathTranslations}/currency/{$i18n->locale}.php";

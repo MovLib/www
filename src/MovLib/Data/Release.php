@@ -133,13 +133,11 @@ class Release extends \MovLib\Data\Database {
   /**
    * Get random release identifier.
    *
-   * @global \MovLib\Data\Database $db
    * @return integer|null
    *   Random release identifier, or <code>NULL</code> on failure.
    * @throws \MovLib\Exception\DatabaseException
    */
   public static function getRandomReleaseId() {
-    global $db;
     $result = $db->query("SELECT `id` FROM `master_releases` ORDER BY RAND() LIMIT 1")->get_result()->fetch_row();
     if (isset($result[0])) {
       return $result[0];

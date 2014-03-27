@@ -26,7 +26,7 @@ namespace MovLib\Presentation\Job;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractBase extends \MovLib\Presentation\Page {
+abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Presentation\TraitGone {
     goneGetContent as private traitGetGoneContent;
   }
@@ -52,29 +52,27 @@ abstract class AbstractBase extends \MovLib\Presentation\Page {
   /**
    * Build content for gone page.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return $this
    * @throws \LogicException
    */
   protected function goneGetContent() {
-    global $i18n;
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->job instanceof \MovLib\Data\Job)) {
-      throw new \LogicException($i18n->t("\$this->job has to be a valid job object!"));
+      throw new \LogicException($this->intl->t("\$this->job has to be a valid job object!"));
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
 
     $routeArgs = [ $this->job->id ];
 
-    $this->goneAlertMessage = $i18n->t(
+    $this->goneAlertMessage = $this->intl->t(
         "The job and all its content have been deleted. Take a look at the {0}history{2} or {1}discussion{2} page " .
         "for further information. Please discuss with the person responsible for this deletion before " .
         "you restore this entry from its {0}history{2}.",
         [
-          "<a href='{$i18n->r("/job/{0}/history", $routeArgs)}'>",
-          "<a href='{$i18n->r("/job/{0}/discussion", $routeArgs)}'>",
+          "<a href='{$this->intl->r("/job/{0}/history", $routeArgs)}'>",
+          "<a href='{$this->intl->r("/job/{0}/discussion", $routeArgs)}'>",
           "</a>"
         ]
       );
@@ -84,22 +82,20 @@ abstract class AbstractBase extends \MovLib\Presentation\Page {
   /**
    * Init job breadcrumb.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return $this
    * @throws \LogicException
    */
   protected function initJobBreadcrumb() {
-    global $i18n;
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->job instanceof \MovLib\Data\Job)) {
-      throw new \LogicException($i18n->t("\$this->job has to be a valid job object!"));
+      throw new \LogicException($this->intl->t("\$this->job has to be a valid job object!"));
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
 
     return $this->initBreadcrumb([
-      [ $i18n->rp("/jobs"), $i18n->t("Jobs") ],
+      [ $this->intl->rp("/jobs"), $this->intl->t("Jobs") ],
       [ $this->job->route, $this->job->name ]
     ]);
   }
@@ -107,16 +103,14 @@ abstract class AbstractBase extends \MovLib\Presentation\Page {
   /**
    * Init job sidebar.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return $this
    * @throws \LogicException
    */
   protected function sidebarInit() {
-    global $i18n;
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->job instanceof \MovLib\Data\Job)) {
-      throw new \LogicException($i18n->t("\$this->job has to be a valid job object!"));
+      throw new \LogicException($this->intl->t("\$this->job has to be a valid job object!"));
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -127,21 +121,21 @@ abstract class AbstractBase extends \MovLib\Presentation\Page {
     // Reduce the sidebar if the job was deleted.
     if ($this->job->deleted === true) {
       return $this->traitSidebarInit([
-        [ $this->job->route, $i18n->t("View"), [ "class" => "ico ico-view" ] ],
-        [ $i18n->r("/job/{0}/discussion", $routeArgs), $i18n->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
-        [ $i18n->r("/job/{0}/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history" ] ]
+        [ $this->job->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
+        [ $this->intl->r("/job/{0}/discussion", $routeArgs), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
+        [ $this->intl->r("/job/{0}/history", $routeArgs), $this->intl->t("History"), [ "class" => "ico ico-history" ] ]
       ]);
     }
 
     return $this->traitSidebarInit([
-      [ $this->job->route, $i18n->t("View"), [ "class" => "ico ico-view" ] ],
-      [ $i18n->r("/job/{0}/discussion", $routeArgs), $i18n->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
-      [ $i18n->r("/job/{0}/edit", $routeArgs), $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
-      [ $i18n->r("/job/{0}/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history" ] ],
-      [ $i18n->r("/job/{0}/delete", $routeArgs), $i18n->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
+      [ $this->job->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
+      [ $this->intl->r("/job/{0}/discussion", $routeArgs), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
+      [ $this->intl->r("/job/{0}/edit", $routeArgs), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
+      [ $this->intl->r("/job/{0}/history", $routeArgs), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
+      [ $this->intl->r("/job/{0}/delete", $routeArgs), $this->intl->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
 
-      [ $i18n->rp("/job/{0}/movies", $routeArgs), "{$i18n->t("Movies")} <span class='fr'>{$i18n->format("{0,number}", [ $this->job->getMoviesCount() ])}</span>", [ "class" => "ico ico-movie" ] ],
-      [ $i18n->rp("/job/{0}/series", $routeArgs), "{$i18n->t("Series")} <span class='fr'>{$i18n->format("{0,number}", [ $this->job->getSeriesCount() ])}</span>", [ "class" => "ico ico-series separator" ] ]
+      [ $this->intl->rp("/job/{0}/movies", $routeArgs), "{$this->intl->t("Movies")} <span class='fr'>{$this->intl->format("{0,number}", [ $this->job->getMoviesCount() ])}</span>", [ "class" => "ico ico-movie" ] ],
+      [ $this->intl->rp("/job/{0}/series", $routeArgs), "{$this->intl->t("Series")} <span class='fr'>{$this->intl->format("{0,number}", [ $this->job->getSeriesCount() ])}</span>", [ "class" => "ico ico-series separator" ] ]
     ]);
   }
 

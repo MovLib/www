@@ -46,7 +46,6 @@ class MovieBackdrop extends \MovLib\Data\Image\AbstractMovieImage {
   /**
    * Instantiate new movie backdrop.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param null|integer $movieId [optional]
    *   The movie's unique identifier this backdrop belongs to, defaults to no movie identifier which is reserved for
    *   instantiation via fetch object.
@@ -60,7 +59,6 @@ class MovieBackdrop extends \MovLib\Data\Image\AbstractMovieImage {
    * @throws \MovLib\Preentation\Error\NotFound
    */
   public function __construct($movieId = null, $movieTitle = null, $id = null) {
-    global $i18n;
     parent::__construct($id, $movieId, $movieTitle, $i18n->t("Backdrop"), $i18n->t("Backdrops"), "backdrop", "backdrops");
   }
 

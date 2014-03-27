@@ -17,9 +17,11 @@
  */
 namespace MovLib\Presentation;
 
-use \MovLib\Presentation\Email\Webmaster;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\FormElement\InputEmail;
+use \MovLib\Mail\Mailer;
+use \MovLib\Mail\Webmaster;
+use \MovLib\Partial\Alert;
+use \MovLib\Partial\Form;
+use \MovLib\Partial\FormElement\InputEmail;
 
 /**
  * The coming soon page.
@@ -30,12 +32,18 @@ use \MovLib\Presentation\Partial\FormElement\InputEmail;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class ComingSoon extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitForm;
+final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
+
+  /**
+   * The presenter's form.
+   *
+   * @var \MovLib\Partial\Form
+   */
+  protected $form;
 
   /**
    * The user submitted email address.
@@ -50,28 +58,22 @@ final class ComingSoon extends \MovLib\Presentation\Page {
 
   /**
    * Instantiate new coming soon presentation.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
-  public function __construct() {
-    global $i18n, $kernel;
+  public function init() {
+    $this->initPage($this->config->siteName);
+    $this->prefetch("//{$this->config->hostname}/");
+    $this->next("//{$this->config->hostname}/");
 
-    // Initialize the page.
-    $this->initPage($kernel->siteName);
-    $this->prefetch("//{$kernel->domainDefault}/");
-    $this->next("//{$kernel->domainDefault}/");
-
-    // Configure and initialize the form.
-    $this->formAddElement(new InputEmail("email", $i18n->t("Email Address"), $this->email, [
+    $this->form = new Form($this->diContainerHTTP);
+    $this->form->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email Address"), $this->email, [
       "autofocus"   => true,
-      "placeholder" => $i18n->t("Sign up for the {sitename} beta!", [ "sitename" => $kernel->siteName ]),
+      "placeholder" => $this->intl->t("Sign up for the {sitename} beta!", [ "sitename" => $this->config->siteName ]),
       "required"    => true,
     ]));
-    $this->formAddAction($i18n->t("Sign Up"), [ "class" => "btn btn-large btn-success" ]);
-    $this->formInit();
+    $this->form->addAction($this->intl->t("Sign Up"), [ "class" => "btn btn-large btn-success" ]);
+    $this->form->init([ $this, "valid" ]);
 
-    $kernel->stylesheets[] = "coming-soon";
+    $this->stylesheets[] = "coming-soon";
   }
 
 
@@ -81,25 +83,45 @@ final class ComingSoon extends \MovLib\Presentation\Page {
   /**
    * @inheritdoc
    */
+  protected function getContent() {
+    return
+      "<p class='tac'>{$this->intl->t(
+        "Imagine {1}Wikipedia{0}, {2}Discogs{0}, {3}Last.fm{0}, {4}IMDb{0}, and {5}TheMovieDB{0} combined in a " .
+        "totally free and open project.",
+        [
+          "</a>",
+          "<a href='//en.wikipedia.org/' target='_blank'>",
+          "<a href='http://www.discogs.com/' target='_blank'>",
+          "<a href='http://www.last.fm/' target='_blank'>",
+          "<a href='http://www.imdb.com/' target='_blank'>",
+          "<a href='http://www.themoviedb.org/' target='_blank'>",
+        ]
+      )}</p>" .
+      "<div class='r'><div class='s s8 o2'>{$this->form->render()}</div></div>"
+    ;
+  }
+
+  /**
+   * @inheritdoc
+   */
   protected function getFooter() {
-    global $i18n, $kernel;
     return
       "<footer id='f' role='contentinfo'>" .
-        "<h1 class='vh'>{$i18n->t("Infos all around {sitename}", [ "sitename" => $kernel->siteName ])}</h1>" .
+        "<h1 class='vh'>{$this->intl->t("Infos all around {sitename}", [ "sitename" => $this->config->siteName ])}</h1>" .
         "<div class='c'><div class='r'>" .
-          "<p class='s s12 tac'>{$i18n->t("The open beta is scheduled to start in June 2014.")}</p>" .
+          "<p class='s s12 tac'>{$this->intl->t("The open beta is scheduled to start in June 2014.")}</p>" .
           "<section id='f-logos' class='s s12 tac'>" .
-            "<h3 class='vh'>{$i18n->t("Sponsors and external resources")}</h3>" .
+            "<h3 class='vh'>{$this->intl->t("Sponsors and external resources")}</h3>" .
             "<a class='no-link' href='http://www.fh-salzburg.ac.at/' target='_blank'>" .
-              "<img alt='Fachhochschule Salzburg' height='30' src='{$this->getURL("asset://img/footer/fachhochschule-salzburg.svg")}' width='48'>" .
+              "<img alt='Fachhochschule Salzburg' height='30' src='{$this->getExternalURL("asset://img/footer/fachhochschule-salzburg.svg")}' width='48'>" .
             "</a>" .
             "<a class='no-link' href='https://github.com/MovLib' target='_blank'>" .
-              "<img alt='GitHub' height='30' src='{$this->getURL("asset://img/footer/github.svg")}' width='48'>" .
+              "<img alt='GitHub' height='30' src='{$this->getExternalURL("asset://img/footer/github.svg")}' width='48'>" .
             "</a>" .
           "</section>" .
-          "<p class='last s s12 tac'>{$i18n->t("Wanna see the current alpha version of {sitename}? Go to {alpha_url}", [
-            "sitename"  => $kernel->siteName,
-            "alpha_url" => "<a href='//{$kernel->domainDefault}/'>{$kernel->domainDefault}</a>",
+          "<p class='last s s12 tac'>{$this->intl->t("Wanna see the current alpha version of {sitename}? Go to {alpha_url}", [
+            "sitename"  => $this->config->siteName,
+            "alpha_url" => "<a href='//{$this->config->hostname}/'>{$this->config->hostname}</a>",
           ])}</p>" .
         "</div>" .
       "</div></footer>"
@@ -117,35 +139,19 @@ final class ComingSoon extends \MovLib\Presentation\Page {
    * @inheritdoc
    */
   protected function getHeadTitle() {
-    global $kernel;
-    return $kernel->siteNameAndSlogan;
+    return $this->config->siteNameAndSlogan;
   }
 
   /**
    * @inheritdoc
    */
-  protected function getMainContent() {
-    global $i18n, $kernel;
+  protected function getMainContent($content) {
     return
       "<main class='{$this->id}-content' id='m' role='main'><div class='c'>" .
         "<h1 class='cf'>" .
-          "<img alt='' height='192' src='{$this->getURL("asset://img/logo/vector.svg")}' width='192'>" .
-          "<span>{$kernel->siteNameAndSloganHTML}</span>" .
-        "</h1>" .
-        $this->alerts .
-        "<p class='tac'>{$i18n->t(
-          "Imagine {1}Wikipedia{0}, {2}Discogs{0}, {3}Last.fm{0}, {4}IMDb{0}, and {5}TheMovieDB{0} combined in a " .
-          "totally free and open project.",
-          [
-            "</a>",
-            "<a href='//en.wikipedia.org/' target='_blank'>",
-            "<a href='http://www.discogs.com/' target='_blank'>",
-            "<a href='http://www.last.fm/' target='_blank'>",
-            "<a href='http://www.imdb.com/' target='_blank'>",
-            "<a href='http://www.themoviedb.org/' target='_blank'>",
-          ]
-        )}</p>" .
-        "<div class='r'><div class='s s8 o2'>{$this->formRender()}</div></div>" .
+          "<img alt='' height='192' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='192'>" .
+          "<span>{$this->config->siteNameAndSloganHTML}</span>" .
+        "</h1>{$this->alerts}{$content}" .
       "</div></main>"
     ;
   }
@@ -153,29 +159,26 @@ final class ComingSoon extends \MovLib\Presentation\Page {
   /**
    * The submitted form has no auto-validation errors, continue normal program flow.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @return this
    */
-  protected function formValid() {
-    global $i18n, $kernel;
-
+  public function valid() {
     // Send an email with the new subscriber to the webmaster.
-    $kernel->sendEmail(new Webmaster(
+    (new Mailer())->send($this->kernel, new Webmaster(
+      $this->diContainerHTTP,
       "New beta subscription",
       "<a href='mailto:{$this->email}'>{$this->email}</a> would like to be part of the MovLib beta."
     ));
 
     // Append new subscriber to subscription list (not save to use database while we're still developing).
-    file_put_contents("{$kernel->documentRoot}/private/subscriptions.txt", "\n{$this->email}", FILE_APPEND);
+    file_put_contents("{$_SERVER["HOME"]}/subscriptions.txt", "\n{$this->email}", FILE_APPEND);
 
     // Let the user know that the subscription was successful.
     $this->alerts .= new Alert(
-      $i18n->t("Thanks for signing up for the {sitename} beta {email}.", [
-        "sitename" => $kernel->siteName,
+      $this->intl->t("Thanks for signing up for the {sitename} beta {email}.", [
+        "sitename" => $this->config->siteName,
         "email"    => $this->placeholder($this->email),
       ]),
-      $i18n->t("Successfully Signed Up"),
+      $this->intl->t("Successfully Signed Up"),
       Alert::SEVERITY_SUCCESS
     );
 

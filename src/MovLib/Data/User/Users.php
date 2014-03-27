@@ -54,19 +54,16 @@ class Users {
   /**
    * Get the total count of undeleted users.
    *
-   * @global \MovLib\Data\Database $db
    * @return integer
    *   The total count of undeleted users.
    */
   public function getTotalCount() {
-    global $db;
     return $db->query("SELECT COUNT(*) FROM `users` WHERE `email` IS NOT NULL")->get_result()->fetch_row()[0];
   }
 
   /**
    * Get all undeleted users ordered by their creation timestamp.
    *
-   * @global \MovLib\Data\Database $db
    * @param integer $offset
    *   The offset, usually provided by the pagination trait.
    * @param integer $rowCount
@@ -76,7 +73,6 @@ class Users {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getOrderedByCreatedResult($offset, $rowCount) {
-    global $db;
     return $db->query("{$this->query} WHERE `email` IS NOT NULL ORDER BY `created` DESC LIMIT ? OFFSET ?", "ii", [ $rowCount, $offset ])->get_result();
   }
 

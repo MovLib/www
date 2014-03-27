@@ -80,7 +80,6 @@ class MovieRatings extends \MovLib\Data\Database {
   /**
    * Get all movie ratings ordered by their creation timestamp.
    *
-   * @global \MovLib\Data\Database $db
    * @param string $from
    *   Defines how the object should be filled with data, use the various <var>FROM_*</var> class constants.
    * @param mixed $value
@@ -90,7 +89,6 @@ class MovieRatings extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getOrderedByCreated($from, $value) {
-    global $db;
     $ratings = [];
     $result = $db->query("{$this->query} WHERE `{$from}` = ? ORDER BY `created` DESC", $this->types[$from], [ $value ])->get_result();
     while ($movieRating = $result->fetch_object("\\MovLib\\Data\\Movie\\MovieRating")) {

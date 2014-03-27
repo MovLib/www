@@ -68,19 +68,17 @@ class Contact extends \MovLib\Presentation\SystemPage\Show {
   /**
    * Instantiate new contact system page.
    *
-   * @global \MovLib\Data\I18n $i18n
    */
   public function __construct() {
-    global $i18n;
     parent::__construct();
-    $this->subject                = new InputText("subject", $i18n->t("Subject"), [
-      "placeholder" => $i18n->t("This will appear as subject of your message"),
+    $this->subject                = new InputText("subject", $this->intl->t("Subject"), [
+      "placeholder" => $this->intl->t("This will appear as subject of your message"),
       "required",
     ]);
-    $this->message                = new InputHTML("message", $i18n->t("Message"));
+    $this->message                = new InputHTML("message", $this->intl->t("Message"));
     $this->message->attributes[]  = "required";
     $this->form                   = new Form($this, [ $this->subject, $this->message ]);
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Send"), [ "class" => "btn btn-success btn-large" ]);
+    $this->form->actionElements[] = new InputSubmit($this->intl->t("Send"), [ "class" => "btn btn-success btn-large" ]);
   }
 
 
@@ -97,12 +95,8 @@ class Contact extends \MovLib\Presentation\SystemPage\Show {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   protected function valid() {
-    global $i18n, $kernel;
-
     // Send the contact email to the webmaster.
     $kernel->sendEmail(new Webmaster($this->subject->value, $this->htmlDecode($this->message->value)));
 
@@ -111,8 +105,8 @@ class Contact extends \MovLib\Presentation\SystemPage\Show {
 
     // Display success alert so the user knows that the submission was successful.
     $this->success = new Alert(
-      $i18n->t(""),
-      $i18n->t("Contact Successful"),
+      $this->intl->t(""),
+      $this->intl->t("Contact Successful"),
       Alert::SEVERITY_SUCCESS
     );
 

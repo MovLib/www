@@ -30,7 +30,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Create extends \MovLib\Presentation\Page {
+class Create extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Presentation\TraitForm;
 
 
@@ -51,18 +51,14 @@ class Create extends \MovLib\Presentation\Page {
   /**
    * Instantiate new award event create presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
-
-    $this->initPage($i18n->t("Create Event"));
+    $this->initPage($this->intl->t("Create Event"));
     $this->initBreadcrumb([
-      [ $i18n->rp("/events"), $i18n->t("Events") ],
+      [ $this->intl->rp("/events"), $this->intl->t("Events") ],
     ]);
     $this->initLanguageLinks("/event/create");
-    $this->breadcrumbTitle = $i18n->t("Create");
+    $this->breadcrumbTitle = $this->intl->t("Create");
 
     $kernel->stylesheets[] = "award";
 
@@ -78,13 +74,11 @@ class Create extends \MovLib\Presentation\Page {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function getContent() {
-    global $i18n;
     return new Alert(
-      $i18n->t("The create event feature isn’t implemented yet."),
-      $i18n->t("Check back later"),
+      $this->intl->t("The create event feature isn’t implemented yet."),
+      $this->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     );
   }

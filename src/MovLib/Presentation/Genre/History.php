@@ -37,14 +37,11 @@ class History extends \MovLib\Presentation\Genre\AbstractBase {
   /**
    * Instantiate new genre history presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
     $this->genre = new Genre((integer) $_SERVER["GENRE_ID"]);
-    $this->initPage($i18n->t("History"));
-    $this->pageTitle = $i18n->t("History of {0}", [ "<a href='{$this->genre->route}'>{$this->genre->name}</a>" ]);
+    $this->initPage($this->intl->t("History"));
+    $this->pageTitle = $this->intl->t("History of {0}", [ "<a href='{$this->genre->route}'>{$this->genre->name}</a>" ]);
     $this->initLanguageLinks("/genre/{0}/history", [ $this->genre->id ]);
     $this->initGenreBreadcrumb();
     $this->sidebarInit();
@@ -58,12 +55,10 @@ class History extends \MovLib\Presentation\Genre\AbstractBase {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    * @return \MovLib\Presentation\Partial\Alert
    */
   protected function getPageContent() {
-    global $i18n;
-    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("genre history") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Presentation\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("genre history") ]), $this->intl->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
   }
 
 }

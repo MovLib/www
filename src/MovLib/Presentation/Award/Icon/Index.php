@@ -40,25 +40,21 @@ class Index extends \MovLib\Presentation\Award\AbstractBase {
   /**
    * Instantiate new award logo presentation.
    *
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\I18n $i18n
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   public function __construct() {
-    global $i18n, $kernel;
-
     $this->award = new Award((integer) $_SERVER["AWARD_ID"]);
 
     // Redirect to award edit form, if there is no logo.
     if ($this->award->imageExists === false) {
-      throw new SeeOtherRedirect($i18n->r("/award/{0}/edit", [ $this->award->id ]));
+      throw new SeeOtherRedirect($this->intl->r("/award/{0}/edit", [ $this->award->id ]));
     }
 
     $routeArgs = [ $this->award->id ];
 
-    $this->initPage($i18n->t("Logo"));
-    $this->pageTitle = $i18n->t("Logo of {0}", [
+    $this->initPage($this->intl->t("Logo"));
+    $this->pageTitle = $this->intl->t("Logo of {0}", [
       "<span property='about' typeof='Corporation'><a href='{$this->award->route}' property='url'>" .
         "<span property='name'>{$this->award->name}</span>" .
       "</a></span>"
@@ -68,8 +64,8 @@ class Index extends \MovLib\Presentation\Award\AbstractBase {
     $this->sidebarInit();
 
     // Modify sidebar items.
-    $this->sidebarNavigation->menuitems[0] = [ $this->award->route, $i18n->t("Back to Award"), [ "class" => "ico ico-award" ] ];
-    $this->sidebarNavigation->menuitems[count($this->sidebarNavigation->menuitems)] = [ $i18n->r("/award/{0}/logo/delete", $routeArgs), $i18n->t("Delete Icon"), [ "class" => "ico ico-delete" ] ];
+    $this->sidebarNavigation->menuitems[0] = [ $this->award->route, $this->intl->t("Back to Award"), [ "class" => "ico ico-award" ] ];
+    $this->sidebarNavigation->menuitems[count($this->sidebarNavigation->menuitems)] = [ $this->intl->r("/award/{0}/logo/delete", $routeArgs), $this->intl->t("Delete Icon"), [ "class" => "ico ico-delete" ] ];
 
     // Initialize CSS class, schema and stylesheet.
     $this->bodyClasses    .= " imagedetails";
@@ -84,17 +80,16 @@ class Index extends \MovLib\Presentation\Award\AbstractBase {
    * @inheritdoc
    */
   protected function getPageContent() {
-    global $i18n;
     $uploader    = new User(User::FROM_ID, $this->award->uploaderId);
     $dateTime    = new DateTime($this->award->changed, [ "property" => "uploadDate" ]);
-    $description = "<dt>{$i18n->t("Description")}</dt>";
+    $description = "<dt>{$this->intl->t("Description")}</dt>";
     if ($this->award->imageDescription) {
       $description .= "<dd property='description'>{$this->htmlDecode($this->award->imageDescription)}</dd>";
     }
     else {
-      $description .= "<dd>{$i18n->t(
+      $description .= "<dd>{$this->intl->t(
         "No description available, {0}add one{1}?",
-        [ "<a href='{$i18n->r("/award/{0}/edit", [ $this->award->id ])}'>", "</a>" ]
+        [ "<a href='{$this->intl->r("/award/{0}/edit", [ $this->award->id ])}'>", "</a>" ]
       )}</dd>";
     }
     return
@@ -103,13 +98,13 @@ class Index extends \MovLib\Presentation\Award\AbstractBase {
         "<div class='r wrapper'>" .
           "<dl class='s s7 description'>" .
             $description .
-            "<dt>{$i18n->t("Provided by")}</dt><dd><a href='{$uploader->route}' property='accountablePerson'>{$uploader->name}</a></dd>" .
-            "<dt>{$i18n->t("Dimensions")}</dt><dd>{$i18n->t("{width} × {height}", [
-              "width"  => "<span property='width'>{$this->award->width}&nbsp;<abbr title='{$i18n->t("Pixel")}'>px</abbr></span>",
-              "height" => "<span property='height'>{$this->award->height}&nbsp;<abbr title='{$i18n->t("Pixel")}'>px</abbr></span>",
+            "<dt>{$this->intl->t("Provided by")}</dt><dd><a href='{$uploader->route}' property='accountablePerson'>{$uploader->name}</a></dd>" .
+            "<dt>{$this->intl->t("Dimensions")}</dt><dd>{$this->intl->t("{width} × {height}", [
+              "width"  => "<span property='width'>{$this->award->width}&nbsp;<abbr title='{$this->intl->t("Pixel")}'>px</abbr></span>",
+              "height" => "<span property='height'>{$this->award->height}&nbsp;<abbr title='{$this->intl->t("Pixel")}'>px</abbr></span>",
             ])}</dd>" .
-            "<dt>{$i18n->t("File size")}</dt><dd property='contentSize'>{$i18n->t("{0,number} {1}", $this->formatBytes($this->award->filesize))}</dd>" .
-            "<dt>{$i18n->t("Upload on")}</dt><dd>{$dateTime}</dd>" .
+            "<dt>{$this->intl->t("File size")}</dt><dd property='contentSize'>{$this->intl->t("{0,number} {1}", $this->formatBytes($this->award->filesize))}</dd>" .
+            "<dt>{$this->intl->t("Upload on")}</dt><dd>{$dateTime}</dd>" .
           "</dl>" .
           "<div class='s s3 tac image'>{$this->getImage(
             $this->award->getStyle(Award::STYLE_SPAN_03),

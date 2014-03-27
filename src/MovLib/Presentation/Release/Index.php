@@ -32,7 +32,7 @@ use \MovLib\Presentation\Partial\Date;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\Page {
+class Index extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Presentation\TraitSidebar;
 
 
@@ -40,19 +40,15 @@ class Index extends \MovLib\Presentation\Page {
 
 
   /**
-   * Instantiate new latest releases presentation
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
+   * Instantiate new latest releases presentation.
    */
   public function __construct() {
-    global $i18n, $kernel;
-    $this->initPage($i18n->t("Releases"));
+    $this->initPage($this->intl->t("Releases"));
     $this->initLanguageLinks("/releases", null, true);
     $this->initBreadcrumb();
     $this->sidebarInit([
-      [ $i18n->rp("/releases"), $i18n->t("Releases"), [ "class" => "ico ico-release" ] ],
-      [ $i18n->r("/release/random"), $i18n->t("Random") ],
+      [ $this->intl->rp("/releases"), $this->intl->t("Releases"), [ "class" => "ico ico-release" ] ],
+      [ $this->intl->r("/release/random"), $this->intl->t("Random") ],
     ]);
   }
 
@@ -62,16 +58,12 @@ class Index extends \MovLib\Presentation\Page {
 
   /**
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   protected function getPageContent() {
-    global $i18n, $kernel;
-
     $list           = null;
     $releasesResult = Release::getReleases();
-    $releaseRoute   = $i18n->r("/release/{0}");
-    $releaseTitle   = $i18n->t("{0} ({1})");
+    $releaseRoute   = this->intl->r("/release/{0}");
+    $releaseTitle   = this->intl->t("{0} ({1})");
     $date           = new Date();
 
     /* @var $release \MovLib\Data\Release\Release */

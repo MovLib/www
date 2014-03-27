@@ -154,7 +154,6 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
    *
    * If no <var>$from</var> or <var>$value</var> is given, an empty user model will be created.
    *
-   * @global \MovLib\Data\Database $db
    * @param string $from [optional]
    *   Defines how the object should be filled with data, use the various <var>FROM_*</var> class constants.
    * @param mixed $value [optional]
@@ -162,8 +161,6 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
    * @throws \OutOfBoundsException
    */
   public function __construct($from = null, $value = null) {
-    global $db;
-
     if ($from && $value) {
       $stmt = $db->query(
         "SELECT `id`, `name`, `time_zone_identifier`, UNIX_TIMESTAMP(`image_changed`), `image_extension` FROM `users` WHERE `{$from}` = ?",
@@ -189,11 +186,9 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
   /**
    * Commit the current state of the object to the database.
    *
-   * @global \MovLib\Data\Database $db
    * @return this
    */
   public function commit() {
-    global $db;
     $db->query(
       "UPDATE `users` SET `image_changed` = FROM_UNIXTIME(?), `image_extension` = ? WHERE `id` = ?",
       "ssd",
@@ -205,13 +200,11 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
   /**
    * Get random user name.
    *
-   * @global \MovLib\Data\Database $db
    * @return integer|null
    *   Random user name or null in case of failure.
    * @throws \MovLib\Exception\DatabaseException
    */
   public static function getRandomUserName() {
-    global $db;
     $query = "SELECT `name` FROM `users` ORDER BY RAND() LIMIT 1";
     if ($result = $db->query($query)->get_result()) {
       return $result->fetch_assoc()["name"];
@@ -227,7 +220,6 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
    *   The image's desired style object.
    */
   public function getStyle($style = self::STYLE_SPAN_02) {
-    global $i18n;
     if (!isset($this->stylesCache[$style])) {
       $this->stylesCache[$style] = new Style(
         $i18n->t("Avatar image of {0}.", [ $this->name ]),
@@ -244,11 +236,9 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
   /**
    * Initialize image properties and user page route.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return this
    */
   public function init() {
-    global $i18n;
     $this->imageExists   = (boolean) $this->changed;
     $this->filename = mb_strtolower($this->name);
     $this->route    = $i18n->r("/user/{0}", [ $this->filename ]);
@@ -258,7 +248,6 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
   /**
    * Upload the <var>$source</var>, overriding any existing image.
    *
-   * @global \MovLib\Data\User\Session $session
    * @param string $source
    *   Absolute path to the uploaded image.
    * @param string $extension
@@ -271,8 +260,6 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
    * @throws \RuntimeException
    */
   public function upload($source, $extension, $height, $width) {
-    global $session;
-
     $this->changed     = $_SERVER["REQUEST_TIME"];
     $this->imageExists = true;
     $this->extension   = $extension;

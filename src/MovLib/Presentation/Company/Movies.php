@@ -38,15 +38,12 @@ class Movies extends \MovLib\Presentation\Company\AbstractBase {
   /**
    * Instantiate new company movie presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
     $this->company = new FullCompany((integer) $_SERVER["COMPANY_ID"]);
-    $this->initPage($i18n->t("Movies from {0}", [ $this->company->name ]));
-    $this->pageTitle       = $i18n->t("Movies from {0}", [ "<a href='{$this->company->route}'>{$this->company->name}</a>" ]);
-    $this->breadcrumbTitle = $i18n->t("Movies");
+    $this->initPage($this->intl->t("Movies from {0}", [ $this->company->name ]));
+    $this->pageTitle       = $this->intl->t("Movies from {0}", [ "<a href='{$this->company->route}'>{$this->company->name}</a>" ]);
+    $this->breadcrumbTitle = $this->intl->t("Movies");
     $this->initLanguageLinks("/company/{0}/movies", [ $this->company->id ], true);
     $this->initCompanyBreadcrumb();
     $this->sidebarInit();

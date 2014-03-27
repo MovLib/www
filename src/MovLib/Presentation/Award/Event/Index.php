@@ -39,15 +39,12 @@ class Index extends \MovLib\Presentation\Award\AbstractBase {
   /**
    * Instantiate new award events presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
     $this->award = new Award((integer) $_SERVER["AWARD_ID"]);
-    $this->initPage($i18n->t("Events of {0}", [ $this->award->name ]));
-    $this->pageTitle       = $i18n->t("Events of {0}", [ "<a href='{$this->award->route}'>{$this->award->name}</a>" ]);
-    $this->breadcrumbTitle = $i18n->t("Events");
+    $this->initPage($this->intl->t("Events of {0}", [ $this->award->name ]));
+    $this->pageTitle       = $this->intl->t("Events of {0}", [ "<a href='{$this->award->route}'>{$this->award->name}</a>" ]);
+    $this->breadcrumbTitle = $this->intl->t("Events");
     $this->initLanguageLinks("/award/{0}/events", [ $this->award->id ], true);
     $this->initAwardBreadcrumb();
     $this->sidebarInit();
@@ -61,31 +58,29 @@ class Index extends \MovLib\Presentation\Award\AbstractBase {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    * @return \MovLib\Presentation\Partial\Listing\EntityIndexListing
    */
   protected function getPageContent() {
-    global $i18n;
     $this->headingBefore =
-      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/event/create")}?a={$this->award->id}'>" .
-        $i18n->t("Create New Event") .
+      "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/event/create")}?a={$this->award->id}'>" .
+        $this->intl->t("Create New Event") .
       "</a>"
     ;
 
     $result      = $this->award->getEventsResult();
     $noItemText  = new Alert(
-      $i18n->t(
+      $this->intl->t(
         "We couldn’t find any event matching your filter criteria, or there simply aren’t any events available."
-      ), $i18n->t("No Event"), Alert::SEVERITY_INFO
+      ), $this->intl->t("No Event"), Alert::SEVERITY_INFO
     );
     $noItemText .=
-      $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [
-        "<a href='{$i18n->r("/event/creat")}?a={$this->award->id}'>",
+      $this->intl->t("<p>Would you like to {0}create a new entry{1}?</p>", [
+        "<a href='{$this->intl->r("/event/creat")}?a={$this->award->id}'>",
         "</a>"
       ]);
 
-    $moviesRoute = $i18n->rp("/event/{0}/movies", [ "{{ id }}" ]);
-    $seriesRoute = $i18n->rp("/event/{0}/series", [ "{{ id }}" ]);
+    $moviesRoute = $this->intl->rp("/event/{0}/movies", [ "{{ id }}" ]);
+    $seriesRoute = $this->intl->rp("/event/{0}/series", [ "{{ id }}" ]);
 
     return new AwardEventListing($result, $noItemText, "Event", $moviesRoute, $seriesRoute);
   }

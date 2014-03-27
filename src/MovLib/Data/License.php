@@ -74,16 +74,12 @@ class License {
   /**
    * Instantiate new license.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param integer $id [optional]
    *   The unique license identifier. If no identifier is passed an empty license is created.
    * @throws \MovLib\Exception\DatabaseException
    * @throws \OutOfBoundsException
    */
   public function __construct($id = null) {
-    global $db, $i18n;
-
     // If we have an identifier try to fetch the license from the database.
     if ($id) {
       $stmt = $db->query(
@@ -120,14 +116,11 @@ class License {
    *   <li><code>"abbreviation"</code>: the license's unique abbreviation</li>
    * </ul>
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return array
    *   Associative array containing all available licenses.
    * @throws \MovLib\Exception\DatabaseException
    */
   public static function getLicensesResult() {
-    global $db, $i18n;
     return $db->query(
       "SELECT
         `id`,

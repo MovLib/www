@@ -50,20 +50,17 @@ class Random {
   /**
    * Redirect to random award presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   public function __construct() {
-    global $i18n, $kernel;
     $this->awardId = Award::getRandomAwardId();
     if (isset($this->awardId)) {
-      throw new SeeOtherRedirect($i18n->r("/award/{0}", [ $this->awardId ]));
+      throw new SeeOtherRedirect($this->intl->r("/award/{0}", [ $this->awardId ]));
     }
     else {
       $kernel->alerts .= new Alert(
-        $i18n->t("There is currently no award in our database."),
-        $i18n->t("Check back later"),
+        $this->intl->t("There is currently no award in our database."),
+        $this->intl->t("Check back later"),
         Alert::SEVERITY_INFO
       );
       throw new SeeOtherRedirect("/");

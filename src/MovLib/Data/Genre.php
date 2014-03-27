@@ -96,14 +96,11 @@ class Genre extends \MovLib\Data\Database {
   /**
    * Instantiate new genre.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param integer $id [optional]
    *   The genre's unique identifier, omit to create empty instance.
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct($id = null) {
-    global $db, $i18n;
     if ($id) {
       $query = self::getQuery();
       $stmt = $db->query("
@@ -139,8 +136,6 @@ class Genre extends \MovLib\Data\Database {
   /**
    * Get all genres matching the offset and row count.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param integer $offset
    *   The offset in the result.
    * @param integer $rowCount
@@ -149,7 +144,6 @@ class Genre extends \MovLib\Data\Database {
    *   The query result.
    */
   public static function getGenres($offset, $rowCount) {
-    global $db, $i18n;
     $query = self::getQuery();
     return $db->query("
       {$query}
@@ -163,12 +157,10 @@ class Genre extends \MovLib\Data\Database {
   /**
    * The count of movies with this genre.
    *
-   * @global \MovLib\Data\Database $db
    * @return integer
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMoviesCount() {
-    global $db;
     return $db->query(
       "SELECT count(DISTINCT `movie_id`) as `count` FROM `movies_genres` WHERE `genre_id` = ?", "d", [ $this->id ]
     )->get_result()->fetch_assoc()["count"];
@@ -177,14 +169,11 @@ class Genre extends \MovLib\Data\Database {
  /**
    * Get the mysqli result for all movies that are of this genre.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return \mysqli_result
    *   The mysqli result for all movies that are of this genre.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMoviesResult() {
-    global $db, $i18n;
     return $db->query(
       "SELECT
         `movies`.`id` AS `id`,
@@ -219,14 +208,12 @@ class Genre extends \MovLib\Data\Database {
   /**
    * Get the default query.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @staticvar string $query
    *   Used to cache the default query.
    * @return string
    *   The default query.
    */
   protected static function getQuery() {
-    global $i18n;
     static $query = null;
     if (!$query) {
       $query =
@@ -246,13 +233,11 @@ class Genre extends \MovLib\Data\Database {
   /**
    * Get random genre identifier.
    *
-   * @global \MovLib\Data\Database $db
    * @return integer|null
    *   Random genre identifier, or <code>NULL</code> on failure.
    * @throws \MovLib\Exception\DatabaseException
    */
   public static function getRandomGenreId() {
-    global $db;
     $result = $db->query("SELECT `id` FROM `genres` WHERE `genres`.`deleted` = false ORDER BY RAND() LIMIT 1")->get_result()->fetch_row();
     if (isset($result[0])) {
       return $result[0];
@@ -262,12 +247,10 @@ class Genre extends \MovLib\Data\Database {
   /**
    * The count of series with this genre.
    *
-   * @global \MovLib\Data\Database $db
    * @return integer
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getSeriesCount() {
-    global $db;
     return $db->query(
       "SELECT count(DISTINCT `series_id`) as `count` FROM `series_genres` WHERE `genre_id` = ?", "d", [ $this->id ]
     )->get_result()->fetch_assoc()["count"];
@@ -276,13 +259,11 @@ class Genre extends \MovLib\Data\Database {
   /**
    * Get the count of all genres.
    *
-   * @global \MovLib\Data\Database $db
    * @staticvar null|integer $count
    *   The genre's count.
    * @return integer
    */
   public static function getTotalCount() {
-    global $db;
     static $count = null;
     if (!$count) {
       $count = $db->query("SELECT COUNT(`id`) FROM `genres` WHERE `deleted` = false LIMIT 1")->get_result()->fetch_row()[0];
@@ -293,11 +274,8 @@ class Genre extends \MovLib\Data\Database {
   /**
    * Initialize genre.
    *
-   * @global type $i18n
    */
   protected function init() {
-    global $i18n;
-
     $this->deleted  = (boolean) $this->deleted;
     $this->routeKey = "/genre/{0}";
     $this->route    = $i18n->r($this->routeKey, [ $this->id ]);

@@ -40,22 +40,19 @@ class Random {
   /**
    * Redirect to random movie presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   public function __construct() {
-    global $i18n, $kernel;
     $name = User::getRandomUserName();
     if (isset($name)) {
-      throw new SeeOther($i18n->r("/user/{0}", [ $name ]));
+      throw new SeeOther($this->intl->r("/user/{0}", [ $name ]));
     }
     $kernel->alerts .= new Alert(
-      $i18n->t("There is currently no user in our database"),
-      $i18n->t("Check back later"),
+      $this->intl->t("There is currently no user in our database"),
+      $this->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     );
-    throw new SeeOther($i18n->rp("/users"));
+    throw new SeeOther($this->intl->rp("/users"));
   }
 
 }

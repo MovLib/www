@@ -34,18 +34,16 @@ class Movies extends \MovLib\Presentation\Person\AbstractBase {
   /**
    * Instantiate new person movies presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
-    global $i18n;
     $this->person = new FullPerson((integer) $_SERVER["PERSON_ID"]);
-    $this->initPage($i18n->t("Movies with {0}", [ $this->person->name ]));
-    $this->pageTitle        = $i18n->t(
+    $this->initPage($this->intl->t("Movies with {0}", [ $this->person->name ]));
+    $this->pageTitle        = $this->intl->t(
       "Movies with {0}",
       [ "<a href='{$this->person->route}' property='url'><span property='name'>{$this->person->name}</span></a>" ]
     );
-    $this->breadcrumbTitle  = $i18n->t("Movies");
+    $this->breadcrumbTitle  = $this->intl->t("Movies");
     $this->initLanguageLinks("/person/{0}/movies", [ $this->person->id ], true);
     $this->initPersonBreadcrumb();
     $this->sidebarInit();

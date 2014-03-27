@@ -45,11 +45,10 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
-    global $i18n;
     $this->person = new FullPerson((integer) $_SERVER["PERSON_ID"]);
     $this->initPage($this->person->name);
     $this->initLanguageLinks("/person/{0}", [ $this->person->id]);
-    $this->initBreadcrumb([[ $i18n->rp("/persons"), $i18n->t("Persons") ]]);
+    $this->initBreadcrumb([[ $this->intl->rp("/persons"), $this->intl->t("Persons") ]]);
     $this->sidebarInit();
   }
 
@@ -59,12 +58,8 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   protected function getPageContent() {
-    global $i18n, $kernel;
-
     // Enhance the page title with microdata.
     $this->schemaType = "Person";
     $this->pageTitle  = "<span property='name'>{$this->person->name}</span>";
@@ -77,10 +72,10 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     // Append sex information to name.
     if ($this->person->sex === InputSex::MALE || $this->person->sex === InputSex::FEMALE) {
       if ($this->person->sex === InputSex::MALE) {
-        $title = $i18n->t("Male");
+        $title = $this->intl->t("Male");
       }
       elseif ($this->person->sex === InputSex::FEMALE) {
-        $title = $i18n->t("Female");
+        $title = $this->intl->t("Female");
       }
       $this->pageTitle .= " <sup class='ico ico-sex{$this->person->sex} sex sex-{$this->person->sex}' content='{$title}' property='gender' title='{$title}'></sup>";
     }
@@ -88,9 +83,9 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     // Put the personal information together.
     $info = null;
     if ($this->person->bornName) {
-      $info = $i18n->t("{0} ({1})", [
+      $info = $this->intl->t("{0} ({1})", [
         "<span property='additionalName'>{$this->person->bornName}</span>",
-        "<i>{$i18n->t("born name")}</i>",
+        "<i>{$this->intl->t("born name")}</i>",
       ]);
     }
 
@@ -98,7 +93,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     $birth = $birthDate = $birthDateFormatted = $birthAge = $birthPlace = null;
     if ($this->person->birthDate) {
       $birthDate          = new Date($this->person->birthDate);
-      $birthDateFormatted = $birthDate->format([ "property" => "birthDate" ], $i18n->rp("/year/{0}/persons", [ $birthDate->dateInfo["year"] ]));
+      $birthDateFormatted = $birthDate->format([ "property" => "birthDate" ], $this->intl->rp("/year/{0}/persons", [ $birthDate->dateInfo["year"] ]));
       $birthAge           = $birthDate->getAge();
     }
     $birthPlace = $this->person->getBirthPlace();
@@ -108,24 +103,24 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
 
     if ($birthDate && $birthPlace) {
       if ($this->person->deathDate) {
-        $birth = $i18n->t("Born on {date} in {place} and would be {age} years old.");
+        $birth = $this->intl->t("Born on {date} in {place} and would be {age} years old.");
       }
       else {
-        $birth = $i18n->t("Born on {date} in {place} and is {age} years old.");
+        $birth = $this->intl->t("Born on {date} in {place} and is {age} years old.");
       }
       $birth = str_replace([ "{date}", "{place}", "{age}" ], [ $birthDateFormatted, $birthPlace, $birthAge ], $birth);
     }
     elseif ($birthDate) {
       if ($this->person->deathDate) {
-        $birth = $i18n->t("Born on {date} and would be {age} years old.");
+        $birth = $this->intl->t("Born on {date} and would be {age} years old.");
       }
       else {
-        $birth = $i18n->t("Born on {date} and is {age} years old.");
+        $birth = $this->intl->t("Born on {date} and is {age} years old.");
       }
       $birth = str_replace([ "{date}", "{age}" ], [ $birthDateFormatted, $birthAge ], $birth);
     }
     elseif ($birthPlace) {
-      $birth = $i18n->t("Born in {place}.", [ "place" => $birthPlace ]);
+      $birth = $this->intl->t("Born in {place}.", [ "place" => $birthPlace ]);
     }
     if ($birth) {
       if ($info) {
@@ -150,25 +145,25 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
 
     if ($deathDate && $deathPlace) {
       if ($birthDate) {
-        $death = $i18n->t(
+        $death = $this->intl->t(
           "Died on {date} in {place} at the age of {age} years.",
           [ "date" => $deathDateFormatted, "place" => $deathPlace, "age" => $deathAge ]
         );
       }
       else {
-        $death = $i18n->t("Died on {date} in {place}.", [ "date" => $deathDateFormatted, "place" => $deathPlace ]);
+        $death = $this->intl->t("Died on {date} in {place}.", [ "date" => $deathDateFormatted, "place" => $deathPlace ]);
       }
     }
     elseif ($deathDate) {
       if ($birthDate) {
-        $death = $i18n->t("Died on {date} at the age of {age} years.", [ "date" => $deathDateFormatted, "age" => $deathAge ]);
+        $death = $this->intl->t("Died on {date} at the age of {age} years.", [ "date" => $deathDateFormatted, "age" => $deathAge ]);
       }
       else {
-        $death = $i18n->t("Died on {date}.", [ "date" => $deathDateFormatted ]);
+        $death = $this->intl->t("Died on {date}.", [ "date" => $deathDateFormatted ]);
       }
     }
     elseif ($deathPlace) {
-      $death = $i18n->t("Died in {place}.", [ "place" => $deathPlace ]);
+      $death = $this->intl->t("Died in {place}.", [ "place" => $deathPlace ]);
     }
     if ($death) {
       if ($info) {
@@ -182,7 +177,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
       if ($info) {
         $info .= "<br>";
       }
-      $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->person->wikipedia}' property='sameAs' target='_blank'>{$i18n->t("Wikipedia Article")}</a>";
+      $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->person->wikipedia}' property='sameAs' target='_blank'>{$this->intl->t("Wikipedia Article")}</a>";
     }
 
     // Put all header information together after the closing title.
@@ -209,7 +204,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
 
     // Biography section.
     if ($this->person->biography) {
-      $content .= $this->getSection("biography", $i18n->t("Biography"), $this->htmlDecode($this->person->biography));
+      $content .= $this->getSection("biography", $this->intl->t("Biography"), $this->htmlDecode($this->person->biography));
     }
 
     // Additional names section.
@@ -219,7 +214,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
       for ($i = 0; $i < $c; ++$i) {
         $aliases .= "<li class='mb10 s s3' property='additionalName'>{$personAliases[$i]}</li>";
       }
-      $content .= $this->getSection("aliases", $i18n->t("Also Known As"), "<ol class='grid-list no-list r'>{$aliases}</ol>");
+      $content .= $this->getSection("aliases", $this->intl->t("Also Known As"), "<ol class='grid-list no-list r'>{$aliases}</ol>");
     }
 
     // External links section.
@@ -231,7 +226,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
         $hostname = str_replace("www.", "", parse_url($personLinks[$i], PHP_URL_HOST));
         $links .= "<li class='mb10 s s3'><a href='{$personLinks[$i]}' property='url' rel='nofollow' target='_blank'>{$hostname}</a></li>";
       }
-      $content .= $this->getSection("links", $i18n->t("External Links"), "<ul class='grid-list no-list r'>{$links}</ul>");
+      $content .= $this->getSection("links", $this->intl->t("External Links"), "<ul class='grid-list no-list r'>{$links}</ul>");
     }
 
     if ($content) {
@@ -239,11 +234,11 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     }
 
     return new Alert(
-      $i18n->t(
+      $this->intl->t(
         "{sitename} has no further details about {person_name}.",
-        [ "sitename"    => $kernel->siteName, "person_name" => $this->person->name ]
+        [ "sitename"    => $this->config->siteName, "person_name" => $this->person->name ]
       ),
-      $i18n->t("No Data Available"),
+      $this->intl->t("No Data Available"),
       Alert::SEVERITY_INFO
     );
   }

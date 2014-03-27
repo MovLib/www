@@ -46,7 +46,6 @@ class MovieLobbyCard extends \MovLib\Data\Image\AbstractMovieImage {
   /**
    * Instantiate new movie poster.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param null|integer $movieId [optional]
    *   The movie's unique identifier this poster belongs to, defaults to no movie identifier which is reserved for
    *   instantiation via fetch object.
@@ -60,7 +59,6 @@ class MovieLobbyCard extends \MovLib\Data\Image\AbstractMovieImage {
    * @throws \MovLib\Preentation\Error\NotFound
    */
   public function __construct($movieId = null, $movieTitle = null, $id = null) {
-    global $i18n;
     parent::__construct($id, $movieId, $movieTitle, $i18n->t("Lobby Card"), $i18n->t("Lobby Cards"), "lobby-card", "lobby-cards");
   }
 
