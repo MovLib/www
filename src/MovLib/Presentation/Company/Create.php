@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Company;
 
-use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Partial\Alert;
 
 /**
  * Allows the creation of a new company.
@@ -29,24 +29,6 @@ use \MovLib\Presentation\Partial\Alert;
  * @since 0.0.1-dev
  */
 class Create extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\TraitForm;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new company create presentation.
-   *
-   */
-  public function __construct() {
-    $this->initPage($this->intl->t("Create Company"));
-    $this->initBreadcrumb([ [ $this->intl->rp("/companies"), $this->intl->t("Companies") ] ]);
-    $this->breadcrumbTitle = $this->intl->t("Create");
-    $this->initLanguageLinks("/company/create");
-
-    $kernel->stylesheets[] = "company";
-  }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -64,10 +46,13 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
   }
 
   /**
-   * @inheritdoc
+   * Instantiate new company create presentation.
    */
-  protected function formValid() {
-    return $this;
+  public function init() {
+    $this->initPage($this->intl->t("Create Company"));
+    $this->initBreadcrumb([ [ $this->intl->rp("/companies"), $this->intl->t("Companies") ] ]);
+    $this->breadcrumbTitle = $this->intl->t("Create");
+    $this->initLanguageLinks("/company/create");
   }
 
 }

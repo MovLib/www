@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Company;
 
-use \MovLib\Data\Company\Company;
+use \MovLib\Data\Company;
 
 /**
  * Allows editing of a company's information.
@@ -31,25 +31,6 @@ use \MovLib\Data\Company\Company;
 class Edit extends \MovLib\Presentation\Company\AbstractBase {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new company edit presentation.
-   *
-   */
-  public function __construct() {
-    $this->company = new Company((integer) $_SERVER["COMPANY_ID"]);
-    $this->initPage($this->intl->t("Edit"));
-    $this->pageTitle = $this->intl->t("Edit {0}", [ "<a href='{$this->company->route}'>{$this->company->name}</a>" ]);
-    $this->initLanguageLinks("/company/{0}/edit", [ $this->company->id ]);
-    $this->initCompanyBreadcrumb();
-    $this->sidebarInit();
-
-    $kernel->stylesheets[] = "company";
-  }
-
-
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
@@ -58,7 +39,20 @@ class Edit extends \MovLib\Presentation\Company\AbstractBase {
    * @return \MovLib\Presentation\Partial\Alert
    */
   protected function getPageContent() {
-    return new \MovLib\Presentation\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("edit company") ]), $this->intl->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("edit company") ]), $this->intl->t("Check back later"), \MovLib\Partial\Alert::SEVERITY_INFO);
+  }
+
+  /**
+   * Instantiate new company edit presentation.
+   *
+   */
+  public function init() {
+    $this->company = (new Company($this->diContainerHTTP))->init((integer) $_SERVER["COMPANY_ID"]);
+    $this->initPage($this->intl->t("Edit"));
+    $this->pageTitle = $this->intl->t("Edit {0}", [ "<a href='{$this->company->route}'>{$this->company->name}</a>" ]);
+    $this->initLanguageLinks("/company/{0}/edit", [ $this->company->id ]);
+    $this->initCompanyBreadcrumb();
+    $this->sidebarInit();
   }
 
 }

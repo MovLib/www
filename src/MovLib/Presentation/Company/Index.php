@@ -17,9 +17,9 @@
  */
 namespace MovLib\Presentation\Company;
 
-use \MovLib\Data\Company\Company;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Listing\CompanyIndexListing;
+use \MovLib\Data\Company;
+use \MovLib\Partial\Alert;
+use \MovLib\Partial\Listing\CompanyIndexListing;
 
 /**
  * The latest companies.
@@ -36,23 +36,16 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Presentation\TraitPagination;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+  // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * Instantiate new latest companies presentation.
+   * The company to present.
    *
+   * @var \MovLib\Data\Company\Company
    */
-  public function __construct() {
-    $this->initPage($this->intl->t("Companies"));
-    $this->initBreadcrumb();
-    $this->initLanguageLinks("/companies", null, true);
-    $this->paginationInit(Company::getTotalCount());
-    $this->sidebarInit([
-      [ $kernel->requestPath, $this->title, [ "class" => "ico ico-company" ] ],
-      [ $this->intl->r("/company/random"), $this->intl->t("Random") ],
-    ]);
-  }
+  protected $company;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
@@ -65,7 +58,7 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
       "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/company/create")}'>{$this->intl->t("Create New Company")}</a>"
     ;
 
-    $result      = Company::getCompanies($this->paginationOffset, $this->paginationLimit);
+    $result      = $this->company->getCompanies($this->paginationOffset, $this->paginationLimit);
     $noItemText  = new Alert(
       $this->intl->t(
         "We couldn’t find any company matching your filter criteria, or there simply aren’t any companies available."
@@ -74,7 +67,23 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
     $noItemText .=
       $this->intl->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$this->intl->r("/company/create")}'>", "</a>" ]);
 
-    return new CompanyIndexListing($result, $noItemText);
+    return new CompanyIndexListing($this->diContainerHTTP, $result, $noItemText);
+  }
+
+  /**
+   * Instantiate new latest companies presentation.
+   */
+  public function init() {
+    $this->company = new Company($this->diContainerHTTP);
+
+    $this->initPage($this->intl->t("Companies"));
+    $this->initBreadcrumb();
+    $this->initLanguageLinks("/companies", null, true);
+    $this->paginationInit($this->company->getTotalCount());
+    $this->sidebarInit([
+      [ $this->intl->rp("/companies"), $this->title, [ "class" => "ico ico-company" ] ],
+      [ $this->intl->r("/company/random"), $this->intl->t("Random") ],
+    ]);
   }
 
 }

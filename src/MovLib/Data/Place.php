@@ -28,7 +28,7 @@ use \MovLib\Presentation\Error\NotFound;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Place {
+class Place extends \MovLib\Core\Database {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -78,17 +78,18 @@ class Place {
    *
    * @param integer $id
    *   The place's unique ID to load.
+   * @return $this
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Error\NotFound
    */
-  public function __construct($id = null) {
+  public function init($id = null) {
     // Try to load the place for the given identifier.
     if ($id) {
       $this->id = $id;
-      $stmt = $db->query(
+      $stmt = $this->query(
         "SELECT
             `country_code`,
-            IFNULL(COLUMN_GET(`dyn_names`, '{$i18n->languageCode}' AS BINARY), COLUMN_GET(`dyn_names`, '{$i18n->defaultLanguageCode}' AS BINARY)),
+            IFNULL(COLUMN_GET(`dyn_names`, '{$this->intl->languageCode}' AS BINARY), COLUMN_GET(`dyn_names`, '{$this->intl->defaultLanguageCode}' AS BINARY)),
             `latitude`,
             `longitude`
           FROM `places`
@@ -109,6 +110,7 @@ class Place {
       }
       $stmt->close();
     }
+    return $this;
   }
 
 }

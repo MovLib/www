@@ -17,9 +17,10 @@
  */
 namespace MovLib\Presentation\Company;
 
-use \MovLib\Data\Company\FullCompany;
-use \MovLib\Presentation\Partial\Place;
-use \MovLib\Presentation\Partial\Date;
+use \MovLib\Data\Company;
+use \MovLib\Partial\Alert;
+use \MovLib\Partial\Date;
+use \MovLib\Partial\Place;
 
 /**
  * Presentation of a single company.
@@ -31,25 +32,6 @@ use \MovLib\Presentation\Partial\Date;
  * @since 0.0.1-dev
  */
 class Show extends \MovLib\Presentation\Company\AbstractBase {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new company presentation.
-   *
-   * @throws \MovLib\Presentation\Error\NotFound
-   */
-  public function __construct() {
-    $this->company = new FullCompany((integer) $_SERVER["COMPANY_ID"]);
-    $this->initPage($this->company->name);
-    $this->initLanguageLinks("/company/{0}", [ $this->company->id]);
-    $this->initBreadcrumb([[ $this->intl->rp("/companies"), $this->intl->t("Companies") ]]);
-    $this->sidebarInit();
-
-    $kernel->stylesheets[] = "company";
-  }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -69,14 +51,15 @@ class Show extends \MovLib\Presentation\Company\AbstractBase {
     // Put the company information together.
     $info = null;
     if ($this->company->foundingDate && $this->company->defunctDate) {
-      $info .= (new Date($this->company->foundingDate))->format([ "itemprop" => "foundingDate", "title" => $this->intl->t("Founding Date") ]);
-      $info .= " – " . (new Date($this->company->defunctDate))->format([ "title" => $this->intl->t("Defunct Date") ]);
+      $info .= (new Date($this, $this->company->foundingDate))->format($this->diContainerHTTP->intl, [ "itemprop" => "foundingDate", "title" => $this->intl->t("Founding Date") ]);
+      $info .= " – " . (new Date($this, $this->company->defunctDate))->format($this->diContainerHTTP->intl, [ "title" => $this->intl->t("Defunct Date") ]);
     }
     else if ($this->company->foundingDate) {
-      $info .= "{$this->intl->t("Founded")}: " . (new Date($this->company->foundingDate))->format([ "itemprop" => "foundingDate", "title" => $this->intl->t("Founding Date") ]);
+      $info .= "{$this->intl->t("Founded")}: " . (new Date($this, $this->company->foundingDate))->format($this->diContainerHTTP->intl, [ "itemprop" => "foundingDate", "title" => $this->intl->t("Founding Date") ]);
     }
     if ($this->company->place) {
-      $info .= "<br><span itemprop='location'>". new Place($this->company->place) . "</span>";
+      $place = new Place($this, $this->diContainerHTTP->intl, $this->company->place);
+      $info .= "<br><span itemprop='location'>{$place}</span>";
     }
 
     // Construct the wikipedia link.
@@ -87,9 +70,15 @@ class Show extends \MovLib\Presentation\Company\AbstractBase {
       $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->company->wikipedia}' itemprop='sameAs' target='_blank'>{$this->intl->t("Wikipedia Article")}</a>";
     }
 
-    $headerImage = $this->getImage($this->company->getStyle(FullCompany::STYLE_SPAN_02), true, [ "itemprop" => "image" ]);
+    // @todo: display real company logo
+    $companyLogo =
+      "<a class='no-link' href='{$this->company->imageRoute}' property='image'>" .
+        "<img alt='' height='140' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='140'>" .
+      "</a>"
+    ;
+
     $this->headingBefore = "<div class='r'><div class='s s10'>";
-    $this->headingAfter = "<p>{$info}</p></div><div id='company-logo' class='s s2'>{$headerImage}</div></div>";
+    $this->headingAfter = "<p>{$info}</p></div><div id='company-logo' class='s s2'>{$companyLogo}</div></div>";
 
 
     // ----------------------------------------------------------------------------------------------------------------- Build page sections.
@@ -152,6 +141,21 @@ class Show extends \MovLib\Presentation\Company\AbstractBase {
     $this->sidebarNavigation->menuitems[] = [ "#{$id}", $title ];
 
     return "<div id='{$id}'><h2>{$title}</h2>{$content}</div>";
+  }
+
+  /**
+   * Instantiate new company presentation.
+   *
+   * @throws \MovLib\Presentation\Error\NotFound
+   */
+  public function init() {
+    $this->company = new Company($this->diContainerHTTP);
+    $this->company->init((integer) $_SERVER["COMPANY_ID"]);
+
+    $this->initPage($this->company->name);
+    $this->initLanguageLinks("/company/{0}", [ $this->company->id]);
+    $this->initBreadcrumb([[ $this->intl->rp("/companies"), $this->intl->t("Companies") ]]);
+    $this->sidebarInit();
   }
 
 }

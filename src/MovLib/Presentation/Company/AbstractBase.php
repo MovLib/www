@@ -41,7 +41,7 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
   /**
    * The company to present.
    *
-   * @var \MovLib\Data\Company\Company
+   * @var \MovLib\Data\Company
    */
   protected $company;
 
@@ -58,7 +58,7 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
   protected function goneGetContent() {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (!($this->company instanceof \MovLib\Data\Company\Company)) {
+    if (!($this->company instanceof \MovLib\Data\Company)) {
       throw new \LogicException($this->intl->t("\$this->company has to be a valid company object!"));
     }
     // @codeCoverageIgnoreEnd
@@ -88,7 +88,7 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
   protected function initCompanyBreadcrumb() {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (!($this->company instanceof \MovLib\Data\Company\Company)) {
+    if (!($this->company instanceof \MovLib\Data\Company)) {
       throw new \LogicException($this->intl->t("\$this->company has to be a valid company object!"));
     }
     // @codeCoverageIgnoreEnd
@@ -109,7 +109,7 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
   protected function sidebarInit() {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (!($this->company instanceof \MovLib\Data\Company\Company)) {
+    if (!($this->company instanceof \MovLib\Data\Company)) {
       throw new \LogicException($this->intl->t("\$this->company has to be a valid company object!"));
     }
     // @codeCoverageIgnoreEnd

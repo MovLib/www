@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Company;
 
-use \MovLib\Data\Company\FullCompany;
+use \MovLib\Data\Company;
 
 /**
  * Releases with a certain company associated.
@@ -31,27 +31,7 @@ use \MovLib\Data\Company\FullCompany;
 class Releases extends \MovLib\Presentation\Company\AbstractBase {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new company releases presentation.
-   *
-   */
-  public function __construct() {
-    $this->company = new FullCompany((integer) $_SERVER["COMPANY_ID"]);
-    $this->initPage($this->intl->t("Releases from {0}", [ $this->company->name ]));
-    $this->pageTitle       = $this->intl->t("Releases from {0}", [ "<a href='{$this->company->route}'>{$this->company->name}</a>" ]);
-    $this->breadcrumbTitle = $this->intl->t("Releases");
-    $this->initLanguageLinks("/company/{0}/releases", [ $this->company->id ], true);
-    $this->initCompanyBreadcrumb();
-    $this->sidebarInit();
-
-    $kernel->stylesheets[] = "company";
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
+ // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
  /**
@@ -59,7 +39,20 @@ class Releases extends \MovLib\Presentation\Company\AbstractBase {
    * @return \MovLib\Presentation\Partial\Alert
    */
   protected function getPageContent() {
-    return new \MovLib\Presentation\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("releases with company") ]), $this->intl->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("releases with company") ]), $this->intl->t("Check back later"), \MovLib\Partial\Alert::SEVERITY_INFO);
+  }
+
+  /**
+   * Instantiate new company releases presentation.
+   */
+  public function init() {
+    $this->company = (new Company($this->diContainerHTTP))->init((integer) $_SERVER["COMPANY_ID"]);
+    $this->initPage($this->intl->t("Releases from {0}", [ $this->company->name ]));
+    $this->pageTitle       = $this->intl->t("Releases from {0}", [ "<a href='{$this->company->route}'>{$this->company->name}</a>" ]);
+    $this->breadcrumbTitle = $this->intl->t("Releases");
+    $this->initLanguageLinks("/company/{0}/releases", [ $this->company->id ], true);
+    $this->initCompanyBreadcrumb();
+    $this->sidebarInit();
   }
 
 }

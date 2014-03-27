@@ -17,9 +17,8 @@
  */
 namespace MovLib\Partial\Listing;
 
-use \MovLib\Data\Company\Company;
-use \MovLib\Presentation\Partial\Date;
-use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Partial\Date;
+use \MovLib\Partial\Alert;
 
 /**
  * Images list for company instances.
@@ -30,11 +29,25 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class CompanyListing extends \MovLib\Presentation\AbstractBase {
+class CompanyListing {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
+
+  /**
+   * The Dependency Injection Container
+   *
+   * @var \MovLib\Data\diContainer
+   */
+  protected $diContainer;
+
+  /**
+   * The active intl instance.
+   *
+   * @var \MovLib\Data\Intl
+   */
+  protected $intl;
 
   /**
    * The list items to display.
@@ -50,6 +63,20 @@ class CompanyListing extends \MovLib\Presentation\AbstractBase {
    */
   protected $noItemsText;
 
+  /**
+   * The presenting presenter.
+   *
+   * @var \MovLib\Presentation\AbstractPresenter
+   */
+  protected $presenter;
+
+  /**
+   * The active response instance.
+   *
+   * @var \MovLib\Data\Response
+   */
+  protected $response;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -57,12 +84,18 @@ class CompanyListing extends \MovLib\Presentation\AbstractBase {
   /**
    * Instantiate new company listing.
    *
+   * @param \MovLib\Data\DIContiner $diContainer
+   *   The Dependency Injection Container
    * @param mixed $listItems
    *   The items to build the company listing.
    * @param mixed $noItemsText [optional]
    *   The text to display if there are no items, defaults to a generic {@see \MovLib\Presentation\Partial\Alert}.
    */
-  public function __construct($listItems, $noItemsText = null) {
+  public function __construct(\MovLib\Core\diContainer $diContainer, $listItems, $noItemsText = null) {
+    $this->diContainer = $diContainer;
+    $this->intl        = $this->diContainer->intl;
+    $this->response    = $this->diContainer->response;
+    $this->presenter   = $this->diContainer->presenter;
     $this->listItems   = $listItems;
     $this->noItemsText = $noItemsText;
   }
@@ -82,14 +115,15 @@ class CompanyListing extends \MovLib\Presentation\AbstractBase {
     // @devEnd
       $list = null;
       /* @var $company \MovLib\Data\Company\Company */
-      while ($company = $this->listItems->fetch_object("\\MovLib\\Data\\Company\\Company")) {
+      while ($company = $this->listItems->fetch_object("\\MovLib\\Data\\Company", [ $this->diContainer ])) {
         // @devStart
         // @codeCoverageIgnoreStart
-        if (!($company instanceof \MovLib\Data\Company\Company)) {
+        if (!($company instanceof \MovLib\Data\Company)) {
           throw new \LogicException($this->intl->t("\$company has to be a valid company object!"));
         }
         // @codeCoverageIgnoreEnd
         // @devEnd
+        $company->initFetchObject();
         $list .= $this->formatListItem($company);
       }
 
@@ -138,7 +172,7 @@ class CompanyListing extends \MovLib\Presentation\AbstractBase {
     if ($company->foundingDate || $company->defunctDate) {
       $companyDates    = "<br><span class='small'>";
       if ($company->foundingDate) {
-        $companyDates .= (new Date($company->foundingDate))->format([
+        $companyDates .= (new Date($this->presenter, $company->foundingDate))->format($this->intl, [
           "property" => "foundingDate",
           "title" => $this->intl->t("Founding Date")
         ]);
@@ -147,21 +181,23 @@ class CompanyListing extends \MovLib\Presentation\AbstractBase {
         $companyDates .= $this->intl->t("{0}unknown{1}", [ "<em title='{$this->intl->t("Founding Date")}'>", "</em>" ]);
       }
       if ($company->defunctDate) {
-        $companyDates .= " – " . (new Date($company->defunctDate))->format([ "title" => $this->intl->t("Defunct Date") ]);
+        $companyDates .= " – " . (new Date($this->presenter, $company->defunctDate))->format($this->intl, [ "title" => $this->intl->t("Defunct Date") ]);
       }
       $companyDates   .= "</span>";
     }
+
+    // @todo: display real company logo
+    $companyLogo       =
+      "<a class='fl no-link' href='{$company->imageRoute}' property='image'>" .
+        "<img alt='' height='60' src='{$this->presenter->getExternalURL("asset://img/logo/vector.svg")}' width='60'>" .
+      "</a>"
+    ;
 
     // Put the company list entry together.
     return
       "<li class='hover-item r' typeof='Corporation'>" .
         "<div class='s s10'>" .
-          $this->getImage(
-            $company->getStyle(Company::STYLE_SPAN_01),
-            $company->route,
-            [ "property" => "image" ],
-            [ "class" => "fl" ]
-          ) .
+          $companyLogo .
           "<span class='s s9'>" .
             $this->getAdditionalContent($company, $listItem) .
             "<a href='{$company->route}' property='url'>" .

@@ -17,16 +17,34 @@
  */
 namespace MovLib\Partial;
 
-use \MovLib\Presentation\Partial\Country;
+use \MovLib\Partial\Country;
 
 /**
  * Description of Place
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  */
-class Place extends \MovLib\Presentation\AbstractBase {
+class Place {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   protected $attributes;
+
+  /**
+   * The active intl instance.
+   *
+   * @var \MovLib\Core\Intl
+   */
+  protected $intl;
+
+  /**
+   * The presenting presenter.
+   *
+   * @var \MovLib\Presentation\AbstractPresenter
+   */
+  protected $presenter;
 
   /**
    *
@@ -35,25 +53,41 @@ class Place extends \MovLib\Presentation\AbstractBase {
   protected $place;
   protected $tag;
 
-  public function __construct($place, array $attributes = [], $tag = "span") {
+  public function __construct(\MovLib\Presentation\AbstractPresenter $presenter, \MovLib\Core\Intl $intl, $place, array $attributes = [], $tag = "span") {
     $this->attributes             = $attributes;
-    $this->attributes["typeof"] = "Place";
+    $this->attributes["typeof"]   = "Place";
     $this->place                  = $place;
     $this->tag                    = $tag;
+    $this->presenter              = $presenter;
+    $this->intl                   = $intl;
   }
 
   public function __toString() {
-      "<{$this->tag}{$this->expandTagAttributes($this->attributes)}>" .
+    // @devStart
+    // @codeCoverageIgnoreStart
+    try {
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    return
+      "<{$this->tag}{$this->presenter->expandTagAttributes($this->attributes)}>" .
         "<span property='geo' typeof='http://schema.org/GeoCoordinates'>" .
           "<meta property='latitude' content='{$this->place->latitude}'>" .
           "<meta property='longitude' content='{$this->place->longitude}'>" .
         "</span>" .
         $this->intl->t("{0}, {1}", [
           "<span property='name'>{$this->place->name}</span>",
-          new Country($this->place->countryCode, [ "property" => "containedIn" ]),
+          new Country($this->presenter, $this->intl, $this->place->countryCode, [ "property" => "containedIn" ]),
         ]) .
       "</{$this->tag}>"
     ;
+    // @devStart
+    // @codeCoverageIgnoreStart
+    }
+    catch (\Exception $e) {
+      return (string) $e;
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
   }
 
 }

@@ -81,11 +81,11 @@ final class CompanyIndexListing extends \MovLib\Partial\Listing\CompanyListing {
   /**
    * @inheritdoc
    */
-  public function __construct($listItems, $noItemsText = null) {
+  public function __construct(\MovLib\Core\diContainer $diContainer, $listItems, $noItemsText = null) {
+    parent::__construct($diContainer, $listItems, $noItemsText);
     $this->moviesTitle   = $this->intl->t("Movies");
     $this->releasesTitle = $this->intl->t("Releases");
     $this->seriesTitle   = $this->intl->t("Series");
-    parent::__construct($listItems, $noItemsText);
   }
 
 
@@ -98,7 +98,7 @@ final class CompanyIndexListing extends \MovLib\Partial\Listing\CompanyListing {
   protected function getAdditionalContent($company, $listItem) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if(!($company instanceof \MovLib\Data\Company\Company)) {
+    if(!($company instanceof \MovLib\Data\Company)) {
       throw new \InvalidArgumentException("\$company must be of type \\MovLib\\Data\\Company\\Company");
     }
     // @codeCoverageIgnoreEnd

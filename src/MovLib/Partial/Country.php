@@ -17,7 +17,7 @@
  */
 namespace MovLib\Partial;
 
-use \MovLib\Presentation\Partial\FormElement\Select;
+use \MovLib\Partial\FormElement\Select;
 
 /**
  * Represents a single country in HTML and provides an interface to all available countries in the current locale.
@@ -28,7 +28,7 @@ use \MovLib\Presentation\Partial\FormElement\Select;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Country extends \MovLib\Presentation\AbstractBase {
+final class Country {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -48,7 +48,7 @@ final class Country extends \MovLib\Presentation\AbstractBase {
    */
   protected $country;
 
-  /**
+ /**
    * The active intl instance.
    *
    * @var \MovLib\Core\Intl
@@ -76,10 +76,6 @@ final class Country extends \MovLib\Presentation\AbstractBase {
   /**
    * Instantiate new country partial.
    *
-   * @param \MovLib\Core\Intl $intl
-   *   The active intl instance.
-   * @param \MovLib\Presentation\AbstractPresenter $presenter
-   *   The presenting presenter.
    * @param string $code
    *   The ISO 3166-1 alpha-2 code of the country.
    * @param array $attributes [optional]
@@ -87,9 +83,9 @@ final class Country extends \MovLib\Presentation\AbstractBase {
    * @param string $tag [optional]
    *   The tag that should be used to wrap this country, defaults to <code>"span"</code>.
    */
-  public function __construct(\MovLib\Core\Intl $intl, \MovLib\Presentation\AbstractPresenter $presenter, $code, array $attributes = null, $tag = "span") {
-    $this->intl                 = $intl;
+  public function __construct(\MovLib\Presentation\AbstractPresenter $presenter, \MovLib\Core\Intl $intl, $code, array $attributes = null, $tag = "span") {
     $this->presenter            = $presenter;
+    $this->intl                 = $intl;
     $this->attributes           = $attributes;
     $this->attributes["typeof"] = "http://schema.org/Country";
     $this->country              = $this->intl->getTranslations("countries")[$code];

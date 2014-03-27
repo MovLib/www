@@ -15,14 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Job;
+namespace MovLib\Presentation\Company;
 
-use \MovLib\Data\Job;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
+use \MovLib\Data\Company;
+use \MovLib\Partial\Alert;
+use \MovLib\Exception\SeeOtherException;
 
 /**
- * Random job presentation.
+ * Random company presentation.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -30,40 +30,45 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Random {
+class Random extends \MovLib\Presentation\AbstractPresenter {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * A random job identifier.
+   * A random company identifier.
    *
    * @var integer
    */
-  private $jobId;
+  private $companyId;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+  // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * Redirect to random job presentation.
+   * {@inheritdoc}
    *
-   * @throws \MovLib\Presentation\Redirect\SeeOther
+   * @return \MovLib\Partial\Alert
    */
-  public function __construct() {
-    $this->jobId = Job::getRandomJobId();
-    if (isset($this->jobId)) {
-      throw new SeeOtherRedirect($this->intl->r("/job/{0}", [ $this->jobId ]));
-    }
-    else {
-      $kernel->alerts .= new Alert(
-        $this->intl->t("There is currently no job in our database."),
-        $this->intl->t("Check back later"),
-        Alert::SEVERITY_INFO
-      );
-      throw new SeeOtherRedirect("/");
+  public function getContent() {
+    return new Alert(
+      $this->intl->t(
+        "There aren’t any companies available."
+      ), $this->intl->t("No Companies"), Alert::SEVERITY_INFO
+    );
+  }
+
+  /**
+   * Redirect to random company presentation.
+   *
+   * @throws \MovLib\Exception\SeeOtherException
+   */
+  public function init() {
+    $this->companyId = (new Company($this->diContainerHTTP))->getRandomCompanyId();
+    if (isset($this->companyId)) {
+      throw new SeeOtherException($this->intl->r("/company/{0}", [ $this->companyId ]));
     }
   }
 

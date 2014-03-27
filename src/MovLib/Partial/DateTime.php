@@ -26,7 +26,7 @@ namespace MovLib\Partial;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class DateTime extends \MovLib\Presentation\AbstractBase {
+class DateTime {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -54,6 +54,27 @@ class DateTime extends \MovLib\Presentation\AbstractBase {
   protected $dateTime;
 
   /**
+   * The active intl instance.
+   *
+   * @var \MovLib\Core\Intl
+   */
+  protected $intl;
+
+  /**
+   * The presenting presenter.
+   *
+   * @var \MovLib\Presentation\AbstractPresenter
+   */
+  protected $presenter;
+
+  /**
+   * The active session.
+   *
+   * @var \MovLib\Core\HTTP\Session
+   */
+  protected $session;
+
+  /**
    * The Intl ICU time format to use for formatting.
    *
    * @var integer
@@ -73,10 +94,13 @@ class DateTime extends \MovLib\Presentation\AbstractBase {
    * @param array $attributes [optional]
    *   Additional attributes that should be applied to the element.
    */
-  public function __construct($time = "now", array $attributes = null) {
+  public function __construct(\MovLib\Core\DIContainer $diContainer, $time = "now", array $attributes = null) {
     if (is_int($time)) {
       $time = "@{$time}";
     }
+    $this->presenter              = $diContainer->presenter;
+    $this->intl                   = $diContainer->intl;
+    $this->session                = $diContainer->session;
     $this->dateTime               = new \DateTime($time);
     $this->attributes             = $attributes;
     $this->attributes["datetime"] = $this->dateTime->format(\DateTime::W3C);
@@ -89,8 +113,8 @@ class DateTime extends \MovLib\Presentation\AbstractBase {
    *   The string representation of this (date)time.
    */
   public function __toString() {
-    $time = new \IntlDateFormatter($this->intl->locale, $this->dateFormat, $this->timeFormat, $session->userTimeZone);
-    return "<time{$this->expandTagAttributes($this->attributes)}>{$time->format($this->dateTime)}</time>";
+    $time = new \IntlDateFormatter($this->intl->locale, $this->dateFormat, $this->timeFormat, $this->session->userTimeZone);
+    return "<time{$this->presenter->expandTagAttributes($this->attributes)}>{$time->format($this->dateTime)}</time>";
   }
 
 }
