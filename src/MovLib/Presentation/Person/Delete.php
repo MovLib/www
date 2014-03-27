@@ -31,11 +31,11 @@ use \MovLib\Data\Person\Person;
 class Delete extends \MovLib\Presentation\Person\AbstractBase {
 
   /**
-   * Instantiate new person edit presentation.
-   *
+   * Initialize person edit presentation.
    */
-  public function __construct() {
-  $this->person = new Person((integer) $_SERVER["PERSON_ID"]);
+  public function init() {
+    $this->person = new Person($this->diContainerHTTP);
+    $this->person->init((integer) $_SERVER["PERSON_ID"]);
     $this->initPage($this->intl->t("Delete"));
     $this->pageTitle        = $this->intl->t("Delete {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
     $this->initLanguageLinks("/person/{0}/delete", [ $this->person->id ]);
@@ -44,6 +44,6 @@ class Delete extends \MovLib\Presentation\Person\AbstractBase {
   }
 
   protected function getPageContent() {
-    return new \MovLib\Presentation\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("delete person") ]), $this->intl->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("delete person") ]), $this->intl->t("Check back later"), \MovLib\Partial\Alert::SEVERITY_INFO);
   }
 }

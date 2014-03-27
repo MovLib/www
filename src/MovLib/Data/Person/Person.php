@@ -204,7 +204,7 @@ class Person extends \MovLib\Core\Database {
    *   Random person id or null in case of failure.
    * @throws \MovLib\Exception\DatabaseException
    */
-  public static function getRandomPersonId() {
+  public function getRandomPersonId() {
     $query = "SELECT `id` FROM `persons` WHERE `persons`.`deleted` = false ORDER BY RAND() LIMIT 1";
     if ($result = $this->query($query)->get_result()) {
       return $result->fetch_assoc()["id"];
@@ -293,60 +293,52 @@ class Person extends \MovLib\Core\Database {
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function init($id) {
-    // Try to load the person for the given identifier.
-    if ($id) {
-      $stmt = $this->query(
-        "SELECT
-          `deleted`,
-          `name`,
-          `sex`,
-          `birthdate`,
-          `born_name`,
-          `deathdate`,
-          `nickname`,
-          `image_uploader_id`,
-          `image_width`,
-          `image_height`,
-          `image_filesize`,
-          `image_extension`,
-          `image_styles`
-        FROM `persons`
-        WHERE
-          `id` = ?
-        LIMIT 1",
-        "d",
-        [ $id ]
-      );
-      $stmt->bind_result(
-        $this->deleted,
-        $this->name,
-        $this->sex,
-        $this->birthDate,
-        $this->bornName,
-        $this->deathDate,
-        $this->nickname,
-        $this->uploaderId,
-        $this->width,
-        $this->height,
-        $this->filesize,
-        $this->extension,
-        $this->styles
-      );
-      if (!$stmt->fetch()) {
-        throw new NotFound;
-      }
-      $stmt->close();
-      $this->id = $id;
+    $stmt = $this->query(
+      "SELECT
+        `deleted`,
+        `name`,
+        `sex`,
+        `birthdate`,
+        `born_name`,
+        `deathdate`,
+        `nickname`,
+        `image_uploader_id`,
+        `image_width`,
+        `image_height`,
+        `image_filesize`,
+        `image_extension`,
+        `image_styles`
+      FROM `persons`
+      WHERE
+        `id` = ?
+      LIMIT 1",
+      "d",
+      [ $id ]
+    );
+    $stmt->bind_result(
+      $this->deleted,
+      $this->name,
+      $this->sex,
+      $this->birthDate,
+      $this->bornName,
+      $this->deathDate,
+      $this->nickname,
+      $this->uploaderId,
+      $this->width,
+      $this->height,
+      $this->filesize,
+      $this->extension,
+      $this->styles
+    );
+    if (!$stmt->fetch()) {
+      throw new NotFound;
     }
+    $stmt->close();
+    $this->id = $id;
 
     // The person's photo name is always the person's identifier, so set it here.
     $this->filename = &$this->id;
-
-    // If we have an identifier, either from the above query or directly set via PHP's fetch_object() method, try to
-    // load the photo for this person.
-    if ($this->id) {
-      $this->init();
-    }
+    $this->initFetchObject();
   }
 
   /**

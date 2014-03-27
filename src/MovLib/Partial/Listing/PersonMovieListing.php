@@ -17,7 +17,7 @@
  */
 namespace MovLib\Partial\Listing;
 
-use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Partial\Alert;
 
 /**
  * Listing for all movies a person has participated in.
@@ -34,11 +34,11 @@ final class PersonMovieListing extends \MovLib\Partial\Listing\MovieListing {
 
   // @devStart
   // @codeCoverageIgnoreStart
-  public function __construct($listItems, $noItemsText = null) {
+  public function __construct($diContainer, $listItems, $noItemsText = null) {
     if (isset($listItems) && $listItems !== (array) $listItems) {
       throw new \InvalidArgumentException("\$listItems must be an array");
     }
-    parent::__construct($listItems, $noItemsText);
+    parent::__construct($diContainer, $listItems, $noItemsText);
   }
   // @codeCoverageIgnoreEnd
   // @devEnd

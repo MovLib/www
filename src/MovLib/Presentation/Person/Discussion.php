@@ -31,11 +31,11 @@ use \MovLib\Data\Person\Person;
 class Discussion extends \MovLib\Presentation\Person\AbstractBase {
 
   /**
-   * Instantiate new person discussion presentation.
-   *
+   * Initialize person discussion presentation.
    */
-  public function __construct() {
-    $this->person = new Person((integer) $_SERVER["PERSON_ID"]);
+  public function init() {
+    $this->person = new Person($this->diContainerHTTP);
+    $this->person->init((integer) $_SERVER["PERSON_ID"]);
     $this->initPage($this->intl->t("Discussion"));
     $this->pageTitle        = $this->intl->t("Discussion of {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
     $this->initLanguageLinks("/person/{0}/discussion", [ $this->person->id ]);
@@ -44,7 +44,7 @@ class Discussion extends \MovLib\Presentation\Person\AbstractBase {
   }
 
   protected function getPageContent() {
-    return new \MovLib\Presentation\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("discuss person") ]), $this->intl->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("discuss person") ]), $this->intl->t("Check back later"), \MovLib\Partial\Alert::SEVERITY_INFO);
   }
 
 }

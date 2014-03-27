@@ -122,10 +122,10 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
 
 
   /**
-   * Instantiate new person create presentation.
+   * Initialize person create presentation.
    *
    */
-  public function __construct() {
+  public function init() {
     $this->initPage($this->intl->t("Create Person"));
     $this->initBreadcrumb([ [ $this->intl->rp("/persons"), $this->intl->t("Persons") ] ]);
 

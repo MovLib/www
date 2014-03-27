@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Person;
 
 use \MovLib\Data\Person\Person;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
+use \MovLib\Exception\SeeOtherException;
 
 /**
  * Random person presentation.
@@ -52,15 +52,15 @@ class Random {
    *
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
-  public function __construct() {
-    $this->personId = Person::getRandomPersonId();
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+    $this->personId = (new Person($diContainerHTTP))->getRandomPersonId();
     if (isset($this->personId)) {
-      throw new SeeOtherRedirect($this->intl->r("/person/{0}", [ $this->personId ]));
+      throw new SeeOtherException($diContainerHTTP->intl->r("/person/{0}", [ $this->personId ]));
     }
     else {
       $kernel->alerts .= new Alert(
-        $this->intl->t("There is currently no person in our database"),
-        $this->intl->t("Check back later"),
+        $diContainerHTTP->intl->t("There is currently no person in our database"),
+        $diContainerHTTP->intl->t("Check back later"),
         Alert::SEVERITY_INFO
       );
       throw new SeeOtherRedirect("/");

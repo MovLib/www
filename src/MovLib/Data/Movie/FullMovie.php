@@ -62,69 +62,66 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Error\NotFound
    */
-  public function __construct($id = null) {
-    if ($id) {
-      $this->id = $id;
-      $stmt = $db->query(
-        "SELECT
-          `movies`.`created`,
-          `movies`.`deleted`,
-          COLUMN_GET(`movies`.`dyn_synopses`, ? AS CHAR),
-          `movies`.`mean_rating`,
-          `movies`.`rating`,
-          `movies`.`votes`,
-          `movies`.`commit`,
-          `movies`.`rank`,
-          `movies`.`runtime`,
-          `movies`.`year`,
-          IFNULL(`dt`.`title`, `ot`.`title`),
-          IFNULL(`dt`.`language_code`, `ot`.`language_code`),
-          `ot`.`title`,
-          `ot`.`language_code`,
-          `p`.`poster_id`
-        FROM `movies`
-          LEFT JOIN `movies_display_titles` AS `mdt`
-            ON `mdt`.`movie_id` = `movies`.`id`
-            AND `mdt`.`language_code` = ?
-          LEFT JOIN `movies_titles` AS `dt`
-            ON `dt`.`id` = `mdt`.`title_id`
-          LEFT JOIN `movies_original_titles` AS `mot`
-            ON `mot`.`movie_id` = `movies`.`id`
-          LEFT JOIN `movies_titles` AS `ot`
-            ON `ot`.`id` = `mot`.`title_id`
-          LEFT JOIN `display_posters` AS `p`
-            ON `p`.`movie_id` = `movies`.`id`
-            AND `p`.`language_code` = ?
-        WHERE `movies`.`id` = ?
-        LIMIT 1",
-        "sssd",
-        [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $this->id ]
-      );
-      $stmt->bind_result(
-        $this->created,
-        $this->deleted,
-        $this->synopsis,
-        $this->ratingMean,
-        $this->rating,
-        $this->votes,
-        $this->commit,
-        $this->rank,
-        $this->runtime,
-        $this->year,
-        $this->displayTitle,
-        $this->displayTitleLanguageCode,
-        $this->originalTitle,
-        $this->originalTitleLanguageCode,
-        $this->displayPoster
-      );
-      if (!$stmt->fetch()) {
-        throw new NotFound;
-      }
-      $stmt->close();
+  public function init($id) {
+    $this->id = $id;
+    $stmt = $this->query(
+      "SELECT
+        `movies`.`created`,
+        `movies`.`deleted`,
+        COLUMN_GET(`movies`.`dyn_synopses`, ? AS CHAR),
+        `movies`.`mean_rating`,
+        `movies`.`rating`,
+        `movies`.`votes`,
+        `movies`.`commit`,
+        `movies`.`rank`,
+        `movies`.`runtime`,
+        `movies`.`year`,
+        IFNULL(`dt`.`title`, `ot`.`title`),
+        IFNULL(`dt`.`language_code`, `ot`.`language_code`),
+        `ot`.`title`,
+        `ot`.`language_code`,
+        `p`.`poster_id`
+      FROM `movies`
+        LEFT JOIN `movies_display_titles` AS `mdt`
+          ON `mdt`.`movie_id` = `movies`.`id`
+          AND `mdt`.`language_code` = ?
+        LEFT JOIN `movies_titles` AS `dt`
+          ON `dt`.`id` = `mdt`.`title_id`
+        LEFT JOIN `movies_original_titles` AS `mot`
+          ON `mot`.`movie_id` = `movies`.`id`
+        LEFT JOIN `movies_titles` AS `ot`
+          ON `ot`.`id` = `mot`.`title_id`
+        LEFT JOIN `display_posters` AS `p`
+          ON `p`.`movie_id` = `movies`.`id`
+          AND `p`.`language_code` = ?
+      WHERE `movies`.`id` = ?
+      LIMIT 1",
+      "sssd",
+      [ $this->intl->languageCode, $this->intl->languageCode, $this->intl->languageCode, $this->id ]
+    );
+    $stmt->bind_result(
+      $this->created,
+      $this->deleted,
+      $this->synopsis,
+      $this->ratingMean,
+      $this->rating,
+      $this->votes,
+      $this->commit,
+      $this->rank,
+      $this->runtime,
+      $this->year,
+      $this->displayTitle,
+      $this->displayTitleLanguageCode,
+      $this->originalTitle,
+      $this->originalTitleLanguageCode,
+      $this->displayPoster
+    );
+    if (!$stmt->fetch()) {
+      throw new NotFound;
     }
-    if ($this->id) {
-      $this->init();
-    }
+    $stmt->close();
+
+    $this->initFetchObject();
   }
 
 
@@ -140,7 +137,7 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
    *   The array contains person's identifiers as keys and {@see \MovLib\Stub\Data\Movie\MoviePerson} objecs as values.
    */
   public function getCast() {
-    $result = $db->query(
+    $result = $this->query(
       "SELECT
         `movies_cast`.`person_id`,
         `persons`.`name` AS `person_name`,
@@ -157,7 +154,7 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
           `role`.`name`,
           IFNULL(
             COLUMN_GET(`movies_cast`.`dyn_role`, ? AS BINARY),
-            COLUMN_GET(`movies_cast`.`dyn_role`, '{$i18n->defaultLanguageCode}' AS BINARY)
+            COLUMN_GET(`movies_cast`.`dyn_role`, '{$this->intl->defaultLanguageCode}' AS BINARY)
           )
         ) AS `role_name`
       FROM `movies_cast`
@@ -166,16 +163,16 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
       LEFT JOIN `persons` AS `role`
         ON `movies_cast`.`role_id` = `role`.`id`
       WHERE `movies_cast`.`movie_id` = ? AND `persons`.`deleted` = FALSE
-      ORDER BY `persons`.`name`{$db->collations[$i18n->languageCode]} ASC",
+      ORDER BY `persons`.`name`{$this->collations[$this->intl->languageCode]} ASC",
       "sd",
-      [ $i18n->languageCode, $this->id ]
+      [ $this->intl->languageCode, $this->id ]
     )->get_result();
 
     $persons  = null;
     $roleSelf = [
-      InputSex::MALE    => $i18n->t("Himself"),
-      InputSex::FEMALE  => $i18n->t("Herself"),
-      InputSex::UNKNOWN => $i18n->t("Self"),
+      InputSex::MALE    => $this->intl->t("Himself"),
+      InputSex::FEMALE  => $this->intl->t("Herself"),
+      InputSex::UNKNOWN => $this->intl->t("Self"),
     ];
     while ($row = $result->fetch_assoc()) {
       // Instantiate and initialize a Person if it is not present yet.
@@ -213,7 +210,7 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getCountries() {
-    return $db->query("SELECT `country_code` FROM `movies_countries` WHERE `movie_id` = ?", "d", [ $this->id ])->get_result();
+    return $this->query("SELECT `country_code` FROM `movies_countries` WHERE `movie_id` = ?", "d", [ $this->id ])->get_result();
   }
 
   /**
@@ -227,7 +224,7 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
    *   Every entry contains the offset "id", "name" and "nickname" for the corresponding properties of a person.
    */
   public function getCastLimited($limit = 5) {
-    $result = $db->query(
+    $result = $this->query(
       "SELECT DISTINCT
         `persons`.`id`,
         `persons`.`name`,
@@ -236,7 +233,7 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
       INNER JOIN `persons`
         ON `movies_cast`.`person_id` = `persons`.`id`
       WHERE `movies_cast`.`movie_id` = ? AND `persons`.`deleted` = FALSE
-      ORDER BY `persons`.`name`{$db->collations[$i18n->languageCode]} ASC
+      ORDER BY `persons`.`name`{$this->collations[$this->intl->languageCode]} ASC
       LIMIT ?",
       "dd",
       [ $this->id, $limit ]
@@ -254,12 +251,12 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
    *   values or <code>NULL</code> if no crew was found.
    */
   public function getCrew() {
-    $result = $db->query(
+    $result = $this->query(
       "SELECT
         `jobs`.`id` AS `job_id`,
         IFNULL(
           COLUMN_GET(`jobs`.`dyn_names_sex0`, ? AS CHAR(255)),
-          COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$i18n->defaultLanguageCode}' AS CHAR(255))
+          COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$this->intl->defaultLanguageCode}' AS CHAR(255))
         ) AS `job_title`,
         `movies_directors`.`person_id` AS `director_person_id`,
         `movies_crew`.`person_id` AS `crew_person_id`,
@@ -281,15 +278,15 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
         WHERE `movies_directors`.`person_id` IS NOT NULL
           OR `movies_crew`.`person_id` IS NOT NULL
           OR `movies_crew`.`company_id` IS NOT NULL
-        ORDER BY `job_title`{$db->collations[$i18n->languageCode]} ASC",
+        ORDER BY `job_title`{$this->collations[$this->intl->languageCode]} ASC",
       "sdd",
-      [ $i18n->languageCode, $this->id, $this->id ]
+      [ $this->intl->languageCode, $this->id, $this->id ]
     )->get_result();
 
     $crew         = null;
-    $companyRoute = $i18n->r("/company/{0}");
-    $jobRoute     = $i18n->r("/job/{0}");
-    $personRoute  = $i18n->r("/person/{0}");
+    $companyRoute = $this->intl->r("/company/{0}");
+    $jobRoute     = $this->intl->r("/job/{0}");
+    $personRoute  = $this->intl->r("/person/{0}");
 
     while ($row = $result->fetch_assoc()) {
       // Initialize a movie crew stub object if not present yet.
@@ -335,7 +332,7 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getDirectors() {
-    return $db->query(
+    return $this->query(
       "SELECT
         `persons`.`id`,
         `persons`.`name`,
@@ -349,7 +346,7 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
       FROM `movies_directors`
         INNER JOIN `persons` ON `persons`.`id` = `movies_directors`.`person_id`
       WHERE `movies_directors`.`movie_id` = ?
-      ORDER BY `persons`.`name`{$db->collations[$i18n->languageCode]} ASC",
+      ORDER BY `persons`.`name`{$this->collations[$this->intl->languageCode]} ASC",
       "d",
       [ $this->id ]
     )->get_result();
@@ -365,7 +362,7 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getDirectorsLimited() {
-    return $db->query(
+    return $this->query(
       "SELECT
         `persons`.`id`,
         `persons`.`name`,
@@ -373,15 +370,15 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
         CASE `persons`.`sex`
           WHEN 1 THEN IFNULL(
             COLUMN_GET(`jobs`.`dyn_names_sex1`, ? AS BINARY),
-            COLUMN_GET(`jobs`.`dyn_names_sex1`, '{$i18n->defaultLanguageCode}' AS BINARY)
+            COLUMN_GET(`jobs`.`dyn_names_sex1`, '{$this->intl->defaultLanguageCode}' AS BINARY)
           )
           WHEN 2 THEN IFNULL(
             COLUMN_GET(`jobs`.`dyn_names_sex2`, ? AS BINARY),
-            COLUMN_GET(`jobs`.`dyn_names_sex2`, '{$i18n->defaultLanguageCode}' AS BINARY)
+            COLUMN_GET(`jobs`.`dyn_names_sex2`, '{$this->intl->defaultLanguageCode}' AS BINARY)
           )
           ELSE IFNULL(
             COLUMN_GET(`jobs`.`dyn_names_sex0`, ? AS BINARY),
-            COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$i18n->defaultLanguageCode}' AS BINARY)
+            COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$this->intl->defaultLanguageCode}' AS BINARY)
           )
         END AS `job_name`
       FROM `movies_directors`
@@ -390,9 +387,9 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
       INNER JOIN `jobs`
         ON `jobs`.`id` = `movies_directors`.`job_id`
       WHERE `movies_directors`.`movie_id` = ?
-      ORDER BY `persons`.`name`{$db->collations[$i18n->languageCode]} ASC",
+      ORDER BY `persons`.`name`{$this->collations[$this->intl->languageCode]} ASC",
       "sssd",
-      [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $this->id ]
+      [ $this->intl->languageCode, $this->intl->languageCode, $this->intl->languageCode, $this->id ]
     )->get_result()->fetch_all(MYSQLI_ASSOC);
   }
 
@@ -404,16 +401,16 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getGenres() {
-    return $db->query(
+    return $this->query(
       "SELECT
         `genres`.`id`,
-        IFNULL(COLUMN_GET(`genres`.`dyn_names`, ? AS CHAR), COLUMN_GET(`genres`.`dyn_names`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `name`
+        IFNULL(COLUMN_GET(`genres`.`dyn_names`, ? AS CHAR), COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `name`
       FROM `movies_genres`
         INNER JOIN `genres` ON `genres`.`id` = `movies_genres`.`genre_id`
       WHERE `movies_genres`.`movie_id` = ?
-      ORDER BY `name`{$db->collations[$i18n->languageCode]} ASC",
+      ORDER BY `name`{$this->collations[$this->intl->languageCode]} ASC",
       "sd",
-      [ $i18n->languageCode, $this->id ]
+      [ $this->intl->languageCode, $this->id ]
     )->get_result();
   }
 
@@ -425,7 +422,7 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getLanguages() {
-    return $db->query(
+    return $this->query(
       "SELECT `language_code` FROM `movies_languages` WHERE `movie_id` = ?",
       "d",
       [ $this->id ]
@@ -442,9 +439,9 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getTrailers() {
-    $result = $db->query(
+    $result = $this->query(
       "SELECT
-        IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS BINARY), COLUMN_GET(`dyn_descriptions`, '{$i18n->defaultLanguageCode}' AS BINARY)) AS `description`,
+        IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS BINARY), COLUMN_GET(`dyn_descriptions`, '{$this->intl->defaultLanguageCode}' AS BINARY)) AS `description`,
         `language_code` as `languageCode`,
         `url`,
         `vq`.`name` AS `quality`
@@ -453,20 +450,20 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
         ON `vq`.`id` = `movies_trailers`.`video_quality_id`
       WHERE `movie_id` = ? AND `language_code` IN(?, ?)",
       "sdss",
-      [ $i18n->languageCode, $this->id, $i18n->languageCode, "xx" ]
+      [ $this->intl->languageCode, $this->id, $this->intl->languageCode, "xx" ]
     )->get_result();
     $trailers = null;
     while ($row = $result->fetch_assoc()) {
       $host = str_replace("www.", "", parse_url($row["url"])["host"]);
       if ($row["description"]) {
-        $trailers[$i18n->t("{0} – {1} ({2})", [ $row["description"], $host, $row["quality"] ])] = $row["url"];
+        $trailers[$this->intl->t("{0} – {1} ({2})", [ $row["description"], $host, $row["quality"] ])] = $row["url"];
       }
       else {
-        $trailers[$i18n->t("{0} ({1})", [ $host, $row["quality"] ])] = $row["url"];
+        $trailers[$this->intl->t("{0} ({1})", [ $host, $row["quality"] ])] = $row["url"];
       }
     }
     if ($trailers) {
-      $i18n->getCollator()->ksort($trailers, \Collator::SORT_STRING);
+      $this->intl->getCollator()->ksort($trailers, \Collator::SORT_STRING);
       return $trailers;
     }
   }
@@ -483,15 +480,15 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
   public function rate($rating) {
     // Insert or update the user's rating for this movie.
     if ($this->getUserRating() === null) {
-      $db->query("INSERT INTO `movies_ratings` SET `movie_id` = ?, `user_id` = ?, `rating` = ?", "ddi", [ $this->id, $session->userId, $rating ])->close();
+      $this->query("INSERT INTO `movies_ratings` SET `movie_id` = ?, `user_id` = ?, `rating` = ?", "ddi", [ $this->id, $session->userId, $rating ])->close();
       $this->votes++;
     }
     else {
-      $db->query("UPDATE `movies_ratings` SET `rating` = ? WHERE `movie_id` = ? AND `user_id` = ?", "idd", [ $rating, $this->id, $session->userId ])->close();
+      $this->query("UPDATE `movies_ratings` SET `rating` = ? WHERE `movie_id` = ? AND `user_id` = ?", "idd", [ $rating, $this->id, $session->userId ])->close();
     }
 
     // Update the mean rating of this movie.
-    $db->query(
+    $this->query(
       "UPDATE `movies` SET `mean_rating` = (
         SELECT ROUND(SUM(`mr`.`rating`) / COUNT(`mr`.`rating`), 1) FROM `movies_ratings` AS `mr` WHERE `mr`.`movie_id` = ?
       ), `votes` = ? WHERE `id` = ?",
@@ -500,7 +497,7 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
     )->close();
 
     // Get the updated mean rating for us.
-    $this->ratingMean = $db->query("SELECT `mean_rating` FROM `movies` WHERE `id` = ? LIMIT 1", "d", [ $this->id ])->get_result()->fetch_row()[0];
+    $this->ratingMean = $this->query("SELECT `mean_rating` FROM `movies` WHERE `id` = ? LIMIT 1", "d", [ $this->id ])->get_result()->fetch_row()[0];
 
     // Update the old rating with the new rating.
     $this->userRating = $rating;

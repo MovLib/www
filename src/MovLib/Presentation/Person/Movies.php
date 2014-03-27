@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Person;
 
 use \MovLib\Data\Person\FullPerson;
-use \MovLib\Presentation\Partial\Listing\PersonMovieListing;
+use \MovLib\Partial\Listing\PersonMovieListing;
 
 /**
  * Presentation of a person's movies.
@@ -32,12 +32,13 @@ use \MovLib\Presentation\Partial\Listing\PersonMovieListing;
 class Movies extends \MovLib\Presentation\Person\AbstractBase {
 
   /**
-   * Instantiate new person movies presentation.
+   * Initialize person movies presentation.
    *
    * @throws \MovLib\Presentation\Error\NotFound
    */
-  public function __construct() {
-    $this->person = new FullPerson((integer) $_SERVER["PERSON_ID"]);
+  public function init() {
+    $this->person = new FullPerson($this->diContainerHTTP);
+    $this->person->init((integer) $_SERVER["PERSON_ID"]);
     $this->initPage($this->intl->t("Movies with {0}", [ $this->person->name ]));
     $this->pageTitle        = $this->intl->t(
       "Movies with {0}",
@@ -54,7 +55,7 @@ class Movies extends \MovLib\Presentation\Person\AbstractBase {
    * @inheritdoc
    */
   protected function getPageContent() {
-    return new PersonMovieListing($this->person->getMovies());
+    return new PersonMovieListing($this->diContainerHTTP, $this->person->getMovies());
   }
 
 

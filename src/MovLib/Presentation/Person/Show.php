@@ -17,11 +17,11 @@
  */
 namespace MovLib\Presentation\Person;
 
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Place;
-use \MovLib\Presentation\Partial\Date;
-use \MovLib\Presentation\Partial\FormElement\InputSex;
 use \MovLib\Data\Person\FullPerson;
+use \MovLib\Partial\Alert;
+use \MovLib\Partial\Date;
+use \MovLib\Partial\FormElement\InputSex;
+use \MovLib\Partial\Place;
 
 /**
  * Presentation of a single person.
@@ -36,28 +36,11 @@ use \MovLib\Data\Person\FullPerson;
 class Show extends \MovLib\Presentation\Person\AbstractBase {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new person presentation.
-   *
-   * @throws \MovLib\Presentation\Error\NotFound
-   */
-  public function __construct() {
-    $this->person = new FullPerson((integer) $_SERVER["PERSON_ID"]);
-    $this->initPage($this->person->name);
-    $this->initLanguageLinks("/person/{0}", [ $this->person->id]);
-    $this->initBreadcrumb([[ $this->intl->rp("/persons"), $this->intl->t("Persons") ]]);
-    $this->sidebarInit();
-  }
-
-
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   protected function getPageContent() {
     // Enhance the page title with microdata.
@@ -92,8 +75,8 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     // Construct birth info in a translatable way.
     $birth = $birthDate = $birthDateFormatted = $birthAge = $birthPlace = null;
     if ($this->person->birthDate) {
-      $birthDate          = new Date($this->person->birthDate);
-      $birthDateFormatted = $birthDate->format([ "property" => "birthDate" ], $this->intl->rp("/year/{0}/persons", [ $birthDate->dateInfo["year"] ]));
+      $birthDate          = new Date($this, $this->person->birthDate);
+      $birthDateFormatted = $birthDate->format($this->intl, [ "property" => "birthDate" ], $this->intl->rp("/year/{0}/persons", [ $birthDate->dateInfo["year"] ]));
       $birthAge           = $birthDate->getAge();
     }
     $birthPlace = $this->person->getBirthPlace();
@@ -132,8 +115,8 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     // Construct death info in a translatable way.
     $death = $deathDate = $deathDateFormatted = $deathAge = $deathPlace = null;
     if ($this->person->deathDate) {
-      $deathDate          = new Date($this->person->deathDate);
-      $deathDateFormatted = $deathDate->format([ "property" => "deathDate" ]);
+      $deathDate          = new Date($this, $this->person->deathDate);
+      $deathDateFormatted = $deathDate->format($this->intl, [ "property" => "deathDate" ]);
       if ($birthDate) {
         $deathAge         = $birthDate->getAge($this->person->deathDate);
       }
@@ -181,12 +164,19 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     }
 
     // Put all header information together after the closing title.
-    $personPhoto         = $this->getImage(
-      $this->person->getStyle(FullPerson::STYLE_SPAN_02),
-      true,
-      null,
-      [ "property" => "image" ]
-    );
+    // @todo: Implement new image retrieval!
+    $personPhoto = "<a class='no-link' href='{$this->intl->r(
+      "/person/{0}/photo",
+      [ $this->person->id ]
+    )}' property='image'><img alt='' height='140' src='{$this->getExternalURL(
+      "asset://img/logo/vector.svg"
+    )}' width='140'></a>";
+//    $personPhoto         = $this->getImage(
+//      $this->person->getStyle(FullPerson::STYLE_SPAN_02),
+//      true,
+//      null,
+//      [ "property" => "image" ]
+//    );
     // Enhance the header, insert row and span before the title.
     $this->headingBefore = "<div class='r'><div class='s s10'>";
     $this->headingAfter  =
@@ -260,6 +250,20 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     $this->sidebarNavigation->menuitems[] = [ "#{$id}", $title ];
 
     return "<div id='{$id}'><h2>{$title}</h2>{$content}</div>";
+  }
+
+  /**
+   * Initialize person presentation.
+   *
+   * @throws \MovLib\Presentation\Error\NotFound
+   */
+  public function init() {
+    $this->person = new FullPerson($this->diContainerHTTP);
+    $this->person->init((integer) $_SERVER["PERSON_ID"]);
+    $this->initPage($this->person->name);
+    $this->initLanguageLinks("/person/{0}", [ $this->person->id]);
+    $this->initBreadcrumb([[ $this->intl->rp("/persons"), $this->intl->t("Persons") ]]);
+    $this->sidebarInit();
   }
 
 }

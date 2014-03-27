@@ -58,7 +58,7 @@ trait TraitMovie {
     if ($movie->displayTitle != $movie->originalTitle) {
       $displayTitleItemprop = "alternateName";
       $originalTitle = "<br><span class='small'>{$this->intl->t("{0} ({1})", [
-        "<span property='name'{$this->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>",
+        "<span property='name'{$this->presenter->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>",
         "<i>{$this->intl->t("original title")}</i>",
       ])}</span>";
     }
@@ -67,7 +67,7 @@ trait TraitMovie {
       $displayTitleItemprop = "name";
       $originalTitle = null;
     }
-    $displayTitle = "<a href='{$movie->route}' property='url'><span property='{$displayTitleItemprop}'{$this->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}</span></a>{0}";
+    $displayTitle = "<a href='{$movie->route}' property='url'><span property='{$displayTitleItemprop}'{$this->presenter->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}</span></a>{0}";
 
     // Append year enclosed in micro-data to display title if available.
     if (isset($movie->year)) {
@@ -77,7 +77,7 @@ trait TraitMovie {
       $displayTitle = str_replace("{0}", "", $displayTitle);
     }
 
-    return "<{$wrap}{$this->expandTagAttributes($attributes)}>{$displayTitle}{$originalTitle}</{$wrap}>";
+    return "<{$wrap}{$this->presenter->expandTagAttributes($attributes)}>{$displayTitle}{$originalTitle}</{$wrap}>";
   }
 
 }

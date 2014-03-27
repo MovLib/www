@@ -30,7 +30,7 @@ use \MovLib\Presentation\Error\NotFound;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Movie {
+class Movie extends \MovLib\Core\Database {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -169,37 +169,31 @@ class Movie {
   /**
    * Instantiate new movie.
    *
-   * @param integer $id [optional]
-   *   The movie's unique identifier to load, defaults to no identifier which creates an empty movie object.
+   * @param integer $id
+   *   The movie's unique identifier to load.
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Error\NotFound
    */
-  public function __construct($id = null) {
-    // Try to load the movie if an identifier was passed to the constructor.
-    if ($id) {
-      $query = self::$query;
-      $stmt  = $db->query("{$query} WHERE `movies`.`id` = ? LIMIT 1", "ssd", [ $i18n->languageCode, $i18n->languageCode, $id ]);
-      $stmt->bind_result(
-        $this->id,
-        $this->deleted,
-        $this->year,
-        $this->ratingMean,
-        $this->displayTitle,
-        $this->displayTitleLanguageCode,
-        $this->originalTitle,
-        $this->originalTitleLanguageCode,
-        $this->displayPoster
-      );
-      if (!$stmt->fetch()) {
-        throw new NotFound;
-      }
-      $stmt->close();
+  public function init($id) {
+    $query = self::$query;
+    $stmt  = $this->query("{$query} WHERE `movies`.`id` = ? LIMIT 1", "ssd", [ $this->intl->languageCode, $this->intl->languageCode, $id ]);
+    $stmt->bind_result(
+      $this->id,
+      $this->deleted,
+      $this->year,
+      $this->ratingMean,
+      $this->displayTitle,
+      $this->displayTitleLanguageCode,
+      $this->originalTitle,
+      $this->originalTitleLanguageCode,
+      $this->displayPoster
+    );
+    if (!$stmt->fetch()) {
+      throw new NotFound;
     }
+    $stmt->close();
 
-    // Initialize the movie if we have an identifier, either from above query or from fetch object.
-    if ($this->id) {
-      $this->init();
-    }
+    $this->initFetchObject();
   }
 
 
@@ -219,8 +213,8 @@ class Movie {
    */
   public static function getMovies($offset, $rowCount) {
     $query = self::$query;
-    return $db->query("{$query} WHERE `movies`.`deleted` = false ORDER BY `movies`.`id` DESC LIMIT ? OFFSET ?", "ssii", [
-      $i18n->languageCode, $i18n->languageCode, $rowCount, $offset
+    return $this->query("{$query} WHERE `movies`.`deleted` = false ORDER BY `movies`.`id` DESC LIMIT ? OFFSET ?", "ssii", [
+      $this->intl->languageCode, $this->intl->languageCode, $rowCount, $offset
     ])->get_result();
   }
 
@@ -243,7 +237,7 @@ class Movie {
       $where   = "WHERE `deleted` = {$deleted}";
     }
 
-    return $db->query("SELECT COUNT(*) FROM `movies` {$where} LIMIT 1")->get_result()->fetch_row()[0];
+    return $this->query("SELECT COUNT(*) FROM `movies` {$where} LIMIT 1")->get_result()->fetch_row()[0];
   }
 
   /**
@@ -254,7 +248,7 @@ class Movie {
    * @throws \MovLib\Exception\DatabaseException
    */
   public static function getRandomMovieId() {
-    $result = $db->query("SELECT `id` FROM `movies` WHERE `deleted` = false ORDER BY RAND() LIMIT 1")->get_result()->fetch_row();
+    $result = $this->query("SELECT `id` FROM `movies` WHERE `deleted` = false ORDER BY RAND() LIMIT 1")->get_result()->fetch_row();
     if (isset($result[0])) {
       return $result[0];
     }
@@ -275,7 +269,7 @@ class Movie {
       return [ "rating" => $this->userRating, "created" => $this->userRatingCreated ];
     }
 
-    $result = $db->query("SELECT `rating`, `created` FROM `movies_ratings` WHERE `user_id` = ? AND `movie_id` = ? LIMIT 1", "dd", [ $userId, $this->id ])->get_result()->fetch_row();
+    $result = $this->query("SELECT `rating`, `created` FROM `movies_ratings` WHERE `user_id` = ? AND `movie_id` = ? LIMIT 1", "dd", [ $userId, $this->id ])->get_result()->fetch_row();
     if (isset($result[0])) {
       $this->userRating = $result[0];
       $this->userRatingCreated = $result[1];
@@ -291,7 +285,7 @@ class Movie {
    * @return \mysqli_result
    */
   public static function getUserRatings($userId) {
-    return $db->query(
+    return $this->query(
       "SELECT
         `movies`.`id`,
         `movies`.`deleted`,
@@ -324,7 +318,7 @@ class Movie {
       WHERE `movies`.`deleted` = FALSE AND `mr`.`user_id` = ?
       ORDER BY `mr`.`created` DESC",
       "ssd",
-      [ $i18n->languageCode, $i18n->languageCode, $userId ]
+      [ $this->intl->languageCode, $this->intl->languageCode, $userId ]
     )->get_result();
   }
 
@@ -334,19 +328,19 @@ class Movie {
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function init() {
+  public function initFetchObject() {
     // Build the route to the movie.
-    $this->route = $i18n->r("/movie/{0}", [ $this->id ]);
+    $this->route = $this->intl->r("/movie/{0}", [ $this->id ]);
 
     // Ensure deleted has to the correct type for later comparisons.
     $this->deleted = (boolean) $this->deleted;
 
     // Construct full display title including the year. This combination is needed all over the place.
-    $this->displayTitleWithYear = isset($this->year) ? $i18n->t("{0} ({1})", [ $this->displayTitle, $this->year ]) : $this->displayTitle;
+    $this->displayTitleWithYear = isset($this->year) ? $this->intl->t("{0} ({1})", [ $this->displayTitle, $this->year ]) : $this->displayTitle;
 
     // Load the oldest poster if we don't have a display poster for the current language.
     if (!$this->displayPoster) {
-      $stmt   = $db->query("SELECT MIN(`id`) FROM `posters` WHERE `movie_id` = ?", "d", [ $this->id ]);
+      $stmt   = $this->query("SELECT MIN(`id`) FROM `posters` WHERE `movie_id` = ?", "d", [ $this->id ]);
       $result = $stmt->get_result()->fetch_row();
       if (isset($result[0])) {
         $this->displayPoster = $result[0];
@@ -355,13 +349,14 @@ class Movie {
     }
 
     // Load the actual display poster for this movie.
-    $stmt = $db->query("SELECT `id`, UNIX_TIMESTAMP(`changed`) AS `changed`, `extension`, `styles` FROM `posters` WHERE `id` = ? LIMIT 1", "d", [ $this->displayPoster ]);
+    $stmt = $this->query("SELECT `id`, UNIX_TIMESTAMP(`changed`) AS `changed`, `extension`, `styles` FROM `posters` WHERE `id` = ? LIMIT 1", "d", [ $this->displayPoster ]);
     $this->displayPoster = $stmt->get_result()->fetch_object("\\MovLib\\Data\\Image\\MoviePoster", [ $this->id, $this->displayTitleWithYear ]);
     $stmt->close();
 
     // Load an empty poster if above query returned with no result (fetch object will simply return NULL in that case).
+    // @todo: Implement new image handling!
     if (!$this->displayPoster) {
-      $this->displayPoster = new MoviePoster($this->id, $this->displayTitleWithYear);
+//      $this->displayPoster = new MoviePoster($this->id, $this->displayTitleWithYear);
     }
 
     return $this;

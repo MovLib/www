@@ -31,12 +31,13 @@ use \MovLib\Data\Person\FullPerson;
 class Releases extends \MovLib\Presentation\Person\AbstractBase {
 
   /**
-   * Instantiate new person releases presentation.
+   * Initialize person releases presentation.
    *
    * @throws \MovLib\Presentation\Error\NotFound
    */
-  public function __construct() {
-    $this->person = new FullPerson((integer) $_SERVER["PERSON_ID"]);
+  public function init() {
+    $this->person = new FullPerson($this->diContainerHTTP);
+    $this->person->init((integer) $_SERVER["PERSON_ID"]);
     $this->initPage($this->intl->t("Releases with {0}", [ $this->person->name ]));
     $this->pageTitle        = $this->intl->t("Releases with {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
     $this->breadcrumbTitle  = $this->intl->t("Releases");
@@ -49,7 +50,7 @@ class Releases extends \MovLib\Presentation\Person\AbstractBase {
    * @inheritdoc
    */
   protected function getPageContent() {
-    return new \MovLib\Presentation\Partial\Alert($this->intl->t("Not implemented yet."), null, \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Partial\Alert($this->intl->t("Not implemented yet."), null, \MovLib\Partial\Alert::SEVERITY_INFO);
   }
 
 }

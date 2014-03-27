@@ -29,12 +29,26 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieListing extends \MovLib\Presentation\AbstractBase {
+class MovieListing {
   use \MovLib\Presentation\TraitMovie;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
+
+  /**
+   * The dependency injection container.
+   *
+   * @var \MovLib\Core\HTTP\DIContainerHTTP
+   */
+  protected $diContainerHTTP;
+
+  /**
+   * The active intl instance.
+   *
+   * @var \MovLib\Core\Intl
+   */
+  protected $intl;
 
   /**
    * The list items to display.
@@ -50,6 +64,13 @@ class MovieListing extends \MovLib\Presentation\AbstractBase {
    */
   protected $noItemsText;
 
+  /**
+   * The presenting presenter.
+   *
+   * @var \MovLib\Presentation\AbstractPresenter
+   */
+  protected $presenter;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -57,12 +78,17 @@ class MovieListing extends \MovLib\Presentation\AbstractBase {
   /**
    * Instantiate new movie listing.
    *
+   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   *   The dependency injection container.
    * @param mixed $listItems
    *   The items to build the movie listing.
    * @param mixed $noItemsText [optional]
    *   The text to display if there are no items, defaults to a generic {@see \MovLib\Presentation\Partial\Alert}.
    */
-  public function __construct($listItems, $noItemsText = null) {
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $listItems, $noItemsText = null) {
+    $this->diContainerHTTP = $diContainerHTTP;
+    $this->intl            = $this->diContainerHTTP->intl;
+    $this->presenter       = $this->diContainerHTTP->presenter;
     // @devStart
     // @codeCoverageIgnoreStart
     if (isset($noItemsText) && (empty($noItemsText) || !method_exists($noItemsText, "__toString"))) {
@@ -90,8 +116,8 @@ class MovieListing extends \MovLib\Presentation\AbstractBase {
     // @devEnd
       $list = null;
       /* @var $movie \MovLib\Data\Movie\FullMovie */
-      while ($movie = $this->listItems->fetch_object("\\MovLib\\Data\\Movie\\FullMovie")) {
-        $list .= $this->formatListItem($movie);
+      while ($movie = $this->listItems->fetch_object("\\MovLib\\Data\\Movie\\FullMovie", [ $this->diContainerHTTP ])) {
+        $list .= $this->formatListItem($movie->initFetchObject());
       }
 
       if ($list) {
@@ -147,14 +173,10 @@ class MovieListing extends \MovLib\Presentation\AbstractBase {
     }
 
     // Put the movie list entry together.
+    // @todo: Implement new image retrieval!
     return
       "<li class='hover-item r' typeof='Movie'>" .
-        $this->getImage(
-          $movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01),
-          $movie->route,
-          null,
-          [ "class" => "s s1 tac" ]
-        ) .
+        "<a class='no-link s s1 tac' href='{$movie->route}'><img alt='' height='60' src='{$this->presenter->getExternalURL("asset://img/logo/vector.svg")}' width='60'></a>" .
         "<div class='s s8'>{$this->getTitleInfo($movie)}{$genres}{$this->getAdditionalContent($movie, $listItem)}</div>" .
         $this->getRatingContent($movie) .
       "</li>"

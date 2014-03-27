@@ -20,7 +20,7 @@ namespace MovLib\Data\Person;
 use \MovLib\Data\Place;
 use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Presentation\Error\NotFound;
-use \MovLib\Presentation\Partial\FormElement\InputSex;
+use \MovLib\Partial\FormElement\InputSex;
 
 /**
  * Contains all available information about a person.
@@ -106,11 +106,11 @@ class FullPerson extends \MovLib\Data\Person\Person {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function create() {
-    $this->id = $db->query(
+    $this->id = $this->query(
       "INSERT INTO `persons` SET
         `created` = CURRENT_TIMESTAMP,
-        `dyn_biographies` = COLUMN_CREATE('{$i18n->languageCode}', ?),
-        `dyn_wikipedia`= COLUMN_CREATE('{$i18n->languageCode}', ?),
+        `dyn_biographies` = COLUMN_CREATE('{$this->intl->languageCode}', ?),
+        `dyn_wikipedia`= COLUMN_CREATE('{$this->intl->languageCode}', ?),
         `dyn_image_descriptions` = '',
         `name` = ?,
         `sex` = ?,
@@ -138,7 +138,7 @@ class FullPerson extends \MovLib\Data\Person\Person {
         $params[] = $this->aliases[$i];
       }
       $query = "INSERT INTO `persons_aliases` (`person_id`, `alias`) VALUES {$query}";
-      $db->query($query, $types, $params);
+      $this->query($query, $types, $params);
     }
 
     // Insert external links.
@@ -154,11 +154,11 @@ class FullPerson extends \MovLib\Data\Person\Person {
         $query .= "(?, ?, ?)";
         $types .= "dss";
         $params[] = $this->id;
-        $params[] = $i18n->languageCode;
+        $params[] = $this->intl->languageCode;
         $params[] = $this->links[$i];
       }
       $query = "INSERT INTO `persons_links` (`person_id`, `language_code`, `url`) VALUES {$query}";
-      $db->query($query, $types, $params);
+      $this->query($query, $types, $params);
     }
 
     return $this;
@@ -174,12 +174,12 @@ class FullPerson extends \MovLib\Data\Person\Person {
   public function getAliases() {
     if ($this->aliases === false) {
       $this->aliases = null;
-      $result = $db->query(
+      $result = $this->query(
         "SELECT
           `alias`
         FROM `persons_aliases`
         WHERE `person_id` = ?
-        ORDER BY `alias` {$db->collations[$i18n->languageCode]}",
+        ORDER BY `alias` {$this->collations[$this->intl->languageCode]}",
         "d",
         [ $this->id ]
       )->get_result();
@@ -226,10 +226,10 @@ class FullPerson extends \MovLib\Data\Person\Person {
   public function getLinks() {
     if ($this->links === false) {
       $this->links = null;
-      $result = $db->query(
+      $result = $this->query(
         "SELECT `url` FROM `persons_links` WHERE `person_id` = ? AND `language_code` = ? ORDER BY `id` ASC",
         "ds",
-        [ $this->id, $i18n->languageCode ]
+        [ $this->id, $this->intl->languageCode ]
       )->get_result();
       while ($row = $result->fetch_row()) {
         $this->links[] = $row[0];
@@ -246,7 +246,7 @@ class FullPerson extends \MovLib\Data\Person\Person {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMovieCast() {
-    return $db->query(
+    return $this->query(
       "SELECT
         `id`,
         `movie_id` AS `movieId`,
@@ -258,7 +258,7 @@ class FullPerson extends \MovLib\Data\Person\Person {
       FROM `movies_cast`
       WHERE `person_id` = ?",
       "ssd",
-      [ $i18n->languageCode, $i18n->defaultLanguageCode, $this->id ]
+      [ $this->intl->languageCode, $this->intl->defaultLanguageCode, $this->id ]
     )->get_result();
   }
 
@@ -270,7 +270,7 @@ class FullPerson extends \MovLib\Data\Person\Person {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMovieCrew() {
-    return $db->query(
+    return $this->query(
       "SELECT
         `mc`.`id`,
         `mc`.`movie_id` AS `movieId`,
@@ -285,7 +285,7 @@ class FullPerson extends \MovLib\Data\Person\Person {
         ON `j`.`id` = `mc`.`job_id`
       WHERE `mc`.`person_id` = ?",
       "ssssssd",
-      [ $i18n->languageCode, $i18n->defaultLanguageCode, $i18n->languageCode, $i18n->defaultLanguageCode, $i18n->languageCode, $i18n->defaultLanguageCode, $this->id ]
+      [ $this->intl->languageCode, $this->intl->defaultLanguageCode, $this->intl->languageCode, $this->intl->defaultLanguageCode, $this->intl->languageCode, $this->intl->defaultLanguageCode, $this->id ]
     )->get_result();
   }
 
@@ -300,7 +300,7 @@ class FullPerson extends \MovLib\Data\Person\Person {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMovies() {
-    $result = $db->query(
+    $result = $this->query(
       "SELECT
         `movies`.`id` AS `movie_id`,
         `movies`.`deleted` AS `movie_deleted`,
@@ -320,7 +320,7 @@ class FullPerson extends \MovLib\Data\Person\Person {
             `role`.`name`,
             IFNULL(
               COLUMN_GET(`movies_cast`.`dyn_role`, ? AS BINARY),
-              COLUMN_GET(`movies_cast`.`dyn_role`, '{$i18n->defaultLanguageCode}' AS BINARY)
+              COLUMN_GET(`movies_cast`.`dyn_role`, '{$this->intl->defaultLanguageCode}' AS BINARY)
             )
           ),
           NULL
@@ -330,7 +330,7 @@ class FullPerson extends \MovLib\Data\Person\Person {
           `movies_crew`.`job_id` IS NOT NULL,
           IFNULL(
             COLUMN_GET(`jobs`.`dyn_names_sex0`, ? AS BINARY),
-            COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$i18n->defaultLanguageCode}' AS BINARY)
+            COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$this->intl->defaultLanguageCode}' AS BINARY)
           ),
           NULL
         ) AS `job_title_crew0`,
@@ -338,7 +338,7 @@ class FullPerson extends \MovLib\Data\Person\Person {
           `movies_crew`.`job_id` IS NOT NULL,
           IFNULL(
             COLUMN_GET(`jobs`.`dyn_names_sex1`, ? AS BINARY),
-            COLUMN_GET(`jobs`.`dyn_names_sex1`, '{$i18n->defaultLanguageCode}' AS BINARY)
+            COLUMN_GET(`jobs`.`dyn_names_sex1`, '{$this->intl->defaultLanguageCode}' AS BINARY)
           ),
           NULL
         ) AS `job_title_crew1`,
@@ -346,7 +346,7 @@ class FullPerson extends \MovLib\Data\Person\Person {
           `movies_crew`.`job_id` IS NOT NULL,
           IFNULL(
             COLUMN_GET(`jobs`.`dyn_names_sex2`, ? AS BINARY),
-            COLUMN_GET(`jobs`.`dyn_names_sex2`, '{$i18n->defaultLanguageCode}' AS BINARY)
+            COLUMN_GET(`jobs`.`dyn_names_sex2`, '{$this->intl->defaultLanguageCode}' AS BINARY)
           ),
           NULL
         ) AS `job_title_crew2`
@@ -383,29 +383,29 @@ class FullPerson extends \MovLib\Data\Person\Person {
       ORDER BY `movies`.`year` DESC",
       "ssssdddss",
       [
-        $i18n->languageCode,
-        $i18n->languageCode,
-        $i18n->languageCode,
-        $i18n->languageCode,
+        $this->intl->languageCode,
+        $this->intl->languageCode,
+        $this->intl->languageCode,
+        $this->intl->languageCode,
         $this->id,
         $this->id,
         $this->id,
-        $i18n->languageCode,
-        $i18n->languageCode
+        $this->intl->languageCode,
+        $this->intl->languageCode
       ]
     )->get_result();
 
     switch ($this->sex) {
       case InputSex::MALE:
-        $roleSelf = $i18n->t("Himself");
+        $roleSelf = $this->intl->t("Himself");
         break;
 
       case InputSex::FEMALE:
-        $roleSelf = $i18n->t("Herself");
+        $roleSelf = $this->intl->t("Herself");
         break;
 
       default:
-        $roleSelf = $i18n->t("Self");
+        $roleSelf = $this->intl->t("Self");
         break;
     }
 
@@ -415,7 +415,7 @@ class FullPerson extends \MovLib\Data\Person\Person {
       // {@see \MovLib\Data\Movie\FullMovie} within.
       if (!isset($movies[$row["movie_id"]])) {
         $movies[$row["movie_id"]] = (object) [
-          "movie"    => new FullMovie(),
+          "movie"    => new FullMovie($this->diContainer),
           "director" => null,
           "cast"     => null,
           "roles"    => [],
@@ -431,7 +431,7 @@ class FullPerson extends \MovLib\Data\Person\Person {
         $movies[$row["movie_id"]]->movie->originalTitle             = $row["movie_original_title"];
         $movies[$row["movie_id"]]->movie->originalTitleLanguageCode = $row["movie_original_title_language_code"];
         $movies[$row["movie_id"]]->movie->displayPoster             = $row["movie_display_poster"];
-        $movies[$row["movie_id"]]->movie->init();
+        $movies[$row["movie_id"]]->movie->initFetchObject();
       }
 
       // Set the director job if present.
@@ -488,77 +488,69 @@ class FullPerson extends \MovLib\Data\Person\Person {
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function init($id) {
-    // Try to load the person for the given identifier.
-    if ($id) {
-      $this->id = $id;
-      $stmt = $db->query(
-        "SELECT
-          `created`,
-          `deleted`,
-          IFNULL(COLUMN_GET(`dyn_biographies`, ? AS BINARY), COLUMN_GET(`dyn_biographies`, '{$i18n->defaultLanguageCode}' AS BINARY)),
-          IFNULL(COLUMN_GET(`dyn_wikipedia`, ? AS BINARY), COLUMN_GET(`dyn_wikipedia`, '{$i18n->defaultLanguageCode}' AS BINARY)),
-          `name`,
-          `sex`,
-          `birthdate`,
-          `birthplace_id`,
-          `born_name`,
-          `cause_of_death_id`,
-          `deathdate`,
-          `deathplace_id`,
-          `nickname`,
-          `image_uploader_id`,
-          `image_width`,
-          `image_height`,
-          `image_filesize`,
-          `image_extension`,
-          UNIX_TIMESTAMP(`image_changed`),
-          IFNULL(COLUMN_GET(`dyn_image_descriptions`, ? AS BINARY), COLUMN_GET(`dyn_image_descriptions`, '{$i18n->defaultLanguageCode}' AS BINARY)),
-          `image_styles`
-        FROM `persons`
-        WHERE
-          `id` = ?
-        LIMIT 1",
-        "sssd",
-        [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $id ]
-      );
-      $stmt->bind_result(
-        $this->created,
-        $this->deleted,
-        $this->biography,
-        $this->wikipedia,
-        $this->name,
-        $this->sex,
-        $this->birthDate,
-        $this->birthplace,
-        $this->bornName,
-        $this->causeOfDeath,
-        $this->deathDate,
-        $this->deathplace,
-        $this->nickname,
-        $this->uploaderId,
-        $this->width,
-        $this->height,
-        $this->filesize,
-        $this->extension,
-        $this->changed,
-        $this->description,
-        $this->styles
-      );
-      if (!$stmt->fetch()) {
-        throw new NotFound;
-      }
-      $stmt->close();
-      $this->id = $id;
+    $this->id = $id;
+    $stmt = $this->query(
+      "SELECT
+        `created`,
+        `deleted`,
+        IFNULL(COLUMN_GET(`dyn_biographies`, ? AS BINARY), COLUMN_GET(`dyn_biographies`, '{$this->intl->defaultLanguageCode}' AS BINARY)),
+        IFNULL(COLUMN_GET(`dyn_wikipedia`, ? AS BINARY), COLUMN_GET(`dyn_wikipedia`, '{$this->intl->defaultLanguageCode}' AS BINARY)),
+        `name`,
+        `sex`,
+        `birthdate`,
+        `birthplace_id`,
+        `born_name`,
+        `cause_of_death_id`,
+        `deathdate`,
+        `deathplace_id`,
+        `nickname`,
+        `image_uploader_id`,
+        `image_width`,
+        `image_height`,
+        `image_filesize`,
+        `image_extension`,
+        UNIX_TIMESTAMP(`image_changed`),
+        IFNULL(COLUMN_GET(`dyn_image_descriptions`, ? AS BINARY), COLUMN_GET(`dyn_image_descriptions`, '{$this->intl->defaultLanguageCode}' AS BINARY)),
+        `image_styles`
+      FROM `persons`
+      WHERE
+        `id` = ?
+      LIMIT 1",
+      "sssd",
+      [ $this->intl->languageCode, $this->intl->languageCode, $this->intl->languageCode, $id ]
+    );
+    $stmt->bind_result(
+      $this->created,
+      $this->deleted,
+      $this->biography,
+      $this->wikipedia,
+      $this->name,
+      $this->sex,
+      $this->birthDate,
+      $this->birthplace,
+      $this->bornName,
+      $this->causeOfDeath,
+      $this->deathDate,
+      $this->deathplace,
+      $this->nickname,
+      $this->uploaderId,
+      $this->width,
+      $this->height,
+      $this->filesize,
+      $this->extension,
+      $this->changed,
+      $this->description,
+      $this->styles
+    );
+    if (!$stmt->fetch()) {
+      throw new NotFound;
     }
+    $stmt->close();
+    $this->id = $id;
 
     // The person's photo name is always the person's identifier, so set it here.
     $this->filename = &$this->id;
-
-    // If we have an identifier, either from the above query or directly set via PHP's fetch_object() method, try to
-    // load the photo for this person.
-    if ($this->id) {
-      $this->init();
-    }
+    $this->initFetchObject();
   }
 
 }
