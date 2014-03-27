@@ -29,7 +29,7 @@ use \MovLib\Presentation\Error\NotFound;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Person extends \MovLib\Data\Image\AbstractImage {
+class Person extends \MovLib\Core\Database {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -42,7 +42,7 @@ class Person extends \MovLib\Data\Image\AbstractImage {
    *
    * @var integer
    */
-  const STYLE_SPAN_03 = \MovLib\Data\Image\SPAN_03;
+  const STYLE_SPAN_03 = null;//\MovLib\Data\Image\SPAN_03;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -126,21 +126,176 @@ class Person extends \MovLib\Data\Image\AbstractImage {
   public $sex;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+  // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * Instantiate new person.
+   * Get the total number of the movies this person has appeared in.
    *
-   * @param integer $id [optional]
-   *   The unique person's identifier to load, leave empty to create empty instance.
+   * @return integer
+   *   The count of the person's unique movies.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getMoviesCount() {
+    $ids = $this->query(
+      "SELECT DISTINCT
+        `movies`.`id`
+      FROM `movies`
+        LEFT JOIN `movies_directors` AS `md`
+          ON `md`.`movie_id` = `movies`.`id`
+          AND `md`.`person_id` = ?
+        LEFT JOIN `movies_cast` AS `mc`
+          ON `mc`.`movie_id` = `movies`.`id`
+          AND `mc`.`person_id` = ?
+        LEFT JOIN `movies_crew` AS `mcr`
+          ON `mcr`.`movie_id` = `movies`.`id`
+          AND `mcr`.`person_id` = ?
+      WHERE `movies`.`deleted` = false
+        AND NOT (`md`.`person_id` IS NULL AND `mc`.`person_id` IS NULL AND `mcr`.`person_id` IS NULL)",
+      "ddd",
+      [ $this->id, $this->id, $this->id ]
+    )->get_result()->fetch_all();
+    return count($ids);
+  }
+
+  /**
+   * Get all movies matching the offset and row count.
+   *
+   * @param integer $offset
+   *   The offset in the result.
+   * @param integer $rowCount
+   *   The number of rows to retrieve.
+   * @return \mysqli_result
+   *   The query result.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getPersons($offset, $rowCount) {
+    return $this->query(
+      "SELECT
+        `id`,
+        `deleted`,
+        `name`,
+        `sex`,
+        `birthdate` AS `birthDate`,
+        `born_name` AS `bornName`,
+        `deathdate` AS `deathDate`,
+        `nickname`,
+        `image_uploader_id` AS `uploaderId`,
+        `image_width` AS `width`,
+        `image_height` AS `height`,
+        `image_filesize` AS `filesize`,
+        `image_extension` AS `extension`,
+        UNIX_TIMESTAMP(`image_changed`) AS `changed`,
+        COLUMN_GET(`dyn_image_descriptions`, ? AS BINARY) AS `description`,
+        `image_styles` AS `styles`
+      FROM `persons`
+      WHERE `deleted` = false
+      ORDER BY `id` DESC
+      LIMIT ? OFFSET ?",
+      "sdi",
+      [ $this->intl->languageCode, $rowCount, $offset ]
+    )->get_result();
+  }
+
+  /**
+   * Get random person id.
+   *
+   * @return integer|null
+   *   Random person id or null in case of failure.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public static function getRandomPersonId() {
+    $query = "SELECT `id` FROM `persons` WHERE `persons`.`deleted` = false ORDER BY RAND() LIMIT 1";
+    if ($result = $this->query($query)->get_result()) {
+      return $result->fetch_assoc()["id"];
+    }
+  }
+
+  /**
+   * Get the total number of the releases this person has worked on.
+   *
+   * @todo Implement when releases are implemented.
+   * @return integer
+   *   The count of the person's unique releases.
+   */
+  public function getReleasesCount() {
+    return 0;
+  }
+
+  /**
+   * Get the total number of the series this person has appeared in.
+   *
+   * @todo Implement when series are implemented.
+   * @return integer
+   *   The count of the person's unique series.
+   */
+  public function getSeriesCount() {
+    return 0;
+  }
+
+  /**
+   * Get the count of all persons who haven't been deleted.
+   *
+   * @staticvar null|integer $count
+   *   The count of all persons who haven't been deleted.
+   * @return integer
+   *   The count of all persons who haven't been deleted.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getTotalCount() {
+    static $count = null;
+    if (!$count) {
+      $count = $this->query("SELECT COUNT(`id`) FROM `persons` WHERE `deleted` = false LIMIT 1")->get_result()->fetch_row()[0];
+    }
+    return $count;
+  }
+
+  /**
+   * Get the translated and gendered job title.
+   *
+   * @param integer $id
+   *   The job's identifier.
+   * @return string
+   *   The translated and gendered job title.
+   */
+  public function getJobTitle($id) {
+    if (!isset($this->jobTranslations[$id])) {
+      $this->jobTranslations[$id] = $this->query(
+        "SELECT
+          IFNULL(
+            COLUMN_GET(`jobs`.`dyn_names_sex0`, ? AS BINARY),
+            COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$this->intl->defaultLanguageCode}' AS BINARY)
+          ),
+          IFNULL(
+            COLUMN_GET(`jobs`.`dyn_names_sex1`, ? AS BINARY),
+            COLUMN_GET(`jobs`.`dyn_names_sex1`, '{$this->intl->defaultLanguageCode}' AS BINARY)
+          ),
+          IFNULL(
+            COLUMN_GET(`jobs`.`dyn_names_sex2`, ? AS BINARY),
+            COLUMN_GET(`jobs`.`dyn_names_sex2`, '{$this->intl->defaultLanguageCode}' AS BINARY)
+          )
+        FROM `jobs`
+        WHERE `id` = ?
+        LIMIT 1",
+        "sssd",
+        [ $this->intl->languageCode, $this->intl->languageCode, $this->intl->languageCode, $id ]
+      )->get_result()->fetch_row()[$this->sex];
+    }
+    return $this->jobTranslations[$id];
+  }
+
+  /**
+   * Initialize new person.
+   *
+   * @param integer $id
+   *   The unique person's identifier to load.
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Error\NotFound
    */
-  public function __construct($id = null) {
+  public function init($id) {
     // Try to load the person for the given identifier.
     if ($id) {
-      $stmt = $db->query(
+      $stmt = $this->query(
         "SELECT
           `deleted`,
           `name`,
@@ -194,179 +349,21 @@ class Person extends \MovLib\Data\Image\AbstractImage {
     }
   }
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * Get the total number of the movies this person has appeared in.
-   *
-   * @return integer
-   *   The count of the person's unique movies.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getMoviesCount() {
-    $ids = $db->query(
-      "SELECT DISTINCT
-        `movies`.`id`
-      FROM `movies`
-        LEFT JOIN `movies_directors` AS `md`
-          ON `md`.`movie_id` = `movies`.`id`
-          AND `md`.`person_id` = ?
-        LEFT JOIN `movies_cast` AS `mc`
-          ON `mc`.`movie_id` = `movies`.`id`
-          AND `mc`.`person_id` = ?
-        LEFT JOIN `movies_crew` AS `mcr`
-          ON `mcr`.`movie_id` = `movies`.`id`
-          AND `mcr`.`person_id` = ?
-      WHERE `movies`.`deleted` = false
-        AND NOT (`md`.`person_id` IS NULL AND `mc`.`person_id` IS NULL AND `mcr`.`person_id` IS NULL)",
-      "ddd",
-      [ $this->id, $this->id, $this->id ]
-    )->get_result()->fetch_all();
-    return count($ids);
-  }
-
-  /**
-   * Get all movies matching the offset and row count.
-   *
-   * @param integer $offset
-   *   The offset in the result.
-   * @param integer $rowCount
-   *   The number of rows to retrieve.
-   * @return \mysqli_result
-   *   The query result.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public static function getPersons($offset, $rowCount) {
-    return $db->query(
-      "SELECT
-        `id`,
-        `deleted`,
-        `name`,
-        `sex`,
-        `birthdate` AS `birthDate`,
-        `born_name` AS `bornName`,
-        `deathdate` AS `deathDate`,
-        `nickname`,
-        `image_uploader_id` AS `uploaderId`,
-        `image_width` AS `width`,
-        `image_height` AS `height`,
-        `image_filesize` AS `filesize`,
-        `image_extension` AS `extension`,
-        UNIX_TIMESTAMP(`image_changed`) AS `changed`,
-        COLUMN_GET(`dyn_image_descriptions`, ? AS BINARY) AS `description`,
-        `image_styles` AS `styles`
-      FROM `persons`
-      WHERE `deleted` = false
-      ORDER BY `id` DESC
-      LIMIT ? OFFSET ?",
-      "sdi",
-      [ $i18n->languageCode, $rowCount, $offset ]
-    )->get_result();
-  }
-
-  /**
-   * Get random person id.
-   *
-   * @return integer|null
-   *   Random person id or null in case of failure.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public static function getRandomPersonId() {
-    $query = "SELECT `id` FROM `persons` WHERE `persons`.`deleted` = false ORDER BY RAND() LIMIT 1";
-    if ($result = $db->query($query)->get_result()) {
-      return $result->fetch_assoc()["id"];
-    }
-  }
-
-  /**
-   * Get the total number of the releases this person has worked on.
-   *
-   * @todo Implement when releases are implemented.
-   * @return integer
-   *   The count of the person's unique releases.
-   */
-  public function getReleasesCount() {
-    return 0;
-  }
-
-  /**
-   * Get the total number of the series this person has appeared in.
-   *
-   * @todo Implement when series are implemented.
-   * @return integer
-   *   The count of the person's unique series.
-   */
-  public function getSeriesCount() {
-    return 0;
-  }
-
-  /**
-   * Get the count of all persons who haven't been deleted.
-   *
-   * @staticvar null|integer $count
-   *   The count of all persons who haven't been deleted.
-   * @return integer
-   *   The count of all persons who haven't been deleted.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public static function getTotalCount() {
-    static $count = null;
-    if (!$count) {
-      $count = $db->query("SELECT COUNT(`id`) FROM `persons` WHERE `deleted` = false LIMIT 1")->get_result()->fetch_row()[0];
-    }
-    return $count;
-  }
-
-  /**
-   * Get the translated and gendered job title.
-   *
-   * @param integer $id
-   *   The job's identifier.
-   * @return string
-   *   The translated and gendered job title.
-   */
-  public function getJobTitle($id) {
-    if (!isset($this->jobTranslations[$id])) {
-      $this->jobTranslations[$id] = $db->query(
-        "SELECT
-          IFNULL(
-            COLUMN_GET(`jobs`.`dyn_names_sex0`, ? AS BINARY),
-            COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$i18n->defaultLanguageCode}' AS BINARY)
-          ),
-          IFNULL(
-            COLUMN_GET(`jobs`.`dyn_names_sex1`, ? AS BINARY),
-            COLUMN_GET(`jobs`.`dyn_names_sex1`, '{$i18n->defaultLanguageCode}' AS BINARY)
-          ),
-          IFNULL(
-            COLUMN_GET(`jobs`.`dyn_names_sex2`, ? AS BINARY),
-            COLUMN_GET(`jobs`.`dyn_names_sex2`, '{$i18n->defaultLanguageCode}' AS BINARY)
-          )
-        FROM `jobs`
-        WHERE `id` = ?
-        LIMIT 1",
-        "sssd",
-        [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $id ]
-      )->get_result()->fetch_row()[$this->sex];
-    }
-    return $this->jobTranslations[$id];
-  }
-
   /**
    * Initialize the person with their image, deleted flag and translate their route.
    *
+   * return this
    */
-  public function init() {
+  public function initFetchObject() {
     $this->deleted = (boolean) $this->deleted;
-    $this->route   = $i18n->r("/person/{0}", [ $this->id]);
+    $this->route   = $this->intl->r("/person/{0}", [ $this->id]);
     $key           = "edit";
     if ($this->uploaderId) {
       $this->imageExists = true;
       $key               = "photo";
       $this->styles      = unserialize($this->styles);
     }
-    $this->imageRoute = $i18n->r("/person/{0}/{$key}", [ $this->id ]);
+    $this->imageRoute = $this->intl->r("/person/{0}/{$key}", [ $this->id ]);
 
     return $this;
   }
@@ -423,7 +420,7 @@ class Person extends \MovLib\Data\Image\AbstractImage {
       $types  = "isssiisdid";
       $params = [
         $this->changed,
-        $i18n->languageCode,
+        $this->intl->languageCode,
         $this->description,
         $this->extension,
         $this->filesize,
@@ -434,7 +431,7 @@ class Person extends \MovLib\Data\Image\AbstractImage {
         $this->id,
       ];
     }
-    $db->query($query, $types, $params)->close();
+    $this->query($query, $types, $params)->close();
 
     return $this;
   }

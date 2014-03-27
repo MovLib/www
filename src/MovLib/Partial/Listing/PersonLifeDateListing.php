@@ -31,11 +31,11 @@ final class PersonLifeDateListing extends \MovLib\Partial\Listing\PersonListing 
 
   // @devStart
   // @codeCoverageIgnoreStart
-  public function __construct($listItems, $listItemProperty = null, $noItemsText = null) {
+  public function __construct($dicontainer, $listItems, $listItemProperty = null, $noItemsText = null) {
     if (!($listItems instanceof \mysqli_result)) {
       throw new \InvalidArgumentException("\$listItems must be of type \mysqli_result");
     }
-    parent::__construct($listItems, $listItemProperty, $noItemsText);
+    parent::__construct($dicontainer, $listItems, $listItemProperty, $noItemsText);
   }
   // @codeCoverageIgnoreEnd
   // @devEnd

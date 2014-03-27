@@ -95,92 +95,6 @@ class FullPerson extends \MovLib\Data\Person\Person {
   protected $links = false;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Intantiate new Person.
-   *
-   * @param integer $id
-   *   The person's unique ID to load.
-   * @throws \MovLib\Exception\DatabaseException
-   * @throws \MovLib\Presentation\Error\NotFound
-   */
-  public function __construct($id = null) {
-    // Try to load the person for the given identifier.
-    if ($id) {
-      $this->id = $id;
-      $stmt = $db->query(
-        "SELECT
-          `created`,
-          `deleted`,
-          IFNULL(COLUMN_GET(`dyn_biographies`, ? AS BINARY), COLUMN_GET(`dyn_biographies`, '{$i18n->defaultLanguageCode}' AS BINARY)),
-          IFNULL(COLUMN_GET(`dyn_wikipedia`, ? AS BINARY), COLUMN_GET(`dyn_wikipedia`, '{$i18n->defaultLanguageCode}' AS BINARY)),
-          `name`,
-          `sex`,
-          `birthdate`,
-          `birthplace_id`,
-          `born_name`,
-          `cause_of_death_id`,
-          `deathdate`,
-          `deathplace_id`,
-          `nickname`,
-          `image_uploader_id`,
-          `image_width`,
-          `image_height`,
-          `image_filesize`,
-          `image_extension`,
-          UNIX_TIMESTAMP(`image_changed`),
-          IFNULL(COLUMN_GET(`dyn_image_descriptions`, ? AS BINARY), COLUMN_GET(`dyn_image_descriptions`, '{$i18n->defaultLanguageCode}' AS BINARY)),
-          `image_styles`
-        FROM `persons`
-        WHERE
-          `id` = ?
-        LIMIT 1",
-        "sssd",
-        [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $id ]
-      );
-      $stmt->bind_result(
-        $this->created,
-        $this->deleted,
-        $this->biography,
-        $this->wikipedia,
-        $this->name,
-        $this->sex,
-        $this->birthDate,
-        $this->birthplace,
-        $this->bornName,
-        $this->causeOfDeath,
-        $this->deathDate,
-        $this->deathplace,
-        $this->nickname,
-        $this->uploaderId,
-        $this->width,
-        $this->height,
-        $this->filesize,
-        $this->extension,
-        $this->changed,
-        $this->description,
-        $this->styles
-      );
-      if (!$stmt->fetch()) {
-        throw new NotFound;
-      }
-      $stmt->close();
-      $this->id = $id;
-    }
-
-    // The person's photo name is always the person's identifier, so set it here.
-    $this->filename = &$this->id;
-
-    // If we have an identifier, either from the above query or directly set via PHP's fetch_object() method, try to
-    // load the photo for this person.
-    if ($this->id) {
-      $this->init();
-    }
-  }
-
-
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
@@ -563,6 +477,88 @@ class FullPerson extends \MovLib\Data\Person\Person {
     }
 
     return $movies;
+  }
+
+  /**
+   * Initialize new Person.
+   *
+   * @param integer $id
+   *   The person's unique ID to load.
+   * @throws \MovLib\Exception\DatabaseException
+   * @throws \MovLib\Presentation\Error\NotFound
+   */
+  public function init($id) {
+    // Try to load the person for the given identifier.
+    if ($id) {
+      $this->id = $id;
+      $stmt = $db->query(
+        "SELECT
+          `created`,
+          `deleted`,
+          IFNULL(COLUMN_GET(`dyn_biographies`, ? AS BINARY), COLUMN_GET(`dyn_biographies`, '{$i18n->defaultLanguageCode}' AS BINARY)),
+          IFNULL(COLUMN_GET(`dyn_wikipedia`, ? AS BINARY), COLUMN_GET(`dyn_wikipedia`, '{$i18n->defaultLanguageCode}' AS BINARY)),
+          `name`,
+          `sex`,
+          `birthdate`,
+          `birthplace_id`,
+          `born_name`,
+          `cause_of_death_id`,
+          `deathdate`,
+          `deathplace_id`,
+          `nickname`,
+          `image_uploader_id`,
+          `image_width`,
+          `image_height`,
+          `image_filesize`,
+          `image_extension`,
+          UNIX_TIMESTAMP(`image_changed`),
+          IFNULL(COLUMN_GET(`dyn_image_descriptions`, ? AS BINARY), COLUMN_GET(`dyn_image_descriptions`, '{$i18n->defaultLanguageCode}' AS BINARY)),
+          `image_styles`
+        FROM `persons`
+        WHERE
+          `id` = ?
+        LIMIT 1",
+        "sssd",
+        [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $id ]
+      );
+      $stmt->bind_result(
+        $this->created,
+        $this->deleted,
+        $this->biography,
+        $this->wikipedia,
+        $this->name,
+        $this->sex,
+        $this->birthDate,
+        $this->birthplace,
+        $this->bornName,
+        $this->causeOfDeath,
+        $this->deathDate,
+        $this->deathplace,
+        $this->nickname,
+        $this->uploaderId,
+        $this->width,
+        $this->height,
+        $this->filesize,
+        $this->extension,
+        $this->changed,
+        $this->description,
+        $this->styles
+      );
+      if (!$stmt->fetch()) {
+        throw new NotFound;
+      }
+      $stmt->close();
+      $this->id = $id;
+    }
+
+    // The person's photo name is always the person's identifier, so set it here.
+    $this->filename = &$this->id;
+
+    // If we have an identifier, either from the above query or directly set via PHP's fetch_object() method, try to
+    // load the photo for this person.
+    if ($this->id) {
+      $this->init();
+    }
   }
 
 }

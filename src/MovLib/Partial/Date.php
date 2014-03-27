@@ -135,14 +135,16 @@ final class Date {
   /**
    * Format a date as <code><time></code> tag with additional attributes.
    *
+   * @param \MovLib\Core\Intl $intl
+   *   The active intl instance.
    * @param array $attributes [optional]
    *   Additional attributes to apply, <code>"datetime"</code> will be overridden!
    * @return string
    *   Formatted date as <code><time></code> tag with additional attributes.
    */
-  public function format(array $attributes = [], $url = null) {
+  public function format(\MovLib\Core\Intl $intl, array $attributes = [], $url = null) {
     $attributes["datetime"] = $this->iso8601Format();
-    $formatted = $this->intlFormat();
+    $formatted = $this->intlFormat($intl);
     if ($url) {
       $formatted = "<a href='{$url}'>{$formatted}</a>";
     }
@@ -227,23 +229,25 @@ final class Date {
   /**
    * Get the localized formatted date.
    *
+   * @param \MovLib\Core\Intl $intl
+   *   The active intl instance.
    * @param integer $datetype [optional]
    *   Any of the {@see \IntlDateFormatter} constants, defaults to {@see \IntlDateFormatter::MEDIUM}.
    * @return string
    *   The localized and formatted date.
    */
-  public function intlFormat($datetype = \IntlDateFormatter::MEDIUM) {
+  public function intlFormat(\MovLib\Core\Intl $intl, $datetype = \IntlDateFormatter::MEDIUM) {
     // Month and day are empty, return year.
     if ($this->dateInfo["month"] === 0 && $this->dateInfo["day"] === 0) {
       return $this->dateInfo["year"];
     }
 
     $date = $this->dateValue;
-    $fmt  = new \IntlDateFormatter($this->intl->locale, $datetype, \IntlDateFormatter::NONE);
+    $fmt  = new \IntlDateFormatter($intl->locale, $datetype, \IntlDateFormatter::NONE);
 
     // Day is missing, use format strings provided by this class.
     if ($this->dateInfo["month"] !== 0 && $this->dateInfo["day"] === 0) {
-      $fmt->setPattern(self::$dateFormats[$this->intl->languageCode][$datetype]);
+      $fmt->setPattern(self::$dateFormats[$intl->languageCode][$datetype]);
       $date = "{$this->dateInfo["year"]}-{$this->dateInfo["month"]}-01";
     }
 

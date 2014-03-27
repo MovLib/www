@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation;
 
-use \MovLib\Presentation\Partial\Date;
+use \MovLib\Partial\Date;
 
 /**
  * Add various person formatting functions to presentation.
@@ -42,7 +42,7 @@ trait TraitPerson {
     $lifeDates = null;
     if ($person->birthDate || $person->deathDate) {
       if ($person->birthDate) {
-        $birthDate = (new Date($person->birthDate))->format([
+        $birthDate = (new Date($this->presenter, $person->birthDate))->format($this->intl, [
           "property" => "birthDate",
           "title" => $this->intl->t("Date of Birth")
         ]);
@@ -54,7 +54,7 @@ trait TraitPerson {
       if ($person->deathDate) {
         $lifeDates = $this->intl->t("{0}–{1}", [
           $birthDate,
-          (new Date($person->deathDate))->format([ "property" => "deathDate", "title" => $this->intl->t("Date of Death") ])
+          (new Date($this->presenter, $person->deathDate))->format($this->intl, [ "property" => "deathDate", "title" => $this->intl->t("Date of Death") ])
         ]);
       }
       else {

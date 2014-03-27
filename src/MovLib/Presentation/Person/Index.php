@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Person;
 
 use \MovLib\Data\Person\Person;
-use \MovLib\Presentation\Partial\Listing\PersonLifeDateListing;
+use \MovLib\Partial\Listing\PersonLifeDateListing;
 
 /**
  * The listing for the latest person additions.
@@ -34,24 +34,15 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Presentation\TraitPagination;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+  // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * Instantiate new latest persons presentation.
+   * The person object for data retrieval.
    *
+   * @var \MovLib\Data\Person\Person
    */
-  public function __construct() {
-    $this->initPage($this->intl->t("Persons"));
-    $this->initBreadcrumb();
-    $this->initLanguageLinks("/persons", null, true);
-    $this->sidebarInit([
-      [ $this->intl->rp("/persons"), $this->intl->t("Persons"), [ "class" => "ico ico-person" ] ],
-      [ $this->intl->r("/person/random"), $this->intl->t("Random") ],
-    ]);
-    $this->paginationInit(Person::getTotalCount());
-    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/person/create")}'>{$this->intl->t("Create New Person")}</a>";
-  }
+  protected $person;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -61,7 +52,29 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
    * @inheritdoc
    */
   protected function getPageContent() {
-    return new PersonLifeDateListing(Person::getPersons($this->paginationOffset, $this->paginationLimit));
+    return new PersonLifeDateListing(
+      $this->diContainerHTTP,
+      $this->person->getPersons($this->paginationOffset, $this->paginationLimit)
+    );
+  }
+
+  /**
+   * Initialize latest persons presentation.
+   *
+   */
+  public function init() {
+    $this->person = new Person($this->diContainerHTTP);
+    $this->initPage($this->intl->t("Persons"));
+    $this->initBreadcrumb();
+    $this->initLanguageLinks("/persons", null, true);
+    $this->sidebarInit([
+      [ $this->intl->rp("/persons"), $this->intl->t("Persons"), [ "class" => "ico ico-person" ] ],
+      [ $this->intl->r("/person/random"), $this->intl->t("Random") ],
+    ]);
+    $this->paginationInit($this->person->getTotalCount());
+    $this->headingBefore ="<a class='btn btn-large btn-success fr' href='{$this->intl->r(
+        "/person/create"
+      )}'>{$this->intl->t("Create New Person")}</a>";
   }
 
 }

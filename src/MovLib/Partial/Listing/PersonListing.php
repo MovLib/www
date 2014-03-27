@@ -18,7 +18,7 @@
 namespace MovLib\Partial\Listing;
 
 use \MovLib\Data\Person\Person;
-use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Partial\Alert;
 
 /**
  * Listing for person instances.
@@ -30,11 +30,25 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class PersonListing extends \MovLib\Presentation\AbstractBase {
+class PersonListing {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
+
+  /**
+   * The dependency injection container.
+   *
+   * @var \MovLib\Core\DIContainer
+   */
+  protected $diContainer;
+
+  /**
+   * The active intl instance.
+   *
+   * @var \MovLib\Core\Intl
+   */
+  protected $intl;
 
   /**
    * The list items to display.
@@ -57,6 +71,13 @@ class PersonListing extends \MovLib\Presentation\AbstractBase {
    */
   protected $noItemsText;
 
+  /**
+   * The presenting presenter.
+   *
+   * @var \MovLib\Presentation\AbstractPresenter
+   */
+  protected $presenter;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -64,6 +85,8 @@ class PersonListing extends \MovLib\Presentation\AbstractBase {
   /**
    * Instantiate new person listing.
    *
+   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainer
+   *   The dependency injection container.
    * @param mixed $listItems
    *   The items to build the person listing.
    * @param string $listItemProperty [optional]
@@ -71,7 +94,10 @@ class PersonListing extends \MovLib\Presentation\AbstractBase {
    * @param mixed $noItemsText [optional]
    *   The text to display if there are no items, defaults to a generic {@see \MovLib\Presentation\Partial\Alert}.
    */
-  public function __construct($listItems, $listItemProperty = null, $noItemsText = null) {
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainer, $listItems, $listItemProperty = null, $noItemsText = null) {
+    $this->diContainer = $diContainer;
+    $this->intl        = $this->diContainer->intl;
+    $this->presenter   = $this->diContainer->presenter;
     // @devStart
     // @codeCoverageIgnoreStart
     if (isset($listItemProperty) && (empty($listItemProperty) || !is_string($listItemProperty))) {
@@ -105,8 +131,8 @@ class PersonListing extends \MovLib\Presentation\AbstractBase {
     // @devEnd
       $list = null;
       /* @var $person \MovLib\Data\Person\FullPerson */
-      while ($person = $this->listItems->fetch_object("\\MovLib\\Data\\Person\\FullPerson")) {
-        $list .= $this->formatListItem($person);
+      while ($person = $this->listItems->fetch_object("\\MovLib\\Data\\Person\\FullPerson", [ $this->diContainer ])) {
+        $list .= $this->formatListItem($person->initFetchObject());
       }
 
       if ($list) {
@@ -159,9 +185,12 @@ class PersonListing extends \MovLib\Presentation\AbstractBase {
       ])}</small>";
     }
 
+    // @todo implement new image retrieval!
     return
       "<li{$this->listItemProperty} class='hover-item r' typeof='Person'>" .
-        $this->getImage($person->getStyle(Person::STYLE_SPAN_01), $person->route, null, [ "class" => "s s1 tac" ]) .
+        "<a class='no-link s s1 tac'><img alt='' height='60' src='{$this->presenter->getExternalURL(
+          "asset://img/logo/vector.svg"
+        )}' width='60'></a>" .
         "<div class='s s9'>" .
           "<a href='{$person->route}' property='url'><span property='name'>{$person->name}</span></a>{$bornName}" .
         "{$this->getAdditionalContent($person, $listItem)}</div>" .
