@@ -49,6 +49,20 @@ final class Country extends \MovLib\Presentation\AbstractBase {
   protected $country;
 
   /**
+   * The active intl instance.
+   *
+   * @var \MovLib\Core\Intl
+   */
+  protected $intl;
+
+  /**
+   * The presenting presenter.
+   *
+   * @var \MovLib\Presentation\AbstractPresenter
+   */
+  protected $presenter;
+
+  /**
    * The HTML tag to wrap the country.
    *
    * @var string
@@ -62,6 +76,10 @@ final class Country extends \MovLib\Presentation\AbstractBase {
   /**
    * Instantiate new country partial.
    *
+   * @param \MovLib\Core\Intl $intl
+   *   The active intl instance.
+   * @param \MovLib\Presentation\AbstractPresenter $presenter
+   *   The presenting presenter.
    * @param string $code
    *   The ISO 3166-1 alpha-2 code of the country.
    * @param array $attributes [optional]
@@ -69,7 +87,9 @@ final class Country extends \MovLib\Presentation\AbstractBase {
    * @param string $tag [optional]
    *   The tag that should be used to wrap this country, defaults to <code>"span"</code>.
    */
-  public function __construct($code, array $attributes = null, $tag = "span") {
+  public function __construct(\MovLib\Core\Intl $intl, \MovLib\Presentation\AbstractPresenter $presenter, $code, array $attributes = null, $tag = "span") {
+    $this->intl                 = $intl;
+    $this->presenter            = $presenter;
     $this->attributes           = $attributes;
     $this->attributes["typeof"] = "http://schema.org/Country";
     $this->country              = $this->intl->getTranslations("countries")[$code];
@@ -82,7 +102,7 @@ final class Country extends \MovLib\Presentation\AbstractBase {
    * @return string
    */
   public function __toString() {
-    return "<{$this->tag}{$this->expandTagAttributes($this->attributes)}><span property='name'>{$this->country->name}</span></{$this->tag}>";
+    return "<{$this->tag}{$this->presenter->expandTagAttributes($this->attributes)}><span property='name'>{$this->country->name}</span></{$this->tag}>";
   }
 
 
@@ -98,7 +118,7 @@ final class Country extends \MovLib\Presentation\AbstractBase {
    *   The string represntation of the country including a small flag icon.
    */
   public function getFlag($nameVisible = false) {
-    $a = $this->expandTagAttributes($this->attributes);
+    $a = $this->presenter->expandTagAttributes($this->attributes);
     $i = $this->getURL("asset://img/flag/{$this->country->code}.png");
     $n = $nameVisible === true
       ? " <span property='name'>{$this->country->name}</span>"

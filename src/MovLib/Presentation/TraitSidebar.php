@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation;
 
-use \MovLib\Presentation\Partial\Navigation;
+use \MovLib\Partial\Navigation;
 
 /**
  * Add sidebar navigation to presentation.
@@ -87,7 +87,7 @@ trait TraitSidebar {
    *
    * @var boolean
    */
-  protected $sidebarSmall = false;
+  protected $sidebarSmall;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
@@ -116,14 +116,10 @@ trait TraitSidebar {
     $content = $this->getPageContent();
 
     // We have to apply different HTML/CSS depending on the desired size of the sidebar.
-    if ($this->sidebarSmall === true) {
+    if ($this->sidebarSmall) {
       $containerClass                    = " sidebar-s";
       $sidebarClass                      = null;
       $contentClass                      = "s12";
-      $this->sidebarNavigation->callback = function ($menuitem) {
-        $menuitem[1] = "<span class='text'>{$menuitem[1]}</span>";
-        return $menuitem;
-      };
     }
     else {
       $containerClass = null;
@@ -148,9 +144,11 @@ trait TraitSidebar {
    *
    * @param array $menuitems
    *   The sidebar navigation's menuitems.
+   * @param boolean $small [optional]
+   *   Whether to create a small sidebar or not, defaults to <code>FALSE</code>.
    * @return this
    */
-  final protected function sidebarInit($menuitems) {
+  final protected function sidebarInit($menuitems, $small = false) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (!method_exists($this, "initPage")) {
@@ -161,9 +159,15 @@ trait TraitSidebar {
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
+    if (($this->sidebarSmall = $small)) {
+      $c = count($menuitems);
+      for ($i = 0; $i < $c; ++$i) {
+        $menuitems[$i][1] = "<span class='text'>{$menuitems[$i][1]}</span>";
+      }
+    }
 
     $this->bodyClasses                     .= " sidebar";
-    $this->sidebarNavigation                = new Navigation($this->intl->t("Secondary Navigation"), $menuitems, [ "id" => "sidebar-nav" ]);
+    $this->sidebarNavigation                = new Navigation($this, $this->intl->t("Secondary Navigation"), $menuitems, [ "id" => "sidebar-nav" ]);
     $this->sidebarNavigation->ignoreQuery   = true;
     $this->sidebarNavigation->unorderedList = true; // For CSS styling.
 

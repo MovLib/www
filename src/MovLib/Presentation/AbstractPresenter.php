@@ -894,7 +894,7 @@ abstract class AbstractPresenter {
     }
 
     // Create the actual navigation with the trail we just built.
-    $this->breadcrumb = new Navigation($this->intl->t("You are here: "), $trail, [ "class" => "c", "id" => "b" ]);
+    $this->breadcrumb = new Navigation($this, $this->intl->t("You are here: "), $trail, [ "class" => "c", "id" => "b" ]);
     $this->breadcrumb->glue = " › ";
 
     return $this;

@@ -27,7 +27,7 @@ namespace MovLib\Partial;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Date extends \MovLib\Presentation\AbstractBase {
+final class Date {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -93,6 +93,13 @@ class Date extends \MovLib\Presentation\AbstractBase {
    */
   public $dateValue;
 
+  /**
+   * The presenting presenter.
+   *
+   * @var \MovLib\Presentation\AbstractPresenter
+   */
+  protected $presenter;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -100,11 +107,14 @@ class Date extends \MovLib\Presentation\AbstractBase {
   /**
    * Instantiate new date partial.
    *
+   * @param \MovLib\Presentation\AbstractPresenter $presenter
+   *   The presenting presenter.
    * @param string $date [optional]
    *   A date/time string in a valid format as explained in {@link http://www.php.net/manual/en/datetime.formats.php Date
    *   and Time Formats} or an integer, which is treated as UNIX timestamp. Defaults to <code>"now"</code>.
    */
-  public function __construct($date = "now") {
+  public function __construct(\MovLib\Presentation\AbstractPresenter $presenter, $date = "now") {
+    $this->presenter = $presenter;
     if (is_int($date)) {
       $date = date(self::FORMAT_W3C, $date);
     }
@@ -136,7 +146,7 @@ class Date extends \MovLib\Presentation\AbstractBase {
     if ($url) {
       $formatted = "<a href='{$url}'>{$formatted}</a>";
     }
-    return "<time{$this->expandTagAttributes($attributes)}>{$formatted}</time>";
+    return "<time{$this->presenter->expandTagAttributes($attributes)}>{$formatted}</time>";
   }
 
   /**

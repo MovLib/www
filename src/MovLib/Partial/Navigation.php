@@ -37,7 +37,7 @@ namespace MovLib\Partial;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Navigation extends \MovLib\Presentation\AbstractBase {
+final class Navigation {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -51,13 +51,6 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
    * @var array
    */
   protected $attributes;
-
-  /**
-   * Callable that will be called with each menuitem.
-   *
-   * @var null|callable|\Closure
-   */
-  public $callback;
 
   /**
    * The navigation's menuitem glue.
@@ -102,6 +95,13 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
   public $menuitems;
 
   /**
+   * The presenting presenter.
+   *
+   * @var \MovLib\Presentation\AbstractPresenter
+   */
+  protected $presenter;
+
+  /**
    * The navigation's title.
    *
    * @var string
@@ -124,6 +124,8 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
   /**
    * Instantiate new navigation partial.
    *
+   * @param \MovLib\Presentation\AbstractPresenter $presenter
+   *   The presenting presenter.
    * @param string $title
    *   Descriptive title for the complete navigation.
    * @param array $menuitems
@@ -139,7 +141,8 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
    * @param array $attributes [optional]
    *   Additional attributes that should be applied to the <code><nav></code> element.
    */
-  public function __construct($title, array $menuitems, array $attributes = null) {
+  public function __construct(\MovLib\Presentation\AbstractPresenter $presenter, $title, array $menuitems, array $attributes = null) {
+    $this->presenter  = $presenter;
     $this->title      = $title;
     $this->menuitems  = $menuitems;
     $this->attributes = $attributes;
@@ -162,13 +165,10 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
         if ($menuitems && $this->unorderedList === false) {
           $menuitems .= $this->glue;
         }
-        if ($this->callback) {
-          $menuitem = call_user_func($this->callback, $menuitem);
-        }
         if (!empty($menuitem)) {
           if (is_array($menuitem)) {
             $menuitem[2]["role"] = "menuitem";
-            $menuitem            = $this->a($menuitem[0], $menuitem[1], $menuitem[2], $this->ignoreQuery);
+            $menuitem            = $this->presenter->a($menuitem[0], $menuitem[1], $menuitem[2], $this->ignoreQuery);
           }
           $menuitems .= $this->unorderedList === true ? "<li>{$menuitem}</li>" : $menuitem;
         }
@@ -178,7 +178,7 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
       }
       $this->attributes["role"] = "navigation";
       $hideTitle                = $this->hideTitle ? " class='vh'" : null;
-      return "<nav{$this->expandTagAttributes($this->attributes)}><h{$this->headingLevel}{$hideTitle}>{$this->title}</h{$this->headingLevel}><div role='menu'>{$menuitems}</div></nav>";
+      return "<nav{$this->presenter->expandTagAttributes($this->attributes)}><h{$this->headingLevel}{$hideTitle}>{$this->title}</h{$this->headingLevel}><div role='menu'>{$menuitems}</div></nav>";
     // @devStart
     // @codeCoverageIgnoreStart
     }
@@ -208,7 +208,7 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    return $this->addClass("active", $this->menuitems[$index][2]);
+    return $this->presenter->addClass("active", $this->menuitems[$index][2]);
   }
 
 }
