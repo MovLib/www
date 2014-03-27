@@ -15,9 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Help;
+namespace MovLib\Presentation\Help\Category;
 
 use \MovLib\Data\Help\HelpCategory;
+use \MovLib\Data\FileSystem;
 
 /**
  * The main help page.
@@ -28,14 +29,14 @@ use \MovLib\Data\Help\HelpCategory;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\Page {
+class Index extends \MovLib\Presentation\Help\AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new help presentation.
+   * Instantiate new help category presentation.
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
@@ -43,9 +44,11 @@ class Index extends \MovLib\Presentation\Page {
   public function __construct() {
     global $i18n, $kernel;
 
-    $this->initPage($i18n->t("Help"));
-    $this->initLanguageLinks("/help");
-    $this->initBreadcrumb();
+    $this->helpCategory = new HelpCategory((integer) $_SERVER["HELP_CATEGORY_ID"]);
+    $this->initPage($i18n->t("{0} Help", [ $this->helpCategory->title ]));
+    $this->initLanguageLinks($this->helpCategory->routeKey, [ FileSystem::sanitizeFilename($this->helpCategory->title) ]);
+    $this->initHelpBreadcrumb();
+    $this->sidebarInit();
 
     $kernel->stylesheets[] = "help";
   }
@@ -58,29 +61,10 @@ class Index extends \MovLib\Presentation\Page {
    * @inheritdoc
    * @global \MovLib\Data\I18n $i18n
    */
-  protected function getContent() {
+  protected function getPageContent() {
     global $i18n;
 
-    $content = "";
-    $categoryResult = HelpCategory::getHelpCategoryIds();
-    while ($row = $categoryResult->fetch_object()) {
-      /* @var $category \MovLib\Data\Help\HelpCategory */
-      $category = new HelpCategory($row->id);
-
-      $content .=
-        "<div class='s s4'>" .
-          "<h2 class='ico {$category->icon} tac'> {$category->title}</h2>" .
-          "<p>{$category->description}</p>" .
-          "<p class='tac'>" .
-            "<a class='btn btn-success btn-large' href='{$category->route}'>" .
-              $i18n->t("{0} Help", [ $category->title ]) .
-            "</a>" .
-          "</p>" .
-        "</div>"
-      ;
-    }
-
-    return "<div class='c'><div class='r'>{$content}</div></div>";
+    return "";
   }
 
 }

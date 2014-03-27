@@ -312,6 +312,7 @@ INSERT INTO `messages` (`message`, `dyn_translations`) VALUES
 ('until {0}', COLUMN_CREATE('de', 'bis {0}')),
 ('in {0}', COLUMN_CREATE('de', 'in {0}')),
 ('on {0}', COLUMN_CREATE('de', 'am {0}')),
+('{0} Help', COLUMN_CREATE('de', '{0} Hilfe')),
 
 -- Coming Soon Page (must be last)
 

@@ -36,6 +36,20 @@ class HelpCategory extends \MovLib\Data\Database {
 
 
   /**
+   * The help category's description in the current display language.
+   *
+   * @var string
+   */
+  public $description;
+
+  /**
+   * The help category title's icon (e.g. ico-person).
+   *
+   * @var string
+   */
+  public $icon;
+
+  /**
    * The help category's unique identifier.
    *
    * @var integer
@@ -81,15 +95,19 @@ class HelpCategory extends \MovLib\Data\Database {
 
     $stmt = $db->query("
       SELECT
+        `icon`,
+        IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS CHAR), COLUMN_GET(`dyn_descriptions`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `description`,
         `id`,
         IFNULL(COLUMN_GET(`dyn_titles`, ? AS CHAR), COLUMN_GET(`dyn_titles`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `title`
       FROM `help_categories`
       WHERE `id` = ?
       LIMIT 1",
-      "sd",
-      [ $i18n->languageCode, $id ]
+      "ssd",
+      [ $i18n->languageCode, $i18n->languageCode, $id ]
     );
     $stmt->bind_result(
+      $this->icon,
+      $this->description,
       $this->id,
       $this->title
     );

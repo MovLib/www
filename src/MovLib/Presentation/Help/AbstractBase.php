@@ -82,7 +82,7 @@ abstract class AbstractBase extends \MovLib\Presentation\Page {
       // @codeCoverageIgnoreEnd
       // @devEnd
       $breadCrumbItems[] = [ $i18n->r("/help"), $i18n->t("Help") ];
-      $breadCrumbItems[] = [ $this->helpCategory->route, $this->helpCategory->title ];
+      //$breadCrumbItems[] = [ $this->helpCategory->route, $this->helpCategory->title ];
     }
     if (isset($this->helpSubCategory)) {
       // @devStart
@@ -111,19 +111,16 @@ abstract class AbstractBase extends \MovLib\Presentation\Page {
   /**
    * Init help article sidebar.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return $this
    * @throws \LogicException
    */
   protected function sidebarInit() {
-    global $i18n;
-
     /* @var $result \mysqli_result */
     $result = HelpCategory::getHelpCategoryIds();
     $sidebarItems = [];
     while ($row = $result->fetch_object()) {
       $category = new HelpCategory($row->id);
-      $sidebarItems[] = [ $category->route, $category->title ];
+      $sidebarItems[] = [ $category->route, $category->title, [ "class" => "ico {$category->icon}" ] ];
     }
 
     return $this->traitSidebarInit($sidebarItems);
