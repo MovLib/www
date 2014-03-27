@@ -17,6 +17,7 @@
  */
 namespace MovLib\Console\Command\Admin;
 
+use \MovLib\Console\AdminDatabase;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -45,6 +46,13 @@ class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
+
+  /**
+   * The active admin database instance.
+   *
+   * @var \MovLib\Console\AdminDatabase
+   */
+  protected $db;
 
   /**
    * Used to collect plural routes that need translation.
@@ -123,6 +131,8 @@ class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
    * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
+    $this->db = new AdminDatabase($this->diContainer);
+
     // Don't remove the $db variable just because it's unused, it's used in the included routes.php file!
     $this->writeVerbose("Starting to translate and compile nginx routes ...", self::MESSAGE_TYPE_COMMENT);
 
@@ -176,6 +186,38 @@ class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
 
     // Reload nginx and load the newly translated routes.
     if ($this->privileged) {
+      $httpsKeys = "dr://etc/nginx/https/keys";
+      if (!is_dir($httpsKeys) || $this->fs->isDirectoryEmpty($httpsKeys)) {
+        $rootKeys = "/root/keys";
+        if (is_dir($rootKeys) && !$this->fs->isDirectoryEmpty($rootKeys)) {
+          mkdir($httpsKeys, 0660);
+          chown($httpsKeys, "root");
+          chgrp($httpsKeys, "root");
+          $httpsKeysRealpath = $this->fs->realpath($httpsKeys);
+          /* @var $fileinfo \SplFileInfo */
+          foreach ($this->fs->getRecursiveIterator($rootKeys, \RecursiveIteratorIterator::SELF_FIRST) as $fileinfo) {
+            $source      = $fileinfo->getRealPath();
+            $destination = str_replace($rootKeys, $httpsKeysRealpath, $source);
+            if ($fileinfo->isDir()) {
+              $this->writeDebug("Creating directory <comment>{$destination}</comment>");
+              mkdir($destination, 0770);
+              chown($destination, "root");
+              chgrp($destination, "root");
+            }
+            else {
+              $this->writeDebug("Copying <comment>{$source}</comment> to <comment>{$destination}</comment>");
+              copy($source, $destination);
+              chmod($destination, 0660);
+              chown($destination, "root");
+              chgrp($destination, "root");
+            }
+          }
+        }
+        else {
+          throw new \RuntimeException("Couldn't find HTTPS keys and certificates in '{$rootKeys}'.");
+        }
+      }
+
       $this->exec("nginx -t");
       $this->exec("service nginx reload");
     }
@@ -229,7 +271,7 @@ class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
     if ($this->intl->locale != $this->config->defaultLocale) {
       // Check if we already have the route translations for this locale cached.
       if (empty($routes[$this->intl->locale][$context])) {
-        $routes[$this->intl->locale][$context] = require "dr://var/i18n/{$this->intl->locale}/routes/{$context}.php";
+        $routes[$this->intl->locale][$context] = require "dr://var/intl/{$this->intl->locale}/routes/{$context}.php";
       }
 
       // Check if we have a translation for this route and use it if we have one.

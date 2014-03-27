@@ -17,11 +17,7 @@
  */
 namespace MovLib\Console;
 
-use \MovLib\Core\Config;
-use \MovLib\Core\FileSystem;
-use \MovLib\Core\Intl;
-use \MovLib\Core\Kernel;
-use \MovLib\Core\Log;
+use \MovLib\Core\DIContainer;
 
 /**
  * MovLib Command Line Interface Application.
@@ -43,9 +39,11 @@ final class Application extends \Symfony\Component\Console\Application {
    *
    * @param string $basename
    *   The basename of the executed binary (without extension).
+   * @param \MovLib\Core\DIContainer $diContainer
+   *   The dependency injection container.
    */
-  public function __construct($basename, Kernel $kernel, Config $config, Log $log, FileSystem $fs, Intl $intl) {
-    parent::__construct($basename, $config->version);
+  public function __construct($basename, DIContainer $diContainer) {
+    parent::__construct($basename, $diContainer->config->version);
     cli_set_process_title($basename);
 
     // Guess the directory containing the commands, if the result is "Lig" then the "movlib.php" binary was invoked
@@ -60,7 +58,7 @@ final class Application extends \Symfony\Component\Console\Application {
       $command   = "\\MovLib\\Console\\Command\\{$commandDirectory}\\{$fileinfo->getBasename(".php")}";
       $reflector = new \ReflectionClass($command);
       if ($reflector->isInstantiable() && $reflector->isSubclassOf("\\Symfony\\Component\\Console\\Command\\Command")) {
-        $this->add(new $command($kernel, $config, $log, $fs, $intl));
+        $this->add(new $command($diContainer));
       }
     }
   }

@@ -27,16 +27,12 @@
  * @since 0.0.1-dev
  */
 
-/* @var $config \MovLib\Core\Config */
-/* @var $db \MovLib\Core\Database */
-/* @var $fs \MovLib\Core\FileSystem */
-/* @var $stmt \mysqli_stmt */
-/* @var $this \MovLib\Console\Command\Production\NginxRoutes */
+/* @var $this \MovLib\Console\Command\Admin\NginxRoutes */
 
-$stmt = $db->query(
+$stmt = $this->db->query(
   "SELECT `id`, COLUMN_GET(`dyn_titles`, ? AS CHAR(255)) AS `title`, `presenter` FROM `system_pages`",
   "s",
-  [ $config->defaultLanguageCode ]
+  [ $this->intl->defaultLanguageCode ]
 );
 
 /* @var $systemPages \mysqli_result */
@@ -44,7 +40,7 @@ $systemPages = $stmt->get_result();
 
 /* @var $systemPage \MovLib\Data\SystemPage */
 while ($systemPage = $systemPages->fetch_object()):
-  $systemPage->title = $fs->sanitizeFilename($systemPage->title);
+  $systemPage->title = $this->fs->sanitizeFilename($systemPage->title);
 ?>
 
 location = <?= $this->r("/{$systemPage->title}") ?> {

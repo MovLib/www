@@ -28,10 +28,10 @@ use \MovLib\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Home extends \MovLib\Presentation\AbstractPresenter {
+final class Home extends \MovLib\Presentation\AbstractPresenter {
 
   /**
-   * {@inheritdoc}
+   * @inheritdoc
    */
   public function getContent() {
     $articles = [];
@@ -81,10 +81,9 @@ class Home extends \MovLib\Presentation\AbstractPresenter {
   }
 
   /**
-   * {@inheritdoc}
+   * @inheritdoc
    */
-  protected function getHeadTitle() {
-  }
+  protected function getHeadTitle() {}
 
   /**
    * @inheritdoc
@@ -100,7 +99,7 @@ class Home extends \MovLib\Presentation\AbstractPresenter {
         "<div id='banner'>" .
           "<h2 class='c'>{$this->intl->t("Do you like movies?{0}Great, so do we!", [ "<br>" ])}</h2>" .
         "</div>" .
-        "<noscript>{$noscript}</noscript>{$this->alerts}" .
+        "<noscript>{$noscript}</noscript>{$this->alerts}{$content}" .
       "</main>"
     ;
   }
@@ -108,9 +107,11 @@ class Home extends \MovLib\Presentation\AbstractPresenter {
   /**
    * @inheritdoc
    */
-  protected function init() {
+  public function init() {
     $this->initPage($this->config->siteName);
-    $this->initLanguageLinks("/");
+    foreach ($this->intl->systemLocales as $code => $locale) {
+      $this->languageLinks[$code] = "/";
+    }
     $this->initBreadcrumb();
     // A link to the current page would be redundant!
     unset($this->breadcrumb->menuitems[1]);

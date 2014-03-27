@@ -39,25 +39,25 @@ class SeedSubtitles extends \MovLib\Console\Command\Install\SeedLanguages {
   }
 
   /**
-   * {@inheritdoc}
+   * @inheritdoc
    */
   protected function translate() {
     // Translate all available languages to the desired locale.
     $languages = [];
     foreach ($this->codes as $code) {
-      $languages[$code] = \Locale::getDisplayLanguage($code, $i18n->locale);
+      $languages[$code] = \Locale::getDisplayLanguage($code, $this->intl->locale);
     }
 
     // Add the two special language codes.
-    $languages[Intl::CODE_COMMENTARY] = $i18n->t("Commentary");
-    $languages[Intl::CODE_FACT]       = $i18n->t("Facts");
-    $languages[Intl::CODE_OTHER]      = $i18n->t("Other");
+    $languages[Intl::CODE_COMMENTARY] = $this->intl->t("Commentary");
+    $languages[Intl::CODE_FACT]       = $this->intl->t("Facts");
+    $languages[Intl::CODE_OTHER]      = $this->intl->t("Other");
 
     // Prepare search array which helps us to identify which special language codes don't have a native translation.
     $noNative = [ Intl::CODE_COMMENTARY, Intl::CODE_FACT, Intl::CODE_OTHER ];
 
     // Sort the translated language according to their translated names.
-    $i18n->getCollator()->asort($languages);
+    $this->intl->getCollator()->asort($languages);
 
     $translations = null;
     foreach ($languages as $code => $name) {

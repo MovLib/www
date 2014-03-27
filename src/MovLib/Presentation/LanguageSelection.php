@@ -36,28 +36,29 @@ use \MovLib\Partial\Navigation;
 final class LanguageSelection extends \MovLib\Presentation\AbstractPresenter {
 
   /**
-   * {@inheritdoc}
+   * @inheritdoc
    */
-  public function getContent() {
+  protected function getContent() {
     $prerender = $menuitems = null;
-    foreach ($config->locales as $code => $locale) {
-      $href = "//{$code}.{$config->hostname}/";
+    foreach ($this->config->locales as $code => $locale) {
+      $href = "//{$code}.{$this->config->hostname}/";
       // Doesn't validate, but the browsers like it. Please note that Chrome doesn't prerender more than one URL and
       // no HTTPS pages; there's nothing we can do about that. But it works great in Gecko and IE.
       $prerender  .= "<link rel='prefetch' href='{$href}'><link rel='prerender' href='{$href}'>";
       $menuitems[] = [ $href, \Locale::getDisplayLanguage($locale, $code), [ "lang" => $code ] ];
     }
 
-    $navigation       = new Navigation($this->intl->t("Available Languages"), $menuitems, [ "class" => "well well-lg" ]);
+    $navigation = new Navigation($this, $this->intl->t("Available Languages"), $menuitems, [ "class" => "well well-lg" ]);
     $navigation->glue = " / ";
 
     return "{$prerender}<p>{$this->intl->t("Please select your preferred language from the following list.")}</p>{$navigation}";
   }
 
   /**
-   * {@inheritdoc}
+   * @inheritdoc
    */
-  public function getFooter() {
+  protected function getFooter() {
+    return
       "<footer id='f'><div class='c'><div class='r'><p>{$this->intl->t(
         "Is your language missing from our list? Help us translate {sitename} to your language. More information can " .
         "be found at {0}our translation portal{1}.",
@@ -69,27 +70,28 @@ final class LanguageSelection extends \MovLib\Presentation\AbstractPresenter {
   /**
    * @inheritdoc
    */
-  public function getHeader() {}
+  protected function getHeader() {}
 
   /**
-   * {@inheritdoc}
+   * @inheritdoc
    */
-  public function getMainContent($content) {
+  protected function getMainContent($content) {
+    return
       "<main class='{$this->id}-content' id='m' role='main'><div class='c'>" .
         "<h1 class='cf'>" .
           "<img alt='' height='192' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='192'>" .
-          "<span>{$config->siteNameAndSloganHTML}</span>" .
+          "<span>{$this->config->siteNameAndSloganHTML}</span>" .
         "</h1>{$this->alerts}{$content}" .
       "</div></main>"
     ;
   }
 
   /**
-   * {@inheritdoc}
+   * @inheritdoc
    */
-  protected function init() {
+  public function init() {
     $this->initPage($this->intl->t("Language Selection"));
-    $this->next("//{$this->intl->languageCode}.{$config->hostname}/");
+    $this->next("//{$this->intl->languageCode}.{$this->config->hostname}/");
     $this->stylesheets[] = "language-selection";
   }
 

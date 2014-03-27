@@ -17,12 +17,7 @@
  */
 namespace MovLib\Console\Command\Install;
 
-use \MovLib\Core\Config;
-use \MovLib\Core\FileSystem;
-use \MovLib\Core\Intl;
-use \MovLib\Core\Kernel;
-use \MovLib\Core\Log;
-use \MovLib\Core\Shell;
+use \MovLib\Core\DIContainer;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -54,7 +49,7 @@ abstract class AbstractIntlCommand extends \MovLib\Console\Command\AbstractComma
    *
    * @var string
    */
-  const ICU_SOURCE_DATE_DIR = "dr://var/i18n/icu-data";
+  const ICU_SOURCE_DATE_DIR = "dr://var/intl/icu-data";
 
   /**
    * Intl ICU version file URI.
@@ -62,7 +57,7 @@ abstract class AbstractIntlCommand extends \MovLib\Console\Command\AbstractComma
    * @todo We can concatenate constants in PHP 5.6.
    * @var string
    */
-  const ICU_VERSION_URI = "dr://var/i18n/icu-data/.version";
+  const ICU_VERSION_URI = "dr://var/intl/icu-data/.version";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -71,8 +66,8 @@ abstract class AbstractIntlCommand extends \MovLib\Console\Command\AbstractComma
   /**
    * @inheritdoc
    */
-  public function __construct(Kernel $kernel, Config $config, Log $log, FileSystem $fs, Intl $intl) {
-    parent::__construct($kernel, $config, $log, $fs, $intl);
+  public function __construct(DIContainer $diContainer) {
+    parent::__construct($diContainer);
     $this->addArgument(
       "locale",
       InputArgument::IS_ARRAY | InputArgument::OPTIONAL,
@@ -80,7 +75,7 @@ abstract class AbstractIntlCommand extends \MovLib\Console\Command\AbstractComma
         "The system locales for which translations should be generated, either a language code or a locale. Note that " .
         "the default value 'all' is a special keyword, if 'all' is part of your supplied arguments any other argument " .
         "is simply ignored and translations for all available system locales will be generated. The following system " .
-        "locales are currently available:\n\n<info>" . implode("</info>, <info>", [ "all" ] + $config->locales) .
+        "locales are currently available:\n\n<info>" . implode("</info>, <info>", [ "all" ] + $this->config->locales) .
         "</info>",
         120
       )),
@@ -125,31 +120,32 @@ abstract class AbstractIntlCommand extends \MovLib\Console\Command\AbstractComma
     $args = $input->getArgument("locale");
     if (in_array("all", $args)) {
       $this->writeVerbose("Found special <comment>all</comment> keyword, generating translations for all system locales");
-      $locales = $config->locales;
+      $locales = $this->config->locales;
     }
     else {
       foreach ($args as $arg) {
-        if (!isset($config->locales[$arg]) && !in_array($arg, $config->locales)) {
+        if (!isset($this->config->locales[$arg]) && !in_array($arg, $this->config->locales)) {
           throw new \InvalidArgumentException("Supplied locale '{$arg}' is not a valid system locale.");
         }
         $languageCode           = "{$arg[0]}{$arg[1]}";
-        $locales[$languageCode] = $config->locales[$languageCode];
+        $locales[$languageCode] = $this->config->locales[$languageCode];
       }
     }
 
     $this->writeDebug("Creating target URI for translations based on the command's name");
     $targetFilename = str_replace("seed-", "", $this->getName());
-    $this->writeVeryVerbose("Target filename will be <comment>dr://var/i18n/<locale>/{$targetFilename}.php</comment>");
+    $name = strtr($this->getName(), "-", " ");
+    $this->writeVeryVerbose("Target filename will be <comment>dr://var/intl/<locale>/{$targetFilename}.php</comment>");
 
     foreach ($locales as $locale) {
-      $this->writeDebug("Creating new global I18n instance for <comment>{$locale}</comment>");
-      $i18n->setLocale($locale);
+      $this->writeDebug("Setting Intl locale to <comment>{$locale}</comment>");
+      $this->intl->setLocale($locale);
 
-      $this->writeVerbose("Creating translations for <comment>{$locale}</comment>");
-      file_put_contents("dr://var/i18n/{$locale}/{$targetFilename}.php", "<?php return[{$this->translate()}];");
+      $this->writeVerbose("Creating <info>{$name}</info> translations for <comment>{$locale}</comment>");
+      file_put_contents("dr://var/intl/{$locale}/{$targetFilename}.php", "<?php return[{$this->translate()}];");
     }
 
-    $i18n->setLocale($i18n->defaultLocale);
+    $this->intl->setLocale($this->intl->defaultLocale);
     $this->writeDebug("Successfully created translations for " . implode(", ", $locales) . "!", self::MESSAGE_TYPE_INFO);
     return 0;
   }
@@ -170,8 +166,8 @@ abstract class AbstractIntlCommand extends \MovLib\Console\Command\AbstractComma
    * @throws \InvalidArgumentException
    */
   final protected function getResourceBundle($dataSourceDirectoryName) {
-    $source     = self::ICU_SOURCE_DATE_DIR . "/{$dataSourceDirectoryName}";
-    $version    = $this->getVersion();
+    $source  = self::ICU_SOURCE_DATE_DIR . "/{$dataSourceDirectoryName}";
+    $version = $this->getVersion();
 
     // Make sure we have the latest sources available.
     if (is_dir(self::ICU_SOURCE_DATE_DIR) && is_file(self::ICU_VERSION_URI) && version_compare($version, file_get_contents(self::ICU_VERSION_URI), ">")) {
@@ -187,22 +183,22 @@ abstract class AbstractIntlCommand extends \MovLib\Console\Command\AbstractComma
     }
 
     // Load the best matching translations.
-    $source    = "{$source}/{$i18n->languageCode}.txt";
-    $srcLocale = "{$source}/{$i18n->locale}.txt";
+    $source    = "{$source}/{$this->intl->languageCode}.txt";
+    $srcLocale = "{$source}/{$this->intl->locale}.txt";
     if (is_file($srcLocale)) {
       $source = $srcLocale;
     }
     elseif (!is_file($source)) {
-      throw new \UnexpectedValueException("There are not translations available for '{$i18n->languageCode}' ('{$dataSourceDirectoryName}')");
+      throw new \UnexpectedValueException("There are not translations available for '{$this->intl->languageCode}' ('{$dataSourceDirectoryName}')");
     }
 
     // Generate the resource bundle.
     $destination    = "dr://tmp/icu-resource-bundle";
     mkdir($destination);
-    $destRealpath   = $fs->realpath($destination);
-    $this->exec("genrb --encoding UTF-8 --destdir '{$destRealpath}' '{$fs->realpath($source)}'");
-    $resourceBundle = new \ResourceBundle($i18n->locale, $destRealpath);
-    $fs->registerFileForDeletion($destination, true);
+    $destRealpath   = $this->fs->realpath($destination);
+    $this->exec("genrb --encoding UTF-8 --destdir '{$destRealpath}' '{$this->fs->realpath($source)}'");
+    $resourceBundle = new \ResourceBundle($this->intl->locale, $destRealpath);
+    $this->fs->registerFileForDeletion($destination, true);
 
     return $resourceBundle;
   }
@@ -221,7 +217,7 @@ abstract class AbstractIntlCommand extends \MovLib\Console\Command\AbstractComma
    */
   final protected function getVersion() {
     $this->writeDebug("Determining installed ICU version...");
-    Shell::execute("icu-config --version", $version);
+    $this->getShell()->execute("icu-config --version", $version);
     return trim(strtr($version[0], ".", "-"));
   }
 
@@ -232,9 +228,10 @@ abstract class AbstractIntlCommand extends \MovLib\Console\Command\AbstractComma
    * @throws \MovLib\Exception\ShellException
    */
   final protected function svnExport() {
-    $srcRealpath = $fs->realpath(self::ICU_SOURCE_DATE_DIR);
+    $srcRealpath = $this->fs->realpath(self::ICU_SOURCE_DATE_DIR);
     $version     = $this->getVersion();
 
+    $this->writeVerbose("SVN exporting Intl ICU source data, this might some time...");
     $this->exec("svn export 'http://source.icu-project.org/repos/icu/icu/tags/release-{$version}/source/data' '{$srcRealpath}'");
     file_put_contents(self::ICU_VERSION_URI, $version);
 

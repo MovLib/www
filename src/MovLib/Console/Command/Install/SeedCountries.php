@@ -83,10 +83,10 @@ class SeedCountries extends \MovLib\Console\Command\Install\AbstractIntlCommand 
   protected function translate() {
     $countries = [];
     foreach ($this->codes as $code) {
-      $countries[$code] = \Locale::getDisplayRegion("xx-{$code}", $i18n->locale);
+      $countries[$code] = \Locale::getDisplayRegion("xx-{$code}", $this->intl->locale);
     }
 
-    $i18n->getCollator()->asort($countries);
+    $this->intl->getCollator()->asort($countries);
 
     $translations = null;
     foreach ($countries as $code => $name) {

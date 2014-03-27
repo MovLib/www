@@ -63,11 +63,4 @@ class DIContainer {
    */
   public $log;
 
-  /**
-   * The presenting presenter.
-   *
-   * @var \MovLib\Presentation\AbstractPresenter
-   */
-  public $presenter;
-
 }

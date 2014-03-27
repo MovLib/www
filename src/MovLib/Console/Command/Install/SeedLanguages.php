@@ -95,18 +95,18 @@ class SeedLanguages extends \MovLib\Console\Command\Install\AbstractIntlCommand 
     // Translate all available languages to the desired locale.
     $languages = [];
     foreach ($this->codes as $code) {
-      $languages[$code] = \Locale::getDisplayLanguage($code, $i18n->locale);
+      $languages[$code] = \Locale::getDisplayLanguage($code, $this->intl->locale);
     }
 
     // Add the two special language codes.
-    $languages[Intl::CODE_NON_LINGUISTIC] = $i18n->t("Silent");
-    $languages[Intl::CODE_OTHER]          = $i18n->t("Other");
+    $languages[Intl::CODE_NON_LINGUISTIC] = $this->intl->t("Silent");
+    $languages[Intl::CODE_OTHER]          = $this->intl->t("Other");
 
     // Prepare search array which helps us to identify which special language codes don't have a native translation.
     $noNative = [ Intl::CODE_NON_LINGUISTIC, Intl::CODE_OTHER ];
 
     // Sort the translated language according to their translated names.
-    $i18n->getCollator()->asort($languages);
+    $this->intl->getCollator()->asort($languages);
 
     $translations = null;
     foreach ($languages as $code => $name) {
@@ -118,7 +118,7 @@ class SeedLanguages extends \MovLib\Console\Command\Install\AbstractIntlCommand 
         $native = \Locale::getDisplayLanguage($code, $code);
       }
 
-      // Put it together.
+      $this->writeDebug("Translating <comment>{$code}</comment> to <info>{$this->intl->locale}</info>");
       $translations .= '"' . $code . '"=>(object)["code"=>"' . $code . '","name"=>"' . $name . '","native"=>"' . $native . '"],';
     }
 

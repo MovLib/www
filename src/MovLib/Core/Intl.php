@@ -261,7 +261,7 @@ final class Intl extends \MovLib\Core\Database {
       }
 
       // Build absolute path to the translation file.
-      $file = "dr://var/i18n/{$this->locale}/{$filename}.php";
+      $file = "dr://var/intl/{$this->locale}/{$filename}.php";
 
       // Only load the translation file if it really exists, some things don't need translation in the default locale
       // (e.g. routes) and others do (e.g. time zones).

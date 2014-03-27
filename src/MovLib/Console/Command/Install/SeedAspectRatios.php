@@ -82,12 +82,12 @@ final class SeedAspectRatios extends \MovLib\Console\Command\Install\AbstractInt
    * {@inheritdoc}
    */
   protected function translate() {
-    $numberFormatter = new \NumberFormatter($i18n->locale, \NumberFormatter::DECIMAL, "#0.###");
+    $numberFormatter = new \NumberFormatter($this->intl->locale, \NumberFormatter::DECIMAL, "#0.###");
     $translations    = null;
     foreach ($this->aspectRatios as $intl => $info) {
       $name = "{$numberFormatter->format($intl)}:1";
       if (isset($info)) {
-        $name = $i18n->t("{0} ({1})", [ $name, $info ]);
+        $name = $this->intl->t("{0} ({1})", [ $name, $info ]);
       }
       $this->writeDebug("Aspect Ratio <comment>{$intl} => {$name}</comment>");
       $translations .= '"' . $intl . '"=>(object)["code"=>"' . $intl . '","name"=>"' . $name . '"],';

@@ -234,9 +234,12 @@ final class FileSystem {
    *
    * @param string $uri
    *   URI of the start directory to recursively iterate through.
+   * @param integer $mode
+   *   The {@see \RecursiveIteratorIterator} mode, see original documentation for more info. Defaults to
+   *   {@see \RecursiveIteratorIterator::CHILD_FIRST}.
    * @return \RecursiveIteratorIterator
    */
-  public function getRecursiveIterator($uri) {
+  public function getRecursiveIterator($uri, $mode = \RecursiveIteratorIterator::CHILD_FIRST) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($uri) || !is_string($uri)) {
@@ -244,7 +247,7 @@ final class FileSystem {
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    return new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($uri, \RecursiveDirectoryIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST);
+    return new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($uri, \RecursiveDirectoryIterator::SKIP_DOTS), $mode);
   }
 
   /**
@@ -274,6 +277,18 @@ final class FileSystem {
     catch (\ErrorException $e) {
       throw new FileSystemException("No stream wrapper available to handle '{$uri}'.", null, $e);
     }
+  }
+
+  /**
+   * Check if given directory is empty.
+   *
+   * @param string $uri
+   *   URI or canonical path of the directory.
+   * @return boolean
+   *   <code>TRUE</code> if the directory is empty, <code>FALSE</code> otherwise.
+   */
+  public function isDirectoryEmpty($uri) {
+    return (count(glob("{$uri}/*")) === 0);
   }
 
   /**

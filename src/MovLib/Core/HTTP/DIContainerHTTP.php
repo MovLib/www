@@ -29,23 +29,30 @@ namespace MovLib\Core\HTTP;
 class DIContainerHTTP extends \MovLib\Core\DIContainer {
 
   /**
-   * Active request instance, <code>NULL</code> in CLI context.
+   * The presenting presenter.
    *
-   * @var \MovLib\Core\HTTP\Request|null
+   * @var \MovLib\Presentation\AbstractPresenter
+   */
+  public $presenter;
+
+  /**
+   * Active request instance.
+   *
+   * @var \MovLib\Core\HTTP\Request
    */
   public $request;
 
   /**
-   * Active response instance, <code>NULL</code> in CLI context.
+   * Active response instance.
    *
-   * @var \MovLib\Core\HTTP\Response|null
+   * @var \MovLib\Core\HTTP\Response
    */
   public $response;
 
   /**
-   * Active session instance, <code>NULL</code> in CLI context.
+   * Active session instance.
    *
-   * @var \MovLib\Core\HTTP\Session|null
+   * @var \MovLib\Core\HTTP\Session
    */
   public $session;
 
