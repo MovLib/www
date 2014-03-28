@@ -17,7 +17,7 @@
  */
 namespace MovLib\Core;
 
-use \MovLib\Data\Collator;
+use \MovLib\Exception\DatabaseException;
 
 /**
  * The i18n model loads and and updated translations and retrieves translated data.
@@ -151,7 +151,7 @@ final class Intl extends \MovLib\Core\Database {
   /**
    * Instantiate new I18n object.
    *
-   * @param string $locale
+   * @param string $locale [optional]
    *   The locale of this instance.
    * @param string $defaultLocale
    *   The default system locale.
@@ -184,21 +184,6 @@ final class Intl extends \MovLib\Core\Database {
 
 
   /**
-   * Format a message without translation, very useful for inline number formatting.
-   *
-   * @param string $message
-   *   The message to format.
-   * @param array $args
-   *   The message arguments.
-   * @return string
-   *   The formatted message.
-   * @throws \IntlException
-   */
-  public function format($message, array $args) {
-    return \MessageFormatter::formatMessage($this->locale, $message, $args);
-  }
-
-  /**
    * Get number formatted in human readable form.
    *
    * @param integer $bytes
@@ -229,48 +214,37 @@ final class Intl extends \MovLib\Core\Database {
   }
 
   /**
-   * Get collator for the current locale.
-   *
-   * @staticvar array $collators
-   *   Cache for collator instances.
-   * @return \MovLib\Data\Collator
-   *   If instantiating of the collator failed (e.g. non supported locale).
-   */
-  public function getCollator() {
-    static $collators = [];
-    if (empty($collators[$this->locale])) {
-      $collators[$this->locale] = new Collator($this->locale);
-    }
-    return $collators[$this->locale];
-  }
-
-  /**
    * Get translations from file.
    *
    * @param string $filename
    *   The name of the file that contains the translations.
+   * @param string $locale [optional]
+   *   Use a different locale for this translation.
    * @return array
    *   The translations from the file or an empty array if no translations are available.
    * @throws \IntlException
    */
-  public function getTranslations($filename) {
+  public function getTranslations($filename, $locale = null) {
     try {
+      if (!$locale) {
+        $locale = $this->locale;
+      }
       // Nothing to do if we already have the translations cached for this entry.
-      if (isset(self::$translations[$this->locale][$filename])) {
-        return self::$translations[$this->locale][$filename];
+      if (isset(self::$translations[$locale][$filename])) {
+        return self::$translations[$locale][$filename];
       }
 
       // Build absolute path to the translation file.
-      $file = "dr://var/intl/{$this->locale}/{$filename}.php";
+      $file = "dr://var/intl/{$locale}/{$filename}.php";
 
       // Only load the translation file if it really exists, some things don't need translation in the default locale
       // (e.g. routes) and others do (e.g. time zones).
       if (is_file($file)) {
-        return (self::$translations[$this->locale][$filename] = require $file);
+        return (self::$translations[$locale][$filename] = require $file);
       }
 
       // No cached entry and not file was loaded, create an empty index in the cache to speed up later look ups.
-      return (self::$translations[$this->locale][$filename] = []);
+      return (self::$translations[$locale][$filename] = []);
     }
     catch (\Exception $e) {
       throw new \IntlException("Couldn't get translations for '{$filename}'.", null, $e);
@@ -290,23 +264,28 @@ final class Intl extends \MovLib\Core\Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function insertMessage($message, $comment = null) {
-    // We want to make sure that this message isn't already stored in the database.
-    $result = $this->query(
-      "SELECT `message_id` FROM `messages` WHERE `message` = ? LIMIT 1",
-      "s",
-      [ $message ]
-    )->get_result()->fetch_assoc();
+    $this->insertMessages([[ "message" => $message, $comment => null ]]);
+    return $this;
+  }
 
-    // Only insert if above query didn't return any result.
-    if (empty($result)) {
-      // Insert the message into the database.
-      $this->query(
-        "INSERT INTO `messages` (`message`, `comment`, `dyn_translations`) VALUES (?, ?, '')",
-        "ss",
-        [ $message, $comment ]
-      );
+  /**
+   * Insert multiple messages at once.
+   *
+   * @param array $messages
+   *   Array arrays that contain the key <code>"message"</code> and optionally <code>"comment"</code>.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function insertMessages(array $messages) {
+    if (!($stmt = $this->mysqli->prepare("INSERT INTO `messages` (`message`, `comment`, `dyn_translations`) VALUES (?, ?, '')"))) {
+      throw new DatabaseException;
     }
-
+    foreach ($messages as list($message, $comment)) {
+      if (!$stmt->bind_param("ss", $message, empty($comment) ? null : $comment) || !$stmt->execute()) {
+        throw new DatabaseException;
+      }
+    }
+    $stmt->close();
     return $this;
   }
 
@@ -317,22 +296,21 @@ final class Intl extends \MovLib\Core\Database {
    *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
    * @param array $args [optional]
    *   The message formatter arguments.
+   * @param string $locale [optional]
+   *   Use a different locale for this translation.
    * @return string
    *   The translated and formatted singular route.
    * @throws \IntlException
    */
-  public function r($route, array $args = null) {
+  public function r($route, array $args = null, $locale = null) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (empty($route) || !is_string($route)) {
-      throw new \LogicException("\$route cannot be empty and must of type string");
-    }
     if ($route == "/") {
       throw new \LogicException("Translating the root route '/' makes no sense");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    return $this->translate($route, $args, "routes/singular");
+    return $this->translate($route, $args, "routes/singular", $locale);
   }
 
   /**
@@ -342,28 +320,27 @@ final class Intl extends \MovLib\Core\Database {
    *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
    * @param array $args [optional]
    *   The message formatter arguments.
+   * @param string $locale [optional]
+   *   Use a different locale for this translation.
    * @return string
    *   The translated and formatted plural route.
    * @throws \IntlException
    */
-  public function rp($route, array $args = null) {
+  public function rp($route, array $args = null, $locale = null) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (empty($route) || !is_string($route)) {
-      throw new \LogicException("\$route cannot be empty and must of type string");
-    }
     if ($route == "/") {
       throw new \LogicException("Translating the root route '/' makes no sense");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    return $this->translate($route, $args, "routes/plural");
+    return $this->translate($route, $args, "routes/plural", $locale);
   }
 
   /**
    * Set the locale.
    *
-   * @param string $locale
+   * @param string $locale [optional]
    *   The locale to set, you can also pass a language code.
    * @return this
    * @throws \InvalidArgumentException
@@ -392,19 +369,14 @@ final class Intl extends \MovLib\Core\Database {
    *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
    * @param array $args [optional]
    *   Numeric array of arguments that should be inserted into <var>$message</var>.
+   * @param string $locale [optional]
+   *   Use a different locale for this translation.
    * @return string
    *   The formatted and translated <var>$message</var>.
    * @throws \IntlException
    */
-  public function t($message, array $args = null) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (empty($message) || !is_string($message)) {
-      throw new \LogicException("\$message cannot be empty and must be of type string");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    return $this->translate($message, $args, "messages");
+  public function t($message, array $args = null, $locale = null) {
+    return $this->translate($message, $args, "messages", $locale);
   }
 
   /**
@@ -426,32 +398,30 @@ final class Intl extends \MovLib\Core\Database {
    * @param array $args [optional]
    *   The message's arguments to insert into placeholder in <var>$plural</var> or <var>$singular</var>. Defaults to
    *   <code>NULL</code> (no replacements).
+   * @param string $locale [optional]
+   *   Use a different locale for this translation.
    * @return string
    *   The translated and formatted plural message.
    * @throws \IntlException
    */
-  public function tp($plural, $singular = null, $count = 1, array $args = null) {
+  public function tp($plural, $singular = null, $count = 1, array $args = null, $locale = null) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (empty($plural) || is_string($plural) === false) {
-      throw new \LogicException("\$plural cannot be empty and must be of type string");
+    assert(!empty($plural));
+    assert(is_string($plural));
+    if (isset($singular)) {
+      assert(!empty($singular));
+      assert(is_string($singular));
     }
-    if (isset($singular) && (empty($singular) || is_string($singular) === false)) {
-      throw new \LogicException("\$singular cannot be empty and must be of type string");
-    }
-    if (is_numeric($count) === false) {
-      throw new \LogicException("\$count must be numeric");
-    }
-    if (isset($args["@count"])) {
-      throw new \LogicException("You cannot have a '@count' key in the arguments passed to I18n::tp()");
-    }
+    assert(is_numeric($count));
+    assert(empty($args["@count"]));
     // @codeCoverageIgnoreEnd
     // @devEnd
     if (empty($singular)) {
       $singular = $plural;
     }
     $args["@count"] = $count;
-    return $this->translate("{@count, plural, one{{$singular}} other{{$plural}}}", $args, "messages");
+    return $this->translate("{@count, plural, one{{$singular}} other{{$plural}}}", $args, "messages", $locale);
   }
 
   /**
@@ -464,41 +434,62 @@ final class Intl extends \MovLib\Core\Database {
    * @param string $context
    *   The translations context (e.g. <code>"routes/singular"</code> or <code>"countries"</code>) if you pass
    *   <code>NULL</code> the database is asked.
+   * @param null|string $locale
+   *   Use a different locale for this translation.
    * @return string
    *   The translated and formatted pattern.
    * @throws \IntlException
    */
-  public function translate($pattern, $args, $context) {
+  public function translate($pattern, $args, $context, $locale) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert(!empty($pattern));
+    assert(is_string($pattern));
+    if (isset($args)) {
+      assert(!empty($args));
+    }
+    assert(!empty($context));
+    assert(is_string($context));
+    if (isset($locale)) {
+      assert(preg_match("/[a-z]{2}[_\-][a-z]{2}/i", $locale));
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     try {
+      if (!$locale) {
+        $locale = $this->locale;
+      }
       // Only attempt to translate the pattern if we have no translation already cached.
-      if (empty(self::$translations[$this->locale][$context][$pattern])) {
+      if (empty(self::$translations[$locale][$context][$pattern])) {
         // Fetch translations from database for message context.
         if ($context == "messages") {
-          list(self::$translations[$this->locale][$context][$pattern]) = $this->query(
+          $stmt = $this->query(
             "SELECT COLUMN_GET(`dyn_translations`, ? AS CHAR) FROM `messages` WHERE `message` = ? LIMIT 1",
             "ss",
-            [ $this->languageCode, $pattern ]
-          )->get_result()->fetch_row();
+            [ "{$locale[0]}{$locale[1]}", $pattern ]
+          );
+          list(self::$translations[$locale][$context][$pattern]) = $stmt->get_result()->fetch_row();
+          $stmt->close();
         }
         // Fetch translations from file for everything else, we don't need the returned value because we're directly
         // accessing the internal caching array.
         else {
-          $this->getTranslations($context);
+          $this->getTranslations($context, $locale);
         }
 
         // Check if we have a translation for this pattern. If we have none this either means that the pattern is in the
         // default locale and has no translations (e.g. time zones have translations in the default locale as well, but
         // most other things have no default locale translations). We insert the given pattern in this case to speed up
         // later look ups.
-        if (empty(self::$translations[$this->locale][$context][$pattern])) {
-          self::$translations[$this->locale][$context][$pattern] = $pattern;
+        if (empty(self::$translations[$locale][$context][$pattern])) {
+          self::$translations[$locale][$context][$pattern] = $pattern;
         }
       }
 
       if ($args) {
-        return \MessageFormatter::formatMessage($this->locale, self::$translations[$this->locale][$context][$pattern], $args);
+        return \MessageFormatter::formatMessage($locale, self::$translations[$locale][$context][$pattern], $args);
       }
-      return self::$translations[$this->locale][$context][$pattern];
+      return self::$translations[$locale][$context][$pattern];
     }
     catch (\Exception $e) {
       throw new \IntlException("Couldn't translate '{$pattern}'.", null, $e);
