@@ -17,6 +17,8 @@
  */
 namespace MovLib\Console\Command\Install;
 
+use \Collator;
+
 /**
  * Seed currencies.
  *
@@ -89,13 +91,21 @@ class SeedCurrencies extends \MovLib\Console\Command\Install\AbstractIntlCommand
    * {@inheritdoc}
    */
   protected function translate() {
+    // PHP doesn't contain the currency's name's.
     $resourceBundle = $this->getResourceBundle("curr");
-    $translations   = null;
+
+    $currencies = [];
     foreach ($this->codes as $code) {
-      $name          = $resourceBundle["Currencies"][$code][1];
-      $symbol        = $resourceBundle["Currencies"][$code][0];
-      $translations .= '"' . $code . '"=>(object)["code"=>"' . $code . '","name"=>"' . $name . '","symbol"=>"' . $symbol . '"],';
+      $currencies[$code] = $resourceBundle["Currencies"][$code][1];
     }
+
+    (new Collator($this->intl->locale))->asort($currencies);
+
+    $translations = null;
+    foreach ($currencies as $code => $name) {
+      $translations .= '"' . $code . '"=>(object)["code"=>"' . $code . '","name"=>"' . $name . '","symbol"=>"' . $resourceBundle["Currencies"][$code][0] . '"],';
+    }
+
     return $translations;
   }
 

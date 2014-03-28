@@ -17,6 +17,8 @@
  */
 namespace MovLib\Console\Command\Install;
 
+use \Collator;
+
 /**
  * Seed countries.
  *
@@ -86,7 +88,7 @@ class SeedCountries extends \MovLib\Console\Command\Install\AbstractIntlCommand 
       $countries[$code] = \Locale::getDisplayRegion("xx-{$code}", $this->intl->locale);
     }
 
-    $this->intl->getCollator()->asort($countries);
+    (new Collator($this->intl->locale))->asort($countries);
 
     $translations = null;
     foreach ($countries as $code => $name) {

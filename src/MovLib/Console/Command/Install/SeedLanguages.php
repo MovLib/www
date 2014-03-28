@@ -17,6 +17,7 @@
  */
 namespace MovLib\Console\Command\Install;
 
+use \Collator;
 use \MovLib\Core\Intl;
 
 /**
@@ -106,7 +107,7 @@ class SeedLanguages extends \MovLib\Console\Command\Install\AbstractIntlCommand 
     $noNative = [ Intl::CODE_NON_LINGUISTIC, Intl::CODE_OTHER ];
 
     // Sort the translated language according to their translated names.
-    $this->intl->getCollator()->asort($languages);
+    (new Collator($this->intl->locale))->asort($languages);
 
     $translations = null;
     foreach ($languages as $code => $name) {
