@@ -70,6 +70,20 @@ final class Request {
   public $method = "GET";
 
   /**
+   * Whether this is a GET request or not.
+   *
+   * @var boolean
+   */
+  public $methodGET = true;
+
+  /**
+   * Whether this is a POST request or not.
+   *
+   * @var boolean
+   */
+  public $methodPOST = false;
+
+  /**
    * The request's path.
    *
    * @var string
@@ -162,6 +176,8 @@ final class Request {
     $this->hostname      =  $_SERVER["SERVER_NAME"];
     $this->https         =  $_SERVER["HTTPS"] == "on";
     $this->method        =  $_SERVER["REQUEST_METHOD"];
+    $this->methodGET     =  $this->method == "GET";
+    $this->methodPOST    = !$this->method;
     $this->path          =  $_SERVER["REQUEST_PATH"];
     $this->post          =& $_POST;
     $this->protocol      =  $_SERVER["SERVER_PROTOCOL"];

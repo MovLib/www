@@ -15,26 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation;
+namespace MovLib\Partial;
 
 use \MovLib\Partial\Navigation;
 
 /**
  * Add sidebar navigation to presentation.
- *
- * @see \MovLib\Presentation\AbstractBase
- *
- * @method string a($route, $text, array $attributes = null, $ignoreQuery = true)
- * @method this addClass($class, array &$attributes = null)
- * @method string collapseWhitespace($string)
- * @method string expandTagAttributes(array $attributes)
- * @method string getImage($style, $route = true, array $attributes = null, array $anchorAttributes = null)
- * @method string htmlDecode($text)
- * @method string htmlDecodeEntities($text)
- * @method string htmlEncode($text)
- * @method string lang($lang)
- * @method string normalizeLineFeeds($text)
- * @method string placeholder($text)
  *
  * @see \MovLib\Presentation\AbstractPresenter
  *
@@ -53,6 +39,17 @@ use \MovLib\Partial\Navigation;
  * @property-read string $pageTitle
  * @property-read string $schemaType
  * @property-read string $title
+ * @method string a($route, $text, array $attributes = null, $ignoreQuery = true)
+ * @method this addClass($class, array &$attributes = null)
+ * @method string collapseWhitespace($string)
+ * @method string expandTagAttributes(array $attributes)
+ * @method string getImage($style, $route = true, array $attributes = null, array $anchorAttributes = null)
+ * @method string htmlDecode($text)
+ * @method string htmlDecodeEntities($text)
+ * @method string htmlEncode($text)
+ * @method string lang($lang)
+ * @method string normalizeLineFeeds($text)
+ * @method string placeholder($text)
  * @method string getContent()
  * @method string getFooter()
  * @method string getHeader()
@@ -69,7 +66,7 @@ use \MovLib\Partial\Navigation;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-trait TraitSidebar {
+trait SidebarTrait {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -117,9 +114,9 @@ trait TraitSidebar {
 
     // We have to apply different HTML/CSS depending on the desired size of the sidebar.
     if ($this->sidebarSmall) {
-      $containerClass                    = " sidebar-s";
-      $sidebarClass                      = null;
-      $contentClass                      = "s12";
+      $containerClass = " sidebar-s";
+      $sidebarClass   = null;
+      $contentClass   = "s12";
     }
     else {
       $containerClass = null;
@@ -129,7 +126,10 @@ trait TraitSidebar {
 
     return
       "<div class='c sidebar-c{$containerClass}'><div class='r sidebar-r'>" .
-        "<aside id='sidebar' class='{$sidebarClass}' role='complementary'><h2 class='vh'>{$this->intl->t("Sidebar")}</h2>{$this->sidebarNavigation}</aside>" .
+        "<aside id='sidebar' class='{$sidebarClass}' role='complementary'>" .
+          "<h2 class='vh'>{$this->intl->t("Sidebar")}</h2>" .
+          $this->sidebarNavigation .
+        "</aside>" .
         "<div class='page-content s {$contentClass}'>{$content}</div>" .
       "</div></div>"
     ;
@@ -148,14 +148,14 @@ trait TraitSidebar {
    *   Whether to create a small sidebar or not, defaults to <code>FALSE</code>.
    * @return this
    */
-  final protected function sidebarInit($menuitems, $small = false) {
+  final protected function sidebarInit(array $menuitems, $small = false) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (!method_exists($this, "initPage")) {
-      throw new \LogicException("You can only use the sidebar trait within a presenting page class");
+    if (!($this instanceof \MovLib\Presentation\AbstractPresenter)) {
+      throw new \LogicException("You can only use the sidebar trait within a presenter.");
     }
     if (empty($this->title)) {
-      throw new \LogicException("You have to initialize the page before you initialize the sidebar trait");
+      throw new \LogicException("You have to initialize the page before you initialize the sidebar trait.");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

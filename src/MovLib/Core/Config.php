@@ -59,6 +59,13 @@ class Config {
   public $database = "movlib";
 
   /**
+   * The default currency code.
+   *
+   * @var string
+   */
+  public $defaultCurrencyCode = "USD";
+
+  /**
    * The default language code.
    *
    * <b>NOTE</b><br>

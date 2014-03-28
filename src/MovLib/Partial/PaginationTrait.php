@@ -15,13 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation;
+namespace MovLib\Partial;
 
-use \MovLib\Presentation\Partial\Navigation;
+use \MovLib\Partial\Navigation;
 
 /**
  * Add pagination support to presentation.
- *
  *
  * @see \MovLib\Presentation\AbstractPresenter
  *
@@ -67,7 +66,7 @@ use \MovLib\Presentation\Partial\Navigation;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-trait TraitPagination {
+trait PaginationTrait {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -134,16 +133,16 @@ trait TraitPagination {
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this instanceof \MovLib\Presentation\AbstractPresenter)) {
-      throw new \LogicException("You can only use the pagination trait within a presenter class");
+      throw new \LogicException("You can only use the pagination trait within a presenter.");
     }
     if (empty($this->title)) {
-      throw new \LogicException("You have to initialize the page before you initialize the pagination trait");
+      throw new \LogicException("You have to initialize the page before you initialize the pagination trait.");
     }
     if (empty($this->breadcrumb)) {
-      throw new \LogicException("You have to initialize the breadcrumb before you initialize the pagination trait");
+      throw new \LogicException("You have to initialize the breadcrumb before you initialize the pagination trait.");
     }
     if (!empty($this->contentAfter)) {
-      throw new \LogicException("The \$contentAfter variable will be overwritten by the pagination trait");
+      throw new \LogicException("The \$contentAfter variable will be overwritten by the pagination trait.");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

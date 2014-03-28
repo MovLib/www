@@ -39,6 +39,8 @@ final class InputCheckbox extends \MovLib\Partial\FormElement\AbstractFormElemen
    * behavior. A single checkbox is meant for boolean rows in the database or other decisions that are solely based on
    * a yes or not question.
    *
+   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   *   HTTP dependency injection container.
    * @param string $id
    *   The checkbox's unique global identifier.
    * @param string $label
@@ -48,7 +50,7 @@ final class InputCheckbox extends \MovLib\Partial\FormElement\AbstractFormElemen
    * @param array $attributes [optional]
    *   The checkbox's attributes array, defaults to <code>NULL</code> (no additional attributes).
    */
-  public function __construct($id, $label, &$value, array $attributes = null) {
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, &$value, array $attributes = null) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (isset($attributes["checked"])) {
@@ -56,7 +58,7 @@ final class InputCheckbox extends \MovLib\Partial\FormElement\AbstractFormElemen
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    parent::__construct($id, $label, $value, $attributes);
+    parent::__construct($diContainerHTTP, $id, $label, $value, $attributes);
     $this->attributes["checked"] =& $this->value;
   }
 
@@ -72,12 +74,12 @@ final class InputCheckbox extends \MovLib\Partial\FormElement\AbstractFormElemen
     try {
     // @codeCoverageIgnoreEnd
     // @devEnd
-      return "{$this->required}{$this->helpPopup}<p><label class='checkbox'><input{$this->expandTagAttributes($this->attributes)} name='{$this->id}' type='checkbox'>{$this->label}</label></p>";
+      return "{$this->required}{$this->helpPopup}<p><label class='checkbox'><input{$this->presenter->expandTagAttributes($this->attributes)} name='{$this->id}' type='checkbox'>{$this->label}</label></p>";
     // @devStart
     // @codeCoverageIgnoreStart
     }
     catch (\Exception $e) {
-      return (string) new \MovLib\Presentation\Partial\Alert("<pre>{$e}</pre>", "Error Rendering Element", \MovLib\Presentation\Partial\Alert::SEVERITY_ERROR);
+      return (string) new \MovLib\Partial\Alert("<pre>{$e}</pre>", "Error Rendering Element", \MovLib\Partial\Alert::SEVERITY_ERROR);
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

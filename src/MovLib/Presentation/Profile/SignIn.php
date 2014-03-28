@@ -17,10 +17,11 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\FormElement\InputEmail;
-use \MovLib\Presentation\Partial\FormElement\InputPassword;
-use \MovLib\Presentation\Redirect\SeeOther;
+use \MovLib\Exception\SeeOtherException;
+use \MovLib\Partial\Alert;
+use \MovLib\Partial\Form;
+use \MovLib\Partial\FormElement\InputEmail;
+use \MovLib\Partial\FormElement\InputPassword;
 
 /**
  * User sign in presentation.
@@ -32,11 +33,9 @@ use \MovLib\Presentation\Redirect\SeeOther;
  * @since 0.0.1-dev
  */
 final class SignIn extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\TraitForm;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
-  // The properties are public to allow classes that throw an UnauthorizedException to manipulate them.
 
 
   /**
@@ -44,7 +43,14 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
    *
    * @var string
    */
-  public $email;
+  protected $email;
+
+  /**
+   * The presentation's form.
+   *
+   * @var \MovLib\Partial\Form
+   */
+  protected $form;
 
   /**
    * The submitted (raw) password.
@@ -54,39 +60,45 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
   protected $rawPassword;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Methods
+  // ------------------------------------------------------------------------------------------------------------------- Presentation
 
 
   /**
-   * Instantiate new sign in presentation.
-   *
-   * @throws \MovLib\Presentation\Redirect\SeeOther
+   * {@inheritdoc}
    */
-  public function __construct() {
+  protected function getContent() {
+    return "<div class='c'><div class='r'>{$this->form}</div></div>";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function init() {
     // We need to know the translated version of the sign in route for comparison.
     $this->initLanguageLinks("/profile/sign-in");
 
     // Snatch the current requested URI if a redirect was requested and no redirect is already active. We have to build
     // the complete target URI to ensure that this presenter will receive the submitted form, but at the same time we
     // want to enable ourself to redirect the user after successful sign in to the page she or he requested.
-    if ($kernel->requestURI != $this->languageLinks[$this->intl->languageCode]) {
-      if (empty($_GET["redirect_to"])) {
-        $_GET["redirect_to"] = $kernel->requestURI;
+    if ($this->request->uri != $this->languageLinks[$this->intl->languageCode]) {
+      $redirectTo = $this->intl->r("redirect_to");
+      if (empty($this->request->query[$redirectTo])) {
+        $this->request->query[$redirectTo] = $this->request->uri;
       }
     }
     // If the user is logged in, but didn't request to be signed out, redirect her or him to the personal dashboard.
-    elseif ($session->isAuthenticated === true) {
-      throw new SeeOther($this->intl->r("/my"));
+    elseif ($this->session->isAuthenticated) {
+      throw new SeeOtherException($this->intl->r("/my"));
     }
 
     // Ensure all views are using the correct path info to render themselves.
-    $kernel->requestURI = $kernel->requestPath = $this->languageLinks[$this->intl->languageCode];
+    $this->request->uri = $this->request->path = $this->languageLinks[$this->intl->languageCode];
 
     // Append the URL to the action attribute of our form.
     $redirectToKey = $this->intl->r("redirect_to");
     if (!empty($_GET[$redirectToKey]) && $_GET[$redirectToKey] != $this->languageLinks[$this->intl->languageCode]) {
       $redirectTo          = rawurlencode(rawurldecode($_GET[$redirectToKey]));
-      $kernel->requestURI .= "?{$redirectToKey}={$redirectTo}";
+      $this->request->uri .= "?{$redirectToKey}={$redirectTo}";
     }
 
     // Start rendering the page.
@@ -99,47 +111,50 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
       [ "sitename" => $this->config->siteName ]
     )}</a>";
 
-    $this->formAddElement(new InputEmail("email", $this->intl->t("Email Address"), $this->email, [
+    $this->form = new Form($this->diContainerHTTP);
+
+    $this->form->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email Address"), $this->email, [
       "#help-text"  => "<a href='{$this->intl->r("/profile/reset-password")}'>{$this->intl->t("Forgot your password?")}</a>",
       "autofocus"   => true,
       "placeholder" => $this->intl->t("Enter your email address"),
       "required"    => true,
     ]));
 
-    $this->formAddElement(new InputPassword("password", $this->intl->t("Password"), $this->rawPassword, [
+    $this->form->addElement(new InputPassword($this->diContainerHTTP, "password", $this->intl->t("Password"), $this->rawPassword, [
       "placeholder" => $this->intl->t("Enter your password"),
       "required"    => true,
     ]));
 
-    $this->formAddAction($this->intl->t("Sign In"), [ "class" => "btn btn-large btn-success" ]);
+    $this->form->addAction($this->intl->t("Sign In"), [ "class" => "btn btn-large btn-success" ]);
 
-    $this->formInit([ "class" => "s s6 o3" ]);
+    $this->form->init([ $this, "valid" ], [ "class" => "s s6 o3" ]);
   }
 
-  /**
-   * @inheritdoc
-   */
-  protected function getContent() {
-    return "<div class='c'><div class='r'>{$this->formRender()}</div></div>";
-  }
+
+  // ------------------------------------------------------------------------------------------------------------------- Validation
+
 
   /**
    * {@inheritdoc}
-   *
-   * @return this
-   * @throws \MovLib\Presentation\Redirect\SeeOther
    */
-  protected function formValid() {
-    if ($session->authenticate($this->email, $this->rawPassword) === true) {
-      $kernel->alerts .= new Alert(
+  public function valid() {
+    if ($this->session->authenticate($this->email, $this->rawPassword)) {
+      $this->alerts .= new Alert(
         $this->intl->t("Successfully Signed In"),
-        $this->intl->t("Welcome back {username}!", [ "username" => $session->userName ]),
+        $this->intl->t("Welcome back {username}!", [ "username" => $this->session->userName ]),
         Alert::SEVERITY_SUCCESS
       );
-      throw new SeeOther(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $this->intl->r("/my"));
+
+      $redirectTo = $this->request->filterInput(INPUT_GET, $this->intl->r("redirect_to"), FILTER_SANITIZE_STRING);
+      throw new SeeOtherException($redirectTo ?: $this->intl->r("/my"));
     }
 
-    $this->formInvalid($this->intl->t("We either don’t know the email address, or the password was wrong."));
+    $this->alerts .= new Alert(
+      $this->intl->t("We either don’t know the email address, or the password was wrong."),
+      $this->intl->t("Sign In Failed"),
+      Alert::SEVERITY_ERROR
+    );
+
     return $this;
   }
 

@@ -17,7 +17,7 @@
  */
 namespace MovLib\Core\HTTP;
 
-use \MovLib\Data\User\User;
+use \MovLib\Data\User;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Exception\UnauthorizedException;
 
@@ -230,52 +230,67 @@ final class Session extends \MovLib\Core\Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function authenticate($email, $rawPassword) {
-    // Load necessary user data from storage (if we have any).
-    $user = new FullUser(User::FROM_EMAIL, $email);
+    // @devStart
+    // @codeCoverageIgnoreStart
+    foreach ([ "email", "rawPassword" ] as $param) {
+      if (empty($email) || !is_string($email)) {
+        throw new \InvalidArgumentException("\${$param} cannot be empty and must be of type string.");
+      }
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    try {
+      // Load necessary user data from storage (if we have any).
+      $user = new User($this->diContainer);
+      $user->init($rawPassword, $user);
 
-    // Validate the submitted password.
-    if ($user->verifyPassword($rawPassword) === false) {
+      // Validate the submitted password.
+      if ($user->verifyPassword($rawPassword) === false) {
+        return false;
+      }
+
+      // Only create a session if we're serving this request via nginx.
+      if ($kernel->fastCGI === true) {
+        // Export to class scope.
+        $this->authentication           = $this->initTime = $_SERVER["REQUEST_TIME"];
+        $this->userAvatar               = $user->getStyle(User::STYLE_HEADER_USER_NAVIGATION);
+        $this->userId                   = $user->id;
+        $this->userName                 = $user->name;
+        $this->userTimeZone           = $user->timeZoneIdentifier;
+
+        // Export to session storage.
+        $this->data[self::AUTHENTICATION] =& $this->authentication;
+        $this->data[self::INIT_TIME]      =& $this->initTime;
+        $this->data[self::USER_AVATAR]    =& $this->userAvatar;
+        $this->data[self::USER_ID]        =& $this->userId;
+        $this->data[self::USER_NAME]      =& $this->userName;
+        $this->data[self::USER_TIME_ZONE] =& $this->userTimeZone;
+
+        // Maybe the user was doing some work as anonymous user and already has a session active. If so generate new session
+        // ID and if not generate a completely new session.
+        if (session_status() === PHP_SESSION_ACTIVE) {
+          $this->regenerate();
+        }
+        else {
+          $this->start();
+          $kernel->delayMethodCall([ $this, "insert" ]);
+        }
+
+        // Set cookie for preferred system language for nginx. We set the cookie expire time to January 2038. This is the
+        // maximum value that is possible.
+        $kernel->cookieCreate("lang", $user->systemLanguageCode, 2147483647);
+      }
+
+      // @todo Is this unnecessary overhead or a good protection? If PHP updates the default password this would be the
+      //       only way to update the password's of all users. We execute it delayed, so there's only the server load we
+      //       have to worry about. Maybe introduce a configuration option for this?
+      $kernel->delayMethodCall([ $this, "passwordNeedsRehash" ], [ $user->password, $rawPassword ]);
+
+      return true;
+    }
+    catch (\Exception $e) {
       return false;
     }
-
-    // Only create a session if we're serving this request via nginx.
-    if ($kernel->fastCGI === true) {
-      // Export to class scope.
-      $this->authentication           = $this->initTime = $_SERVER["REQUEST_TIME"];
-      $this->userAvatar               = $user->getStyle(User::STYLE_HEADER_USER_NAVIGATION);
-      $this->userId                   = $user->id;
-      $this->userName                 = $user->name;
-      $this->userTimeZone           = $user->timeZoneIdentifier;
-
-      // Export to session storage.
-      $this->data[self::AUTHENTICATION] =& $this->authentication;
-      $this->data[self::INIT_TIME]      =& $this->initTime;
-      $this->data[self::USER_AVATAR]    =& $this->userAvatar;
-      $this->data[self::USER_ID]        =& $this->userId;
-      $this->data[self::USER_NAME]      =& $this->userName;
-      $this->data[self::USER_TIME_ZONE] =& $this->userTimeZone;
-
-      // Maybe the user was doing some work as anonymous user and already has a session active. If so generate new session
-      // ID and if not generate a completely new session.
-      if (session_status() === PHP_SESSION_ACTIVE) {
-        $this->regenerate();
-      }
-      else {
-        $this->start();
-        $kernel->delayMethodCall([ $this, "insert" ]);
-      }
-
-      // Set cookie for preferred system language for nginx. We set the cookie expire time to January 2038. This is the
-      // maximum value that is possible.
-      $kernel->cookieCreate("lang", $user->systemLanguageCode, 2147483647);
-    }
-
-    // @todo Is this unnecessary overhead or a good protection? If PHP updates the default password this would be the
-    //       only way to update the password's of all users. We execute it delayed, so there's only the server load we
-    //       have to worry about. Maybe introduce a configuration option for this?
-    $kernel->delayMethodCall([ $this, "passwordNeedsRehash" ], [ $user->password, $rawPassword ]);
-
-    return true;
   }
 
   /**

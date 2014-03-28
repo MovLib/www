@@ -31,8 +31,8 @@ use \MovLib\Data\UserSet;
  * @since 0.0.1-dev
  */
 class Index extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\TraitPagination;
-  use \MovLib\Presentation\TraitSidebar;
+  use \MovLib\Partial\PaginationTrait;
+  use \MovLib\Partial\SidebarTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -72,7 +72,7 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
       $list .=
         "<li class='hover-item r' typeof='Person'>" .
           // @todo Display avatar
-          //"<img alt='' src='{$this->getExternalURL("asset://logo/vector.svg")}' width='60' height='60'>" .
+          "<img alt='' class='s s1' property='image' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
           "<span class='s'><a href='{$user->route}' property='url'><span property='name'>{$user->name}</span></a></span>" .
         "</li>"
       ;

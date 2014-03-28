@@ -97,7 +97,7 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
           "<a href='http://www.themoviedb.org/' target='_blank'>",
         ]
       )}</p>" .
-      "<div class='r'><div class='s s8 o2'>{$this->form->render()}</div></div>"
+      "<div class='r'><div class='s s8 o2'>{$this->form}</div></div>"
     ;
   }
 

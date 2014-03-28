@@ -118,6 +118,29 @@ final class Form {
     }
   }
 
+  /**
+   * Get the form including all elements.
+   *
+   * @return string
+   *   The form including all elements.
+   */
+  public function __toString() {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    try {
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+      return $this->open() . implode($this->elements) . $this->close();
+    // @devStart
+    // @codeCoverageIgnoreStart
+    }
+    catch (\Exception $e) {
+      return (string) new Alert("<pre>{$e}</pre>", "Error Rendering Form", Alert::SEVERITY_ERROR);
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+  }
+
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
@@ -361,17 +384,6 @@ final class Form {
     }
 
     return "<form{$this->presenter->expandTagAttributes($this->attributes)}>{$this->hiddenElements}";
-  }
-
-  /**
-   * Get the form including all elements.
-   *
-   * @return string
-   *   The form including all elements.
-   */
-  public function render() {
-    $elements = implode($this->elements);
-    return "{$this->open()}{$elements}{$this->close()}";
   }
 
 }
