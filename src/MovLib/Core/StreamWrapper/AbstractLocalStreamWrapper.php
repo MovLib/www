@@ -62,27 +62,11 @@ abstract class AbstractLocalStreamWrapper {
   public static $documentRoot;
 
   /**
-   * The process group, only used in CLI.
-   *
-   * @see \MovLib\Core\FileSystem::setProcessOwner()
-   * @var null|string
-   */
-  public static $group;
-
-  /**
    * Generic resource handle.
    *
    * @var null|resource
    */
   public $handle;
-
-  /**
-   * Whether this process is privileged or not, only used in CLI.
-   *
-   * @see \MovLib\Core\FileSystem::setProcessOwner()
-   * @var boolean
-   */
-  public static $privileged = false;
 
   /**
    * The stream wrapper's scheme.
@@ -98,14 +82,6 @@ abstract class AbstractLocalStreamWrapper {
    * @var string
    */
   public $uri;
-
-  /**
-   * The process user, only used in CLI.
-   *
-   * @see \MovLib\Core\FileSystem::setProcessOwner()
-   * @var null|string
-   */
-  public static $user;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods

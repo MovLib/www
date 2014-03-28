@@ -395,32 +395,36 @@ final class FileSystem {
    * @return this
    */
   public function setProcessOwner($user, $group) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    foreach ([ "user", "group" ] as $param) {
-      if (isset($param) && (empty(${$param}) || !is_string(${$param}))) {
-        throw new \InvalidArgumentException("\${$param} cannot be empty and must be of type string.");
-      }
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
+    // Make sure this method is called in CLI context.
+    assert(PHP_SAPI == "cli");
 
-    if (isset($user) && !posix_getpwnam($user)) {
-      throw new \InvalidArgumentException("User {$user} doesn't exist.");
+    // Determine if current process is privileged.
+    $this->privileged = (posix_getuid() === 0);
+
+    // Set or reset user based on passed parameter, if we're going to set the user make sure the user actually exists.
+    if (isset($user)) {
+      assert(posix_getpwnam($user));
+      $this->user = $user;
     }
-    if (isset($group) && !posix_getgrnam($group)) {
-      throw new \InvalidArgumentException("Group {$group} doesn't exist.");
+    else {
+      $this->user = posix_getpwuid(posix_getuid())["name"];
     }
 
-    $this->group      = $group;
-    $this->privileged = posix_getuid() === 0;
-    $this->user       = $user;
-
-    foreach (self::$streamWrappers as $streamWrapper) {
-      $streamWrapper::$group      = $this->group;
-      $streamWrapper::$privileged = $this->privileged;
-      $streamWrapper::$user       = $this->user;
+    // Set or reset group, same as above.
+    if (isset($group)) {
+      assert(posix_getgrnam($group));
+      $this->group = $group;
     }
+    else {
+      $this->group = posix_getgrgid(posix_getgid())["name"];
+    }
+
+    // Notify all stream wrappers about the ownership change.
+    stream_context_set_default(array_fill_keys(array_keys(self::$streamWrappers), [
+      "group"      => $group,
+      "privileged" => $this->privileged,
+      "user"       => $user,
+    ]));
 
     return $this;
   }
