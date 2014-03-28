@@ -15,10 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Exception;
+namespace MovLib\Presentation\Error;
+
+use \MovLib\Partial\Alert;
 
 /**
- * Interface for client exceptions.
+ * Defines the not found error page.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,16 +28,29 @@ namespace MovLib\Exception;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-interface ClientException {
+final class NotFound extends \MovLib\Presentation\AbstractPresenter {
 
   /**
-   * Get the exception's presentation.
-   *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
-   *   The HTTP dependency injection container.
-   * @return string
-   *   The exception's presentation.
+   * {@inheritdoc}
    */
-  public function getPresentation(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP);
+  public function init() {
+    http_response_code(404);
+    $this->response->cacheable = false;
+    $this->initPage($this->intl->t("Not Found"));
+    $this->initBreadcrumb();
+    $this->alerts .= new Alert(
+      $this->intl->t(
+          "There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.",
+          [ "<a href='{$this->intl->r("/contact")}'>", "</a>" ]
+        ),
+      $this->intl->t("The requested page could not be found."),
+      Alert::SEVERITY_ERROR
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {}
 
 }

@@ -36,7 +36,7 @@ final class UnauthorizedException extends \RuntimeException implements \MovLib\E
    * {@inheritdoc}
    */
   public function getPresentation() {
-    header("WWW-Authenticate: {$config->siteName} location='{$i18n->r("/profile/sign-in")}'", true, 401);
+    header("WWW-Authenticate: {$config->sitename} location='{$i18n->r("/profile/sign-in")}'", true, 401);
 
     // Never cache an unauthorized response.
     $response->cacheable = false;
@@ -48,7 +48,7 @@ final class UnauthorizedException extends \RuntimeException implements \MovLib\E
     if (empty($this->message)) {
       $this->message = $i18n->t(
         "Please use the form below to sign in or {0}join {sitename}{1}.",
-        [ "<a href='{$i18n->r("/profile/join")}'>", "</a>", "sitename" => $config->siteName ]
+        [ "<a href='{$i18n->r("/profile/join")}'>", "</a>", "sitename" => $config->sitename ]
       );
     }
 

@@ -17,7 +17,7 @@
  */
 namespace MovLib\Exception;
 
-use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Presentation\Error\NotFound;
 
 /**
  * Thrown if a resource couldn't be found.
@@ -34,14 +34,11 @@ use \MovLib\Presentation\Partial\Alert;
 final class NotFoundException extends \RuntimeException implements \MovLib\Exception\ClientException {
 
   /**
-   * Get the exception's content.
-   *
-   * @return string
-   *   The exception's content.
+   * {@inheritdoc}
    */
-  public function getContent() {
-    http_response_code(404);
-    return;
+  public function getPresentation(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+    $diContainerHTTP->presenter = new NotFound($diContainerHTTP);
+    return $diContainerHTTP->getContent();
   }
 
 }
