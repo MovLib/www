@@ -422,16 +422,16 @@ EOT;
   /**
    * Send the given email.
    *
-   * @param \MovLib\Core\Kernel $kernel
-   *   The active kernel instance.
+   * @param \MovLib\Core\DIContainer $diContainer
+   *   The dependency injection container.
    * @param \MovLib\Data\AbstractEmail $email
    *   The email to send.
    * @return this
    */
-  public function send(\MovLib\Core\Kernel $kernel, \MovLib\Mail\AbstractEmail $email) {
+  public function send(\MovLib\Core\DIContainer $diContainer, \MovLib\Mail\AbstractEmail $email) {
     if (empty(self::$emailStack)) {
       /* @var $kernel \MovLib\Core\Kernel */
-      $kernel->delayMethodCall([ $this, "sendEmailStack" ]);
+      $diContainer->kernel->delayMethodCall([ $this, "sendEmailStack" ], [ $diContainer->config, $diContainer->log ]);
     }
     self::$emailStack[] = $email;
     return $this;
@@ -446,8 +446,9 @@ EOT;
    *   Active log instance.
    * @return this
    */
-  public function sendEmailStack(\MovLib\Core\Kernel $kernel, \MovLib\Core\Config $config, \MovLib\Core\Log $log) {
+  public function sendEmailStack(\MovLib\Core\Config $config, \MovLib\Core\Log $log) {
     $this->config = $config;
+    /* @var $email \MovLib\Mail\AbstractEmail */
     foreach (self::$emailStack as $email) {
       try {
         $this->email     = $email;

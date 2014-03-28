@@ -44,16 +44,19 @@ class Webmaster extends \MovLib\Mail\AbstractEmail {
 
 
   /**
-   * Instantiate new fatal error email.
+   * Instantiate new webmaster email.
    *
    * @param string $subject
    *   The email's subject.
    * @param string $$message
    *   The message that should be sent to the webmaster.
+   * @param integer $priority [optional]
+   *   The priority of the email, defaults to <i>normal</i>.
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $subject, $message) {
+  public function __construct(\MovLib\Core\DIContainer $diContainer, $subject, $message, $priority = self::PRIORITY_NORMAL) {
     parent::__construct($diContainer, $diContainer->config->emailWebmaster, $subject);
-    $this->message = $message;
+    $this->message  = $message;
+    $this->priority = $priority;
   }
 
 
@@ -61,21 +64,17 @@ class Webmaster extends \MovLib\Mail\AbstractEmail {
 
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getHTML() {
     return "<p>{$this->intl->t("Hi webmaster!")}</p><p>{$this->message}</p>";
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getPlainText() {
-    return <<<EOT
-{$this->intl->t("Hi webmaster!")}
-
-{$this->message}
-EOT;
+    return "{$this->intl->t("Hi webmaster!")}\n\n{$this->message}";
   }
 
 }

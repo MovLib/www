@@ -163,7 +163,7 @@ final class Kernel {
     $this->diContainer->fs       = new FileSystem($documentRoot, $this->diContainer->log);
     $this->diContainer->intl     = new Intl($_SERVER["LANGUAGE_CODE"], $this->diContainer->config->defaultLocale, $this->diContainer->config->locales);
     $this->diContainer->request  = new Request($this->diContainer->intl);
-    $this->diContainer->response = new Response($this->diContainer->request->method);
+    $this->diContainer->response = new Response($this->diContainer->config, $this->diContainer->request);
     $this->diContainer->session  = new Session($this->diContainer->log, $this->diContainer->response, $this->diContainer->request->remoteAddress, $this->diContainer->config->timeZone);
 
     // @todo NOT GOOD! We have to move this somewhere save and find a solution for the dynamic translation.
@@ -172,17 +172,11 @@ final class Kernel {
     $this->diContainer->config->siteNameAndSlogan     = $this->diContainer->intl->t($this->diContainer->config->siteNameAndSlogan, $args);
     $this->diContainer->config->siteNameAndSloganHTML = $this->diContainer->intl->t($this->diContainer->config->siteNameAndSloganHTML, $args);
 
-    try {
-      $this->diContainer->session->resume();
-      $presenterClass = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
-      /* @var $presenter \MovLib\Presentation\AbstractPresenter */
-      $this->diContainer->presenter = new $presenterClass($this->diContainer);
-      $this->diContainer->presenter->init();
-      echo $this->diContainer->presenter->getPresentation();
-    }
-    catch (ClientException $exception) {
-      echo $exception->getPresentation();
-    }
+    $this->diContainer->session->resume();
+    $presenterClass = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
+    $this->diContainer->presenter = new $presenterClass($this->diContainer);
+    $this->diContainer->presenter->init();
+    echo $this->diContainer->presenter->getPresentation();
 
     // @devStart
     // @codeCoverageIgnoreStart
@@ -194,8 +188,7 @@ final class Kernel {
     }
     $this->diContainer->session->shutdown();
     $this->bench("response", 0.75);
-    $this->diContainer->response->cache();
-    (new Mailer())->sendEmailStack($this->diContainer->config, $this->diContainer->log);
+//    $this->diContainer->response->cache($presentation);
     $this->shutdown();
     $this->bench("shutdown", 0.5);
 
@@ -279,9 +272,20 @@ final class Kernel {
    *   The exception that wasn't caught.
    */
   public function exceptionHandler($exception) {
-    error_log($exception);
+    // Make sure we don't send a header after some content was already sent to the client because that would just
+    // trigger another error.
     if (!headers_sent()) {
       header("Content-Type: text/plain");
+    }
+
+    // Make sure we actually have a logger available.
+    if (isset($this->diContainer->log) && $this->diContainer->log instanceof Log) {
+      $this->diContainer->log->emergency($exception);
+    }
+    // If not things use PHP native functions, the root user of this server should have email forwarding set up.
+    else {
+      error_log($exception);
+      mail("root", "EMERGENCY! MovLib is experiencing problems!", $exception);
     }
 
     // ASCII art source: http://www.chris.com/ASCII/index.php?art=animals/insects/other

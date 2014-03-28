@@ -53,6 +53,13 @@ abstract class AbstractEmail {
 
 
   /**
+   * The active config instance.
+   *
+   * @var \MovLib\Core\Config
+   */
+  protected $config;
+
+  /**
    * The dependency injection container.
    *
    * @var \MovLib\Core\DIContainer
@@ -60,11 +67,32 @@ abstract class AbstractEmail {
   protected $diContainer;
 
   /**
-   * Active intl instance.
+   * The active file system instance.
+   *
+   * @var \MovLib\Core\FileSystem
+   */
+  protected $fs;
+
+  /**
+   * The active intl instance.
    *
    * @var \MovLib\Core\Intl
    */
   protected $intl;
+
+  /**
+   * The active kernel instance.
+   *
+   * @var \MovLib\Core\Kernel
+   */
+  protected $kernel;
+
+  /**
+   * The active log instance.
+   *
+   * @var \MovLib\Core\Log
+   */
+  protected $log;
 
   /**
    * The email's priority.
@@ -101,6 +129,11 @@ abstract class AbstractEmail {
    */
   public function __construct(\MovLib\Core\DIContainer $diContainer, $recipient, $subject) {
     $this->diContainer = $diContainer;
+    $this->config      = $diContainer->config;
+    $this->fs          = $diContainer->fs;
+    $this->intl        = $diContainer->intl;
+    $this->kernel      = $diContainer->kernel;
+    $this->log         = $diContainer->log;
     $this->recipient   = $recipient;
     $this->subject     = $subject;
   }
