@@ -399,7 +399,7 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
           "sign_in" => "<a href='{$this->intl->r("/profile/sign-in")}'>{$this->intl->t("Sign In")}</a>",
           "join"    => "<a href='{$this->intl->r("/profile/join")}'>{$this->intl->t(
             "Join {sitename}",
-            [ "sitename" => $this->config->siteName ]
+            [ "sitename" => $this->config->sitename ]
           )}</a>",
         ]),
         null,

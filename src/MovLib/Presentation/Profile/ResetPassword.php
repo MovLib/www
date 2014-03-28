@@ -109,7 +109,7 @@ final class ResetPassword extends \MovLib\Presentation\AbstractPresenter {
     }
     else {
       $this->form->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email Address"), $this->email, [
-        "#help-popup" => $this->intl->t("Enter the email address associated with your {sitename} account. Password reset instructions will be sent via email.", [ "sitename" => $this->config->siteName ]),
+        "#help-popup" => $this->intl->t("Enter the email address associated with your {sitename} account. Password reset instructions will be sent via email.", [ "sitename" => $this->config->sitename ]),
         "autofocus"   => true,
         "placeholder" => $this->intl->t("Enter your email address"),
         "required"    => true,

@@ -22,44 +22,6 @@ use \MovLib\Partial\Navigation;
 /**
  * Add sidebar navigation to presentation.
  *
- * @see \MovLib\Presentation\AbstractPresenter
- *
- * @property string $alerts
- * @property string $bodyClasses
- * @property \MovLib\Presentation\Partial\Navigation $breadcrumb
- * @property string $breadcrumbTitle
- * @property string $contentAfter
- * @property string $contentBefore
- * @property string $headingBefore
- * @property string $headingAfter
- * @property string $headingSchemaProperty
- * @property-read string $id
- * @property-read array $languageLinks
- * @property-read array $namespace
- * @property-read string $pageTitle
- * @property-read string $schemaType
- * @property-read string $title
- * @method string a($route, $text, array $attributes = null, $ignoreQuery = true)
- * @method this addClass($class, array &$attributes = null)
- * @method string collapseWhitespace($string)
- * @method string expandTagAttributes(array $attributes)
- * @method string getImage($style, $route = true, array $attributes = null, array $anchorAttributes = null)
- * @method string htmlDecode($text)
- * @method string htmlDecodeEntities($text)
- * @method string htmlEncode($text)
- * @method string lang($lang)
- * @method string normalizeLineFeeds($text)
- * @method string placeholder($text)
- * @method string getContent()
- * @method string getFooter()
- * @method string getHeader()
- * @method string getHeadTitle()
- * @method string getPresentation()
- * @method string getMainContent()
- * @method this initBreadcrumb()
- * @method this initLanguageLinks($route, array $args = null, $plural = false, $query = null)
- * @method this initPage($title)
- *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -87,31 +49,18 @@ trait SidebarTrait {
   protected $sidebarSmall;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
-
-
-  /**
-   * Get the presentation's page content.
-   *
-   * @return string
-   *   The presentation's page content.
-   */
-  abstract protected function getPageContent();
-
-
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * Implement the content getter and insert the sidebar.
+   * Get the content wrapped in the mark-up from the default presentation class plus the sidebar.
    *
+   * @param string $content
+   *   The presentation's content.
    * @return string
-   *   The presentation's content wrapped in a container and including the sidebar.
+   *   The presentation's content wrapped with the main tag, header, and sidebar.
    */
-  protected function getContent() {
-    // Allow implementing class to alter the sidebar within the getPageContent method.
-    $content = $this->getPageContent();
-
+  final public function getMainContent($content) {
     // We have to apply different HTML/CSS depending on the desired size of the sidebar.
     if ($this->sidebarSmall) {
       $containerClass = " sidebar-s";
@@ -124,7 +73,8 @@ trait SidebarTrait {
       $contentClass   = "s10";
     }
 
-    return
+    // Call the parent method to get the default mark-up for the main content and add the sidebar mark-up.
+    return parent::getMainContent(
       "<div class='c sidebar-c{$containerClass}'><div class='r sidebar-r'>" .
         "<aside id='sidebar' class='{$sidebarClass}' role='complementary'>" .
           "<h2 class='vh'>{$this->intl->t("Sidebar")}</h2>" .
@@ -132,7 +82,7 @@ trait SidebarTrait {
         "</aside>" .
         "<div class='page-content s {$contentClass}'>{$content}</div>" .
       "</div></div>"
-    ;
+    );
   }
 
   /**
@@ -151,14 +101,11 @@ trait SidebarTrait {
   final protected function sidebarInit(array $menuitems, $small = false) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (!($this instanceof \MovLib\Presentation\AbstractPresenter)) {
-      throw new \LogicException("You can only use the sidebar trait within a presenter.");
-    }
-    if (empty($this->title)) {
-      throw new \LogicException("You have to initialize the page before you initialize the sidebar trait.");
-    }
+    assert($this instanceof \MovLib\Presentation\AbstractPresenter);
+    assert(!empty($this->title), "You have to initialize the page before you initialize the sidebar trait.");
     // @codeCoverageIgnoreEnd
     // @devEnd
+
     if (($this->sidebarSmall = $small)) {
       $c = count($menuitems);
       for ($i = 0; $i < $c; ++$i) {

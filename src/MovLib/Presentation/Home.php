@@ -57,17 +57,17 @@ final class Home extends \MovLib\Presentation\AbstractPresenter {
       "Insert text here …"
     )}</p>";
 
-    $articles[$this->intl->t("My {sitename}", [ "sitename" => $this->config->siteName ])] = "<p>{$this->intl->t(
+    $articles[$this->intl->t("My {sitename}", [ "sitename" => $this->config->sitename ])] = "<p>{$this->intl->t(
       "Insert text here …"
     )}</p><p><a class='btn btn-success btn-large' href='{$this->intl->r("/profile/join")}'>{$this->intl->t(
-      "Join {sitename}", [ "sitename" => $this->config->siteName ])
+      "Join {sitename}", [ "sitename" => $this->config->sitename ])
     }</a></p>";
 
     $articles["<abbr title='{$this->intl->t("Application Programming Interface")}'>{$this->intl->t("API")}</abbr>"] = "<p>{$this->intl->t(
       "The {sitename} API is a REST interface to access the free movie library. Specifically designed for all " .
       "developers out there. We want to keep the barrier as low as possible and ensure that everybody can use the " .
       "data we all collect here at {sitename}.",
-      [ "sitename" => $this->config->siteName ]
+      [ "sitename" => $this->config->sitename ]
     )}</p><p><a class='btn btn-primary btn-large' href='{$this->intl->r("/help/api")}'>{$this->intl->t(
       "Read the API documentation"
     )}</a></p>";
@@ -84,7 +84,7 @@ final class Home extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   protected function getHeadTitle() {
-    return $this->config->siteName;
+    return $this->config->sitename;
   }
 
   /**
@@ -110,7 +110,7 @@ final class Home extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->initPage($this->config->siteName);
+    $this->initPage($this->config->sitename);
     foreach ($this->intl->systemLocales as $code => $locale) {
       $this->languageLinks[$code] = "/";
     }

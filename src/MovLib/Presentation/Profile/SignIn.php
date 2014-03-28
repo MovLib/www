@@ -60,30 +60,28 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
   protected $rawPassword;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Presentation
+  // ------------------------------------------------------------------------------------------------------------------- Setup
 
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getContent() {
-    return "<div class='c'><div class='r'>{$this->form}</div></div>";
-  }
 
   /**
    * {@inheritdoc}
    */
   public function init() {
     // We need to know the translated version of the sign in route for comparison.
-    $this->initLanguageLinks("/profile/sign-in");
+    $routeKey = "/profile/sign-in";
+    $redirectToKey = $this->intl->r("redirect_to");
+    $this->initLanguageLinks($routeKey);
+    $route = $this->intl->r($routeKey);
 
     // Snatch the current requested URI if a redirect was requested and no redirect is already active. We have to build
     // the complete target URI to ensure that this presenter will receive the submitted form, but at the same time we
     // want to enable ourself to redirect the user after successful sign in to the page she or he requested.
-    if ($this->request->uri != $this->languageLinks[$this->intl->languageCode]) {
-      $redirectTo = $this->intl->r("redirect_to");
-      if (empty($this->request->query[$redirectTo])) {
-        $this->request->query[$redirectTo] = $this->request->uri;
+    //
+    // We won't append the redirect to query string to the language links in the footer because we have no chance to
+    // find out what the translated version of that route would be.
+    if ($this->request->uri != $route) {
+      if (empty($this->request->query[$redirectToKey])) {
+        $this->request->query[$redirectToKey] = $this->request->uri;
       }
     }
     // If the user is logged in, but didn't request to be signed out, redirect her or him to the personal dashboard.
@@ -91,13 +89,10 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
       throw new SeeOtherException($this->intl->r("/my"));
     }
 
-    // Ensure all views are using the correct path info to render themselves.
-    $this->request->uri = $this->request->path = $this->languageLinks[$this->intl->languageCode];
-
     // Append the URL to the action attribute of our form.
-    $redirectToKey = $this->intl->r("redirect_to");
-    if (!empty($_GET[$redirectToKey]) && $_GET[$redirectToKey] != $this->languageLinks[$this->intl->languageCode]) {
-      $redirectTo          = rawurlencode(rawurldecode($_GET[$redirectToKey]));
+    $redirectTo = $this->request->filterInput(INPUT_GET, $redirectToKey, FILTER_SANITIZE_STRING, FILTER_REQUIRE_SCALAR | FILTER_FLAG_STRIP_LOW);
+    if ($redirectTo && $redirectTo != $route) {
+      $redirectTo = rawurlencode(rawurldecode($redirectTo));
       $this->request->uri .= "?{$redirectToKey}={$redirectTo}";
     }
 
@@ -108,7 +103,7 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
 
     $this->headingBefore = "<a class='btn btn-large btn-primary fr' href='{$this->intl->r("/profile/join")}'>{$this->intl->t(
       "Join {sitename}",
-      [ "sitename" => $this->config->siteName ]
+      [ "sitename" => $this->config->sitename ]
     )}</a>";
 
     $this->form = new Form($this->diContainerHTTP);
@@ -128,6 +123,17 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
     $this->form->addAction($this->intl->t("Sign In"), [ "class" => "btn btn-large btn-success" ]);
 
     $this->form->init([ $this, "valid" ], [ "class" => "s s6 o3" ]);
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Layout
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {
+    return "<div class='c'><div class='r'>{$this->form}</div></div>";
   }
 
 

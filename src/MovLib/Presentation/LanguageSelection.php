@@ -38,7 +38,7 @@ final class LanguageSelection extends \MovLib\Presentation\AbstractPresenter {
   /**
    * {@inheritdoc}
    */
-  protected function getContent() {
+  public function getContent() {
     $prerender = $menuitems = null;
     foreach ($this->config->locales as $code => $locale) {
       $href = "//{$code}.{$this->config->hostname}/";
@@ -57,12 +57,12 @@ final class LanguageSelection extends \MovLib\Presentation\AbstractPresenter {
   /**
    * {@inheritdoc}
    */
-  protected function getFooter() {
+  public function getFooter() {
     return
       "<footer id='f'><div class='c'><div class='r'><p>{$this->intl->t(
         "Is your language missing from our list? Help us translate {sitename} to your language. More information can " .
         "be found at {0}our translation portal{1}.",
-        [ "<a href='{$this->intl->r("/localize")}'>", "</a>", "sitename" => $this->config->siteName ]
+        [ "<a href='{$this->intl->r("/localize")}'>", "</a>", "sitename" => $this->config->sitename ]
       )}</p></div></div></footer>"
     ;
   }
@@ -70,17 +70,20 @@ final class LanguageSelection extends \MovLib\Presentation\AbstractPresenter {
   /**
    * {@inheritdoc}
    */
-  protected function getHeader() {}
+  public function getHeader() {}
 
   /**
    * {@inheritdoc}
    */
-  protected function getMainContent($content) {
+  public function getMainContent($content) {
     return
       "<main class='{$this->id}-content' id='m' role='main'><div class='c'>" .
         "<h1 class='cf'>" .
           "<img alt='' height='192' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='192'>" .
-          "<span>{$this->config->siteNameAndSloganHTML}</span>" .
+          "<span>{$this->intl->t(
+            "{sitename}, {0}the {1}free{2} movie library.{3}",
+            [ "sitename" => $this->config->sitename, "<small>", "<em>", "</em>", "</small>" ]
+          )}</span>" .
         "</h1>{$this->alerts}{$content}" .
       "</div></main>"
     ;

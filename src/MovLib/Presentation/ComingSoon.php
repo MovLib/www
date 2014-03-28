@@ -53,21 +53,21 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
   protected $email;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+  // ------------------------------------------------------------------------------------------------------------------- Setup
 
 
   /**
-   * Instantiate new coming soon presentation.
+   * {@inheritdoc}
    */
   public function init() {
-    $this->initPage($this->config->siteName);
+    $this->initPage($this->config->sitename);
     $this->prefetch("//{$this->config->hostname}/");
     $this->next("//{$this->config->hostname}/");
 
     $this->form = new Form($this->diContainerHTTP);
     $this->form->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email Address"), $this->email, [
       "autofocus"   => true,
-      "placeholder" => $this->intl->t("Sign up for the {sitename} beta!", [ "sitename" => $this->config->siteName ]),
+      "placeholder" => $this->intl->t("Sign up for the {sitename} beta!", [ "sitename" => $this->config->sitename ]),
       "required"    => true,
     ]));
     $this->form->addAction($this->intl->t("Sign Up"), [ "class" => "btn btn-large btn-success" ]);
@@ -77,13 +77,13 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
   }
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Methods
+  // ------------------------------------------------------------------------------------------------------------------- Layout
 
 
   /**
    * {@inheritdoc}
    */
-  protected function getContent() {
+  public function getContent() {
     return
       "<p class='tac'>{$this->intl->t(
         "Imagine {1}Wikipedia{0}, {2}Discogs{0}, {3}Last.fm{0}, {4}IMDb{0}, and {5}TheMovieDB{0} combined in a " .
@@ -104,10 +104,10 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
   /**
    * {@inheritdoc}
    */
-  protected function getFooter() {
+  public function getFooter() {
     return
       "<footer id='f' role='contentinfo'>" .
-        "<h1 class='vh'>{$this->intl->t("Infos all around {sitename}", [ "sitename" => $this->config->siteName ])}</h1>" .
+        "<h1 class='vh'>{$this->intl->t("Infos all around {sitename}", [ "sitename" => $this->config->sitename ])}</h1>" .
         "<div class='c'><div class='r'>" .
           "<p class='s s12 tac'>{$this->intl->t("The open beta is scheduled to start in June 2014.")}</p>" .
           "<section id='f-logos' class='s s12 tac'>" .
@@ -120,7 +120,7 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
             "</a>" .
           "</section>" .
           "<p class='last s s12 tac'>{$this->intl->t("Wanna see the current alpha version of {sitename}? Go to {alpha_url}", [
-            "sitename"  => $this->config->siteName,
+            "sitename"  => $this->config->sitename,
             "alpha_url" => "<a href='//{$this->config->hostname}/'>{$this->config->hostname}</a>",
           ])}</p>" .
         "</div>" .
@@ -131,7 +131,7 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
   /**
    * {@inheritdoc}
    */
-  protected function getHeader() {
+  public function getHeader() {
     return "";
   }
 
@@ -139,22 +139,29 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   protected function getHeadTitle() {
-    return $this->config->siteNameAndSlogan;
+    return $this->intl->t("{0}, {1}.", [ $this->config->sitename, $this->config->slogan ]);
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getMainContent($content) {
+  public function getMainContent($content) {
     return
       "<main class='{$this->id}-content' id='m' role='main'><div class='c'>" .
         "<h1 class='cf'>" .
           "<img alt='' height='192' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='192'>" .
-          "<span>{$this->config->siteNameAndSloganHTML}</span>" .
+          "<span>{$this->config->sitename}{$this->intl->t(
+            "{0}The {1}free{2} movie library.{3}",
+            [ "<small>", "<em>", "</em>", "</small>" ]
+          )}</span>" .
         "</h1>{$this->alerts}{$content}" .
       "</div></main>"
     ;
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Validation
+
 
   /**
    * Submitted email address is valid, add the email address to our subscribers.
@@ -163,7 +170,7 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
    */
   public function valid() {
     // Send an email with the new subscriber to the webmaster.
-    (new Mailer())->send($this->kernel, new Webmaster(
+    (new Mailer())->send($this->diContainerHTTP, new Webmaster(
       $this->diContainerHTTP,
       "New beta subscription",
       "<a href='mailto:{$this->email}'>{$this->email}</a> would like to be part of the MovLib beta."
@@ -175,7 +182,7 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
     // Let the user know that the subscription was successful.
     $this->alerts .= new Alert(
       $this->intl->t("Thanks for signing up for the {sitename} beta {email}.", [
-        "sitename" => $this->config->siteName,
+        "sitename" => $this->config->sitename,
         "email"    => $this->placeholder($this->email),
       ]),
       $this->intl->t("Successfully Signed Up"),

@@ -649,7 +649,7 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
 
     // If a host is present check if it's from MovLib.
     if (isset($url["host"]) && $url["host"] != $kernel->domainStatic && strpos($url["host"], ".{$kernel->domainDefault}") === false) {
-      throw new ValidationException($this->intl->t("Only images from {movlib} are allowed.", [ "movlib" => $kernel->siteName ]));
+      throw new ValidationException($this->intl->t("Only images from {movlib} are allowed.", [ "movlib" => $kernel->sitename ]));
     }
 
     // Check that the image actually exists and set width and height.

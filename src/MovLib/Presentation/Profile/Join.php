@@ -83,22 +83,9 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
   protected $username;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Presentation
+  // ------------------------------------------------------------------------------------------------------------------- Setup
 
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getContent() {
-    if ($this->accepted === true) {
-      return "<div class='c'><small>{$this->intl->t(
-        "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
-        [ "<a href='{$this->request->uri}'>", "</a>" ]
-      )}</small></div>";
-    }
-
-    return "<div class='c'><div class='r'>{$this->form}</div></div>";
-  }
 
   /**
    * {@inheritdoc}
@@ -143,10 +130,10 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
     ]));
 
     $terms = false; // We don't care about the value, the checkbox is required!
-    $this->form->addElement(new InputCheckbox($this->diContainerHTTP, "terms", $this->intl->t("I accept the {privacy_policy} and {terms_of_use}.", [
-      "privacy_policy" => "<a href='{$this->intl->t("/privacy-policy")}'>{$this->intl->t("Privacy Policy")}</a>",
-      "terms_of_use"   => "<a href='{$this->intl->r("/terms-of-use")}'>{$this->intl->t("Terms of Use")}</a>",
-    ]), $terms, [
+    $this->form->addElement(new InputCheckbox($this->diContainerHTTP, "terms", $this->intl->t(
+      "I accept the {a1}privacy policy{a} and the {a2}terms of use{a}.",
+      [ "a" => "</a>", "a1" => "<a href='{$this->intl->t("/privacy-policy")}'>", "a2" => "<a href='{$this->intl->r("/terms-of-use")}'>" ]
+    ), $terms, [
       "required" => true,
     ]));
 
@@ -157,6 +144,24 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
     if ($this->request->methodGET && isset($this->request->query["token"])) {
       $this->validateToken();
     }
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Layout
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {
+    if ($this->accepted === true) {
+      return "<div class='c'><small>{$this->intl->t(
+        "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
+        [ "<a href='{$this->request->uri}'>", "</a>" ]
+      )}</small></div>";
+    }
+
+    return "<div class='c'><div class='r'>{$this->form}</div></div>";
   }
 
 
@@ -223,7 +228,7 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
       $errors["terms"] = $this->intl->t("You have to accept the {privacy_policy} and {terms_of_use} to join {sitename}.", [
         "privacy_policy" => "<a href='{$this->intl->r("/privacy-policy")}'>{$this->intl->t("Privacy Policy")}</a>",
         "terms_of_use"   => "<a href='{$this->intl->r("/terms-of-use")}'>{$this->intl->t("Terms of Use")}</a>",
-        "sitename"       => $this->config->siteName,
+        "sitename"       => $this->config->sitename,
       ]);
     }
 

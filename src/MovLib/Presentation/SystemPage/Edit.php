@@ -59,7 +59,7 @@ class Edit extends \MovLib\Presentation\SystemPage\Show {
    */
   public function __construct() {
     // Don't allow non-admin users to edit this system page.
-    $session->checkAuthorizationAdmin($this->intl->t("The page you want to edit can only be changed by administrators of {0}.", [ $this->config->siteName ]));
+    $session->checkAuthorizationAdmin($this->intl->t("The page you want to edit can only be changed by administrators of {0}.", [ $this->config->sitename ]));
 
     // Request authorization from admins who have been logged in for a long time.
     $session->checkAuthorizationTimestamp($this->intl->t("Please sign in again to verify the legitimacy of this request."));

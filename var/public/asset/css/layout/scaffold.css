@@ -31,6 +31,9 @@ body {
   background-color: #252525;
   -ms-touch-action: auto;
   touch-action: auto;
+  -moz-hyphens: auto;
+  -ms-hyphens: auto;
+  hyphens: auto;
 }
 
 code,

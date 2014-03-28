@@ -52,13 +52,13 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
   /**
    * {@inheritdoc}
    */
-  protected function getPageContent() {
+  public function getContent() {
     // Add a join button to the page's header if the user isn't signe in.
     if ($this->session->isAuthenticated === false) {
       $this->headingBefore =
         "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/profile/join")}'>{$this->intl->t(
           "Join {sitename}",
-          [ "sitename" => $this->config->siteName ]
+          [ "sitename" => $this->config->sitename ]
         )}</a>"
       ;
     }

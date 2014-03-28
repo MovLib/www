@@ -83,7 +83,7 @@ class Contact extends \MovLib\Presentation\User\AbstractUserPage {
     if ($session->isAuthenticated === false) {
       return new Alert(
         $this->intl->t("You need to {0}sign in{1} or {2}joing {sitename}{1} to contact other users.", [
-          "<a href='{$this->intl->r("/profile/sign-in")}'>", "</a>", "<a href='{$this->intl->r("/profile/join")}'>", "sitename" => $this->config->siteName
+          "<a href='{$this->intl->r("/profile/sign-in")}'>", "</a>", "<a href='{$this->intl->r("/profile/join")}'>", "sitename" => $this->config->sitename
         ]),
         $this->intl->t("Authentication Required"),
         Alert::SEVERITY_INFO

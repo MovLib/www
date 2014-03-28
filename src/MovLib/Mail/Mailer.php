@@ -118,7 +118,7 @@ final class Mailer {
    */
   protected function getBase64EncodedPlainText() {
     return base64_encode($this->wordwrap(
-      "{{$this->email->getPlainText()}\n\n--\n{$this->config->siteName}\n"
+      "{{$this->email->getPlainText()}\n\n--\n{$this->config->sitename}\n"
     ));
   }
 
@@ -129,7 +129,7 @@ final class Mailer {
    *   The default from name.
    */
   protected function getFromName() {
-    return mb_encode_mimeheader($this->config->siteNameAndSlogan);
+    return mb_encode_mimeheader($this->config->sitename);
   }
 
   /**

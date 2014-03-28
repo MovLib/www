@@ -177,7 +177,7 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
         "stays with the username you’ve initially chosen. This doesn’t include any reviews of yours which have no " .
         "open license, they are deleted as well and lost forever. Again, this action is final and there’s no way for " .
         "you to reclaim your account after deletion!"
-      , [ $this->config->siteName ])}</p>{$this->form}"
+      , [ $this->config->sitename ])}</p>{$this->form}"
     ;
   }
 

@@ -127,7 +127,7 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
       "#help-popup" => $this->intl->t(
         "Select your preferred system language, this will be used to redirect you if you visit {sitename} without a " .
         "subdomain and may be from other use in the future.",
-        [ "sitename" => $this->config->siteName ]
+        [ "sitename" => $this->config->sitename ]
       ),
     ]));
 
@@ -137,7 +137,7 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
         "used by {sitename} for anonymous demographical evaluation of usage statistics and ratings. By providing basic " .
         "data like sex and country, scientists around the world are enabled to research the human interests in movies " .
         "more closely. Of course your real name won’t be used for anything!",
-        [ $this->config->siteName ]
+        [ $this->config->sitename ]
       ),
     ]));
 

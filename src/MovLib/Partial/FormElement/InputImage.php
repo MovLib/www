@@ -124,7 +124,7 @@ final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
     if ($session->isAuthenticated === false) {
       throw new Unauthorized($this->intl->t(
         "You must be signed in to upload images. If you don’t have an account yet why not {0}join {sitename}{1}?.",
-        [ "<a href='{$this->intl->r("/profile/join")}'>", "</a>", "sitename" => $kernel->siteName ]
+        [ "<a href='{$this->intl->r("/profile/join")}'>", "</a>", "sitename" => $kernel->sitename ]
       ));
     }
 

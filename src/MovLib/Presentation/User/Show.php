@@ -35,7 +35,7 @@ use \MovLib\Presentation\Partial\Time;
  * @since 0.0.1-dev
  */
 class Show extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\TraitSidebar;
+  use \MovLib\Partial\SidebarTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -59,7 +59,7 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
    * @throws \MovLib\Presentation\Error\NotFound
    * @throws \MovLib\Presentation\Redirect\Permanent
    */
-  public function __construct() {
+  public function init() {
     $this->user = new FullUser(FullUser::FROM_NAME, $_SERVER["USER_NAME"]);
     $this->initPage($this->user->name);
     $routeArgs = [ $this->user->filename ];

@@ -130,7 +130,7 @@ class Show extends \MovLib\Presentation\Award\AbstractBase {
     }
 
     return new Alert(
-      $this->intl->t("{sitename} has no further details about this award.", [ "sitename"    => $this->config->siteName ]),
+      $this->intl->t("{sitename} has no further details about this award.", [ "sitename"    => $this->config->sitename ]),
       $this->intl->t("No Data Available"),
       Alert::SEVERITY_INFO
     );

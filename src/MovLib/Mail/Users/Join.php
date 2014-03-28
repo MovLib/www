@@ -89,7 +89,7 @@ class Join extends \MovLib\Mail\AbstractEmail {
    */
   public function init() {
     $this->recipient = $this->user->email;
-    $this->subject   = $this->intl->t("Welcome to {0}!", [ $kernel->siteName ]);
+    $this->subject   = $this->intl->t("Welcome to {0}!", [ $kernel->sitename ]);
     $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$this->intl->r("/profile/join")}?{$this->intl->r("token")}=" . rawurlencode(base64_encode($this->recipient));
     $key             = "jointoken{$this->user->email}";
     $tmp             = new Temporary();
@@ -109,7 +109,7 @@ class Join extends \MovLib\Mail\AbstractEmail {
   public function getHTML() {
       "<p>{$this->intl->t("Hi {username}!", [ "username" => $this->user->name ])}</p>" .
       "<p>{$this->intl->t("Thank you for joining {0}. You may now sign in and activate your new account by {1}clicking this link{2}.", [
-        $kernel->siteName,
+        $kernel->sitename,
         "<a href='{$this->link}'>",
         "</a>"
       ])}</p>" .
@@ -130,7 +130,7 @@ class Join extends \MovLib\Mail\AbstractEmail {
     return <<<EOT
 {$this->intl->t("Hi {username}!", [ "username" => $this->user->name ])}
 
-{$this->intl->t("Thank your for joining {sitename}. You may now sign in and activate your new account by clicking the following link or copying and pasting it to your browser:", [ "sitename" => $kernel->siteName ])}
+{$this->intl->t("Thank your for joining {sitename}. You may now sign in and activate your new account by clicking the following link or copying and pasting it to your browser:", [ "sitename" => $kernel->sitename ])}
 
 {$this->link}
 

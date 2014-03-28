@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation;
 
+use \MovLib\Data\Collator;
 use \MovLib\Partial\Alert;
 use \MovLib\Partial\Navigation;
 
@@ -172,11 +173,9 @@ abstract class AbstractPresenter {
   /**
    * The page's translated routes.
    *
-   * Associative array where the key is the system language code and the value the translated route.
-   *
    * @var array
    */
-  protected $languageLinks;
+  private $languageLinks;
 
   /**
    * The active log instance.
@@ -282,7 +281,7 @@ abstract class AbstractPresenter {
    * @return string
    *   The presentation.
    */
-  abstract protected function getContent();
+  abstract public function getContent();
 
   /**
    * Initialize the presentation.
@@ -485,53 +484,77 @@ abstract class AbstractPresenter {
    * @return string
    *   The reference footer.
    */
-  protected function getFooter() {
-    // Only build the language links if we have routes to build them. For example the internal server error page doesn't
-    // need language links ;)
+  public function getFooter() {
+    $languageLinks = null;
+    $teamOffset = " o4";
+
     if ($this->languageLinks) {
-      $languages     = $this->intl->getTranslations("languages");
-      $languageLinks = $currentLanguageName = $teamOffset = null;
-      foreach ($this->languageLinks as $code => $route) {
-        $language = $languages[$code];
-        if ($code == $this->intl->languageCode) {
-          $currentLanguageName = $language->name;
-          $languageLinks[$language->name] =
-            "<a class='active' href='{$route}' tabindex='0' title='{$this->intl->t("You’re currently viewing this page.")}'>{$language->name}</a>"
-          ;
+      $teamOffset = null;
+      list($routeKey, $args, $plural, $queries) = $this->languageLinks;
+      $languages = $this->intl->getTranslations("languages");
+      // @devStart
+      // @codeCoverageIgnoreStart
+      if (empty($languages)) {
+        throw new \LogicException("Language translations are empty, please execute `movinstall seed-languages`.");
+      }
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+
+      // Format the current language's link right away.
+      $languageLinks[$languages[$this->intl->languageCode]->name] =
+        "<a class='active' href='#' title='{$this->intl->t("You’re currently viewing this page.")}'>" .
+          $languages[$this->intl->languageCode]->name .
+        "</a>"
+      ;
+
+      // Remove the current language from the available locales.
+      $locales = $this->intl->systemLocales;
+      unset($locales[$this->intl->languageCode]);
+
+      // Translate the rest of the available languages.
+      foreach ($locales as $code => $locale) {
+        $route = $plural ? $this->intl->rp($routeKey, $args, $locale) : $this->intl->r($routeKey, $args, $locale);
+        if ($queries) {
+          $query = null;
+          foreach ($queries as $key => $value) {
+            if ($query) {
+              $query .= "&amp;";
+            }
+            $query .= "{$this->intl->r($key)}={$value}";
+          }
+          $route .= "?{$query}";
         }
-        else {
-          $languageLinks[$language->name] =
-            "<a href='//{$code}.{$this->config->hostname}{$route}'>{$this->intl->t("{0} ({1})", [
-              $language->name, "<span lang='{$language->code}'>{$language->native}</span>"
-            ])}</a>"
-          ;
-        }
+        $languageLinks[$languages[$code]->name] =
+          "<a href='//{$code}.{$this->config->hostname}{$route}' lang='{$code}'>" .
+            $this->intl->t("{0} ({1})", [ $languages[$code]->name, $languages[$code]->native ]);
+          "</a>"
+        ;
       }
 
-      $this->intl->getCollator()->ksort($languageLinks);
-      $languageLinks = implode(" ", $languageLinks);
+      // The language links shall be sorted in the client's native language.
+      (new Collator($this->intl->locale))->ksort($languageLinks);
 
+      // Put the section together.
       $languageLinks =
         "<section class='last s s4'>" .
           "<div class='popup'>" .
-            "<div class='content'><h2>{$this->intl->t("Choose your language")}</h2><small>{$this->intl->t(
-              "Is your language missing in our list? {0}Help us translate {sitename}.{1}",
-              [ "<a href='{$this->intl->r("/localize")}'>", "</a>", "sitename" => $this->config->siteName ]
-            )}</small>{$languageLinks}</div>" .
-            "<a class='ico ico-languages' id='f-language' tabindex='0'>{$this->intl->t("Language")}: {$currentLanguageName}</a>" .
+            "<div class='content'>" .
+              "<h2>{$this->intl->t("Choose your language")}</h2>" .
+              "<small>{$this->intl->t(
+                "Is your language missing in our list? {0}Help us translate {sitename}.{1}",
+                [ "<a href='{$this->intl->r("/localize")}'>", "</a>", "sitename" => $this->config->sitename ]
+              )}</small>" .
+              implode(" ", $languageLinks) .
+            "</div>" .
+            "<a class='ico ico-languages' id='f-language' tabindex='0'>{$this->intl->t("Language")}: {$languages[$this->intl->languageCode]->name}</a>" .
           "</div>" .
         "</section>"
       ;
     }
-    // Insert placeholder and be sure to use div tags instead of section tags.
-    else {
-      $languageLinks = null;
-      $teamOffset    = " o4";
-    }
 
     return
       "<footer id='f' role='contentinfo'>" .
-        "<h1 class='vh'>{$this->intl->t("Infos all around {sitename}", [ "sitename" => $this->config->siteName ])}</h1>" .
+        "<h1 class='vh'>{$this->intl->t("Infos all around {sitename}", [ "sitename" => $this->config->sitename ])}</h1>" .
         "<div class='c'><div class='r'>" .
           "<section class='s s12'>" .
             "<h3 class='vh'>{$this->intl->t("Copyright and licensing information")}</h3>" .
@@ -572,7 +595,7 @@ abstract class AbstractPresenter {
    * @return string
    *   The reference header.
    */
-  protected function getHeader() {
+  public function getHeader() {
     $exploreNavigation =
       "<ul class='o1 sm2 no-list'>" .
         "<li>{$this->a($this->intl->rp("/movies"), $this->intl->t("Movies"), [ "class" => "ico ico-movie" ])}</li>" .
@@ -638,7 +661,7 @@ abstract class AbstractPresenter {
         // wants us to use multiple <h1>s for multiple sections, so here we go. The header is always the MovLib header.
         "<h1 class='s s3'>{$this->a(
           "/",
-          "<img alt='' height='42' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='42'> {$this->config->siteName}",
+          "<img alt='' height='42' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='42'> {$this->config->sitename}",
           [ "id" => "l", "title" => $this->intl->t("Go back to the home page.") ]
         )}</h1>" .
         "<div class='s s9'>" .
@@ -687,7 +710,7 @@ abstract class AbstractPresenter {
    *   The head title.
    */
   protected function getHeadTitle() {
-    return $this->intl->t("{page_title} — {sitename}", [ "page_title" => $this->title, "sitename" => $this->config->siteName ]);
+    return $this->intl->t("{page_title} — {sitename}", [ "page_title" => $this->title, "sitename" => $this->config->sitename ]);
   }
 
   /**
@@ -753,12 +776,12 @@ abstract class AbstractPresenter {
         "<link href='https://plus.google.com/115387876584819891316?rel=publisher' property='publisher'>" .
         "<meta property='og:description' content='{$this->intl->t("The free online movie database that anyone can edit.")}'>" .
         "<meta property='og:image' content='{$this->request->scheme}:{$logo256}'>" .
-        "<meta property='og:site_name' content='{$this->config->siteName}'>" .
+        "<meta property='og:site_name' content='{$this->config->sitename}'>" .
         "<meta property='og:title' content='{$title}'>" .
         "<meta property='og:type' content='website'>" .
         "<meta property='og:url' content='{$this->request->scheme}://{$this->config->hostname}{$this->request->uri}'>" .
-        "<meta name='application-name' content='{$this->config->siteName}'>" .
-        "<meta name='msapplication-tooltip' content='{$this->config->siteSlogan}'>" .
+        "<meta name='application-name' content='{$this->config->sitename}'>" .
+        "<meta name='msapplication-tooltip' content='{$this->config->slogan}'>" .
         "<meta name='msapplication-starturl' content='{$this->request->scheme}://{$this->config->hostname}/'>" .
         "<meta name='msapplication-navbutton-color' content='#ffffff'>" .
         // @todo Add opensearch tag (rel="search").
@@ -839,8 +862,10 @@ abstract class AbstractPresenter {
    *
    * @param string $content
    *   The presentation's content.
+   * @return string
+   *   The presentation's content wrapped with the main tag and header.
    */
-  protected function getMainContent($content) {
+  public function getMainContent($content) {
     // Allow the presentation to set a heading that includes HTML mark-up.
     $title = $this->pageTitle ?: $this->title;
 
@@ -919,22 +944,13 @@ abstract class AbstractPresenter {
    *   The route arguments, defaults to no arguments.
    * @param boolean $plural [optional]
    *   Set to <code>TRUE</code> if the current page has a plural route, defaults to <code>FALSE</code>.
-   * @param string $query [optional]
-   *   Append string to each language link.
+   * @param array $queries [optional]
+   *   Array of key value pairs that should be appended as query string to the route. Note that the keys have to be in
+   *   the default locale because they are translated like everything else.
    * @return this
    */
-  final protected function initLanguageLinks($route, array $args = null, $plural = false, $query = null) {
-    // Not pretty but efficient, only check once if we have plural or singular form.
-    if ($plural === true) {
-      foreach ($this->intl->systemLocales as $code => $locale) {
-        $this->languageLinks[$code] = "{$this->intl->rp($route, $args, $locale)}{$query}";
-      }
-    }
-    else {
-      foreach ($this->intl->systemLocales as $code => $locale) {
-        $this->languageLinks[$code] = "{$this->intl->r($route, $args, $locale)}{$query}";
-      }
-    }
+  final protected function initLanguageLinks($route, array $args = null, $plural = false, array $queries = null) {
+    $this->languageLinks = [ $route, $args, $plural, $queries ];
     return $this;
   }
 

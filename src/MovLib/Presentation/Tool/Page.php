@@ -35,7 +35,7 @@ class Page extends \MovLib\Presentation\AbstractPresenter {
     $year = date("Y");
     return
       "<footer id='f' role='contentinfo'><div class='c'><p>" .
-        "© {$year} {$this->config->siteName}™ " .
+        "© {$year} {$this->config->sitename}™ " .
         "<a href='mailto:{$kernel->emailWebmaster}'>{$this->intl->t("Contact")}</a> " .
         "<a href='//{$kernel->domainStatic}/asset/ssl/ca.crt'>{$this->intl->t("CA Certificate")}</a> " .
         "<a target='_blank' href='https://github.com/MovLib'>GitHub {$this->intl->t("Project")}</a>" .
@@ -50,8 +50,8 @@ class Page extends \MovLib\Presentation\AbstractPresenter {
     $l = $this->getURL("asset://img/logo/tools-vector.svg");
     return
       "<header id='header' role='banner'><div class='c'><div class='r'>" .
-        "<h1 class='s s3'>{$this->a("/", "<img height='42' src='{$l}' width='42'> {$this->config->siteName}", [ "id" => "logo" ])}</h1>" .
-        "<div class='s s9'><h2><a href='//{$kernel->domainDefault}/'>{$this->config->siteName}</a></h2></div>" .
+        "<h1 class='s s3'>{$this->a("/", "<img height='42' src='{$l}' width='42'> {$this->config->sitename}", [ "id" => "logo" ])}</h1>" .
+        "<div class='s s9'><h2><a href='//{$kernel->domainDefault}/'>{$this->config->sitename}</a></h2></div>" .
       "</div></div></header>"
     ;
   }

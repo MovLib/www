@@ -226,7 +226,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
     return new Alert(
       $this->intl->t(
         "{sitename} has no further details about {person_name}.",
-        [ "sitename"    => $this->config->siteName, "person_name" => $this->person->name ]
+        [ "sitename"    => $this->config->sitename, "person_name" => $this->person->name ]
       ),
       $this->intl->t("No Data Available"),
       Alert::SEVERITY_INFO
