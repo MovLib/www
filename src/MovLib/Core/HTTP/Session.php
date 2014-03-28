@@ -155,11 +155,18 @@ final class Session extends \MovLib\Core\Database {
   protected $log;
 
   /**
-   * The session's name.
+   * The active request instance.
    *
-   * @var string
+   * @var \MovLib\Core\HTTP\Request
    */
-  protected $name = "MOVSID";
+  protected $request;
+
+  /**
+   * The active response instance.
+   *
+   * @var \MovLib\Core\HTTP\Response
+   */
+  protected $response;
 
   /**
    * The user's absolute avatar image URL for the header.
@@ -188,30 +195,6 @@ final class Session extends \MovLib\Core\Database {
    * @var string
    */
   public $userTimeZone;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new HTTP session object.
-   *
-   * @param \MovLib\Core\Log $log
-   *   Active log instance.
-   * @param \MovLib\Core\HTTP\Response $response
-   *   Active response instance.
-   * @param string $remoteAddress
-   *   The client's remote address.
-   * @param string $timeZone
-   *   The default time zone.
-   */
-  public function __construct(\MovLib\Core\Log $log, \MovLib\Core\HTTP\Response $response, $remoteAddress, $timeZone) {
-    $this->data         =& $_SESSION;
-    $this->log          = $log;
-    $this->response     = $response;
-    $this->userName     = $remoteAddress;
-    $this->userTimeZone = $timeZone;
-  }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -418,7 +401,7 @@ final class Session extends \MovLib\Core\Database {
       }
 
       // Remove the session and language cookie.
-      $kernel->cookieDelete([ $this->name, "lang" ]);
+      $kernel->cookieDelete([ $this->config->sessionName, "lang" ]);
 
       // Delete all sessions if the flag is set.
       if ($deleteAllSessions === true) {
@@ -580,11 +563,19 @@ final class Session extends \MovLib\Core\Database {
   /**
    * Resume existing HTTP session.
    *
+   * @param \MovLib\Core\HTTP\Request $request
+   *   The active request instance.
+   * @param \MovLib\Core\HTTP\Response $response
+   *   The active response instance.
    * @return this
    * @throws \MemcachedException
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function resume() {
+  public function resume(\MovLib\Core\HTTP\Request $request, \MovLib\Core\HTTP\Response $response) {
+    $this->data     =& $_SESSION;
+    $this->request  =  $request;
+    $this->response =  $response;
+
     // Add all alerts that are stored in a cookie to the current presentation. The page is automatically not cacheable
     // anymore because we're displaying alert messages, we also remove the cookie directly after displaying the alerts
     // to ensure that subsequent requests can be cached.
@@ -596,20 +587,20 @@ final class Session extends \MovLib\Core\Database {
 
     // Only attempt to load the session if a non-empty session ID is present. Anonymous user's don't get any session to
     // ensure that HTTP proxies are able to cache anonymous pageviews.
-    if (!empty($request->cookies[$this->name])) {
+    if (empty($this->request->cookies[$this->config->sessionName])) {
+      $this->userName     = $this->request->remoteAddress;
+      $this->userTimeZone = $this->config->timeZone;
+    }
+    else {
       // Try to resume the session with the ID from the cookie.
       $this->start();
 
       // Try to load the session from the persistent session storage for known users if we just generated a new
       // session ID and have no data stored for it.
       if (empty($this->data)) {
-        // Load session data from persistent session storage.
-        /* @var $stmt \mysqli_stmt */
-        $stmt = $db->query(
-          "SELECT UNIX_TIMESTAMP(`authentication`), `user_id` FROM `sessions` WHERE `id` = ? LIMIT 1",
-          "s",
-          [ $request->cookies[$this->name] ]
-        );
+        $stmt = $this->prepare("SELECT UNIX_TIMESTAMP(`authentication`), `user_id` FROM `sessions` WHERE `id` = ? LIMIT 1");
+        $stmt->bind_param("s", $this->request->cookies[$this->config->sessionName]);
+        $stmt->execute();
         $stmt->bind_result($this->authentication, $this->userId);
 
         // We couldn't find a valid session and we have no data, invalid session.
@@ -643,7 +634,7 @@ final class Session extends \MovLib\Core\Database {
           catch (\Exception $e) {
             Log::error(
               new \RuntimeException("Non-existent user ID from persistent session storage", null, $e),
-              [ "remote address" => $request->remoteAddress, "session ID" => $request->cookies[$this->name] ]
+              [ "remote address" => $this->request->remoteAddress, "session ID" => $this->request->cookies[$this->config->sessionName] ]
             );
             $this->destroy();
           }
@@ -672,7 +663,7 @@ final class Session extends \MovLib\Core\Database {
         Log::debug("Loaded Session from Memcached");
         // @codeCoverageIgnoreEnd
         // @devEnd
-        if (($this->initTime + self::REGENERATION_GRACE_TIME) < $request->time) {
+        if (($this->initTime + self::REGENERATION_GRACE_TIME) < $this->request->time) {
           $this->regenerate();
         }
       }

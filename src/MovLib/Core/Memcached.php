@@ -15,9 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
-
-use \MovLib\Data\Log;
+namespace MovLib\Core;
 
 /**
  * Represents connection to memcached server.
@@ -28,7 +26,7 @@ use \MovLib\Data\Log;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Memcached {
+final class Memcached {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants

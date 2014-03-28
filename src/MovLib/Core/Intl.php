@@ -17,8 +17,6 @@
  */
 namespace MovLib\Core;
 
-use \MovLib\Exception\DatabaseException;
-
 /**
  * The i18n model loads and and updated translations and retrieves translated data.
  *
@@ -30,59 +28,36 @@ use \MovLib\Exception\DatabaseException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Intl extends \MovLib\Core\Database {
+final class Intl {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
 
   /**
-   * Custom language code for non linguistic content.
+   * Custom language code for non linguistic content (used in languages).
    *
-   * Used in languages.
-   *
-   * @see \MovLib\Stub\Data\Language
-   * @see \MovLib\Presentation\Partial\Language
-   * @see \MovLib\Tool\Console\Command\Install\SeedLanguages
    * @var string
    */
   const CODE_NON_LINGUISTIC = "--";
 
   /**
-   * Custom language code for other content.
+   * Custom language code for other content (used in languages and subtitles).
    *
-   * Used in languages and subtitles.
-   *
-   * @see \MovLib\Stub\Data\Language
-   * @see \MovLib\Presentation\Partial\Language
-   * @see \MovLib\Tool\Console\Command\Install\SeedLanguages
-   * @see \MovLib\Stub\Data\Subtitle
-   * @see \MovLib\Presentation\Partial\Subtitle
-   * @see \MovLib\Tool\Console\Command\Install\SeedSubtitles
    * @var string
    */
   const CODE_OTHER = "&&";
 
   /**
-   * Custom language code for commentary content.
+   * Custom language code for commentary content (used in subtitles).
    *
-   * Used in subtitles.
-   *
-   * @see \MovLib\Stub\Data\Subtitle
-   * @see \MovLib\Presentation\Partial\Subtitle
-   * @see \MovLib\Tool\Console\Command\Install\SeedSubtitles
    * @var string
    */
   const CODE_COMMENTARY = "@@";
 
   /**
-   * Custom language code for fact content.
+   * Custom language code for fact content (used in subtitles).
    *
-   * Used in subtitles.
-   *
-   * @see \MovLib\Stub\Data\Subtitle
-   * @see \MovLib\Presentation\Partial\Subtitle
-   * @see \MovLib\Tool\Console\Command\Install\SeedSubtitles
    * @var string
    */
   const CODE_FACT = "§§";
@@ -149,34 +124,32 @@ final class Intl extends \MovLib\Core\Database {
 
 
   /**
-   * Instantiate new I18n object.
+   * Instantiate new intl object.
    *
-   * @param string $locale [optional]
-   *   The locale of this instance.
-   * @param string $defaultLocale
-   *   The default system locale.
-   * @param array $systemLocales
-   *   All available locales of this system, the associative array's keys must be the language code and the value the
-   *   locale.
+   * @param \MovLib\Core\Config $config
+   *   The active config instance.
+   * @param string $language
+   *   An ISO 639-1 code (preferred) or a locale, defaults to <code>NULL</code> (default system locale from config will
+   *   be used).
    * @throws \InvalidArgumentException
+   *   If <var>$locale</var> contains a malformed or unsupported locale/language code.
    */
-  public function __construct($locale, $defaultLocale, array $systemLocales) {
+  final public function __construct(\MovLib\Core\Config $config, $language = null) {
     // @devStart
     // @codeCoverageIgnoreStart
-    foreach ([ "locale", "defaultLocale" ] as $param) {
-      if (empty(${$param}) || !is_string(${$param})) {
-        throw new \InvalidArgumentException("\${$param} cannot be empty and must be of type string.");
-      }
-    }
-    if (empty($systemLocales)) {
-      throw new \InvalidArgumentException("\$systemLocales cannot be empty.");
-    }
+    assert(
+      !empty($config->defaultLanguageCode) && !empty($config->defaultLocale) && !empty($config->locales),
+      "Please execute `movadmin seed-languages` (or simply `make` in the document root)."
+    );
     // @codeCoverageIgnoreEnd
     // @devEnd
-    $this->defaultLocale       = $defaultLocale;
-    $this->defaultLanguageCode = "{$defaultLocale[0]}{$defaultLocale[1]}";
-    $this->systemLocales       = $systemLocales;
-    $this->setLocale($locale);
+    $this->defaultLanguageCode = $config->defaultLanguageCode;
+    $this->defaultLocale       = $config->defaultLocale;
+    $this->systemLocales       = $config->locales;
+    if (!$language) {
+      $language = $config->defaultLanguageCode;
+    }
+    $this->setLocale($language);
   }
 
 
@@ -229,6 +202,7 @@ final class Intl extends \MovLib\Core\Database {
       if (!$locale) {
         $locale = $this->locale;
       }
+
       // Nothing to do if we already have the translations cached for this entry.
       if (isset(self::$translations[$locale][$filename])) {
         return self::$translations[$locale][$filename];
@@ -243,50 +217,12 @@ final class Intl extends \MovLib\Core\Database {
         return (self::$translations[$locale][$filename] = require $file);
       }
 
-      // No cached entry and not file was loaded, create an empty index in the cache to speed up later look ups.
+      // No cached entry and no file was loaded, create an empty index in the cache to speed up later look ups.
       return (self::$translations[$locale][$filename] = []);
     }
     catch (\Exception $e) {
       throw new \IntlException("Couldn't get translations for '{$filename}'.", null, $e);
     }
-  }
-
-  /**
-   * Insert message pattern.
-   *
-   * @param string $message
-   *   The message to insert.
-   * @param array $comment [optional]
-   *   Comment that should be added to the message, a comment should help translators to understand how they should
-   *   translate the message. Usually your messages should be self-explanatory. Therefore this parameter defaults to
-   *   <code>NULL</code>.
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function insertMessage($message, $comment = null) {
-    $this->insertMessages([[ "message" => $message, $comment => null ]]);
-    return $this;
-  }
-
-  /**
-   * Insert multiple messages at once.
-   *
-   * @param array $messages
-   *   Array arrays that contain the key <code>"message"</code> and optionally <code>"comment"</code>.
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function insertMessages(array $messages) {
-    if (!($stmt = $this->mysqli->prepare("INSERT INTO `messages` (`message`, `comment`, `dyn_translations`) VALUES (?, ?, '')"))) {
-      throw new DatabaseException;
-    }
-    foreach ($messages as list($message, $comment)) {
-      if (!$stmt->bind_param("ss", $message, empty($comment) ? null : $comment) || !$stmt->execute()) {
-        throw new DatabaseException;
-      }
-    }
-    $stmt->close();
-    return $this;
   }
 
   /**
@@ -305,9 +241,7 @@ final class Intl extends \MovLib\Core\Database {
   public function r($route, array $args = null, $locale = null) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if ($route == "/") {
-      throw new \LogicException("Translating the root route '/' makes no sense");
-    }
+    assert($route != "/", "Translating the root route '/' doesn't make sense.");
     // @codeCoverageIgnoreEnd
     // @devEnd
     return $this->translate($route, $args, "routes/singular", $locale);
@@ -329,9 +263,7 @@ final class Intl extends \MovLib\Core\Database {
   public function rp($route, array $args = null, $locale = null) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if ($route == "/") {
-      throw new \LogicException("Translating the root route '/' makes no sense");
-    }
+    assert($route != "/", "Translating the root route '/' doesn't make sense.");
     // @codeCoverageIgnoreEnd
     // @devEnd
     return $this->translate($route, $args, "routes/plural", $locale);
@@ -340,23 +272,24 @@ final class Intl extends \MovLib\Core\Database {
   /**
    * Set the locale.
    *
-   * @param string $locale [optional]
-   *   The locale to set, you can also pass a language code.
+   * @param string $language
+   *   An ISO 639-1 code (preferred) or a locale, defaults to <code>NULL</code> (default system locale from config will
+   *   be used).
    * @return this
    * @throws \InvalidArgumentException
    */
-  public function setLocale($locale) {
-    if (isset($this->systemLocales[$locale])) {
-      $this->locale       = $this->systemLocales[$locale];
-      $this->languageCode = $locale;
+  public function setLocale($language) {
+    if (isset($this->systemLocales[$language])) {
+      $this->locale       = $this->systemLocales[$language];
+      $this->languageCode = $language;
     }
-    elseif (in_array($locale, $this->systemLocales)) {
-      $this->locale       = $locale;
-      $this->languageCode = "{$locale[0]}{$locale[1]}";
+    elseif (in_array($language, $this->systemLocales)) {
+      $this->locale       = $language;
+      $this->languageCode = "{$language[0]}{$language[1]}";
     }
     else {
       throw new \InvalidArgumentException(
-        "\$locale ({$locale}) must be a valid system locale: " . implode(", ", $this->systemLocales)
+        "\$locale ({$language}) must be a valid system locale: " . implode(", ", $this->systemLocales)
       );
     }
     return $this;
@@ -445,37 +378,24 @@ final class Intl extends \MovLib\Core\Database {
     // @codeCoverageIgnoreStart
     assert(!empty($pattern));
     assert(is_string($pattern));
-    if (isset($args)) {
-      assert(!empty($args));
-    }
+    assert(
+      preg_match("/^\s*\{[\{\}0-9a-z_\- ]*\}\s*$/i", $pattern) !== 1,
+      "A translation that contains placeholder tokens only doesn't make sense. Don't misuse the message formatter to " .
+      "format you strings, the right tool for the job! You may use sprintf() for fancy formatting."
+    );
+    assert(!isset($args) || !empty($args));
     assert(!empty($context));
     assert(is_string($context));
-    if (isset($locale)) {
-      assert(preg_match("/[a-z]{2}[_\-][a-z]{2}/i", $locale));
-    }
+    assert(!isset($locale) || preg_match("/[a-z]{2}[_\-][a-z]{2}/i", $locale));
     // @codeCoverageIgnoreEnd
     // @devEnd
     try {
       if (!$locale) {
         $locale = $this->locale;
       }
-      // Only attempt to translate the pattern if we have no translation already cached.
+      // Only attempt to translate the pattern if we have no cached translation.
       if (empty(self::$translations[$locale][$context][$pattern])) {
-        // Fetch translations from database for message context.
-        if ($context == "messages") {
-          $stmt = $this->query(
-            "SELECT COLUMN_GET(`dyn_translations`, ? AS CHAR) FROM `messages` WHERE `message` = ? LIMIT 1",
-            "ss",
-            [ "{$locale[0]}{$locale[1]}", $pattern ]
-          );
-          list(self::$translations[$locale][$context][$pattern]) = $stmt->get_result()->fetch_row();
-          $stmt->close();
-        }
-        // Fetch translations from file for everything else, we don't need the returned value because we're directly
-        // accessing the internal caching array.
-        else {
-          $this->getTranslations($context, $locale);
-        }
+        $this->getTranslations($context, $locale);
 
         // Check if we have a translation for this pattern. If we have none this either means that the pattern is in the
         // default locale and has no translations (e.g. time zones have translations in the default locale as well, but

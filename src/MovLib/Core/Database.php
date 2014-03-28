@@ -46,7 +46,7 @@ class Database {
    *
    * @var \array
    */
-  private static $connections = [];
+  private static $connection;
 
   /**
    * Associative array containing language specific collation strings.
@@ -62,13 +62,6 @@ class Database {
     "en" => null,
     "de" => " COLLATE utf8mb4_german2_ci",
   ];
-
-  /**
-   * Name of the database to which this instance is connected.
-   *
-   * @var string
-   */
-  private $database = "movlib";
 
   /**
    * The dependency injection container.
@@ -133,18 +126,40 @@ class Database {
 
 
   /**
-   * Instantiate new database.
+   * Instantiate new database object.
    *
    * @param \MovLib\Core\DIContainer $diContainer
    *   The dependency injection container.
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer) {
+  final public function __construct(\MovLib\Core\DIContainer $diContainer) {
     $this->diContainer = $diContainer;
     $this->config      = $diContainer->config;
     $this->fs          = $diContainer->fs;
     $this->intl        = $diContainer->intl;
     $this->kernel      = $diContainer->kernel;
     $this->log         = $diContainer->log;
+
+    // @todo Evaluate if we really need a connection for every presentation rendered via PHP (remember that nearly
+    //       everything is handled via nginx). Still, it should be evaluated.
+    if (!self::$connection) {
+      $driver = new \mysqli_driver();
+      $driver->report_mode = MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT;
+
+      $this->mysqli = new \mysqli();
+      $this->mysqli->real_connect();
+      $this->mysqli->select_db($this->config->database);
+
+      self::$connection = $this->mysqli;
+    }
+
+    $this->mysqli =  self::$connection;
+  }
+
+  /**
+   * Close active database connection.
+   */
+  final public function __destruct() {
+    self::$connection->close();
   }
 
 
@@ -158,23 +173,23 @@ class Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   private function connect() {
-    if (!isset(self::$connections[$this->database])) {
-      // A cached reflection function is faster than call_user_func_array()!
-      if (!self::$stmtBindParam) {
-        self::$stmtBindParam = new \ReflectionFunction("mysqli_stmt_bind_param");
-      }
-      $mysqli = new \mysqli();
-      if ($mysqli->real_connect() === false || $mysqli->connect_error) {
-        throw new DatabaseException("Connecting to database server failed", $mysqli->error, $mysqli->errno);
-      }
-      if ($mysqli->select_db($this->database) === false) {
-        throw new DatabaseException("Selecting database '{$this->database}' failed", $mysqli->error, $mysqli->errno);
-      }
-      self::$connections[$this->database] = $mysqli;
-    }
-    if (!$this->mysqli) {
-      $this->mysqli = self::$connections[$this->database];
-    }
+//    if (!isset(self::$connections[$this->database])) {
+//      // A cached reflection function is faster than call_user_func_array()!
+//      if (!self::$stmtBindParam) {
+//        self::$stmtBindParam = new \ReflectionFunction("mysqli_stmt_bind_param");
+//      }
+//      $mysqli = new \mysqli();
+//      if ($mysqli->real_connect() === false || $mysqli->connect_error) {
+//        throw new DatabaseException("Connecting to database server failed", $mysqli->error, $mysqli->errno);
+//      }
+//      if ($mysqli->select_db($this->database) === false) {
+//        throw new DatabaseException("Selecting database '{$this->database}' failed", $mysqli->error, $mysqli->errno);
+//      }
+//      self::$connections[$this->database] = $mysqli;
+//    }
+//    if (!$this->mysqli) {
+//      $this->mysqli = self::$connections[$this->database];
+//    }
     return $this;
   }
 

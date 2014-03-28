@@ -27,7 +27,7 @@ use \MovLib\Core\HTTP\Response;
 use \MovLib\Core\HTTP\Session;
 use \MovLib\Core\Intl;
 use \MovLib\Core\Log;
-use \MovLib\Mail\Mailer;
+use \MovLib\Presentation\Error\InternalServerError;
 
 /**
  * The MovLib kernel.
@@ -44,6 +44,24 @@ final class Kernel {
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
+  // @devStart
+  // @codeCoverageIgnoreStart
+  /**
+   * Whether the kernel has already booted or not.
+   *
+   * @var boolean
+   */
+  protected $booted = false;
+  // @codeCoverageIgnoreEnd
+  // @devEnd
+
+  /**
+   * Whether this kernel is in CLI context or not.
+   *
+   * @var boolean
+   */
+  public $cli = false;
+
   /**
    * Used to collect methods that should executed after the response was sent to the client.
    *
@@ -56,20 +74,16 @@ final class Kernel {
   /**
    * Dependency injection container.
    *
-   * @var \MovLib\Core\DIContainer
+   * @var \MovLib\Core\DIContainer|\MovLib\Core\HTTP\DIContainerHTTP
    */
   protected $diContainer;
 
-  // @devStart
-  // @codeCoverageIgnoreStart
   /**
-   * Whether the kernel has already booted or not.
+   * Whether this kernel is in HTTP context or not.
    *
    * @var boolean
    */
-  protected $booted = false;
-  // @codeCoverageIgnoreEnd
-  // @devEnd
+  public $http = false;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -80,9 +94,14 @@ final class Kernel {
    *
    * @param string $documentRoot
    *   The real document root path.
+   * @param string $logName
+   *   The name for the log entries.
+   * @param string $language [optional]
+   *   An ISO 639-1 code (preferred) or a locale, defaults to <code>NULL</code> (default system locale from config will
+   *   be used).
    * @return this
    */
-  protected function boot($documentRoot) {
+  protected function boot($documentRoot, $logName, $language = null) {
     // @devStart
     // @codeCoverageIgnoreStart
     if ($this->booted) {
@@ -93,6 +112,8 @@ final class Kernel {
     // @devEnd
 
     $this->diContainer->kernel = $this;
+    $this->diContainer->log    = new Log();
+    $this->diContainer->fs     = new FileSystem($documentRoot, $this->diContainer->log);
 
     // @devStart
     // @codeCoverageIgnoreStart
@@ -117,6 +138,9 @@ final class Kernel {
     // @codeCoverageIgnoreEnd
     // @devEnd
 
+    $this->diContainer->log->init($logName, $this->diContainer->config, $this->http);
+    $this->diContainer->intl = new Intl($this->diContainer->config, $language);
+
     return $this;
   }
 
@@ -130,14 +154,13 @@ final class Kernel {
    * @return this
    */
   public function bootCLI($documentRoot, $basename) {
-    $this->diContainer       = new DIContainer();
-    $this->boot($documentRoot);
-    $this->diContainer->log  = new Log("{$this->diContainer->config->siteName}CLI", $this->diContainer->config, false);
-    $this->diContainer->fs   = new FileSystem($documentRoot, $this->diContainer->log);
-    $this->diContainer->intl = new Intl($this->diContainer->config->defaultLocale, $this->diContainer->config->defaultLocale, $this->diContainer->config->locales);
+    $this->cli = true;
+    $this->diContainer = new DIContainer();
+    $this->boot($documentRoot, "{$basename}-cli");
     $this->diContainer->fs->setProcessOwner($this->diContainer->config->user, $this->diContainer->config->group);
     (new Application($this->diContainer, $basename))->run();
     $this->shutdown();
+
     return $this;
   }
 
@@ -152,31 +175,39 @@ final class Kernel {
    * @return this
    */
   public function bootHTTP($documentRoot) {
-    $this->diContainer = new DIContainerHTTP();
-    $this->boot($documentRoot);
     set_error_handler([ $this, "errorHandler" ]);
     set_exception_handler([ $this, "exceptionHandler" ]);
     register_shutdown_function([ $this, "fatalErrorHandler" ]);
     ini_set("display_errors", false);
 
-    $this->diContainer->log      = new Log($_SERVER["SERVER_NAME"], $this->diContainer->config, true);
-    $this->diContainer->fs       = new FileSystem($documentRoot, $this->diContainer->log);
-    $this->diContainer->intl     = new Intl($_SERVER["LANGUAGE_CODE"], $this->diContainer->config->defaultLocale, $this->diContainer->config->locales);
+    $this->http = true;
+    $this->diContainer = new DIContainerHTTP();
+    $this->boot($documentRoot, $_SERVER["SERVER_NAME"], $_SERVER["LANGUAGE_CODE"]);
     $this->diContainer->request  = new Request($this->diContainer->intl);
     $this->diContainer->response = new Response($this->diContainer->config, $this->diContainer->request);
-    $this->diContainer->session  = new Session($this->diContainer->log, $this->diContainer->response, $this->diContainer->request->remoteAddress, $this->diContainer->config->timeZone);
+    $this->diContainer->session  = new Session($this->diContainer);
 
-    // @todo NOT GOOD! We have to move this somewhere save and find a solution for the dynamic translation.
-    $this->diContainer->config->siteSlogan            = $this->diContainer->intl->t($this->diContainer->config->siteSlogan);
-    $args                                             = [ "sitename" => $this->diContainer->config->siteName, "slogan" => $this->diContainer->config->siteSlogan ];
-    $this->diContainer->config->siteNameAndSlogan     = $this->diContainer->intl->t($this->diContainer->config->siteNameAndSlogan, $args);
-    $this->diContainer->config->siteNameAndSloganHTML = $this->diContainer->intl->t($this->diContainer->config->siteNameAndSloganHTML, $args);
-
-    $this->diContainer->session->resume();
-    $presenterClass = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
-    $this->diContainer->presenter = new $presenterClass($this->diContainer);
-    $this->diContainer->presenter->init();
-    echo $this->diContainer->presenter->getPresentation();
+    // Try to initialize the session and presentation and send it to the client.
+    try {
+      $this->diContainer->session->resume($this->diContainer->request, $this->diContainer->response);
+      $presenterClass = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
+      $this->diContainer->presenter = new $presenterClass($this->diContainer);
+      $this->diContainer->presenter->init();
+      echo $this->diContainer->presenter->getPresentation();
+    }
+    // Client exception's are exception's that display a fully rendered page in HTTP context, catch them separately.
+    catch (ClientException $clientException) {
+      echo $clientException->getPresentation();
+    }
+    // Any other exception is an error, but the base system booted nicely therefore we try to display a nice looking
+    // error page including a stack trace. MovLib is open source and we don't use any passwords anywhere, therefore we
+    // don't have to keep the stacktrace a secret. Who knows, maybe someone can will directly create a pull request at
+    // GitHub that fixes the issue (*dreaming*).
+    catch (\Exception $exception) {
+      $this->diContainer->presenter = new InternalServerError($this->diContainer);
+      $this->diContainer->presenter->init()->setException($exception);
+      echo $this->diContainer->presenter->getPresentation();
+    }
 
     // @devStart
     // @codeCoverageIgnoreStart
@@ -270,8 +301,10 @@ final class Kernel {
    *
    * @param \Exception $exception
    *   The exception that wasn't caught.
+   * @param boolean $title [optional]
+   *   The title that should be displayed.
    */
-  public function exceptionHandler($exception) {
+  public function exceptionHandler($exception, $title = "UNCAUGHT EXCEPTION!") {
     // Make sure we don't send a header after some content was already sent to the client because that would just
     // trigger another error.
     if (!headers_sent()) {
@@ -288,11 +321,20 @@ final class Kernel {
       mail("root", "EMERGENCY! MovLib is experiencing problems!", $exception);
     }
 
+    $pad = str_repeat(" ", (118 - strlen($title)) / 2);
+    $title = "{$pad}{$title}{$pad}";
+    $pad = strlen($title) - 118;
+    if ($pad < 0) {
+      $title .= str_repeat(" ", -$pad);
+    }
+
     // ASCII art source: http://www.chris.com/ASCII/index.php?art=animals/insects/other
     echo <<<EOT
 # -------------------------------------------------------------------------------------------------------------------- #
 #                                                                                                                      #
-#                   UNRECOVERABLE FATAL ERROR! Please report @ https://github.com/MovLib/www/issues                    #
+#{$title}#
+#                                                                                                                      #
+#                                 Please report @ https://github.com/MovLib/www/issues                                 #
 #                                                                                                                      #
 # -------------------------------------------------------------------------------------------------------------------- #
 
@@ -369,7 +411,7 @@ EOT;
         $property->setValue($exception, $error[$propertyName]);
       }
 
-      $this->exceptionHandler($exception);
+      $this->exceptionHandler($exception, "UNRECOVERABLE FATAL ERROR!");
     }
   }
 

@@ -50,7 +50,7 @@ final class Log {
   protected $logger;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+  // ------------------------------------------------------------------------------------------------------------------- Initialize
 
 
   /**
@@ -63,21 +63,18 @@ final class Log {
    * @param boolean $http
    *   Whether this logger is executing in HTTP context or not.
    */
-  public function __construct($name, \MovLib\Core\Config $config, $http) {
+  public function init($name, \MovLib\Core\Config $config, $http) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (empty($name) || !is_string($name)) {
-      throw new \InvalidArgumentException("\$name cannot be empty and must be of type string.");
-    }
-    if (!is_bool($http)) {
-      throw new \InvalidArgumentException("\$http must be of type boolean.");
-    }
+    assert(!empty($name));
+    assert(is_string($name));
+    assert(is_bool($http));
     // @codeCoverageIgnoreEnd
     // @devEnd
 
     $mailer = new NativeMailerHandler(
       $config->emailDevelopers,
-      "IMPORTANT! {$config->siteName} is experiencing problems!",
+      "IMPORTANT! {$config->sitename} is experiencing problems!",
       $config->emailFrom,
       Logger::CRITICAL,
       true,

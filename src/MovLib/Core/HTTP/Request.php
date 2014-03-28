@@ -187,7 +187,7 @@ final class Request {
     $this->scheme        =  $_SERVER["SCHEME"];
     $this->time          =  $_SERVER["REQUEST_TIME"];
     $this->timeFloat     =  $_SERVER["REQUEST_TIME_FLOAT"];
-    $this->uri           =  $_SERVER["QUERY_STRING"];
+    $this->uri           =  $_SERVER["REQUEST_URI"];
     $this->userAgent     =  $this->filterInput(INPUT_SERVER, "HTTP_USER_AGENT", FILTER_SANITIZE_STRING, FILTER_REQUIRE_SCALAR | FILTER_FLAG_STRIP_LOW);
 
     // Careful, it wouldn't make much sense to tell the client to read our privacy policy and at the same time block

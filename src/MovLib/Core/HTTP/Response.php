@@ -36,19 +36,25 @@ final class Response {
 
 
   /**
-   * Used to collect client alert messages.
-   *
-   * @see Response::setAlert()
-   * @var string
-   */
-  protected $alerts;
-
-  /**
    * Whether this request is cacheable or not.
    *
    * @var boolean
    */
   public $cacheable = false;
+
+  /**
+   * The active config instance.
+   *
+   * @var \MovLib\Core\Config
+   */
+  protected $config;
+
+  /**
+   * The active request instance.
+   *
+   * @var \MovLib\Core\HTTP\Request
+   */
+  protected $request;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -56,9 +62,16 @@ final class Response {
 
   /**
    * Instantiate new HTTP request object.
+   *
+   * @param \MovLib\Core\Config $config
+   *   The active config instance.
+   * @param \MovLib\Core\HTTP\Request $request
+   *   The active request instance.
    */
-  public function __construct($requestMethod) {
-    $this->cacheable = $requestMethod == "GET";
+  public function __construct(\MovLib\Core\Config $config, \MovLib\Core\HTTP\Request $request) {
+    $this->config    = $config;
+    $this->request   = $request;
+    $this->cacheable = $request->methodGET;
   }
 
 
@@ -81,7 +94,7 @@ final class Response {
    * @return this
    */
   public function createCookie($identifier, $value, $expire = 0, $httpOnly = false) {
-    setcookie($identifier, $value, $expire, "/", $config->hostname, $request->https, $httpOnly);
+    setcookie($identifier, $value, $expire, "/", $this->config->hostname, $this->request->https, $httpOnly);
     return $this;
   }
 
@@ -97,116 +110,6 @@ final class Response {
       $this->createCookie($id, "", 1);
     }
     return $this;
-  }
-
-  /**
-   * Get the response.
-   *
-   * @param string $siteName
-   *   The site's name.
-   * @return string
-   *   The response.
-   */
-  public function respond($siteName) {
-    try {
-      $className = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
-      $presenter = new $className($siteName);
-      $content   = $presenter->getContent();
-    }
-    catch (ClientException $e) {
-      return $e->getPresentation();
-    }
-    catch (\Exception $e) {
-      $presenter = new Stacktrace($siteName, $e);
-      $content   = $presenter->getContent();
-    }
-
-    // Allow every stage to alter the final presentation.
-    $header = $presenter->getHeader();
-    $main   = $presenter->getMainContent($content);
-    $footer = $presenter->getFooter();
-
-    // Finally try to send the presentation.
-    return $presenter->getPresentation($header, $main, $footer);
-  }
-
-  /**
-   * Set alert.
-   *
-   * @param string $message
-   *   The alert's localized message.
-   * @param string $title
-   *   The alert's localized title.
-   * @param string $severity
-   *   The alert's severity.
-   * @return this
-   */
-  protected function setAlert($message, $title, $severity) {
-    if ($title) {
-      $title = "<h4 class='title'>{$title}</h4>";
-    }
-    $this->alerts .= "<div class='alert{$severity}' role='alert'><div class='c'>{$title}{$message}</div></div>";
-    return $this;
-  }
-
-  /**
-   * Set error alert (red color).
-   *
-   * @param string $message
-   *   The alert's localized message.
-   * @param string $title [optional]
-   *   The alert's localized title, defaults to <code>NULL</code> which is suitable for inline alerts that have many
-   *   surrounding content. If the alert message is going to be displayed with no or little surrounding content include
-   *   a title (in proper title case).
-   * @return this
-   */
-  public function setAlertError($message, $title = null) {
-    return $this->setAlert($message, $title, "error");
-  }
-
-  /**
-   * Set info alert (blue color).
-   *
-   * @param string $message
-   *   The alert's localized message.
-   * @param string $title [optional]
-   *   The alert's localized title, defaults to <code>NULL</code> which is suitable for inline alerts that have many
-   *   surrounding content. If the alert message is going to be displayed with no or little surrounding content include
-   *   a title (in proper title case).
-   * @return this
-   */
-  public function setAlertInfo($message, $title = null) {
-    return $this->setAlert($message, $title, "info");
-  }
-
-  /**
-   * Set success alert (green color).
-   *
-   * @param string $message
-   *   The alert's localized message.
-   * @param string $title [optional]
-   *   The alert's localized title, defaults to <code>NULL</code> which is suitable for inline alerts that have many
-   *   surrounding content. If the alert message is going to be displayed with no or little surrounding content include
-   *   a title (in proper title case).
-   * @return this
-   */
-  public function setAlertSuccess($message, $title = null) {
-    return $this->setAlert($message, $title, "success");
-  }
-
-  /**
-   * Set warning alert (yellow color).
-   *
-   * @param string $message
-   *   The alert's localized message.
-   * @param string $title [optional]
-   *   The alert's localized title, defaults to <code>NULL</code> which is suitable for inline alerts that have many
-   *   surrounding content. If the alert message is going to be displayed with no or little surrounding content include
-   *   a title (in proper title case).
-   * @return this
-   */
-  public function setAlertWarning($message, $title = null) {
-    return $this->setAlert($message, $title, "warning");
   }
 
 }
