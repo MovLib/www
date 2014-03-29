@@ -38,7 +38,7 @@ use \MovLib\Exception\UnauthorizedException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Session extends \MovLib\Core\Database {
+final class Session extends \MovLib\Core\AbstractDatabase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -691,7 +691,7 @@ final class Session extends \MovLib\Core\Database {
     elseif (session_status() === PHP_SESSION_ACTIVE) {
       // If this session belongs to an authenticated user, update the last access time.
       if ($this->isAuthenticated === true) {
-        $kernel->delayMethodCall([ $this, "updateUserAccess" ]);
+        $this->kernel->delayMethodCall([ $this, "updateUserAccess" ]);
       }
 
       // Commit session to memcached and release session lock.

@@ -17,7 +17,7 @@
  */
 namespace MovLib\Core\HTTP;
 
-use \MovLib\Exception\ClientException;
+use \MovLib\Exception\ClientExceptionInterface;
 use \MovLib\Presentation\Stacktrace;
 
 /**

@@ -30,7 +30,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class UnauthorizedException extends \RuntimeException implements \MovLib\Exception\ClientException {
+final class UnauthorizedException extends \RuntimeException implements \MovLib\Exception\ClientExceptionInterface {
 
   /**
    * {@inheritdoc}

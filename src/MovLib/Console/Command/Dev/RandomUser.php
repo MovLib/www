@@ -17,7 +17,7 @@
  */
 namespace MovLib\Console\Command\Dev;
 
-use \MovLib\Console\AdminDatabase;
+use \MovLib\Console\MySQLi;
 use \MovLib\Data\User\FullUser;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
@@ -134,7 +134,7 @@ abstract class RandomUser extends \MovLib\Console\Command\AbstractCommand {
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $this->amount = (integer) $input->getArgument("amount");
-    $db = new AdminDatabase($this->diContainer);
+    $db = new MySQLi($this->diContainer);
 
     $this->write("Preparing to generate <comment>{$this->amount}</comment> random users ...");
     $this->setUsernames($db);
@@ -216,12 +216,12 @@ abstract class RandomUser extends \MovLib\Console\Command\AbstractCommand {
    *
    * The usernames we generate have to be absolutely unique, therefor we have to know all the usernames that are in use.
    *
-   * @param \MovLib\Console\AdminDatabase $db
+   * @param \MovLib\Console\MySQLi $db
    *   Admin database instance.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected function setUsernames(AdminDatabase $db) {
+  protected function setUsernames(MySQLi $db) {
     if (($result = $db->query("SELECT `name` FROM `users`")->get_result())) {
       while ($user = $result->fetch_row()) {
         $this->usernames[] = $user[0];

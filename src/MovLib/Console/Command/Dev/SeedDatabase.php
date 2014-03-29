@@ -17,7 +17,7 @@
  */
 namespace MovLib\Console\Command\Dev;
 
-use \MovLib\Console\AdminDatabase;
+use \MovLib\Console\MySQLi;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -105,7 +105,7 @@ final class SeedDatabase extends \MovLib\Console\Command\AbstractCommand {
     }
 
     $this->writeVerbose("Importing individual SQL scripts...");
-    $db = new AdminDatabase($this->diContainer);
+    $db = new MySQLi($this->diContainer);
     foreach ($scripts as $script) {
       $script = "{$this->scriptDirectory}/{$script}.sql";
       $this->writeDebug("Importing <comment>{$script}</comment>");

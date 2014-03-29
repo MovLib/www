@@ -28,7 +28,7 @@ use \MovLib\Data\Image\Style;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class User extends \MovLib\Core\Database {
+class User extends \MovLib\Core\AbstractDatabase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants

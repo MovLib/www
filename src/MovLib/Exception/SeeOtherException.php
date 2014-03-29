@@ -26,10 +26,16 @@ namespace MovLib\Exception;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class SeeOtherException extends \MovLib\Exception\RedirectException implements \MovLib\Exception\ClientException {
+final class SeeOtherException extends \MovLib\Exception\RedirectException {
 
-  public function getPresentation() {
-
+  /**
+   * {@inheritdoc}
+   */
+  protected function getHttpStatusCode($http1) {
+    if ($http1) {
+      return self::HTTP_MOVED_PERMANENTLY;
+    }
+    return self::HTTP_SEE_OTHER;
   }
 
 }

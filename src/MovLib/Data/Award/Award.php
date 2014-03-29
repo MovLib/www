@@ -15,9 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\Data\Award;
 
 /**
- * Defines the order in which the SQL scripts are imported if all scripts are imported at once.
+ * Defines the award entity object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -25,18 +26,23 @@
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
+final class Award extends \MovLib\Core\AbstractDatabase {
 
-// @codeCoverageIgnoreStart
-return [
-  "awards",
-  "companies",
-  "genres",
-  "help",
-  "jobs",
-  "licenses",
-  "movies",
-  "releases",
-  "system_pages",
-  "users",
-];
-// @codeCoverageIgnoreEnd
+  public $route;
+
+  public function initFetchObject() {
+    $this->route = $this->intl->r("/award/{0}", $this->id);
+  }
+
+  /**
+   * @param type $singular
+   * @param type $plural
+   * @return type
+   */
+  public function getCount($singular, $plural) {
+    return $this->getMySQLi()->query(
+      "SELECT COUNT(DISTINCT `{$singular}_id`) FROM `{$plural}_awards` WHERE `award_id` = {$this->id}"
+    )->fetch_row()[0];
+  }
+
+}

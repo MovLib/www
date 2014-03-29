@@ -230,15 +230,16 @@ final class Intl {
    *
    * @param string $route
    *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
-   * @param array $args [optional]
-   *   The message formatter arguments.
+   * @param mixed $args [optional]
+   *   The arguments that should be passed to the message formatter, default to <code>NULL</code> and the message
+   *   formatter isn't used at all. You can pass either a single scaler value or an array.
    * @param string $locale [optional]
    *   Use a different locale for this translation.
    * @return string
    *   The translated and formatted singular route.
    * @throws \IntlException
    */
-  public function r($route, array $args = null, $locale = null) {
+  public function r($route, $args = null, $locale = null) {
     // @devStart
     // @codeCoverageIgnoreStart
     assert($route != "/", "Translating the root route '/' doesn't make sense.");
@@ -252,15 +253,16 @@ final class Intl {
    *
    * @param string $route
    *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
-   * @param array $args [optional]
-   *   The message formatter arguments.
+   * @param mixed $args [optional]
+   *   The arguments that should be passed to the message formatter, default to <code>NULL</code> and the message
+   *   formatter isn't used at all. You can pass either a single scaler value or an array.
    * @param string $locale [optional]
    *   Use a different locale for this translation.
    * @return string
    *   The translated and formatted plural route.
    * @throws \IntlException
    */
-  public function rp($route, array $args = null, $locale = null) {
+  public function rp($route, $args = null, $locale = null) {
     // @devStart
     // @codeCoverageIgnoreStart
     assert($route != "/", "Translating the root route '/' doesn't make sense.");
@@ -300,15 +302,16 @@ final class Intl {
    *
    * @param string $message
    *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
-   * @param array $args [optional]
-   *   Numeric array of arguments that should be inserted into <var>$message</var>.
+   * @param mixed $args [optional]
+   *   The arguments that should be passed to the message formatter, default to <code>NULL</code> and the message
+   *   formatter isn't used at all. You can pass either a single scaler value or an array.
    * @param string $locale [optional]
    *   Use a different locale for this translation.
    * @return string
    *   The formatted and translated <var>$message</var>.
    * @throws \IntlException
    */
-  public function t($message, array $args = null, $locale = null) {
+  public function t($message, $args = null, $locale = null) {
     return $this->translate($message, $args, "messages", $locale);
   }
 
@@ -328,16 +331,16 @@ final class Intl {
    *   <var>$plural</var> is also used for the singular form (e.g. the English word <i>Series</i> has no singular form).
    * @param integer|float $count [optional]
    *   The message's count, defaults to <code>1</code>.
-   * @param array $args [optional]
-   *   The message's arguments to insert into placeholder in <var>$plural</var> or <var>$singular</var>. Defaults to
-   *   <code>NULL</code> (no replacements).
+   * @param mixed $args [optional]
+   *   The arguments that should be passed to the message formatter, default to <code>NULL</code> and the message
+   *   formatter isn't used at all. You can pass either a single scaler value or an array.
    * @param string $locale [optional]
    *   Use a different locale for this translation.
    * @return string
    *   The translated and formatted plural message.
    * @throws \IntlException
    */
-  public function tp($plural, $singular = null, $count = 1, array $args = null, $locale = null) {
+  public function tp($plural, $singular = null, $count = 1, $args = null, $locale = null) {
     // @devStart
     // @codeCoverageIgnoreStart
     assert(!empty($plural));
@@ -353,6 +356,9 @@ final class Intl {
     if (empty($singular)) {
       $singular = $plural;
     }
+    if ($args) {
+      $args = (array) $args;
+    }
     $args["@count"] = $count;
     return $this->translate("{@count, plural, one{{$singular}} other{{$plural}}}", $args, "messages", $locale);
   }
@@ -362,8 +368,9 @@ final class Intl {
    *
    * @param string $pattern
    *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
-   * @param null|array $args
-   *   The message formatter arguments.
+   * @param mixed $args [optional]
+   *   The arguments that should be passed to the message formatter, default to <code>NULL</code> and the message
+   *   formatter isn't used at all. You can pass either a single scaler value or an array.
    * @param string $context
    *   The translations context (e.g. <code>"routes/singular"</code> or <code>"countries"</code>) if you pass
    *   <code>NULL</code> the database is asked.
@@ -383,6 +390,11 @@ final class Intl {
       "A translation that contains placeholder tokens only doesn't make sense. Don't misuse the message formatter to " .
       "format you strings, the right tool for the job! You may use sprintf() for fancy formatting."
     );
+    assert(
+      preg_match("/\{[a-z0-9_]*[A-Z|\-| ]+[a-z0-9_]*\}/", $pattern) !== 1,
+      "Always use snake case for intl placeholder tokens."
+    );
+    assert(strip_tags($pattern) == $pattern, "HTML is not allowed in translation patterns.");
     assert(!isset($args) || !empty($args));
     assert(!empty($context));
     assert(is_string($context));
@@ -407,7 +419,7 @@ final class Intl {
       }
 
       if ($args) {
-        return \MessageFormatter::formatMessage($locale, self::$translations[$locale][$context][$pattern], $args);
+        return \MessageFormatter::formatMessage($locale, self::$translations[$locale][$context][$pattern], (array) $args);
       }
       return self::$translations[$locale][$context][$pattern];
     }

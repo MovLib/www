@@ -17,54 +17,38 @@
  */
 namespace MovLib\Presentation\Award;
 
-use \MovLib\Data\Award;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
+use \MovLib\Data\Award\AwardSet;
+use \MovLib\Exception\SeeOtherException;
+use \MovLib\Partial\Alert;
 
 /**
- * Random award presentation.
+ * Random user presentation.
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Random {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
+final class Random {
 
   /**
-   * A random award identifier.
+   * Redirect client to random user profile.
    *
-   * @var integer
+   * @param \MovLib\Core\HTTP\DIContainerHTTP
+   *   The dependency injection container.
+   * @throws \MovLib\Exception\SeeOtherException
    */
-  private $awardId;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Redirect to random award presentation.
-   *
-   * @throws \MovLib\Presentation\Redirect\SeeOther
-   */
-  public function __construct() {
-    $this->awardId = Award::getRandomAwardId();
-    if (isset($this->awardId)) {
-      throw new SeeOtherRedirect($this->intl->r("/award/{0}", [ $this->awardId ]));
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+    if (($id = (new AwardSet($diContainerHTTP))->getRandom())) {
+      throw new SeeOtherException($diContainerHTTP->intl->r("/award/{0}", $id));
     }
-    else {
-      $kernel->alerts .= new Alert(
-        $this->intl->t("There is currently no award in our database."),
-        $this->intl->t("Check back later"),
-        Alert::SEVERITY_INFO
-      );
-      throw new SeeOtherRedirect("/");
-    }
+    $diContainerHTTP->response->createCookie("alert", (string) new Alert(
+      $this->intl->t("There is currently no award in our database"),
+      $this->intl->t("Check back later"),
+      Alert::SEVERITY_INFO
+    ));
+    throw new SeeOtherException($this->intl->rp("/awards"));
   }
 
 }

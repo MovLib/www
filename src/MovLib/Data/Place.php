@@ -28,7 +28,7 @@ use \MovLib\Presentation\Error\NotFound;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Place extends \MovLib\Core\Database {
+class Place extends \MovLib\Core\AbstractDatabase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

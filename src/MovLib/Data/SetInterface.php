@@ -29,6 +29,14 @@ namespace MovLib\Data;
 interface SetInterface {
 
   /**
+   * Get the set's canonical absolute entity class name.
+   *
+   * @return string
+   *   The set's canonical absolute entity class name.
+   */
+  public function getEntityClassName();
+
+  /**
    * Must return the total count of all available entities.
    *
    * @return integer
@@ -49,5 +57,13 @@ interface SetInterface {
    *   A {@see \mysqli_result} is the preferred type, but arrays are allowed as well.
    */
   public function getOrdered($by, $offset, $rowCount);
+
+  /**
+   * Get a random, unique, existing entity's identifier from the set.
+   *
+   * @return mixed
+   *   A random, unique, existing entity's identifier from the set.
+   */
+  public function getRandom();
 
 }

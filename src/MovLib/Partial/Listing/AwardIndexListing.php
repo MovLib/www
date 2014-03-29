@@ -20,57 +20,44 @@ namespace MovLib\Partial\Listing;
 /**
  * Images list for award instances with series and movie counts.
  *
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class AwardIndexListing extends \MovLib\Partial\Listing\AwardListing {
+final class AwardIndexListing extends \MovLib\Partial\Listing\AbstractMySQLiResultListing {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * Translated movie route of first item.
+   * Title attribute content for explanation of the movie icon.
    *
    * @var string
    */
-  private $firstMovieRoute;
+  protected $moviesTitle;
 
   /**
-   * Translated series route of first item.
+   * Title attribute content for explanation of the series icon.
    *
    * @var string
    */
-  private $firstSeriesRoute;
-
-  /**
-   * Translated movies title.
-   *
-   * @var string
-   */
-  private $moviesTitle;
-
-  /**
-   * Translated series title.
-   *
-   * @var string
-   */
-  private $seriesTitle;
+  protected $seriesTitle;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Methods
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  public function __construct($listItems, $noItemsText = null) {
-    $this->moviesTitle = $this->intl->t("Movies");
-    $this->seriesTitle = $this->intl->t("Series");
-    parent::__construct($listItems, $noItemsText);
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, \MovLib\Data\SetInterface $set, $oderedBy, callable $noItemsCallback) {
+    parent::__construct($diContainerHTTP, $set, $oderedBy, $noItemsCallback);
+    $this->moviesTitle = $diContainerHTTP->intl->t("Movies");
+    $this->seriesTitle = $diContainerHTTP->intl->t("Series");
   }
 
 
@@ -78,37 +65,62 @@ final class AwardIndexListing extends \MovLib\Partial\Listing\AwardListing {
 
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
+   * @param \MovLib\Data\Award $item {@inheritdoc}
    */
-  protected function getAdditionalContent($award, $listItem) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if(!($award instanceof \MovLib\Data\Award)) {
-      throw new \InvalidArgumentException("\$award must be of type \\MovLib\\Data\\Award");
+  public function formatItem($award, $delta = null) {
+    // @todo Move to "\MovLib\Partial\Award\AwardTrait" if needed elsewhere!
+    $years = null;
+    if ($award->firstAwardingYear || $award->lastAwardingYear) {
+      if ($award->firstAwardingYear && $award->lastAwardingYear) {
+        $years = $this->diContainerHTTP->intl->t(
+          "from {year_from} to {year_to}",
+          [ "year1" => $award->firstAwardingYear, "year2" => $award->lastAwardingYear ]
+        );
+      }
+      elseif ($award->firstAwardingYear) {
+        $years = $this->diContainerHTTP->intl->t("since {year}", [ "year" => $award->firstAwardingYear ]);
+      }
+      else {
+        $years = $this->diContainerHTTP->intl->t("until {year}", [ "year" => $award->lastAwardingYear ]);
+      }
+      $years = "<br><span class='small'>{$years}</span>";
     }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
-    if (!isset($this->firstMovieRoute)) {
-      $this->firstMovieRoute = $this->intl->rp("{$award->routeKey}/movies");
-    }
-    if (!isset($this->firstSeriesRoute)) {
-      $this->firstSeriesRoute = $this->intl->rp("{$award->routeKey}/series");
-    }
-
-    $currentMovieRoute  = str_replace("{0}", $award->id, $this->firstMovieRoute);
-    $currentSeriesRoute = str_replace("{0}", $award->id, $this->firstSeriesRoute);
 
     return
-      "<span class='fr'>" .
-        "<a class='ico ico-movie label' href='{$currentMovieRoute}' title='{$this->moviesTitle}'>" .
-          " &nbsp; {$award->getMoviesCount()}" .
-        "</a>" .
-        "<a class='ico ico-series label' href='{$currentSeriesRoute}' title='{$this->seriesTitle}'>" .
-          " &nbsp; {$award->getSeriesCount()}" .
-        "</a>" .
-      "</span>"
+      "<li class='hover-item r' typeof='Corporation'>" .
+        "<div class='s s10'>" .
+          "<img alt='' src='{$this->diContainerHTTP->presenter->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60' property='image' class='fl'>" .
+//          $this->getImage(
+//            $award->getStyle(Award::STYLE_SPAN_01),
+//            $award->route,
+//            [ "property" => "image" ],
+//            [ "class" => "fl" ]
+//          ) .
+          "<span class='s s9'>" .
+            "<span class='fr'>" .
+              "<a class='ico ico-movie label' href='{$this->diContainerHTTP->intl->rp("/award/{0}/movies", $award->id)}' title='{$this->moviesTitle}'>" .
+                " &nbsp; {$award->getCount("movie", "movies", true)}" .
+              "</a>" .
+              "<a class='ico ico-series label' href='{$this->diContainerHTTP->intl->rp("/award/{0}/series", $award->id)}' title='{$this->seriesTitle}'>" .
+                " &nbsp; 0" . // {$award->getCount("series_id", "series", true)}
+              "</a>" .
+            "</span>" .
+            "<a href='{$award->route}' property='url'>" .
+              "<span property='name'>{$award->name}</span>" .
+            "</a>" .
+            $years .
+          "</span>" .
+        "</div>" .
+      "</li>"
     ;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getListing($items) {
+    return "<ol class='hover-list no-list'>{$items}</ol>";
   }
 
 }

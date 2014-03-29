@@ -79,7 +79,9 @@ final class InternalServerError extends \MovLib\Presentation\AbstractPresenter {
       "<div id='stacktrace-details'><div class='title'><i class='ico ico-info'></i> {$this->intl->t(
         "{exception_message} in {class} on line {line, number}", [
           "exception_message" => nl2br($this->exception->getMessage(), false),
-          "class"             => str_replace([ $this->fs->documentRoot, "/src/" ], "", $this->exception->getFile()),
+          "class"             => str_replace(
+            [ $this->fs->documentRoot, $this->config->documentRoot, "/src/", "/lib/" ], "", $this->exception->getFile()
+          ),
           "line"              => $this->exception->getLine(),
         ]
       )}</div><table>{$this->formatStacktrace($this->exception->getTrace())}</table></div>",
@@ -152,7 +154,7 @@ final class InternalServerError extends \MovLib\Presentation\AbstractPresenter {
       return "<em>unknown</em>";
     }
     // Remove symbolic link document root and/or realpath document root from paths and replace with proper scheme.
-    return str_replace([ $this->config->documentRoot, $this->fs->documentRoot ], "dr:/", $stacktrace["file"]);
+    return str_replace([ $this->fs->documentRoot, $this->config->documentRoot ], "dr:/", $stacktrace["file"]);
   }
 
   /**

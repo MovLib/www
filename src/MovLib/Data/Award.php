@@ -430,20 +430,6 @@ class Award extends \MovLib\Data\Image\AbstractImage {
   }
 
   /**
-   * Get random award identifier.
-   *
-   * @return integer|null
-   *   Random award identifier, or <code>NULL</code> on failure.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public static function getRandomAwardId() {
-    $query = "SELECT `id` FROM `awards` WHERE `awards`.`deleted` = false ORDER BY RAND() LIMIT 1";
-    if ($result = $db->query($query)->get_result()) {
-      return $result->fetch_assoc()["id"];
-    }
-  }
-
-  /**
    * The count of series that received this award.
    *
    * @todo Implement when series are implemented
@@ -464,23 +450,6 @@ class Award extends \MovLib\Data\Image\AbstractImage {
    */
   public function getSeriesResult() {
     return $this;
-  }
-
-  /**
-   * Get the count of all awards.
-   *
-   * @staticvar null|integer $count
-   *   The total amount of awards which haven't been deleted.
-   * @return integer
-   *   The total amount of awards which haven't been deleted.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public static function getTotalCount() {
-    static $count = null;
-    if (!$count) {
-      $count = $db->query("SELECT COUNT(`id`) FROM `awards` WHERE `deleted` = false LIMIT 1")->get_result()->fetch_row()[0];
-    }
-    return $count;
   }
 
   /**

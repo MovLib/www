@@ -26,7 +26,7 @@ namespace MovLib\Exception;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-interface ClientException {
+interface ClientExceptionInterface {
 
   /**
    * Get the exception's presentation.

@@ -18,15 +18,15 @@
 namespace MovLib\Partial\Listing;
 
 /**
- * Base class for HTML lists.
+ * Defines the base class for listings that consume MySQLi results.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractListing {
+abstract class AbstractMySQLiResultListing implements \MovLib\Partial\Listing\ListingInterface {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -42,7 +42,7 @@ abstract class AbstractListing {
   /**
    * The listing's items.
    *
-   * @var array
+   * @var \mysqli_result
    */
   protected $items;
 
@@ -53,25 +53,47 @@ abstract class AbstractListing {
    */
   protected $noItemsCallback;
 
+  /**
+   * The <code>ORDER BY</code> clause for the query.
+   *
+   * @var string
+   */
+  protected $orderBy;
+
+  /**
+   * The set of which the items should be listed.
+   *
+   * @var \MovLib\Data\SetInterface
+   */
+  protected $set;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new generic array listing, the listing uses a <code>foreach</code> to iterate over the items and can
-   * handle any kind of (native) array.
+   * Instantiate new listing that consumes MySQLi results.
    *
-   * @param \MovLib\Core\DIContainerHTTP $diContainerHTTP
+   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
    *   The HTTP dependency injection container.
-   * @param array $items
-   *   The items to list.
+   * @param \MovLib\Data\SetInterface $set
+   *   The set of which the items should be listed.
    * @param callable $noItemsCallback
    *   The callback to call if there were no items.
+   * @param string $orderedBy
+   *   The <code>ORDER BY</code> clause for the query.
    */
-  public function __construct(\MovLib\Core\DIContainerHTTP $diContainerHTTP, array $items, callable $noItemsCallback) {
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, \MovLib\Data\SetInterface $set, $oderedBy, callable $noItemsCallback) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    // No way we can check for a trait and traits can't implement interfaces ... :(
+    assert(property_exists($diContainerHTTP->presenter, "paginationOffset"), "You need to use the PaginationTrait in your class to use a listing.");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     $this->diContainerHTTP = $diContainerHTTP;
-    $this->items           = $items;
     $this->noItemsCallback = $noItemsCallback;
+    $this->orderBy         = $oderedBy;
+    $this->set             = $set;
   }
 
   /**
@@ -84,21 +106,22 @@ abstract class AbstractListing {
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-      if (empty($this->items)) {
-        return $this->noItemsCallback;
-      }
-
       $items = null;
-      foreach ($this->items as $delta => $item) {
-        $items .= $this->formatItem($item, $delta);
+      $result = $this->set->getOrdered($this->orderBy, $this->diContainerHTTP->presenter->paginationOffset, $this->diContainerHTTP->presenter->paginationRowCount);
+      while ($item = $result->fetch_object($this->set->getEntityClassName(), [ $this->diContainerHTTP ])) {
+        $items .= $this->formatItem($item);
       }
-      return $this->getListing($items);
+      $result->free();
+      if ($items) {
+        return $this->getListing($items);
+      }
+      $this->noItemsCallback();
 
     // @devStart
     // @codeCoverageIgnoreStart
     }
     catch (\Exception $e) {
-      return (string) new \MovLib\Partial\Alert("<pre>{$e}</pre>", "Error Rendering Abstract Listing", \MovLib\Partial\Alert::SEVERITY_ERROR);
+      return (string) new \MovLib\Partial\Alert("<pre>{$e}</pre>", "Error Rendering MySQLi Result Listing", \MovLib\Partial\Alert::SEVERITY_ERROR);
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

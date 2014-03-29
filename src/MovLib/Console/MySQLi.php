@@ -15,9 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\Console;
 
 /**
- * Defines the order in which the SQL scripts are imported if all scripts are imported at once.
+ * Extends the default MySQLi class with an auto-connect constructor.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -25,18 +26,19 @@
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
+final class MySQLi extends \mysqli {
 
-// @codeCoverageIgnoreStart
-return [
-  "awards",
-  "companies",
-  "genres",
-  "help",
-  "jobs",
-  "licenses",
-  "movies",
-  "releases",
-  "system_pages",
-  "users",
-];
-// @codeCoverageIgnoreEnd
+  /**
+   * Instantiate new database.
+   *
+   * @param null|string $databaseName
+   *   The name of the database to use.
+   * @throws \mysqli_sql_exception
+   */
+  public function __construct($databaseName) {
+    $driver = new \mysqli_driver();
+    $driver->report_mode = MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT;
+    parent::__construct(ini_get("mysqli.default_host"), null, null, $databaseName);
+  }
+
+}

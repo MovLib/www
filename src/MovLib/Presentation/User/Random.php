@@ -17,42 +17,38 @@
  */
 namespace MovLib\Presentation\User;
 
-use \MovLib\Data\User\User;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Redirect\SeeOther;
+use \MovLib\Data\UserSet;
+use \MovLib\Exception\SeeOtherException;
+use \MovLib\Partial\Alert;
 
 /**
  * Random user presentation.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Random {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+final class Random {
 
   /**
-   * Redirect to random movie presentation.
+   * Redirect client to random user profile.
    *
-   * @throws \MovLib\Presentation\Redirect\SeeOther
+   * @param \MovLib\Core\HTTP\DIContainerHTTP
+   *   The dependency injection container.
+   * @throws \MovLib\Exception\SeeOtherException
    */
-  public function __construct() {
-    $name = User::getRandomUserName();
-    if (isset($name)) {
-      throw new SeeOther($this->intl->r("/user/{0}", [ $name ]));
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+    if (($username = (new UserSet($diContainerHTTP))->getRandom())) {
+      throw new SeeOtherException($diContainerHTTP->intl->r("/user/{0}", $username));
     }
-    $kernel->alerts .= new Alert(
+    $diContainerHTTP->response->createCookie("alert", (string) new Alert(
       $this->intl->t("There is currently no user in our database"),
       $this->intl->t("Check back later"),
       Alert::SEVERITY_INFO
-    );
-    throw new SeeOther($this->intl->rp("/users"));
+    ));
+    throw new SeeOtherException($this->intl->rp("/users"));
   }
 
 }

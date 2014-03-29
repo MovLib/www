@@ -30,7 +30,7 @@ use \MovLib\Presentation\Error\NotFound;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Company extends \MovLib\Core\Database {
+final class Company extends \MovLib\Core\AbstractDatabase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants

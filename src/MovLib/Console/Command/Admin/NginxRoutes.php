@@ -17,7 +17,7 @@
  */
 namespace MovLib\Console\Command\Admin;
 
-use \MovLib\Console\AdminDatabase;
+use \MovLib\Console\MySQLi;
 use \MovLib\Console\Command\Install\Nginx;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -51,7 +51,7 @@ class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
   /**
    * The active admin database instance.
    *
-   * @var \MovLib\Console\AdminDatabase
+   * @var \MovLib\Console\MySQLi
    */
   protected $db;
 
@@ -132,7 +132,7 @@ class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
    * {@inheritdoc}
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    $this->db = new AdminDatabase($this->diContainer);
+    $this->db = new MySQLi($this->diContainer);
 
     // Don't remove the $db variable just because it's unused, it's used in the included routes.php file!
     $this->writeVerbose("Starting to translate and compile nginx routes ...", self::MESSAGE_TYPE_COMMENT);

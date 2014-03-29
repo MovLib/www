@@ -17,64 +17,80 @@
  */
 namespace MovLib\Presentation\Award;
 
-use \MovLib\Data\Award;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Listing\AwardIndexListing;
+use \MovLib\Data\Award\AwardSet;
+use \MovLib\Partial\Alert;
+use \MovLib\Partial\Listing\AwardIndexListing;
 
 /**
  * The latest Awards.
  *
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\TraitSidebar;
-  use \MovLib\Presentation\TraitPagination;
+final class Index extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Partial\PaginationTrait;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+  // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * Instantiate new latest awards presentation.
+   * The award set.
    *
+   * @var \MovLib\Data\AwardSet
    */
-  public function __construct() {
-    $this->initPage($this->intl->t("Awards"));
-    $this->initBreadcrumb();
-    $this->initLanguageLinks("/awards", null, true);
-    $this->paginationInit(Award::getTotalCount());
-    $this->sidebarInit([
-      [ $kernel->requestPath, $this->title, [ "class" => "ico ico-award" ] ],
-      [ $this->intl->r("/award/random"), $this->intl->t("Random") ],
-    ]);
-  }
+  protected $awardSet;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    $this->headingBefore =
-      "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/award/create")}'>{$this->intl->t("Create New Award")}</a>"
+  public function init() {
+    $this->awardSet = new AwardSet($this->diContainerHTTP);
+    $this
+      ->initPage($this->intl->t("Awards"))
+      ->initBreadcrumb()
+      ->initLanguageLinks("/awards", null, true)
+      ->paginationInit($this->awardSet)
+      ->sidebarInit([
+        [ $this->request->path, $this->title, [ "class" => "ico ico-award" ] ],
+        [ $this->intl->r("/award/random"), $this->intl->t("Random") ],
+      ])
     ;
+  }
 
-    $result      = Award::getAwards($this->paginationOffset, $this->paginationLimit);
-    $noItemText  = new Alert(
-      $this->intl->t(
-        "We couldn’t find any awards matching your filter criteria, or there simply aren’t any awards available."
-      ), $this->intl->t("No Awards"), Alert::SEVERITY_INFO
-    );
-    $noItemText .=
-      $this->intl->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$this->intl->r("/award/create")}'>", "</a>" ]);
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {
+    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/award/create")}'>{$this->intl->t("Create New Award")}</a>";
+    return new AwardIndexListing($this->diContainerHTTP, $this->awardSet, "`created` DESC", [ $this, "noItemsCallback" ]);
+  }
 
-    return new AwardIndexListing($result, $noItemText);
+  /**
+   * Get the text to display if no awards matched the filter criteria for the listing.
+   *
+   * @return string
+   *   The text to display if no awards matched the filter criteria for the listing.
+   */
+  public function noItemsCallback() {
+    return new Alert(
+      $this->intl->t("We couldn’t find any awards matching your filter criteria, or there simply aren’t any awards available."),
+      $this->intl->t("No Awards"),
+      Alert::SEVERITY_INFO
+    ) .
+    "<p>{$this->intl->t(
+      "Would you like to {0}create an award{1}?",
+      [ "<a href='{$this->intl->r("/award/create")}'>", "</a>" ]
+    )}</p>";
   }
 
 }

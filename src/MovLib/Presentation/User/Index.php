@@ -65,13 +65,12 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
 
     // Fetch all users from the database and build the listing.
     $list = null;
-    $userResult = $this->userSet->getOrdered("`created` DESC", $this->paginationOffset, $this->paginationLimit);
+    $userResult = $this->userSet->getOrdered("`created` DESC", $this->paginationOffset, $this->paginationRowCount);
     /* @var $user \MovLib\Data\User */
     while ($user = $userResult->fetch_object("\\MovLib\\Data\\User", [ $this->diContainerHTTP ])) {
       $user->initFetchObject();
       $list .=
         "<li class='hover-item r' typeof='Person'>" .
-          // @todo Display avatar
           "<img alt='' class='s s1' property='image' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
           "<span class='s'><a href='{$user->route}' property='url'><span property='name'>{$user->name}</span></a></span>" .
         "</li>"

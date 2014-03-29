@@ -22,44 +22,6 @@ use \MovLib\Partial\Navigation;
 /**
  * Add pagination support to presentation.
  *
- * @see \MovLib\Presentation\AbstractPresenter
- *
- * @property string $alerts
- * @property string $bodyClasses
- * @property \MovLib\Presentation\Partial\Navigation $breadcrumb
- * @property string $breadcrumbTitle
- * @property string $contentAfter
- * @property string $contentBefore
- * @property string $headingBefore
- * @property string $headingAfter
- * @property string $headingSchemaProperty
- * @property-read string $id
- * @property-read array $languageLinks
- * @property-read array $namespace
- * @property-read string $pageTitle
- * @property-read \MovLib\Core\HTTP\Request $request
- * @property-read string $schemaType
- * @property-read string $title
- * @method string a($route, $text, array $attributes = null, $ignoreQuery = true)
- * @method this addClass($class, array &$attributes = null)
- * @method string collapseWhitespace($string)
- * @method string expandTagAttributes(array $attributes)
- * @method string htmlDecode($text)
- * @method string htmlDecodeEntities($text)
- * @method string htmlEncode($text)
- * @method string lang($lang)
- * @method string normalizeLineFeeds($text)
- * @method string placeholder($text)
- * @method string getContent()
- * @method string getFooter()
- * @method string getHeader()
- * @method string getHeadTitle()
- * @method string getPresentation()
- * @method string getMainContent()
- * @method this initBreadcrumb()
- * @method this initLanguageLinks($route, array $args = null, $plural = false, $query = null)
- * @method this initPage($title)
- *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -86,7 +48,7 @@ trait PaginationTrait {
    *
    * @var integer
    */
-  protected $paginationLimit = 25;
+  public $paginationRowCount = 25;
 
   /**
    * The pagination's offset.
@@ -95,7 +57,7 @@ trait PaginationTrait {
    *
    * @var integer
    */
-  protected $paginationOffset = 0;
+  public $paginationOffset = 0;
 
   /**
    * The pagination's total page count.
@@ -163,12 +125,12 @@ trait PaginationTrait {
     ]);
 
     // Calculate how many pages we have to display.
-    $this->paginationTotalPages = (integer) ceil($this->paginationTotalResults / $this->paginationLimit);
+    $this->paginationTotalPages = (integer) ceil($this->paginationTotalResults / $this->paginationRowCount);
 
     // Extend the page's breadcrumb and title if this isn't the first page.
     if ($this->paginationCurrentPage > 1) {
       // Calculate the pagination offset within the results for this page.
-      $this->paginationOffset = ($this->paginationCurrentPage - 1) * $this->paginationLimit;
+      $this->paginationOffset = ($this->paginationCurrentPage - 1) * $this->paginationRowCount;
 
       // Extend the page's breadcrumb and title with information about the current pagination page.
       $title = $this->intl->t("Page {0, number, integer}", [ $this->paginationCurrentPage ]);
@@ -181,9 +143,9 @@ trait PaginationTrait {
     // Only create a pagination navigation if we have at least two pages.
     $pagination = null;
     $to         = $this->paginationTotalResults;
-    if ($this->paginationTotalResults > $this->paginationLimit) {
+    if ($this->paginationTotalResults > $this->paginationRowCount) {
       // Calculate the maximum amount of results that we can show on this page.
-      $max = $this->paginationOffset + $this->paginationLimit;
+      $max = $this->paginationOffset + $this->paginationRowCount;
       // If the current total count isn't smaller then the maximum, use the maximum as to (see bottom of method).
       if ($this->paginationTotalResults > $max) {
         $to = $max;

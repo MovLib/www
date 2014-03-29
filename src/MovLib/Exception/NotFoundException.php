@@ -31,7 +31,7 @@ use \MovLib\Presentation\Error\NotFound;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class NotFoundException extends \RuntimeException implements \MovLib\Exception\ClientException {
+final class NotFoundException extends \RuntimeException implements \MovLib\Exception\ClientExceptionInterface {
 
   /**
    * {@inheritdoc}

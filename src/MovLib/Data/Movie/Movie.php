@@ -30,7 +30,7 @@ use \MovLib\Presentation\Error\NotFound;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Movie extends \MovLib\Core\Database {
+class Movie extends \MovLib\Core\AbstractDatabase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

@@ -27,7 +27,7 @@ namespace MovLib\Exception;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class GoneException extends \RuntimeException implements \MovLib\Exception\ClientException {
+final class GoneException extends \RuntimeException implements \MovLib\Exception\ClientExceptionInterface {
 
   /**
    * {@inheritdoc}

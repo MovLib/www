@@ -28,6 +28,7 @@ use \MovLib\Core\HTTP\Session;
 use \MovLib\Core\Intl;
 use \MovLib\Core\Log;
 use \MovLib\Presentation\Error\InternalServerError;
+use \MovLib\Exception\ClientExceptionInterface;
 
 /**
  * The MovLib kernel.
@@ -196,8 +197,8 @@ final class Kernel {
       echo $this->diContainer->presenter->getPresentation();
     }
     // Client exception's are exception's that display a fully rendered page in HTTP context, catch them separately.
-    catch (ClientException $clientException) {
-      echo $clientException->getPresentation();
+    catch (ClientExceptionInterface $clientException) {
+      echo $clientException->getPresentation($this->diContainer);
     }
     // Any other exception is an error, but the base system booted nicely therefore we try to display a nice looking
     // error page including a stack trace. MovLib is open source and we don't use any passwords anywhere, therefore we

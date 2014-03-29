@@ -17,7 +17,7 @@
  */
 namespace MovLib\Console\Command\Admin;
 
-use \MovLib\Console\AdminDatabase;
+use \MovLib\Console\MySQLi;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -67,7 +67,7 @@ class CronDaily extends \MovLib\Console\Command\AbstractCommand {
     $query = "DELETE FROM `tmp` WHERE DATEDIFF(CURRENT_TIMESTAMP, `created`) > 0 AND `ttl` = '{$ttl}'";
     $this->writeDebug("Purging temporary table for <comment>{$ttl}</comment> entries...");
     $this->writeDebug("mysql> <comment>{$query};</comment>");
-    (new AdminDatabase($this->diContainer))->query($query);
+    (new MySQLi($this->diContainer))->query($query);
     return $this;
   }
 
