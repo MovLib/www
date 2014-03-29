@@ -206,15 +206,15 @@ class Movie extends \MovLib\Core\AbstractDatabase {
    * @internal The returned {@see \mysqli_result} is prepared for direct instantiating via fetch object of this class.
    * @param integer $offset
    *   The offset, usually provided by the pagination trait.
-   * @param integer $rowCount
+   * @param integer $limit
    *   The row count, usually provided by the pagination trait.
    * @return \mysqli_result
    *   Paginated movies result.
    */
-  public static function getMovies($offset, $rowCount) {
+  public static function getMovies($offset, $limit) {
     $query = self::$query;
     return $this->query("{$query} WHERE `movies`.`deleted` = false ORDER BY `movies`.`id` DESC LIMIT ? OFFSET ?", "ssii", [
-      $this->intl->languageCode, $this->intl->languageCode, $rowCount, $offset
+      $this->intl->languageCode, $this->intl->languageCode, $limit, $offset
     ])->get_result();
   }
 

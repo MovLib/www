@@ -51,12 +51,12 @@ interface SetInterface {
    *   The SQL queries <code>ORDER BY</code> content, e.g. <code>"`created` DESC"</code>.
    * @param integer $offset
    *   The offset, usually provided by the {@see \MovLib\Presentation\PaginationTrait}.
-   * @param integer $rowCount
-   *   The limit, usually provided by the {@see \MovLib\Presentation\PaginationTrait}.
+   * @param integer $limit
+   *   The limit (row count), usually provided by the {@see \MovLib\Presentation\PaginationTrait}.
    * @return \mysqli_result|array
    *   A {@see \mysqli_result} is the preferred type, but arrays are allowed as well.
    */
-  public function getOrdered($by, $offset, $rowCount);
+  public function getOrdered($by, $offset, $limit);
 
   /**
    * Get a random, unique, existing entity's identifier from the set.

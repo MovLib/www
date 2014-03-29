@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,15 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Exception;
-
-use \MovLib\Presentation\Error\NotFound;
+namespace MovLib\Exception\ClientException;
 
 /**
- * Thrown if a resource couldn't be found.
- *
- * <b>NOTE</b><br>
- * 404 page will be displayed if in HTTP context.
+ * Thrown if a page that lists items has no items to display.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -31,14 +26,13 @@ use \MovLib\Presentation\Error\NotFound;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class NotFoundException extends \RuntimeException implements \MovLib\Exception\ClientExceptionInterface {
+final class NoItemsException extends \RuntimeException implements \MovLib\Exception\ClientException\ClientExceptionInterface {
 
   /**
    * {@inheritdoc}
    */
   public function getPresentation(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    $diContainerHTTP->presenter = new NotFound($diContainerHTTP);
-    return $diContainerHTTP->getContent();
+    return $diContainerHTTP->presenter->getPresentation($diContainerHTTP->presenter->getNoItemsContent());
   }
 
 }

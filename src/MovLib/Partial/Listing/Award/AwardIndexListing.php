@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Partial\Listing;
+namespace MovLib\Partial\Listing\Award;
 
 /**
  * Images list for award instances with series and movie counts.
@@ -54,8 +54,8 @@ final class AwardIndexListing extends \MovLib\Partial\Listing\AbstractMySQLiResu
   /**
    * {@inheritdoc}
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, \MovLib\Data\SetInterface $set, $oderedBy, callable $noItemsCallback) {
-    parent::__construct($diContainerHTTP, $set, $oderedBy, $noItemsCallback);
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, \MovLib\Data\SetInterface $set, $oderedBy) {
+    parent::__construct($diContainerHTTP, $set, $oderedBy);
     $this->moviesTitle = $diContainerHTTP->intl->t("Movies");
     $this->seriesTitle = $diContainerHTTP->intl->t("Series");
   }
@@ -90,25 +90,25 @@ final class AwardIndexListing extends \MovLib\Partial\Listing\AbstractMySQLiResu
     return
       "<li class='hover-item r' typeof='Corporation'>" .
         "<div class='s s10'>" .
-          "<img alt='' src='{$this->diContainerHTTP->presenter->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60' property='image' class='fl'>" .
 //          $this->getImage(
 //            $award->getStyle(Award::STYLE_SPAN_01),
 //            $award->route,
 //            [ "property" => "image" ],
 //            [ "class" => "fl" ]
 //          ) .
+          "<img alt='' src='{$this->diContainerHTTP->presenter->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60' property='image' class='fl'>" .
           "<span class='s s9'>" .
             "<span class='fr'>" .
-              "<a class='ico ico-movie label' href='{$this->diContainerHTTP->intl->rp("/award/{0}/movies", $award->id)}' title='{$this->moviesTitle}'>" .
-                " &nbsp; {$award->getCount("movie", "movies", true)}" .
-              "</a>" .
-              "<a class='ico ico-series label' href='{$this->diContainerHTTP->intl->rp("/award/{0}/series", $award->id)}' title='{$this->seriesTitle}'>" .
-                " &nbsp; 0" . // {$award->getCount("series_id", "series", true)}
-              "</a>" .
+              "<a class='ico ico-movie label' href='{$this->diContainerHTTP->intl->rp(
+                "/award/{0}/movies",
+                $award->id
+              )}' title='{$this->moviesTitle}'> &nbsp; {$award->getCount("movie", "movies", true)}</a>" .
+              "<a class='ico ico-series label' href='{$this->diContainerHTTP->intl->rp(
+                "/award/{0}/series",
+                $award->id
+              )}' title='{$this->seriesTitle}'> &nbsp; 0</a>" .
             "</span>" .
-            "<a href='{$award->route}' property='url'>" .
-              "<span property='name'>{$award->name}</span>" .
-            "</a>" .
+            "<a href='{$award->route}' property='url'><span property='name'>{$award->name}</span></a>" .
             $years .
           "</span>" .
         "</div>" .

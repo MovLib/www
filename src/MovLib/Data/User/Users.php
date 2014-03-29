@@ -66,14 +66,14 @@ class Users {
    *
    * @param integer $offset
    *   The offset, usually provided by the pagination trait.
-   * @param integer $rowCount
+   * @param integer $limit
    *   The row count, usually provided by the pagination trait.
    * @return \mysqli_result
    *   The mysqli result of the query.
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function getOrderedByCreatedResult($offset, $rowCount) {
-    return $db->query("{$this->query} WHERE `email` IS NOT NULL ORDER BY `created` DESC LIMIT ? OFFSET ?", "ii", [ $rowCount, $offset ])->get_result();
+  public function getOrderedByCreatedResult($offset, $limit) {
+    return $db->query("{$this->query} WHERE `email` IS NOT NULL ORDER BY `created` DESC LIMIT ? OFFSET ?", "ii", [ $limit, $offset ])->get_result();
   }
 
 }

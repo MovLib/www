@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Award;
 
 use \MovLib\Data\Award\AwardSet;
-use \MovLib\Exception\SeeOtherException;
+use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Alert;
 
 /**
@@ -44,7 +44,7 @@ final class Random {
       throw new SeeOtherException($diContainerHTTP->intl->r("/award/{0}", $id));
     }
     $diContainerHTTP->response->createCookie("alert", (string) new Alert(
-      $this->intl->t("There is currently no award in our database"),
+      $this->intl->t("There is currently no award in our database."),
       $this->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     ));

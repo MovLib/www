@@ -321,7 +321,7 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
    *   Filter images by movie identifier, defaults to no filtering.
    * @param integer $offset [optional]
    *   The offset, usually provided by the pagination trait. Defaults to no offset.
-   * @param integer $rowCount [optional]
+   * @param integer $limit [optional]
    *   The row count, usually provided by the pagination trait. Defaults to no row count (all).
    * @param string $orderBy [optional]
    *   Order the result by given table row, defaults to row <code>"created"</code>.
@@ -334,7 +334,7 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
    *   All movie images.
    * @throws \MovLib\Exception\DatabaseException
    */
-  public static function getImages($movieId = null, $offset = null, $rowCount = null, $orderBy = "created", $sortOrder = "ASC", $deleted = false) {
+  public static function getImages($movieId = null, $offset = null, $limit = null, $orderBy = "created", $sortOrder = "ASC", $deleted = false) {
     $query  = $types = null;
     $params = [];
 
@@ -356,10 +356,10 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
     $query .= " ORDER BY `{$orderBy}` {$sortOrder}";
 
     // Paginate if requested.
-    if (isset($offset) && isset($rowCount)) {
+    if (isset($offset) && isset($limit)) {
       $query   .= " LIMIT ? OFFSET ?";
       $types   .= "ii";
-      $params[] = $rowCount;
+      $params[] = $limit;
       $params[] = $offset;
     }
 

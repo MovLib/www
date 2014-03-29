@@ -147,12 +147,12 @@ class Job extends \MovLib\Data\Database {
    *
    * @param integer $offset
    *   The offset in the result.
-   * @param integer $rowCount
+   * @param integer $limit
    *   The number of rows to retrieve.
    * @return \mysqli_result
    *   The query result.
    */
-  public static function getJobs($offset, $rowCount) {
+  public static function getJobs($offset, $limit) {
     $query = self::getQuery();
     return $db->query("
       {$query}
@@ -160,7 +160,7 @@ class Job extends \MovLib\Data\Database {
       ORDER BY `name` ASC
       LIMIT ? OFFSET ?",
       "ssssdd",
-      [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $rowCount, $offset ]
+      [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $limit, $offset ]
     )->get_result();
   }
 

@@ -15,27 +15,31 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Exception;
+namespace MovLib\Exception\ClientException;
 
 /**
- * Interface for client exceptions.
+ * 404 Not Found
  *
+ * The server has not found anything matching the Request-URI. No indication is given of whether the condition is
+ * temporary or permanent. The 410 (Gone) status code SHOULD be used if the server knows, through some internally
+ * configurable mechanism, that an old resource is permanently unavailable and has no forwarding address. This status
+ * code is commonly used when the server does not wish to reveal exactly why the request has been refused, or when no
+ * other response is applicable.
+ *
+ * @link https://tools.ietf.org/html/rfc2616#section-10.4.5
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-interface ClientExceptionInterface {
+final class NotFoundException extends \RuntimeException implements \MovLib\Exception\ClientException\ClientExceptionInterface {
 
   /**
-   * Get the exception's presentation.
-   *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
-   *   The HTTP dependency injection container.
-   * @return string
-   *   The exception's presentation.
+   * {@inheritdoc}
    */
-  public function getPresentation(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP);
+  public function getPresentation(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+
+  }
 
 }

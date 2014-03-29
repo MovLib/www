@@ -15,12 +15,15 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Exception;
-
-use \MovLib\Presentation\Partial\Alert;
+namespace MovLib\Exception\ClientException;
 
 /**
- * Access to the requested resource is forbidden and even authentication won't help.
+ * 403 Forbidden
+ *
+ * The server understood the request, but is refusing to fulfill it. Authorization will not help and the request SHOULD
+ * NOT be repeated. If the request method was not HEAD and the server wishes to make public why the request has not been
+ * fulfilled, it SHOULD describe the reason for the refusal in the entity.  If the server does not wish to make this
+ * information available to the client, the status code 404 (Not Found) can be used instead.
  *
  * @link https://tools.ietf.org/html/rfc2616#section-10.4.4
  * @author Richard Fussenegger <richard@fussenegger.info>
@@ -29,24 +32,13 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class ForbiddenException extends \RuntimeException implements \MovLib\Exception\ClientExceptionInterface {
+final class ForbiddenException extends \RuntimeException implements \MovLib\Exception\ClientException\ClientExceptionInterface {
 
   /**
    * {@inheritdoc}
    */
-  public function getPresentation() {
-    http_response_code(403);
-    if (empty($this->message)) {
-      $this->message = $i18n->t(
-        "There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.",
-        [ "<a href='{$i18n->r("/contact")}'>", "</a>" ]
-      );
-    }
-    $content = $presenter->getGoneContent();
-    $header  = $presenter->getHeader();
-    $main    = $presenter->getMainContent(new Alert($this->message, $i18n->t("Forbidden"), Alert::SEVERITY_ERROR));
-    $footer  = $presenter->getFooter();
-    return $presenter->getPresentation($header, $main, $footer);
+  public function getPresentation(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+
   }
 
 }

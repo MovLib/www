@@ -19,10 +19,10 @@ namespace MovLib\Presentation\Award;
 
 use \MovLib\Data\Award\AwardSet;
 use \MovLib\Partial\Alert;
-use \MovLib\Partial\Listing\AwardIndexListing;
+use \MovLib\Partial\Listing\Award\AwardIndexListing;
 
 /**
- * The latest Awards.
+ * Defines the award index presentation.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
@@ -59,11 +59,11 @@ final class Index extends \MovLib\Presentation\AbstractPresenter {
       ->initPage($this->intl->t("Awards"))
       ->initBreadcrumb()
       ->initLanguageLinks("/awards", null, true)
-      ->paginationInit($this->awardSet)
       ->sidebarInit([
         [ $this->request->path, $this->title, [ "class" => "ico ico-award" ] ],
         [ $this->intl->r("/award/random"), $this->intl->t("Random") ],
       ])
+      ->paginationInit($this->awardSet)
     ;
   }
 
@@ -72,25 +72,22 @@ final class Index extends \MovLib\Presentation\AbstractPresenter {
    */
   public function getContent() {
     $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/award/create")}'>{$this->intl->t("Create New Award")}</a>";
-    return new AwardIndexListing($this->diContainerHTTP, $this->awardSet, "`created` DESC", [ $this, "noItemsCallback" ]);
+    return new AwardIndexListing($this->diContainerHTTP, $this->awardSet, "`created` DESC");
   }
 
   /**
-   * Get the text to display if no awards matched the filter criteria for the listing.
-   *
-   * @return string
-   *   The text to display if no awards matched the filter criteria for the listing.
+   * {@inheritdoc}
    */
-  public function noItemsCallback() {
+  public function getNoItemsContent() {
     return new Alert(
-      $this->intl->t("We couldn’t find any awards matching your filter criteria, or there simply aren’t any awards available."),
-      $this->intl->t("No Awards"),
-      Alert::SEVERITY_INFO
-    ) .
-    "<p>{$this->intl->t(
-      "Would you like to {0}create an award{1}?",
-      [ "<a href='{$this->intl->r("/award/create")}'>", "</a>" ]
-    )}</p>";
+      "<p>{$this->intl->t(
+        "We couldn’t find any awards matching your filter criteria, or there simply aren’t any awards available."
+      )}</p><p>{$this->intl->t(
+        "Would you like to {0}create an award{1}?",
+        [ "<a href='{$this->intl->r("/award/create")}'>", "</a>" ]
+      )}</p>",
+      $this->intl->t("No Awards")
+    );
   }
 
 }

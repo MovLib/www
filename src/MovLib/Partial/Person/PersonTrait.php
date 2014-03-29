@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Partial;
+namespace MovLib\Partial\Person;
 
 use \MovLib\Partial\Date;
 
@@ -29,27 +29,26 @@ use \MovLib\Partial\Date;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-trait TraitPerson {
+trait PersonTrait {
 
   /**
-   * Construct life date information for display.
+   * Get a person's biographical dates.
    *
    * @param \MovLib\Presentation\AbstractPresenter $presenter
    *   The presenting presenter.
    * @param \MovLib\Core\Intl $intl
    *   The active intl instance.
    * @param \MovLib\Data\Person\Person $person
-   *   The person to format.
+   *   The person to get the biographical dates from.
    * @return null|string
-   *   The formatted life dates or <code>NULL</code> if none were present.
+   *   The formatted biographical dates or <code>NULL</code> if none were present.
    */
-  final protected function getPersonDates(\MovLib\Presentation\AbstractPresenter $presenter, \MovLib\Core\Intl $intl, \MovLib\Data\Person\Person $person) {
+  final protected function getPersonBioDates(\MovLib\Presentation\AbstractPresenter $presenter, \MovLib\Core\Intl $intl, \MovLib\Data\Person\Person $person) {
     if ($person->birthDate || $person->deathDate) {
-      $date  = new Date($presenter);
       $dates = null;
 
       if ($person->birthDate) {
-        $dates .= $date->format($intl, $person->birthDate, [
+        $dates .= (new Date($presenter, $person->birthDate))->format($intl, [
           "property" => "birthDate",
           "title" => $intl->t("Date of Birth"),
         ]);
@@ -59,7 +58,7 @@ trait TraitPerson {
       }
 
       if ($person->deathDate) {
-        $dates = $intl->t("{0}–{1}", [ $dates, $date->format($intl, $person->deathDate, [
+        $dates = $intl->t("{0}–{1}", [ $dates, (new Date($presenter, $person->deathDate))->format($intl, [
           "property" => "deathDate",
           "title" => $intl->t("Date of Death") ]),
         ]);

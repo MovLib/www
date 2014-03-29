@@ -138,19 +138,19 @@ class Genre extends \MovLib\Data\Database {
    *
    * @param integer $offset
    *   The offset in the result.
-   * @param integer $rowCount
+   * @param integer $limit
    *   The number of rows to retrieve.
    * @return \mysqli_result
    *   The query result.
    */
-  public static function getGenres($offset, $rowCount) {
+  public static function getGenres($offset, $limit) {
     $query = self::getQuery();
     return $db->query("
       {$query}
       ORDER BY `name` ASC
       LIMIT ? OFFSET ?",
       "ssdd",
-      [ $i18n->languageCode, $i18n->languageCode, $rowCount, $offset ]
+      [ $i18n->languageCode, $i18n->languageCode, $limit, $offset ]
     )->get_result();
   }
 

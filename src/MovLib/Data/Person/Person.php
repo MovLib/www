@@ -163,13 +163,13 @@ class Person extends \MovLib\Core\AbstractDatabase {
    *
    * @param integer $offset
    *   The offset in the result.
-   * @param integer $rowCount
+   * @param integer $limit
    *   The number of rows to retrieve.
    * @return \mysqli_result
    *   The query result.
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function getPersons($offset, $rowCount) {
+  public function getPersons($offset, $limit) {
     return $this->query(
       "SELECT
         `id`,
@@ -193,22 +193,8 @@ class Person extends \MovLib\Core\AbstractDatabase {
       ORDER BY `id` DESC
       LIMIT ? OFFSET ?",
       "sdi",
-      [ $this->intl->languageCode, $rowCount, $offset ]
+      [ $this->intl->languageCode, $limit, $offset ]
     )->get_result();
-  }
-
-  /**
-   * Get random person id.
-   *
-   * @return integer|null
-   *   Random person id or null in case of failure.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getRandomPersonId() {
-    $query = "SELECT `id` FROM `persons` WHERE `persons`.`deleted` = false ORDER BY RAND() LIMIT 1";
-    if ($result = $this->query($query)->get_result()) {
-      return $result->fetch_assoc()["id"];
-    }
   }
 
   /**
@@ -231,23 +217,6 @@ class Person extends \MovLib\Core\AbstractDatabase {
    */
   public function getSeriesCount() {
     return 0;
-  }
-
-  /**
-   * Get the count of all persons who haven't been deleted.
-   *
-   * @staticvar null|integer $count
-   *   The count of all persons who haven't been deleted.
-   * @return integer
-   *   The count of all persons who haven't been deleted.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getTotalCount() {
-    static $count = null;
-    if (!$count) {
-      $count = $this->query("SELECT COUNT(`id`) FROM `persons` WHERE `deleted` = false LIMIT 1")->get_result()->fetch_row()[0];
-    }
-    return $count;
   }
 
   /**

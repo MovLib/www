@@ -726,11 +726,14 @@ abstract class AbstractPresenter {
    * <i>getPresentation() must not throw an exception</i> message would be displayed (fatal error of course, so you get
    * nothing).
    *
+   * @param string $content
+   *   The presentation's content, usually from {@see AbstractPresenter::getContent()} but exception may call other
+   *   methods to provide the content.
    * @return string
    */
-  public function getPresentation() {
+  public function getPresentation($content) {
     // Allow the presentation to alter presentation in getContent() method.
-    $content = $this->getMainContent($this->getContent());
+    $content = $this->getMainContent($content);
 
     // Build a link for each stylesheet of this page.
     $stylesheets = null;

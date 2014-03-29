@@ -45,13 +45,13 @@ final class AwardSet extends \MovLib\Core\AbstractDatabase implements \MovLib\Da
   /**
    * {@inheritdoc}
    */
-  public function getOrdered($by, $offset, $rowCount) {
+  public function getOrdered($by, $offset, $limit) {
     // @devStart
     // @codeCoverageIgnoreStart
     assert(is_string($by));
     assert(!empty($by));
     assert(is_integer($offset));
-    assert(is_integer($rowCount));
+    assert(is_integer($limit));
     // @codeCoverageIgnoreEnd
     // @devEnd
     return $this->getMySQLi()->query(<<<SQL
@@ -61,7 +61,7 @@ SELECT
   `first_awarding_year` AS `firstAwardingYear`,
   `last_awarding_year` AS `lastAwardingYear`
 FROM `awards`
-ORDER BY {$by} LIMIT {$rowCount} OFFSET {$offset}
+ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}
 SQL
     );
   }

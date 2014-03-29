@@ -17,64 +17,77 @@
  */
 namespace MovLib\Presentation\Person;
 
-use \MovLib\Data\Person\Person;
-use \MovLib\Partial\Listing\PersonLifeDateListing;
+use \MovLib\Data\Person\PersonSet;
+use \MovLib\Partial\Alert;
+use \MovLib\Partial\Listing\Person\PersonIndexListing;
 
 /**
- * The listing for the latest person additions.
+ * Defines the person index listing.
  *
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\TraitSidebar;
-  use \MovLib\Presentation\TraitPagination;
+final class Index extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Partial\PaginationTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The person object for data retrieval.
+   * The person set.
    *
-   * @var \MovLib\Data\Person\Person
+   * @var \MovLib\Data\Person\PersonSet
    */
-  protected $person;
+  protected $personSet;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    return new PersonLifeDateListing(
-      $this->diContainerHTTP,
-      $this->person->getPersons($this->paginationOffset, $this->paginationLimit)
-    );
+  public function init() {
+    $this->personSet = new PersonSet($this->diContainerHTTP);
+    $this
+      ->initPage($this->intl->t("Persons"))
+      ->initBreadcrumb()
+      ->initLanguageLinks("/persons", null, true)
+      ->sidebarInit([
+        [ $this->request->path, $this->title, [ "class" => "ico ico-person" ] ],
+        [ $this->intl->r("/person/random"), $this->intl->t("Random") ],
+      ])
+      ->paginationInit($this->personSet)
+    ;
   }
 
   /**
-   * Initialize latest persons presentation.
-   *
+   * {@inheritdoc}
    */
-  public function init() {
-    $this->person = new Person($this->diContainerHTTP);
-    $this->initPage($this->intl->t("Persons"));
-    $this->initBreadcrumb();
-    $this->initLanguageLinks("/persons", null, true);
-    $this->sidebarInit([
-      [ $this->intl->rp("/persons"), $this->intl->t("Persons"), [ "class" => "ico ico-person" ] ],
-      [ $this->intl->r("/person/random"), $this->intl->t("Random") ],
-    ]);
-    $this->paginationInit($this->person->getTotalCount());
-    $this->headingBefore ="<a class='btn btn-large btn-success fr' href='{$this->intl->r(
-        "/person/create"
-      )}'>{$this->intl->t("Create New Person")}</a>";
+  public function getContent() {
+    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/person/create")}'>{$this->intl->t("Create New Person")}</a>";
+    return new PersonIndexListing($this->diContainerHTTP, $this->personSet, "`created` DESC");
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getNoItemsContent() {
+    return new Alert(
+      "<p>{$this->intl->t(
+        "We couldn’t find any persons matching your filter criteria, or there simply aren’t any persons available."
+      )}</p><p>{$this->intl->t(
+        "Would you like to {0}create a person{1}?",
+        [ "<a href='{$this->intl->r("/person/create")}'>", "</a>" ]
+      )}</p>",
+      $this->intl->t("No Persons")
+    );
   }
 
 }

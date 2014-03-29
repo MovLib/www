@@ -17,6 +17,7 @@
  */
 namespace MovLib\Partial;
 
+use \MovLib\Exception\ClientException\NoItemsException;
 use \MovLib\Partial\Navigation;
 
 /**
@@ -48,7 +49,7 @@ trait PaginationTrait {
    *
    * @var integer
    */
-  public $paginationRowCount = 25;
+  public $paginationLimit = 25;
 
   /**
    * The pagination's offset.
@@ -73,12 +74,42 @@ trait PaginationTrait {
    */
   protected $paginationTotalResults = 0;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
+
+
   /**
-   * The set that the pagination is presenting.
+   * Called if there are no items to display.
    *
-   * @var \MovLib\Data\SetInterface
+   * This method should return an alert that describes why there are no items and provide a linkt to create a new
+   * entity.
+   *
+   * <i>Why do we have to re-implement this in each class?</i><br>
+   * The problem are the translations, we can't simply use placeholder tokens for entities (e.g.
+   * <code>"No {entity}"</code>) because we have no clue how this has to be translated in other languages. Translators
+   * need highest flexibility because languages are so complex.
+   *
+   * <b>EXAMPLE</b><br>
+   * <code><?php
+   *
+   * protected function paginationNoItems() {
+   *   return new Alert(
+   *     "<p>{$this->intl->t(
+   *       "We couldn’t find any entities matching your filter criteria, or there simply aren’t any entities available."
+   *     )}</p><p>{$this->intl->t(
+   *       "Would you like to {0}create a new entity{1}?",
+   *       [ "<a href='{$this->intl->r("/entity/create")}'>", "</a>" ]
+   *     )}</p>",
+   *     $this->intl->t("No Entities")
+   *   );
+   * }
+   *
+   * ?></code>
+   *
+   * @return string
+   *   No items text.
    */
-  private $set;
+  abstract public function getNoItemsContent();
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -108,12 +139,12 @@ trait PaginationTrait {
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-
-    $this->set = $set;
-
-    // No need to get started if we only have one (or no) result.
-    if (($this->paginationTotalResults = $set->getCount()) < 2) {
+    $this->paginationTotalResults = $set->getCount();
+    if ($this->paginationTotalResults === 1) {
       return $this;
+    }
+    elseif ($this->paginationTotalResults < 1) {
+      throw new NoItemsException();
     }
 
     // Include the pagination stylesheet and let the complete design know that a pagination is present.
@@ -125,12 +156,12 @@ trait PaginationTrait {
     ]);
 
     // Calculate how many pages we have to display.
-    $this->paginationTotalPages = (integer) ceil($this->paginationTotalResults / $this->paginationRowCount);
+    $this->paginationTotalPages = (integer) ceil($this->paginationTotalResults / $this->paginationLimit);
 
     // Extend the page's breadcrumb and title if this isn't the first page.
     if ($this->paginationCurrentPage > 1) {
       // Calculate the pagination offset within the results for this page.
-      $this->paginationOffset = ($this->paginationCurrentPage - 1) * $this->paginationRowCount;
+      $this->paginationOffset = ($this->paginationCurrentPage - 1) * $this->paginationLimit;
 
       // Extend the page's breadcrumb and title with information about the current pagination page.
       $title = $this->intl->t("Page {0, number, integer}", [ $this->paginationCurrentPage ]);
@@ -143,9 +174,9 @@ trait PaginationTrait {
     // Only create a pagination navigation if we have at least two pages.
     $pagination = null;
     $to         = $this->paginationTotalResults;
-    if ($this->paginationTotalResults > $this->paginationRowCount) {
+    if ($this->paginationTotalResults > $this->paginationLimit) {
       // Calculate the maximum amount of results that we can show on this page.
-      $max = $this->paginationOffset + $this->paginationRowCount;
+      $max = $this->paginationOffset + $this->paginationLimit;
       // If the current total count isn't smaller then the maximum, use the maximum as to (see bottom of method).
       if ($this->paginationTotalResults > $max) {
         $to = $max;

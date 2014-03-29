@@ -207,13 +207,13 @@ final class Company extends \MovLib\Core\AbstractDatabase {
    *
    * @param integer $offset
    *   The offset in the result.
-   * @param integer $rowCount
+   * @param integer $limit
    *   The number of rows to retrieve.
    * @return \mysqli_result
    *   The query result.
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function getCompanies($offset, $rowCount) {
+  public function getCompanies($offset, $limit) {
     return $this->query("
       SELECT
         `id`,
@@ -235,7 +235,7 @@ final class Company extends \MovLib\Core\AbstractDatabase {
       ORDER BY `id` DESC
       LIMIT ? OFFSET ?",
       "sdi",
-      [ $this->intl->languageCode, $rowCount, $offset ]
+      [ $this->intl->languageCode, $limit, $offset ]
     )->get_result();
   }
 

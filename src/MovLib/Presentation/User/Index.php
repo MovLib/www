@@ -52,8 +52,8 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
   /**
    * {@inheritdoc}
    */
-  public function getContent() {
-    // Add a join button to the page's header if the user isn't signe in.
+  public function init() {
+    $this->userSet = new UserSet($this->diContainerHTTP);
     if ($this->session->isAuthenticated === false) {
       $this->headingBefore =
         "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/profile/join")}'>{$this->intl->t(
@@ -62,12 +62,26 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
         )}</a>"
       ;
     }
+    $this
+      ->initPage($this->intl->t("Users"))
+      ->initBreadcrumb()
+      ->initLanguageLinks("/users", null, true)
+      ->sidebarInit([
+        [ $this->request->path, $this->title, [ "class" => "ico ico-user" ] ],
+        [ $this->intl->r("/user/random"), $this->intl->t("Random") ],
+      ])
+      ->paginationInit($this->userSet)
+    ;
+  }
 
-    // Fetch all users from the database and build the listing.
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {
     $list = null;
-    $userResult = $this->userSet->getOrdered("`created` DESC", $this->paginationOffset, $this->paginationRowCount);
+    $result = $this->userSet->getOrdered("`created` DESC", $this->paginationOffset, $this->paginationLimit);
     /* @var $user \MovLib\Data\User */
-    while ($user = $userResult->fetch_object("\\MovLib\\Data\\User", [ $this->diContainerHTTP ])) {
+    while ($user = $result->fetch_object("\\MovLib\\Data\\User", [ $this->diContainerHTTP ])) {
       $user->initFetchObject();
       $list .=
         "<li class='hover-item r' typeof='Person'>" .
@@ -76,32 +90,27 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
         "</li>"
       ;
     }
-    $userResult->free();
-
-    if ($list) {
-      return "<ol class='hover-list no-list'>{$list}</ol>";
-    }
-
-    return new Alert(
-      $this->intl->t("We couldn't find any users matching your filter criteria, or there simply isn’t any user available."),
-      $this->intl->t("No Users")
-    );
+    $result->free();
+    return "<ol class='hover-list no-list'>{$list}</ol>";
   }
 
   /**
    * {@inheritdoc}
    */
-  public function init() {
-    $this->response->cacheable = false;
-    $this->userSet = new UserSet($this->diContainerHTTP);
-    $this->initPage($this->intl->t("Users"));
-    $this->initBreadcrumb();
-    $this->initLanguageLinks("/users", null, true);
-    $this->paginationInit($this->userSet);
-    $this->sidebarInit([
-      [ $this->request->path, $this->title, [ "class" => "ico ico-user" ] ],
-      [ $this->intl->r("/user/random"), $this->intl->t("Random") ],
-    ]);
+  public function getNoItemsContent() {
+    $join = null;
+    if ($this->session->isAuthenticated === false) {
+      $join = "<p>{$this->intl->t(
+        "Would you like {0}to join {sitename}{1}?",
+        [ "<a href='{$this->intl->r("/profile/join")}'>", "</a>", "sitename" => $this->config->sitename ]
+      )}</p>";
+    }
+    return new Alert(
+      "<p>{$this->intl->t(
+        "We couldn't find any users matching your filter criteria, or there simply isn’t any user available."
+      )}</p>{$join}",
+      $this->intl->t("No Users")
+    );
   }
 
 }

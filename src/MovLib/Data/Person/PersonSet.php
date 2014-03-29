@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Data\Person;
 
 /**
- * Defines the user set object.
+ * Defines the person set object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,55 +26,52 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class UserSet extends \MovLib\Core\AbstractDatabase implements \MovLib\Data\SetInterface {
+final class PersonSet extends \MovLib\Core\AbstractDatabase implements \MovLib\Data\SetInterface {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCount() {
+    return $this->getMySQLi()->query("SELECT COUNT(*) FROM `persons` WHERE `deleted` = false LIMIT 1")->fetch_row()[0];
+  }
 
   /**
    * {@inheritdoc}
    */
   public function getEntityClassName() {
-    return "\\MovLib\\Data\\User\\User";
-  }
-
-  /**
-   * Get the total user count.
-   *
-   * @return integer
-   *   The total user count.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getCount() {
-    return $this->getMySQLi()->query("SELECT COUNT(*) FROM `users` WHERE `email` IS NOT NULL")->fetch_row()[0];
+    return "\\MovLib\\Data\\Person\\Person";
   }
 
   /**
    * {@inheritdoc}
-   * @return \mysqli_result
-   *   The user's ordered <var>$by</var>.
    */
   public function getOrdered($by, $offset, $limit) {
     // @devStart
     // @codeCoverageIgnoreStart
     assert(is_string($by));
-    assert(!empty($by));
     assert(is_integer($offset));
     assert(is_integer($limit));
     // @codeCoverageIgnoreEnd
     // @devEnd
     return $this->getMySQLi()->query(<<<SQL
-SELECT `id`, `name`, UNIX_TIMESTAMP(`image_changed`) AS `imageChanged`, `image_extension` AS `imageExtension`
-FROM `users` WHERE `email` IS NOT NULL ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}
+SELECT
+  `id`,
+  `name`,
+  `birthdate` AS `birthDate`,
+  `born_name` AS `bornName`,
+  `deathdate` AS `deathDate`
+FROM `persons`
+ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}
 SQL
     );
   }
 
   /**
    * {@inheritdoc}
-   * @return string|null
-   *   A random, unique, and existing user's name ready for use as route. <code>NULL</code> if no user could be found.
    */
   public function getRandom() {
-    if (($result = $this->getMySQLi()->query("SELECT `name` FROM `users` WHERE `email` IS NOT NULL ORDER BY RAND() LIMIT 1"))) {
-      return mb_strtolower($result->fetch_row()[0]);
+    if (($result = $this->getMySQLi()->query("SELECT `id` FROM `persons` WHERE `deleted` = false ORDER BY RAND() LIMIT 1"))) {
+      return $result->fetch_row()[0];
     }
   }
 

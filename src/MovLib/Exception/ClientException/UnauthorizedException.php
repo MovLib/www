@@ -15,13 +15,23 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Exception;
+namespace MovLib\Exception\ClientException;
 
 use \MovLib\Presentation\Profile\SignIn;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
- * The request requires user authentication.
+ * 401 Unauthorized
+ *
+ * The request requires user authentication. The response MUST include a WWW-Authenticate header field (
+ * {@link https://tools.ietf.org/html/rfc2616#section-14.47 section 14.47}) containing a challenge applicable to the
+ * requested resource. The client MAY repeat the request with a suitable Authorization header field (
+ * {@link https://tools.ietf.org/html/rfc2616#section-14.8 section 14.8). If the request already included Authorization
+ * credentials, then the 401 response indicates that authorization has been refused for those credentials. If the 401
+ * response contains the same challenge as the prior response, and the user agent has already attempted authentication
+ * at least once, then the user SHOULD be presented the entity that was given in the response, since that entity might
+ * include relevant diagnostic information. HTTP access authentication is explained in "HTTP Authentication: Basic and
+ * Digest Access Authentication" [{@link https://tools.ietf.org/html/rfc2616#ref-43 43}].
  *
  * @link https://tools.ietf.org/html/rfc2616#section-10.4.2
  * @author Richard Fussenegger <richard@fussenegger.info>
@@ -30,7 +40,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class UnauthorizedException extends \RuntimeException implements \MovLib\Exception\ClientExceptionInterface {
+final class UnauthorizedException extends \RuntimeException implements \MovLib\Exception\ClientException\ClientExceptionInterface {
 
   /**
    * {@inheritdoc}

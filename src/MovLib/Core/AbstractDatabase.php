@@ -89,13 +89,6 @@ abstract class AbstractDatabase {
    */
   protected $log;
 
-  /**
-   * Used for caching of prepared statements.
-   *
-   * @var \mysqli_stmt
-   */
-  protected $stmtCache;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -152,7 +145,14 @@ abstract class AbstractDatabase {
     $driver->report_mode = MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT;
 
     // Instantiate, connect, and select database.
-    $mysqli = new \mysqli(ini_get("mysqli.default_host"), null, null, $this->config->database);
+    try {
+      $mysqli = new \mysqli($this->config->databaseHost, $this->config->databaseUsername, $this->config->databasePassword, $this->config->databaseName);
+    }
+    catch (\ErrorException $e) {
+      $this->log->notice("Killing current database thread and creating new connection.");
+      $mysqli->kill($mysqli->thread_id);
+      $mysqli->real_connect($this->config->databaseHost, $this->config->databaseUsername, $this->config->databasePassword, $this->config->databaseName);
+    }
 
     // As per recommendation in the PHP documentation, always explicitely close the connection.
     register_shutdown_function(function () use ($mysqli) { $mysqli->close(); });

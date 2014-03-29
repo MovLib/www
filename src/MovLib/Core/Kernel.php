@@ -28,7 +28,7 @@ use \MovLib\Core\HTTP\Session;
 use \MovLib\Core\Intl;
 use \MovLib\Core\Log;
 use \MovLib\Presentation\Error\InternalServerError;
-use \MovLib\Exception\ClientExceptionInterface;
+use \MovLib\Exception\ClientException\ClientExceptionInterface;
 
 /**
  * The MovLib kernel.
@@ -194,7 +194,7 @@ final class Kernel {
       $presenterClass = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
       $this->diContainer->presenter = new $presenterClass($this->diContainer);
       $this->diContainer->presenter->init();
-      echo $this->diContainer->presenter->getPresentation();
+      echo $this->diContainer->presenter->getPresentation($this->diContainer->presenter->getContent());
     }
     // Client exception's are exception's that display a fully rendered page in HTTP context, catch them separately.
     catch (ClientExceptionInterface $clientException) {
@@ -207,7 +207,7 @@ final class Kernel {
     catch (\Exception $exception) {
       $this->diContainer->presenter = new InternalServerError($this->diContainer);
       $this->diContainer->presenter->init()->setException($exception);
-      echo $this->diContainer->presenter->getPresentation();
+      echo $this->diContainer->presenter->getPresentation($this->diContainer->presenter->getContent());
     }
 
     // @devStart

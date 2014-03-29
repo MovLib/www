@@ -47,13 +47,6 @@ abstract class AbstractMySQLiResultListing implements \MovLib\Partial\Listing\Li
   protected $items;
 
   /**
-   * The listing's no items callback.
-   *
-   * @var callable
-   */
-  protected $noItemsCallback;
-
-  /**
    * The <code>ORDER BY</code> clause for the query.
    *
    * @var string
@@ -78,21 +71,21 @@ abstract class AbstractMySQLiResultListing implements \MovLib\Partial\Listing\Li
    *   The HTTP dependency injection container.
    * @param \MovLib\Data\SetInterface $set
    *   The set of which the items should be listed.
-   * @param callable $noItemsCallback
-   *   The callback to call if there were no items.
-   * @param string $orderedBy
+   * @param string $orderBy
    *   The <code>ORDER BY</code> clause for the query.
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, \MovLib\Data\SetInterface $set, $oderedBy, callable $noItemsCallback) {
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, \MovLib\Data\SetInterface $set, $orderBy) {
     // @devStart
     // @codeCoverageIgnoreStart
     // No way we can check for a trait and traits can't implement interfaces ... :(
-    assert(property_exists($diContainerHTTP->presenter, "paginationOffset"), "You need to use the PaginationTrait in your class to use a listing.");
+    assert(
+      method_exists($diContainerHTTP->presenter, "getNoItemsContent"),
+      "You need to use the PaginationTrait in your class to use a listing."
+    );
     // @codeCoverageIgnoreEnd
     // @devEnd
     $this->diContainerHTTP = $diContainerHTTP;
-    $this->noItemsCallback = $noItemsCallback;
-    $this->orderBy         = $oderedBy;
+    $this->orderBy         = $orderBy;
     $this->set             = $set;
   }
 
@@ -107,15 +100,12 @@ abstract class AbstractMySQLiResultListing implements \MovLib\Partial\Listing\Li
     // @devEnd
 
       $items = null;
-      $result = $this->set->getOrdered($this->orderBy, $this->diContainerHTTP->presenter->paginationOffset, $this->diContainerHTTP->presenter->paginationRowCount);
+      $result = $this->set->getOrdered($this->orderBy, $this->diContainerHTTP->presenter->paginationOffset, $this->diContainerHTTP->presenter->paginationLimit);
       while ($item = $result->fetch_object($this->set->getEntityClassName(), [ $this->diContainerHTTP ])) {
         $items .= $this->formatItem($item);
       }
       $result->free();
-      if ($items) {
-        return $this->getListing($items);
-      }
-      $this->noItemsCallback();
+      return $this->getListing($items);
 
     // @devStart
     // @codeCoverageIgnoreStart

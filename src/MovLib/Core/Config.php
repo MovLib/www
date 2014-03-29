@@ -52,11 +52,32 @@ class Config {
 
 
   /**
+   * The database host.
+   *
+   * @var null|string
+   */
+  public $databaseHost = "p:localhost";
+
+  /**
    * The name of the database.
    *
-   * @var string
+   * @var null|string
    */
-  public $database = "movlib";
+  public $databaseName = "movlib";
+
+  /**
+   * The password for database authentication.
+   *
+   * @var null|string
+   */
+  public $databasePassword = null;
+
+  /**
+   * The username for database authentication.
+   *
+   * @var null|string
+   */
+  public $databaseUsername = null;
 
   /**
    * The default currency code.

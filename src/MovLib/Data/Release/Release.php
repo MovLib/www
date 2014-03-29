@@ -221,12 +221,12 @@ class Release {
    * @internal The returned {@see \mysqli_result} is prepared for direct instantiating via fetch object of this class.
    * @param integer $offset
    *   The offset, usually provided by the pagination trait.
-   * @param integer $rowCount
+   * @param integer $limit
    *   The row count, usually provided by the pagination trait.
    * @return \mysqli_result
    *   Paginated releases result.
    */
-  public static function getReleases($offset = 0, $rowCount = 8) {
+  public static function getReleases($offset = 0, $limit = 8) {
     return $db->query(
       "SELECT
         `release`.`changed`,
@@ -241,7 +241,7 @@ class Release {
       OFFSET ?
       LIMIT ?",
       "di",
-      [ $offset, $rowCount ]
+      [ $offset, $limit ]
     )->get_result();
   }
 

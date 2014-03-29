@@ -142,12 +142,9 @@ final class Date {
    * @return string
    *   Formatted date as <code><time></code> tag with additional attributes.
    */
-  public function format(\MovLib\Core\Intl $intl, array $attributes = [], $url = null) {
+  public function format(\MovLib\Core\Intl $intl, array $attributes = []) {
     $attributes["datetime"] = $this->iso8601Format();
     $formatted = $this->intlFormat($intl);
-    if ($url) {
-      $formatted = "<a href='{$url}'>{$formatted}</a>";
-    }
     return "<time{$this->presenter->expandTagAttributes($attributes)}>{$formatted}</time>";
   }
 

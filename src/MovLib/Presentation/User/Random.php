@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\User;
 
 use \MovLib\Data\UserSet;
-use \MovLib\Exception\SeeOtherException;
+use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Alert;
 
 /**
