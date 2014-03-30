@@ -59,6 +59,36 @@ abstract class AbstractIndexPresenter extends \MovLib\Presentation\AbstractPrese
 
 
   /**
+   * Initialize default index presentation.
+   *
+   * @param \MovLib\Data\AbstractSet $set
+   *   The set to present.
+   * @param string $createText
+   *   The translated text for the creation button (title case).
+   * @param string $title
+   *   The page title.
+   * @param string $plural
+   *   The plural name of the current index all lowercase as used for routes.
+   * @param string $singular
+   *   The singular name of the current index all lowercase as used for routes.
+   * @return this
+   */
+  public function initIndex(\MovLib\Data\AbstractSet $set, $createText, $title, $plural, $singular) {
+    $this->set = $set;
+    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/{$singular}/create")}'>{$createText}</a>";
+    return $this
+      ->initPage($title)
+      ->initBreadcrumb()
+      ->initLanguageLinks("/{$plural}", null, true)
+      ->sidebarInit([
+        [ $this->request->path, $title, [ "class" => "ico ico-{$singular}" ] ],
+        [ $this->intl->r("/{$singular}/random"), $this->intl->t("Random") ],
+      ])
+      ->paginationInit()
+    ;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function getContent() {

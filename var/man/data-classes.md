@@ -7,10 +7,11 @@ represent a single entity or a set of entities.
 A set is a data structure that provides zero, one, or more entities. The most important and basic rules for a set are as
 follows:
 
-1. The class name must end with **Set** (e.g. *MovieSet*)
-2. The class must implement the set interface (`\MovLib\Data\SetInterface`)
+1. The class name must be singular and match the name of the entity's class.
+2. The class name must end with **Set** (e.g. *MovieSet*).
+3. The class must extend the abstract set (`\MovLib\Data\AbstractSet`).
 
-Other than that no special rules apply
+Other than that no special rules apply.
 
 ## Weblinks
 

@@ -42,24 +42,13 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->set = new AwardSet($this->diContainerHTTP);
-
-    $this->headingBefore =
-      "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/award/create")}'>" .
-        $this->intl->t("Create New Award") .
-      "</a>"
-    ;
-
-    $this
-      ->initPage($this->intl->t("Awards"))
-      ->initBreadcrumb()
-      ->initLanguageLinks("/awards", null, true)
-      ->sidebarInit([
-        [ $this->request->path, $this->title, [ "class" => "ico ico-award" ] ],
-        [ $this->intl->r("/award/random"), $this->intl->t("Random") ],
-      ])
-      ->paginationInit()
-    ;
+    return $this->initIndex(
+      new AwardSet($this->diContainerHTTP),
+      $this->intl->t("Create New Award"),
+      $this->intl->t("Awards"),
+      "awards",
+      "award"
+    );
   }
 
   /**

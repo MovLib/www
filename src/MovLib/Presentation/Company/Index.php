@@ -42,24 +42,13 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->set = new CompanySet($this->diContainerHTTP);
-
-    $this->headingBefore =
-      "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/company/create")}'>" .
-        $this->intl->t("Create New Company") .
-      "</a>"
-    ;
-
-    $this
-      ->initPage($this->intl->t("Companies"))
-      ->initBreadcrumb()
-      ->initLanguageLinks("/companies", null, true)
-      ->sidebarInit([
-        [ $this->intl->rp("/companies"), $this->title, [ "class" => "ico ico-company" ] ],
-        [ $this->intl->r("/company/random"), $this->intl->t("Random") ],
-      ])
-      ->paginationInit()
-    ;
+    return $this->initIndex(
+      new CompanySet($this->diContainerHTTP),
+      $this->intl->t("Create New Company"),
+      $this->intl->t("Companies"),
+      "companies",
+      "company"
+    );
   }
 
   /**

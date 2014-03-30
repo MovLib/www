@@ -106,6 +106,7 @@ hr {
   border: 0;
 }
 
+.para,
 hr,
 p,
 small {
@@ -173,6 +174,13 @@ h4 {
 
 h6 {
   font-size: 12px;
+}
+
+/* Allows to reset any kind of heading to default paragraph style. */
+.para {
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 1.46;
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------

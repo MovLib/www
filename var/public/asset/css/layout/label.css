@@ -27,7 +27,8 @@
 
 .label {
   display: inline;
-  padding: 0.1em 0.5em 0.2em;
+  padding: 0.2em 0.5em 0.1em;
+  margin-right: 15px;
   line-height: 1;
   letter-spacing: 0.2px;
   color: #fff;
@@ -35,6 +36,13 @@
   white-space: nowrap;
   vertical-align: baseline;
   background-color: #999;
+}
+
+.label.small,
+.small .label,
+small.label,
+small .label {
+  margin-right: 5px;
 }
 
 .label-primary {
@@ -71,12 +79,7 @@ a.label:focus {
   background-color: #09c;
 }
 
-ol .label,
-ul .label {
-  margin-right: 15px;
-}
-
-ol small .label,
-ul small .label {
-  margin-right: 3px;
+.btn .label {
+  position: relative;
+  top: -1px;
 }

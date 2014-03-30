@@ -72,210 +72,214 @@
   speak: none;
 }
 
+.label.ico:before {
+  margin-right: 0.5em;
+}
+
 .ico-wikipedia:before {
-	content: "\e600";
+  content: "\e600";
 }
 
 .ico-series:before {
-	content: "\e601";
+  content: "\e601";
 }
 
 .ico-release:before {
-	content: "\e602";
+  content: "\e602";
 }
 
 .ico-event:before {
-	content: "\e603";
+  content: "\e603";
 }
 
 .ico-movie:before {
-	content: "\e604";
+  content: "\e604";
 }
 
 .ico-company:before {
-	content: "\e605";
+  content: "\e605";
 }
 
 .ico-job:before {
-	content: "\e606";
+  content: "\e606";
 }
 
 .ico-image:before {
-	content: "\e607";
+  content: "\e607";
 }
 
 .ico-poster:before {
-	content: "\e608";
+  content: "\e608";
 }
 
 .ico-delete:before {
-	content: "\e609";
+  content: "\e609";
 }
 
 .ico-sex1:before {
-	content: "\e60a";
+  content: "\e60a";
 }
 
 .ico-sex2:before {
-	content: "\e60b";
+  content: "\e60b";
 }
 
 .ico-lobby-card:before {
-	content: "\e60c";
+  content: "\e60c";
 }
 
 .ico-email:before {
-	content: "\e60d";
+  content: "\e60d";
 }
 
 .ico-edit:before {
-	content: "\e60e";
+  content: "\e60e";
 }
 
 .ico-user:before {
-	content: "\e60f";
+  content: "\e60f";
 }
 
 .ico-person:before {
-	content: "\e610";
+  content: "\e610";
 }
 
 .ico-user-add:before {
-	content: "\e611";
+  content: "\e611";
 }
 
 .ico-discussion:before {
-	content: "\e612";
+  content: "\e612";
 }
 
 .ico-search:before {
-	content: "\e613";
+  content: "\e613";
 }
 
 .ico-notification:before {
-	content: "\e614";
+  content: "\e614";
 }
 
 .ico-alert:before {
-	content: "\e615";
+  content: "\e615";
 }
 
 .ico-view:before {
-	content: "\e616";
+  content: "\e616";
 }
 
 .ico-info:before {
-	content: "\e617";
+  content: "\e617";
 }
 
 .ico-help:before {
-	content: "\e618";
+  content: "\e618";
 }
 
 .ico-history:before {
-	content: "\e619";
+  content: "\e619";
 }
 
 .ico-chevron-left:before {
-	content: "\e61a";
+  content: "\e61a";
 }
 
 .ico-chevron-right:before {
-	content: "\e61b";
+  content: "\e61b";
 }
 
 .ico-cc:before {
-	content: "\e61c";
+  content: "\e61c";
 }
 
 .ico-cc-zero:before {
-	content: "\e61d";
+  content: "\e61d";
 }
 
 .ico-heart:before {
-	content: "\e61e";
+  content: "\e61e";
 }
 
 .ico-star:before {
-	content: "\e61f";
+  content: "\e61f";
 }
 
 .ico-settings:before {
-	content: "\e620";
+  content: "\e620";
 }
 
 .ico-lock:before {
-	content: "\e621";
+  content: "\e621";
 }
 
 .ico-genre:before {
-	content: "\e622";
+  content: "\e622";
 }
 
 .ico-bold:before {
-	content: "\e623";
+  content: "\e623";
 }
 
 .ico-italic:before {
-	content: "\e624";
+  content: "\e624";
 }
 
 .ico-align-left:before {
-	content: "\e625";
+  content: "\e625";
 }
 
 .ico-align-center:before {
-	content: "\e626";
+  content: "\e626";
 }
 
 .ico-align-right:before {
-	content: "\e627";
+  content: "\e627";
 }
 
 .ico-indent-left:before {
-	content: "\e628";
+  content: "\e628";
 }
 
 .ico-indent-right:before {
-	content: "\e629";
+  content: "\e629";
 }
 
 .ico-award:before {
-	content: "\e62a";
+  content: "\e62a";
 }
 
 .ico-upload:before {
-	content: "\e62b";
+  content: "\e62b";
 }
 
 .ico-languages:before {
-	content: "\e62c";
+  content: "\e62c";
 }
 
 .ico-link:before {
-	content: "\e62d";
+  content: "\e62d";
 }
 
 .ico-ul:before {
-	content: "\e62e";
+  content: "\e62e";
 }
 
 .ico-ol:before {
-	content: "\e62f";
+  content: "\e62f";
 }
 
 .ico-category:before {
-	content: "\e630";
+  content: "\e630";
 }
 
 .ico-quotation:before {
-	content: "\e631";
+  content: "\e631";
 }
 
 .ico-unlink:before {
-	content: "\e632";
+  content: "\e632";
 }
 
 .ico-like:before {
-	content: "\e633";
+  content: "\e633";
 }
