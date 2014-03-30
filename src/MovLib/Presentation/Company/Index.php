@@ -62,7 +62,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
     return
       "<li class='hover-item r'>" .
         "<article typeof='Company'>" .
-          "<a class='s s1' href='{$company->imageRoute}'>" .
+          "<a class='no-link s s1' href='{$company->imageRoute}'>" .
             "<img alt='' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
           "</a>" .
           "<div class='s s9'>" .

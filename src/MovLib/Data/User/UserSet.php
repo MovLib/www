@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Data\User;
 
 /**
  * Defines the user set object.
@@ -26,7 +26,7 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class UserSet extends \MovLib\Core\AbstractDatabase implements \MovLib\Data\SetInterface {
+final class UserSet extends \MovLib\Data\AbstractSet {
 
   /**
    * {@inheritdoc}
@@ -36,33 +36,25 @@ final class UserSet extends \MovLib\Core\AbstractDatabase implements \MovLib\Dat
   }
 
   /**
-   * Get the total user count.
-   *
-   * @return integer
-   *   The total user count.
-   * @throws \MovLib\Exception\DatabaseException
+   * {@inheritdoc}
    */
   public function getCount() {
-    return $this->getMySQLi()->query("SELECT COUNT(*) FROM `users` WHERE `email` IS NOT NULL")->fetch_row()[0];
+    return $this->getMySQLi()->query("SELECT COUNT(*) FROM `users` WHERE `email` IS NOT NULL LIMIT 1")->fetch_row()[0];
   }
 
   /**
    * {@inheritdoc}
-   * @return \mysqli_result
-   *   The user's ordered <var>$by</var>.
    */
   public function getOrdered($by, $offset, $limit) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert(is_string($by));
-    assert(!empty($by));
-    assert(is_integer($offset));
-    assert(is_integer($limit));
-    // @codeCoverageIgnoreEnd
-    // @devEnd
     return $this->getMySQLi()->query(<<<SQL
-SELECT `id`, `name`, UNIX_TIMESTAMP(`image_changed`) AS `imageChanged`, `image_extension` AS `imageExtension`
-FROM `users` WHERE `email` IS NOT NULL ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}
+SELECT
+  `id`,
+  `name`,
+  UNIX_TIMESTAMP(`image_changed`) AS `imageChanged`,
+  `image_extension` AS `imageExtension`
+FROM `users`
+WHERE `email` IS NOT NULL
+ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}
 SQL
     );
   }
@@ -76,6 +68,13 @@ SQL
     if (($result = $this->getMySQLi()->query("SELECT `name` FROM `users` WHERE `email` IS NOT NULL ORDER BY RAND() LIMIT 1"))) {
       return mb_strtolower($result->fetch_row()[0]);
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTableName() {
+    return "users";
   }
 
 }

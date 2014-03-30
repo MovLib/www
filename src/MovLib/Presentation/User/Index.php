@@ -18,10 +18,10 @@
 namespace MovLib\Presentation\User;
 
 use \MovLib\Partial\Alert;
-use \MovLib\Data\UserSet;
+use \MovLib\Data\User\UserSet;
 
 /**
- * Latest users.
+ * Defines the user index persenter.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
@@ -30,30 +30,13 @@ use \MovLib\Data\UserSet;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Partial\PaginationTrait;
-  use \MovLib\Partial\SidebarTrait;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * User set containing all user's we want to present.
-   *
-   * @var \MovLib\Data\UserSet
-   */
-  protected $userSet;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
+final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
 
   /**
    * {@inheritdoc}
    */
   public function init() {
-    $this->userSet = new UserSet($this->diContainerHTTP);
+    $this->set = new UserSet($this->diContainerHTTP);
     if ($this->session->isAuthenticated === false) {
       $this->headingBefore =
         "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/profile/join")}'>{$this->intl->t(
@@ -70,28 +53,23 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
         [ $this->request->path, $this->title, [ "class" => "ico ico-user" ] ],
         [ $this->intl->r("/user/random"), $this->intl->t("Random") ],
       ])
-      ->paginationInit($this->userSet)
+      ->paginationInit()
     ;
   }
 
   /**
    * {@inheritdoc}
+   * @param \MovLib\Data\User\User $user {@inheritdoc}
    */
-  public function getContent() {
-    $list = null;
-    $result = $this->userSet->getOrdered("`created` DESC", $this->paginationOffset, $this->paginationLimit);
-    /* @var $user \MovLib\Data\User */
-    while ($user = $result->fetch_object("\\MovLib\\Data\\User", [ $this->diContainerHTTP ])) {
-      $user->initFetchObject();
-      $list .=
-        "<li class='hover-item r' typeof='Person'>" .
-          "<img alt='' class='s s1' property='image' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
-          "<span class='s'><a href='{$user->route}' property='url'><span property='name'>{$user->name}</span></a></span>" .
-        "</li>"
-      ;
-    }
-    $result->free();
-    return "<ol class='hover-list no-list'>{$list}</ol>";
+  protected function formatListingItem($user) {
+    return
+      "<li typeof='Person'><article>" .
+        "<a class='hover-item r' href='{$user->route}' property='url'>" .
+          "<img class='s s1' alt='{$user->name}' property='image' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'></a>" .
+          "<h2 class='para s s9' property='name'>{$user->name}</h2>" .
+        "</a>" .
+      "</article></li>"
+    ;
   }
 
   /**
@@ -106,9 +84,7 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
       )}</p>";
     }
     return new Alert(
-      "<p>{$this->intl->t(
-        "We couldn't find any users matching your filter criteria, or there simply isn’t any user available."
-      )}</p>{$join}",
+      "<p>{$this->intl->t("We couldn't find any users matching your filter criteria, or there simply isn’t any user available.")}</p>{$join}",
       $this->intl->t("No Users")
     );
   }

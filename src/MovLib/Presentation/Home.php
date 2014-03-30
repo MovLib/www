@@ -33,6 +33,20 @@ final class Home extends \MovLib\Presentation\AbstractPresenter {
   /**
    * {@inheritdoc}
    */
+  public function init() {
+    $this->initPage($this->config->sitename);
+    foreach ($this->intl->systemLocales as $code => $locale) {
+      $this->languageLinks[$code] = "/";
+    }
+    $this->initBreadcrumb();
+    // A link to the current page would be redundant!
+    unset($this->breadcrumb->menuitems[1]);
+    $this->stylesheets[] = "home";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getContent() {
     $articles = [];
 
@@ -104,20 +118,6 @@ final class Home extends \MovLib\Presentation\AbstractPresenter {
         "<noscript>{$noscript}</noscript>{$this->alerts}{$content}" .
       "</main>"
     ;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-    $this->initPage($this->config->sitename);
-    foreach ($this->intl->systemLocales as $code => $locale) {
-      $this->languageLinks[$code] = "/";
-    }
-    $this->initBreadcrumb();
-    // A link to the current page would be redundant!
-    unset($this->breadcrumb->menuitems[1]);
-    $this->stylesheets[] = "home";
   }
 
 }

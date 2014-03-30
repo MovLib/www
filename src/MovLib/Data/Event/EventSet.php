@@ -39,11 +39,13 @@ final class EventSet extends \MovLib\Data\AbstractSet {
    * {@inheritdoc}
    */
   public function getOrdered($by, $offset, $limit) {
+    // @todo Rename table to Events, as it is a main entity now.
     return $this->getMySQLi()->query(<<<SQL
 SELECT
   `events`.`id` AS `id`,
   `events`.`name` AS `name`,
 FROM `events`
+WHERE `deleted` = false
 ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}
 SQL
     );

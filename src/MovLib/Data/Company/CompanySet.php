@@ -53,6 +53,7 @@ FROM `companies`
     ON `movies_crew`.`company_id` = `companies`.`id`
   LEFT JOIN `releases_labels`
     ON `releases_labels`.`company_id` = `companies`.`id`
+WHERE `deleted` = false
 GROUP BY `companies`.`id`, `companies`.`name`, `companies`.`founding_date`, `companies`.`defunct_date`
 ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}
 SQL

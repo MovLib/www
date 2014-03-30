@@ -61,6 +61,7 @@ SELECT
 FROM `awards`
   LEFT JOIN `movies_awards`
     ON `movies_awards`.`award_id` = `awards`.`id`
+WHERE `deleted` = false
 GROUP BY `awards`.`id`, `awards`.`dyn_names`, `awards`.`first_awarding_year`, `awards`.`last_awarding_year`
 ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}
 SQL
