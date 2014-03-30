@@ -92,19 +92,18 @@ trait PaginationTrait {
    * <b>EXAMPLE</b><br>
    * <code><?php
    *
-   * protected function paginationNoItems() {
+   * protected function getNoItemsContent() {
    *   return new Alert(
-   *     "<p>{$this->intl->t(
-   *       "We couldn’t find any entities matching your filter criteria, or there simply aren’t any entities available."
-   *     )}</p><p>{$this->intl->t(
-   *       "Would you like to {0}create a new entity{1}?",
-   *       [ "<a href='{$this->intl->r("/entity/create")}'>", "</a>" ]
-   *     )}</p>",
+   *     "<p>{$this->intl->t("We couldn’t find any entities matching your filter criteria, or there simply aren’t any entities available.")}</p>" .
+   *     "<p>{$this->intl->t("Would you like to {0}create a new entity{1}?", [ "<a href='{$this->intl->r("/entity/create")}'>", "</a>" ])}</p>",
    *     $this->intl->t("No Entities")
    *   );
    * }
    *
    * ?></code>
+   *
+   * <b>NOTE</b><br>
+   * Must be public because the {@see \MovLib\Exception\ClientException\NoItemsException} will call this method.
    *
    * @return string
    *   No items text.
@@ -118,28 +117,20 @@ trait PaginationTrait {
   /**
    * Initialize the pagination.
    *
-   * @param \MovLib\Data\SetInterface $set
-   *   The set that is going to be displayed.
    * @return this
    */
-  final protected function paginationInit(\MovLib\Data\SetInterface $set) {
+  final protected function paginationInit() {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (!($this instanceof \MovLib\Presentation\AbstractPresenter)) {
-      throw new \LogicException("You can only use the pagination trait within a presenter.");
-    }
-    if (empty($this->title)) {
-      throw new \LogicException("You have to initialize the page before you initialize the pagination trait.");
-    }
-    if (empty($this->breadcrumb)) {
-      throw new \LogicException("You have to initialize the breadcrumb before you initialize the pagination trait.");
-    }
-    if (!empty($this->contentAfter)) {
-      throw new \LogicException("The \$contentAfter variable will be overwritten by the pagination trait.");
-    }
+    assert($this instanceof \MovLib\Presentation\AbstractPresenter, "You can only use the pagination trait within a presenter.");
+    assert(!empty($this->title), "You have to initialize the page before initializing the pagination trait.");
+    assert(!empty($this->breadcrumb), "You have to initialize the breadcrumb before initializing the pagination trait.");
+    assert(empty($this->contentAfter), "The \$contentAfter variable will be overwritten by the pagination trait.");
+    assert($this->set instanceof \MovLib\Data\AbstractSet, "You have to instantiate and export your set before initalizing the pagination trait.");
     // @codeCoverageIgnoreEnd
     // @devEnd
-    $this->paginationTotalResults = $set->getCount();
+
+    $this->paginationTotalResults = $this->set->getCount();
     if ($this->paginationTotalResults === 1) {
       return $this;
     }

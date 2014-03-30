@@ -15,35 +15,23 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Data\Company;
 
 use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Data\Place;
 use \MovLib\Presentation\Error\NotFound;
 
 /**
- * Contains all available information about a company.
+ * Defines the company object.
  *
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Company extends \MovLib\Core\AbstractDatabase {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
-  /**
-   * 220x220>
-   *
-   * Image style used on the show page to display the company logo.
-   *
-   * @var integer
-   */
-  const STYLE_SPAN_03 = 220;
+final class Company extends \MovLib\Data\AbstractEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -161,6 +149,55 @@ final class Company extends \MovLib\Core\AbstractDatabase {
    */
   public $wikipedia;
 
+  /**
+   * The company's total movie count.
+   *
+   * @var integer
+   */
+  public $movieCount;
+
+  /**
+   * The company's total series count.
+   *
+   * @var integer
+   */
+  public $seriesCount;
+
+  /**
+   * The company's total release count.
+   *
+   * @var integer
+   */
+  public $releaseCount;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Initialization
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function initFetchObject() {
+    $this->route = $this->intl->r("/company/{0}", $this->id);
+//    if ($this->place) {
+//      $this->place = (new Place($this->diContainer))->init($this->place);
+//    }
+//
+//    $this->aliases = $this->aliases ? unserialize($this->aliases) : [];
+//    $this->links   = $this->links ? unserialize($this->links) : [];
+//
+//    $this->deleted  = (boolean) $this->deleted;
+//    $this->routeKey = "/company/{0}";
+//    $this->route    = $this->intl->r($this->routeKey, [ $this->id]);
+//    $key            = "edit";
+//    if ($this->uploaderId) {
+//      $this->imageExists = true;
+//      $key               = "logo";
+//      $this->styles      = unserialize($this->styles);
+//    }
+//    $this->imageRoute = $this->intl->r("/company/{0}/{$key}", [ $this->id ]);
+  }
+
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
@@ -200,56 +237,6 @@ final class Company extends \MovLib\Core\AbstractDatabase {
     )->insert_id;
 
     return $this;
-  }
-
-  /**
-   * Get all companies matching the offset and row count.
-   *
-   * @param integer $offset
-   *   The offset in the result.
-   * @param integer $limit
-   *   The number of rows to retrieve.
-   * @return \mysqli_result
-   *   The query result.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getCompanies($offset, $limit) {
-    return $this->query("
-      SELECT
-        `id`,
-        `deleted`,
-        `name`,
-        `founding_date` AS `foundingDate`,
-        `defunct_date` AS `defunctDate`,
-        `image_uploader_id` AS `uploaderId`,
-        `image_width` AS `width`,
-        `image_height` AS `height`,
-        `image_filesize` AS `filesize`,
-        `image_extension` AS `extension`,
-        UNIX_TIMESTAMP(`image_changed`) AS `changed`,
-        COLUMN_GET(`dyn_image_descriptions`, ? AS BINARY) AS `description`,
-        `image_styles` AS `styles`
-      FROM `companies`
-      WHERE
-        `deleted` = false
-      ORDER BY `id` DESC
-      LIMIT ? OFFSET ?",
-      "sdi",
-      [ $this->intl->languageCode, $limit, $offset ]
-    )->get_result();
-  }
-
-  /**
-   * Get the total number of the movies this company was involved.
-   *
-   * @return integer
-   *   The count of the company's unique movies.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getMoviesCount() {
-    return $this->query(
-      "SELECT count(DISTINCT `movie_id`) as `count` FROM `movies_crew` WHERE `company_id` = ?", "d", [ $this->id ]
-    )->get_result()->fetch_assoc()["count"];
   }
 
   /**
@@ -324,32 +311,6 @@ final class Company extends \MovLib\Core\AbstractDatabase {
   }
 
   /**
-   * Get random company id.
-   *
-   * @return integer|null
-   *   Random company id or null in case of failure.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getRandomCompanyId() {
-    $query = "SELECT `id` FROM `companies` WHERE `companies`.`deleted` = false ORDER BY RAND() LIMIT 1";
-    if ($result = $this->query($query)->get_result()) {
-      return $result->fetch_assoc()["id"];
-    }
-  }
-
-  /**
-   * Get the total number of the releases this company was involved.
-   *
-   * @return integer
-   *   The count of the company's unique releases.
-   */
-  public function getReleasesCount() {
-    return $this->query(
-      "SELECT count(*) as `count` FROM `releases_labels` WHERE `company_id` = ?", "d", [ $this->id ]
-    )->get_result()->fetch_assoc()["count"];
-  }
-
-  /**
    * Get the mysqli result for all releases this company was involved.
    *
    * @return \mysqli_result
@@ -371,18 +332,6 @@ final class Company extends \MovLib\Core\AbstractDatabase {
   }
 
   /**
-   * Get the total number of the series this company was involved.
-   *
-   * @return integer
-   *   The count of the company's unique series.
-   */
-  public function getSeriesCount() {
-    return $this->query(
-      "SELECT count(DISTINCT `series_id`) as `count` FROM `episodes_crew` WHERE `company_id` = ?", "d", [ $this->id ]
-    )->get_result()->fetch_assoc()["count"];
-  }
-
-  /**
    * Get the mysqli result for all series this company was involved.
    *
    * @todo Implement when series are implemented
@@ -392,17 +341,6 @@ final class Company extends \MovLib\Core\AbstractDatabase {
    */
   public function getSeriesResult() {
     return $this;
-  }
-
-  /**
-   * Get the count of all companies which haven't been deleted.
-   *
-   * @return integer
-   *   The count of all companies which haven't been deleted.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getTotalCount() {
-    return $this->query("SELECT COUNT(`id`) FROM `companies` WHERE `deleted` = false LIMIT 1")->get_result()->fetch_row()[0];
   }
 
   /**
@@ -481,29 +419,6 @@ final class Company extends \MovLib\Core\AbstractDatabase {
       $this->initFetchObject();
     }
     return $this;
-  }
-
-  /**
-   * Initialize the company with its image, deleted flag and translate the route.
-   */
-  public function initFetchObject() {
-    if ($this->place) {
-      $this->place = (new Place($this->diContainer))->init($this->place);
-    }
-
-    $this->aliases = $this->aliases ? unserialize($this->aliases) : [];
-    $this->links   = $this->links ? unserialize($this->links) : [];
-
-    $this->deleted  = (boolean) $this->deleted;
-    $this->routeKey = "/company/{0}";
-    $this->route    = $this->intl->r($this->routeKey, [ $this->id]);
-    $key            = "edit";
-    if ($this->uploaderId) {
-      $this->imageExists = true;
-      $key               = "logo";
-      $this->styles      = unserialize($this->styles);
-    }
-    $this->imageRoute = $this->intl->r("/company/{0}/{$key}", [ $this->id ]);
   }
 
 
@@ -585,6 +500,20 @@ final class Company extends \MovLib\Core\AbstractDatabase {
    */
   public function setDeletionRequest($id) {
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPluralName() {
+    return "companies";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getSingularName() {
+    return "company";
   }
 
 }

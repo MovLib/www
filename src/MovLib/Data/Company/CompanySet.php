@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Award;
+namespace MovLib\Data\Company;
 
 /**
- * Defines the award set object.
+ * Defines the company set object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,42 +26,34 @@ namespace MovLib\Data\Award;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class AwardSet extends \MovLib\Data\AbstractSet {
+final class CompanySet extends \MovLib\Data\AbstractSet {
 
   /**
    * {@inheritdoc}
    */
   public function getEntityClassName() {
-    return "\\MovLib\\Data\\Award\\Award";
+    return "\\MovLib\\Data\\Company\\Company";
   }
 
   /**
    * {@inheritdoc}
    */
   public function getOrdered($by, $offset, $limit) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert(is_string($by));
-    assert(!empty($by));
-    assert(is_integer($offset));
-    assert(is_integer($limit));
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
-    // @todo One international name per organization (award) plus aliases, same as companies.
-    // @todo Rename both year columns to from "awarding" to "event".
     return $this->getMySQLi()->query(<<<SQL
 SELECT
-  `awards`.`id` AS `id`,
-  IFNULL(COLUMN_GET(`awards`.`dyn_names`, '{$this->intl->languageCode}' AS CHAR), COLUMN_GET(`awards`.`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `name`,
-  `awards`.`first_awarding_year` AS `firstEventYear`,
-  `awards`.`last_awarding_year` AS `lastEventYear`,
-  COUNT(DISTINCT `movies_awards`.`movie_id`) AS `movieCount`,
-  '0' AS `seriesCount`
-FROM `awards`
-  LEFT JOIN `movies_awards`
-    ON `movies_awards`.`award_id` = `awards`.`id`
-GROUP BY `awards`.`id`, `awards`.`dyn_names`, `awards`.`first_awarding_year`, `awards`.`last_awarding_year`
+  `companies`.`id` AS `id`,
+  `companies`.`name` AS `name`,
+  `companies`.`founding_date` AS `foundingDate`,
+  `companies`.`defunct_date` AS `defunctDate`,
+  COUNT(DISTINCT `movies_crew`.`movie_id`) AS `movieCount`,
+  '0' AS `seriesCount`,
+  COUNT(DISTINCT `releases_labels`.`release_id`) AS `releaseCount`
+FROM `companies`
+  LEFT JOIN `movies_crew`
+    ON `movies_crew`.`company_id` = `companies`.`id`
+  LEFT JOIN `releases_labels`
+    ON `releases_labels`.`company_id` = `companies`.`id`
+GROUP BY `companies`.`id`, `companies`.`name`, `companies`.`founding_date`, `companies`.`defunct_date`
 ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}
 SQL
     );
@@ -71,7 +63,7 @@ SQL
    * {@inheritdoc}
    */
   public function getTableName() {
-    return "awards";
+    return "companies";
   }
 
 }

@@ -383,8 +383,7 @@ final class Intl {
   public function translate($pattern, $args, $context, $locale) {
     // @devStart
     // @codeCoverageIgnoreStart
-    assert(!empty($pattern));
-    assert(is_string($pattern));
+    assert(!empty($pattern), "The pattern cannot be empty.");
     assert(
       preg_match("/^\s*\{[\{\}0-9a-z_\- ]*\}\s*$/i", $pattern) !== 1,
       "A translation that contains placeholder tokens only doesn't make sense. Don't misuse the message formatter to " .

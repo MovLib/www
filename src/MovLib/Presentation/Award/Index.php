@@ -19,11 +19,15 @@ namespace MovLib\Presentation\Award;
 
 use \MovLib\Data\Award\AwardSet;
 use \MovLib\Partial\Alert;
-use \MovLib\Partial\Listing\Award\AwardIndexListing;
 
 /**
  * Defines the award index presentation.
  *
+ * @link http://schema.org/Organization
+ * @link http://www.google.com/webmasters/tools/richsnippets?q=https://en.movlib.org/awards
+ * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/awards
+ * @link http://validator.w3.org/check?uri=https://en.movlib.org/awards
+ * @link http://gsnedders.html5.org/outliner/process.py?url=https://en.movlib.org/awards
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -31,30 +35,21 @@ use \MovLib\Partial\Listing\Award\AwardIndexListing;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Index extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Partial\SidebarTrait;
-  use \MovLib\Partial\PaginationTrait;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The award set.
-   *
-   * @var \MovLib\Data\AwardSet
-   */
-  protected $awardSet;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
+final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
+  use \MovLib\Partial\AwardTrait;
 
   /**
    * {@inheritdoc}
    */
   public function init() {
-    $this->awardSet = new AwardSet($this->diContainerHTTP);
+    $this->set = new AwardSet($this->diContainerHTTP);
+
+    $this->headingBefore =
+      "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/award/create")}'>" .
+        $this->intl->t("Create New Award") .
+      "</a>"
+    ;
+
     $this
       ->initPage($this->intl->t("Awards"))
       ->initBreadcrumb()
@@ -63,16 +58,35 @@ final class Index extends \MovLib\Presentation\AbstractPresenter {
         [ $this->request->path, $this->title, [ "class" => "ico ico-award" ] ],
         [ $this->intl->r("/award/random"), $this->intl->t("Random") ],
       ])
-      ->paginationInit($this->awardSet)
+      ->paginationInit()
     ;
   }
 
   /**
    * {@inheritdoc}
+   * @param \MovLib\Data\Award $award {@inheritdoc}
    */
-  public function getContent() {
-    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/award/create")}'>{$this->intl->t("Create New Award")}</a>";
-    return new AwardIndexListing($this->diContainerHTTP, $this->awardSet, "`created` DESC");
+  public function formatListingItem($award) {
+    if (($awardYears = $this->getAwardEventYears($award))) {
+      $awardYears = "<small>{$awardYears}</small>";
+    }
+    return
+      "<li class='hover-item r'>" .
+        "<article typeof='Organization'>" .
+          "<a class='s s1' href='{$award->route}'>" .
+            "<img alt='{$award->name}' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
+          "</a>" .
+          "<div class='s s9'>" .
+            "<div class='fr'>" .
+              "<a class='ico ico-movie label' href='{$this->intl->rp("/award/{0}/movies", $award->id)}' title='{$this->intl->t("Movies")}'>{$award->movieCount}</a>" .
+              "<a class='ico ico-series label' href='{$this->intl->rp("/award/{0}/series", $award->id)}' title='{$this->intl->t("Series")}'>{$award->seriesCount}</a>" .
+            "</div>" .
+            "<h2 class='para'><a href='{$award->route}' property='url'><span property='name'>{$award->name}</span></a></h2>" .
+            $awardYears .
+          "</div>" .
+        "</article>" .
+      "</li>"
+    ;
   }
 
   /**
@@ -80,12 +94,8 @@ final class Index extends \MovLib\Presentation\AbstractPresenter {
    */
   public function getNoItemsContent() {
     return new Alert(
-      "<p>{$this->intl->t(
-        "We couldn’t find any awards matching your filter criteria, or there simply aren’t any awards available."
-      )}</p><p>{$this->intl->t(
-        "Would you like to {0}create an award{1}?",
-        [ "<a href='{$this->intl->r("/award/create")}'>", "</a>" ]
-      )}</p>",
+      "<p>{$this->intl->t("We couldn’t find any awards matching your filter criteria, or there simply aren’t any awards available.")}</p>" .
+      "<p>{$this->intl->t("Would you like to {0}create an award{1}?", [ "<a href='{$this->intl->r("/award/create")}'>", "</a>" ])}</p>",
       $this->intl->t("No Awards")
     );
   }

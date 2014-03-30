@@ -18,7 +18,7 @@
 namespace MovLib\Data;
 
 /**
- * Defines the interface for set objects.
+ * Defines the base class for set objects.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,7 +26,11 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-interface SetInterface {
+abstract class AbstractSet extends \MovLib\Core\AbstractDatabase {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
+
 
   /**
    * Get the set's canonical absolute entity class name.
@@ -34,18 +38,10 @@ interface SetInterface {
    * @return string
    *   The set's canonical absolute entity class name.
    */
-  public function getEntityClassName();
+  abstract public function getEntityClassName();
 
   /**
-   * Must return the total count of all available entities.
-   *
-   * @return integer
-   *   The total count of all available entities.
-   */
-  public function getCount();
-
-  /**
-   * Must return the demanded amount of elements ordered by the given parameter.
+   * Get the demanded amount of elements ordered by the given parameter.
    *
    * @param string $by
    *   The SQL queries <code>ORDER BY</code> content, e.g. <code>"`created` DESC"</code>.
@@ -56,7 +52,29 @@ interface SetInterface {
    * @return \mysqli_result|array
    *   A {@see \mysqli_result} is the preferred type, but arrays are allowed as well.
    */
-  public function getOrdered($by, $offset, $limit);
+  abstract public function getOrdered($by, $offset, $limit);
+
+  /**
+   * Get the set's database table's name.
+   *
+   * @return string
+   *   The set's database table's name.
+   */
+  abstract public function getTableName();
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Get the total count of all available entities.
+   *
+   * @return integer
+   *   The total count of all available entities.
+   */
+  public function getCount() {
+    return $this->getMySQLi()->query("SELECT COUNT(*) FROM `{$this->getTableName()}` WHERE `deleted` = false")->fetch_row()[0];
+  }
 
   /**
    * Get a random, unique, existing entity's identifier from the set.
@@ -64,6 +82,10 @@ interface SetInterface {
    * @return mixed
    *   A random, unique, existing entity's identifier from the set.
    */
-  public function getRandom();
+  public function getRandom() {
+    if (($result = $this->getMySQLi()->query("SELECT `id` FROM `{$this->getTableName()}` WHERE `deleted` = false ORDER BY RAND() LIMIT 1"))) {
+      return $result->fetch_row()[0];
+    }
+  }
 
 }

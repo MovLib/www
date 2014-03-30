@@ -525,9 +525,10 @@ abstract class AbstractPresenter {
           $route .= "?{$query}";
         }
         $languageLinks[$languages[$code]->name] =
-          "<a href='//{$code}.{$this->config->hostname}{$route}' lang='{$code}'>" .
-            $this->intl->t("{0} ({1})", [ $languages[$code]->name, $languages[$code]->native ]);
-          "</a>"
+          "<a href='//{$code}.{$this->config->hostname}{$route}' lang='{$code}'>{$this->intl->t(
+            "{0} ({1})",
+            [ $languages[$code]->name, $languages[$code]->native ]
+          )}</a>"
         ;
       }
 

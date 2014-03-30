@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Award;
+namespace MovLib\Presentation;
 
 /**
- * Defines the award entity object.
+ * Defines base class for index presenter.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,50 +26,33 @@ namespace MovLib\Data\Award;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Award extends \MovLib\Data\AbstractEntity {
+abstract class AbstractIndexPresenter extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Partial\PaginationTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The award's first event year.
    *
-   * @var integer
+   * @var \MovLib\Data\AbstractSet
    */
-  public $firstEventYear;
-
-  /**
-   * The award's last event year.
-   *
-   * @var integer
-   */
-  public $lastEventYear;
-
-  /**
-   * The award's name.
-   *
-   * @var string
-   */
-  public $name;
-
-  /**
-   * The award's route in the current locale.
-   *
-   * @var string
-   */
-  public $route;
+  protected $set;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Initialize
+  // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
 
 
   /**
-   * Initialize after instantiation via PHP's built in <code>\mysqli_result::fetch_object()}
+   * Format a single listing's item.
+   *
+   * @param mixed $item
+   *   The listing's item to format.
+   * @return string
+   *   The formatted listing's item.
    */
-  public function initFetchObject() {
-    $this->route = $this->intl->r("/award/{0}", $this->id);
-  }
+  abstract protected function formatListingItem($item);
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -78,15 +61,28 @@ final class Award extends \MovLib\Data\AbstractEntity {
   /**
    * {@inheritdoc}
    */
-  public function getPluralName() {
-    return "awards";
+  public function getContent() {
+    $items = null;
+    // @todo Implement default filters for ORDER BY
+    $result = $this->set->getOrdered("`created` DESC", $this->paginationOffset, $this->paginationLimit);
+    while ($item = $result->fetch_object($this->set->getEntityClassName(), [ $this->diContainerHTTP ])) {
+      $item->initFetchObject();
+      $items .= $this->formatListingItem($item);
+    }
+    $result->free();
+    return $this->getListing($items);
   }
 
   /**
-   * {@inheritdoc}
+   * Get the listing.
+   *
+   * @param string $items
+   *   The formatted listing's items.
+   * @return string
+   *   The listing.
    */
-  public function getSingularName() {
-    return "award";
+  protected function getListing($items) {
+    return "<ol class='hover-list no-list'>{$items}</ol>";
   }
 
 }

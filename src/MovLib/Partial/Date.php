@@ -33,22 +33,32 @@ final class Date {
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
   /**
-   * Default W3C date format.
+   * Default W3C/SQL date format.
    *
    * @var string
    */
   const FORMAT_W3C = "Y-m-d";
 
   /**
-   * Default W3C date regular expression that can be used for validation.
+   * Default W3C/SQL date regular expression that can be used for validation.
+   *
+   * <b>NOTE</b><br>
+   * Both month and day are optional, this ensures that we're able to format partial dates as well.
    *
    * @var string
    */
-  const REGEXP_W3C = "/[0-9]{4}-[0-9]{2}-[0-9]{2}/";
+  const REGEXP_W3C = "/[0-9]{4}(-[0-9]{2}){0,2}/";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
+
+  /**
+   * Valid SQL date string (<code>"Y-m-d"</code>).
+   *
+   * @var string
+   */
+  public $date;
 
   /**
    * Associative array containing date formats for missing days.
@@ -79,57 +89,95 @@ final class Date {
   ];
 
   /**
-   * Internal information about the date, the output of the {@link http://www.php.net/manual/en/function.date-parse.php
-   *  date_parse} function.
-   *
-   * @var array
-   */
-  public $dateInfo;
-
-  /**
-   * The date's string representation in <code>"Y-m-d"</code> format.
+   * The date's day part.
    *
    * @var string
    */
-  public $dateValue;
+  protected $day;
 
   /**
-   * The presenting presenter.
+   * The date's month part.
    *
-   * @var \MovLib\Presentation\AbstractPresenter
+   * @var string
    */
-  protected $presenter;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+  protected $month;
 
   /**
-   * Instantiate new date partial.
+   * The date's year part.
    *
-   * @param \MovLib\Presentation\AbstractPresenter $presenter
-   *   The presenting presenter.
-   * @param string $date [optional]
-   *   A date/time string in a valid format as explained in {@link http://www.php.net/manual/en/datetime.formats.php Date
-   *   and Time Formats} or an integer, which is treated as UNIX timestamp. Defaults to <code>"now"</code>.
+   * @var string
    */
-  public function __construct(\MovLib\Presentation\AbstractPresenter $presenter, $date = "now") {
-    $this->presenter = $presenter;
-    if (is_int($date)) {
-      $date = date(self::FORMAT_W3C, $date);
-    }
-    elseif ($date == "now") {
-      $date = date(self::FORMAT_W3C, strtotime("now"));
-    }
-    // Make sure date_parse() does not interpret incomplete dates as time strings.
-    $this->dateInfo          = date_parse("{$date} 00:00:00");
-    $this->dateInfo["month"] = $this->dateInfo["month"] === false ? 0 : $this->dateInfo["month"];
-    $this->dateInfo["day"]   = $this->dateInfo["day"] === false ? 0 : $this->dateInfo["day"];
-    $this->dateValue         = "{$this->dateInfo["year"]}-{$this->dateInfo["month"]}-{$this->dateInfo["day"]}";
-  }
+  protected $year;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Format the given date as year.
+   *
+   * @param null|string $date [optional]
+   *   Any valid SQL date string.
+   * @param null|string $attributes [optional]
+   *   Additional attributes that should be applied to the <code><time></code> element, already sent through the
+   *   appropriate expansion method.
+   * @return string
+   *   The formatted date as year.
+   */
+  public function formatYear($date = null, $attributes = null) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert(strpos($attributes, "datetime") === false, "The attributes of a date method cannot contain a datetime attribute.");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    if ($date) {
+      $this->setDate($date);
+    }
+    return "<time datetime='{$this->year}'{$attributes}>{$this->year}</time>";
+  }
+
+  /**
+   * Set the date.
+   *
+   * @param string $date
+   *   Any valid SQL date string.
+   * @return this
+   */
+  public function setDate($date) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert(preg_match(self::REGEXP_W3C, $date) === 1, "Invalid date '{$date}'!");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    // Reset properties and directly return if the passed date is empty.
+    $this->year = $this->month = $this->day = $this->date = null;
+    if (empty($date)) {
+      return $this;
+    }
+
+    // Split the given W3C/SQL date at its delimiter and export to object scope.
+    $date = explode("-", $date, 3);
+
+    // Set individual parts if available.
+    if (isset($date[0])) {
+      $this->year = str_pad($date[0], 4, "0");
+    }
+    if (isset($date[1])) {
+      $this->month = str_pad($date[1], 2, "0");
+    }
+    if (isset($date[2])) {
+      $this->day = str_pad($date[2], 2, "0");
+    }
+
+    // Put the parts together in a valid W3C/SQL format.
+    $this->date = sprintf("%04d-%02d-%02d", $this->year, $this->month, $this->day);
+
+    return $this;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Old Methods
 
 
   /**

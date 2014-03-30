@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Partial\Person;
+namespace MovLib\Partial;
 
 use \MovLib\Partial\Date;
 
@@ -32,38 +32,45 @@ use \MovLib\Partial\Date;
 trait PersonTrait {
 
   /**
+   * Get a person's born name.
+   *
+   * @param \MovLib\Data\Person\Person $person
+   *   The person to get the born name from.
+   * @return null|string
+   *   The formatted born name or <code>NULL</code> if none was present.
+   */
+  final protected function getPersonBornName(\MovLib\Data\Person\Person $person) {
+    if ($person->bornName) {
+      return $this->intl->t("{0} ({1})", [
+        "<span property='additionalName'>{$person->bornName}</span>",
+        "<i>{$this->intl->t("born name")}</i>",
+      ]);
+    }
+  }
+
+  /**
    * Get a person's biographical dates.
    *
-   * @param \MovLib\Presentation\AbstractPresenter $presenter
-   *   The presenting presenter.
-   * @param \MovLib\Core\Intl $intl
-   *   The active intl instance.
    * @param \MovLib\Data\Person\Person $person
    *   The person to get the biographical dates from.
    * @return null|string
    *   The formatted biographical dates or <code>NULL</code> if none were present.
    */
-  final protected function getPersonBioDates(\MovLib\Presentation\AbstractPresenter $presenter, \MovLib\Core\Intl $intl, \MovLib\Data\Person\Person $person) {
+  final protected function getPersonBioDates(\MovLib\Data\Person\Person $person) {
     if ($person->birthDate || $person->deathDate) {
-      $dates = null;
-
+      $birth = $this->intl->t("Date of Birth");
       if ($person->birthDate) {
-        $dates .= (new Date($presenter, $person->birthDate))->format($intl, [
-          "property" => "birthDate",
-          "title" => $intl->t("Date of Birth"),
-        ]);
+        $dates = (new Date($this, $person->birthDate))->format($this->intl, [ "property" => "birthDate", "title" => $birth ]);
       }
       else {
-        $dates .= "<em title='{$intl->t("Date of Birth")}'>{$intl->t("unknown")}</em>";
+        $dates = "<em title='{$birth}'>{$this->intl->t("unknown")}</em>";
       }
-
       if ($person->deathDate) {
-        $dates = $intl->t("{0}–{1}", [ $dates, (new Date($presenter, $person->deathDate))->format($intl, [
+        return $this->intl->t("{0}–{1}", [ $dates, (new Date($this, $person->deathDate))->format($this->intl, [
           "property" => "deathDate",
-          "title" => $intl->t("Date of Death") ]),
+          "title"    => $this->intl->t("Date of Death") ]),
         ]);
       }
-
       return $dates;
     }
   }

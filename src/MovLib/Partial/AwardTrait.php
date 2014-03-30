@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Person;
+namespace MovLib\Partial;
 
 /**
- * Defines the person set object.
+ * @todo Description of AwardTrait
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,44 +26,37 @@ namespace MovLib\Data\Person;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class PersonSet extends \MovLib\Data\AbstractSet {
+trait AwardTrait {
 
   /**
-   * {@inheritdoc}
+   * Get the award's first and last awarding years.
+   *
+   * @param \MovLib\Data\Award\Award $award
+   *   The award to get the years from.
+   * @return string
+   *   The formatted first and last awarding years or <code>NULL</code> if none were present.
    */
-  public function getTableName() {
-    return "persons";
-  }
+  protected function getAwardEventYears(\MovLib\Data\Award\Award $award) {
+    if ($award->firstEventYear || $award->lastEventYear) {
+      $date  = new Date();
+      $first = " title='{$this->intl->t("First award ceremony")}'";
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getEntityClassName() {
-    return "\\MovLib\\Data\\Person\\Person";
-  }
+      if ($award->firstEventYear) {
+        $years = $date->formatYear($award->firstEventYear, $first);
+      }
+      else {
+        $years = "<em{$first}>{$this->intl->t("unknown")}</em>";
+      }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getOrdered($by, $offset, $limit) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert(is_string($by));
-    assert(is_integer($offset));
-    assert(is_integer($limit));
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    return $this->getMySQLi()->query(<<<SQL
-SELECT
-  `id`,
-  `name`,
-  `birthdate` AS `birthDate`,
-  `born_name` AS `bornName`,
-  `deathdate` AS `deathDate`
-FROM `persons`
-ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}
-SQL
-    );
+      if ($award->lastEventYear) {
+        return $this->intl->t(
+          "{0}–{1}",
+          [ $years, $date->formatYear($award->lastEventYear, " title='{$this->intl->t("Last award ceremony")}'") ]
+        );
+      }
+
+      return $years;
+    }
   }
 
 }

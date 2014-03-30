@@ -17,13 +17,17 @@
  */
 namespace MovLib\Presentation\Company;
 
-use \MovLib\Data\Company;
+use \MovLib\Data\Company\CompanySet;
 use \MovLib\Partial\Alert;
-use \MovLib\Partial\Listing\CompanyIndexListing;
 
 /**
- * The latest companies.
+ * Defines the company index presentation.
  *
+ * @link http://schema.org/Company
+ * @link http://www.google.com/webmasters/tools/richsnippets?q=https://en.movlib.org/companies
+ * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/companies
+ * @link http://validator.w3.org/check?uri=https://en.movlib.org/companies
+ * @link http://gsnedders.html5.org/outliner/process.py?url=https://en.movlib.org/companies
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -31,59 +35,70 @@ use \MovLib\Partial\Listing\CompanyIndexListing;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\TraitSidebar;
-  use \MovLib\Presentation\TraitPagination;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
+final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
+  use \MovLib\Partial\CompanyTrait;
 
   /**
-   * The company to present.
-   *
-   * @var \MovLib\Data\Company\Company
+   * {@inheritdoc}
    */
-  protected $company;
+  public function init() {
+    $this->set = new CompanySet($this->diContainerHTTP);
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * @inheritdoc
-   */
-  protected function getPageContent() {
     $this->headingBefore =
-      "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/company/create")}'>{$this->intl->t("Create New Company")}</a>"
+      "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/company/create")}'>" .
+        $this->intl->t("Create New Company") .
+      "</a>"
     ;
 
-    $result      = $this->company->getCompanies($this->paginationOffset, $this->paginationLimit);
-    $noItemText  = new Alert(
-      $this->intl->t(
-        "We couldn’t find any company matching your filter criteria, or there simply aren’t any companies available."
-      ), $this->intl->t("No Companies"), Alert::SEVERITY_INFO
-    );
-    $noItemText .=
-      $this->intl->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$this->intl->r("/company/create")}'>", "</a>" ]);
-
-    return new CompanyIndexListing($this->diContainerHTTP, $result, $noItemText);
+    $this
+      ->initPage($this->intl->t("Companies"))
+      ->initBreadcrumb()
+      ->initLanguageLinks("/companies", null, true)
+      ->sidebarInit([
+        [ $this->intl->rp("/companies"), $this->title, [ "class" => "ico ico-company" ] ],
+        [ $this->intl->r("/company/random"), $this->intl->t("Random") ],
+      ])
+      ->paginationInit()
+    ;
   }
 
   /**
-   * Instantiate new latest companies presentation.
+   * {@inheritdoc}
+   * @param \MovLib\Data\Company\Company $company {@inheritdoc}
    */
-  public function init() {
-    $this->company = new Company($this->diContainerHTTP);
+  protected function formatListingItem($company) {
+    if (($companyDates = $this->getCompanyDates($company))) {
+      $companyDates = "<small>{$companyDates}</small>";
+    }
+    return
+      "<li class='hover-item r'>" .
+        "<article typeof='Company'>" .
+          "<a class='s s1' href='{$company->imageRoute}'>" .
+            "<img alt='' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
+          "</a>" .
+          "<div class='s s9'>" .
+            "<div class='fr'>" .
+              "<a class='ico ico-movie label' href='{$this->intl->rp("/company/{0}/movies", $company->id)}' title='{$this->intl->t("Movies")}'>{$company->movieCount}</a>" .
+              "<a class='ico ico-series label' href='{$this->intl->rp("/company/{0}/series", $company->id)}' title='{$this->intl->t("Series")}'>{$company->seriesCount}</a>" .
+              "<a class='ico ico-release label' href='{$this->intl->rp("/company/{0}/releases", $company->id)}' title='{$this->intl->t("Releases")}'>{$company->releaseCount}</a>" .
+            "</div>" .
+            "<h2 class='para'><a href='{$company->route}' property='url'><span property='name'>{$company->name}</span></a></h2>" .
+            $companyDates .
+          "</div>" .
+        "</article>" .
+      "</li>"
+    ;
+  }
 
-    $this->initPage($this->intl->t("Companies"));
-    $this->initBreadcrumb();
-    $this->initLanguageLinks("/companies", null, true);
-    $this->paginationInit($this->company->getTotalCount());
-    $this->sidebarInit([
-      [ $this->intl->rp("/companies"), $this->title, [ "class" => "ico ico-company" ] ],
-      [ $this->intl->r("/company/random"), $this->intl->t("Random") ],
-    ]);
+  /**
+   * {@inheritdoc}
+   */
+  public function getNoItemsContent() {
+    return new Alert(
+      "<p>{$this->intl->t("We couldn’t find any companies matching your filter criteria, or there simply aren’t any companies available.")}</p>" .
+      "<p>{$this->intl->t("Would you like to {0}create a company{1}?", [ "<a href='{$this->intl->r("/company/create")}'>", "</a>" ])}</p>",
+      $this->intl->t("No Companies")
+    );
   }
 
 }

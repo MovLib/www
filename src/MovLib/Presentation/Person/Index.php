@@ -19,7 +19,6 @@ namespace MovLib\Presentation\Person;
 
 use \MovLib\Data\Person\PersonSet;
 use \MovLib\Partial\Alert;
-use \MovLib\Partial\Listing\Person\PersonIndexListing;
 
 /**
  * Defines the person index listing.
@@ -31,30 +30,19 @@ use \MovLib\Partial\Listing\Person\PersonIndexListing;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Index extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Partial\SidebarTrait;
-  use \MovLib\Partial\PaginationTrait;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The person set.
-   *
-   * @var \MovLib\Data\Person\PersonSet
-   */
-  protected $personSet;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
+final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
+  use \MovLib\Partial\PersonTrait;
 
   /**
    * {@inheritdoc}
    */
   public function init() {
-    $this->personSet = new PersonSet($this->diContainerHTTP);
+    $this->set = new PersonSet($this->diContainerHTTP);
+    $this->headingBefore =
+      "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/person/create")}'>" .
+        $this->intl->t("Create New Person") .
+      "</a>"
+    ;
     $this
       ->initPage($this->intl->t("Persons"))
       ->initBreadcrumb()
@@ -63,16 +51,8 @@ final class Index extends \MovLib\Presentation\AbstractPresenter {
         [ $this->request->path, $this->title, [ "class" => "ico ico-person" ] ],
         [ $this->intl->r("/person/random"), $this->intl->t("Random") ],
       ])
-      ->paginationInit($this->personSet)
+      ->paginationInit($this->set)
     ;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getContent() {
-    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/person/create")}'>{$this->intl->t("Create New Person")}</a>";
-    return new PersonIndexListing($this->diContainerHTTP, $this->personSet, "`created` DESC");
   }
 
   /**
@@ -88,6 +68,32 @@ final class Index extends \MovLib\Presentation\AbstractPresenter {
       )}</p>",
       $this->intl->t("No Persons")
     );
+  }
+
+  /**
+   * {@inheritdoc}
+   * @param \MovLib\Data\Person\Person $person {@inheritdoc}
+   */
+  protected function formatListingItem($person) {
+    if (($bornName = $this->getPersonBornName($person))) {
+      $bornName = "<br><span class='small'>{$bornName}</span>";
+    }
+    if (($bioDates = $this->getPersonBioDates($person))) {
+      $bioDates = "<br><span class='small'>{$bioDates}</span>";
+    }
+    return
+      "<li class='hover-item r' typeof='Person'>" .
+        "<a class='no-link s s1 tac'><img alt='' height='60' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60'></a>" .
+        "<div class='s s9'><a href='{$person->route}' property='url'><span property='name'>{$person->name}</span></a>{$bornName}{$bioDates}</div>" .
+      "</li>"
+    ;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getListing($items) {
+    return "<ol class='hover-list no-list'>{$items}</ol>";
   }
 
 }
