@@ -18,10 +18,15 @@
 namespace MovLib\Presentation\Event;
 
 use \MovLib\Data\Event\EventSet;
+use \MovLib\Partial\Alert;
 
 /**
- * The latest Award Events.
+ * Defines the event index presentation.
  *
+ * @link http://www.google.com/webmasters/tools/richsnippets?q=https://en.movlib.org/events
+ * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/events
+ * @link http://validator.w3.org/check?uri=https://en.movlib.org/events
+ * @link http://gsnedders.html5.org/outliner/process.py?url=https://en.movlib.org/events
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -29,6 +34,7 @@ use \MovLib\Data\Event\EventSet;
  * @since 0.0.1-dev
  */
 final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
+  use \MovLib\Partial\EventTrait;
 
   /**
    * {@inheritdoc}
@@ -48,7 +54,23 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * @param \MovLib\Data\Event\Event $event {@inheritdoc}
    */
   protected function formatListingItem($event) {
-
+    return
+      "<li class='hover-item r'>" .
+        "<article>" .
+          "<a class='no-link s s1' href='{$event->route}'>" .
+            "<img alt='{$event->name}' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
+          "</a>" .
+          "<div class='s s9'>" .
+            "<div class='fr'>" .
+              "<a class='ico ico-movie label' href='{$this->intl->rp("/event/{0}/movies", $event->id)}' title='{$this->intl->t("Movies")}'>{$event->movieCount}</a>" .
+              "<a class='ico ico-series label' href='{$this->intl->rp("/event/{0}/series", $event->id)}' title='{$this->intl->t("Series")}'>{$event->seriesCount}</a>" .
+            "</div>" .
+            "<h2 class='para'><a href='{$event->route}' property='url'><span property='name'>{$event->name}</span></a></h2>" .
+            "<small>{$this->getEventDates($event)} {$this->getEventPlace($event)}</small>" .
+          "</div>" .
+        "</article>" .
+      "</li>"
+    ;
   }
 
   /**

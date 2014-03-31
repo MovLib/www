@@ -44,8 +44,16 @@ final class EventSet extends \MovLib\Data\AbstractSet {
 SELECT
   `events`.`id` AS `id`,
   `events`.`name` AS `name`,
+  `events`.`end_date` AS `endDate`,
+  COUNT(DISTINCT `movies_awards`.`movie_id`) AS `movieCount`,
+  `events`.`place_id` AS `place`,
+  '0' AS `seriesCount`,
+  `events`.`start_date` AS `startDate`
 FROM `events`
+  LEFT JOIN `movies_awards`
+    ON `events`.`id` = `movies_awards`.`event_id`
 WHERE `deleted` = false
+GROUP BY `id`, `name`, `endDate`, `place`, `seriesCount`, `startDate`
 ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}
 SQL
     );

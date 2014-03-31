@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Data\Event;
 
 use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Data\Place;
@@ -30,11 +30,18 @@ use \MovLib\Presentation\Error\NotFound;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Event extends \MovLib\Data\Database {
+class Event extends \MovLib\Data\AbstractEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
+
+  /**
+   * The award’s aliases.
+   *
+   * @var array
+   */
+  public $aliases = [];
 
   /**
    * The award's unique identifier this event belongs to.
@@ -100,6 +107,13 @@ class Event extends \MovLib\Data\Database {
   public $name;
 
   /**
+   * The count of movies connected to this event.
+   *
+   * @var integer
+   */
+  public $movieCount;
+
+  /**
    * The event’s place.
    *
    * @var integer|object
@@ -114,11 +128,11 @@ class Event extends \MovLib\Data\Database {
   public $route;
 
   /**
-   * The route key of this award event.
+   * The count of series connected to this event.
    *
-   * @var string
+   * @var integer
    */
-  public $routeKey;
+  public $seriesCount;
 
   /**
    * The event’s start date.
@@ -135,28 +149,28 @@ class Event extends \MovLib\Data\Database {
   public $wikipedia;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+  // ------------------------------------------------------------------------------------------------------------------- Initialize
 
 
   /**
-   * Instantiate new award event.
+   * Instantiate new event.
    *
    * @param integer $id [optional]
-   *   The award event's unique identifier, omit to create empty instance.
+   *   The event's unique identifier, omit to create empty instance.
    * @throws \MovLib\Presentation\Error\NotFound
    */
-  public function __construct($id = null) {
+  public function init($id = null) {
     if ($id) {
-      $query = self::getQuery();
-      $stmt = $db->query("
-        {$query}
+      $stmt = $this->query("
+        {$this->getDefaultQuery()}
         WHERE
           `id` = ?
         LIMIT 1",
-        "sssd",
-        [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $id ]
+        "ssd",
+        [ $this->intl->languageCode, $this->intl->languageCode, $id ]
       );
       $stmt->bind_result(
+        $this->aliases,
         $this->awardId,
         $this->changed,
         $this->created,
@@ -166,7 +180,9 @@ class Event extends \MovLib\Data\Database {
         $this->id,
         $this->links,
         $this->name,
+        $this->movieCount,
         $this->place,
+        $this->seriesCount,
         $this->startDate,
         $this->wikipedia
       );
@@ -176,46 +192,68 @@ class Event extends \MovLib\Data\Database {
       $stmt->close();
     }
     if ($this->id) {
-      $this->init();
+      $this->initFetchObject();
     }
+  }
+
+  /**
+   * Initialize after instantiation via PHP's built in <code>\mysqli_result::fetch_object()}
+   */
+  public function initFetchObject() {
+    if ($this->place) {
+      $this->place = (new Place($this->diContainer))->init($this->place);
+    }
+    $this->deleted = (boolean) $this->deleted;
+    $this->aliases = $this->aliases ? unserialize($this->aliases) : [];
+    $this->links   = $this->links ? unserialize($this->links) : [];
+    $this->route   = $this->intl->r("/event/{0}", $this->id);
   }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
- /**
-   * Get all events matching the offset and row count.
+  /**
+   * The default query.
    *
-   * @param integer $offset
-   *   The offset in the result.
-   * @param integer $limit
-   *   The number of rows to retrieve.
-   * @return \mysqli_result
-   *   The query result.
-   * @throws \MovLib\Exception\DatabaseException
+   * @return string
    */
-  public static function getEvents($offset, $limit) {
-    $query = self::getQuery();
-    return $db->query("
-        {$query}
-        ORDER BY `start_date` DESC
-        LIMIT ? OFFSET ?",
-      "sssid",
-      [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $limit, $offset ]
-    )->get_result();
+  public function getDefaultQuery() {
+    return
+      "SELECT
+        `aliases`
+        `award_id` AS `awardId`,
+        `changed`,
+        `created`,
+        `deleted`,
+        IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS CHAR), COLUMN_GET(`dyn_descriptions`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `description`,
+        `end_date` AS `endDate`,
+        `id`,
+        `links`,
+        `name`,
+        COUNT(DISTINCT `movies_awards`.`movie_id`) AS `movieCount`,
+        `place_id` AS `place`,
+        '0' AS `seriesCount`
+        `start_date` AS `startDate`,
+        IFNULL(COLUMN_GET(`dyn_wikipedia`, ? AS CHAR), COLUMN_GET(`dyn_wikipedia`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `wikipedia`
+      FROM `events`
+        LEFT JOIN `movies_awards`
+          ON `events`.`id` = `movies_awards`.`event_id`"
+    ;
   }
 
   /**
-   * The count of movies connected to this award event.
-   *
-   * @return integer
-   * @throws \MovLib\Exception\DatabaseException
+   * {@inheritdoc}
    */
-  public function getMoviesCount() {
-    return $db->query(
-      "SELECT count(DISTINCT `movie_id`) as `count` FROM `movies_awards` WHERE `award_event_id` = ?", "d", [ $this->id ]
-    )->get_result()->fetch_assoc()["count"];
+  public function getPluralName() {
+    return "events";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getSingularName() {
+    return "event";
   }
 
  /**
@@ -226,7 +264,7 @@ class Event extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMoviesResult() {
-    $result = $db->query(
+    $result = $this->query(
       "SELECT
         `movies`.`id`,
         `movies`.`deleted`,
@@ -237,13 +275,13 @@ class Event extends \MovLib\Data\Database {
         `ot`.`title` AS `originalTitle`,
         `ot`.`language_code` AS `originalTitleLanguageCode`,
         `p`.`poster_id` AS `displayPoster`,
-        `ma`.`award_category_id` AS `awardCategoryId`,
-        `ma`.`won` AS `awardCategoryWon`,
-        `ma`.`person_id` AS `personId`,
-        `ma`.`company_id` AS `companyId`
-      FROM `movies_awards` AS `ma`
-        LEFT JOIN `movies` AS `movies`
-          ON `movies`.`id` = `ma`.`movie_id`
+        `movies_awards`.`award_category_id` AS `awardCategoryId`,
+        `movies_awards`.`won` AS `awardCategoryWon`,
+        `movies_awards`.`person_id` AS `personId`,
+        `movies_awards`.`company_id` AS `companyId`
+      FROM `movies_awards`
+        LEFT JOIN `movies`
+          ON `movies`.`id` = `movies_awards`.`movie_id`
         LEFT JOIN `movies_display_titles` AS `mdt`
           ON `mdt`.`movie_id` = `movies`.`id`
           AND `mdt`.`language_code` = ?
@@ -258,10 +296,10 @@ class Event extends \MovLib\Data\Database {
         LEFT JOIN `display_posters` AS `p`
           ON `p`.`movie_id` = `movies`.`id`
           AND `p`.`language_code` = ?
-      WHERE `ma`.`award_id` = ? AND `ma`.`award_event_id` = ?
+      WHERE `movies_awards`.`award_id` = ? AND `movies_awards`.`award_event_id` = ?
       ORDER BY `displayTitle` DESC",
       "ssdd",
-      [ $i18n->languageCode, $i18n->languageCode, $this->awardId, $this->id ]
+      [ $this->intl->languageCode, $this->intl->languageCode, $this->awardId, $this->id ]
     )->get_result();
 
     while ($row = $result->fetch_assoc()) {
@@ -292,93 +330,6 @@ class Event extends \MovLib\Data\Database {
       array_push($movies[$row["id"]]->movie->awardedCompanyIds, $row["companyId"]);
     }
     return $movies;
-  }
-
-  /**
-   * Get the default query.
-   *
-   * @staticvar string $query
-   *   Used to cache the default query.
-   * @return string
-   *   The default query.
-   */
-  public static function getQuery() {
-    static $query = null;
-    if (!$query) {
-      $query =
-        "SELECT
-          `award_id` AS `awardId`,
-          `changed`,
-          `created`,
-          `deleted`,
-          IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS CHAR), COLUMN_GET(`dyn_descriptions`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `description`,
-          `end_date` AS `endDate`,
-          `id`,
-          `links`,
-          IFNULL(COLUMN_GET(`dyn_names`, ? AS CHAR), COLUMN_GET(`dyn_names`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `name`,
-          `place_id` AS `place`,
-          `start_date` AS `startDate`,
-          IFNULL(COLUMN_GET(`dyn_wikipedia`, ? AS CHAR), COLUMN_GET(`dyn_wikipedia`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `wikipedia`
-        FROM `awards_events`"
-      ;
-    }
-    return $query;
-  }
-
-  /**
-   * Get random event identifier.
-   *
-   * @return integer|null
-   *   Random event identifier, or <code>NULL</code> on failure.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public static function getRandomEventId() {
-    $query = "SELECT `id` FROM `awards_events` WHERE `deleted` = false ORDER BY RAND() LIMIT 1";
-    if ($result = $db->query($query)->get_result()) {
-      return $result->fetch_assoc()["id"];
-    }
-  }
-
-  /**
-   * The count of movies connected to this event.
-   *
-   * @todo Implement when series are implemented.
-   * @return integer
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getSeriesCount() {
-    return 0;
-  }
-
-  /**
-   * Get the total count of all events.
-   *
-   * @staticvar null|integer $count
-   *   The total amount of events which haven't been deleted.
-   * @return integer
-   *   The total amount of events which haven't been deleted.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public static function getTotalCount() {
-    static $count = null;
-    if (!$count) {
-      $count = $db->query("SELECT COUNT(`id`) FROM `awards_events` WHERE `deleted` = false LIMIT 1")->get_result()->fetch_row()[0];
-    }
-    return $count;
-  }
-
-  /**
-   * Initialize event.
-   *
-   */
-  protected function init() {
-    if ($this->place) {
-      $this->place = new Place($this->place);
-    }
-    $this->deleted  = (boolean) $this->deleted;
-    $this->links    = $this->links ? unserialize($this->links) : [];
-    $this->routeKey = "/event/{0}";
-    $this->route    = $i18n->r($this->routeKey, [ $this->id ]);
   }
 
 }
