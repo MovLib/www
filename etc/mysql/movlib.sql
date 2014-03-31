@@ -39,7 +39,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`genres` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The genre’s unique ID.',
   `changed` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The timestamp on which this genre was changed.',
-  `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The timestamp on which this event was created.',
+  `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The timestamp on which this genre was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the genre was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The genre’s description in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_names` BLOB NOT NULL COMMENT 'The genre’s name in various languages. Keys are ISO alpha-2 language codes.',
@@ -119,12 +119,13 @@ SHOW WARNINGS;
 -- Table `movlib`.`places`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`places` (
-  `place_id` BIGINT UNSIGNED NOT NULL COMMENT 'The place’s unique OpenStreetMap node ID.',
+  `id` BIGINT UNSIGNED NOT NULL COMMENT 'The place’s unique OpenStreetMap node ID.',
   `country_code` CHAR(2) NOT NULL COMMENT 'The place’s ISO alpha-2 country code.',
   `dyn_names` BLOB NOT NULL COMMENT 'The place’s translated name.',
   `latitude` FLOAT NOT NULL COMMENT 'The place’s latitude.',
   `longitude` FLOAT NOT NULL COMMENT 'The place’s longitude.',
-  PRIMARY KEY (`place_id`))
+  `name` VARCHAR(255) NOT NULL COMMENT 'The place’s native name.',
+  PRIMARY KEY (`id`))
 ENGINE = InnoDB
 COMMENT = 'Contains unique place information (OpenStreetMap node ID, la /* comment truncated */ /*titude, longitude).*/';
 
@@ -176,12 +177,12 @@ CREATE TABLE IF NOT EXISTS `movlib`.`persons` (
   INDEX `fk_persons_users1_idx` (`image_uploader_id` ASC),
   CONSTRAINT `fk_persons_places1`
     FOREIGN KEY (`birthplace_id`)
-    REFERENCES `movlib`.`places` (`place_id`)
+    REFERENCES `movlib`.`places` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_persons_places2`
     FOREIGN KEY (`deathplace_id`)
-    REFERENCES `movlib`.`places` (`place_id`)
+    REFERENCES `movlib`.`places` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_persons_causes_of_death1`
@@ -226,6 +227,9 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`companies` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The company’s unique ID.',
   `commit` CHAR(40) NULL,
+  `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The company’s movie count.',
+  `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The company’s series count.',
+  `count_releases` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The company’s releases count.',
   `created` TIMESTAMP NOT NULL COMMENT 'The company’s creation timestamp.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the company was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The company’s translated descriptions.',
@@ -254,7 +258,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`companies` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_companies_places`
     FOREIGN KEY (`place_id`)
-    REFERENCES `movlib`.`places` (`place_id`)
+    REFERENCES `movlib`.`places` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -569,7 +573,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`events` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_awards_events_place_id`
     FOREIGN KEY (`place_id`)
-    REFERENCES `movlib`.`places` (`place_id`)
+    REFERENCES `movlib`.`places` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB

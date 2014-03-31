@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\Company;
 
+use \MovLib\Data\Place;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -122,7 +123,7 @@ final class Company extends \MovLib\Data\AbstractEntity {
   /**
    * The company's place.
    *
-   * @var integer|object
+   * @var \MovLib\Data\Place
    */
   public $place;
 
@@ -176,23 +177,34 @@ final class Company extends \MovLib\Data\AbstractEntity {
   public function init($id) {
     $stmt = $this->getMySQLi()->prepare(<<<SQL
 SELECT
-  `id`,
-  `name`,
-  `aliases`,
-  `founding_date`,
-  `defunct_date`,
-  COLUMN_GET(`dyn_descriptions`, '{$this->intl->languageCode}' AS BINARY),
-  COLUMN_GET(`dyn_wikipedia`, '{$this->intl->languageCode}' AS BINARY),
-  `links`,
-  `deleted`,
-  `created`
+  `companies`.`id`,
+  `companies`.`name`,
+  `companies`.`aliases`,
+  `companies`.`founding_date`,
+  `companies`.`defunct_date`,
+  COLUMN_GET(`companies`.`dyn_descriptions`, '{$this->intl->languageCode}' AS BINARY),
+  COLUMN_GET(`companies`.`dyn_wikipedia`, '{$this->intl->languageCode}' AS BINARY),
+  `companies`.`links`,
+  `companies`.`count_movies`,
+  `companies`.`count_series`,
+  `companies`.`count_releases`,
+  `companies`.`deleted`,
+  `companies`.`created`,
+  `companies`.`place_id`,
+  IFNULL(COLUMN_GET(`places`.`dyn_names`, '{$this->intl->languageCode}' AS BINARY), `places`.`name`),
+  `places`.`country_code`,
+  `places`.`latitude`,
+  `places`.`longitude`
 FROM `companies`
-WHERE `id` = ?
+  LEFT JOIN `places`
+    ON `places`.`id` = `companies`.`place_id`
+WHERE `companies`.`id` = ?
 LIMIT 1
 SQL
     );
     $stmt->bind_param("d", $id);
     $stmt->execute();
+    $this->place = new Place($this->diContainer);
     $stmt->bind_result(
       $this->id,
       $this->name,
@@ -202,19 +214,23 @@ SQL
       $this->description,
       $this->wikipedia,
       $this->links,
+      $this->movieCount,
+      $this->seriesCount,
+      $this->releaseCount,
       $this->deleted,
-      $this->created
+      $this->created,
+      $this->place->id,
+      $this->place->name,
+      $this->place->countryCode,
+      $this->place->latitude,
+      $this->place->longitude
     );
     $found = $stmt->fetch();
     $stmt->close();
     if ($found === null) {
       throw new NotFoundException("Couldn't find company for '{$id}'!");
     }
-
-    // @todo Store counts as column in table.
-    $this->movieCount = $this->getCount("movies_crew", "DISTINCT `movie_id`");
-    $this->releaseCount = $this->getCount("releases_labels", "DISTINCT `release_id`");
-
+    $this->place->initFetchObject();
     return $this->initFetchObject();
   }
 

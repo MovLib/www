@@ -126,6 +126,7 @@ tbody .info {
 }
 
 .dtc {
+  padding-right: 8px;
   display: table-cell;
 }
 

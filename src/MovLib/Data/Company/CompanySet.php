@@ -41,20 +41,15 @@ final class CompanySet extends \MovLib\Data\AbstractSet {
   public function getOrdered($by, $offset, $limit) {
     return $this->getMySQLi()->query(<<<SQL
 SELECT
-  `companies`.`id` AS `id`,
-  `companies`.`name` AS `name`,
-  `companies`.`founding_date` AS `foundingDate`,
-  `companies`.`defunct_date` AS `defunctDate`,
-  COUNT(DISTINCT `movies_crew`.`movie_id`) AS `movieCount`,
-  '0' AS `seriesCount`,
-  COUNT(DISTINCT `releases_labels`.`release_id`) AS `releaseCount`
+  `id`,
+  `name`,
+  `founding_date` AS `foundingDate`,
+  `defunct_date` AS `defunctDate`,
+  `count_movies` AS `movieCount`,
+  `count_series` AS `seriesCount`,
+  `count_releases` AS `releaseCount`
 FROM `companies`
-  LEFT JOIN `movies_crew`
-    ON `movies_crew`.`company_id` = `companies`.`id`
-  LEFT JOIN `releases_labels`
-    ON `releases_labels`.`company_id` = `companies`.`id`
 WHERE `deleted` = false
-GROUP BY `companies`.`id`, `companies`.`name`, `companies`.`founding_date`, `companies`.`defunct_date`
 ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}
 SQL
     );

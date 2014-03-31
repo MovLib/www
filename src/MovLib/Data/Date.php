@@ -109,7 +109,7 @@ final class Date {
 
       // But we don't know if we have a month and/or day part.
       foreach ([ 1 => "month", 2 => "day" ] as $delta => $property) {
-        if (isset($date[$delta])) {
+        if (isset($date[$delta]) && $date[$delta] != 0) {
           $this->$property = str_pad($date[$delta], 2, "0", STR_PAD_LEFT);
         }
       }

@@ -28,17 +28,6 @@ TRUNCATE TABLE `companies`;
 
 -- START "Synapse films"
 
-INSERT INTO `places` SET
-  `place_id`     = 97981472,
-  `country_code` = 'US',
-  `dyn_names`    = COLUMN_CREATE(
-    'en', 'Novi, Michigan',
-    'de', 'Novi (Michigan)'
-  ),
-  `latitude`     = -83.4754913,
-  `longitude`    = 42.48059
-;
-
 INSERT INTO `companies` SET
   `created`                = CURRENT_TIMESTAMP,
   `dyn_descriptions`       = COLUMN_CREATE(
@@ -49,10 +38,10 @@ INSERT INTO `companies` SET
     'en', 'http://en.wikipedia.org/wiki/Synapse_Films',
     'de', 'http://de.wikipedia.org/wiki/Synapse_films'
   ),
-  `name`                   = 'Synapse films',
-  `aliases`                = 'a:1:{i:0;s:18:"Synapse Films, Inc";}',
+  `name`                   = 'Synapse Films',
+  `aliases`                = 'a:1:{i:0;s:19:"Synapse Films, Inc.";}',
   `founding_date`          = '1997-00-00',
-  `links`                  = 'a:1:{i:0;s:24:"http://synapse-films.com";}',
+  `links`                  = 'a:2:{i:0;s:25:"http://synapse-films.com/";i:1;s:60:"https://www.facebook.com/pages/Synapse-Films/193094600718553";}',
   `place_id`               = 97981472,
   `image_width`            = 401,
   `image_height`           = 151,

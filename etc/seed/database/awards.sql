@@ -29,17 +29,6 @@ TRUNCATE TABLE `awards_categories`;
 TRUNCATE TABLE `events`;
 TRUNCATE TABLE `movies_awards`;
 
-INSERT INTO `places` SET
-  `place_id`     = 5368361,
-  `country_code` = 'US',
-  `dyn_names`    = COLUMN_CREATE(
-    'en', 'Los Angeles',
-    'de', 'Los Angeles'
-  ),
-  `latitude`     = 89,
-  `longitude`    = -118.24368
-;
-
 -- START "Oscar"
 
 INSERT INTO `awards` SET

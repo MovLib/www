@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -17,39 +17,47 @@
  */
 namespace MovLib\Data;
 
-use \MovLib\Presentation\Error\NotFound;
+use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
  * Contains information about a place.
  *
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Place extends \MovLib\Core\AbstractDatabase {
+final class Place extends \MovLib\Core\AbstractDatabase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The place's unique ID.
+   * The place's unique identifier.
    *
    * @var integer
    */
   public $id;
 
   /**
-   * The place's countrycode.
+   * The place's country code.
    *
    * @var string
    */
   public $countryCode;
 
   /**
-   * The place's localized name.
+   * The place's country.
+   *
+   * @var \MovLib\Stub\Data\Country
+   */
+  public $country;
+
+  /**
+   * The place's name in the current locale if available, otherwise the name returned by the map provider.
    *
    * @var string
    */
@@ -74,42 +82,41 @@ class Place extends \MovLib\Core\AbstractDatabase {
 
 
   /**
-   * Intantiate new Place.
+   * Initialize place from unique identifier.
    *
    * @param integer $id
-   *   The place's unique ID to load.
-   * @return $this
-   * @throws \MovLib\Exception\DatabaseException
-   * @throws \MovLib\Presentation\Error\NotFound
+   *   The place's unique identifier.
+   * @return this
+   * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function init($id = null) {
-    // Try to load the place for the given identifier.
-    if ($id) {
-      $this->id = $id;
-      $stmt = $this->query(
-        "SELECT
-            `country_code`,
-            IFNULL(COLUMN_GET(`dyn_names`, '{$this->intl->languageCode}' AS BINARY), COLUMN_GET(`dyn_names`, '{$this->intl->defaultLanguageCode}' AS BINARY)),
-            `latitude`,
-            `longitude`
-          FROM `places`
-          WHERE
-            `place_id` = ?
-          LIMIT 1",
-        "d",
-        [ $this->id ]
-      );
-      $stmt->bind_result(
-        $this->countryCode,
-        $this->name,
-        $this->latitude,
-        $this->longitude
-      );
-      if (!$stmt->fetch()) {
-        throw new NotFound;
-      }
-      $stmt->close();
+  public function init($id) {
+    $result = $this->getMySQLi()->query(<<<SQL
+SELECT
+  IFNULL(COLUMN_GET(`dyn_names`, '{$this->intl->languageCode}' AS BINARY), `name`),
+  `country_code`,
+  `latitude`,
+  `longitude`
+FROM `places` WHERE `place_id` = {$id} LIMIT 1
+SQL
+    );
+    $row = $result->fetch_row();
+    if (empty($row)) {
+      throw new NotFoundException("Couldn't find place for '{$id}'!");
     }
+    foreach ([ $this->name, $this->countryCode, $this->latitude, $this->longitude ] as $delta => &$property) {
+      $property = $row[$delta];
+    }
+    $result->free();
+    return $this->initFetchObject();
+  }
+
+  /**
+   * Initialize place further after fetching the basic data.
+   *
+   * @return this
+   */
+  public function initFetchObject() {
+    $this->countryCode && ($this->country = $this->intl->getTranslations("countries")[$this->countryCode]);
     return $this;
   }
 

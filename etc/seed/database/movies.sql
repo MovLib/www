@@ -287,17 +287,6 @@ INSERT INTO `movies_original_titles` SET
   `title_id` = @the_shawshank_redemption_ot
 ;
 
-INSERT INTO `places` SET
-  `place_id`     = 97967307,
-  `country_code` = 'FR',
-  `dyn_names`    = COLUMN_CREATE(
-    'en', 'Montbéliard',
-    'de', 'Mömpelgard'
-  ),
-  `latitude`     = 47.5102368,
-  `longitude`    = 6.7977564
-;
-
 INSERT INTO `persons` SET
   `name`                   = 'Frank Darabont',
   `birthdate`              = '1959-01-28',

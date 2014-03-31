@@ -1,3 +1,5 @@
+<?php
+
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
@@ -13,65 +15,34 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\Partial;
 
 /**
- * Global content styles.
+ * Defines methods to add sections to the presenter's content.
  *
- * The usage of IDs for the header and the title are intended, those elements can only appear once within any
- * presentation because they uniquely identify this single page within the entire website.
- *
- * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
+trait ContentSectionTrait {
 
-#m {
-  min-height: 500px;
-  padding-bottom: 40px;
-  margin-top: 50px;
-  background-color: #fff;
+  private $sections = [];
+
+  final protected function addContentSection($title, $content, $decode = true) {
+    $this->sections[$title] = $decode ? $this->htmlDecode($content) : $content;
+    return $this;
+  }
+
+  final protected function getContentSections() {
+    $formatted = null;
+    foreach ($this->sections as $title => $content) {
+      $id = $this->htmlString2ID($title);
+      $this->sidebarNavigation->menuitems[] = [ "#{$id}", $title ];
+      $formatted .= "<section id='{$id}'><h2 class='title'>{$title}</h2><div class='content'>{$content}</div></section>";
+    }
+    return $formatted;
+  }
+
 }
-
-#header {
-  margin-bottom: 40px;
-  background-color: #252525;
-}
-
-#header > .c {
-  padding-bottom: 20px;
-  color: #c7c7c7;
-}
-
-#filter {
-  padding: 8px 20px;
-  margin-left: -20px;
-  font-size: 12px;
-  border-top: 1px solid #e5e5e5;
-  border-bottom: 1px solid #e5e5e5;
-}
-
-.sex {
-  font-size: 0.8em;
-}
-
-.sex-1 {
-  color: #87cefa;
-}
-
-.sex-2 {
-  color: #f5b4f5;
-}
-
-#aliases .s {
-  word-break: break-all;
-}
-
-#links .grid-list a {
-  box-shadow: none;
-  display: inline-block;
-  transition-property: color, border-color;
-}
-

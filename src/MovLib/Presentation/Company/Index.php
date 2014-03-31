@@ -23,7 +23,7 @@ use \MovLib\Partial\Alert;
 /**
  * Defines the company index presentation.
  *
- * @link http://schema.org/Company
+ * @link http://schema.org/Corporation
  * @link http://www.google.com/webmasters/tools/richsnippets?q=https://en.movlib.org/companies
  * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/companies
  * @link http://validator.w3.org/check?uri=https://en.movlib.org/companies

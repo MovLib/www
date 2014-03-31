@@ -342,7 +342,7 @@ abstract class AbstractPresenter {
       }
 
       // Add the route to the anchor element.
-      $attributes["href"] = $this->fs->urlEncodePath($route);
+      $attributes["href"] = $route{0} == "#" ? $route : $this->fs->urlEncodePath($route);
     }
 
     // Put it all together.
@@ -442,6 +442,30 @@ abstract class AbstractPresenter {
 
       return $expanded;
     }
+  }
+
+  /**
+   * Format the given weblinks.
+   *
+   * @param array $weblinks
+   *   The weblinks to format.
+   * @return null|string
+   *   The formatted weblinks, <code>NULL</code> if there are no weblinks to format.
+   */
+  final public function formatWeblinks(array $weblinks) {
+    if (empty($weblinks)) {
+      return;
+    }
+    $formatted = null;
+    $c = count($weblinks);
+    for ($i = 0; $i < $c; ++$i) {
+      if ($formatted) {
+        $formatted .= trim($this->intl->t("{0}, {1}"), "{}01");
+      }
+      $weblink = str_replace("www.", "", parse_url($weblinks[$i], PHP_URL_HOST));
+      $formatted .= "<a href='{$weblinks[$i]}' target='_blank'>{$weblink}</a>";
+    }
+    return $formatted;
   }
 
   /**
@@ -859,6 +883,21 @@ abstract class AbstractPresenter {
     // @codeCoverageIgnoreEnd
     // @devEnd
     return htmlspecialchars($text, ENT_QUOTES | ENT_HTML5);
+  }
+
+  /**
+   * Transform and kind of string to HTML safe ID.
+   *
+   * @param string $string
+   *   The string to convert.
+   * @return string
+   *   The HTML safe ID.
+   */
+  final public function htmlString2ID($string) {
+    if (is_numeric($string{0})) {
+      $string = "n{$string}";
+    }
+    return mb_strtolower(preg_replace("/[^\d\w-_]+/", "-", $string));
   }
 
   /**

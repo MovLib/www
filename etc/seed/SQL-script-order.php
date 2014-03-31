@@ -28,6 +28,7 @@
 
 // @codeCoverageIgnoreStart
 return [
+  "places",
   "awards",
   "companies",
   "genres",
