@@ -22,7 +22,7 @@ use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Partial\FormElement\InputEmail;
 use \MovLib\Partial\FormElement\InputPassword;
-use \MovLib\Data\User;
+use \MovLib\Data\User\User;
 use \MovLib\Partial\FormElement\InputCheckbox;
 
 /**
