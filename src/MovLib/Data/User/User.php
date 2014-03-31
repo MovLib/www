@@ -361,4 +361,11 @@ SQL
     return "user";
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function isGone() {
+    return ($this->email === null);
+  }
+
 }

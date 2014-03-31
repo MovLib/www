@@ -18,7 +18,7 @@
 namespace MovLib\Partial;
 
 /**
- * Date presentation.
+ * Defines methods to format dates.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
@@ -29,41 +29,88 @@ namespace MovLib\Partial;
  */
 trait DateTrait {
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
+  /**
+   * Get the formatted date.
+   *
+   * @param \MovLib\Data\Date $date
+   *   The date to format.
+   * @param array $attributes [optional]
+   *   Additional attributes for the <code><time></code> element.
+   * @param integer $type [optional]
+   *   Any of the {@see \IntlDateFormatter} constants, defaults to {@see \IntlDateFormatter::MEDIUM}.
+   * @return string
+   *   The formatted date.
+   */
+  final public function dateFormat(\MovLib\Data\Date $date, array $attributes = [], $type = \IntlDateFormatter::MEDIUM) {
+    $attributes["datetime"] = $this->dateFormatISO8601($date);
+    return "<time{$this->expandTagAttributes($attributes)}>{$this->intl->formatDate($date, $type)}</time>";
+  }
 
   /**
-   * Associative array containing date formats for missing days.
+   * Format given dates in a generic <code>"{from}-{to}"</code> form.
    *
-   * Structure: <code>[ "language_code" => [ "IntlDateFormatter_constant" => "format_string" ] ]</code>
-   *
-   * @var array
+   * @param \MovLib\Data\Date|null $dateFrom
+   *   The from date or <code>NULL</code>.
+   * @param \MovLib\Data\Date|null $dateTo
+   *   The to date or <code>NULL</code>.
+   * @param array $fromAttributes [optional]
+   *   Additional attributes for the from <code><time></code> element. Note that any <code>"datetime"</code> key will be
+   *   overwritten.
+   * @param array $toAttributes [optional]
+   *   Additional attributes for the to <code><time></code> element. Note that any <code>"datetime"</code> key will be
+   *   overwritten.
+   * @param boolean $yearsOnly [optional]
+   *   Whether the output should only display years or not, defaults to <code>FALSE</code> (display complete date).
+   * @return null|string
+   *   The formatted dates or <code>NULL</code> if no dates where found for formatting.
    */
-  private static $dateFormats = [
-    "de" => [
-      \IntlDateFormatter::NONE        => "yyyyMM hh:mm a",
-      \IntlDateFormatter::SHORT       => "MM.yy",
-      \IntlDateFormatter::MEDIUM      => "MM.y",
-      \IntlDateFormatter::LONG        => "MMMM y",
-      \IntlDateFormatter::FULL        => "MMMM y",
-      \IntlDateFormatter::TRADITIONAL => "MMMM y",
-      \IntlDateFormatter::GREGORIAN   => "MMMM y",
-    ],
-    "en" => [
-      \IntlDateFormatter::NONE        => "yyyyMM hh:mm a",
-      \IntlDateFormatter::SHORT       => "M/yy",
-      \IntlDateFormatter::MEDIUM      => "MMM, y",
-      \IntlDateFormatter::LONG        => "MMMM, y",
-      \IntlDateFormatter::FULL        => "MMMM, y",
-      \IntlDateFormatter::TRADITIONAL => "MMMM, y",
-      \IntlDateFormatter::GREGORIAN   => "MMMM, y",
-    ],
-  ];
+  final public function dateFormatFromTo(\MovLib\Data\Date $dateFrom = null, \MovLib\Data\Date $dateTo = null, array $fromAttributes = [], array $toAttributes = [], $yearsOnly = false) {
+    if ($dateFrom || $dateTo) {
+      $format = $yearsOnly ? "dateFormatYear" : "dateFormat";
+      if ($dateFrom) {
+        $date = $this->$format($dateFrom, $fromAttributes);
+      }
+      else {
+        $date = $this->placeholder("unknown");
+      }
+      if ($dateTo) {
+        $date = $this->intl->t("{0}–{1}", [ $date, $this->$format($dateTo, $toAttributes) ]);
+      }
+      return $date;
+    }
+  }
 
+  /**
+   * Get the formatted date according to {@link http://www.w3.org/TR/NOTE-datetime ISO 8601} standard.
+   *
+   * @return string
+   *   The ISO 8601 formatted date.
+   */
+  final public function dateFormatISO8601(\MovLib\Data\Date $date) {
+    if ($date->day) {
+      return (string) $date;
+    }
+    if ($date->month) {
+      return "{$date->year}-{$date->month}";
+    }
+    return $date->year;
+  }
 
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
+  /**
+   * Format the year of the given string.
+   *
+   * @param \MovLib\Data\Date $date
+   *   The date to format.
+   * @param array $attributes [optional]
+   *   Additional attributes for the <code><time></code> element. Note that any <code>"datetime"</code> key will be
+   *   overwritten.
+   * @return string
+   *   The formatted year.
+   */
+  final public function dateFormatYear(\MovLib\Data\Date $date, array $attributes = []) {
+    $attributes["datetime"] = $date->year;
+    return "<time{$this->expandTagAttributes($attributes)}>{$date->year}</time>";
+  }
 
   /**
    * Get the age of the date in years with approximation if dates are not complete.
@@ -76,93 +123,13 @@ trait DateTrait {
    *   The age of the date in years (with approximation when dates are not complete) or <code>NULL</code> if year part
    *   is missing.
    */
-  public function dateGetAge(\MovLib\Data\Date $dateFrom, \MovLib\Data\Date $dateTo = null) {
-    $approx = false;
-    $dates  = (object) [ "from" => $dateFrom, "to" => $dateTo ];
-    foreach ($dates as $delta => $date) {
-      if ($date) {
-        foreach ([ "month", "day" ] as $prop) {
-          if (!$date->$prop) {
-            $approx      = true;
-            $date->$prop = "01";
-          }
-        }
-      }
-      else {
-        $date = "now";
-      }
-      $dates->$delta = new \DateTime((string) $date);
-    }
+  final public function dateGetAge(\MovLib\Data\Date $dateFrom, \MovLib\Data\Date $dateTo = null) {
     $format = "%Y";
-    if ($approx) {
+    // We can only calculate the exact date if both dates have all date parts.
+    if (isset($dateFrom->month) && isset($dateFrom->day) && isset($dateTo->month) && isset($dateTo->day)) {
       $format = $this->intl->t("~{0}", $format);
     }
-    return $dates->from->diff($dates->to)->format($format);
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Old Methods
-
-
-  /**
-   * Format a date as <code><time></code> tag with additional attributes.
-   *
-   * @param \MovLib\Core\Intl $intl
-   *   The active intl instance.
-   * @param array $attributes [optional]
-   *   Additional attributes to apply, <code>"datetime"</code> will be overridden!
-   * @return string
-   *   Formatted date as <code><time></code> tag with additional attributes.
-   */
-  public function format(\MovLib\Core\Intl $intl, array $attributes = []) {
-    $attributes["datetime"] = $this->iso8601Format();
-    $formatted = $this->intlFormat($intl);
-    return "<time{$this->presenter->expandTagAttributes($attributes)}>{$formatted}</time>";
-  }
-
-  /**
-   * Get the formatted date according to {@link http://www.w3.org/TR/NOTE-datetime ISO 8601} standard.
-   *
-   * @return string
-   *   The ISO 8601 formatted date.
-   */
-  public function iso8601Format() {
-    if ($this->dateInfo["month"] === 0) {
-      return $this->dateInfo["year"];
-    }
-    if ($this->dateInfo["day"] === 0) {
-      return "{$this->dateInfo["year"]}-{$this->dateInfo["month"]}";
-    }
-    return $this->dateValue;
-  }
-
-  /**
-   * Get the localized formatted date.
-   *
-   * @param \MovLib\Core\Intl $intl
-   *   The active intl instance.
-   * @param integer $datetype [optional]
-   *   Any of the {@see \IntlDateFormatter} constants, defaults to {@see \IntlDateFormatter::MEDIUM}.
-   * @return string
-   *   The localized and formatted date.
-   */
-  public function intlFormat(\MovLib\Core\Intl $intl, $datetype = \IntlDateFormatter::MEDIUM) {
-    // Month and day are empty, return year.
-    if ($this->dateInfo["month"] === 0 && $this->dateInfo["day"] === 0) {
-      return $this->dateInfo["year"];
-    }
-
-    $date = $this->dateValue;
-    $fmt  = new \IntlDateFormatter($intl->locale, $datetype, \IntlDateFormatter::NONE);
-
-    // Day is missing, use format strings provided by this class.
-    if ($this->dateInfo["month"] !== 0 && $this->dateInfo["day"] === 0) {
-      $fmt->setPattern(self::$dateFormats[$intl->languageCode][$datetype]);
-      $date = "{$this->dateInfo["year"]}-{$this->dateInfo["month"]}-01";
-    }
-
-    // Everything is there, let Intl do its magic.
-    return $fmt->format(new \DateTime($date));
+    return $dateFrom->dateTime->diff($dateTo->dateTime)->format($format);
   }
 
 }

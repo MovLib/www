@@ -36,7 +36,7 @@ use \MovLib\Partial\Alert;
  * @since 0.0.1-dev
  */
 final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
-  use \MovLib\Partial\AwardTrait;
+  use \MovLib\Partial\DateTrait;
 
   /**
    * {@inheritdoc}
@@ -53,11 +53,18 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
 
   /**
    * {@inheritdoc}
-   * @param \MovLib\Data\Award $award {@inheritdoc}
+   * @param \MovLib\Data\Award\Award $award {@inheritdoc}
    */
   public function formatListingItem($award) {
-    if (($awardYears = $this->getAwardEventYears($award))) {
-      $awardYears = "<small>{$awardYears}</small>";
+    $awardDates = $this->dateFormatFromTo(
+      $award->firstEventYear,
+      $award->lastEventYear,
+      [ "title" => $this->intl->t("First Event") ],
+      [ "title" => $this->intl->t("Last Event") ],
+      true
+    );
+    if ($awardDates) {
+      $awardDates = "<small>{$awardDates}</small>";
     }
     return
       "<li class='hover-item r'>" .
@@ -71,7 +78,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
               "<a class='ico ico-series label' href='{$this->intl->rp("/award/{0}/series", $award->id)}' title='{$this->intl->t("Series")}'>{$award->seriesCount}</a>" .
             "</div>" .
             "<h2 class='para'><a href='{$award->route}' property='url'><span property='name'>{$award->name}</span></a></h2>" .
-            $awardYears .
+            $awardDates .
           "</div>" .
         "</article>" .
       "</li>"

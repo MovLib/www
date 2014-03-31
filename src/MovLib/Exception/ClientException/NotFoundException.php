@@ -17,6 +17,8 @@
  */
 namespace MovLib\Exception\ClientException;
 
+use \MovLib\Presentation\Error\NotFound;
+
 /**
  * 404 Not Found
  *
@@ -39,7 +41,9 @@ final class NotFoundException extends \RuntimeException implements \MovLib\Excep
    * {@inheritdoc}
    */
   public function getPresentation(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-
+    $diContainerHTTP->presenter = new NotFound($diContainerHTTP);
+    $diContainerHTTP->presenter = $diContainerHTTP->presenter->init();
+    return $diContainerHTTP->presenter->getPresentation($diContainerHTTP->presenter->getContent());
   }
 
 }

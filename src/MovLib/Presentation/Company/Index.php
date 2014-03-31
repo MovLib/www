@@ -36,6 +36,7 @@ use \MovLib\Partial\Alert;
  * @since 0.0.1-dev
  */
 final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
+  use \MovLib\Partial\DateTrait;
   use \MovLib\Partial\CompanyTrait;
 
   /**
@@ -56,7 +57,14 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * @param \MovLib\Data\Company\Company $company {@inheritdoc}
    */
   protected function formatListingItem($company) {
-    if (($companyDates = $this->getCompanyDates($company))) {
+    $companyDates = $this->dateFormatFromTo(
+      $company->foundingDate,
+      $company->defunctDate,
+      [ "property" => "foundingDate", "title" => $this->intl->t("Founding Date") ],
+      [ "property" => "defunctDate", "title" => $this->intl->t("Defunct Date") ],
+      true
+    );
+    if ($companyDates) {
       $companyDates = "<small>{$companyDates}</small>";
     }
     return

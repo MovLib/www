@@ -17,9 +17,7 @@
  */
 namespace MovLib\Data\Company;
 
-use \MovLib\Data\Movie\FullMovie;
-use \MovLib\Data\Place;
-use \MovLib\Presentation\Error\NotFound;
+use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
  * Defines the company object.
@@ -38,23 +36,23 @@ final class Company extends \MovLib\Data\AbstractEntity {
 
 
   /**
-   * The company’s aliases.
+   * The company's aliases.
    *
-   * @var array
+   * @var null|array
    */
-  public $aliases = [];
+  public $aliases;
 
   /**
-   * The company’s creation timestamp.
+   * The company's creation timestamp.
    *
    * @var string
    */
   public $created;
 
   /**
-   * The company's defunct date in <code>"Y-m-d"</code> format.
+   * The company's defunct date.
    *
-   * @var string
+   * @var null|\MovLib\Data\Date
    */
   public $defunctDate;
 
@@ -66,9 +64,9 @@ final class Company extends \MovLib\Data\AbstractEntity {
   public $deleted;
 
   /**
-   * The company’s translated descriptions.
+   * The company's translated descriptions.
    *
-   * @var string
+   * @var null|string
    */
   public $description;
 
@@ -80,9 +78,9 @@ final class Company extends \MovLib\Data\AbstractEntity {
   protected $directory = "company";
 
   /**
-   * The company's founding date in <code>"Y-m-d"</code> format.
+   * The company's founding date.
    *
-   * @var string
+   * @var null|\MovLib\Data\Date
    */
   public $foundingDate;
 
@@ -94,9 +92,9 @@ final class Company extends \MovLib\Data\AbstractEntity {
   public $id;
 
   /**
-   * The company logo’s description.
+   * The company logo's description.
    *
-   * @var string
+   * @var null|string
    */
   public $imageDescription;
 
@@ -108,11 +106,11 @@ final class Company extends \MovLib\Data\AbstractEntity {
   public $imageRoute;
 
   /**
-   * The company’s weblinks.
+   * The company's weblinks.
    *
-   * @var array
+   * @var null|array
    */
-  public $links = [];
+  public $links;
 
   /**
    * The company's name.
@@ -122,7 +120,7 @@ final class Company extends \MovLib\Data\AbstractEntity {
   public $name;
 
   /**
-   * The company’s place.
+   * The company's place.
    *
    * @var integer|object
    */
@@ -136,16 +134,9 @@ final class Company extends \MovLib\Data\AbstractEntity {
   public $route;
 
   /**
-   * The route key of this award.
+   * The company's translated Wikipedia link.
    *
-   * @var string
-   */
-  public $routeKey;
-
-  /**
-   * The company’s translated Wikipedia link.
-   *
-   * @var string
+   * @var null|string
    */
   public $wikipedia;
 
@@ -154,48 +145,88 @@ final class Company extends \MovLib\Data\AbstractEntity {
    *
    * @var integer
    */
-  public $movieCount;
+  public $movieCount = 0;
 
   /**
    * The company's total series count.
    *
    * @var integer
    */
-  public $seriesCount;
+  public $seriesCount = 0;
 
   /**
    * The company's total release count.
    *
    * @var integer
    */
-  public $releaseCount;
+  public $releaseCount = 0;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Initialization
 
 
   /**
+   * Initialize existing company from unique identifier.
+   *
+   * @param integer $id
+   *   The company's unique identifier to load.
+   * @return this
+   * @throws \MovLib\Exception\ClientException\NotFoundException
+   */
+  public function init($id) {
+    $stmt = $this->getMySQLi()->prepare(<<<SQL
+SELECT
+  `id`,
+  `name`,
+  `aliases`,
+  `founding_date`,
+  `defunct_date`,
+  COLUMN_GET(`dyn_descriptions`, '{$this->intl->languageCode}' AS BINARY),
+  COLUMN_GET(`dyn_wikipedia`, '{$this->intl->languageCode}' AS BINARY),
+  `links`,
+  `deleted`,
+  `created`
+FROM `companies`
+WHERE `id` = ?
+LIMIT 1
+SQL
+    );
+    $stmt->bind_param("d", $id);
+    $stmt->execute();
+    $stmt->bind_result(
+      $this->id,
+      $this->name,
+      $this->aliases,
+      $this->foundingDate,
+      $this->defunctDate,
+      $this->description,
+      $this->wikipedia,
+      $this->links,
+      $this->deleted,
+      $this->created
+    );
+    $found = $stmt->fetch();
+    $stmt->close();
+    if ($found === null) {
+      throw new NotFoundException("Couldn't find company for '{$id}'!");
+    }
+
+    // @todo Store counts as column in table.
+    $this->movieCount = $this->getCount("movies_crew", "DISTINCT `movie_id`");
+    $this->releaseCount = $this->getCount("releases_labels", "DISTINCT `release_id`");
+
+    return $this->initFetchObject();
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function initFetchObject() {
-    $this->route = $this->intl->r("/company/{0}", $this->id);
-//    if ($this->place) {
-//      $this->place = (new Place($this->diContainer))->init($this->place);
-//    }
-//
-//    $this->aliases = $this->aliases ? unserialize($this->aliases) : [];
-//    $this->links   = $this->links ? unserialize($this->links) : [];
-//
-//    $this->deleted  = (boolean) $this->deleted;
-//    $this->routeKey = "/company/{0}";
-//    $this->route    = $this->intl->r($this->routeKey, [ $this->id]);
-//    $key            = "edit";
-//    if ($this->uploaderId) {
-//      $this->imageExists = true;
-//      $key               = "logo";
-//      $this->styles      = unserialize($this->styles);
-//    }
-//    $this->imageRoute = $this->intl->r("/company/{0}/{$key}", [ $this->id ]);
+    $this->unserialize([ &$this->aliases, &$this->links ]);
+    $this->toDates([ &$this->foundingDate, &$this->defunctDate ]);
+    $this->deleted = (boolean) $this->deleted;
+    $this->route   = $this->intl->r("/company/{0}", $this->id);
+    return $this;
   }
 
 
@@ -340,84 +371,6 @@ final class Company extends \MovLib\Data\AbstractEntity {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getSeriesResult() {
-    return $this;
-  }
-
-  /**
-   * Intantiate new Company.
-   *
-   * @param integer $id
-   *   The company's unique ID to load.
-   * @return $this
-   * @throws \MovLib\Exception\DatabaseException
-   * @throws \MovLib\Presentation\Error\NotFound
-   */
-  public function init($id = null) {
-    // Try to load the company for the given identifier.
-    if ($id) {
-      $this->id = $id;
-      $stmt = $this->query("
-        SELECT
-          `aliases`,
-          `created`,
-          `defunct_date`,
-          `deleted`,
-          IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS BINARY), COLUMN_GET(`dyn_descriptions`, '{$this->intl->defaultLanguageCode}' AS BINARY)),
-          IFNULL(COLUMN_GET(`dyn_wikipedia`, ? AS BINARY), COLUMN_GET(`dyn_wikipedia`, '{$this->intl->defaultLanguageCode}' AS BINARY)),
-          `founding_date`,
-          `links`,
-          `name`,
-          `place_id`,
-          `image_uploader_id`,
-          `image_width`,
-          `image_height`,
-          `image_filesize`,
-          `image_extension`,
-          UNIX_TIMESTAMP(`image_changed`),
-          IFNULL(COLUMN_GET(`dyn_image_descriptions`, ? AS BINARY), COLUMN_GET(`dyn_image_descriptions`, '{$this->intl->defaultLanguageCode}' AS BINARY)),
-          `image_styles`
-        FROM `companies`
-        WHERE
-          `id` = ?
-        LIMIT 1",
-        "sssd",
-        [ $this->intl->languageCode, $this->intl->languageCode, $this->intl->languageCode, $this->id ]
-      );
-      $stmt->bind_result(
-        $this->aliases,
-        $this->created,
-        $this->defunctDate,
-        $this->deleted,
-        $this->description,
-        $this->wikipedia,
-        $this->foundingDate,
-        $this->links,
-        $this->name,
-        $this->place,
-        $this->uploaderId,
-        $this->width,
-        $this->height,
-        $this->filesize,
-        $this->extension,
-        $this->changed,
-        $this->imageDescription,
-        $this->styles
-      );
-      if (!$stmt->fetch()) {
-        throw new NotFound;
-      }
-      $stmt->close();
-      $this->id = $id;
-    }
-
-    // The company's logo name is always the company's identifier.
-    $this->filename = &$this->id;
-
-    // If we have an identifier, either from the above query or directly set via PHP's fetch_object() method, try to
-    // load the logo for this company.
-    if ($this->id) {
-      $this->initFetchObject();
-    }
     return $this;
   }
 

@@ -35,6 +35,7 @@ abstract class AbstractIndexPresenter extends \MovLib\Presentation\AbstractPrese
 
 
   /**
+   * The set to present.
    *
    * @var \MovLib\Data\AbstractSet
    */

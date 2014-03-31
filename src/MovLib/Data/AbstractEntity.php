@@ -107,4 +107,32 @@ abstract class AbstractEntity extends \MovLib\Core\AbstractDatabase {
     return $this->getMySQLi()->query("SELECT COUNT({$what}) FROM `{$from}` WHERE `{$this->getSingularName()}_id` = {$this->id} LIMIT 1")->fetch_row()[0];
   }
 
+  /**
+   * Check if this entity is gone.
+   *
+   * @return boolean
+   *   <code>TRUE</code> if this entity is no longer available, <code>FALSE</code> otherwise.
+   */
+  public function isGone() {
+    return $this->deleted;
+  }
+
+  protected function unserialize(array $properties) {
+    foreach ($properties as &$property) {
+      if (isset($property)) {
+        $property = unserialize($property);
+      }
+    }
+    return $this;
+  }
+
+  protected function toDates(array $properties) {
+    foreach ($properties as &$property) {
+      if (isset($property)) {
+        $property = new \MovLib\Data\Date($property);
+      }
+    }
+    return $this;
+  }
+
 }

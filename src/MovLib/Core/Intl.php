@@ -67,6 +67,34 @@ final class Intl {
 
 
   /**
+   * Associative array containing date formats for missing days.
+   *
+   * Structure: <code>[ "language_code" => [ "IntlDateFormatter_constant" => "format_string" ] ]</code>
+   *
+   * @var array
+   */
+  private static $dateFormats = [
+    "de" => [
+      \IntlDateFormatter::NONE        => "yyyyMM hh:mm a",
+      \IntlDateFormatter::SHORT       => "MM.yy",
+      \IntlDateFormatter::MEDIUM      => "MM.y",
+      \IntlDateFormatter::LONG        => "MMMM y",
+      \IntlDateFormatter::FULL        => "MMMM y",
+      \IntlDateFormatter::TRADITIONAL => "MMMM y",
+      \IntlDateFormatter::GREGORIAN   => "MMMM y",
+    ],
+    "en" => [
+      \IntlDateFormatter::NONE        => "yyyyMM hh:mm a",
+      \IntlDateFormatter::SHORT       => "M/yy",
+      \IntlDateFormatter::MEDIUM      => "MMM, y",
+      \IntlDateFormatter::LONG        => "MMMM, y",
+      \IntlDateFormatter::FULL        => "MMMM, y",
+      \IntlDateFormatter::TRADITIONAL => "MMMM, y",
+      \IntlDateFormatter::GREGORIAN   => "MMMM, y",
+    ],
+  ];
+
+  /**
    * The default language code.
    *
    * @var string
@@ -198,6 +226,32 @@ final class Intl {
       $abbr  = "B";
     }
     return $this->format("{0,number,integer} <abbr title='{$title}'>{$abbr}</abbr>", [ $bytes ]);
+  }
+
+  /**
+   * Get the date formatted in the current locale.
+   *
+   * @param \MovLib\Data\Date $date
+   *   The date to format.
+   * @param integer $type [optional]
+   *   Any of the {@see \IntlDateFormatter} constants, defaults to {@see \IntlDateFormatter::MEDIUM}.
+   * @param string $locale [optional]
+   *   Use a different locale for this translation.
+   * @return string
+   *   The date formatted in the current locale.
+   */
+  public function formatDate(\MovLib\Data\Date $date, $type = \IntlDateFormatter::MEDIUM, $locale = null) {
+    if (!$locale) {
+      $locale = $this->locale;
+    }
+    if ($date->day || $date->month) {
+      $fmt = new \IntlDateFormatter($this->locale, $type, \IntlDateFormatter::NONE);
+      if (!$date->month) {
+        $fmt->setPattern(self::$dateFormats[$type]);
+      }
+      return $fmt->format($date->dateTime);
+    }
+    return $date->year;
   }
 
   /**

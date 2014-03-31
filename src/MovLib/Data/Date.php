@@ -18,7 +18,7 @@
 namespace MovLib\Data;
 
 /**
- * Defines the date object.
+ * Extends PHP's date time class with handling of partial dates.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -36,7 +36,7 @@ final class Date {
    *
    * @var string
    */
-  const FORMAT = "Y-m-d";
+  const W3C_DATE = "Y-m-d";
 
   /**
    * Default SQL date regular expression that can be used for validation.
@@ -46,7 +46,7 @@ final class Date {
    *
    * @var string
    */
-  const REGEXP = "[0-9]{4}(-[0-9]{2}){0,2}";
+  const W3C_DATE_REGEXP = "[0-9]{4}(-[0-9]{1,2}){0,2}";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -58,6 +58,13 @@ final class Date {
    * @var string
    */
   public $date;
+
+  /**
+   * Datetime instance of the current date.
+   *
+   * @var \DateTime
+   */
+  public $dateTime;
 
   /**
    * The date's day part, or <code>NULL</code> if the date doesn't contain the day part.
@@ -91,18 +98,41 @@ final class Date {
    *   Any valid SQL date string.
    * @throws \InvalidArgumentException
    */
-  public function __construct($date) {
-    if (empty($date) || preg_match("/" . self::REGEXP . "/", $date) !== 1) {
-      throw new \InvalidArgumentException("Invalid date '{$date}'!");
-    }
-    $date = explode("-", $date, 3);
-    $this->year = $date[0];
-    foreach ([ 1 => "month", 2 => "day" ] as $delta => $property) {
-      if (isset($date[$delta])) {
-        $this->$property = str_pad($date[$delta], 2, "0");
+  public function __construct($date = "now") {
+    // Check if we have a partial date or a perfect W3C date without any time parts.
+    if (preg_match("/" . self::W3C_DATE_REGEXP . "/", $date) === 1) {
+      // Split the date into year, month, and day parts.
+      $date = explode("-", $date, 3);
+
+      // We'll always have a year, the regular expression check above ensures that for us.
+      $this->year = $date[0];
+
+      // But we don't know if we have a month and/or day part.
+      foreach ([ 1 => "month", 2 => "day" ] as $delta => $property) {
+        if (isset($date[$delta])) {
+          $this->$property = str_pad($date[$delta], 2, "0", STR_PAD_LEFT);
+        }
       }
+
+      // Make sure that the final date has perfectl valid SQL date syntax.
+      $this->date = sprintf("%04s-%02s-%02s", $this->year, $this->month, $this->day);
+
+      // Now we can safely use the date parts to instantiate PHP's DateTime object. We have to ensure that month and
+      // day, in case they're NULL, have correct values, therefore we use 1 in those cases. We also add the time parts
+      // to ensure that absolutely nothing can go wrong.
+      $this->dateTime = new \DateTime(sprintf("%04s-%'0'11s-%'0'11s 00:00:00", $this->year, $this->month, $this->day));
     }
-    $this->date = "{$this->year}-{$this->month}-{$this->day}";
+    // If we got anything else let PHP handle the date/time and try to export it afterwards into class scope.
+    else {
+      if ($date instanceof \DateTime) {
+        $this->dateTime = $date;
+      }
+      else {
+        $this->dateTime = new \DateTime($date);
+      }
+      $this->date = $this->format(self::W3C_DATE);
+      list($this->year, $this->month, $this->day) = explode("-", $this->date, 3);
+    }
   }
 
   /**

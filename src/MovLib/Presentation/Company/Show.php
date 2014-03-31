@@ -17,36 +17,33 @@
  */
 namespace MovLib\Presentation\Company;
 
-use \MovLib\Data\Company;
-use \MovLib\Partial\Alert;
-use \MovLib\Partial\Date;
-use \MovLib\Partial\Place;
+use \MovLib\Data\Company\Company;
 
 /**
- * Presentation of a single company.
+ * Defines the company show presentation.
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @property \MovLib\Data\Company\Company $entity
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\Company\AbstractBase {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
+final class Show extends \MovLib\Presentation\AbstractShowPresenter {
+  use \MovLib\Partial\CompanyTrait;
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    // Enhance the page title with microdata.
-    $this->schemaType = "Corporation";
-    $this->pageTitle  = "<span property='name'>{$this->company->name}</span>";
+  public function init() {
+    $this->initShow(new Company($this->diContainerHTTP), "Corporation", "name");
+  }
 
-    if ($this->company->deleted === true) {
-      return $this->goneGetContent();
-    }
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {
+    return "";
 
     // Put the company information together.
     $info = null;
@@ -141,21 +138,6 @@ class Show extends \MovLib\Presentation\Company\AbstractBase {
     $this->sidebarNavigation->menuitems[] = [ "#{$id}", $title ];
 
     return "<div id='{$id}'><h2>{$title}</h2>{$content}</div>";
-  }
-
-  /**
-   * Instantiate new company presentation.
-   *
-   * @throws \MovLib\Presentation\Error\NotFound
-   */
-  public function init() {
-    $this->company = new Company($this->diContainerHTTP);
-    $this->company->init((integer) $_SERVER["COMPANY_ID"]);
-
-    $this->initPage($this->company->name);
-    $this->initLanguageLinks("/company/{0}", [ $this->company->id]);
-    $this->initBreadcrumb([[ $this->intl->rp("/companies"), $this->intl->t("Companies") ]]);
-    $this->sidebarInit();
   }
 
 }

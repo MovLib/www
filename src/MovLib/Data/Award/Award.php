@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data\Award;
 
+use \MovLib\Exception\ClientException\NotFoundException;
+
 /**
  * Defines the award entity object.
  *
@@ -33,11 +35,18 @@ final class Award extends \MovLib\Data\AbstractEntity {
 
 
   /**
-   * The award’s aliases.
+   * The award's aliases.
    *
-   * @var array
+   * @var null|array
    */
-  public $aliases = [];
+  public $aliases;
+
+  /**
+   * The award's creation timestamp.
+   *
+   * @var string
+   */
+  public $created;
 
   /**
    * The award's deletion state.
@@ -47,16 +56,16 @@ final class Award extends \MovLib\Data\AbstractEntity {
   public $deleted;
 
   /**
-   * The award's description in the current display language.
+   * The award's description in the current locale.
    *
-   * @var string
+   * @var null|string
    */
   public $description;
 
   /**
    * The award's first event year.
    *
-   * @var integer
+   * @var null|\MovLib\Data\Date
    */
   public $firstEventYear;
 
@@ -70,16 +79,23 @@ final class Award extends \MovLib\Data\AbstractEntity {
   /**
    * The award's last event year.
    *
-   * @var integer
+   * @var null|\MovLib\Data\Date
    */
   public $lastEventYear;
 
   /**
-   * The award’s weblinks.
+   * The award's weblinks.
    *
-   * @var array
+   * @var null|array
    */
-  public $links = [];
+  public $links;
+
+  /**
+   * The award's movie count.
+   *
+   * @var integer
+   */
+  public $movieCount = 0;
 
   /**
    * The award's name in the current display language.
@@ -96,9 +112,16 @@ final class Award extends \MovLib\Data\AbstractEntity {
   public $route;
 
   /**
-   * The award’s translated Wikipedia link.
+   * The award's series count.
    *
-   * @var string
+   * @var integer
+   */
+  public $seriesCount = 0;
+
+  /**
+   * The award's translated Wikipedia link.
+   *
+   * @var null|string
    */
   public $wikipedia;
 
@@ -107,10 +130,65 @@ final class Award extends \MovLib\Data\AbstractEntity {
 
 
   /**
+   * Initialize existing award from unique identifier.
+   *
+   * @param integer $id
+   *   The award's unique identifier to load.
+   * @return this
+   * @throws \MovLib\Exception\ClientException\NotFoundException
+   */
+  public function init($id) {
+    $stmt = $this->getMySQLi()->prepare(<<<SQL
+SELECT
+  `id`,
+  `name`,
+  `aliases`,
+  `first_event_year`,
+  `last_event_year`,
+  COLUMN_GET(`dyn_descriptions`, '{$this->intl->languageCode}' AS BINARY),
+  COLUMN_GET(`dyn_wikipedia`, '{$this->intl->languageCode}' AS BINARY),
+  `links`,
+  `created`,
+  `deleted`
+FROM `awards`
+WHERE `id` = ?
+LIMIT 1
+SQL
+    );
+    $stmt->bind_param("d", $id);
+    $stmt->execute();
+    $stmt->bind_result(
+      $this->id,
+      $this->name,
+      $this->aliases,
+      $this->firstEventYear,
+      $this->lastEventYear,
+      $this->description,
+      $this->wikipedia,
+      $this->links,
+      $this->created,
+      $this->deleted
+    );
+    $found = $stmt->fetch();
+    $stmt->close();
+    if ($found === null) {
+      throw new NotFoundException("Couldn't find award for '{$id}'!");
+    }
+
+    // @todo Store counts as columns in table.
+    $this->movieCount = $this->getCount("movies_awards", "DISTINCT `movie_id`");
+
+    return $this->initFetchObject();
+  }
+
+  /**
    * Initialize after instantiation via PHP's built in <code>\mysqli_result::fetch_object()}
    */
   public function initFetchObject() {
+    $this->unserialize([ &$this->aliases, &$this->links ]);
+    $this->toDates([ &$this->firstEventYear, &$this->lastEventYear ]);
     $this->route = $this->intl->r("/award/{0}", $this->id);
+    return $this;
   }
 
 

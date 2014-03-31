@@ -31,35 +31,39 @@ use \MovLib\Data\Date;
 trait CompanyTrait {
 
   /**
-   * Get a company's founding and defunct dates.
-   *
-   * @param \MovLib\Data\Company\Company $company
-   *   The company to get the dates from.
-   * @return null|string
-   *   The formatted founding and defunct dates or <code>NULL</code> if none were present.
+   * {@inheritdoc}
    */
-  protected function getCompanyDates(\MovLib\Data\Company\Company $company) {
-    if ($company->foundingDate || $company->defunctDate) {
-      $founded = " title='{$this->intl->t("Founding Date")}'";
+  protected function getPlural() {
+    return $this->intl->t("Companies");
+  }
 
-      if ($company->foundingDate) {
-        $date = new Date($company->foundingDate);
-        $years = "<time datetime='{$date->year}' property='foundingDate'{$founded}>{$date->year}</time>";
-      }
-      else {
-        $years = "<em{$founded}>{$this->intl->t("unknown")}</em>";
-      }
+  /**
+   * {@inheritdoc}
+   */
+  protected function getSingular() {
+    return $this->intl->t("Company");
+  }
 
-      if ($company->defunctDate) {
-        $date = new Date($company->defunctDate);
-        $years = $this->intl->t(
-          "{0}–{1}",
-          [ $years, "<time datetime='{$date->year}' property='defunctDate' title='{$this->intl->t("Defunct Date")}'>{$date->year}</time>" ]
-        );
-      }
-
-      return $years;
+  /**
+   * {@inheritdoc}
+   */
+  protected function getSidebarItems() {
+    $items = parent::getSidebarItems();
+    if ($this->entity->deleted) {
+      return $items;
     }
+    foreach ([
+      [ "movie", "movies", $this->intl->t("Movies"), $this->entity->movieCount ],
+      [ "series", "series", $this->intl->t("Series"), $this->entity->seriesCount ],
+      [ "release", "releases", $this->intl->t("Releases"), $this->entity->releaseCount ],
+    ] as list($singular, $plural, $title, $count)) {
+      $items[] = [
+        $this->intl->rp("/company/{0}/{$plural}", $this->entity->id),
+        "{$title} <span class='fr'>{$this->intl->format("{0,number}", $count)}</span>",
+        [ "class" => "ico ico-{$singular}" ]
+      ];
+    }
+    return $items;
   }
 
 }

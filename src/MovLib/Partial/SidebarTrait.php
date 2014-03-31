@@ -37,7 +37,7 @@ trait SidebarTrait {
   /**
    * The sidebar's navigation.
    *
-   * @var \MovLib\Presentation\Partial\Navigation
+   * @var \MovLib\Partial\Navigation
    */
   protected $sidebarNavigation;
 

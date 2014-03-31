@@ -17,8 +17,7 @@
  */
 namespace MovLib\Presentation\Award;
 
-use \MovLib\Data\Award;
-use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Data\Award\Award;
 
 /**
  * Presentation of a single award.
@@ -29,41 +28,21 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\Award\AbstractBase {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+final class Show extends \MovLib\Presentation\AbstractShowPresenter {
+  use \MovLib\Partial\AwardTrait;
 
   /**
-   * Instantiate new award presentation.
-   *
-   * @throws \MovLib\Presentation\Error\NotFound
+   * {@inheritdoc}
    */
-  public function __construct() {
-    $this->award = new Award((integer) $_SERVER["AWARD_ID"]);
-    $this->initPage($this->award->name);
-    $this->initLanguageLinks("/award/{0}", [ $this->award->id]);
-    $this->initBreadcrumb([[ $this->intl->rp("/awards"), $this->intl->t("Awards") ]]);
-    $this->sidebarInit();
-
-    $kernel->stylesheets[] = "award";
+  public function init() {
+    return $this->initShow(new Award($this->diContainerHTTP), "Organization", "name");
   }
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    // Enhance the page title with microdata.
-    $this->schemaType = "Intangible";
-    $this->pageTitle  = "<span property='name'>{$this->award->name}</span>";
-
-    if ($this->award->deleted === true) {
-      return $this->goneGetContent();
-    }
+  public function getContent() {
+    return "";
 
     // Put the award information together.
     $info = null;

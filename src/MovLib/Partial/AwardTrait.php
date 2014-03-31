@@ -29,33 +29,38 @@ namespace MovLib\Partial;
 trait AwardTrait {
 
   /**
-   * Get the award's first and last awarding years.
-   *
-   * @param \MovLib\Data\Award\Award $award
-   *   The award to get the years from.
-   * @return string
-   *   The formatted first and last awarding years or <code>NULL</code> if none were present.
+   * {@inheritdoc}
    */
-  protected function getAwardEventYears(\MovLib\Data\Award\Award $award) {
-    if ($award->firstEventYear || $award->lastEventYear) {
-      $first = " title='{$this->intl->t("First award ceremony")}'";
+  protected function getPlural() {
+    return $this->intl->t("Awards");
+  }
 
-      if ($award->firstEventYear) {
-        $years = "<time datetime='{$award->firstEventYear}'{$first}>{$award->firstEventYear}</time>";
-      }
-      else {
-        $years = "<em{$first}>{$this->intl->t("unknown")}</em>";
-      }
+  /**
+   * {@inheritdoc}
+   */
+  protected function getSingular() {
+    return $this->intl->t("Award");
+  }
 
-      if ($award->lastEventYear) {
-        return $this->intl->t(
-          "{0}–{1}",
-          [ $years, "<time datetime='{$award->lastEventYear}' title='{$this->intl->t("Last award ceremony")}'>{$award->lastEventYear}</time>" ]
-        );
-      }
-
-      return $years;
+  /**
+   * {@inheritdoc}
+   */
+  protected function getSidebarItems() {
+    $items = parent::getSidebarItems();
+    if ($this->entity->deleted) {
+      return $items;
     }
+    foreach ([
+      [ "movie", "movies", $this->intl->t("Movies"), $this->entity->movieCount ],
+      [ "series", "series", $this->intl->t("Series"), $this->entity->seriesCount ],
+    ] as list($singular, $plural, $title, $count)) {
+      $items[] = [
+        $this->intl->rp("/company/{0}/{$plural}", $this->entity->id),
+        "{$title} <span class='fr'>{$this->intl->format("{0,number}", $count)}</span>",
+        [ "class" => "ico ico-{$singular}" ]
+      ];
+    }
+    return $items;
   }
 
 }
