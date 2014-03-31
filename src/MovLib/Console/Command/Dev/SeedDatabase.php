@@ -105,13 +105,29 @@ final class SeedDatabase extends \MovLib\Console\Command\AbstractCommand {
     }
 
     $this->writeVerbose("Importing individual SQL scripts...");
-    $db = new MySQLi($this->diContainer);
-    foreach ($scripts as $script) {
-      $script = "{$this->scriptDirectory}/{$script}.sql";
-      $this->writeDebug("Importing <comment>{$script}</comment>");
-      $db->transactionStart();
-      $db->multiQuery(file_get_contents($script), false);
-      $db->transactionCommit();
+    $mysqli = new MySQLi("movlib");
+    try {
+      foreach ($scripts as $script) {
+        $script = "{$this->scriptDirectory}/{$script}.sql";
+        $this->writeDebug("Importing <comment>{$script}</comment>");
+        $mysqli->begin_transaction();
+        $mysqli->query("SET foreign_key_checks = 0");
+        $mysqli->multi_query(file_get_contents($script));
+        do {
+          $mysqli->use_result();
+          if (($more = $mysqli->more_results())) {
+            $mysqli->next_result();
+          }
+        }
+        while ($more);
+        $mysqli->query("SET foreign_key_checks = 1");
+        $mysqli->commit();
+      }
+    }
+    catch (\mysqli_sql_exception $e) {
+      $mysqli->query("SET foreign_key_checks = 1");
+      $mysqli->rollback();
+      throw $e;
     }
     $this->writeVerbose("Successfully imported individual SQL scripts!", self::MESSAGE_TYPE_INFO);
 
