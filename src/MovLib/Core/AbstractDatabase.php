@@ -149,8 +149,10 @@ abstract class AbstractDatabase {
       $mysqli = new \mysqli($this->config->databaseHost, $this->config->databaseUsername, $this->config->databasePassword, $this->config->databaseName);
     }
     catch (\ErrorException $e) {
-      $this->log->notice("Killing current database thread and creating new connection.");
-      $mysqli->kill($mysqli->thread_id);
+      if (isset($mysqli->thread_id)) {
+        $this->log->notice("Killing current database thread and creating new connection.");
+        $mysqli->kill($mysqli->thread_id);
+      }
       $mysqli->real_connect($this->config->databaseHost, $this->config->databaseUsername, $this->config->databasePassword, $this->config->databaseName);
     }
 
