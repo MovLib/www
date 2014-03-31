@@ -38,6 +38,8 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`genres` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The genre’s unique ID.',
+  `changed` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The timestamp on which this genre was changed.',
+  `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The timestamp on which this event was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the genre was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The genre’s description in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_names` BLOB NOT NULL COMMENT 'The genre’s name in various languages. Keys are ISO alpha-2 language codes.',
