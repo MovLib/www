@@ -22,7 +22,7 @@ use \MovLib\Data\Place;
 use \MovLib\Presentation\Error\NotFound;
 
 /**
- * Handling of one or more award events.
+ * Handling of one or more events.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -65,14 +65,14 @@ class Event extends \MovLib\Data\AbstractEntity {
   public $created;
 
   /**
-   * The award event's deletion state.
+   * The event's deletion state.
    *
    * @var boolean
    */
   public $deleted;
 
   /**
-   * The award event's description in the current display language.
+   * The event's description in the current display language.
    *
    * @var string
    */
@@ -86,7 +86,7 @@ class Event extends \MovLib\Data\AbstractEntity {
   public $endDate;
 
   /**
-   * The award event's unique identifier.
+   * The event's unique identifier.
    *
    * @var integer
    */
@@ -100,7 +100,7 @@ class Event extends \MovLib\Data\AbstractEntity {
   public $links = [];
 
   /**
-   * The award event's name in the current display language.
+   * The event's name in the current display language.
    *
    * @var string
    */
@@ -121,7 +121,7 @@ class Event extends \MovLib\Data\AbstractEntity {
   public $place;
 
   /**
-   * The translated route of this award event.
+   * The translated route of this event.
    *
    * @var string
    */
@@ -142,7 +142,7 @@ class Event extends \MovLib\Data\AbstractEntity {
   public $startDate;
 
   /**
-   * The award event’s translated Wikipedia link.
+   * The event’s translated Wikipedia link.
    *
    * @var string
    */
@@ -226,14 +226,14 @@ class Event extends \MovLib\Data\AbstractEntity {
         `changed`,
         `created`,
         `deleted`,
-        IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS CHAR), COLUMN_GET(`dyn_descriptions`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `description`,
+        COLUMN_GET(`dyn_descriptions`, ? AS CHAR) AS `description`,
         `end_date` AS `endDate`,
         `id`,
         `links`,
         `name`,
         COUNT(DISTINCT `movies_awards`.`movie_id`) AS `movieCount`,
         `place_id` AS `place`,
-        '0' AS `seriesCount`
+        '0' AS `seriesCount`,
         `start_date` AS `startDate`,
         IFNULL(COLUMN_GET(`dyn_wikipedia`, ? AS CHAR), COLUMN_GET(`dyn_wikipedia`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `wikipedia`
       FROM `events`

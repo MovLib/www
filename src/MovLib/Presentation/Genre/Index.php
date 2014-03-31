@@ -17,66 +17,66 @@
  */
 namespace MovLib\Presentation\Genre;
 
-use \MovLib\Data\Genre;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Listing\EntityIndexListing;
+use \MovLib\Data\Genre\GenreSet;
+use \MovLib\Partial\Alert;
 
 /**
- * List of all genres.
+ * Defines the genre index presentation.
  *
+ * @link http://www.google.com/webmasters/tools/richsnippets?q=https://en.movlib.org/genres
+ * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/genres
+ * @link http://validator.w3.org/check?uri=https://en.movlib.org/genres
+ * @link http://gsnedders.html5.org/outliner/process.py?url=https://en.movlib.org/genres
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\TraitPagination;
-  use \MovLib\Presentation\TraitSidebar;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
 
   /**
-   * Instantiate new genre index presentation.
-   *
+   * {@inheritdoc}
    */
-  public function __construct() {
-    $this->initPage($this->intl->t("Genres"));
-    $this->initBreadcrumb();
-    $this->initLanguageLinks("/genres", null, true);
-    $this->paginationInit(Genre::getTotalCount());
-    $this->sidebarInit([
-      [ $kernel->requestPath, $this->title, [ "class" => "ico ico-genre" ] ],
-      [ $this->intl->r("/genre/random"), $this->intl->t("Random") ],
-    ]);
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * @inheritdoc
-   */
-  protected function getPageContent() {
-    $this->headingBefore =
-      "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/genre/create")}'>{$this->intl->t("Create New Genre")}</a>"
-    ;
-
-    $result      = Genre::getGenres($this->paginationOffset, $this->paginationLimit);
-    $noItemText  = new Alert(
-      $this->intl->t(
-        "We couldn’t find any genre matching your filter criteria, or there simply aren’t any genres available."
-      ), $this->intl->t("No Genres"), Alert::SEVERITY_INFO
+  public function init() {
+    return $this->initIndex(
+      new GenreSet($this->diContainerHTTP),
+      $this->intl->t("Create New Genre"),
+      $this->intl->t("Genres"),
+      "genres",
+      "genre"
     );
-    $noItemText .=
-      $this->intl->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$this->intl->r("/genre/create")}'>", "</a>" ]);
-
-    $moviesRoute = $this->intl->rp("/genre/{0}/movies", [ "{{ id }}" ]);
-    $seriesRoute = $this->intl->rp("/genre/{0}/series", [ "{{ id }}" ]);
-
-    return new EntityIndexListing($result, $noItemText, "Genre", $moviesRoute, $seriesRoute);
   }
+
+  /**
+   * {@inheritdoc}
+   * @param \MovLib\Data\Genre\Genre $genre {@inheritdoc}
+   */
+  protected function formatListingItem($genre) {
+    return
+      "<li class='hover-item r'>" .
+        "<article>" .
+          "<div class='s s10'>" .
+            "<div class='fr'>" .
+              "<a class='ico ico-movie label' href='{$this->intl->rp("/genre/{0}/movies", $genre->id)}' title='{$this->intl->t("Movies")}'>{$genre->movieCount}</a>" .
+              "<a class='ico ico-series label' href='{$this->intl->rp("/genre/{0}/series", $genre->id)}' title='{$this->intl->t("Series")}'>{$genre->seriesCount}</a>" .
+            "</div>" .
+            "<h2 class='para'><a href='{$genre->route}' property='url'><span property='name'>{$genre->name}</span></a></h2>" .
+          "</div>" .
+        "</article>" .
+      "</li>"
+    ;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getNoItemsContent() {
+    return new Alert(
+      "<p>{$this->intl->t("We couldn’t find any genres matching your filter criteria, or there simply aren’t any genres available.")}</p>" .
+      "<p>{$this->intl->t("Would you like to {0}create an genre{1}?", [ "<a href='{$this->intl->r("/genre/create")}'>", "</a>" ])}</p>",
+      $this->intl->t("No Genres")
+    );
+  }
+
 }

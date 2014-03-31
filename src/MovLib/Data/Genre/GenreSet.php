@@ -15,24 +15,24 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Event;
+namespace MovLib\Data\Genre;
 
 /**
- * Defines the event set object.
+ * Defines the genre set object.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class EventSet extends \MovLib\Data\AbstractSet {
+final class GenreSet extends \MovLib\Data\AbstractSet {
 
   /**
    * {@inheritdoc}
    */
   public function getEntityClassName() {
-    return "\\MovLib\\Data\\Event\\Event";
+    return "\\MovLib\\Data\\Genre\\Genre";
   }
 
   /**
@@ -41,18 +41,12 @@ final class EventSet extends \MovLib\Data\AbstractSet {
   public function getOrdered($by, $offset, $limit) {
     return $this->getMySQLi()->query(<<<SQL
 SELECT
-  `events`.`id` AS `id`,
-  `events`.`name` AS `name`,
-  `events`.`end_date` AS `endDate`,
-  COUNT(DISTINCT `movies_awards`.`movie_id`) AS `movieCount`,
-  `events`.`place_id` AS `place`,
-  '0' AS `seriesCount`,
-  `events`.`start_date` AS `startDate`
-FROM `events`
-  LEFT JOIN `movies_awards`
-    ON `events`.`id` = `movies_awards`.`event_id`
+  `genres`.`id` AS `id`,
+  COLUMN_GET(`dyn_names`, '{$this->intl->languageCode}' AS CHAR) AS `name`,
+  `genres`.`movie_count` AS `movieCount`,
+  `genres`.`series_count` AS `seriesCount`
+FROM `genres`
 WHERE `deleted` = false
-GROUP BY `id`, `name`, `endDate`, `place`, `seriesCount`, `startDate`
 ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}
 SQL
     );
@@ -62,7 +56,7 @@ SQL
    * {@inheritdoc}
    */
   public function getTableName() {
-    return "events";
+    return "genres";
   }
 
 }
