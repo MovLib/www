@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`genres` (
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The genre’s description in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_names` BLOB NOT NULL COMMENT 'The genre’s name in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_wikipedia` BLOB NOT NULL COMMENT 'The event’s translated Wikipedia links.',
-  `movies_count` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Amount of movies with this genre.',
+  `movie_count` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Amount of movies with this genre.',
   `series_count` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Amount of series with this genre.',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
