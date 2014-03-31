@@ -115,7 +115,7 @@ final class ResetPassword extends \MovLib\Presentation\AbstractPresenter {
         "required"    => true,
       ]));
       $this->form->addAction($this->intl->t("Request Reset"), [ "class" => "btn btn-large btn-success" ]);
-      $this->form->init([ $this, "valid" ], [ "class" => "s s6 o3" ]);
+      $this->form->init([ $this, "validEmail" ], [ "class" => "s s6 o3" ]);
     }
   }
 
