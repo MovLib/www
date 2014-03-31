@@ -39,30 +39,20 @@ final class AwardSet extends \MovLib\Data\AbstractSet {
    * {@inheritdoc}
    */
   public function getOrdered($by, $offset, $limit) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert(is_string($by));
-    assert(!empty($by));
-    assert(is_integer($offset));
-    assert(is_integer($limit));
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
     // @todo One international name per organization (award) plus aliases, same as companies.
-    // @todo Rename both year columns to from "awarding" to "event".
     return $this->getMySQLi()->query(<<<SQL
 SELECT
   `awards`.`id` AS `id`,
-  IFNULL(COLUMN_GET(`awards`.`dyn_names`, '{$this->intl->languageCode}' AS CHAR), COLUMN_GET(`awards`.`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `name`,
-  `awards`.`first_awarding_year` AS `firstEventYear`,
-  `awards`.`last_awarding_year` AS `lastEventYear`,
+  `awards`.`name` AS `name`,
+  `awards`.`first_event_year` AS `firstEventYear`,
+  `awards`.`last_event_year` AS `lastEventYear`,
   COUNT(DISTINCT `movies_awards`.`movie_id`) AS `movieCount`,
   '0' AS `seriesCount`
 FROM `awards`
   LEFT JOIN `movies_awards`
     ON `movies_awards`.`award_id` = `awards`.`id`
 WHERE `deleted` = false
-GROUP BY `awards`.`id`, `awards`.`dyn_names`, `awards`.`first_awarding_year`, `awards`.`last_awarding_year`
+GROUP BY `awards`.`id`, `awards`.`name`, `awards`.`first_event_year`, `awards`.`last_event_year`
 ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}
 SQL
     );

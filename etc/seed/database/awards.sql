@@ -26,7 +26,7 @@
 
 TRUNCATE TABLE `awards`;
 TRUNCATE TABLE `awards_categories`;
-TRUNCATE TABLE `awards_events`;
+TRUNCATE TABLE `events`;
 TRUNCATE TABLE `movies_awards`;
 
 INSERT INTO `places` SET
@@ -52,11 +52,8 @@ INSERT INTO `awards` SET
     'en', 'http://en.wikipedia.org/wiki/Academy_Award',
     'de', 'http://de.wikipedia.org/wiki/Oscar'
   ),
-  `dyn_names`              = COLUMN_CREATE(
-    'en', 'Academy Awards',
-    'de', 'Oscar'
-  ),
-  `first_awarding_year`    = 1929,
+  `name`                   = 'Academy Awards',
+  `first_event_year`       = 1929,
   `aliases`                = 'a:2:{i:0;s:5:"Oscar";i:1;s:14:"Academy Awards";}',
   `links`                  = 'a:1:{i:0;s:22:"http://www.oscars.org/";}',
   `image_width`            = 1875,
@@ -88,8 +85,8 @@ INSERT INTO `awards_categories` SET
     'en', 'http://en.wikipedia.org/wiki/Academy_Award_for_Best_Assistant_Director',
     'de', 'http://de.wikipedia.org/wiki/Oscar/Beste_Regieassistenz'
   ),
-  `first_awarding_year` = 1933,
-  `last_awarding_year`  = 1937
+  `first_year`          = 1933,
+  `last_year`           = 1937
 ;
 
 INSERT INTO `awards_categories` SET
@@ -107,7 +104,7 @@ INSERT INTO `awards_categories` SET
     'en', 'http://en.wikipedia.org/wiki/Academy_Award_for_Best_Picture',
     'de', 'http://de.wikipedia.org/wiki/Oscar/Bester_Film'
   ),
-  `first_awarding_year` = 1929
+  `first_year`          = 1929
 ;
 
 INSERT INTO `awards_categories` SET
@@ -125,7 +122,7 @@ INSERT INTO `awards_categories` SET
     'en', 'http://en.wikipedia.org/wiki/Academy_Award_for_Best_Director',
     'de', 'http://de.wikipedia.org/wiki/Oscar/Beste_Regie'
   ),
-  `first_awarding_year` = 1929
+  `first_year`          = 1929
 ;
 
 INSERT INTO `awards_categories` SET
@@ -137,7 +134,7 @@ INSERT INTO `awards_categories` SET
   ),
   `dyn_descriptions`    = '',
   `dyn_wikipedia`       = '',
-  `first_awarding_year` = 1929
+  `first_year`          = 1929
 ;
 SET @oscar_award_best_actor = LAST_INSERT_ID();
 
@@ -150,7 +147,7 @@ INSERT INTO `awards_categories` SET
   ),
   `dyn_descriptions`    = '',
   `dyn_wikipedia`       = '',
-  `first_awarding_year` = 1929
+  `first_year`          = 1929
 ;
 
 INSERT INTO `awards_categories` SET
@@ -162,7 +159,7 @@ INSERT INTO `awards_categories` SET
   ),
   `dyn_descriptions`    = '',
   `dyn_wikipedia`       = '',
-  `first_awarding_year` = 1937
+  `first_year`          = 1937
 ;
 
 INSERT INTO `awards_categories` SET
@@ -174,7 +171,7 @@ INSERT INTO `awards_categories` SET
   ),
   `dyn_descriptions`    = '',
   `dyn_wikipedia`       = '',
-  `first_awarding_year` = 1929
+  `first_year`          = 1929
 ;
 
 INSERT INTO `awards_categories` SET
@@ -192,16 +189,13 @@ INSERT INTO `awards_categories` SET
     'en', 'http://en.wikipedia.org/wiki/Academy_Award_for_Best_Writing_(Adapted_Screenplay)',
     'de', 'http://de.wikipedia.org/wiki/Oscar/Bestes_adaptiertes_Drehbuch'
   ),
-  `first_awarding_year` = 1929
+  `first_year`          = 1929
 ;
 SET @oscar_award_best_writing = LAST_INSERT_ID();
 
-INSERT INTO `awards_events` SET
+INSERT INTO `events` SET
   `award_id`            = @oscar_award_id,
-  `dyn_names`           = COLUMN_CREATE(
-    'en', '67th Academy Awards',
-    'de', 'Oscarverleihung 1995'
-  ),
+  `name`                = '67th Academy Awards',
   `dyn_descriptions`    = COLUMN_CREATE(
     'en', '&lt;p&gt;The 67th Academy Awards, honoring the best films of 1994, were held on March 27, 1995, at the Shrine Auditorium, Los Angeles, California. They were hosted by comedian and talk show host David Letterman.&lt;/p&gt;&lt;p&gt;The ceremony is perhaps best remembered for Letterman&#039;s performance as the host. Although some thought of him as different but good, most critics labeled his performance as terrible and expressed a wish for him never to host the Oscars again. This negative criticism arose from Letterman&#039;s absurdist brand of comedy, and it was followed by Late Show with David Letterman losing in the ratings to The Tonight Show with Jay Leno by the summer of 1995.&lt;/p&gt;&lt;p&gt;Letterman seems to have a sense of humor about it, however, because around Academy Award season he frequently references his lackluster appearance at the Academy awards on his show in a humorous tone.&lt;/p&gt;&lt;p&gt;Forrest Gump won Best Picture, as well as an additional five Oscars, including Tom Hanks&#039; second consecutive Academy Award for Best Actor. Hanks became only the second person in Oscar history to accomplish the feat of winning consecutive awards in the Best Actor category, the first being Spencer Tracy. Also, Jessica Lange, winner of the 1982 Academy Award for Best Supporting Actress for Tootsie, won the Academy Award for Best Actress for Tony Richardson&#039;s last film, Blue Sky, joining an elite group of thespians who have won Oscars in both the supporting and lead categories. Dianne Wiest won her second Academy Award for Best Supporting Actress in a Woody Allen film, becoming the first person to win two Oscars in the same category where the films were directed by the same person (she won another Best Supporting Actress in 1986 for Hannah and Her Sisters).&lt;/p&gt;&lt;p&gt;This year had the rarity of producing a tie. When Tim Allen opened the envelope for Best Live Action Short, much to his surprise there was a tie. There would not be another tie in an Academy Award category for another 18 years, when the award for Best Sound Editing went to both Skyfall and Zero Dark Thirty during the 85th Academy Awards.&lt;/p&gt;&lt;p&gt;The awards this year were also notable for the near inclusion of a documentary as Best Picture. The documentary category was then, as always, nominated by a special committee. The critically acclaimed film Hoop Dreams failed to make the documentary committee&#039;s short list, even though it was on more critics&#039; top ten lists than any other film that year, including Forrest Gump, The Shawshank Redemption, Pulp Fiction and Quiz Show. Many prominent critics, most notably Gene Siskel and Roger Ebert campaigned for Academy members to vote to nominate Hoop Dreams for Best Picture, something that had never happened before. The effort failed, yet Hoop Dreams was nominated for Best Film Editing, one of the few documentaries ever to be nominated in a craft category.&lt;/p&gt;&lt;p&gt;This was only the second, and most recent, time in Oscar history where three of the four acting winners were repeats; the other time was during the 1938 Oscars. Interestingly enough, the only first timer was Martin Landau who was the oldest of the bunch.&lt;/p&gt;',
     'de', '&lt;p&gt;Die Oscarverleihung 1995 fand am 27. März 1995 im Shrine Auditorium in Los Angeles statt. Es waren die 67th Annual Academy Awards. Im Jahr der Auszeichnung werden immer Filme des vergangenen Jahres ausgezeichnet, in diesem Fall also die Filme des Jahres 1994.&lt;/p&gt;'
@@ -211,6 +205,7 @@ INSERT INTO `awards_events` SET
     'de', 'http://de.wikipedia.org/wiki/Oscarverleihung_1995'
   ),
   `start_date`          = '1995-03-27',
+  `aliases`             = 'a:1:{i:0;s:10:"Oscar 1995";}',
   `links`               = 'a:2:{i:0;s:80:"http://www.oscars.org/awards/academyawards/oscarlegacy/1990-1999/67nominees.html";i:1;s:112:"http://www.nytimes.com/1995/01/29/movies/bear-hunting-in-oscar-season-five-strategies.html?pagewanted=all&src=pm";}',
   `place_id`            = 5368361
 ;
@@ -220,7 +215,7 @@ INSERT INTO `movies_awards` SET
   `movie_id`          = 3, /* The Shawshank Redemption */
   `award_id`          = @oscar_award_id,
   `award_category_id` = @oscar_award_best_actor,
-  `award_event_id`    = @oscar_award_event_id,
+  `event_id`          = @oscar_award_event_id,
   `person_id`         = 8, /* Morgan Freeman */
   `won`               = false,
   `year`              = 1995
@@ -230,7 +225,7 @@ INSERT INTO `movies_awards` SET
   `movie_id`          = 3, /* The Shawshank Redemption */
   `award_id`          = @oscar_award_id,
   `award_category_id` = @oscar_award_best_writing,
-  `award_event_id`    = @oscar_award_event_id,
+  `event_id`          = @oscar_award_event_id,
   `person_id`         = 7, /* Frank Darabont */
   `won`               = true,
   `year`              = 1995
@@ -250,12 +245,9 @@ INSERT INTO `awards` SET
     'en', 'http://en.wikipedia.org/wiki/Golden_Globe_Award',
     'de', 'http://de.wikipedia.org/wiki/Golden_Globe_Award'
   ),
-  `dyn_names`              = COLUMN_CREATE(
-    'en', 'Golden Globe Award',
-    'de', 'Golden Globe Award'
-  ),
+  `name`                   = 'Golden Globe Award',
   `dyn_image_descriptions` = '',
-  `first_awarding_year`    = 1944,
+  `first_event_year`       = 1944,
   `links`                  = 'a:1:{i:0;s:28:"http://www.goldenglobes.com/";}'
 ;
 SET @golden_globe_award_id = LAST_INSERT_ID();
@@ -275,7 +267,7 @@ INSERT INTO `awards_categories` SET
     'en', 'http://en.wikipedia.org/wiki/Golden_Globe_Award_for_Best_Actor_%E2%80%93_Motion_Picture_Drama',
     'de', 'http://de.wikipedia.org/wiki/Golden_Globe_Award/Bester_Hauptdarsteller_%E2%80%93_Drama'
   ),
-  `first_awarding_year` = 1951
+  `first_year`          = 1951
 ;
 SET @golden_globe_award_best_actor = LAST_INSERT_ID();
 
@@ -294,16 +286,13 @@ INSERT INTO `awards_categories` SET
     'en', 'http://en.wikipedia.org/wiki/Golden_Globe_Award_for_Best_Screenplay',
     'de', 'http://de.wikipedia.org/wiki/Golden_Globe_Award/Bestes_Filmdrehbuch'
   ),
-  `first_awarding_year` = 1948
+  `first_year`          = 1948
 ;
 SET @golden_globe_award_screenplay = LAST_INSERT_ID();
 
-INSERT INTO `awards_events` SET
+INSERT INTO `events` SET
   `award_id`            = @golden_globe_award_id,
-  `dyn_names`           = COLUMN_CREATE(
-    'en', '52nd Golden Globe Awards',
-    'de', 'Golden Globe Awards 1995'
-  ),
+  `name`                = '52nd Golden Globe Awards',
   `dyn_descriptions`    = COLUMN_CREATE(
     'en', '&lt;p&gt;The 52nd Golden Globe Awards, honoring the best in film and television for 1994, were held on January 21, 1995 at the Beverly Hilton Hotel in Beverly Hills, California.&lt;/p&gt;',
     'de', '&lt;p&gt;Die 52. Verleihung der Golden Globe Awards fand am 21. Januar 1995 statt.&lt;/p&gt;'
@@ -314,6 +303,7 @@ INSERT INTO `awards_events` SET
   ),
   `start_date`          = '1995-01-21',
   `end_date`            = '1995-01-21',
+  `aliases`             = 'a:1:{i:0;s:24:"Golden Globe Awards 1995";}',
   `links`               = 'a:1:{i:0;s:40:"http://www.imdb.com/event/ev0000292/1995";}',
   `place_id`            = 5368361
 ;
@@ -323,7 +313,7 @@ INSERT INTO `movies_awards` SET
   `movie_id`          = 3, /* The Shawshank Redemption */
   `award_id`          = @golden_globe_award_id,
   `award_category_id` = @golden_globe_award_best_actor,
-  `award_event_id`    = @golden_globe_award_event_id,
+  `event_id`          = @golden_globe_award_event_id,
   `person_id`         = 8, /* Morgan Freeman */
   `won`               = false,
   `year`              = 1995
@@ -333,7 +323,7 @@ INSERT INTO `movies_awards` SET
   `movie_id`          = 3, /* The Shawshank Redemption */
   `award_id`          = @golden_globe_award_id,
   `award_category_id` = @golden_globe_award_screenplay,
-  `award_event_id`    = @golden_globe_award_event_id,
+  `event_id`          = @golden_globe_award_event_id,
   `person_id`         = 7, /* Frank Darabont */
   `won`               = false,
   `year`              = 1995

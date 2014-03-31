@@ -35,7 +35,6 @@ return [
   "jobs",
   "licenses",
   "movies",
-  "releases",
   "system_pages",
   "users",
 ];

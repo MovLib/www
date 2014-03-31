@@ -33,11 +33,39 @@ final class Award extends \MovLib\Data\AbstractEntity {
 
 
   /**
+   * The award’s aliases.
+   *
+   * @var array
+   */
+  public $aliases = [];
+
+  /**
+   * The award's deletion state.
+   *
+   * @var boolean
+   */
+  public $deleted;
+
+  /**
+   * The award's description in the current display language.
+   *
+   * @var string
+   */
+  public $description;
+
+  /**
    * The award's first event year.
    *
    * @var integer
    */
   public $firstEventYear;
+
+  /**
+   * The award's unique identifier.
+   *
+   * @var integer
+   */
+  public $id;
 
   /**
    * The award's last event year.
@@ -47,7 +75,14 @@ final class Award extends \MovLib\Data\AbstractEntity {
   public $lastEventYear;
 
   /**
-   * The award's name.
+   * The award’s weblinks.
+   *
+   * @var array
+   */
+  public $links = [];
+
+  /**
+   * The award's name in the current display language.
    *
    * @var string
    */
@@ -59,6 +94,13 @@ final class Award extends \MovLib\Data\AbstractEntity {
    * @var string
    */
   public $route;
+
+  /**
+   * The award’s translated Wikipedia link.
+   *
+   * @var string
+   */
+  public $wikipedia;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Initialize
