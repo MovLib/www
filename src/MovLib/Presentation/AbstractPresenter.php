@@ -944,7 +944,7 @@ abstract class AbstractPresenter {
    *
    * @param string $route
    *   The key of this route.
-   * @param array $args [optional]
+   * @param mixed $args [optional]
    *   The route arguments, defaults to no arguments.
    * @param boolean $plural [optional]
    *   Set to <code>TRUE</code> if the current page has a plural route, defaults to <code>FALSE</code>.
@@ -953,7 +953,7 @@ abstract class AbstractPresenter {
    *   the default locale because they are translated like everything else.
    * @return this
    */
-  final protected function initLanguageLinks($route, array $args = null, $plural = false, array $queries = null) {
+  final protected function initLanguageLinks($route, $args = null, $plural = false, array $queries = null) {
     $this->languageLinks = [ $route, $args, $plural, $queries ];
     return $this;
   }

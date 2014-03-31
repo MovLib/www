@@ -157,6 +157,20 @@ final class Intl {
 
 
   /**
+   * Format a message without translation, very useful for inline number formatting.
+   *
+   * @param string $message
+   *   The message to format.
+   * @param mixed $args
+   *   The message arguments.
+   * @return string
+   *   The formatted message.
+   */
+  public function format($message, $args) {
+    return \MessageFormatter::formatMessage($this->locale, $message, (array) $args);
+  }
+
+  /**
    * Get number formatted in human readable form.
    *
    * @param integer $bytes

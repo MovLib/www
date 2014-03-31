@@ -38,11 +38,10 @@ trait AwardTrait {
    */
   protected function getAwardEventYears(\MovLib\Data\Award\Award $award) {
     if ($award->firstEventYear || $award->lastEventYear) {
-      $date  = new Date();
       $first = " title='{$this->intl->t("First award ceremony")}'";
 
       if ($award->firstEventYear) {
-        $years = $date->formatYear($award->firstEventYear, $first);
+        $years = "<time datetime='{$award->firstEventYear}'{$first}>{$award->firstEventYear}</time>";
       }
       else {
         $years = "<em{$first}>{$this->intl->t("unknown")}</em>";
@@ -51,7 +50,7 @@ trait AwardTrait {
       if ($award->lastEventYear) {
         return $this->intl->t(
           "{0}–{1}",
-          [ $years, $date->formatYear($award->lastEventYear, " title='{$this->intl->t("Last award ceremony")}'") ]
+          [ $years, "<time datetime='{$award->lastEventYear}' title='{$this->intl->t("Last award ceremony")}'>{$award->lastEventYear}</time>" ]
         );
       }
 

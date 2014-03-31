@@ -17,6 +17,10 @@
  */
 namespace MovLib\Data\User;
 
+use \MovLib\Data\Date;
+use \MovLib\Exception\ClientException\GoneException;
+use \MovLib\Exception\ClientException\NotFoundException;
+
 /**
  * Defines the user entity object.
  *
@@ -26,7 +30,7 @@ namespace MovLib\Data\User;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class User extends \MovLib\Core\AbstractDatabase {
+final class User extends \MovLib\Data\AbstractEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -139,7 +143,7 @@ final class User extends \MovLib\Core\AbstractDatabase {
    *
    * @var integer
    */
-  protected $id;
+  public $id;
 
   /**
    * The user's unique name.
@@ -242,8 +246,86 @@ final class User extends \MovLib\Core\AbstractDatabase {
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
+  /**
+   * Initialize existing user from given value.
+   *
+   * @param string $from
+   *   From which column the existing user should be loaded, use the <var>FROM_*</var> class constants.
+   * @param string $value
+   *   The value of the column.
+   * @return this
+   * @throws \MovLib\Exception\ClientException\NotFoundException
+   * @throws \MovLib\Exception\ClientException\GoneException
+   */
+  public function init($from, $value) {
+    $stmt = $this->getMySQLi()->prepare(<<<SQL
+SELECT
+  `id`,
+  `name`,
+  UNIX_TIMESTAMP(`access`),
+  `birthdate`,
+  `country_code`,
+  UNIX_TIMESTAMP(`created`),
+  `currency_code`,
+  COLUMN_GET(`dyn_about_me`, '{$this->intl->languageCode}' AS BINARY),
+  `edits`,
+  `email`,
+  `password`,
+  `private`,
+  `profile_views`,
+  `real_name`,
+  `reputation`,
+  `sex`,
+  `system_language_code`,
+  `time_zone_identifier`,
+  `website`
+FROM `users`
+WHERE `{$from}` = ?
+LIMIT 1
+SQL
+    );
+    $stmt->bind_param(self::$types[$from], $value);
+    $stmt->execute();
+    $stmt->bind_result(
+      $this->id,
+      $this->name,
+      $this->access,
+      $this->birthday,
+      $this->countryCode,
+      $this->created,
+      $this->currencyCode,
+      $this->aboutMe,
+      $this->edits,
+      $this->email,
+      $this->password,
+      $this->private,
+      $this->profileViews,
+      $this->realName,
+      $this->reputation,
+      $this->sex,
+      $this->systemLanguageCode,
+      $this->timeZone,
+      $this->website
+    );
+    try {
+      $stmt->fetch();
+    }
+    catch (\mysqli_sql_exception $e) {
+      throw new NotFoundException("Couldn't find user {$from} '{$value}'");
+    }
+    finally {
+      $stmt->close();
+    }
+    return $this->initFetchObject();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function initFetchObject() {
-    $this->log->debug("user", [ "id" => $this->id ]);
+    $this->birthday = new Date($this->birthday);
+    $this->route    = $this->intl->r("/user/{0}", mb_strtolower($this->name));
+    return $this;
   }
 
   /**
@@ -259,15 +341,24 @@ final class User extends \MovLib\Core\AbstractDatabase {
   public function inUse($what, $nameOrEmail) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (self::FROM_EMAIL != $what && self::FROM_NAME != $what) {
-      throw new \InvalidArgumentException("You can only check usage for 'name' and 'email'.");
-    }
-    if (empty($nameOrEmail) || !is_string($nameOrEmail)) {
-      throw new \InvalidArgumentException("\$nameOrEmail cannot be empty and must be of type string.");
-    }
+    assert($what == self::FROM_EMAIL || $what == self::FROM_NAME, "You can only check usage for 'name' and 'email'.");
     // @codeCoverageIgnoreEnd
     // @devEnd
     return (null !== $this->query("SELECT `{$what}` FROM `users` WHERE `{$what}` = ? LIMIT 1", "s", [ $nameOrEmail ]));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPluralName() {
+    return "users";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getSingularName() {
+    return "user";
   }
 
 }

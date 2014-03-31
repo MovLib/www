@@ -17,6 +17,8 @@
  */
 namespace MovLib\Partial;
 
+use \MovLib\Data\Date;
+
 /**
  * Contains utility methods for companies.
  *
@@ -38,24 +40,25 @@ trait CompanyTrait {
    */
   protected function getCompanyDates(\MovLib\Data\Company\Company $company) {
     if ($company->foundingDate || $company->defunctDate) {
-      $date    = new Date();
       $founded = " title='{$this->intl->t("Founding Date")}'";
 
       if ($company->foundingDate) {
-        $dates = $date->formatYear($company->foundingDate, " property='foundingDate'{$founded}");
+        $date = new Date($company->foundingDate);
+        $years = "<time datetime='{$date->year}' property='foundingDate'{$founded}>{$date->year}</time>";
       }
       else {
-        $dates = "<em{$founded}>{$this->intl->t("unknown")}</em>";
+        $years = "<em{$founded}>{$this->intl->t("unknown")}</em>";
       }
 
       if ($company->defunctDate) {
-        $dates = $this->intl->t(
+        $date = new Date($company->defunctDate);
+        $years = $this->intl->t(
           "{0}–{1}",
-          [ $dates, $date->formatYear($company->defunctDate, " property='defunctDate' title='{$this->intl->t("Defunct Date")}'") ]
+          [ $years, "<time datetime='{$date->year}' property='defunctDate' title='{$this->intl->t("Defunct Date")}'>{$date->year}</time>" ]
         );
       }
 
-      return $dates;
+      return $years;
     }
   }
 

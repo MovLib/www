@@ -27,38 +27,11 @@ namespace MovLib\Partial;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Date {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-  /**
-   * Default W3C/SQL date format.
-   *
-   * @var string
-   */
-  const FORMAT_W3C = "Y-m-d";
-
-  /**
-   * Default W3C/SQL date regular expression that can be used for validation.
-   *
-   * <b>NOTE</b><br>
-   * Both month and day are optional, this ensures that we're able to format partial dates as well.
-   *
-   * @var string
-   */
-  const REGEXP_W3C = "/[0-9]{4}(-[0-9]{2}){0,2}/";
+trait DateTrait {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   * Valid SQL date string (<code>"Y-m-d"</code>).
-   *
-   * @var string
-   */
-  public $date;
 
   /**
    * Associative array containing date formats for missing days.
@@ -67,7 +40,7 @@ final class Date {
    *
    * @var array
    */
-  public static $dateFormats = [
+  private static $dateFormats = [
     "de" => [
       \IntlDateFormatter::NONE        => "yyyyMM hh:mm a",
       \IntlDateFormatter::SHORT       => "MM.yy",
@@ -88,92 +61,43 @@ final class Date {
     ],
   ];
 
-  /**
-   * The date's day part.
-   *
-   * @var string
-   */
-  protected $day;
-
-  /**
-   * The date's month part.
-   *
-   * @var string
-   */
-  protected $month;
-
-  /**
-   * The date's year part.
-   *
-   * @var string
-   */
-  protected $year;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * Format the given date as year.
+   * Get the age of the date in years with approximation if dates are not complete.
    *
-   * @param null|string $date [optional]
-   *   Any valid SQL date string.
-   * @param null|string $attributes [optional]
-   *   Additional attributes that should be applied to the <code><time></code> element, already sent through the
-   *   appropriate expansion method.
+   * @param \MovLib\Data\Date $dateFrom
+   *   The date when the entity started.
+   * @param \MovLib\Data\Date $dateTo [optional]
+   *   The date when the entity ended, defaults to <code>NULL</code> and the current date is used.
    * @return string
-   *   The formatted date as year.
+   *   The age of the date in years (with approximation when dates are not complete) or <code>NULL</code> if year part
+   *   is missing.
    */
-  public function formatYear($date = null, $attributes = null) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert(strpos($attributes, "datetime") === false, "The attributes of a date method cannot contain a datetime attribute.");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    if ($date) {
-      $this->setDate($date);
+  public function dateGetAge(\MovLib\Data\Date $dateFrom, \MovLib\Data\Date $dateTo = null) {
+    $approx = false;
+    $dates  = (object) [ "from" => $dateFrom, "to" => $dateTo ];
+    foreach ($dates as $delta => $date) {
+      if ($date) {
+        foreach ([ "month", "day" ] as $prop) {
+          if (!$date->$prop) {
+            $approx      = true;
+            $date->$prop = "01";
+          }
+        }
+      }
+      else {
+        $date = "now";
+      }
+      $dates->$delta = new \DateTime((string) $date);
     }
-    return "<time datetime='{$this->year}'{$attributes}>{$this->year}</time>";
-  }
-
-  /**
-   * Set the date.
-   *
-   * @param string $date
-   *   Any valid SQL date string.
-   * @return this
-   */
-  public function setDate($date) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert(preg_match(self::REGEXP_W3C, $date) === 1, "Invalid date '{$date}'!");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
-    // Reset properties and directly return if the passed date is empty.
-    $this->year = $this->month = $this->day = $this->date = null;
-    if (empty($date)) {
-      return $this;
+    $format = "%Y";
+    if ($approx) {
+      $format = $this->intl->t("~{0}", $format);
     }
-
-    // Split the given W3C/SQL date at its delimiter and export to object scope.
-    $date = explode("-", $date, 3);
-
-    // Set individual parts if available.
-    if (isset($date[0])) {
-      $this->year = str_pad($date[0], 4, "0");
-    }
-    if (isset($date[1])) {
-      $this->month = str_pad($date[1], 2, "0");
-    }
-    if (isset($date[2])) {
-      $this->day = str_pad($date[2], 2, "0");
-    }
-
-    // Put the parts together in a valid W3C/SQL format.
-    $this->date = sprintf("%04d-%02d-%02d", $this->year, $this->month, $this->day);
-
-    return $this;
+    return $dates->from->diff($dates->to)->format($format);
   }
 
 
@@ -194,65 +118,6 @@ final class Date {
     $attributes["datetime"] = $this->iso8601Format();
     $formatted = $this->intlFormat($intl);
     return "<time{$this->presenter->expandTagAttributes($attributes)}>{$formatted}</time>";
-  }
-
-  /**
-   * Get the age of the date in years with approximation if dates are not complete.
-   *
-   * @param int|string $date [optional]
-   *   A date/time string in a valid format as explained in {@link http://www.php.net/manual/en/datetime.formats.php Date
-   *   and Time Formats} or an integer, which is treated as UNIX timestamp. Defaults to <code>"now"</code>.
-   * @return string
-   *   The age of the date in years (with approximation when dates are not complete) or <code>NULL</code> if years are missing.
-   */
-  public function getAge($date = "now") {
-    $approximate = false;
-    if (is_int($date)) {
-      $date = "@{$date}";
-    }
-    // Parse the date and repair the value if month or day are missing.
-    if (is_string($date) && $date != "now") {
-      // Make sure date_parse() does not interpret incomplete dates as time strings.
-      $dateInfo = date_parse("{$date} 00:00:00");
-      if ($dateInfo["year"] === false) {
-        return null;
-      }
-      if ($dateInfo["month"] === false || $dateInfo["month"] === 0) {
-        $dateInfo["month"] = 1;
-        $approximate = true;
-      }
-      if ($dateInfo["day"] === false || $dateInfo["day"] === 0) {
-        $dateInfo["day"] = 1;
-        $approximate = true;
-      }
-      $date = "{$dateInfo["year"]}-{$dateInfo["month"]}-{$dateInfo["day"]}";
-    }
-    $date   = new \DateTime($date);
-
-    // Construct a valid representation of the internal date.
-    $thisDate = "{$this->dateInfo["year"]}-";
-    if ($this->dateInfo["month"] === 0) {
-      $thisDate .= "01";
-      $approximate = true;
-    }
-    else {
-      $thisDate .= $this->dateInfo["month"];
-    }
-    if ($this->dateInfo["day"] === 0) {
-      $thisDate .= "-01";
-      $approximate = true;
-    }
-    else {
-      $thisDate .= "-{$this->dateInfo["day"]}";
-    }
-    $thisDate = new \DateTime($thisDate);
-
-    // Finally format the diff.
-    $format = "%Y";
-    if ($approximate === true) {
-      $format = "~{$format}";
-    }
-    return $thisDate->diff($date)->format($format);
   }
 
   /**

@@ -17,13 +17,8 @@
  */
 namespace MovLib\Presentation\User;
 
-use \MovLib\Data\Image\MoviePoster;
-use \MovLib\Data\Movie\Movie;
-use \MovLib\Data\User\FullUser;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Country;
-use \MovLib\Presentation\Partial\Date;
-use \MovLib\Presentation\Partial\Time;
+use \MovLib\Data\User\User;
+use \MovLib\Partial\Alert;
 
 /**
  * Public user profile presentation.
@@ -35,6 +30,7 @@ use \MovLib\Presentation\Partial\Time;
  * @since 0.0.1-dev
  */
 class Show extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\DateTrait;
   use \MovLib\Partial\SidebarTrait;
 
 
@@ -42,9 +38,9 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
 
 
   /**
-   * The user we are currently displaying.
+   * The user to present.
    *
-   * @var \MovLib\Data\User\FullUser
+   * @var \MovLib\Data\User\User
    */
   protected $user;
 
@@ -54,23 +50,21 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
 
   /**
    * Instantiate new user presentation.
-   *
-   * @throws \MovLib\Exception\DatabaseException
-   * @throws \MovLib\Presentation\Error\NotFound
-   * @throws \MovLib\Presentation\Redirect\Permanent
    */
   public function init() {
-    $this->user = new FullUser(FullUser::FROM_NAME, $_SERVER["USER_NAME"]);
-    $this->initPage($this->user->name);
-    $routeArgs = [ $this->user->filename ];
-    $this->initLanguageLinks("/user/{0}", $routeArgs);
-    $this->initBreadcrumb([[ $this->intl->rp("/users"), $this->intl->t("Users") ]]);
-    $this->sidebarInit([
-      [ $this->intl->r("/user/{0}/uploads", $routeArgs), "{$this->intl->t("Uploads")} <span class='fr'>{$this->intl->format("{0,number}", [ $this->user->getTotalUploadsCount() ])}</span>" ],
-      [ $this->intl->r("/user/{0}/collection", $routeArgs), "{$this->intl->t("Collection")} <span class='fr'>{$this->intl->format("{0,number}", [ $this->user->getTotalCollectionCount() ])}</span>" ],
-      [ $this->intl->r("/user/{0}/contact", $routeArgs), $this->intl->t("Contact") ],
-    ]);
-    $kernel->stylesheets[] = "user";
+    $this->user = new User($this->diContainerHTTP);
+    $this->user->init(User::FROM_NAME, $_SERVER["USER_NAME"]);
+    $this->stylesheets[] = "user";
+    $this
+      ->initPage($this->user->name)
+      ->initLanguageLinks("/user/{0}", $this->user->name)
+      ->initBreadcrumb([[ $this->intl->rp("/users"), $this->intl->t("Users") ] ])
+      ->sidebarInit([
+        [ $this->intl->r("/user/{0}/uploads", $this->user->name), "{$this->intl->t("Uploads")} <span class='fr'>{$this->intl->format("{0,number}", 0)}</span>" ],
+        [ $this->intl->r("/user/{0}/collection", $this->user->name), "{$this->intl->t("Collection")} <span class='fr'>{$this->intl->format("{0,number}", 0)}</span>" ],
+        [ $this->intl->r("/user/{0}/contact", $this->user->name), $this->intl->t("Contact") ],
+      ])
+    ;
   }
 
 
@@ -78,9 +72,9 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
 
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  protected function getPageContent(){
+  public function getContent(){
     // http://schema.org/Person
     $this->schemaType = "Person";
 
@@ -95,16 +89,15 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
 
     // Format the user's birthday if available.
     if ($this->user->birthday) {
-      $date = new Date($this->user->birthday);
-      $personalData[] = "<time itemprop='birthDate' datetime='{$date->dateValue}'>{$date->getAge()}</time>";
+      $personalData[] = "<time datetime='{$this->user->birthday}' property='birthDate'>{$this->dateGetAge($this->user->birthday)}</time>";
     }
     if ($this->user->sex > 0) {
       $gender     = $this->user->sex === 1 ? $this->intl->t("Male") : $this->intl->t("Female");
       $personalData[] = "<span itemprop='gender'>{$gender}</span>";
     }
     if ($this->user->countryCode) {
-      $country        = new Country($this->user->countryCode);
-      $personalData[] = "<span itemprop='nationality'>{$country}</span>";
+//      $country        = new Country($this->user->countryCode);
+//      $personalData[] = "<span itemprop='nationality'>{$country}</span>";
     }
 
     // Link the user's real name to the website if we have both properties.
@@ -129,12 +122,13 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
       $personalData = "<p>{$personalData}</p>";
     }
 
-    $avatar = $this->getImage($this->user->getStyle(), false, [ "itemprop" => "image" ]);
+//    $avatar = $this->getImage($this->user->getStyle(), false, [ "itemprop" => "image" ]);
+    $avatar = "<img alt='' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='120' height='120'>";
 
     // Display additional info about this user after the name and the avatar to the right of it.
     $this->headingAfter = "{$personalData}<small>{$this->intl->t("Joined {date} and was last seen {time}.", [
-      "date" => (new Date($this->user->created))->intlFormat(),
-      "time" => (new Time($this->user->access))->formatRelative(),
+      "date" => ""/*(new Date($this->user->created))->intlFormat()*/,
+      "time" => ""/*(new Time($this->user->access))->formatRelative()*/,
     ])}</small></div><div class='s s2'>{$avatar}</div></div>";
 
     $publicProfile = $edit = null;
@@ -142,14 +136,14 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
     // ----------------------------------------------------------------------------------------------------------------- About Me
 
     $aboutMe = null;
-    if (empty($this->user->aboutMe) && $session->userId === $this->user->id) {
+    if (empty($this->user->aboutMe) && $this->session->userId === $this->user->id) {
       $aboutMe = "<p>{$this->intl->t("Your profile is currently empty, {0}click here to edit{1}.", [
         "<a href='{$this->intl->r("/profile/account-settings")}'>", "</a>"
       ])}</p>";
     }
     else {
       $aboutMe = $this->htmlDecode($this->user->aboutMe);
-      if ($session->userId === $this->user->id) {
+      if ($this->session->userId === $this->user->id) {
         $edit = "<a class='small edit' href='{$this->intl->r("/profile/account-settings")}'>{$this->intl->t("edit")}</a>";
       }
     }
@@ -160,78 +154,77 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
     // ----------------------------------------------------------------------------------------------------------------- Rating Stream
 
     $publicProfile .= "<h2>{$this->intl->t("Recently Rated Movies")}</h2>";
-    $noRatingsText = new Alert("", $this->intl->t("No rated Movies"), Alert::SEVERITY_INFO);
-    if ($session->userId === $this->user->id) {
-      $noRatingsText->message = $this->intl->t("You haven’t rated a single movie yet, use the {0}search{1} to explore movies you already know.", [
+    if ($this->session->userId === $this->user->id) {
+      $noRatingsText = new Alert($this->intl->t("You haven’t rated a single movie yet, use the {0}search{1} to explore movies you already know.", [
           "<a href='{$this->intl->r("/search")}'>", "</a>"
-      ]);
+      ]), $this->intl->t("No rated Movies"), Alert::SEVERITY_INFO);
     }
     else {
-      $noRatingsText->message = $this->intl->t("{username} hasn’t rated a single movie yet, that makes us a sad panda.", [
+      $noRatingsText = new Alert($this->intl->t("{username} hasn’t rated a single movie yet, that makes us a sad panda.", [
           "username" => $this->user->name
-      ]);
+      ]), $this->intl->t("No rated Movies"), Alert::SEVERITY_INFO);
     }
 
-    $ratings = Movie::getUserRatings($this->user->id);
+//    $ratings = Movie::getUserRatings($this->user->id);
     $ratingStream = null;
-    /* @var $movie \MovLib\Data\Movie\FullMovie */
-    while ($movie = $ratings->fetch_object("\\MovLib\\Data\\Movie\\FullMovie")) {
-      // We have to use different micro-data if display and original title differ.
-      if ($movie->displayTitle != $movie->originalTitle) {
-        $displayTitleItemprop = "alternateName";
-        $movie->originalTitle = "<br><span class='small'>{$this->intl->t("{0} ({1})", [
-          "<span itemprop='name'{$this->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>",
-          "<i>{$this->intl->t("original title")}</i>",
-        ])}</span>";
-      }
-      // Simplay clear the original title if it's the same as the display title.
-      else {
-        $displayTitleItemprop = "name";
-        $movie->originalTitle = null;
-      }
-      $movie->displayTitle = "<span class='link-color' itemprop='{$displayTitleItemprop}'{$this->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}</span>";
-
-      // Append year enclosed in micro-data to display title if available.
-      if (isset($movie->year)) {
-        $movie->displayTitle = $this->intl->t("{0} ({1})", [ $movie->displayTitle, "<span itemprop='datePublished'>{$movie->year}</span>" ]);
-      }
-
-      $ratingInfo = null;
-      $ratingData = $movie->getUserRating($this->user->id);
-      if ($ratingData !== null) {
-        $rating = str_repeat("<img alt='' height='20' src='{$this->getURL("asset://star.svg")}' width='24'>", $ratingData["rating"]);
-        $ratingTime = (new Time($ratingData["created"]))->formatRelative();
-        $ratingInfo = "<div class ='rating-user tar' title='{$this->intl->t("{user}’s rating", [ "user" => $this->user->name])}'>{$rating}<br><small>{$ratingTime}</small></div>";
-      }
-
-      // Construct the genre listing.
-      $genres = null;
-      $result = $movie->getGenres();
-      $route  = $this->intl->r("/genre/{0}");
-      while ($row = $result->fetch_assoc()) {
-        if ($genres) {
-          $genres .= "&nbsp;";
-        }
-        $row["route"] = str_replace("{0}", $row["id"], $route);
-        $genres      .= "<a class='label' href='{$row["route"]}' itemprop='genre'>{$row["name"]}</a>";
-      }
-      if ($genres) {
-        $genres = "<p class='small'>{$genres}</p>";
-      }
-
-      // Put the movie list entry together.
-      $ratingStream .=
-        "<li class='s10' itemtype='http://schema.org/Movie' itemscope>" .
-          "<div class='hover-item no-link r'>" .
-            "<div class='s s1 tac'>" .
-              $this->getImage($movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01), false, [ "itemprop" => "image" ]) .
-            "</div>" .
-            $ratingInfo .
-            "<span class='s s7'><p><a href='{$movie->route}' itemprop='url'>{$movie->displayTitle}</a>{$movie->originalTitle}</p>{$genres}</span>" .
-          "</a>" .
-        "</li>"
-      ;
-    }
+//    /* @var $movie \MovLib\Data\Movie\FullMovie */
+//    while ($movie = $ratings->fetch_object("\\MovLib\\Data\\Movie\\FullMovie")) {
+//      // We have to use different micro-data if display and original title differ.
+//      if ($movie->displayTitle != $movie->originalTitle) {
+//        $displayTitleItemprop = "alternateName";
+//        $movie->originalTitle = "<br><span class='small'>{$this->intl->t("{0} ({1})", [
+//          "<span itemprop='name'{$this->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>",
+//          "<i>{$this->intl->t("original title")}</i>",
+//        ])}</span>";
+//      }
+//      // Simplay clear the original title if it's the same as the display title.
+//      else {
+//        $displayTitleItemprop = "name";
+//        $movie->originalTitle = null;
+//      }
+//      $movie->displayTitle = "<span class='link-color' itemprop='{$displayTitleItemprop}'{$this->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}</span>";
+//
+//      // Append year enclosed in micro-data to display title if available.
+//      if (isset($movie->year)) {
+//        $movie->displayTitle = $this->intl->t("{0} ({1})", [ $movie->displayTitle, "<span itemprop='datePublished'>{$movie->year}</span>" ]);
+//      }
+//
+//      $ratingInfo = null;
+//      $ratingData = $movie->getUserRating($this->user->id);
+//      if ($ratingData !== null) {
+//        $rating = str_repeat("<img alt='' height='20' src='{$this->getURL("asset://star.svg")}' width='24'>", $ratingData["rating"]);
+//        $ratingTime = (new Time($ratingData["created"]))->formatRelative();
+//        $ratingInfo = "<div class ='rating-user tar' title='{$this->intl->t("{user}’s rating", [ "user" => $this->user->name])}'>{$rating}<br><small>{$ratingTime}</small></div>";
+//      }
+//
+//      // Construct the genre listing.
+//      $genres = null;
+//      $result = $movie->getGenres();
+//      $route  = $this->intl->r("/genre/{0}");
+//      while ($row = $result->fetch_assoc()) {
+//        if ($genres) {
+//          $genres .= "&nbsp;";
+//        }
+//        $row["route"] = str_replace("{0}", $row["id"], $route);
+//        $genres      .= "<a class='label' href='{$row["route"]}' itemprop='genre'>{$row["name"]}</a>";
+//      }
+//      if ($genres) {
+//        $genres = "<p class='small'>{$genres}</p>";
+//      }
+//
+//      // Put the movie list entry together.
+//      $ratingStream .=
+//        "<li class='s10' itemtype='http://schema.org/Movie' itemscope>" .
+//          "<div class='hover-item no-link r'>" .
+//            "<div class='s s1 tac'>" .
+//              $this->getImage($movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01), false, [ "itemprop" => "image" ]) .
+//            "</div>" .
+//            $ratingInfo .
+//            "<span class='s s7'><p><a href='{$movie->route}' itemprop='url'>{$movie->displayTitle}</a>{$movie->originalTitle}</p>{$genres}</span>" .
+//          "</a>" .
+//        "</li>"
+//      ;
+//    }
 
     if ($ratingStream) {
       $publicProfile .= "<ol class='hover-list no-list'>{$ratingStream}</ol>";

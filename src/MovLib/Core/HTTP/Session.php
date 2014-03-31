@@ -17,9 +17,7 @@
  */
 namespace MovLib\Core\HTTP;
 
-use \MovLib\Data\User;
-use \MovLib\Exception\DatabaseException;
-use \MovLib\Exception\UnauthorizedException;
+use \MovLib\Data\User\User;
 
 /**
  * The session model loads the basic user information, creates, updates and deletes sessions.
@@ -213,15 +211,6 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function authenticate($email, $rawPassword) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    foreach ([ "email", "rawPassword" ] as $param) {
-      if (empty($email) || !is_string($email)) {
-        throw new \InvalidArgumentException("\${$param} cannot be empty and must be of type string.");
-      }
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
     try {
       // Load necessary user data from storage (if we have any).
       $user = new User($this->diContainer);
