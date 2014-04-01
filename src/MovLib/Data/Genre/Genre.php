@@ -131,8 +131,6 @@ final class Genre extends \MovLib\Data\AbstractEntity {
       $this->description,
       $this->id,
       $this->name,
-      $this->movieCount,
-      $this->seriesCount,
       $this->wikipedia
     );
     $found = $stmt->fetch();
@@ -140,6 +138,10 @@ final class Genre extends \MovLib\Data\AbstractEntity {
     if ($found === null) {
       throw new NotFoundException("Couldn't find genre for '{$id}'!");
     }
+
+    // @todo Store counts as columns in table.
+    $this->movieCount  = $this->getCount("movies_genres", "DISTINCT `movie_id`");
+    $this->seriesCount = $this->getCount("series_genres", "DISTINCT `series_id`");
 
     return $this->initFetchObject();
   }
@@ -171,8 +173,6 @@ final class Genre extends \MovLib\Data\AbstractEntity {
         COLUMN_GET(`dyn_descriptions`, ? AS CHAR) AS `description`,
         `id`,
         COLUMN_GET(`dyn_names`, ? AS CHAR) AS `name`,
-        `movie_count` AS `movieCount`,
-        `series_count` AS `seriesCount`,
         IFNULL(COLUMN_GET(`dyn_wikipedia`, ? AS CHAR), COLUMN_GET(`dyn_wikipedia`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `wikipedia`
       FROM `genres`"
     ;

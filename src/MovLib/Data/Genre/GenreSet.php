@@ -39,14 +39,20 @@ final class GenreSet extends \MovLib\Data\AbstractSet {
    * {@inheritdoc}
    */
   public function getOrdered($by, $offset, $limit) {
+    // @todo Store counts as columns in table.
     return $this->getMySQLi()->query(<<<SQL
 SELECT
   `genres`.`id` AS `id`,
   COLUMN_GET(`dyn_names`, '{$this->intl->languageCode}' AS CHAR) AS `name`,
-  `genres`.`movie_count` AS `movieCount`,
-  `genres`.`series_count` AS `seriesCount`
+  COUNT(DISTINCT `movies_genres`.`movie_id`) AS `movieCount`,
+  COUNT(DISTINCT `series_genres`.`series_id`) AS `seriesCount`
 FROM `genres`
+  LEFT JOIN `movies_genres`
+    ON `movies_genres`.`genre_id` = `genres`.`id`
+  LEFT JOIN `series_genres`
+    ON `series_genres`.`genre_id` = `genres`.`id`
 WHERE `deleted` = false
+GROUP BY `id`, `name`
 ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}
 SQL
     );
