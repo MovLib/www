@@ -1,0 +1,3432 @@
+# English translations for PACKAGE package.
+# Copyright (C) 2014 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# MovLib Developers <info@movlib.org>, 2014.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: MivLib 0.0.1-dev\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-04-01 14:53+0000\n"
+"PO-Revision-Date: 2014-04-01 18:22+0100\n"
+"Last-Translator: MovLib Developers <info@movlib.org>\n"
+"Language-Team: English <info@movlib.org>\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 1.6.4\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+
+#: /var/www2/src/MovLib/Data/Format/AbstractFormat.php:101
+#: /var/www2/src/MovLib/Partial/Format/AbstractFormat.php:101
+msgid "Black & White and Color"
+msgstr "Black & White and Color"
+
+#: /var/www2/src/MovLib/Data/Image/MoviePoster.php:62
+#: /var/www2/src/MovLib/Presentation/Movie/Images/Posters.php:38
+msgid "Poster"
+msgstr "Poster"
+
+#: /var/www2/src/MovLib/Data/Image/MoviePoster.php:62
+#: /var/www2/src/MovLib/Presentation/Movie/Images/AbstractBase.php:203
+#: /var/www2/src/MovLib/Presentation/Movie/Images/Posters.php:38
+msgid "Posters"
+msgstr "Posters"
+
+#: /var/www2/src/MovLib/Data/Image/MovieLobbyCard.php:62
+#: /var/www2/src/MovLib/Presentation/Movie/Images/LobbyCards.php:38
+msgid "Lobby Card"
+msgstr "Lobby Card"
+
+#: /var/www2/src/MovLib/Data/Image/MovieLobbyCard.php:62
+#: /var/www2/src/MovLib/Presentation/Movie/Images/AbstractBase.php:204
+#: /var/www2/src/MovLib/Presentation/Movie/Images/LobbyCards.php:38
+msgid "Lobby Cards"
+msgstr "Lobby Cards"
+
+#: /var/www2/src/MovLib/Data/Image/AbstractMovieImage.php:236
+#: /var/www2/src/MovLib/Presentation/Movie/Images/AbstractBase.php:106
+msgid "{image_name} for {title}"
+msgstr "{image_name} for {title}"
+
+#: /var/www2/src/MovLib/Data/Image/MovieBackdrop.php:62
+#: /var/www2/src/MovLib/Presentation/Movie/Images/Backdrops.php:38
+msgid "Backdrop"
+msgstr "Backdrop"
+
+#: /var/www2/src/MovLib/Data/Image/MovieBackdrop.php:62
+#: /var/www2/src/MovLib/Presentation/Movie/Images/AbstractBase.php:205
+#: /var/www2/src/MovLib/Presentation/Movie/Images/Backdrops.php:38
+msgid "Backdrops"
+msgstr "Backdrops"
+
+#: /var/www2/src/MovLib/Data/Movie/FullMovie.php:173
+#: /var/www2/src/MovLib/Data/Person/FullPerson.php:400
+msgid "Himself"
+msgstr "Himself"
+
+#: /var/www2/src/MovLib/Data/Movie/FullMovie.php:174
+#: /var/www2/src/MovLib/Data/Person/FullPerson.php:404
+msgid "Herself"
+msgstr "Herself"
+
+#: /var/www2/src/MovLib/Data/Movie/FullMovie.php:175
+#: /var/www2/src/MovLib/Data/Person/FullPerson.php:408
+msgid "Self"
+msgstr "Self"
+
+#: /var/www2/src/MovLib/Data/Movie/FullMovie.php:459
+msgid "{0} – {1} ({2})"
+msgstr "{0} – {1} ({2})"
+
+#: /var/www2/src/MovLib/Data/Movie/FullMovie.php:462
+#: /var/www2/src/MovLib/Partial/License.php:100
+#: /var/www2/src/MovLib/Partial/PersonTrait.php:44
+#: /var/www2/src/MovLib/Console/Command/Install/SeedAspectRatios.php:90
+#: /var/www2/src/MovLib/Presentation/Movie/Images/AbstractBase.php:117
+#: /var/www2/src/MovLib/Presentation/Movie/Image.php:227
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:170
+#: /var/www2/src/MovLib/Presentation/Person/Show.php:93
+msgid "{0} ({1})"
+msgstr "{0} ({1})"
+
+#: /var/www2/src/MovLib/Data/User/Collection.php:66
+#: /var/www2/src/MovLib/Data/User/Collection.php:93
+msgid "Mint (M)"
+msgstr "Mint (M)"
+
+#: /var/www2/src/MovLib/Data/User/Collection.php:67
+#: /var/www2/src/MovLib/Data/User/Collection.php:94
+msgid "Near Mint (NM or M-)"
+msgstr "Near Mint (NM or M-)"
+
+#: /var/www2/src/MovLib/Data/User/Collection.php:68
+#: /var/www2/src/MovLib/Data/User/Collection.php:95
+msgid "Very Good Plus (VG+)"
+msgstr "Very Good Plus (VG+)"
+
+#: /var/www2/src/MovLib/Data/User/Collection.php:69
+#: /var/www2/src/MovLib/Data/User/Collection.php:96
+msgid "Very Good (VG)"
+msgstr "Very Good (VG)"
+
+#: /var/www2/src/MovLib/Data/User/Collection.php:70
+#: /var/www2/src/MovLib/Data/User/Collection.php:97
+msgid "Good Plus (G+)"
+msgstr "Good Plus (G+)"
+
+#: /var/www2/src/MovLib/Data/User/Collection.php:71
+#: /var/www2/src/MovLib/Data/User/Collection.php:98
+msgid "Good (G)"
+msgstr "Good (G)"
+
+#: /var/www2/src/MovLib/Data/User/Collection.php:72
+#: /var/www2/src/MovLib/Data/User/Collection.php:99
+msgid "Fair (F)"
+msgstr "Fair (F)"
+
+#: /var/www2/src/MovLib/Data/User/Collection.php:73
+#: /var/www2/src/MovLib/Data/User/Collection.php:100
+msgid "Poor (P)"
+msgstr "Poor (P)"
+
+#: /var/www2/src/MovLib/Data/User/Collection.php:91
+msgid "Generic"
+msgstr "Generic"
+
+#: /var/www2/src/MovLib/Data/User/Collection.php:92
+msgid "No Cover"
+msgstr "No Cover"
+
+#: /var/www2/src/MovLib/Core/HTTP/Request.php:203
+msgid "Privacy Policy"
+msgstr "Privacy Policy"
+
+#: /var/www2/src/MovLib/Partial/EventTrait.php:68
+#: /var/www2/src/MovLib/Partial/Listing/AwardEventListing.php:71
+#: /var/www2/src/MovLib/Presentation/Event/Show.php:91
+msgid "in {0}"
+msgstr "in {0}"
+
+#: /var/www2/src/MovLib/Partial/Currency.php:127
+msgid "Currency"
+msgstr "Currency"
+
+#: /var/www2/src/MovLib/Partial/Language.php:115
+#: /var/www2/src/MovLib/Presentation/Movie/ImageEdit.php:131
+#: /var/www2/src/MovLib/Presentation/Movie/ImageUpload.php:142
+#: /var/www2/src/MovLib/Presentation/Movie/BackdropUpload.php:102
+msgid "Language"
+msgstr "Language"
+
+#: /var/www2/src/MovLib/Partial/PaginationTrait.php:158
+msgid "Page {0, number, integer}"
+msgstr "Page {0, number, integer}"
+
+#: /var/www2/src/MovLib/Partial/PaginationTrait.php:246
+msgid "Pagination"
+msgstr "Pagination"
+
+#: /var/www2/src/MovLib/Partial/Form.php:315
+msgid "Form Outdated"
+msgstr "Form Outdated"
+
+#: /var/www2/src/MovLib/Partial/Form.php:358
+msgid "Validation Error"
+msgstr "Validation Error"
+
+#: /var/www2/src/MovLib/Partial/Duration.php:119
+msgid "{0, number, integer} min."
+msgstr "{0, number, integer} min."
+
+#: /var/www2/src/MovLib/Partial/QuickInfo.php:80
+#: /var/www2/src/MovLib/Partial/Place.php:119
+#: /var/www2/src/MovLib/Presentation/AbstractPresenter.php:463
+msgid "{0}, {1}"
+msgstr "{0}, {1}"
+
+#: /var/www2/src/MovLib/Partial/FormElement/TextareaHTMLRaw.php:175
+msgid ""
+"You must be signed in and have administrator privileges to enter raw HTML."
+msgstr ""
+"You must be signed in and have administrator privileges to enter raw HTML."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputFloat.php:59
+#: /var/www2/src/MovLib/Partial/FormElement/InputInteger.php:44
+msgid "The “{0}” field must be an integer."
+msgstr "The “{0}” field must be an integer."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputFloat.php:65
+msgid "The “{0}” is too large, the value must be {1,number} or less."
+msgstr "The “{0}” is too large, the value must be {1,number} or less."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputFloat.php:68
+msgid "The “{0}” is too low, the value must be {1,number} or more."
+msgstr "The “{0}” is too low, the value must be {1,number} or more."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputURL.php:121
+msgid ""
+"The URL must start with either http:// or https:// and continue with a valid "
+"domain (username, password and port are not allowed)"
+msgstr ""
+"The URL must start with either http:// or https:// and continue with a valid "
+"domain (username, password and port are not allowed)"
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputURL.php:146
+#: /var/www2/src/MovLib/Partial/FormElement/InputURL.php:215
+msgid "The URL is invalid."
+msgstr "The URL is invalid."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputURL.php:156
+msgid "Scheme (protocol) and host are mandatory in a URL."
+msgstr "Scheme (protocol) and host are mandatory in a URL."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputURL.php:160
+msgid "Scheme (protocol) must be of type HTTP or HTTPS."
+msgstr "Scheme (protocol) must be of type HTTP or HTTPS."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputURL.php:164
+msgid "The URL must have a valid {0}TLD{1}."
+msgstr "The URL must have a valid {0}TLD{1}."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputURL.php:177
+msgid "External URLs are not allowed."
+msgstr "External URLs are not allowed."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputURL.php:183
+msgid ""
+"The URL contains illegal parts. Port, usernames and passwords are not "
+"allowed!"
+msgstr ""
+"The URL contains illegal parts. Port, usernames and passwords are not "
+"allowed!"
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputURL.php:243
+msgid "The URL doesn’t exists (more specifically isn’t reachable)."
+msgstr "The URL doesn’t exists (more specifically isn’t reachable)."
+
+#: /var/www2/src/MovLib/Partial/FormElement/AbstractFormElement.php:280
+msgid "The “{0}” field is required."
+msgstr "The “{0}” field is required."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputLinesURL.php:70
+#: /var/www2/src/MovLib/Partial/FormElement/InputLinesText.php:69
+msgid "The “{0}” text field is mandatory."
+msgstr "The “{0}” text field is mandatory."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputDateSeparate.php:185
+msgid "The “{0}” date is mandatory."
+msgstr "The “{0}” date is mandatory."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputDateSeparate.php:192
+msgid "Month and Year are mandatory in “{0}” date."
+msgstr "Month and Year are mandatory in “{0}” date."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputDateSeparate.php:197
+msgid "Year is mandatory in “{0}” date."
+msgstr "Year is mandatory in “{0}” date."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputDateSeparate.php:213
+msgid "The “{0}” date is invalid."
+msgstr "The “{0}” date is invalid."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputEmail.php:92
+msgid ""
+"An email address in the format [local]@[host].[tld] with a maximum of {0,"
+"number,integer} characters"
+msgstr ""
+"An email address in the format [local]@[host].[tld] with a maximum of {0,"
+"number,integer} characters"
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputEmail.php:113
+msgid "The email address is too long: it must be {0,number,integer} or less."
+msgstr "The email address is too long: it must be {0,number,integer} or less."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputEmail.php:118
+msgid "The email address is invalid."
+msgstr "The email address is invalid."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputEmail.php:133
+msgid "The email address is unreachable."
+msgstr "The email address is unreachable."
+
+#: /var/www2/src/MovLib/Partial/FormElement/AbstractInputFile.php:87
+msgid "The “{0}” file is required."
+msgstr "The “{0}” file is required."
+
+#: /var/www2/src/MovLib/Partial/FormElement/AbstractInputFile.php:99
+msgid "The uploaded file is too large, it must be: {maxsize} or less"
+msgstr "The uploaded file is too large, it must be: {maxsize} or less"
+
+#: /var/www2/src/MovLib/Partial/FormElement/AbstractInputFile.php:105
+msgid "The upload didn’t complete, please try again."
+msgstr "The upload didn’t complete, please try again."
+
+#: /var/www2/src/MovLib/Partial/FormElement/AbstractInputFile.php:110
+msgid ""
+"An unknown problem was encountered while processing your upload, please try "
+"again."
+msgstr ""
+"An unknown problem was encountered while processing your upload, please try "
+"again."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputText.php:73
+msgid "The “{0}” field contains invalid UTF-8 characters."
+msgstr "The “{0}” field contains invalid UTF-8 characters."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputText.php:78
+msgid "The “{0}” field contains illegal low ASCII characters."
+msgstr "The “{0}” field contains illegal low ASCII characters."
+
+#: /var/www2/src/MovLib/Partial/FormElement/Select.php:160
+msgid "{0} isn’t a valid choice."
+msgstr "{0} isn’t a valid choice."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputInteger.php:50
+msgid "The “{0}” is too large, the value must be {1,number,integer} or less."
+msgstr "The “{0}” is too large, the value must be {1,number,integer} or less."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputInteger.php:53
+msgid "The “{0}” is too low, the value must be {1,number,integer} or more."
+msgstr "The “{0}” is too low, the value must be {1,number,integer} or more."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputDate.php:105
+msgid ""
+"The “{0}” date is invalid, only the following format is valid: {format}."
+msgstr ""
+"The “{0}” date is invalid, only the following format is valid: {format}."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputDate.php:112
+msgid "The date {0} must not be greater than {1}."
+msgstr "The date {0} must not be greater than {1}."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputDate.php:123
+msgid "The date {0} must not be less than {1}."
+msgstr "The date {0} must not be less than {1}."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputCheckbox.php:107
+msgid "The checkbox is required."
+msgstr "The checkbox is required."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputHTML.php:339
+msgid "Invalid HTML in “{label}” text."
+msgstr "Invalid HTML in “{label}” text."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputHTML.php:362
+msgid "Invalid HTML after the validation in “{label}” text."
+msgstr "Invalid HTML after the validation in “{label}” text."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputHTML.php:386
+msgid "Links without a link target in “{label}” text."
+msgstr "Links without a link target in “{label}” text."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputHTML.php:392
+#: /var/www2/src/MovLib/Partial/FormElement/InputHTML.php:448
+msgid "Invalid link in “{label}” text ({link_url})."
+msgstr "Invalid link in “{label}” text ({link_url})."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputHTML.php:408
+msgid "No external links are allowed in “{label}” text."
+msgstr "No external links are allowed in “{label}” text."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputHTML.php:435
+msgid "Credentials are not allowed in “{label}” text ({link_url})."
+msgstr "Credentials are not allowed in “{label}” text ({link_url})."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputHTML.php:441
+msgid "Ports are not allowed in “{label}” text ({link_url})."
+msgstr "Ports are not allowed in “{label}” text ({link_url})."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputHTML.php:488
+msgid "The “{label}” text contains a quotation without source."
+msgstr "The “{label}” text contains a quotation without source."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputHTML.php:493
+msgid "The “{label}” text contains quotation without text."
+msgstr "The “{label}” text contains quotation without text."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputHTML.php:532
+msgid "Found disallowed tag {tag} in quotation."
+msgstr "Found disallowed tag {tag} in quotation."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputHTML.php:560
+msgid ""
+"Found disallowed HTML tags in image caption, allowed tags are: {taglist}"
+msgstr ""
+"Found disallowed HTML tags in image caption, allowed tags are: {taglist}"
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputHTML.php:563
+msgid "Found disallowed HTML tags, allowed tags are: {taglist}"
+msgstr "Found disallowed HTML tags, allowed tags are: {taglist}"
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputHTML.php:623
+msgid "The image caption is mandatory and cannot be empty."
+msgstr "The image caption is mandatory and cannot be empty."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputHTML.php:628
+msgid "The image is mandatory and cannot be empty."
+msgstr "The image is mandatory and cannot be empty."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputHTML.php:647
+msgid "Image URL seems to be invalid."
+msgstr "Image URL seems to be invalid."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputHTML.php:652
+msgid "Only images from {movlib} are allowed."
+msgstr "Only images from {movlib} are allowed."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputHTML.php:660
+msgid "Image doesn’t exist ({image_src})."
+msgstr "Image doesn’t exist ({image_src})."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputHTML.php:744
+msgid "Disallowed CSS classes in “{label}” text, allowed values are: {classes}"
+msgstr ""
+"Disallowed CSS classes in “{label}” text, allowed values are: {classes}"
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputImage.php:126
+msgid ""
+"You must be signed in to upload images. If you don’t have an account yet why "
+"not {0}join {sitename}{1}?."
+msgstr ""
+"You must be signed in to upload images. If you don’t have an account yet why "
+"not {0}join {sitename}{1}?."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputImage.php:145
+msgid ""
+"Image must be larger than {width} × {height} pixels and less than {size,"
+"number,integer} {unit}. Allowed image types: JPG and PNG"
+msgstr ""
+"Image must be larger than {width} × {height} pixels and less than {size,"
+"number,integer} {unit}. Allowed image types: JPG and PNG"
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputImage.php:154
+msgid "The image you see is only a preview, you still have to submit the form."
+msgstr ""
+"The image you see is only a preview, you still have to submit the form."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputImage.php:155
+msgid ""
+"The image you are trying to upload is too large, it must be {size,number,"
+"integer} {unit} or smaller."
+msgstr ""
+"The image you are trying to upload is too large, it must be {size,number,"
+"integer} {unit} or smaller."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputImage.php:160
+msgid ""
+"New images should have a better quality than already existing images, this "
+"includes the resolution. The current image’s resolution is {width} × "
+"{height} and your new image’s is {width_new} × {height_new} pixels. Please "
+"confirm that your upload has a better quality than the existing one despite "
+"the fact of smaller dimensions."
+msgstr ""
+"New images should have a better quality than already existing images, this "
+"includes the resolution. The current image’s resolution is {width} × "
+"{height} and your new image’s is {width_new} × {height_new} pixels. Please "
+"confirm that your upload has a better quality than the existing one despite "
+"the fact of smaller dimensions."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputImage.php:165
+msgid ""
+"The image is too small, it must be larger than {width} × {height} pixels."
+msgstr ""
+"The image is too small, it must be larger than {width} × {height} pixels."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputImage.php:169
+msgid ""
+"Unsupported image type and/or corrupt image, the following types are "
+"supported: JPG and PNG"
+msgstr ""
+"Unsupported image type and/or corrupt image, the following types are "
+"supported: JPG and PNG"
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputPassword.php:83
+msgid ""
+"A password must contain lowercase and uppercase letters, numbers, and must "
+"be at least {0,number,integer} characters long."
+msgstr ""
+"A password must contain lowercase and uppercase letters, numbers, and must "
+"be at least {0,number,integer} characters long."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputPassword.php:104
+msgid ""
+"The password is too short: it must be {0,number,integer} characters or more."
+msgstr ""
+"The password is too short: it must be {0,number,integer} characters or more."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputPassword.php:109
+msgid ""
+"The password is not complex enough: it must contain numbers plus lowercase "
+"and uppercase letters."
+msgstr ""
+"The password is not complex enough: it must contain numbers plus lowercase "
+"and uppercase letters."
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputSex.php:70
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:137
+#: /var/www2/src/MovLib/Presentation/Person/Show.php:85
+#: /var/www2/src/MovLib/Presentation/Person/Show.php:306
+#: /var/www2/src/MovLib/Presentation/User/Show.php:95
+msgid "Female"
+msgstr "Female"
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputSex.php:71
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:137
+#: /var/www2/src/MovLib/Presentation/Person/Show.php:82
+#: /var/www2/src/MovLib/Presentation/Person/Show.php:303
+#: /var/www2/src/MovLib/Presentation/User/Show.php:95
+msgid "Male"
+msgstr "Male"
+
+#: /var/www2/src/MovLib/Partial/FormElement/InputSex.php:72
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:137
+msgid "Unknown"
+msgstr "Unknown"
+
+#: /var/www2/src/MovLib/Partial/Listing/AwardEventListing.php:48
+msgid "$event->place has to be set!"
+msgstr "$event->place has to be set!"
+
+#: /var/www2/src/MovLib/Partial/Listing/AwardEventListing.php:51
+msgid "$event->startDate has to be set!"
+msgstr "$event->startDate has to be set!"
+
+#: /var/www2/src/MovLib/Partial/Listing/PersonMovieListing.php:65
+msgid "This person hasn’t worked on any movies yet."
+msgstr "This person hasn’t worked on any movies yet."
+
+#: /var/www2/src/MovLib/Partial/Listing/PersonMovieListing.php:66
+#: /var/www2/src/MovLib/Partial/Listing/MovieListing.php:130
+#: /var/www2/src/MovLib/Partial/Listing/AwardMovieListing.php:58
+#: /var/www2/src/MovLib/Partial/Listing/CompanyMovieListing.php:58
+msgid "No Movies"
+msgstr "No Movies"
+
+#: /var/www2/src/MovLib/Partial/Listing/AwardEventMovieListing.php:46
+msgid "$movie->awardCategoryIds can not be empty!"
+msgstr "$movie->awardCategoryIds can not be empty!"
+
+#: /var/www2/src/MovLib/Partial/Listing/AwardEventMovieListing.php:49
+msgid "$movie->awardCategoryWon can not be empty!"
+msgstr "$movie->awardCategoryWon can not be empty!"
+
+#: /var/www2/src/MovLib/Partial/Listing/AwardEventMovieListing.php:52
+msgid "$movie->awardedCompanyIds can not be empty!"
+msgstr "$movie->awardedCompanyIds can not be empty!"
+
+#: /var/www2/src/MovLib/Partial/Listing/AwardEventMovieListing.php:55
+msgid "$movie->awardedPersonIds can not be empty!"
+msgstr "$movie->awardedPersonIds can not be empty!"
+
+#: /var/www2/src/MovLib/Partial/Listing/AwardEventMovieListing.php:58
+msgid ""
+"The count of $movie->awardCategoryIds and $movie->awardCategoryWon has to be "
+"equal!"
+msgstr ""
+"The count of $movie->awardCategoryIds and $movie->awardCategoryWon has to be "
+"equal!"
+
+#: /var/www2/src/MovLib/Partial/Listing/AwardEventMovieListing.php:61
+msgid ""
+"The count of $movie->awardCategoryIds and $movie->awardedCompanyIds has to "
+"be equal!"
+msgstr ""
+"The count of $movie->awardCategoryIds and $movie->awardedCompanyIds has to "
+"be equal!"
+
+#: /var/www2/src/MovLib/Partial/Listing/AwardEventMovieListing.php:64
+msgid ""
+"The count of $movie->awardCategoryIds and $movie->awardedPersonIds has to be "
+"equal!"
+msgstr ""
+"The count of $movie->awardCategoryIds and $movie->awardedPersonIds has to be "
+"equal!"
+
+#: /var/www2/src/MovLib/Partial/Listing/AwardEventMovieListing.php:70
+msgid "has won"
+msgstr "has won"
+
+#: /var/www2/src/MovLib/Partial/Listing/AwardEventMovieListing.php:71
+msgid "was nominated in"
+msgstr "was nominated in"
+
+#: /var/www2/src/MovLib/Partial/Listing/MovieListing.php:129
+#: /var/www2/src/MovLib/Partial/Listing/AwardMovieListing.php:57
+#: /var/www2/src/MovLib/Partial/Listing/CompanyMovieListing.php:57
+msgid "No movies match your search criteria."
+msgstr "No movies match your search criteria."
+
+#: /var/www2/src/MovLib/Partial/Listing/AwardMovieListing.php:84
+msgid "$movie->wonCount has to be set!"
+msgstr "$movie->wonCount has to be set!"
+
+#: /var/www2/src/MovLib/Partial/Listing/AwardMovieListing.php:87
+msgid "$movie->nominationCount has to be set!"
+msgstr "$movie->nominationCount has to be set!"
+
+#: /var/www2/src/MovLib/Partial/Listing/PersonCastListing.php:65
+msgid ""
+"No cast assigned yet, please edit this page to provide this information."
+msgstr ""
+"No cast assigned yet, please edit this page to provide this information."
+
+#: /var/www2/src/MovLib/Partial/Listing/CompanyListing.php:122
+msgid "$company has to be a valid company object!"
+msgstr "$company has to be a valid company object!"
+
+#: /var/www2/src/MovLib/Partial/Listing/CompanyListing.php:137
+msgid ""
+"We couldn’t find any company matching your filter criteria, or there simply "
+"isn’t any company available.Would you like to {0}create a new entry{1}?"
+msgstr ""
+"We couldn’t find any company matching your filter criteria, or there simply "
+"isn’t any company available.Would you like to {0}create a new entry{1}?"
+
+#: /var/www2/src/MovLib/Partial/Listing/CompanyListing.php:141
+#: /var/www2/src/MovLib/Presentation/Company/Index.php:100
+#: /var/www2/src/MovLib/Presentation/Company/Random.php:59
+msgid "No Companies"
+msgstr "No Companies"
+
+#: /var/www2/src/MovLib/Partial/Listing/CompanyListing.php:177
+#: /var/www2/src/MovLib/Presentation/Company/Index.php:66
+msgid "Founding Date"
+msgstr "Founding Date"
+
+#: /var/www2/src/MovLib/Partial/Listing/CompanyListing.php:181
+msgid "{0}unknown{1}"
+msgstr "{0}unknown{1}"
+
+#: /var/www2/src/MovLib/Partial/Listing/CompanyListing.php:184
+#: /var/www2/src/MovLib/Presentation/Company/Index.php:67
+msgid "Defunct Date"
+msgstr "Defunct Date"
+
+#: /var/www2/src/MovLib/Partial/Listing/CompanyMovieListing.php:84
+msgid "$movie->jobIds can not be empty!"
+msgstr "$movie->jobIds can not be empty!"
+
+#: /var/www2/src/MovLib/Partial/Listing/CompanyMovieListing.php:88
+msgid "$movie->jobTitles can not be empty!"
+msgstr "$movie->jobTitles can not be empty!"
+
+#: /var/www2/src/MovLib/Partial/Listing/CompanyMovieListing.php:91
+msgid "The count of $movie->jobTitles and $movie->jobIds has to be equal!"
+msgstr "The count of $movie->jobTitles and $movie->jobIds has to be equal!"
+
+#: /var/www2/src/MovLib/Partial/Listing/EntityIndexListing.php:96
+#: /var/www2/src/MovLib/Partial/CompanyTrait.php:56
+#: /var/www2/src/MovLib/Partial/AwardTrait.php:54
+#: /var/www2/src/MovLib/Presentation/Job/Movies.php:47
+#: /var/www2/src/MovLib/Presentation/Award/Movies.php:46
+#: /var/www2/src/MovLib/Presentation/Award/Category/Movies.php:57
+#: /var/www2/src/MovLib/Presentation/Company/Movies.php:53
+#: /var/www2/src/MovLib/Presentation/Search/Show.php:158
+#: /var/www2/src/MovLib/Presentation/Movie/AbstractBase.php:60
+#: /var/www2/src/MovLib/Presentation/Movie/Index.php:45
+#: /var/www2/src/MovLib/Presentation/Movie/Index.php:49
+#: /var/www2/src/MovLib/Presentation/Movie/Charts.php:40
+#: /var/www2/src/MovLib/Presentation/Movie/Charts.php:44
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:77
+#: /var/www2/src/MovLib/Presentation/Person/Movies.php:47
+#: /var/www2/src/MovLib/Presentation/Genre/Movies.php:47
+#: /var/www2/src/MovLib/Presentation/Home.php:53
+#: /var/www2/src/MovLib/Presentation/Event/Movies.php:51
+msgid "Movies"
+msgstr "Movies"
+
+#: /var/www2/src/MovLib/Partial/Listing/EntityIndexListing.php:98
+#: /var/www2/src/MovLib/Partial/CompanyTrait.php:57
+#: /var/www2/src/MovLib/Partial/AwardTrait.php:55
+#: /var/www2/src/MovLib/Presentation/Job/Series.php:46
+#: /var/www2/src/MovLib/Presentation/Award/Series.php:46
+#: /var/www2/src/MovLib/Presentation/Award/Category/Series.php:56
+#: /var/www2/src/MovLib/Presentation/Series/Index.php:35
+#: /var/www2/src/MovLib/Presentation/Series/Index.php:39
+#: /var/www2/src/MovLib/Presentation/Series/Charts.php:40
+#: /var/www2/src/MovLib/Presentation/Series/Charts.php:44
+#: /var/www2/src/MovLib/Presentation/Series/Create.php:44
+#: /var/www2/src/MovLib/Presentation/Company/Series.php:53
+#: /var/www2/src/MovLib/Presentation/Person/Series.php:43
+#: /var/www2/src/MovLib/Presentation/Genre/Series.php:46
+#: /var/www2/src/MovLib/Presentation/Event/Series.php:50
+msgid "Series"
+msgstr "Series"
+
+#: /var/www2/src/MovLib/Partial/Listing/AwardCategoryMovieListing.php:43
+msgid "$movie->won has to be set!"
+msgstr "$movie->won has to be set!"
+
+#: /var/www2/src/MovLib/Partial/Listing/AwardCategoryMovieListing.php:49
+msgid "won"
+msgstr "won"
+
+#: /var/www2/src/MovLib/Partial/Listing/AwardCategoryMovieListing.php:52
+msgid "nominated"
+msgstr "nominated"
+
+#: /var/www2/src/MovLib/Partial/Time.php:104
+msgid "one second ago"
+msgstr "one second ago"
+
+#: /var/www2/src/MovLib/Partial/Time.php:104
+msgid "{0,number,integer} seconds ago"
+msgstr "{0,number,integer} seconds ago"
+
+#: /var/www2/src/MovLib/Partial/Time.php:107
+msgid "a minute ago"
+msgstr "a minute ago"
+
+#: /var/www2/src/MovLib/Partial/Time.php:110
+msgid "{0,number,integer} minutes ago"
+msgstr "{0,number,integer} minutes ago"
+
+#: /var/www2/src/MovLib/Partial/Time.php:113
+msgid "an hour ago"
+msgstr "an hour ago"
+
+#: /var/www2/src/MovLib/Partial/Time.php:116
+msgid "{0,number,integer} hours ago"
+msgstr "{0,number,integer} hours ago"
+
+#: /var/www2/src/MovLib/Partial/Time.php:119
+msgid "yesterday"
+msgstr "yesterday"
+
+#: /var/www2/src/MovLib/Partial/Time.php:122
+msgid "{0,number,integer} days ago"
+msgstr "{0,number,integer} days ago"
+
+#: /var/www2/src/MovLib/Partial/Time.php:126
+msgid "one month ago"
+msgstr "one month ago"
+
+#: /var/www2/src/MovLib/Partial/Time.php:126
+msgid "{0,number,integer} months ago"
+msgstr "{0,number,integer} months ago"
+
+#: /var/www2/src/MovLib/Partial/Time.php:129
+msgid "one year ago"
+msgstr "one year ago"
+
+#: /var/www2/src/MovLib/Partial/Time.php:129
+msgid "{0,number,integer} years ago"
+msgstr "{0,number,integer} years ago"
+
+#: /var/www2/src/MovLib/Partial/MovieTrait.php:56
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:303
+#: /var/www2/src/MovLib/Presentation/TraitMovie.php:62
+msgid "original title"
+msgstr "original title"
+
+#: /var/www2/src/MovLib/Partial/CompanyTrait.php:37
+#: /var/www2/src/MovLib/Presentation/Company/AbstractBase.php:98
+#: /var/www2/src/MovLib/Presentation/Company/Index.php:52
+#: /var/www2/src/MovLib/Presentation/Company/Create.php:53
+msgid "Companies"
+msgstr "Companies"
+
+#: /var/www2/src/MovLib/Partial/CompanyTrait.php:44
+msgid "Company"
+msgstr "Company"
+
+#: /var/www2/src/MovLib/Partial/CompanyTrait.php:58
+#: /var/www2/src/MovLib/Presentation/Company/Releases.php:52
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:351
+#: /var/www2/src/MovLib/Presentation/Release/Index.php:37
+#: /var/www2/src/MovLib/Presentation/Release/Index.php:41
+#: /var/www2/src/MovLib/Presentation/Person/Releases.php:43
+#: /var/www2/src/MovLib/Presentation/Home.php:70
+msgid "Releases"
+msgstr "Releases"
+
+#: /var/www2/src/MovLib/Partial/SidebarTrait.php:117
+msgid "Secondary Navigation"
+msgstr "Secondary Navigation"
+
+#: /var/www2/src/MovLib/Partial/DateTrait.php:77
+#: /var/www2/src/MovLib/Presentation/TraitPerson.php:55
+msgid "{0}–{1}"
+msgstr "{0}–{1}"
+
+#: /var/www2/src/MovLib/Partial/DateTrait.php:130
+msgid "~{0}"
+msgstr "~{0}"
+
+#: /var/www2/src/MovLib/Partial/AwardTrait.php:35
+#: /var/www2/src/MovLib/Presentation/Award/AbstractBase.php:98
+#: /var/www2/src/MovLib/Presentation/Award/Index.php:51
+#: /var/www2/src/MovLib/Presentation/Award/Create.php:44
+#: /var/www2/src/MovLib/Presentation/Award/Category/AbstractBase.php:111
+#: /var/www2/src/MovLib/Presentation/Award/Category/Create.php:59
+#: /var/www2/src/MovLib/Presentation/Award/Category/Show.php:57
+msgid "Awards"
+msgstr "Awards"
+
+#: /var/www2/src/MovLib/Partial/AwardTrait.php:42
+msgid "Award"
+msgstr "Award"
+
+#: /var/www2/src/MovLib/Partial/Country.php:141
+#: /var/www2/src/MovLib/Presentation/Movie/ImageEdit.php:130
+#: /var/www2/src/MovLib/Presentation/Movie/ImageUpload.php:141
+#: /var/www2/src/MovLib/Presentation/Movie/BackdropUpload.php:101
+msgid "Country"
+msgstr "Country"
+
+#: /var/www2/src/MovLib/Exception/ClientException/UnauthorizedException.php:60
+msgid "Please use the form below to sign in or {0}join {sitename}{1}."
+msgstr "Please use the form below to sign in or {0}join {sitename}{1}."
+
+#: /var/www2/src/MovLib/Exception/ClientException/UnauthorizedException.php:69
+msgid "You must be signed in to access this content."
+msgstr "You must be signed in to access this content."
+
+#: /var/www2/src/MovLib/Console/Command/Install/SeedLanguages.php:103
+msgid "Silent"
+msgstr "Silent"
+
+#: /var/www2/src/MovLib/Console/Command/Install/SeedLanguages.php:104
+#: /var/www2/src/MovLib/Console/Command/Install/SeedSubtitles.php:55
+#: /var/www2/src/MovLib/Presentation/DeletionRequest/Index.php:60
+msgid "Other"
+msgstr "Other"
+
+#: /var/www2/src/MovLib/Console/Command/Install/SeedSubtitles.php:53
+msgid "Commentary"
+msgstr "Commentary"
+
+#: /var/www2/src/MovLib/Console/Command/Install/SeedSubtitles.php:54
+msgid "Facts"
+msgstr "Facts"
+
+#: /var/www2/src/MovLib/Mail/Users/EmailExists.php:56
+msgid "Forgot Your Password?"
+msgstr "Forgot Your Password?"
+
+#: /var/www2/src/MovLib/Mail/Users/Join.php:92
+msgid "Welcome to {0}!"
+msgstr "Welcome to {0}!"
+
+#: /var/www2/src/MovLib/Mail/User/ResetPassword.php:83
+msgid "Requested Password Reset"
+msgstr "Requested Password Reset"
+
+#: /var/www2/src/MovLib/Mail/User/EmailChange.php:92
+msgid "Requested Email Change"
+msgstr "Requested Email Change"
+
+#: /var/www2/src/MovLib/Mail/User/Deletion.php:83
+msgid "Reqeusted Deletion"
+msgstr "Reqeusted Deletion"
+
+#: /var/www2/src/MovLib/Mail/User/PasswordChange.php:97
+msgid "Requested Password Change"
+msgstr "Requested Password Change"
+
+#: /var/www2/src/MovLib/Presentation/Job/AbstractBase.php:62
+#: /var/www2/src/MovLib/Presentation/Job/AbstractBase.php:92
+#: /var/www2/src/MovLib/Presentation/Job/AbstractBase.php:113
+msgid "$this->job has to be a valid job object!"
+msgstr "$this->job has to be a valid job object!"
+
+#: /var/www2/src/MovLib/Presentation/Job/AbstractBase.php:70
+msgid ""
+"The job and all its content have been deleted. Take a look at the {0}"
+"history{2} or {1}discussion{2} page for further information. Please discuss "
+"with the person responsible for this deletion before you restore this entry "
+"from its {0}history{2}."
+msgstr ""
+"The job and all its content have been deleted. Take a look at the {0}"
+"history{2} or {1}discussion{2} page for further information. Please discuss "
+"with the person responsible for this deletion before you restore this entry "
+"from its {0}history{2}."
+
+#: /var/www2/src/MovLib/Presentation/Job/AbstractBase.php:98
+#: /var/www2/src/MovLib/Presentation/Job/Index.php:45
+#: /var/www2/src/MovLib/Presentation/Job/Create.php:44
+#: /var/www2/src/MovLib/Presentation/Job/Show.php:47
+msgid "Jobs"
+msgstr "Jobs"
+
+#: /var/www2/src/MovLib/Presentation/Job/AbstractBase.php:124
+#: /var/www2/src/MovLib/Presentation/Job/AbstractBase.php:131
+#: /var/www2/src/MovLib/Presentation/Award/AbstractBase.php:124
+#: /var/www2/src/MovLib/Presentation/Award/AbstractBase.php:131
+#: /var/www2/src/MovLib/Presentation/Award/Category/AbstractBase.php:142
+#: /var/www2/src/MovLib/Presentation/Award/Category/AbstractBase.php:149
+#: /var/www2/src/MovLib/Presentation/AbstractShowPresenter.php:115
+#: /var/www2/src/MovLib/Presentation/AbstractShowPresenter.php:121
+#: /var/www2/src/MovLib/Presentation/Company/AbstractBase.php:124
+#: /var/www2/src/MovLib/Presentation/Company/AbstractBase.php:131
+#: /var/www2/src/MovLib/Presentation/Movie/AbstractBase.php:72
+#: /var/www2/src/MovLib/Presentation/Movie/Image.php:335
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:82
+#: /var/www2/src/MovLib/Presentation/Person/AbstractBase.php:112
+#: /var/www2/src/MovLib/Presentation/Person/Photo/AbstractBase.php:66
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Edit.php:74
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Show.php:59
+#: /var/www2/src/MovLib/Presentation/Genre/AbstractBase.php:124
+#: /var/www2/src/MovLib/Presentation/Genre/AbstractBase.php:131
+#: /var/www2/src/MovLib/Presentation/Event/AbstractBase.php:140
+#: /var/www2/src/MovLib/Presentation/Event/AbstractBase.php:147
+msgid "View"
+msgstr "View"
+
+#: /var/www2/src/MovLib/Presentation/Job/AbstractBase.php:125
+#: /var/www2/src/MovLib/Presentation/Job/AbstractBase.php:132
+#: /var/www2/src/MovLib/Presentation/Award/AbstractBase.php:125
+#: /var/www2/src/MovLib/Presentation/Award/AbstractBase.php:132
+#: /var/www2/src/MovLib/Presentation/Award/Category/AbstractBase.php:143
+#: /var/www2/src/MovLib/Presentation/Award/Category/AbstractBase.php:150
+#: /var/www2/src/MovLib/Presentation/AbstractShowPresenter.php:116
+#: /var/www2/src/MovLib/Presentation/AbstractShowPresenter.php:123
+#: /var/www2/src/MovLib/Presentation/Company/AbstractBase.php:125
+#: /var/www2/src/MovLib/Presentation/Company/AbstractBase.php:132
+#: /var/www2/src/MovLib/Presentation/Movie/AbstractBase.php:73
+#: /var/www2/src/MovLib/Presentation/Movie/Discussion.php:39
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:83
+#: /var/www2/src/MovLib/Presentation/Person/AbstractBase.php:106
+#: /var/www2/src/MovLib/Presentation/Person/AbstractBase.php:113
+#: /var/www2/src/MovLib/Presentation/Genre/AbstractBase.php:125
+#: /var/www2/src/MovLib/Presentation/Genre/AbstractBase.php:132
+#: /var/www2/src/MovLib/Presentation/Event/AbstractBase.php:141
+#: /var/www2/src/MovLib/Presentation/Event/AbstractBase.php:148
+msgid "Discuss"
+msgstr "Discuss"
+
+#: /var/www2/src/MovLib/Presentation/Job/AbstractBase.php:126
+#: /var/www2/src/MovLib/Presentation/Job/AbstractBase.php:134
+#: /var/www2/src/MovLib/Presentation/Job/History.php:43
+#: /var/www2/src/MovLib/Presentation/Award/AbstractBase.php:126
+#: /var/www2/src/MovLib/Presentation/Award/AbstractBase.php:134
+#: /var/www2/src/MovLib/Presentation/Award/History.php:43
+#: /var/www2/src/MovLib/Presentation/Award/Category/AbstractBase.php:144
+#: /var/www2/src/MovLib/Presentation/Award/Category/AbstractBase.php:152
+#: /var/www2/src/MovLib/Presentation/Award/Category/History.php:52
+#: /var/www2/src/MovLib/Presentation/AbstractShowPresenter.php:117
+#: /var/www2/src/MovLib/Presentation/AbstractShowPresenter.php:124
+#: /var/www2/src/MovLib/Presentation/Company/AbstractBase.php:126
+#: /var/www2/src/MovLib/Presentation/Company/AbstractBase.php:134
+#: /var/www2/src/MovLib/Presentation/Company/History.php:50
+#: /var/www2/src/MovLib/Presentation/Movie/AbstractBase.php:75
+#: /var/www2/src/MovLib/Presentation/Movie/History.php:39
+#: /var/www2/src/MovLib/Presentation/Movie/Image.php:337
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:88
+#: /var/www2/src/MovLib/Presentation/Person/AbstractBase.php:107
+#: /var/www2/src/MovLib/Presentation/Person/AbstractBase.php:115
+#: /var/www2/src/MovLib/Presentation/Person/History.php:35
+#: /var/www2/src/MovLib/Presentation/Person/Photo/AbstractBase.php:68
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Edit.php:76
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Show.php:61
+#: /var/www2/src/MovLib/Presentation/Genre/AbstractBase.php:126
+#: /var/www2/src/MovLib/Presentation/Genre/AbstractBase.php:134
+#: /var/www2/src/MovLib/Presentation/Genre/History.php:43
+#: /var/www2/src/MovLib/Presentation/Event/AbstractBase.php:142
+#: /var/www2/src/MovLib/Presentation/Event/AbstractBase.php:150
+#: /var/www2/src/MovLib/Presentation/Event/History.php:46
+msgid "History"
+msgstr "History"
+
+#: /var/www2/src/MovLib/Presentation/Job/AbstractBase.php:133
+#: /var/www2/src/MovLib/Presentation/Job/Edit.php:43
+#: /var/www2/src/MovLib/Presentation/Award/AbstractBase.php:133
+#: /var/www2/src/MovLib/Presentation/Award/Edit.php:43
+#: /var/www2/src/MovLib/Presentation/Award/Category/AbstractBase.php:151
+#: /var/www2/src/MovLib/Presentation/Award/Category/Edit.php:52
+#: /var/www2/src/MovLib/Presentation/AbstractShowPresenter.php:122
+#: /var/www2/src/MovLib/Presentation/Company/AbstractBase.php:133
+#: /var/www2/src/MovLib/Presentation/Company/Edit.php:51
+#: /var/www2/src/MovLib/Presentation/Movie/AbstractBase.php:74
+#: /var/www2/src/MovLib/Presentation/Movie/Edit.php:53
+#: /var/www2/src/MovLib/Presentation/Movie/Image.php:336
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:87
+#: /var/www2/src/MovLib/Presentation/Person/AbstractBase.php:114
+#: /var/www2/src/MovLib/Presentation/Person/Edit.php:40
+#: /var/www2/src/MovLib/Presentation/Person/Photo/AbstractBase.php:67
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Edit.php:75
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Show.php:60
+#: /var/www2/src/MovLib/Presentation/SystemPage/Edit.php:70
+#: /var/www2/src/MovLib/Presentation/Genre/AbstractBase.php:133
+#: /var/www2/src/MovLib/Presentation/Genre/Edit.php:43
+#: /var/www2/src/MovLib/Presentation/Event/AbstractBase.php:149
+#: /var/www2/src/MovLib/Presentation/Event/Edit.php:46
+msgid "Edit"
+msgstr "Edit"
+
+#: /var/www2/src/MovLib/Presentation/Job/AbstractBase.php:135
+#: /var/www2/src/MovLib/Presentation/Job/Delete.php:43
+#: /var/www2/src/MovLib/Presentation/Profile/DangerZone.php:136
+#: /var/www2/src/MovLib/Presentation/TraitDeletionRequest.php:284
+#: /var/www2/src/MovLib/Presentation/TraitDeletionRequest.php:321
+#: /var/www2/src/MovLib/Presentation/Award/AbstractBase.php:135
+#: /var/www2/src/MovLib/Presentation/Award/Category/AbstractBase.php:153
+#: /var/www2/src/MovLib/Presentation/Award/Category/Delete.php:52
+#: /var/www2/src/MovLib/Presentation/Award/Delete.php:43
+#: /var/www2/src/MovLib/Presentation/AbstractShowPresenter.php:125
+#: /var/www2/src/MovLib/Presentation/Company/AbstractBase.php:135
+#: /var/www2/src/MovLib/Presentation/Company/Delete.php:50
+#: /var/www2/src/MovLib/Presentation/Movie/AbstractBase.php:76
+#: /var/www2/src/MovLib/Presentation/Movie/Image.php:338
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:89
+#: /var/www2/src/MovLib/Presentation/Person/AbstractBase.php:116
+#: /var/www2/src/MovLib/Presentation/Person/Photo/AbstractBase.php:69
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Edit.php:77
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Show.php:62
+#: /var/www2/src/MovLib/Presentation/Person/Delete.php:39
+#: /var/www2/src/MovLib/Presentation/Genre/AbstractBase.php:135
+#: /var/www2/src/MovLib/Presentation/Genre/Delete.php:43
+#: /var/www2/src/MovLib/Presentation/Event/AbstractBase.php:151
+#: /var/www2/src/MovLib/Presentation/Event/Delete.php:46
+msgid "Delete"
+msgstr "Delete"
+
+#: /var/www2/src/MovLib/Presentation/Job/History.php:44
+#: /var/www2/src/MovLib/Presentation/Award/History.php:44
+#: /var/www2/src/MovLib/Presentation/Award/Category/History.php:54
+#: /var/www2/src/MovLib/Presentation/Company/History.php:51
+#: /var/www2/src/MovLib/Presentation/Person/History.php:36
+#: /var/www2/src/MovLib/Presentation/Genre/History.php:44
+#: /var/www2/src/MovLib/Presentation/Event/History.php:48
+msgid "History of {0}"
+msgstr "History of {0}"
+
+#: /var/www2/src/MovLib/Presentation/Job/History.php:61
+msgid "job history"
+msgstr "job history"
+
+#: /var/www2/src/MovLib/Presentation/Job/History.php:61
+#: /var/www2/src/MovLib/Presentation/Job/Edit.php:61
+#: /var/www2/src/MovLib/Presentation/Job/Series.php:63
+#: /var/www2/src/MovLib/Presentation/Job/Discussion.php:61
+#: /var/www2/src/MovLib/Presentation/Job/Delete.php:61
+#: /var/www2/src/MovLib/Presentation/Award/History.php:61
+#: /var/www2/src/MovLib/Presentation/Award/Edit.php:61
+#: /var/www2/src/MovLib/Presentation/Award/Series.php:63
+#: /var/www2/src/MovLib/Presentation/Award/Discussion.php:61
+#: /var/www2/src/MovLib/Presentation/Award/Category/History.php:72
+#: /var/www2/src/MovLib/Presentation/Award/Category/Edit.php:72
+#: /var/www2/src/MovLib/Presentation/Award/Category/Series.php:73
+#: /var/www2/src/MovLib/Presentation/Award/Category/Discussion.php:72
+#: /var/www2/src/MovLib/Presentation/Award/Category/Delete.php:72
+#: /var/www2/src/MovLib/Presentation/Award/Delete.php:61
+#: /var/www2/src/MovLib/Presentation/Company/History.php:42
+#: /var/www2/src/MovLib/Presentation/Company/Edit.php:42
+#: /var/www2/src/MovLib/Presentation/Company/Series.php:43
+#: /var/www2/src/MovLib/Presentation/Company/Discussion.php:42
+#: /var/www2/src/MovLib/Presentation/Company/Releases.php:42
+#: /var/www2/src/MovLib/Presentation/Company/Delete.php:42
+#: /var/www2/src/MovLib/Presentation/Person/History.php:43
+#: /var/www2/src/MovLib/Presentation/Person/Edit.php:48
+#: /var/www2/src/MovLib/Presentation/Person/Discussion.php:47
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Edit.php:113
+#: /var/www2/src/MovLib/Presentation/Person/Delete.php:47
+#: /var/www2/src/MovLib/Presentation/Genre/History.php:61
+#: /var/www2/src/MovLib/Presentation/Genre/Edit.php:61
+#: /var/www2/src/MovLib/Presentation/Genre/Series.php:63
+#: /var/www2/src/MovLib/Presentation/Genre/Discussion.php:61
+#: /var/www2/src/MovLib/Presentation/Genre/Delete.php:61
+#: /var/www2/src/MovLib/Presentation/Event/History.php:66
+#: /var/www2/src/MovLib/Presentation/Event/Edit.php:66
+#: /var/www2/src/MovLib/Presentation/Event/Series.php:67
+#: /var/www2/src/MovLib/Presentation/Event/Discussion.php:66
+#: /var/www2/src/MovLib/Presentation/Event/Delete.php:66
+msgid "The {0} feature isn’t implemented yet."
+msgstr "The {0} feature isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Job/History.php:61
+#: /var/www2/src/MovLib/Presentation/Job/Random.php:48
+#: /var/www2/src/MovLib/Presentation/Job/Movies.php:66
+#: /var/www2/src/MovLib/Presentation/Job/Edit.php:61
+#: /var/www2/src/MovLib/Presentation/Job/Series.php:63
+#: /var/www2/src/MovLib/Presentation/Job/Discussion.php:61
+#: /var/www2/src/MovLib/Presentation/Job/Create.php:61
+#: /var/www2/src/MovLib/Presentation/Job/Delete.php:61
+#: /var/www2/src/MovLib/Presentation/Profile/Messages.php:56
+#: /var/www2/src/MovLib/Presentation/Profile/NotificationSettings.php:56
+#: /var/www2/src/MovLib/Presentation/Profile/Watchlist.php:56
+#: /var/www2/src/MovLib/Presentation/Profile/Lists.php:56
+#: /var/www2/src/MovLib/Presentation/Profile/Wantlist.php:56
+#: /var/www2/src/MovLib/Presentation/Profile/Collection.php:56
+#: /var/www2/src/MovLib/Presentation/Award/History.php:61
+#: /var/www2/src/MovLib/Presentation/Award/Random.php:48
+#: /var/www2/src/MovLib/Presentation/Award/Edit.php:61
+#: /var/www2/src/MovLib/Presentation/Award/Series.php:63
+#: /var/www2/src/MovLib/Presentation/Award/Discussion.php:61
+#: /var/www2/src/MovLib/Presentation/Award/Create.php:61
+#: /var/www2/src/MovLib/Presentation/Award/Category/History.php:72
+#: /var/www2/src/MovLib/Presentation/Award/Category/Edit.php:72
+#: /var/www2/src/MovLib/Presentation/Award/Category/Series.php:73
+#: /var/www2/src/MovLib/Presentation/Award/Category/Discussion.php:72
+#: /var/www2/src/MovLib/Presentation/Award/Category/Create.php:79
+#: /var/www2/src/MovLib/Presentation/Award/Category/Delete.php:72
+#: /var/www2/src/MovLib/Presentation/Award/Delete.php:61
+#: /var/www2/src/MovLib/Presentation/Series/Index.php:51
+#: /var/www2/src/MovLib/Presentation/Series/Random.php:37
+#: /var/www2/src/MovLib/Presentation/Series/Charts.php:63
+#: /var/www2/src/MovLib/Presentation/Series/Create.php:61
+#: /var/www2/src/MovLib/Presentation/Company/History.php:42
+#: /var/www2/src/MovLib/Presentation/Company/Edit.php:42
+#: /var/www2/src/MovLib/Presentation/Company/Series.php:43
+#: /var/www2/src/MovLib/Presentation/Company/Discussion.php:42
+#: /var/www2/src/MovLib/Presentation/Company/Create.php:43
+#: /var/www2/src/MovLib/Presentation/Company/Releases.php:42
+#: /var/www2/src/MovLib/Presentation/Company/Delete.php:42
+#: /var/www2/src/MovLib/Presentation/Help/Index.php:46
+#: /var/www2/src/MovLib/Presentation/Movie/History.php:42
+#: /var/www2/src/MovLib/Presentation/Movie/Random.php:48
+#: /var/www2/src/MovLib/Presentation/Movie/Charts.php:63
+#: /var/www2/src/MovLib/Presentation/Movie/Edit.php:66
+#: /var/www2/src/MovLib/Presentation/Movie/ImageDelete.php:40
+#: /var/www2/src/MovLib/Presentation/Movie/Discussion.php:42
+#: /var/www2/src/MovLib/Presentation/Movie/Create.php:66
+#: /var/www2/src/MovLib/Presentation/Release/Random.php:63
+#: /var/www2/src/MovLib/Presentation/Person/History.php:43
+#: /var/www2/src/MovLib/Presentation/Person/Random.php:63
+#: /var/www2/src/MovLib/Presentation/Person/Edit.php:48
+#: /var/www2/src/MovLib/Presentation/Person/Discussion.php:47
+#: /var/www2/src/MovLib/Presentation/Person/Photo/History.php:52
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Edit.php:113
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Upload.php:52
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Delete.php:52
+#: /var/www2/src/MovLib/Presentation/Person/Delete.php:47
+#: /var/www2/src/MovLib/Presentation/Genre/History.php:61
+#: /var/www2/src/MovLib/Presentation/Genre/Random.php:50
+#: /var/www2/src/MovLib/Presentation/Genre/Movies.php:66
+#: /var/www2/src/MovLib/Presentation/Genre/Edit.php:61
+#: /var/www2/src/MovLib/Presentation/Genre/Series.php:63
+#: /var/www2/src/MovLib/Presentation/Genre/Discussion.php:61
+#: /var/www2/src/MovLib/Presentation/Genre/Create.php:61
+#: /var/www2/src/MovLib/Presentation/Genre/Delete.php:61
+#: /var/www2/src/MovLib/Presentation/User/Random.php:48
+#: /var/www2/src/MovLib/Presentation/User/Collection.php:52
+#: /var/www2/src/MovLib/Presentation/Event/History.php:66
+#: /var/www2/src/MovLib/Presentation/Event/Random.php:50
+#: /var/www2/src/MovLib/Presentation/Event/Edit.php:66
+#: /var/www2/src/MovLib/Presentation/Event/Series.php:67
+#: /var/www2/src/MovLib/Presentation/Event/Discussion.php:66
+#: /var/www2/src/MovLib/Presentation/Event/Create.php:81
+#: /var/www2/src/MovLib/Presentation/Event/Delete.php:66
+msgid "Check back later"
+msgstr "Check back later"
+
+#: /var/www2/src/MovLib/Presentation/Job/Index.php:44
+msgid "Create New Job"
+msgstr "Create New Job"
+
+#: /var/www2/src/MovLib/Presentation/Job/Index.php:78
+msgid "No Jobs"
+msgstr "No Jobs"
+
+#: /var/www2/src/MovLib/Presentation/Job/Random.php:47
+msgid "There is currently no job in our database."
+msgstr "There is currently no job in our database."
+
+#: /var/www2/src/MovLib/Presentation/Job/Movies.php:45
+#: /var/www2/src/MovLib/Presentation/Job/Movies.php:46
+#: /var/www2/src/MovLib/Presentation/Award/Movies.php:44
+#: /var/www2/src/MovLib/Presentation/Award/Movies.php:45
+#: /var/www2/src/MovLib/Presentation/Award/Category/Movies.php:53
+#: /var/www2/src/MovLib/Presentation/Award/Category/Movies.php:55
+#: /var/www2/src/MovLib/Presentation/Person/Movies.php:42
+#: /var/www2/src/MovLib/Presentation/Person/Movies.php:44
+#: /var/www2/src/MovLib/Presentation/Genre/Movies.php:45
+#: /var/www2/src/MovLib/Presentation/Genre/Movies.php:46
+#: /var/www2/src/MovLib/Presentation/Event/Movies.php:47
+#: /var/www2/src/MovLib/Presentation/Event/Movies.php:49
+msgid "Movies with {0}"
+msgstr "Movies with {0}"
+
+#: /var/www2/src/MovLib/Presentation/Job/Movies.php:66
+#: /var/www2/src/MovLib/Presentation/Genre/Movies.php:66
+msgid "No movies found."
+msgstr "No movies found."
+
+#: /var/www2/src/MovLib/Presentation/Job/Edit.php:44
+#: /var/www2/src/MovLib/Presentation/Award/Edit.php:44
+#: /var/www2/src/MovLib/Presentation/Award/Category/Edit.php:54
+#: /var/www2/src/MovLib/Presentation/Company/Edit.php:52
+#: /var/www2/src/MovLib/Presentation/Person/Edit.php:41
+#: /var/www2/src/MovLib/Presentation/SystemPage/Edit.php:68
+#: /var/www2/src/MovLib/Presentation/Genre/Edit.php:44
+#: /var/www2/src/MovLib/Presentation/Event/Edit.php:48
+msgid "Edit {0}"
+msgstr "Edit {0}"
+
+#: /var/www2/src/MovLib/Presentation/Job/Edit.php:61
+msgid "edit job"
+msgstr "edit job"
+
+#: /var/www2/src/MovLib/Presentation/Job/Series.php:44
+#: /var/www2/src/MovLib/Presentation/Job/Series.php:45
+#: /var/www2/src/MovLib/Presentation/Award/Series.php:44
+#: /var/www2/src/MovLib/Presentation/Award/Series.php:45
+#: /var/www2/src/MovLib/Presentation/Award/Category/Series.php:52
+#: /var/www2/src/MovLib/Presentation/Award/Category/Series.php:54
+#: /var/www2/src/MovLib/Presentation/Person/Series.php:41
+#: /var/www2/src/MovLib/Presentation/Person/Series.php:42
+#: /var/www2/src/MovLib/Presentation/Genre/Series.php:44
+#: /var/www2/src/MovLib/Presentation/Genre/Series.php:45
+#: /var/www2/src/MovLib/Presentation/Event/Series.php:46
+#: /var/www2/src/MovLib/Presentation/Event/Series.php:48
+msgid "Series with {0}"
+msgstr "Series with {0}"
+
+#: /var/www2/src/MovLib/Presentation/Job/Series.php:63
+msgid "series with job"
+msgstr "series with job"
+
+#: /var/www2/src/MovLib/Presentation/Job/Discussion.php:43
+#: /var/www2/src/MovLib/Presentation/Award/Discussion.php:43
+#: /var/www2/src/MovLib/Presentation/Award/Category/Discussion.php:52
+#: /var/www2/src/MovLib/Presentation/Company/Discussion.php:51
+#: /var/www2/src/MovLib/Presentation/Person/Discussion.php:39
+#: /var/www2/src/MovLib/Presentation/Genre/Discussion.php:43
+#: /var/www2/src/MovLib/Presentation/Event/Discussion.php:46
+msgid "Discussion"
+msgstr "Discussion"
+
+#: /var/www2/src/MovLib/Presentation/Job/Discussion.php:44
+#: /var/www2/src/MovLib/Presentation/Award/Discussion.php:44
+#: /var/www2/src/MovLib/Presentation/Award/Category/Discussion.php:54
+#: /var/www2/src/MovLib/Presentation/Company/Discussion.php:52
+#: /var/www2/src/MovLib/Presentation/Person/Discussion.php:40
+#: /var/www2/src/MovLib/Presentation/Genre/Discussion.php:44
+#: /var/www2/src/MovLib/Presentation/Event/Discussion.php:48
+msgid "Discussion of {0}"
+msgstr "Discussion of {0}"
+
+#: /var/www2/src/MovLib/Presentation/Job/Discussion.php:61
+msgid "discuss job"
+msgstr "discuss job"
+
+#: /var/www2/src/MovLib/Presentation/Job/Create.php:43
+msgid "Create Job"
+msgstr "Create Job"
+
+#: /var/www2/src/MovLib/Presentation/Job/Create.php:45
+#: /var/www2/src/MovLib/Presentation/Award/Create.php:45
+#: /var/www2/src/MovLib/Presentation/Award/Category/Create.php:63
+#: /var/www2/src/MovLib/Presentation/Series/Create.php:45
+#: /var/www2/src/MovLib/Presentation/Company/Create.php:54
+#: /var/www2/src/MovLib/Presentation/Movie/Create.php:52
+#: /var/www2/src/MovLib/Presentation/Genre/Create.php:45
+#: /var/www2/src/MovLib/Presentation/Event/Create.php:61
+msgid "Create"
+msgstr "Create"
+
+#: /var/www2/src/MovLib/Presentation/Job/Create.php:60
+msgid "The create job feature isn’t implemented yet."
+msgstr "The create job feature isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Job/Show.php:84
+#: /var/www2/src/MovLib/Presentation/Award/Category/Show.php:116
+#: /var/www2/src/MovLib/Presentation/Award/Show.php:66
+#: /var/www2/src/MovLib/Presentation/Movie/ImageEdit.php:129
+#: /var/www2/src/MovLib/Presentation/Movie/ImageUpload.php:139
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Edit.php:96
+#: /var/www2/src/MovLib/Presentation/Genre/Show.php:76
+#: /var/www2/src/MovLib/Presentation/Event/Show.php:115
+msgid "Description"
+msgstr "Description"
+
+#: /var/www2/src/MovLib/Presentation/Job/Show.php:93
+msgid "{sitename} has no further details about this job."
+msgstr "{sitename} has no further details about this job."
+
+#: /var/www2/src/MovLib/Presentation/Job/Show.php:96
+#: /var/www2/src/MovLib/Presentation/Award/Category/Show.php:126
+#: /var/www2/src/MovLib/Presentation/Genre/Show.php:88
+#: /var/www2/src/MovLib/Presentation/Event/Show.php:137
+msgid "No Data Available"
+msgstr "No Data Available"
+
+#: /var/www2/src/MovLib/Presentation/Job/Delete.php:44
+#: /var/www2/src/MovLib/Presentation/Award/Category/Delete.php:54
+#: /var/www2/src/MovLib/Presentation/Award/Delete.php:44
+#: /var/www2/src/MovLib/Presentation/Company/Delete.php:51
+#: /var/www2/src/MovLib/Presentation/Person/Delete.php:40
+#: /var/www2/src/MovLib/Presentation/Genre/Delete.php:44
+#: /var/www2/src/MovLib/Presentation/Event/Delete.php:48
+msgid "Delete {0}"
+msgstr "Delete {0}"
+
+#: /var/www2/src/MovLib/Presentation/Job/Delete.php:61
+msgid "delete job"
+msgstr "delete job"
+
+#: /var/www2/src/MovLib/Presentation/Profile/SignIn.php:100
+#: /var/www2/src/MovLib/Presentation/Profile/SignIn.php:123
+msgid "Sign In"
+msgstr "Sign In"
+
+#: /var/www2/src/MovLib/Presentation/Profile/SignIn.php:101
+#: /var/www2/src/MovLib/Presentation/Profile/ResetPassword.php:86
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:101
+#: /var/www2/src/MovLib/Presentation/User/Index.php:49
+#: /var/www2/src/MovLib/Presentation/User/Show.php:61
+#: /var/www2/src/MovLib/Presentation/User/AbstractUserPage.php:75
+msgid "Users"
+msgstr "Users"
+
+#: /var/www2/src/MovLib/Presentation/Profile/SignIn.php:111
+#: /var/www2/src/MovLib/Presentation/Profile/EmailSettings.php:80
+#: /var/www2/src/MovLib/Presentation/Profile/ResetPassword.php:111
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:122
+#: /var/www2/src/MovLib/Presentation/ComingSoon.php:68
+msgid "Email Address"
+msgstr "Email Address"
+
+#: /var/www2/src/MovLib/Presentation/Profile/SignIn.php:114
+#: /var/www2/src/MovLib/Presentation/Profile/ResetPassword.php:114
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:123
+msgid "Enter your email address"
+msgstr "Enter your email address"
+
+#: /var/www2/src/MovLib/Presentation/Profile/SignIn.php:118
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:127
+#: /var/www2/src/MovLib/Presentation/Profile/Show.php:119
+msgid "Password"
+msgstr "Password"
+
+#: /var/www2/src/MovLib/Presentation/Profile/SignIn.php:119
+msgid "Enter your password"
+msgstr "Enter your password"
+
+#: /var/www2/src/MovLib/Presentation/Profile/SignIn.php:149
+msgid "Successfully Signed In"
+msgstr "Successfully Signed In"
+
+#: /var/www2/src/MovLib/Presentation/Profile/SignIn.php:150
+msgid "Welcome back {username}!"
+msgstr "Welcome back {username}!"
+
+#: /var/www2/src/MovLib/Presentation/Profile/SignIn.php:159
+msgid "We either don’t know the email address, or the password was wrong."
+msgstr "We either don’t know the email address, or the password was wrong."
+
+#: /var/www2/src/MovLib/Presentation/Profile/SignIn.php:160
+msgid "Sign In Failed"
+msgstr "Sign In Failed"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Messages.php:39
+msgid "You must be signed in to view your messages."
+msgstr "You must be signed in to view your messages."
+
+#: /var/www2/src/MovLib/Presentation/Profile/Messages.php:40
+msgid "My Messages"
+msgstr "My Messages"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Messages.php:40
+#: /var/www2/src/MovLib/Presentation/Profile/Messages.php:47
+#: /var/www2/src/MovLib/Presentation/Profile/NotificationSettings.php:40
+#: /var/www2/src/MovLib/Presentation/Profile/NotificationSettings.php:47
+#: /var/www2/src/MovLib/Presentation/Profile/DangerZone.php:91
+#: /var/www2/src/MovLib/Presentation/Profile/DangerZone.php:147
+#: /var/www2/src/MovLib/Presentation/Profile/EmailSettings.php:72
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:65
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:161
+#: /var/www2/src/MovLib/Presentation/Profile/Watchlist.php:40
+#: /var/www2/src/MovLib/Presentation/Profile/Watchlist.php:47
+#: /var/www2/src/MovLib/Presentation/Profile/Lists.php:40
+#: /var/www2/src/MovLib/Presentation/Profile/Lists.php:47
+#: /var/www2/src/MovLib/Presentation/Profile/Wantlist.php:40
+#: /var/www2/src/MovLib/Presentation/Profile/Wantlist.php:47
+#: /var/www2/src/MovLib/Presentation/Profile/Show.php:57
+#: /var/www2/src/MovLib/Presentation/Profile/Show.php:110
+#: /var/www2/src/MovLib/Presentation/Profile/Collection.php:40
+#: /var/www2/src/MovLib/Presentation/Profile/Collection.php:47
+#: /var/www2/src/MovLib/Presentation/Profile/PasswordSettings.php:77
+#: /var/www2/src/MovLib/Presentation/Profile/PasswordSettings.php:110
+#: /var/www2/src/MovLib/Presentation/Company/Show.php:68
+msgid "Profile"
+msgstr "Profile"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Messages.php:55
+msgid "The messaging system isn’t implemented yet."
+msgstr "The messaging system isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Profile/NotificationSettings.php:39
+msgid "You must be signed in to change your notification settings."
+msgstr "You must be signed in to change your notification settings."
+
+#: /var/www2/src/MovLib/Presentation/Profile/NotificationSettings.php:40
+msgid "Notification Settings"
+msgstr "Notification Settings"
+
+#: /var/www2/src/MovLib/Presentation/Profile/NotificationSettings.php:55
+msgid "The notification system isn’t implemented yet."
+msgstr "The notification system isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Profile/DangerZone.php:87
+msgid "You need to sign in to access the danger zone."
+msgstr "You need to sign in to access the danger zone."
+
+#: /var/www2/src/MovLib/Presentation/Profile/DangerZone.php:88
+#: /var/www2/src/MovLib/Presentation/Profile/EmailSettings.php:69
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:63
+#: /var/www2/src/MovLib/Presentation/Profile/PasswordSettings.php:74
+#: /var/www2/src/MovLib/Presentation/SystemPage/Edit.php:65
+msgid "Please sign in again to verify the legitimacy of this request."
+msgstr "Please sign in again to verify the legitimacy of this request."
+
+#: /var/www2/src/MovLib/Presentation/Profile/DangerZone.php:91
+#: /var/www2/src/MovLib/Presentation/Profile/Show.php:120
+msgid "Danger Zone"
+msgstr "Danger Zone"
+
+#: /var/www2/src/MovLib/Presentation/Profile/DangerZone.php:101
+msgid "Terminate"
+msgstr "Terminate"
+
+#: /var/www2/src/MovLib/Presentation/Profile/DangerZone.php:102
+msgid ""
+"Terminate this session, the associated user agent will be signed out "
+"immediately."
+msgstr ""
+"Terminate this session, the associated user agent will be signed out "
+"immediately."
+
+#: /var/www2/src/MovLib/Presentation/Profile/DangerZone.php:117
+msgid ""
+"If you use this button all your active session will be terminated and you’ll "
+"be signe out!"
+msgstr ""
+"If you use this button all your active session will be terminated and you’ll "
+"be signe out!"
+
+#: /var/www2/src/MovLib/Presentation/Profile/DangerZone.php:118
+msgid "Sign Out"
+msgstr "Sign Out"
+
+#: /var/www2/src/MovLib/Presentation/Profile/DangerZone.php:193
+msgid "The submitted session ID was invalid."
+msgstr "The submitted session ID was invalid."
+
+#: /var/www2/src/MovLib/Presentation/Profile/DangerZone.php:221
+#: /var/www2/src/MovLib/Presentation/Profile/EmailSettings.php:119
+#: /var/www2/src/MovLib/Presentation/Profile/PasswordSettings.php:154
+msgid "An email with further instructions has been sent to {0}."
+msgstr "An email with further instructions has been sent to {0}."
+
+#: /var/www2/src/MovLib/Presentation/Profile/DangerZone.php:222
+#: /var/www2/src/MovLib/Presentation/TraitDeletionRequest.php:340
+msgid "Successfully Requested Deletion"
+msgstr "Successfully Requested Deletion"
+
+#: /var/www2/src/MovLib/Presentation/Profile/DangerZone.php:228
+msgid ""
+"You have to follow the link that we just sent to you via email to complete "
+"this action."
+msgstr ""
+"You have to follow the link that we just sent to you via email to complete "
+"this action."
+
+#: /var/www2/src/MovLib/Presentation/Profile/DangerZone.php:229
+#: /var/www2/src/MovLib/Presentation/Profile/EmailSettings.php:127
+#: /var/www2/src/MovLib/Presentation/Profile/PasswordSettings.php:162
+msgid "Important!"
+msgstr "Important!"
+
+#: /var/www2/src/MovLib/Presentation/Profile/DangerZone.php:246
+#: /var/www2/src/MovLib/Presentation/Profile/EmailSettings.php:184
+#: /var/www2/src/MovLib/Presentation/Profile/ResetPassword.php:197
+#: /var/www2/src/MovLib/Presentation/Profile/ResetPassword.php:207
+#: /var/www2/src/MovLib/Presentation/Profile/PasswordSettings.php:216
+msgid ""
+"Your confirmation token is invalid or expired, please fill out the form "
+"again."
+msgstr ""
+"Your confirmation token is invalid or expired, please fill out the form "
+"again."
+
+#: /var/www2/src/MovLib/Presentation/Profile/DangerZone.php:247
+#: /var/www2/src/MovLib/Presentation/Profile/DangerZone.php:257
+#: /var/www2/src/MovLib/Presentation/Profile/EmailSettings.php:185
+#: /var/www2/src/MovLib/Presentation/Profile/EmailSettings.php:195
+#: /var/www2/src/MovLib/Presentation/Profile/ResetPassword.php:198
+#: /var/www2/src/MovLib/Presentation/Profile/ResetPassword.php:208
+#: /var/www2/src/MovLib/Presentation/Profile/PasswordSettings.php:217
+#: /var/www2/src/MovLib/Presentation/Profile/PasswordSettings.php:227
+msgid "Token Invalid"
+msgstr "Token Invalid"
+
+#: /var/www2/src/MovLib/Presentation/Profile/DangerZone.php:256
+#: /var/www2/src/MovLib/Presentation/Profile/EmailSettings.php:194
+#: /var/www2/src/MovLib/Presentation/Profile/PasswordSettings.php:226
+msgid ""
+"The confirmation token is invalid, please sign in again and request a new "
+"token."
+msgstr ""
+"The confirmation token is invalid, please sign in again and request a new "
+"token."
+
+#: /var/www2/src/MovLib/Presentation/Profile/DangerZone.php:269
+msgid ""
+"Your account has been purged from our system. We’re very sorry to see you "
+"leave."
+msgstr ""
+"Your account has been purged from our system. We’re very sorry to see you "
+"leave."
+
+#: /var/www2/src/MovLib/Presentation/Profile/DangerZone.php:270
+msgid "Account Deletion Successfull"
+msgstr "Account Deletion Successfull"
+
+#: /var/www2/src/MovLib/Presentation/Profile/EmailSettings.php:68
+msgid "You need to sign in to change your email address."
+msgstr "You need to sign in to change your email address."
+
+#: /var/www2/src/MovLib/Presentation/Profile/EmailSettings.php:72
+msgid "Email Settings"
+msgstr "Email Settings"
+
+#: /var/www2/src/MovLib/Presentation/Profile/EmailSettings.php:82
+msgid ""
+"MovLib takes your privacy seriously. That’s why your email address will "
+"never show up in public. In fact, it stays top secret like your password. If "
+"you’d like to manage when to receive messages from MovLib go to your {0}"
+"notification settings{1}."
+msgstr ""
+"MovLib takes your privacy seriously. That’s why your email address will "
+"never show up in public. In fact, it stays top secret like your password. If "
+"you’d like to manage when to receive messages from MovLib go to your {0}"
+"notification settings{1}."
+
+#: /var/www2/src/MovLib/Presentation/Profile/EmailSettings.php:92
+#: /var/www2/src/MovLib/Presentation/Profile/PasswordSettings.php:99
+msgid "Change"
+msgstr "Change"
+
+#: /var/www2/src/MovLib/Presentation/Profile/EmailSettings.php:103
+msgid "Your current email address is {0}."
+msgstr "Your current email address is {0}."
+
+#: /var/www2/src/MovLib/Presentation/Profile/EmailSettings.php:120
+msgid "Successfully Requested Email Change"
+msgstr "Successfully Requested Email Change"
+
+#: /var/www2/src/MovLib/Presentation/Profile/EmailSettings.php:126
+msgid ""
+"You have to sign in with your old email address until you’ve successfully "
+"confirmed your email change via the link that we’ve just sent you."
+msgstr ""
+"You have to sign in with your old email address until you’ve successfully "
+"confirmed your email change via the link that we’ve just sent you."
+
+#: /var/www2/src/MovLib/Presentation/Profile/EmailSettings.php:151
+msgid "You are already using this email address."
+msgstr "You are already using this email address."
+
+#: /var/www2/src/MovLib/Presentation/Profile/EmailSettings.php:160
+msgid "This email address is already is use, please choose another one."
+msgstr "This email address is already is use, please choose another one."
+
+#: /var/www2/src/MovLib/Presentation/Profile/EmailSettings.php:161
+msgid ""
+"If you feel that receiving this error is a mistake please {0}contact us{1}."
+msgstr ""
+"If you feel that receiving this error is a mistake please {0}contact us{1}."
+
+#: /var/www2/src/MovLib/Presentation/Profile/EmailSettings.php:205
+msgid ""
+"Your email address was successfully changed. Please use your new email "
+"address to sign in from now on."
+msgstr ""
+"Your email address was successfully changed. Please use your new email "
+"address to sign in from now on."
+
+#: /var/www2/src/MovLib/Presentation/Profile/EmailSettings.php:206
+msgid "Email Changed Successfully"
+msgstr "Email Changed Successfully"
+
+#: /var/www2/src/MovLib/Presentation/Profile/ResetPassword.php:85
+msgid "Reset Password"
+msgstr "Reset Password"
+
+#: /var/www2/src/MovLib/Presentation/Profile/ResetPassword.php:95
+#: /var/www2/src/MovLib/Presentation/Profile/PasswordSettings.php:85
+msgid "New Password"
+msgstr "New Password"
+
+#: /var/www2/src/MovLib/Presentation/Profile/ResetPassword.php:97
+#: /var/www2/src/MovLib/Presentation/Profile/PasswordSettings.php:86
+msgid "Enter your new password"
+msgstr "Enter your new password"
+
+#: /var/www2/src/MovLib/Presentation/Profile/ResetPassword.php:102
+#: /var/www2/src/MovLib/Presentation/Profile/PasswordSettings.php:90
+msgid "Confirm Password"
+msgstr "Confirm Password"
+
+#: /var/www2/src/MovLib/Presentation/Profile/ResetPassword.php:103
+#: /var/www2/src/MovLib/Presentation/Profile/PasswordSettings.php:91
+msgid "Enter your new password again"
+msgstr "Enter your new password again"
+
+#: /var/www2/src/MovLib/Presentation/Profile/ResetPassword.php:112
+msgid ""
+"Enter the email address associated with your {sitename} account. Password "
+"reset instructions will be sent via email."
+msgstr ""
+"Enter the email address associated with your {sitename} account. Password "
+"reset instructions will be sent via email."
+
+#: /var/www2/src/MovLib/Presentation/Profile/ResetPassword.php:117
+msgid "Request Reset"
+msgstr "Request Reset"
+
+#: /var/www2/src/MovLib/Presentation/Profile/ResetPassword.php:133
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:266
+msgid "An email with further instructions has been sent to {email}."
+msgstr "An email with further instructions has been sent to {email}."
+
+#: /var/www2/src/MovLib/Presentation/Profile/ResetPassword.php:134
+msgid "Successfully Requested Password Reset"
+msgstr "Successfully Requested Password Reset"
+
+#: /var/www2/src/MovLib/Presentation/Profile/ResetPassword.php:160
+#: /var/www2/src/MovLib/Presentation/Profile/PasswordSettings.php:237
+msgid ""
+"Your password was successfully changed. Please use your new password to sign "
+"in from now on."
+msgstr ""
+"Your password was successfully changed. Please use your new password to sign "
+"in from now on."
+
+#: /var/www2/src/MovLib/Presentation/Profile/ResetPassword.php:161
+#: /var/www2/src/MovLib/Presentation/Profile/PasswordSettings.php:238
+msgid "Password Changed Successfully"
+msgstr "Password Changed Successfully"
+
+#: /var/www2/src/MovLib/Presentation/Profile/ResetPassword.php:179
+#: /var/www2/src/MovLib/Presentation/Profile/PasswordSettings.php:183
+msgid ""
+"The confirmation password doesn’t match the new password, please try again."
+msgstr ""
+"The confirmation password doesn’t match the new password, please try again."
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:62
+msgid "You need to sign in to access this page."
+msgstr "You need to sign in to access this page."
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:65
+msgid "Account Settings"
+msgstr "Account Settings"
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:70
+msgid "Your avatar image was deleted successfully"
+msgstr "Your avatar image was deleted successfully"
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:71
+msgid "Avatar Deleted Successfully"
+msgstr "Avatar Deleted Successfully"
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:79
+msgid "Real Name"
+msgstr "Real Name"
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:80
+msgid "Your real name will be displayed on your profile page."
+msgstr "Your real name will be displayed on your profile page."
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:81
+msgid "Enter our real name"
+msgstr "Enter our real name"
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:84
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:137
+msgid "Sex"
+msgstr "Sex"
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:85
+msgid ""
+"Your sex will be displayed on your profile page and is used to create "
+"demographic evaluations."
+msgstr ""
+"Your sex will be displayed on your profile page and is used to create "
+"demographic evaluations."
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:90
+#: /var/www2/src/MovLib/Presentation/TraitPerson.php:47
+#: /var/www2/src/MovLib/Presentation/Person/Index.php:66
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:135
+#: /var/www2/src/MovLib/Presentation/Person/Show.php:323
+msgid "Date of Birth"
+msgstr "Date of Birth"
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:91
+msgid ""
+"Your birthday will be displayed on your profile page and is used to create "
+"demographic evaluations."
+msgstr ""
+"Your birthday will be displayed on your profile page and is used to create "
+"demographic evaluations."
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:94
+msgid "A birth date must be between {min} (120 years) and {max} (6 years)"
+msgstr "A birth date must be between {min} (120 years) and {max} (6 years)"
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:100
+msgid "Website"
+msgstr "Website"
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:101
+msgid "Your website will be display on your profile page."
+msgstr "Your website will be display on your profile page."
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:105
+msgid "About Me"
+msgstr "About Me"
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:106
+msgid "Tell others about yourself, what do you do, what do you like, …"
+msgstr "Tell others about yourself, what do you do, what do you like, …"
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:110
+msgid ""
+"Your country will be displayed on your profile page and is used to create "
+"demographic evaluations."
+msgstr ""
+"Your country will be displayed on your profile page and is used to create "
+"demographic evaluations."
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:113
+msgid "Time Zone"
+msgstr "Time Zone"
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:114
+msgid ""
+"Your time zone will be used to display any time related information "
+"correctly."
+msgstr ""
+"Your time zone will be used to display any time related information "
+"correctly."
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:118
+msgid ""
+"Your currency will be used to display any money related information "
+"correctly."
+msgstr ""
+"Your currency will be used to display any money related information "
+"correctly."
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:126
+msgid "System Language"
+msgstr "System Language"
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:128
+msgid ""
+"Select your preferred system language, this will be used to redirect you if "
+"you visit {sitename} without a subdomain and may be from other use in the "
+"future."
+msgstr ""
+"Select your preferred system language, this will be used to redirect you if "
+"you visit {sitename} without a subdomain and may be from other use in the "
+"future."
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:134
+msgid "Keep my data private!"
+msgstr "Keep my data private!"
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:136
+msgid ""
+"Check the following box if you’d like to hide your private data on your "
+"profile page. Your data will only be used by {sitename} for anonymous "
+"demographical evaluation of usage statistics and ratings. By providing basic "
+"data like sex and country, scientists around the world are enabled to "
+"research the human interests in movies more closely. Of course your real "
+"name won’t be used for anything!"
+msgstr ""
+"Check the following box if you’d like to hide your private data on your "
+"profile page. Your data will only be used by {sitename} for anonymous "
+"demographical evaluation of usage statistics and ratings. By providing basic "
+"data like sex and country, scientists around the world are enabled to "
+"research the human interests in movies more closely. Of course your real "
+"name won’t be used for anything!"
+
+#: /var/www2/src/MovLib/Presentation/Profile/AccountSettings.php:144
+#: /var/www2/src/MovLib/Presentation/SystemPage/Edit.php:87
+msgid "Update"
+msgstr "Update"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Watchlist.php:39
+msgid "You must be signed in to view your watchlist."
+msgstr "You must be signed in to view your watchlist."
+
+#: /var/www2/src/MovLib/Presentation/Profile/Watchlist.php:40
+msgid "My Watchlist"
+msgstr "My Watchlist"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Watchlist.php:55
+msgid "The watchlist isn’t implemented yet."
+msgstr "The watchlist isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:100
+msgid "Join"
+msgstr "Join"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:109
+msgid "Username"
+msgstr "Username"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:113
+msgid "Enter your desired username"
+msgstr "Enter your desired username"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:116
+msgid ""
+"A username must be valid UTF-8, cannot contain spaces at the beginning and "
+"end or more than one space in a row, it cannot contain any of the following "
+"characters {0} and it cannot be longer than {1,number,integer} characters."
+msgstr ""
+"A username must be valid UTF-8, cannot contain spaces at the beginning and "
+"end or more than one space in a row, it cannot contain any of the following "
+"characters {0} and it cannot be longer than {1,number,integer} characters."
+
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:128
+msgid "Enter your desired password"
+msgstr "Enter your desired password"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:134
+msgid "I accept the {a1}privacy policy{a} and the {a2}terms of use{a}."
+msgstr "I accept the {a1}privacy policy{a} and the {a2}terms of use{a}."
+
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:140
+#: /var/www2/src/MovLib/Presentation/ComingSoon.php:73
+msgid "Sign Up"
+msgstr "Sign Up"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:188
+msgid "The username cannot begin with a space."
+msgstr "The username cannot begin with a space."
+
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:192
+msgid "The username cannot end with a space."
+msgstr "The username cannot end with a space."
+
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:196
+msgid "The username cannot contain multiple spaces in a row."
+msgstr "The username cannot contain multiple spaces in a row."
+
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:204
+msgid "The username cannot contain any of the following characters: {0}"
+msgstr "The username cannot contain any of the following characters: {0}"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:211
+msgid ""
+"The username is too long: it must be {0,number,integer} characters or less."
+msgstr ""
+"The username is too long: it must be {0,number,integer} characters or less."
+
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:217
+msgid "The username is already taken, please choose another one."
+msgstr "The username is already taken, please choose another one."
+
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:228
+msgid ""
+"You have to accept the {privacy_policy} and {terms_of_use} to join "
+"{sitename}."
+msgstr ""
+"You have to accept the {privacy_policy} and {terms_of_use} to join "
+"{sitename}."
+
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:247
+msgid ""
+"Too many joining attempts from this IP address. Please wait one hour before "
+"trying again."
+msgstr ""
+"Too many joining attempts from this IP address. Please wait one hour before "
+"trying again."
+
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:267
+msgid "Successfully Joined"
+msgstr "Successfully Joined"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:288
+msgid ""
+"The activation token is invalid, please go back to the mail we sent you and "
+"copy the whole link."
+msgstr ""
+"The activation token is invalid, please go back to the mail we sent you and "
+"copy the whole link."
+
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:308
+msgid "Seems like you’ve already activated your account, please sign in."
+msgstr "Seems like you’ve already activated your account, please sign in."
+
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:309
+msgid "Already Activated"
+msgstr "Already Activated"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:320
+msgid ""
+"Unfortunately in the meantime someone took your desired username, please "
+"choose another one."
+msgstr ""
+"Unfortunately in the meantime someone took your desired username, please "
+"choose another one."
+
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:334
+msgid ""
+"Your account has been activated, please sign in with your email address and "
+"your secret password."
+msgstr ""
+"Your account has been activated, please sign in with your email address and "
+"your secret password."
+
+#: /var/www2/src/MovLib/Presentation/Profile/Join.php:335
+msgid "Hi there {0}!"
+msgstr "Hi there {0}!"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Lists.php:39
+msgid "You must be signed in to view your lists."
+msgstr "You must be signed in to view your lists."
+
+#: /var/www2/src/MovLib/Presentation/Profile/Lists.php:40
+msgid "My Lists"
+msgstr "My Lists"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Lists.php:55
+msgid "The lists aren't implemented yet."
+msgstr "The lists aren't implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Profile/Wantlist.php:39
+msgid "You must be signed in to view your wantlist."
+msgstr "You must be signed in to view your wantlist."
+
+#: /var/www2/src/MovLib/Presentation/Profile/Wantlist.php:40
+msgid "My Wantlist"
+msgstr "My Wantlist"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Wantlist.php:55
+msgid "The wantlist isn’t implemented yet."
+msgstr "The wantlist isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Profile/Show.php:56
+msgid "You must be signed in to view your profile."
+msgstr "You must be signed in to view your profile."
+
+#: /var/www2/src/MovLib/Presentation/Profile/Show.php:111
+msgid "Messages"
+msgstr "Messages"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Show.php:112
+#: /var/www2/src/MovLib/Presentation/User/AbstractUserPage.php:82
+#: /var/www2/src/MovLib/Presentation/User/Collection.php:43
+msgid "Collection"
+msgstr "Collection"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Show.php:113
+msgid "Wantlist"
+msgstr "Wantlist"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Show.php:114
+msgid "Lists"
+msgstr "Lists"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Show.php:115
+msgid "Watchlist"
+msgstr "Watchlist"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Show.php:116
+msgid "Account"
+msgstr "Account"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Show.php:117
+msgid "Notifications"
+msgstr "Notifications"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Show.php:118
+msgid "Email"
+msgstr "Email"
+
+#: /var/www2/src/MovLib/Presentation/Profile/SignOut.php:43
+msgid "We hope to see you again soon."
+msgstr "We hope to see you again soon."
+
+#: /var/www2/src/MovLib/Presentation/Profile/SignOut.php:44
+msgid "Sign Out Successfull"
+msgstr "Sign Out Successfull"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Collection.php:39
+msgid "You must be signed in to view your collection."
+msgstr "You must be signed in to view your collection."
+
+#: /var/www2/src/MovLib/Presentation/Profile/Collection.php:40
+msgid "My Collection"
+msgstr "My Collection"
+
+#: /var/www2/src/MovLib/Presentation/Profile/Collection.php:55
+msgid "The Collection system isn’t implemented yet."
+msgstr "The Collection system isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Profile/PasswordSettings.php:73
+msgid "You need to sign in to change your password."
+msgstr "You need to sign in to change your password."
+
+#: /var/www2/src/MovLib/Presentation/Profile/PasswordSettings.php:77
+msgid "Password Settings"
+msgstr "Password Settings"
+
+#: /var/www2/src/MovLib/Presentation/Profile/PasswordSettings.php:135
+msgid "Tip"
+msgstr "Tip"
+
+#: /var/www2/src/MovLib/Presentation/Profile/PasswordSettings.php:155
+msgid "Successfully Requested Password Change"
+msgstr "Successfully Requested Password Change"
+
+#: /var/www2/src/MovLib/Presentation/Profile/PasswordSettings.php:161
+msgid ""
+"You have to sign in with your old password until you’ve successfully "
+"confirmed your password change via the link we’ve just sent you."
+msgstr ""
+"You have to sign in with your old password until you’ve successfully "
+"confirmed your password change via the link we’ve just sent you."
+
+#: /var/www2/src/MovLib/Presentation/Profile/PasswordSettings.php:192
+msgid ""
+"Your new password equals your existing password, please enter a new one."
+msgstr ""
+"Your new password equals your existing password, please enter a new one."
+
+#: /var/www2/src/MovLib/Presentation/Stacktrace.php:64
+#: /var/www2/src/MovLib/Presentation/Error/InternalServerError.php:88
+msgid "Stacktrace for {0}"
+msgstr "Stacktrace for {0}"
+
+#: /var/www2/src/MovLib/Presentation/Stacktrace.php:216
+#: /var/www2/src/MovLib/Presentation/Error/InternalServerError.php:60
+msgid "Internal Server Error"
+msgstr "Internal Server Error"
+
+#: /var/www2/src/MovLib/Presentation/Stacktrace.php:221
+#: /var/www2/src/MovLib/Presentation/Error/InternalServerError.php:64
+msgid ""
+"This error was reported to the system administrators, it should be fixed in "
+"no time. Please try again in a few minutes."
+msgstr ""
+"This error was reported to the system administrators, it should be fixed in "
+"no time. Please try again in a few minutes."
+
+#: /var/www2/src/MovLib/Presentation/Stacktrace.php:222
+#: /var/www2/src/MovLib/Presentation/Error/InternalServerError.php:65
+msgid ""
+"An unexpected condition which prevented us from fulfilling the request was "
+"encountered."
+msgstr ""
+"An unexpected condition which prevented us from fulfilling the request was "
+"encountered."
+
+#: /var/www2/src/MovLib/Presentation/TraitPerson.php:57
+#: /var/www2/src/MovLib/Presentation/Person/Index.php:67
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:136
+msgid "Date of Death"
+msgstr "Date of Death"
+
+#: /var/www2/src/MovLib/Presentation/Year/Filter.php:105
+msgid "{entity_name} from {year}"
+msgstr "{entity_name} from {year}"
+
+#: /var/www2/src/MovLib/Presentation/Year/Filter.php:110
+msgid "Years"
+msgstr "Years"
+
+#: /var/www2/src/MovLib/Presentation/TraitGone.php:50
+msgid "You have to provide a message for the gone page!"
+msgstr "You have to provide a message for the gone page!"
+
+#: /var/www2/src/MovLib/Presentation/TraitGone.php:57
+msgid "This page has been deleted."
+msgstr "This page has been deleted."
+
+#: /var/www2/src/MovLib/Presentation/TraitDeletionRequest.php:196
+msgid "Deletion Requested"
+msgstr "Deletion Requested"
+
+#: /var/www2/src/MovLib/Presentation/TraitDeletionRequest.php:288
+msgid "Delete the content and resolve the deletion request."
+msgstr "Delete the content and resolve the deletion request."
+
+#: /var/www2/src/MovLib/Presentation/TraitDeletionRequest.php:290
+msgid "Discard"
+msgstr "Discard"
+
+#: /var/www2/src/MovLib/Presentation/TraitDeletionRequest.php:294
+msgid "Discard this deletion request."
+msgstr "Discard this deletion request."
+
+#: /var/www2/src/MovLib/Presentation/TraitDeletionRequest.php:307
+msgid "Reason"
+msgstr "Reason"
+
+#: /var/www2/src/MovLib/Presentation/TraitDeletionRequest.php:310
+msgid "URL"
+msgstr "URL"
+
+#: /var/www2/src/MovLib/Presentation/TraitDeletionRequest.php:311
+msgid "Enter the URL of the existing content."
+msgstr "Enter the URL of the existing content."
+
+#: /var/www2/src/MovLib/Presentation/TraitDeletionRequest.php:315
+msgid "Explanation"
+msgstr "Explanation"
+
+#: /var/www2/src/MovLib/Presentation/TraitDeletionRequest.php:316
+msgid "Please explain why this content should be deleted…"
+msgstr "Please explain why this content should be deleted…"
+
+#: /var/www2/src/MovLib/Presentation/TraitDeletionRequest.php:337
+msgid ""
+"You’ve successfully requested the deletion of this content for the reason: "
+"“{reason}”"
+msgstr ""
+"You’ve successfully requested the deletion of this content for the reason: "
+"“{reason}”"
+
+#: /var/www2/src/MovLib/Presentation/TraitDeletionRequest.php:372
+msgid "Only administrators can delete content."
+msgstr "Only administrators can delete content."
+
+#: /var/www2/src/MovLib/Presentation/TraitDeletionRequest.php:373
+msgid "Not Allowed!"
+msgstr "Not Allowed!"
+
+#: /var/www2/src/MovLib/Presentation/Error/NotFound.php:39
+msgid "Not Found"
+msgstr "Not Found"
+
+#: /var/www2/src/MovLib/Presentation/Error/NotFound.php:43
+msgid ""
+"There can be various reasons why you might see this error message. If you "
+"feel that receiving this error is a mistake please {0}contact us{1}."
+msgstr ""
+"There can be various reasons why you might see this error message. If you "
+"feel that receiving this error is a mistake please {0}contact us{1}."
+
+#: /var/www2/src/MovLib/Presentation/Error/NotFound.php:46
+msgid "The requested page could not be found."
+msgstr "The requested page could not be found."
+
+#: /var/www2/src/MovLib/Presentation/Award/AbstractBase.php:62
+#: /var/www2/src/MovLib/Presentation/Award/AbstractBase.php:92
+#: /var/www2/src/MovLib/Presentation/Award/AbstractBase.php:113
+#: /var/www2/src/MovLib/Presentation/Award/Category/AbstractBase.php:69
+#: /var/www2/src/MovLib/Presentation/Award/Category/AbstractBase.php:102
+#: /var/www2/src/MovLib/Presentation/Award/Category/AbstractBase.php:128
+#: /var/www2/src/MovLib/Presentation/Event/AbstractBase.php:69
+#: /var/www2/src/MovLib/Presentation/Event/AbstractBase.php:102
+#: /var/www2/src/MovLib/Presentation/Event/AbstractBase.php:126
+msgid "$this->award has to be a valid award object!"
+msgstr "$this->award has to be a valid award object!"
+
+#: /var/www2/src/MovLib/Presentation/Award/AbstractBase.php:70
+msgid ""
+"The award and all its content have been deleted. Take a look at the {0}"
+"history{2} or {1}discussion{2} page for further information. Please discuss "
+"with the person responsible for this deletion before you restore this entry "
+"from its {0}history{2}."
+msgstr ""
+"The award and all its content have been deleted. Take a look at the {0}"
+"history{2} or {1}discussion{2} page for further information. Please discuss "
+"with the person responsible for this deletion before you restore this entry "
+"from its {0}history{2}."
+
+#: /var/www2/src/MovLib/Presentation/Award/History.php:61
+msgid "award history"
+msgstr "award history"
+
+#: /var/www2/src/MovLib/Presentation/Award/Index.php:50
+msgid "Create New Award"
+msgstr "Create New Award"
+
+#: /var/www2/src/MovLib/Presentation/Award/Index.php:65
+#: /var/www2/src/MovLib/Presentation/Award/Show.php:60
+msgid "First Event"
+msgstr "First Event"
+
+#: /var/www2/src/MovLib/Presentation/Award/Index.php:66
+#: /var/www2/src/MovLib/Presentation/Award/Show.php:61
+msgid "Last Event"
+msgstr "Last Event"
+
+#: /var/www2/src/MovLib/Presentation/Award/Index.php:98
+msgid "No Awards"
+msgstr "No Awards"
+
+#: /var/www2/src/MovLib/Presentation/Award/Random.php:47
+msgid "There is currently no award in our database."
+msgstr "There is currently no award in our database."
+
+#: /var/www2/src/MovLib/Presentation/Award/Edit.php:61
+msgid "edit award"
+msgstr "edit award"
+
+#: /var/www2/src/MovLib/Presentation/Award/Series.php:63
+msgid "series with award"
+msgstr "series with award"
+
+#: /var/www2/src/MovLib/Presentation/Award/Discussion.php:61
+msgid "discuss award"
+msgstr "discuss award"
+
+#: /var/www2/src/MovLib/Presentation/Award/Create.php:43
+msgid "Create Award"
+msgstr "Create Award"
+
+#: /var/www2/src/MovLib/Presentation/Award/Create.php:60
+msgid "The create award feature isn’t implemented yet."
+msgstr "The create award feature isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Award/Category/AbstractBase.php:72
+#: /var/www2/src/MovLib/Presentation/Award/Category/AbstractBase.php:105
+#: /var/www2/src/MovLib/Presentation/Award/Category/AbstractBase.php:131
+msgid "$this->awardCategory has to be a valid award category object!"
+msgstr "$this->awardCategory has to be a valid award category object!"
+
+#: /var/www2/src/MovLib/Presentation/Award/Category/AbstractBase.php:80
+msgid ""
+"The award category and all its content have been deleted. Take a look at the "
+"{0}history{2} or {1}discussion{2} page for further information. Please "
+"discuss with the person responsible for this deletion before you restore "
+"this entry from its {0}history{2}."
+msgstr ""
+"The award category and all its content have been deleted. Take a look at the "
+"{0}history{2} or {1}discussion{2} page for further information. Please "
+"discuss with the person responsible for this deletion before you restore "
+"this entry from its {0}history{2}."
+
+#: /var/www2/src/MovLib/Presentation/Award/Category/AbstractBase.php:113
+#: /var/www2/src/MovLib/Presentation/Award/Category/Index.php:47
+#: /var/www2/src/MovLib/Presentation/Award/Category/Create.php:61
+#: /var/www2/src/MovLib/Presentation/Award/Category/Show.php:59
+msgid "Categories"
+msgstr "Categories"
+
+#: /var/www2/src/MovLib/Presentation/Award/Category/History.php:72
+msgid "award category history"
+msgstr "award category history"
+
+#: /var/www2/src/MovLib/Presentation/Award/Category/Index.php:45
+#: /var/www2/src/MovLib/Presentation/Award/Category/Index.php:46
+msgid "Categories of {0}"
+msgstr "Categories of {0}"
+
+#: /var/www2/src/MovLib/Presentation/Award/Category/Index.php:71
+msgid ""
+"We couldn’t find any categories matching your filter criteria, or there "
+"simply aren’t any categories available."
+msgstr ""
+"We couldn’t find any categories matching your filter criteria, or there "
+"simply aren’t any categories available."
+
+#: /var/www2/src/MovLib/Presentation/Award/Category/Index.php:72
+msgid "No Category"
+msgstr "No Category"
+
+#: /var/www2/src/MovLib/Presentation/Award/Category/Index.php:75
+#: /var/www2/src/MovLib/Presentation/Award/Event/Index.php:77
+msgid "<p>Would you like to {0}create a new entry{1}?</p>"
+msgstr "<p>Would you like to {0}create a new entry{1}?</p>"
+
+#: /var/www2/src/MovLib/Presentation/Award/Category/Edit.php:72
+msgid "edit award category"
+msgstr "edit award category"
+
+#: /var/www2/src/MovLib/Presentation/Award/Category/Series.php:73
+msgid "series with award category"
+msgstr "series with award category"
+
+#: /var/www2/src/MovLib/Presentation/Award/Category/Discussion.php:72
+msgid "discuss award category"
+msgstr "discuss award category"
+
+#: /var/www2/src/MovLib/Presentation/Award/Category/Create.php:57
+msgid "Create Category"
+msgstr "Create Category"
+
+#: /var/www2/src/MovLib/Presentation/Award/Category/Create.php:78
+msgid "The create award category feature isn’t implemented yet."
+msgstr "The create award category feature isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Award/Category/Show.php:125
+msgid "{sitename} has no further details about this award category."
+msgstr "{sitename} has no further details about this award category."
+
+#: /var/www2/src/MovLib/Presentation/Award/Category/Delete.php:72
+msgid "delete award category"
+msgstr "delete award category"
+
+#: /var/www2/src/MovLib/Presentation/Award/Show.php:59
+#: /var/www2/src/MovLib/Presentation/Company/Show.php:60
+msgid "Sites"
+msgstr "Sites"
+
+#: /var/www2/src/MovLib/Presentation/Award/Show.php:67
+#: /var/www2/src/MovLib/Presentation/Company/Show.php:69
+msgid "Also Known As"
+msgstr "Also Known As"
+
+#: /var/www2/src/MovLib/Presentation/Award/Show.php:75
+#: /var/www2/src/MovLib/Presentation/Company/Show.php:77
+#: /var/www2/src/MovLib/Presentation/Person/Show.php:340
+msgid "No Info"
+msgstr "No Info"
+
+#: /var/www2/src/MovLib/Presentation/Award/Delete.php:61
+msgid "delete award"
+msgstr "delete award"
+
+#: /var/www2/src/MovLib/Presentation/Award/Event/Index.php:45
+#: /var/www2/src/MovLib/Presentation/Award/Event/Index.php:46
+msgid "Events of {0}"
+msgstr "Events of {0}"
+
+#: /var/www2/src/MovLib/Presentation/Award/Event/Index.php:47
+#: /var/www2/src/MovLib/Presentation/Event/AbstractBase.php:111
+#: /var/www2/src/MovLib/Presentation/Event/Index.php:46
+#: /var/www2/src/MovLib/Presentation/Event/Create.php:58
+#: /var/www2/src/MovLib/Presentation/Event/Show.php:54
+msgid "Events"
+msgstr "Events"
+
+#: /var/www2/src/MovLib/Presentation/Award/Event/Index.php:66
+#: /var/www2/src/MovLib/Presentation/Event/Index.php:45
+msgid "Create New Event"
+msgstr "Create New Event"
+
+#: /var/www2/src/MovLib/Presentation/Award/Event/Index.php:73
+msgid ""
+"We couldn’t find any event matching your filter criteria, or there simply "
+"aren’t any events available."
+msgstr ""
+"We couldn’t find any event matching your filter criteria, or there simply "
+"aren’t any events available."
+
+#: /var/www2/src/MovLib/Presentation/Award/Event/Index.php:74
+msgid "No Event"
+msgstr "No Event"
+
+#: /var/www2/src/MovLib/Presentation/Award/Icon/Index.php:56
+#: /var/www2/src/MovLib/Presentation/Company/Logo/Index.php:98
+msgid "Logo"
+msgstr "Logo"
+
+#: /var/www2/src/MovLib/Presentation/Award/Icon/Index.php:57
+#: /var/www2/src/MovLib/Presentation/Company/Logo/Index.php:99
+msgid "Logo of {0}"
+msgstr "Logo of {0}"
+
+#: /var/www2/src/MovLib/Presentation/Award/Icon/Index.php:67
+msgid "Back to Award"
+msgstr "Back to Award"
+
+#: /var/www2/src/MovLib/Presentation/Award/Icon/Index.php:68
+msgid "Delete Icon"
+msgstr "Delete Icon"
+
+#: /var/www2/src/MovLib/Presentation/LanguageSelection.php:51
+msgid "Available Languages"
+msgstr "Available Languages"
+
+#: /var/www2/src/MovLib/Presentation/LanguageSelection.php:96
+msgid "Language Selection"
+msgstr "Language Selection"
+
+#: /var/www2/src/MovLib/Presentation/Series/Index.php:40
+#: /var/www2/src/MovLib/Presentation/Series/Charts.php:41
+#: /var/www2/src/MovLib/Presentation/Series/Charts.php:45
+#: /var/www2/src/MovLib/Presentation/Movie/Index.php:50
+#: /var/www2/src/MovLib/Presentation/Movie/Charts.php:41
+#: /var/www2/src/MovLib/Presentation/Movie/Charts.php:45
+msgid "Charts"
+msgstr "Charts"
+
+#: /var/www2/src/MovLib/Presentation/Series/Index.php:41
+#: /var/www2/src/MovLib/Presentation/Series/Charts.php:46
+#: /var/www2/src/MovLib/Presentation/Movie/Index.php:51
+#: /var/www2/src/MovLib/Presentation/Movie/Charts.php:46
+#: /var/www2/src/MovLib/Presentation/AbstractIndexPresenter.php:88
+#: /var/www2/src/MovLib/Presentation/Release/Index.php:42
+#: /var/www2/src/MovLib/Presentation/User/Index.php:54
+msgid "Random"
+msgstr "Random"
+
+#: /var/www2/src/MovLib/Presentation/Series/Index.php:50
+msgid "The series feature isn’t implemented yet."
+msgstr "The series feature isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Series/Random.php:36
+msgid "There is currently no series in our database"
+msgstr "There is currently no series in our database"
+
+#: /var/www2/src/MovLib/Presentation/Series/Charts.php:39
+msgid "Series Charts"
+msgstr "Series Charts"
+
+#: /var/www2/src/MovLib/Presentation/Series/Charts.php:62
+msgid "The series charts feature isn’t implemented yet."
+msgstr "The series charts feature isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Series/Create.php:43
+msgid "Create Series"
+msgstr "Create Series"
+
+#: /var/www2/src/MovLib/Presentation/Series/Create.php:60
+msgid "The create series feature isn’t implemented yet."
+msgstr "The create series feature isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Company/AbstractBase.php:62
+#: /var/www2/src/MovLib/Presentation/Company/AbstractBase.php:92
+#: /var/www2/src/MovLib/Presentation/Company/AbstractBase.php:113
+msgid "$this->company has to be a valid company object!"
+msgstr "$this->company has to be a valid company object!"
+
+#: /var/www2/src/MovLib/Presentation/Company/AbstractBase.php:70
+msgid ""
+"The company and all its content have been deleted. Take a look at the {0}"
+"history{2} or {1}discussion{2} page for further information. Please discuss "
+"with the person responsible for this deletion before you restore this entry "
+"from its {0}history{2}."
+msgstr ""
+"The company and all its content have been deleted. Take a look at the {0}"
+"history{2} or {1}discussion{2} page for further information. Please discuss "
+"with the person responsible for this deletion before you restore this entry "
+"from its {0}history{2}."
+
+#: /var/www2/src/MovLib/Presentation/Company/History.php:42
+msgid "company history"
+msgstr "company history"
+
+#: /var/www2/src/MovLib/Presentation/Company/Index.php:51
+msgid "Create New Company"
+msgstr "Create New Company"
+
+#: /var/www2/src/MovLib/Presentation/Company/Random.php:58
+msgid "There aren’t any companies available."
+msgstr "There aren’t any companies available."
+
+#: /var/www2/src/MovLib/Presentation/Company/Movies.php:51
+#: /var/www2/src/MovLib/Presentation/Company/Movies.php:52
+msgid "Movies from {0}"
+msgstr "Movies from {0}"
+
+#: /var/www2/src/MovLib/Presentation/Company/Edit.php:42
+msgid "edit company"
+msgstr "edit company"
+
+#: /var/www2/src/MovLib/Presentation/Company/Series.php:43
+msgid "series with company"
+msgstr "series with company"
+
+#: /var/www2/src/MovLib/Presentation/Company/Series.php:51
+#: /var/www2/src/MovLib/Presentation/Company/Series.php:52
+msgid "Series from {0}"
+msgstr "Series from {0}"
+
+#: /var/www2/src/MovLib/Presentation/Company/Logo/Index.php:109
+msgid "Back to Company"
+msgstr "Back to Company"
+
+#: /var/www2/src/MovLib/Presentation/Company/Logo/Index.php:110
+msgid "Delete Logo"
+msgstr "Delete Logo"
+
+#: /var/www2/src/MovLib/Presentation/Company/Discussion.php:42
+msgid "discuss company"
+msgstr "discuss company"
+
+#: /var/www2/src/MovLib/Presentation/Company/Create.php:42
+msgid "The create company feature isn’t implemented yet."
+msgstr "The create company feature isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Company/Create.php:52
+msgid "Create Company"
+msgstr "Create Company"
+
+#: /var/www2/src/MovLib/Presentation/Company/Releases.php:42
+msgid "releases with company"
+msgstr "releases with company"
+
+#: /var/www2/src/MovLib/Presentation/Company/Releases.php:50
+#: /var/www2/src/MovLib/Presentation/Company/Releases.php:51
+msgid "Releases from {0}"
+msgstr "Releases from {0}"
+
+#: /var/www2/src/MovLib/Presentation/Company/Show.php:61
+msgid "Founded"
+msgstr "Founded"
+
+#: /var/www2/src/MovLib/Presentation/Company/Show.php:62
+msgid "Defunct"
+msgstr "Defunct"
+
+#: /var/www2/src/MovLib/Presentation/Company/Show.php:63
+msgid "Based in"
+msgstr "Based in"
+
+#: /var/www2/src/MovLib/Presentation/Company/Delete.php:42
+msgid "delete company"
+msgstr "delete company"
+
+#: /var/www2/src/MovLib/Presentation/AbstractPresenter.php:334
+msgid "You’re currently viewing this page."
+msgstr "You’re currently viewing this page."
+
+#: /var/www2/src/MovLib/Presentation/AbstractPresenter.php:604
+msgid "love"
+msgstr "love"
+
+#: /var/www2/src/MovLib/Presentation/AbstractPresenter.php:738
+msgid "{page_title} — {sitename}"
+msgstr "{page_title} — {sitename}"
+
+#: /var/www2/src/MovLib/Presentation/AbstractPresenter.php:933
+#: /var/www2/src/MovLib/Presentation/Home.php:109
+msgid ""
+"Please activate JavaScript in your browser to experience our website with "
+"all its features."
+msgstr ""
+"Please activate JavaScript in your browser to experience our website with "
+"all its features."
+
+#: /var/www2/src/MovLib/Presentation/AbstractPresenter.php:934
+#: /var/www2/src/MovLib/Presentation/Home.php:110
+msgid "JavaScript Disabled"
+msgstr "JavaScript Disabled"
+
+#: /var/www2/src/MovLib/Presentation/AbstractPresenter.php:959
+msgid "Home"
+msgstr "Home"
+
+#: /var/www2/src/MovLib/Presentation/AbstractPresenter.php:959
+msgid "Go back to the home page."
+msgstr "Go back to the home page."
+
+#: /var/www2/src/MovLib/Presentation/AbstractPresenter.php:969
+msgid "…"
+msgstr "…"
+
+#: /var/www2/src/MovLib/Presentation/AbstractPresenter.php:975
+msgid "You are here: "
+msgstr "You are here: "
+
+#: /var/www2/src/MovLib/Presentation/Search/Show.php:53
+msgid "Search"
+msgstr "Search"
+
+#: /var/www2/src/MovLib/Presentation/Search/Show.php:85
+msgid "No search query submitted."
+msgstr "No search query submitted."
+
+#: /var/www2/src/MovLib/Presentation/Search/Show.php:86
+msgid "Nothing to Search for…"
+msgstr "Nothing to Search for…"
+
+#: /var/www2/src/MovLib/Presentation/Search/Show.php:112
+msgid "Your search “{query}” did not match any document."
+msgstr "Your search “{query}” did not match any document."
+
+#: /var/www2/src/MovLib/Presentation/Search/Show.php:113
+msgid "No Results"
+msgstr "No Results"
+
+#: /var/www2/src/MovLib/Presentation/Search/Show.php:164
+#: /var/www2/src/MovLib/Presentation/Person/AbstractBase.php:86
+#: /var/www2/src/MovLib/Presentation/Person/Index.php:49
+#: /var/www2/src/MovLib/Presentation/Person/Photo/AbstractBase.php:60
+#: /var/www2/src/MovLib/Presentation/Person/Photo/History.php:44
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Edit.php:87
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Upload.php:44
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Show.php:53
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Delete.php:44
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:130
+#: /var/www2/src/MovLib/Presentation/Home.php:58
+msgid "Persons"
+msgstr "Persons"
+
+#: /var/www2/src/MovLib/Presentation/Help/Index.php:35
+#: /var/www2/src/MovLib/Presentation/Help/Index.php:39
+msgid "Help"
+msgstr "Help"
+
+#: /var/www2/src/MovLib/Presentation/Help/Index.php:45
+msgid "The help isn’t implemented yet."
+msgstr "The help isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/ComingSoon.php:70
+msgid "Sign up for the {sitename} beta!"
+msgstr "Sign up for the {sitename} beta!"
+
+#: /var/www2/src/MovLib/Presentation/ComingSoon.php:142
+msgid "{0}, {1}."
+msgstr "{0}, {1}."
+
+#: /var/www2/src/MovLib/Presentation/ComingSoon.php:184
+msgid "Thanks for signing up for the {sitename} beta {email}."
+msgstr "Thanks for signing up for the {sitename} beta {email}."
+
+#: /var/www2/src/MovLib/Presentation/ComingSoon.php:188
+msgid "Successfully Signed Up"
+msgstr "Successfully Signed Up"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Cast.php:40
+#: /var/www2/src/MovLib/Presentation/Movie/AbstractBase.php:78
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:91
+msgid "Cast"
+msgstr "Cast"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Cast.php:43
+msgid "Cast of {0}"
+msgstr "Cast of {0}"
+
+#: /var/www2/src/MovLib/Presentation/Movie/ImageEdit.php:114
+msgid "Upload new {image_name} for {title}"
+msgstr "Upload new {image_name} for {title}"
+
+#: /var/www2/src/MovLib/Presentation/Movie/ImageEdit.php:124
+#: /var/www2/src/MovLib/Presentation/Movie/ImageEdit.php:135
+#: /var/www2/src/MovLib/Presentation/Movie/ImageUpload.php:134
+#: /var/www2/src/MovLib/Presentation/Movie/ImageUpload.php:146
+#: /var/www2/src/MovLib/Presentation/Movie/Images/AbstractBase.php:212
+msgid "Upload"
+msgstr "Upload"
+
+#: /var/www2/src/MovLib/Presentation/Movie/ImageEdit.php:132
+#: /var/www2/src/MovLib/Presentation/Movie/ImageUpload.php:143
+msgid "Publishing Date"
+msgstr "Publishing Date"
+
+#: /var/www2/src/MovLib/Presentation/Movie/ImageEdit.php:151
+#: /var/www2/src/MovLib/Presentation/Movie/ImageUpload.php:162
+msgid "Terms of Use"
+msgstr "Terms of Use"
+
+#: /var/www2/src/MovLib/Presentation/Movie/ImageEdit.php:178
+msgid "Successfully Edited"
+msgstr "Successfully Edited"
+
+#: /var/www2/src/MovLib/Presentation/Movie/ImageUpload.php:115
+msgid "Upload new poster for {title}"
+msgstr "Upload new poster for {title}"
+
+#: /var/www2/src/MovLib/Presentation/Movie/ImageUpload.php:119
+msgid "Upload new lobby card for {title}"
+msgstr "Upload new lobby card for {title}"
+
+#: /var/www2/src/MovLib/Presentation/Movie/ImageUpload.php:123
+msgid "Upload new backdrop for {title}"
+msgstr "Upload new backdrop for {title}"
+
+#: /var/www2/src/MovLib/Presentation/Movie/AbstractBase.php:79
+#: /var/www2/src/MovLib/Presentation/Movie/Crew.php:43
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:92
+msgid "Crew"
+msgstr "Crew"
+
+#: /var/www2/src/MovLib/Presentation/Movie/AbstractBase.php:104
+msgid "This Movie has been deleted."
+msgstr "This Movie has been deleted."
+
+#: /var/www2/src/MovLib/Presentation/Movie/MovieTitles.php:48
+msgid "Titles of {0}"
+msgstr "Titles of {0}"
+
+#: /var/www2/src/MovLib/Presentation/Movie/MovieTitles.php:76
+msgid "There are no Comments."
+msgstr "There are no Comments."
+
+#: /var/www2/src/MovLib/Presentation/Movie/MovieTitles.php:86
+msgid "There are no titles."
+msgstr "There are no titles."
+
+#: /var/www2/src/MovLib/Presentation/Movie/History.php:36
+msgid "History {title}"
+msgstr "History {title}"
+
+#: /var/www2/src/MovLib/Presentation/Movie/History.php:41
+msgid "The movie history feature isn’t implemented yet."
+msgstr "The movie history feature isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Movie/BackdropUpload.php:82
+msgid "Upload New {image_type_name}"
+msgstr "Upload New {image_type_name}"
+
+#: /var/www2/src/MovLib/Presentation/Movie/BackdropUpload.php:89
+msgid "Upload new {image_type_name} for {title}"
+msgstr "Upload new {image_type_name} for {title}"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Random.php:47
+msgid "There is currently no movie in our database"
+msgstr "There is currently no movie in our database"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Charts.php:39
+msgid "Movie Charts"
+msgstr "Movie Charts"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Charts.php:62
+msgid "The movies charts feature isn’t implemented yet."
+msgstr "The movies charts feature isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Movie/Images/AbstractBase.php:148
+msgid ""
+"We couldn’t find any {image_name_plural} matching your filter criteria, or "
+"there simply aren’t any {image_name_plural} available. Would you like to {0}"
+"upload a new {image_name}{1}?"
+msgstr ""
+"We couldn’t find any {image_name_plural} matching your filter criteria, or "
+"there simply aren’t any {image_name_plural} available. Would you like to {0}"
+"upload a new {image_name}{1}?"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Images/AbstractBase.php:155
+msgid "No {image_name_plural}"
+msgstr "No {image_name_plural}"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Images/AbstractBase.php:213
+msgid "Back to movie"
+msgstr "Back to movie"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Edit.php:50
+msgid "Edit {title}"
+msgstr "Edit {title}"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Edit.php:65
+msgid "The edit movie feature isn’t implemented yet."
+msgstr "The edit movie feature isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Movie/ImageDelete.php:39
+msgid "The delete image feature isn’t implemented yet."
+msgstr "The delete image feature isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Movie/Crew.php:46
+msgid "Crew of {0}"
+msgstr "Crew of {0}"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Crew.php:82
+msgid ""
+"No crew assigned yet, please edit this page to provide this information."
+msgstr ""
+"No crew assigned yet, please edit this page to provide this information."
+
+#: /var/www2/src/MovLib/Presentation/Movie/Crew.php:83
+msgid "No Crew"
+msgstr "No Crew"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Image.php:220
+msgid "{image_name} {current} of {total} from {title}"
+msgstr "{image_name} {current} of {total} from {title}"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Discussion.php:36
+msgid "Discuss {title}"
+msgstr "Discuss {title}"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Discussion.php:41
+msgid "The discuss movie feature isn’t implemented yet."
+msgstr "The discuss movie feature isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Movie/Create.php:50
+msgid "Create New Movie"
+msgstr "Create New Movie"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Create.php:65
+msgid "The create movie feature isn’t implemented yet."
+msgstr "The create movie feature isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:118
+msgid "No countries assigned yet, {0}add countries{1}?"
+msgstr "No countries assigned yet, {0}add countries{1}?"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:144
+msgid "No genres assigned yet, {0}add genres{1}?"
+msgstr "No genres assigned yet, {0}add genres{1}?"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:193
+msgid "Awful"
+msgstr "Awful"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:194
+msgid "Bad"
+msgstr "Bad"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:195
+msgid "Okay"
+msgstr "Okay"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:196
+msgid "Fine"
+msgstr "Fine"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:197
+msgid "Awesome"
+msgstr "Awesome"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:215
+msgid "No one has rated this movie so far, be the first."
+msgstr "No one has rated this movie so far, be the first."
+
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:218
+msgid "You’re the only one who rated this movie (yet)."
+msgstr "You’re the only one who rated this movie (yet)."
+
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:224
+msgid "Rated by {votes} user with {rating}."
+msgstr "Rated by {votes} user with {rating}."
+
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:227
+msgid "Rated by {votes} users with a {0}mean rating{1} of {rating}."
+msgstr "Rated by {votes} users with a {0}mean rating{1} of {rating}."
+
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:254
+msgid "Directors"
+msgstr "Directors"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:254
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:257
+msgid "{0}:"
+msgstr "{0}:"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:264
+msgid "No directors assigned yet, {0}add directors{1}?"
+msgstr "No directors assigned yet, {0}add directors{1}?"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:290
+msgid "No cast assigned yet, {0}add cast{1}?"
+msgstr "No cast assigned yet, {0}add cast{1}?"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:343
+msgid "Synopsis"
+msgstr "Synopsis"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:345
+msgid "No synopsis available, {0}write synopsis{1}?"
+msgstr "No synopsis available, {0}write synopsis{1}?"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:367
+msgid "No trailers available, {0}add trailers{1}?"
+msgstr "No trailers available, {0}add trailers{1}?"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:373
+msgid "Trailers"
+msgstr "Trailers"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:378
+msgid "Reviews"
+msgstr "Reviews"
+
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:398
+msgid "Please {sign_in} or {join} to rate this movie."
+msgstr "Please {sign_in} or {join} to rate this movie."
+
+#: /var/www2/src/MovLib/Presentation/Movie/Show.php:419
+msgid ""
+"The submitted rating isn’t valid. Valid ratings range from: {min} to {max}"
+msgstr ""
+"The submitted rating isn’t valid. Valid ratings range from: {min} to {max}"
+
+#: /var/www2/src/MovLib/Presentation/Release/Random.php:62
+msgid "There is currently no release in our database."
+msgstr "There is currently no release in our database."
+
+#: /var/www2/src/MovLib/Presentation/Tool/Home.php:60
+msgid "Have a look at the current PHP configuration, extensions, etc."
+msgstr "Have a look at the current PHP configuration, extensions, etc."
+
+#: /var/www2/src/MovLib/Presentation/Tool/Home.php:61
+msgid "Easily manage the database via the phpMyAdmin web interface."
+msgstr "Easily manage the database via the phpMyAdmin web interface."
+
+#: /var/www2/src/MovLib/Presentation/Person/AbstractBase.php:56
+#: /var/www2/src/MovLib/Presentation/Person/AbstractBase.php:80
+#: /var/www2/src/MovLib/Presentation/Person/AbstractBase.php:95
+msgid "$this->person has to be a valid person object!"
+msgstr "$this->person has to be a valid person object!"
+
+#: /var/www2/src/MovLib/Presentation/Person/AbstractBase.php:64
+msgid ""
+"The person and all its content have been deleted. A look at the edit {0}"
+"history{2} or {1}discussion{2} will explain why that is the case. Please "
+"discuss with the person responsible for this deletion before you restore "
+"this entry from its {0}history{2}."
+msgstr ""
+"The person and all its content have been deleted. A look at the edit {0}"
+"history{2} or {1}discussion{2} will explain why that is the case. Please "
+"discuss with the person responsible for this deletion before you restore "
+"this entry from its {0}history{2}."
+
+#: /var/www2/src/MovLib/Presentation/Person/History.php:43
+msgid "person history"
+msgstr "person history"
+
+#: /var/www2/src/MovLib/Presentation/Person/Index.php:48
+msgid "Create New Person"
+msgstr "Create New Person"
+
+#: /var/www2/src/MovLib/Presentation/Person/Index.php:91
+msgid "No Persons"
+msgstr "No Persons"
+
+#: /var/www2/src/MovLib/Presentation/Person/Random.php:62
+msgid "There is currently no person in our database"
+msgstr "There is currently no person in our database"
+
+#: /var/www2/src/MovLib/Presentation/Person/Edit.php:48
+msgid "edit person"
+msgstr "edit person"
+
+#: /var/www2/src/MovLib/Presentation/Person/Series.php:53
+#: /var/www2/src/MovLib/Presentation/Person/Releases.php:53
+msgid "Not implemented yet."
+msgstr "Not implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Person/Discussion.php:47
+msgid "discuss person"
+msgstr "discuss person"
+
+#: /var/www2/src/MovLib/Presentation/Person/Photo/History.php:39
+#: /var/www2/src/MovLib/Presentation/Person/Photo/History.php:40
+msgid "Photo History of {person_name}"
+msgstr "Photo History of {person_name}"
+
+#: /var/www2/src/MovLib/Presentation/Person/Photo/History.php:51
+msgid "The person photo history feature isn’t implemented yet."
+msgstr "The person photo history feature isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Index.php:51
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Edit.php:89
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Edit.php:92
+msgid "Photo"
+msgstr "Photo"
+
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Index.php:52
+msgid "Photo of {0}"
+msgstr "Photo of {0}"
+
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Index.php:62
+msgid "Back to Person"
+msgstr "Back to Person"
+
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Index.php:63
+msgid "Delete Photo"
+msgstr "Delete Photo"
+
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Edit.php:66
+msgid "Only registered users are allowed to upload images."
+msgstr "Only registered users are allowed to upload images."
+
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Edit.php:71
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Edit.php:72
+msgid "Edit photo of {0}"
+msgstr "Edit photo of {0}"
+
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Edit.php:81
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Edit.php:82
+msgid "Upload photo for {0}"
+msgstr "Upload photo for {0}"
+
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Edit.php:98
+msgid "Please enter a detailed description of this photo."
+msgstr "Please enter a detailed description of this photo."
+
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Edit.php:113
+msgid "edit person photo"
+msgstr "edit person photo"
+
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Upload.php:39
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Upload.php:40
+msgid "Upload Photo for {person_name}"
+msgstr "Upload Photo for {person_name}"
+
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Upload.php:51
+msgid "The upload person photo feature isn’t implemented yet."
+msgstr "The upload person photo feature isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Show.php:69
+msgid "Photo of {person_name}"
+msgstr "Photo of {person_name}"
+
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Delete.php:39
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Delete.php:40
+msgid "Delete Photo of {person_name}"
+msgstr "Delete Photo of {person_name}"
+
+#: /var/www2/src/MovLib/Presentation/Person/Photo/Delete.php:51
+msgid "The delete person photo feature isn’t implemented yet."
+msgstr "The delete person photo feature isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:129
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:154
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:211
+msgid "Create Person"
+msgstr "Create Person"
+
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:132
+msgid "Name"
+msgstr "Name"
+
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:132
+msgid "Enter the person's name"
+msgstr "Enter the person's name"
+
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:133
+#: /var/www2/src/MovLib/Presentation/Person/Show.php:312
+msgid "Born as"
+msgstr "Born as"
+
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:133
+msgid "Enter the person's birth name"
+msgstr "Enter the person's birth name"
+
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:138
+msgid "Wikipedia URL"
+msgstr "Wikipedia URL"
+
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:139
+msgid "Additional Names"
+msgstr "Additional Names"
+
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:139
+msgid "Please supply one name per line"
+msgstr "Please supply one name per line"
+
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:140
+msgid "Biography"
+msgstr "Biography"
+
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:140
+msgid "Enter the person's biography here"
+msgstr "Enter the person's biography here"
+
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:142
+#: /var/www2/src/MovLib/Presentation/Event/Show.php:128
+msgid "External Links"
+msgstr "External Links"
+
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:142
+msgid "Please supply one URL per line"
+msgstr "Please supply one URL per line"
+
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:155
+msgid "Create and Upload Image"
+msgstr "Create and Upload Image"
+
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:203
+msgid "If you want, you can {0}upload a photo{1} right away."
+msgstr "If you want, you can {0}upload a photo{1} right away."
+
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:206
+msgid "Person Created Successfully"
+msgstr "Person Created Successfully"
+
+#: /var/www2/src/MovLib/Presentation/Person/Create.php:236
+msgid "I confirm that this person is new"
+msgstr "I confirm that this person is new"
+
+#: /var/www2/src/MovLib/Presentation/Person/Releases.php:41
+#: /var/www2/src/MovLib/Presentation/Person/Releases.php:42
+msgid "Releases with {0}"
+msgstr "Releases with {0}"
+
+#: /var/www2/src/MovLib/Presentation/Person/Show.php:113
+msgid "Born on {date} in {place} and would be {age} years old."
+msgstr "Born on {date} in {place} and would be {age} years old."
+
+#: /var/www2/src/MovLib/Presentation/Person/Show.php:116
+msgid "Born on {date} in {place} and is {age} years old."
+msgstr "Born on {date} in {place} and is {age} years old."
+
+#: /var/www2/src/MovLib/Presentation/Person/Show.php:122
+msgid "Born on {date} and would be {age} years old."
+msgstr "Born on {date} and would be {age} years old."
+
+#: /var/www2/src/MovLib/Presentation/Person/Show.php:125
+msgid "Born on {date} and is {age} years old."
+msgstr "Born on {date} and is {age} years old."
+
+#: /var/www2/src/MovLib/Presentation/Person/Show.php:130
+msgid "Born in {place}."
+msgstr "Born in {place}."
+
+#: /var/www2/src/MovLib/Presentation/Person/Show.php:156
+msgid "Died on {date} in {place} at the age of {age} years."
+msgstr "Died on {date} in {place} at the age of {age} years."
+
+#: /var/www2/src/MovLib/Presentation/Person/Show.php:161
+msgid "Died on {date} in {place}."
+msgstr "Died on {date} in {place}."
+
+#: /var/www2/src/MovLib/Presentation/Person/Show.php:166
+msgid "Died on {date} at the age of {age} years."
+msgstr "Died on {date} at the age of {age} years."
+
+#: /var/www2/src/MovLib/Presentation/Person/Show.php:169
+msgid "Died on {date}."
+msgstr "Died on {date}."
+
+#: /var/www2/src/MovLib/Presentation/Person/Show.php:173
+msgid "Died in {place}."
+msgstr "Died in {place}."
+
+#: /var/www2/src/MovLib/Presentation/Person/Delete.php:47
+msgid "delete person"
+msgstr "delete person"
+
+#: /var/www2/src/MovLib/Presentation/SystemPage/Edit.php:62
+msgid "The page you want to edit can only be changed by administrators of {0}."
+msgstr ""
+"The page you want to edit can only be changed by administrators of {0}."
+
+#: /var/www2/src/MovLib/Presentation/SystemPage/Edit.php:73
+msgid "Title"
+msgstr "Title"
+
+#: /var/www2/src/MovLib/Presentation/SystemPage/Edit.php:74
+msgid "A system page’s title cannot contain any HTML."
+msgstr "A system page’s title cannot contain any HTML."
+
+#: /var/www2/src/MovLib/Presentation/SystemPage/Edit.php:76
+msgid "Enter the system page title"
+msgstr "Enter the system page title"
+
+#: /var/www2/src/MovLib/Presentation/SystemPage/Edit.php:80
+msgid "Content"
+msgstr "Content"
+
+#: /var/www2/src/MovLib/Presentation/SystemPage/Edit.php:81
+msgid "A system page’s text content can contain any HTML."
+msgstr "A system page’s text content can contain any HTML."
+
+#: /var/www2/src/MovLib/Presentation/SystemPage/Edit.php:82
+msgid "Enter the system page content"
+msgstr "Enter the system page content"
+
+#: /var/www2/src/MovLib/Presentation/SystemPage/Edit.php:113
+msgid "The {title} system page was successfully updated."
+msgstr "The {title} system page was successfully updated."
+
+#: /var/www2/src/MovLib/Presentation/SystemPage/Edit.php:114
+msgid "Successfully Updated"
+msgstr "Successfully Updated"
+
+#: /var/www2/src/MovLib/Presentation/SystemPage/Edit.php:120
+msgid "Please {0}validate your HTML with the W3C validator{1}."
+msgstr "Please {0}validate your HTML with the W3C validator{1}."
+
+#: /var/www2/src/MovLib/Presentation/SystemPage/Edit.php:123
+msgid "Valid?"
+msgstr "Valid?"
+
+#: /var/www2/src/MovLib/Presentation/SystemPage/Contact.php:74
+#: /var/www2/src/MovLib/Presentation/User/Contact.php:93
+msgid "Subject"
+msgstr "Subject"
+
+#: /var/www2/src/MovLib/Presentation/SystemPage/Contact.php:75
+msgid "This will appear as subject of your message"
+msgstr "This will appear as subject of your message"
+
+#: /var/www2/src/MovLib/Presentation/SystemPage/Contact.php:78
+#: /var/www2/src/MovLib/Presentation/User/Contact.php:97
+msgid "Message"
+msgstr "Message"
+
+#: /var/www2/src/MovLib/Presentation/SystemPage/Contact.php:81
+#: /var/www2/src/MovLib/Presentation/User/Contact.php:99
+msgid "Send"
+msgstr "Send"
+
+#: /var/www2/src/MovLib/Presentation/SystemPage/Contact.php:108
+msgid "Contact Successful"
+msgstr "Contact Successful"
+
+#: /var/www2/src/MovLib/Presentation/Genre/AbstractBase.php:62
+#: /var/www2/src/MovLib/Presentation/Genre/AbstractBase.php:92
+#: /var/www2/src/MovLib/Presentation/Genre/AbstractBase.php:113
+msgid "$this->genre has to be a valid genre object!"
+msgstr "$this->genre has to be a valid genre object!"
+
+#: /var/www2/src/MovLib/Presentation/Genre/AbstractBase.php:70
+msgid ""
+"The genre and all its content have been deleted. Take a look at the {0}"
+"history{2} or {1}discussion{2} page for further information. Please discuss "
+"with the person responsible for this deletion before you restore this entry "
+"from its {0}history{2}."
+msgstr ""
+"The genre and all its content have been deleted. Take a look at the {0}"
+"history{2} or {1}discussion{2} page for further information. Please discuss "
+"with the person responsible for this deletion before you restore this entry "
+"from its {0}history{2}."
+
+#: /var/www2/src/MovLib/Presentation/Genre/AbstractBase.php:98
+#: /var/www2/src/MovLib/Presentation/Genre/Index.php:45
+#: /var/www2/src/MovLib/Presentation/Genre/Create.php:44
+#: /var/www2/src/MovLib/Presentation/Genre/Show.php:46
+msgid "Genres"
+msgstr "Genres"
+
+#: /var/www2/src/MovLib/Presentation/Genre/History.php:61
+msgid "genre history"
+msgstr "genre history"
+
+#: /var/www2/src/MovLib/Presentation/Genre/Index.php:44
+msgid "Create New Genre"
+msgstr "Create New Genre"
+
+#: /var/www2/src/MovLib/Presentation/Genre/Index.php:78
+msgid "No Genres"
+msgstr "No Genres"
+
+#: /var/www2/src/MovLib/Presentation/Genre/Random.php:49
+msgid "There is currently no genre in our database."
+msgstr "There is currently no genre in our database."
+
+#: /var/www2/src/MovLib/Presentation/Genre/Edit.php:61
+msgid "edit genre"
+msgstr "edit genre"
+
+#: /var/www2/src/MovLib/Presentation/Genre/Series.php:63
+msgid "series with genre"
+msgstr "series with genre"
+
+#: /var/www2/src/MovLib/Presentation/Genre/Discussion.php:61
+msgid "discuss genre"
+msgstr "discuss genre"
+
+#: /var/www2/src/MovLib/Presentation/Genre/Create.php:43
+msgid "Create Genre"
+msgstr "Create Genre"
+
+#: /var/www2/src/MovLib/Presentation/Genre/Create.php:60
+msgid "The create genre feature isn’t implemented yet."
+msgstr "The create genre feature isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Genre/Show.php:85
+msgid "{sitename} has no further details about this genre."
+msgstr "{sitename} has no further details about this genre."
+
+#: /var/www2/src/MovLib/Presentation/Genre/Delete.php:61
+msgid "delete genre"
+msgstr "delete genre"
+
+#: /var/www2/src/MovLib/Presentation/DeletionRequest/Index.php:45
+msgid "Only administrators can handle deletion requests."
+msgstr "Only administrators can handle deletion requests."
+
+#: /var/www2/src/MovLib/Presentation/DeletionRequest/Index.php:48
+msgid "Deletion Requests"
+msgstr "Deletion Requests"
+
+#: /var/www2/src/MovLib/Presentation/DeletionRequest/Index.php:57
+msgid "All"
+msgstr "All"
+
+#: /var/www2/src/MovLib/Presentation/DeletionRequest/Index.php:58
+msgid "Spam"
+msgstr "Spam"
+
+#: /var/www2/src/MovLib/Presentation/DeletionRequest/Index.php:59
+msgid "Duplicate"
+msgstr "Duplicate"
+
+#: /var/www2/src/MovLib/Presentation/DeletionRequest/Index.php:76
+msgid "Great, not a single deletion request is waiting for approval."
+msgstr "Great, not a single deletion request is waiting for approval."
+
+#: /var/www2/src/MovLib/Presentation/DeletionRequest/Index.php:77
+msgid "No Deletion Requests"
+msgstr "No Deletion Requests"
+
+#: /var/www2/src/MovLib/Presentation/DeletionRequest/Index.php:94
+msgid "{date}: {user} has requested that {0}this content{1} should be deleted."
+msgstr ""
+"{date}: {user} has requested that {0}this content{1} should be deleted."
+
+#: /var/www2/src/MovLib/Presentation/DeletionRequest/Index.php:99
+msgid ""
+"{date}: {user} has requested that {0}this content{1} should be deleted for "
+"the reason: “{reason}”"
+msgstr ""
+"{date}: {user} has requested that {0}this content{1} should be deleted for "
+"the reason: “{reason}”"
+
+#: /var/www2/src/MovLib/Presentation/User/Random.php:47
+msgid "There is currently no user in our database"
+msgstr "There is currently no user in our database"
+
+#: /var/www2/src/MovLib/Presentation/User/Contact.php:68
+msgid "Contact {0}"
+msgstr "Contact {0}"
+
+#: /var/www2/src/MovLib/Presentation/User/Contact.php:70
+msgid "Contact {username}"
+msgstr "Contact {username}"
+
+#: /var/www2/src/MovLib/Presentation/User/Contact.php:71
+#: /var/www2/src/MovLib/Presentation/User/Show.php:65
+#: /var/www2/src/MovLib/Presentation/User/AbstractUserPage.php:83
+msgid "Contact"
+msgstr "Contact"
+
+#: /var/www2/src/MovLib/Presentation/User/Contact.php:85
+msgid ""
+"You need to {0}sign in{1} or {2}joing {sitename}{1} to contact other users."
+msgstr ""
+"You need to {0}sign in{1} or {2}joing {sitename}{1} to contact other users."
+
+#: /var/www2/src/MovLib/Presentation/User/Contact.php:88
+msgid "Authentication Required"
+msgstr "Authentication Required"
+
+#: /var/www2/src/MovLib/Presentation/User/Contact.php:94
+msgid "This will appear as title in {username}’s inbox"
+msgstr "This will appear as title in {username}’s inbox"
+
+#: /var/www2/src/MovLib/Presentation/User/Contact.php:108
+msgid "Not implemented yet!"
+msgstr "Not implemented yet!"
+
+#: /var/www2/src/MovLib/Presentation/User/Show.php:158
+msgid ""
+"You haven’t rated a single movie yet, use the {0}search{1} to explore movies "
+"you already know."
+msgstr ""
+"You haven’t rated a single movie yet, use the {0}search{1} to explore movies "
+"you already know."
+
+#: /var/www2/src/MovLib/Presentation/User/Show.php:160
+#: /var/www2/src/MovLib/Presentation/User/Show.php:165
+msgid "No rated Movies"
+msgstr "No rated Movies"
+
+#: /var/www2/src/MovLib/Presentation/User/Show.php:163
+msgid "{username} hasn’t rated a single movie yet, that makes us a sad panda."
+msgstr "{username} hasn’t rated a single movie yet, that makes us a sad panda."
+
+#: /var/www2/src/MovLib/Presentation/User/AbstractUserPage.php:81
+msgid "Uploads"
+msgstr "Uploads"
+
+#: /var/www2/src/MovLib/Presentation/User/Collection.php:40
+msgid "Collection {0}"
+msgstr "Collection {0}"
+
+#: /var/www2/src/MovLib/Presentation/User/Collection.php:42
+msgid "Collection of {username}"
+msgstr "Collection of {username}"
+
+#: /var/www2/src/MovLib/Presentation/User/Collection.php:51
+msgid "The user collection feature isn’t implemented yet."
+msgstr "The user collection feature isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Home.php:64
+msgid "Marketplace"
+msgstr "Marketplace"
+
+#: /var/www2/src/MovLib/Presentation/Home.php:74
+msgid "My {sitename}"
+msgstr "My {sitename}"
+
+#: /var/www2/src/MovLib/Presentation/Event/AbstractBase.php:72
+#: /var/www2/src/MovLib/Presentation/Event/AbstractBase.php:105
+#: /var/www2/src/MovLib/Presentation/Event/AbstractBase.php:129
+msgid "$this->awardEvent has to be a valid award event object!"
+msgstr "$this->awardEvent has to be a valid award event object!"
+
+#: /var/www2/src/MovLib/Presentation/Event/AbstractBase.php:80
+msgid ""
+"The event and all its content have been deleted. Take a look at the {0}"
+"history{2} or {1}discussion{2} page for further information. Please discuss "
+"with the person responsible for this deletion before you restore this entry "
+"from its {0}history{2}."
+msgstr ""
+"The event and all its content have been deleted. Take a look at the {0}"
+"history{2} or {1}discussion{2} page for further information. Please discuss "
+"with the person responsible for this deletion before you restore this entry "
+"from its {0}history{2}."
+
+#: /var/www2/src/MovLib/Presentation/Event/History.php:66
+msgid "event history"
+msgstr "event history"
+
+#: /var/www2/src/MovLib/Presentation/Event/Index.php:83
+msgid "No Events"
+msgstr "No Events"
+
+#: /var/www2/src/MovLib/Presentation/Event/Random.php:49
+msgid "There is currently no event in our database."
+msgstr "There is currently no event in our database."
+
+#: /var/www2/src/MovLib/Presentation/Event/Edit.php:66
+msgid "edit event"
+msgstr "edit event"
+
+#: /var/www2/src/MovLib/Presentation/Event/Series.php:67
+msgid "series with event"
+msgstr "series with event"
+
+#: /var/www2/src/MovLib/Presentation/Event/Discussion.php:66
+msgid "discuss event"
+msgstr "discuss event"
+
+#: /var/www2/src/MovLib/Presentation/Event/Create.php:56
+msgid "Create Event"
+msgstr "Create Event"
+
+#: /var/www2/src/MovLib/Presentation/Event/Create.php:80
+msgid "The create event feature isn’t implemented yet."
+msgstr "The create event feature isn’t implemented yet."
+
+#: /var/www2/src/MovLib/Presentation/Event/Show.php:136
+msgid "{sitename} has no further details about this award event."
+msgstr "{sitename} has no further details about this award event."
+
+#: /var/www2/src/MovLib/Presentation/Event/Delete.php:66
+msgid "delete event"
+msgstr "delete event"
+
+#: /var/www2/src/MovLib/Presentation/Country/Filter.php:107
+msgid "{entity_name} from {country_name}"
+msgstr "{entity_name} from {country_name}"

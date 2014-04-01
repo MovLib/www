@@ -105,7 +105,7 @@ class Contact extends \MovLib\Presentation\SystemPage\Show {
 
     // Display success alert so the user knows that the submission was successful.
     $this->success = new Alert(
-      $this->intl->t(""),
+      $this->intl->t("Contact Successful"),
       $this->intl->t("Contact Successful"),
       Alert::SEVERITY_SUCCESS
     );
