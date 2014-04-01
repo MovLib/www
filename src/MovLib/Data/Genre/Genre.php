@@ -17,10 +17,10 @@
  */
 namespace MovLib\Data\Genre;
 
-use \MovLib\Presentation\Error\NotFound;
+use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
- * Handling of one gerne.
+ * Defines the genre entity object.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -28,7 +28,7 @@ use \MovLib\Presentation\Error\NotFound;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Genre extends \MovLib\Data\AbstractEntity {
+final class Genre extends \MovLib\Data\AbstractEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -77,11 +77,11 @@ class Genre extends \MovLib\Data\AbstractEntity {
   public $name;
 
   /**
-   * The count of movies from this genre.
+   * The genre's movie count.
    *
    * @var integer
    */
-  public $movieCount;
+  public $movieCount = 0;
 
   /**
    * The translated route of this genre.
@@ -91,11 +91,11 @@ class Genre extends \MovLib\Data\AbstractEntity {
   public $route;
 
   /**
-   * The count of series from this genre.
+   * The genre's series count.
    *
    * @var integer
    */
-  public $seriesCount;
+  public $seriesCount = 0;
 
   /**
    * The genre’s translated Wikipedia link.
@@ -111,39 +111,37 @@ class Genre extends \MovLib\Data\AbstractEntity {
   /**
    * Instantiate new genre.
    *
-   * @param integer $id [optional]
+   * @param integer $id
    *   The genre's unique identifier, omit to create empty instance.
    * @throws \MovLib\Presentation\Error\NotFound
    */
-  public function init($id = null) {
-    if ($id) {
-      $stmt = $this->query("
-        {$this->getDefaultQuery()}
-        WHERE
-          `id` = ?
-        LIMIT 1",
-        "ssd",
-        [ $this->intl->languageCode, $this->intl->languageCode, $id ]
-      );
-      $stmt->bind_result(
-        $this->changed,
-        $this->created,
-        $this->deleted,
-        $this->description,
-        $this->id,
-        $this->name,
-        $this->movieCount,
-        $this->seriesCount,
-        $this->wikipedia
-      );
-      if (!$stmt->fetch()) {
-        throw new NotFound;
-      }
-      $stmt->close();
+  public function init($id) {
+    $stmt = $this->getMySQLi()->prepare("
+      {$this->getDefaultQuery()}
+      WHERE
+        `id` = ?
+      LIMIT 1"
+    );
+    $stmt->bind_param("ssd", $this->intl->languageCode, $this->intl->languageCode, $id);
+    $stmt->execute();
+    $stmt->bind_result(
+      $this->changed,
+      $this->created,
+      $this->deleted,
+      $this->description,
+      $this->id,
+      $this->name,
+      $this->movieCount,
+      $this->seriesCount,
+      $this->wikipedia
+    );
+    $found = $stmt->fetch();
+    $stmt->close();
+    if ($found === null) {
+      throw new NotFoundException("Couldn't find genre for '{$id}'!");
     }
-    if ($this->id) {
-      $this->initFetchObject();
-    }
+
+    return $this->initFetchObject();
   }
 
   /**
@@ -152,6 +150,7 @@ class Genre extends \MovLib\Data\AbstractEntity {
   public function initFetchObject() {
     $this->deleted = (boolean) $this->deleted;
     $this->route   = $this->intl->r("/genre/{0}", $this->id);
+    return $this;
   }
 
 
