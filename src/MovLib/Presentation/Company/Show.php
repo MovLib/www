@@ -47,7 +47,7 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->initShow(new Company($this->diContainerHTTP), "Corporation", "name");
+    $this->initShow(new Company($this->diContainerHTTP, $_SERVER["COMPANY_ID"]), "Corporation");
   }
 
   /**
@@ -60,7 +60,7 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
     $this->entity->links        && $infos->add($this->intl->t("Sites"), $this->formatWeblinks($this->entity->links));
     $this->entity->foundingDate && $infos->add($this->intl->t("Founded"), $this->dateFormat($this->entity->foundingDate, [ "property" => "foundingDate" ]));
     $this->entity->defunctDate  && $infos->add($this->intl->t("Defunct"), $this->dateFormat($this->entity->defunctDate, [ "property" => "defunctDate" ]));
-    $this->entity->place->id    && $infos->add($this->intl->t("Based in"), new Place($this, $this->intl, $this->entity->place, [ "property" => "location" ]));
+    $this->entity->place        && $infos->add($this->intl->t("Based in"), new Place($this, $this->intl, $this->entity->place, [ "property" => "location" ]));
     $this->entity->wikipedia    && $infos->addWikipedia($this->entity->wikipedia);
 
     $this->headingAfter .= "{$infos}</div><div class='s s2'><img alt='' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='140' height='140'></div></div>";

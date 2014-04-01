@@ -38,7 +38,7 @@ abstract class AbstractRedirectException extends \RuntimeException implements \M
     $diContainerHTTP->response->cacheable = false;
     $route = $this->message;
     $code  = $this->getHttpStatusCode($diContainerHTTP->request->protocol == "HTTP/1.0");
-    $title = $diContainerHTTP->intl->t($code);
+    $title = $diContainerHTTP->intl->translate($code, null, "http-status-codes", null);
 
     if (strpos($route, "//") === false) {
       $route = "{$diContainerHTTP->request->scheme}://{$diContainerHTTP->request->hostname}{$route}";

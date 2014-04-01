@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\User;
+namespace MovLib\Data\Place;
 
 /**
- * Defines the user set object.
+ * Provides properties and methods that are needed by several place objects.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,55 +26,41 @@ namespace MovLib\Data\User;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class UserSet extends \MovLib\Data\AbstractDatabaseSet {
+trait PlaceTrait {
 
   /**
    * {@inheritdoc}
    */
-  public function getEntityClassName() {
-    return "\\MovLib\\Data\\User\\User";
+  final public function getIndexRoute() {
+    return $this->intl->rp("/places");
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCount() {
-    return $this->getMySQLi()->query("SELECT COUNT(*) FROM `users` WHERE `email` IS NOT NULL LIMIT 1")->fetch_row()[0];
+  final public function getPluralKey() {
+    return "places";
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getOrdered($by, $offset, $limit) {
-    return $this->getMySQLi()->query(<<<SQL
-SELECT
-  `id`,
-  `name`,
-  UNIX_TIMESTAMP(`image_changed`) AS `imageChanged`,
-  `image_extension` AS `imageExtension`
-FROM `users`
-WHERE `email` IS NOT NULL
-ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}
-SQL
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return string|null
-   *   A random, unique, and existing user's name ready for use as route. <code>NULL</code> if no user could be found.
-   */
-  public function getRandom() {
-    if (($result = $this->getMySQLi()->query("SELECT `name` FROM `users` WHERE `email` IS NOT NULL ORDER BY RAND() LIMIT 1"))) {
-      return mb_strtolower($result->fetch_row()[0]);
-    }
+  final public function getPluralName() {
+    return $this->intl->t("Places");
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getTableName() {
-    return "users";
+  final public function getSingularKey() {
+    return "place";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  final public function getSingularName() {
+    return $this->intl->t("Place");
   }
 
 }

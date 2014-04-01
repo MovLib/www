@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Partial;
+namespace MovLib\Data\Country;
 
 /**
- * @todo Description of AwardTrait
+ * Defines the country set object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,41 +26,6 @@ namespace MovLib\Partial;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-trait AwardTrait {
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getPlural() {
-    return $this->intl->t("Awards");
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getSingular() {
-    return $this->intl->t("Award");
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getSidebarItems() {
-    $items = parent::getSidebarItems();
-    if ($this->entity->deleted) {
-      return $items;
-    }
-    foreach ([
-      [ "movie", "movies", $this->intl->t("Movies"), $this->entity->movieCount ],
-      [ "series separator", "series", $this->intl->t("Series"), $this->entity->seriesCount ],
-    ] as list($icon, $plural, $title, $count)) {
-      $items[] = [
-        $this->intl->rp("/company/{0}/{$plural}", $this->entity->id),
-        "{$title} <span class='fr'>{$this->intl->format("{0,number}", $count)}</span>",
-        [ "class" => "ico ico-{$icon}" ]
-      ];
-    }
-    return $items;
-  }
+final class CountrySet implements \MovLib\Data\SetInterface {
 
 }

@@ -26,7 +26,7 @@ namespace MovLib\Data\Job;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class JobSet extends \MovLib\Data\AbstractSet {
+final class JobSet extends \MovLib\Data\AbstractDatabaseSet {
 
   /**
    * {@inheritdoc}

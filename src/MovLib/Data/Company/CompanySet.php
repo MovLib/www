@@ -18,7 +18,7 @@
 namespace MovLib\Data\Company;
 
 /**
- * Defines the company set object.
+ * Defines the companies set object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,40 +26,34 @@ namespace MovLib\Data\Company;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class CompanySet extends \MovLib\Data\AbstractSet {
+final class CompanySet extends \MovLib\Data\AbstractDatabaseSet {
+  use \MovLib\Data\Company\CompanyTrait;
 
   /**
    * {@inheritdoc}
    */
-  public function getEntityClassName() {
-    return "\\MovLib\\Data\\Company\\Company";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getOrdered($by, $offset, $limit) {
-    return $this->getMySQLi()->query(<<<SQL
+  protected function getEntitiesQuery($where = null, $orderBy = null) {
+    return <<<SQL
 SELECT
-  `id`,
-  `name`,
-  `founding_date` AS `foundingDate`,
-  `defunct_date` AS `defunctDate`,
-  `count_movies` AS `movieCount`,
-  `count_series` AS `seriesCount`,
-  `count_releases` AS `releaseCount`
+  `companies`.`id` AS `id`,
+  `companies`.`name` AS `name`,
+  `companies`.`founding_date` AS `foundingDate`,
+  `companies`.`defunct_date` AS `defunctDate`,
+  `companies`.`deleted` AS `deleted`,
+  `companies`.`changed` AS `changed`,
+  `companies`.`created` AS `created`,
+  `companies`.`place_id` AS `placeId`,
+  COUNT(DISTINCT `movies_crew`.`movie_id`) AS `movieCount`,
+  COUNT(DISTINCT `episodes_crew`.`series_id`) AS `seriesCount`,
+  COUNT(DISTINCT `releases_labels`.`release_id`) AS `releaseCount`
 FROM `companies`
-WHERE `deleted` = false
-ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}
-SQL
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getTableName() {
-    return "companies";
+  LEFT JOIN `movies_crew`     ON `movies_crew`.`company_id`     = `companies`.`id`
+  LEFT JOIN `episodes_crew`   ON `episodes_crew`.`company_id`   = `companies`.`id`
+  LEFT JOIN `releases_labels` ON `releases_labels`.`company_id` = `companies`.`id`
+{$where}
+GROUP BY `id`, `name`, `foundingDate`, `defunctDate`, `deleted`, `changed`, `created`, `placeId`
+{$orderBy}
+SQL;
   }
 
 }

@@ -28,6 +28,9 @@ use \MovLib\Partial\Alert;
  * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/companies
  * @link http://validator.w3.org/check?uri=https://en.movlib.org/companies
  * @link http://gsnedders.html5.org/outliner/process.py?url=https://en.movlib.org/companies
+ *
+ * @property \MovLib\Data\Company\CompanySet $set
+ *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -43,25 +46,19 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    return $this->initIndex(
-      new CompanySet($this->diContainerHTTP),
-      $this->intl->t("Create New Company"),
-      $this->intl->t("Companies"),
-      "companies",
-      "company"
-    );
+    return $this->initIndex(new CompanySet($this->diContainerHTTP), $this->intl->t("Create New Company"));
   }
 
   /**
    * {@inheritdoc}
    * @param \MovLib\Data\Company\Company $company {@inheritdoc}
    */
-  protected function formatListingItem($company) {
+  protected function formatListingItem(\MovLib\Data\EntityInterface $company, $delta) {
     $companyDates = $this->dateFormatFromTo(
       $company->foundingDate,
       $company->defunctDate,
       [ "property" => "foundingDate", "title" => $this->intl->t("Founding Date") ],
-      [ "property" => "defunctDate", "title" => $this->intl->t("Defunct Date") ],
+      [ "property" => "defunctDate",  "title" => $this->intl->t("Defunct Date")  ],
       true
     );
     if ($companyDates) {
@@ -70,7 +67,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
     return
       "<li class='hover-item r'>" .
         "<article typeof='Company'>" .
-          "<a class='no-link s s1' href='{$company->imageRoute}'>" .
+          "<a class='no-link s s1' href='{$company->getRoute()}'>" .
             "<img alt='' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
           "</a>" .
           "<div class='s s9'>" .
@@ -79,7 +76,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
               "<a class='ico ico-series label' href='{$this->intl->rp("/company/{0}/series", $company->id)}' title='{$this->intl->t("Series")}'>{$company->seriesCount}</a>" .
               "<a class='ico ico-release label' href='{$this->intl->rp("/company/{0}/releases", $company->id)}' title='{$this->intl->t("Releases")}'>{$company->releaseCount}</a>" .
             "</div>" .
-            "<h2 class='para'><a href='{$company->route}' property='url'><span property='name'>{$company->name}</span></a></h2>" .
+            "<h2 class='para'><a href='{$company->getRoute()}' property='url'><span property='name'>{$company->name}</span></a></h2>" .
             $companyDates .
           "</div>" .
         "</article>" .

@@ -26,7 +26,7 @@ namespace MovLib\Data\Event;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class EventSet extends \MovLib\Data\AbstractSet {
+final class EventSet extends \MovLib\Data\AbstractDatabaseSet {
 
   /**
    * {@inheritdoc}

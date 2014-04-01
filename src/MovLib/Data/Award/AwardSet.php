@@ -26,43 +26,33 @@ namespace MovLib\Data\Award;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class AwardSet extends \MovLib\Data\AbstractSet {
+final class AwardSet extends \MovLib\Data\AbstractDatabaseSet {
+  use \MovLib\Data\Award\AwardTrait;
 
   /**
    * {@inheritdoc}
    */
-  public function getEntityClassName() {
-    return "\\MovLib\\Data\\Award\\Award";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getOrdered($by, $offset, $limit) {
-    // @todo One international name per organization (award) plus aliases, same as companies.
-    return $this->getMySQLi()->query(<<<SQL
+  protected function getEntitiesQuery($where = null, $orderBy = null) {
+    return <<<SQL
 SELECT
   `awards`.`id` AS `id`,
   `awards`.`name` AS `name`,
-  `awards`.`first_event_year` AS `firstEventYear`,
+  `awards`.`links` AS `links`,
+  `awards`.`aliases` AS `aliases`,
+  `awards`.`deleted` AS `deleted`,
+  `awards`.`changed` AS `changed`,
+  `awards`.`created` AS `created`,
+  COUNT(DISTINCT `movie_id`) AS `movieCount`,
   `awards`.`last_event_year` AS `lastEventYear`,
-  COUNT(DISTINCT `movies_awards`.`movie_id`) AS `movieCount`,
-  '0' AS `seriesCount`
+  `awards`.`first_event_year` AS `firstEventYear`,
+  COLUMN_GET(`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR) AS `wikipedia`,
+  COLUMN_GET(`dyn_descriptions`, '{$this->intl->languageCode}' AS CHAR) AS `description`
 FROM `awards`
-  LEFT JOIN `movies_awards`
-    ON `movies_awards`.`award_id` = `awards`.`id`
-WHERE `deleted` = false
-GROUP BY `awards`.`id`, `awards`.`name`, `awards`.`first_event_year`, `awards`.`last_event_year`
-ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}
-SQL
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getTableName() {
-    return "awards";
+  LEFT JOIN `movies_awards` ON `movies_awards`.`award_id` = `awards`.`id`
+{$where}
+GROUP BY `id`, `name`, `links`, `aliases`, `deleted`, `changed`, `created`, `lastEventYear`, `firstEventYear`, `wikipedia`, `description`
+{$orderBy}
+SQL;
   }
 
 }

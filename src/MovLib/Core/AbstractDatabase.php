@@ -51,7 +51,7 @@ abstract class AbstractDatabase {
    */
   protected $collations = [
     "en" => null,
-    "de" => " COLLATE utf8mb4_german2_ci",
+    "de" => "COLLATE utf8mb4_german2_ci",
   ];
 
   /**
@@ -89,6 +89,13 @@ abstract class AbstractDatabase {
    */
   protected $log;
 
+  /**
+   * The shared MySQLi connection.
+   *
+   * @var null|\mysqli
+   */
+  private static $mysqli;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -99,7 +106,7 @@ abstract class AbstractDatabase {
    * @param \MovLib\Core\DIContainer $diContainer
    *   The dependency injection container.
    */
-  final public function __construct(\MovLib\Core\DIContainer $diContainer) {
+  public function __construct(\MovLib\Core\DIContainer $diContainer) {
     $this->diContainer = $diContainer;
     $this->config      = $diContainer->config;
     $this->fs          = $diContainer->fs;
@@ -115,23 +122,19 @@ abstract class AbstractDatabase {
   /**
    * Get the MySQLi instance.
    *
-   * @staticvar null|\mysqli $mysqli
-   *   Used to cache the MySQLi instance across all concrete classes.
    * @return \mysqli
    *   The MySQLi instance.
    * @throws \mysqli_sql_exception
    */
   final protected function getMySQLi() {
-    static $mysqli;
-
     // Check if we already have a cached instance.
-    if ($mysqli) {
+    if (self::$mysqli) {
       // @devStart
       // @codeCoverageIgnoreStart
-      $this->log->debug("Getting MySQLi", $this->getMySQLiDebugConnectionStats($mysqli));
+      $this->log->debug("Getting MySQLi", $this->getMySQLiDebugConnectionStats());
       // @codeCoverageIgnoreEnd
       // @devEnd
-      return $mysqli;
+      return self::$mysqli;
     }
 
     // @devStart
@@ -146,36 +149,36 @@ abstract class AbstractDatabase {
 
     // Instantiate, connect, and select database.
     try {
-      $mysqli = new \mysqli($this->config->databaseHost, $this->config->databaseUsername, $this->config->databasePassword, $this->config->databaseName);
+      self::$mysqli = new \mysqli($this->config->databaseHost, $this->config->databaseUsername, $this->config->databasePassword, $this->config->databaseName);
     }
     catch (\ErrorException $e) {
-      if (isset($mysqli->thread_id)) {
-        $this->log->notice("Killing current database thread and creating new connection.");
-        $mysqli->kill($mysqli->thread_id);
+      $this->log->notice("Lost socket connection to database server, trying to recover.");
+      if (isset(self::$mysqli->thread_id)) {
+        self::$mysqli->kill(self::$mysqli->thread_id);
       }
-      $mysqli->real_connect($this->config->databaseHost, $this->config->databaseUsername, $this->config->databasePassword, $this->config->databaseName);
+      return $this->getMySQLi();
     }
 
     // As per recommendation in the PHP documentation, always explicitely close the connection.
-    register_shutdown_function(function () use ($mysqli) { $mysqli->close(); });
+    register_shutdown_function(function () { self::$mysqli->close(); });
 
     // @devStart
     // @codeCoverageIgnoreStart
     $this->log->debug(
       "Successfully connected (this message should only appear ONCE per request).",
-      $this->getMySQLiDebugConnectionStats($mysqli)
+      $this->getMySQLiDebugConnectionStats(self::$mysqli)
     );
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-    return $mysqli;
+    return self::$mysqli;
   }
 
   // @devStart
   // @codeCoverageIgnoreStart
-  private function getMySQLiDebugConnectionStats(\mysqli $mysqli) {
+  private function getMySQLiDebugConnectionStats() {
     $connectionStats = null;
-    foreach ($mysqli->get_connection_stats() as $key => $value) {
+    foreach (self::$mysqli->get_connection_stats() as $key => $value) {
       if (in_array($key, [ "connection_reused", "reconnect", "pconnect_success", "active_connections", "active_persistent_connections" ])) {
         $connectionStats[$key] = $value;
       }

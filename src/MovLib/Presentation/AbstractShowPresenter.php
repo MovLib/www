@@ -38,29 +38,9 @@ abstract class AbstractShowPresenter extends \MovLib\Presentation\AbstractPresen
   /**
    * The entity to present.
    *
-   * @var \MovLib\Data\AbstractEntity
+   * @var \MovLib\Data\AbstractDatabaseEntity
    */
   protected $entity;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
-
-
-  /**
-   * Get the translated singular entity's name.
-   *
-   * @return string
-   *   The translated singular entity's name.
-   */
-  abstract protected function getSingular();
-
-  /**
-   * Get the translated plural entity's name.
-   *
-   * @return string
-   *   The translated plural entity's name.
-   */
-  abstract protected function getPlural();
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -69,28 +49,24 @@ abstract class AbstractShowPresenter extends \MovLib\Presentation\AbstractPresen
   /**
    * Initialize the show presenter.
    *
-   * @param \MovLib\Data\AbstractEntity $entity
+   * @param \MovLib\Data\AbstractDatabaseEntity $entity
    *   The entity to present.
    * @param string $typeOf
    *   The structured data type of the entity.
-   * @param string $titleProperty
-   *   The structure data property of the title.
+   * @param string $titleProperty [optional]
+   *   The structure data property of the title, defaults to <code>"name"</code>.
    * @return this
    */
-  protected function initShow(\MovLib\Data\AbstractEntity $entity, $typeOf, $titleProperty) {
-    $singular                    = $entity->getSingularName();
+  protected function initShow(\MovLib\Data\AbstractDatabaseEntity $entity, $typeOf, $titleProperty = "name") {
     $this->entity                = $entity;
-    $this->entity->init($_SERVER[$singular]);
     $this->schemaType            = $typeOf;
     $this->headingSchemaProperty = $titleProperty;
-    $this
-      ->initPage($this->getPageTitle())
-      ->initBreadcrumb([[ $this->intl->rp("/{$entity->getPluralName()}"), $this->getPlural() ]])
-      ->initLanguageLinks("/{$singular}/{0}", $entity->id)
-      ->sidebarInit($this->getSidebarItems())
-    ;
+    $this->initPage($this->getPageTitle());
+    $this->initBreadcrumb([[ $entity->getIndexRoute(), $entity->getPluralName() ]]);
+    $this->initLanguageLinks("/{$entity->getSingularKey()}/{0}", $entity->id);
+    $this->sidebarInit($this->getSidebarItems());
     if ($entity->isGone()) {
-      throw new GoneException("The entity '{$singular}' is no longer available.");
+      throw new GoneException("The {$entity->getSingularName()} '{$entity->id}' is no longer available.");
     }
     return $this;
   }
@@ -112,20 +88,20 @@ abstract class AbstractShowPresenter extends \MovLib\Presentation\AbstractPresen
    *   The presenter's sidebar items.
    */
   protected function getSidebarItems() {
-    $singular = $this->entity->getSingularName();
+    $singularKey = $this->entity->getSingularKey();
     if ($this->entity->isGone()) {
       return [
-        [ $this->entity->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
-        [ $this->intl->r("/{$singular}/{0}/discussion", $this->entity->id), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
-        [ $this->intl->r("/{$singular}/{0}/history", $this->entity->id), $this->intl->t("History"), [ "class" => "ico ico-history" ] ]
+        [ $this->entity->getRoute(), $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
+        [ $this->intl->r("/{$singularKey}/{0}/discussion", $this->entity->id), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
+        [ $this->intl->r("/{$singularKey}/{0}/history", $this->entity->id), $this->intl->t("History"), [ "class" => "ico ico-history" ] ]
       ];
     }
     return [
-      [ $this->entity->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
-      [ $this->intl->r("/{$singular}/{0}/edit", $this->entity->id), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
-      [ $this->intl->r("/{$singular}/{0}/discussion", $this->entity->id), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
-      [ $this->intl->r("/{$singular}/{0}/history", $this->entity->id), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
-      [ $this->intl->r("/{$singular}/{0}/delete", $this->entity->id), $this->intl->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
+      [ $this->entity->getRoute(), $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
+      [ $this->intl->r("/{$singularKey}/{0}/edit", $this->entity->id), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
+      [ $this->intl->r("/{$singularKey}/{0}/discussion", $this->entity->id), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
+      [ $this->intl->r("/{$singularKey}/{0}/history", $this->entity->id), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
+      [ $this->intl->r("/{$singularKey}/{0}/delete", $this->entity->id), $this->intl->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
     ];
   }
 

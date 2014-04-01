@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,50 +15,38 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Movie;
+namespace MovLib\Presentation\Award;
 
 /**
- * Handling of one Rating
+ * Provides properties and methods that are used by several award presenters.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieRating extends \MovLib\Data\Database {
+trait AwardTrait {
 
+  /**
+   * {@inheritdoc}
+   */
+  protected function getSidebarItems() {
+    $items = parent::getSidebarItems();
+    if ($this->entity->deleted) {
+      return $items;
+    }
+    foreach ([
+      [ "movie", "movies", $this->intl->t("Movies"), $this->entity->movieCount ],
+      [ "series separator", "series", $this->intl->t("Series"), $this->entity->seriesCount ],
+    ] as list($icon, $plural, $title, $count)) {
+      $items[] = [
+        $this->intl->rp("/award/{0}/{$plural}", $this->entity->id),
+        "{$title} <span class='fr'>{$this->intl->format("{0,number}", $count)}</span>",
+        [ "class" => "ico ico-{$icon}" ]
+      ];
+    }
+    return $items;
+  }
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-  
-  /**
-   * The movie rating's creation timestamp.
-   *
-   * @var int
-   */
-  public $created;
-  
-  /**
-   * The movie rating's movie id.
-   *
-   * @var int
-   */
-  public $movieId;
-  
-  /**
-   * The rating.
-   *
-   * @var int
-   */
-  public $rating;
-  
-  /**
-   * The movie ratings's user id.
-   *
-   * @var int
-   */
-  public $userId;
-  
 }

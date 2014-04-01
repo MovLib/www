@@ -62,13 +62,14 @@ final class Log {
    *   Active global configuration instance.
    * @param boolean $http
    *   Whether this logger is executing in HTTP context or not.
+   * @throws \ErrorException
    */
   public function init($name, \MovLib\Core\Config $config, $http) {
     // @devStart
     // @codeCoverageIgnoreStart
-    assert(!empty($name));
-    assert(is_string($name));
-    assert(is_bool($http));
+    assert(!empty($name), "Log name cannot be empty.");
+    assert(is_string($name), "Log name must be of type string.");
+    assert(is_bool($http), "\$http must be of type boolean.");
     // @codeCoverageIgnoreEnd
     // @devEnd
 
@@ -102,6 +103,10 @@ final class Log {
     // Instantiate the new logger and store it in the static variable of this method for later usage.
     $this->logger = new Logger($name, $handlers, [ new IntrospectionProcessor(Logger::WARNING) ]);
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * Action must be taken immediately.

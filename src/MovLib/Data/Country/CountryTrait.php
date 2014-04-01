@@ -15,17 +15,45 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Movie;
+namespace MovLib\Data\Country;
 
 /**
- * @todo Description of Movies
+ * Provides properties and methods that are needed by several country objects.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Movies {
+trait CountryTrait {
+
+  /**
+   * {@inheritdoc}
+   */
+  final public function getPluralKey() {
+    return "countries";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  final public function getPluralName() {
+    return $this->intl->t("Countries");
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  final public function getSingularKey() {
+    return "country";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  final public function getSingularName() {
+    return $this->intl->t("Country");
+  }
 
 }

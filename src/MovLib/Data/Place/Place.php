@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Data\Place;
 
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
- * Contains information about a place.
+ * Defines the place entity.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
@@ -29,18 +29,12 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Place extends \MovLib\Core\AbstractDatabase {
+final class Place extends \MovLib\Data\AbstractDatabaseEntity {
+  use \MovLib\Data\Place\PlaceTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   * The place's unique identifier.
-   *
-   * @var integer
-   */
-  public $id;
 
   /**
    * The place's country code.
@@ -48,13 +42,6 @@ final class Place extends \MovLib\Core\AbstractDatabase {
    * @var string
    */
   public $countryCode;
-
-  /**
-   * The place's country.
-   *
-   * @var \MovLib\Stub\Data\Country
-   */
-  public $country;
 
   /**
    * The place's name in the current locale if available, otherwise the name returned by the map provider.
@@ -78,46 +65,70 @@ final class Place extends \MovLib\Core\AbstractDatabase {
   public $longitude;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic methods.
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Initialize place from unique identifier.
+   * Instantiate new place object.
    *
-   * @param integer $id
-   *   The place's unique identifier.
-   * @return this
+   * @param \MovLib\Core\DIContainer $diContainer
+   *   {@inheritdoc}
+   * @param integer $id [optional]
+   *   The place's unique identifier to load.
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function init($id) {
-    $result = $this->getMySQLi()->query(<<<SQL
+  public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null) {
+    parent::__construct($diContainer);
+    if ($id) {
+      $stmt = $this->getMySQLi()->prepare(<<<SQL
 SELECT
-  IFNULL(COLUMN_GET(`dyn_names`, '{$this->intl->languageCode}' AS BINARY), `name`),
-  `country_code`,
+  `id`,
+  `changed`,
+  `created`,
+  IFNULL(COLUMN_GET(`dyn_names`, '{$this->intl->languageCode}' AS BINARY), `name`) AS `name`,
+  `country_code` AS `countryCode`,
   `latitude`,
   `longitude`
-FROM `places` WHERE `id` = {$id} LIMIT 1
+FROM `places`
+WHERE `id` = ?
+LIMIT 1
 SQL
-    );
-    $row = $result->fetch_row();
-    if (empty($row)) {
-      throw new NotFoundException("Couldn't find place for '{$id}'!");
+      );
+      $stmt->bind_param("d", $id);
+      $stmt->execute();
+      $stmt->bind_result(
+        $this->id,
+        $this->changed,
+        $this->created,
+        $this->name,
+        $this->countryCode,
+        $this->latitude,
+        $this->longitude
+      );
+      $found = $stmt->fetch();
+      $stmt->close();
+      if (!$found) {
+        throw new NotFoundException("Couldn't find Place {$id}");
+      }
     }
-    foreach ([ $this->name, $this->countryCode, $this->latitude, $this->longitude ] as $delta => &$property) {
-      $property = $row[$delta];
+    if ($this->id) {
+      $this->init();
     }
-    $result->free();
-    return $this->initFetchObject();
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
   /**
-   * Initialize place further after fetching the basic data.
-   *
-   * @return this
+   * {@inheritdoc}
    */
-  public function initFetchObject() {
-    $this->countryCode && ($this->country = $this->intl->getTranslations("countries")[$this->countryCode]);
-    return $this;
+  public function getRoute() {
+    static $route;
+    if (!$route) {
+      $route = $this->intl->r("/place/{0}", $this->id);
+    }
+    return $route;
   }
 
 }

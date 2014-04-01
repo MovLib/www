@@ -58,7 +58,7 @@ final class Place {
   /**
    * The place to format.
    *
-   * @var \MovLib\Data\Place
+   * @var \MovLib\Data\Place\Place
    */
   protected $place;
 
@@ -94,7 +94,7 @@ final class Place {
    * @param string $tag [optional]
    *   The HTML tag to wrap the place.
    */
-  public function __construct(\MovLib\Presentation\AbstractPresenter $presenter, \MovLib\Core\Intl $intl, \MovLib\Data\Place $place, array $attributes = [], $tag = "span") {
+  public function __construct(\MovLib\Presentation\AbstractPresenter $presenter, \MovLib\Core\Intl $intl, \MovLib\Data\Place\Place $place, array $attributes = [], $tag = "span") {
     $attributes["typeof"] = "Place";
     $this->attributes     = $attributes;
     $this->country        = new Country($presenter, $intl, $place->countryCode, [ "property" => "containedIn" ]);
@@ -104,6 +104,12 @@ final class Place {
     $this->tag            = $tag;
   }
 
+  /**
+   * Get the place's string representation.
+   *
+   * @return string
+   *   The place's string representation.
+   */
   public function __toString() {
     // @devStart
     // @codeCoverageIgnoreStart

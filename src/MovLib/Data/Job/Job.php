@@ -28,7 +28,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Job extends \MovLib\Data\AbstractEntity {
+final class Job extends \MovLib\Data\AbstractDatabaseEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

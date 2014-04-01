@@ -38,7 +38,7 @@ use \MovLib\Partial\QuickInfo;
  * @since 0.0.1-dev
  */
 final class Show extends \MovLib\Presentation\AbstractShowPresenter {
-  use \MovLib\Partial\AwardTrait;
+  use \MovLib\Presentation\Award\AwardTrait;
   use \MovLib\Partial\ContentSectionTrait;
   use \MovLib\Partial\DateTrait;
 
@@ -46,7 +46,7 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    return $this->initShow(new Award($this->diContainerHTTP), "Organization", "name");
+    return $this->initShow(new Award($this->diContainerHTTP, $_SERVER["AWARD_ID"]), "Organization");
   }
 
   /**

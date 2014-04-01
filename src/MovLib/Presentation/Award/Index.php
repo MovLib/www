@@ -28,6 +28,9 @@ use \MovLib\Partial\Alert;
  * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/awards
  * @link http://validator.w3.org/check?uri=https://en.movlib.org/awards
  * @link http://gsnedders.html5.org/outliner/process.py?url=https://en.movlib.org/awards
+ *
+ * @property \MovLib\Data\Award\AwardSet $set
+ *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -42,20 +45,14 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    return $this->initIndex(
-      new AwardSet($this->diContainerHTTP),
-      $this->intl->t("Create New Award"),
-      $this->intl->t("Awards"),
-      "awards",
-      "award"
-    );
+    return $this->initIndex(new AwardSet($this->diContainerHTTP), $this->intl->t("Create New Award"));
   }
 
   /**
    * {@inheritdoc}
    * @param \MovLib\Data\Award\Award $award {@inheritdoc}
    */
-  public function formatListingItem($award) {
+  public function formatListingItem(\MovLib\Data\EntityInterface $award, $delta) {
     $awardDates = $this->dateFormatFromTo(
       $award->firstEventYear,
       $award->lastEventYear,
@@ -66,10 +63,11 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
     if ($awardDates) {
       $awardDates = "<small>{$awardDates}</small>";
     }
+    $route = $award->getRoute();
     return
       "<li class='hover-item r'>" .
         "<article typeof='Organization'>" .
-          "<a class='no-link s s1' href='{$award->route}'>" .
+          "<a class='no-link s s1' href='{$route}'>" .
             "<img alt='{$award->name}' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
           "</a>" .
           "<div class='s s9'>" .
@@ -77,7 +75,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
               "<a class='ico ico-movie label' href='{$this->intl->rp("/award/{0}/movies", $award->id)}' title='{$this->intl->t("Movies")}'>{$award->movieCount}</a>" .
               "<a class='ico ico-series label' href='{$this->intl->rp("/award/{0}/series", $award->id)}' title='{$this->intl->t("Series")}'>{$award->seriesCount}</a>" .
             "</div>" .
-            "<h2 class='para'><a href='{$award->route}' property='url'><span property='name'>{$award->name}</span></a></h2>" .
+            "<h2 class='para'><a href='{$route}' property='url'><span property='name'>{$award->name}</span></a></h2>" .
             $awardDates .
           "</div>" .
         "</article>" .

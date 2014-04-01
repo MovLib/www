@@ -28,7 +28,8 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Award extends \MovLib\Data\AbstractEntity {
+final class Award extends \MovLib\Data\AbstractDatabaseEntity {
+  use \MovLib\Data\Award\AwardTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -40,20 +41,6 @@ final class Award extends \MovLib\Data\AbstractEntity {
    * @var null|array
    */
   public $aliases;
-
-  /**
-   * The award's creation timestamp.
-   *
-   * @var string
-   */
-  public $created;
-
-  /**
-   * The award's deletion state.
-   *
-   * @var boolean
-   */
-  public $deleted;
 
   /**
    * The award's description in the current locale.
@@ -68,13 +55,6 @@ final class Award extends \MovLib\Data\AbstractEntity {
    * @var null|\MovLib\Data\Date
    */
   public $firstEventYear;
-
-  /**
-   * The award's unique identifier.
-   *
-   * @var integer
-   */
-  public $id;
 
   /**
    * The award's last event year.
@@ -95,7 +75,7 @@ final class Award extends \MovLib\Data\AbstractEntity {
    *
    * @var integer
    */
-  public $movieCount = 0;
+  public $movieCount;
 
   /**
    * The award's name in the current display language.
@@ -103,13 +83,6 @@ final class Award extends \MovLib\Data\AbstractEntity {
    * @var string
    */
   public $name;
-
-  /**
-   * The award's route in the current locale.
-   *
-   * @var string
-   */
-  public $route;
 
   /**
    * The award's series count.
@@ -126,69 +99,67 @@ final class Award extends \MovLib\Data\AbstractEntity {
   public $wikipedia;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Initialize
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Initialize existing award from unique identifier.
+   * Instantiate new award object.
    *
-   * @param integer $id
-   *   The award's unique identifier to load.
-   * @return this
+   * @param \MovLib\Core\DIContainer $diContainer
+   *   {@inheritdoc}
+   * @param integer $id [optional]
+   *   The award's unique identifier to instantiate, defaults to <code>NULL</code> (no award will be loaded).
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function init($id) {
-    $stmt = $this->getMySQLi()->prepare(<<<SQL
+  public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null) {
+    parent::__construct($diContainer);
+    if ($id) {
+      $stmt = $this->getMySQLi()->prepare(<<<SQL
 SELECT
-  `id`,
-  `name`,
-  `aliases`,
-  `first_event_year`,
-  `last_event_year`,
-  COLUMN_GET(`dyn_descriptions`, '{$this->intl->languageCode}' AS BINARY),
-  COLUMN_GET(`dyn_wikipedia`, '{$this->intl->languageCode}' AS BINARY),
-  `links`,
-  `created`,
-  `deleted`
+  `awards`.`id` AS `id`,
+  `awards`.`changed` AS `changed`,
+  `awards`.`created` AS `created`,
+  `awards`.`deleted` AS `deleted`,
+  `awards`.`name` AS `name`,
+  `awards`.`first_event_year` AS `firstEventYear`,
+  `awards`.`last_event_year` AS `lastEventYear`,
+  COLUMN_GET(`dyn_descriptions`, '{$this->intl->languageCode}' AS CHAR) AS `description`,
+  `awards`.`links` AS `links`,
+  COLUMN_GET(`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR) AS `wikipedia`,
+  `awards`.`aliases` AS `aliases`,
+  COUNT(DISTINCT `movie_id`) AS `movieCount`
 FROM `awards`
-WHERE `id` = ?
+  LEFT JOIN `movies_awards` ON `movies_awards`.`award_id` = `awards`.`id`
+WHERE `awards`.`id` = ?
+GROUP BY `id`,`name`,`links`,`aliases`,`deleted`,`changed`,`created`,`lastEventYear`,`firstEventYear`,`wikipedia`,`description`
 LIMIT 1
 SQL
-    );
-    $stmt->bind_param("d", $id);
-    $stmt->execute();
-    $stmt->bind_result(
-      $this->id,
-      $this->name,
-      $this->aliases,
-      $this->firstEventYear,
-      $this->lastEventYear,
-      $this->description,
-      $this->wikipedia,
-      $this->links,
-      $this->created,
-      $this->deleted
-    );
-    $found = $stmt->fetch();
-    $stmt->close();
-    if ($found === null) {
-      throw new NotFoundException("Couldn't find award for '{$id}'!");
+      );
+      $stmt->bind_param("d", $id);
+      $stmt->execute();
+      $stmt->bind_result(
+        $this->id,
+        $this->changed,
+        $this->created,
+        $this->deleted,
+        $this->name,
+        $this->firstEventYear,
+        $this->lastEventYear,
+        $this->description,
+        $this->links,
+        $this->wikipedia,
+        $this->aliases,
+        $this->movieCount
+      );
+      $found = $stmt->fetch();
+      $stmt->close();
+      if (!$found) {
+        throw new NotFoundException("Couldn't find Award {$id}");
+      }
     }
-
-    // @todo Store counts as columns in table.
-    $this->movieCount = $this->getCount("movies_awards", "DISTINCT `movie_id`");
-
-    return $this->initFetchObject();
-  }
-
-  /**
-   * Initialize after instantiation via PHP's built in <code>\mysqli_result::fetch_object()}
-   */
-  public function initFetchObject() {
-    $this->unserialize([ &$this->aliases, &$this->links ]);
-    $this->toDates([ &$this->firstEventYear, &$this->lastEventYear ]);
-    $this->route = $this->intl->r("/award/{0}", $this->id);
-    return $this;
+    if ($this->id) {
+      $this->init();
+    }
   }
 
 
@@ -198,15 +169,10 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function getPluralName() {
-    return "awards";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getSingularName() {
-    return "award";
+  protected function init() {
+    $this->unserialize([ &$this->aliases, &$this->links ]);
+    $this->toDates([ &$this->firstEventYear, &$this->lastEventYear ]);
+    return parent::init();
   }
 
 }
