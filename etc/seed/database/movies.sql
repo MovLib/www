@@ -34,19 +34,23 @@ TRUNCATE TABLE `persons`;
 -- Insert director and actor jobs
 
 INSERT INTO `jobs` SET
-  `dyn_names_sex0` = COLUMN_CREATE(
+  `dyn_names_sex0`   = COLUMN_CREATE(
     'en', 'Direction',
     'de', 'Regie'
   ),
-  `dyn_names_sex1` = COLUMN_CREATE(
+  `dyn_names_sex1`   = COLUMN_CREATE(
     'en', 'Director',
     'de', 'Regisseur'
   ),
-  `dyn_names_sex2` = COLUMN_CREATE(
+  `dyn_names_sex2`   = COLUMN_CREATE(
     'en', 'Director',
     'de', 'Regisseurin'
   ),
-  `dyn_descriptions` = ''
+  `dyn_descriptions` = '',
+  `dyn_wikipedia`    = COLUMN_CREATE(
+    'en', 'http://en.wikipedia.org/wiki/Film_director',
+    'de', 'http://de.wikipedia.org/wiki/Filmregisseur'
+  )
 ;
 
 SET @job_director = LAST_INSERT_ID();
@@ -64,7 +68,11 @@ INSERT INTO `jobs` SET
     'en', 'Actress',
     'de', 'Schauspielerin'
   ),
-  `dyn_descriptions` = ''
+  `dyn_descriptions` = '',
+  `dyn_wikipedia`    = COLUMN_CREATE(
+    'en', 'http://en.wikipedia.org/wiki/Actor',
+    'de', 'http://de.wikipedia.org/wiki/Schauspieler'
+  )
 ;
 
 SET @job_actor = LAST_INSERT_ID();
