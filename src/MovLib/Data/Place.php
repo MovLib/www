@@ -96,7 +96,7 @@ SELECT
   `country_code`,
   `latitude`,
   `longitude`
-FROM `places` WHERE `place_id` = {$id} LIMIT 1
+FROM `places` WHERE `id` = {$id} LIMIT 1
 SQL
     );
     $row = $result->fetch_row();

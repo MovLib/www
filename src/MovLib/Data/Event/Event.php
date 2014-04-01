@@ -19,10 +19,10 @@ namespace MovLib\Data\Event;
 
 use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Data\Place;
-use \MovLib\Presentation\Error\NotFound;
+use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
- * Handling of one or more events.
+ * Defines the event entity object.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -155,45 +155,45 @@ class Event extends \MovLib\Data\AbstractEntity {
   /**
    * Instantiate new event.
    *
-   * @param integer $id [optional]
+   * @param integer $id
    *   The event's unique identifier, omit to create empty instance.
    * @throws \MovLib\Presentation\Error\NotFound
    */
-  public function init($id = null) {
-    if ($id) {
-      $stmt = $this->query("
-        {$this->getDefaultQuery()}
-        WHERE
-          `id` = ?
-        LIMIT 1",
-        "ssd",
-        [ $this->intl->languageCode, $this->intl->languageCode, $id ]
-      );
-      $stmt->bind_result(
-        $this->aliases,
-        $this->awardId,
-        $this->changed,
-        $this->created,
-        $this->deleted,
-        $this->description,
-        $this->endDate,
-        $this->id,
-        $this->links,
-        $this->name,
-        $this->movieCount,
-        $this->place,
-        $this->seriesCount,
-        $this->startDate,
-        $this->wikipedia
-      );
-      if (!$stmt->fetch()) {
-        throw new NotFound;
-      }
-      $stmt->close();
+  public function init($id) {
+    $stmt = $this->getMySQLi()->prepare("
+      {$this->getDefaultQuery()}
+      WHERE
+        `id` = ?
+      LIMIT 1"
+    );
+    $stmt->bind_param("ssd", $this->intl->languageCode, $this->intl->languageCode, $id);
+    $stmt->execute();
+    $stmt->bind_result(
+      $this->aliases,
+      $this->awardId,
+      $this->changed,
+      $this->created,
+      $this->deleted,
+      $this->description,
+      $this->endDate,
+      $this->id,
+      $this->links,
+      $this->name,
+      $this->place,
+      $this->startDate,
+      $this->wikipedia
+    );
+    $found = $stmt->fetch();
+    $stmt->close();
+    if ($found === null) {
+      throw new NotFoundException("Couldn't find event for '{$id}'!");
     }
-    if ($this->id) {
-      $this->initFetchObject();
-    }
+
+    // @todo Store counts as columns in table.
+    $this->movieCount  = $this->getCount("movies_genres", "DISTINCT `movie_id`");
+    $this->seriesCount = $this->getCount("series_genres", "DISTINCT `series_id`");
+
+    return $this->initFetchObject();
   }
 
   /**
@@ -231,14 +231,10 @@ class Event extends \MovLib\Data\AbstractEntity {
         `id`,
         `links`,
         `name`,
-        COUNT(DISTINCT `movies_awards`.`movie_id`) AS `movieCount`,
         `place_id` AS `place`,
-        '0' AS `seriesCount`,
         `start_date` AS `startDate`,
         IFNULL(COLUMN_GET(`dyn_wikipedia`, ? AS CHAR), COLUMN_GET(`dyn_wikipedia`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `wikipedia`
-      FROM `events`
-        LEFT JOIN `movies_awards`
-          ON `events`.`id` = `movies_awards`.`event_id`"
+      FROM `events`"
     ;
   }
 

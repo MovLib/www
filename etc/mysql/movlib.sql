@@ -499,6 +499,8 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`awards` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The award’s unique ID.',
+  `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s movie count.',
+  `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The company’s series count.',
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp on which this award was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the award was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The award’s description in various languages. Keys are ISO alpha-2 language codes.',

@@ -196,7 +196,7 @@ INSERT INTO `events` SET
   `start_date`          = '1995-03-27',
   `aliases`             = 'a:1:{i:0;s:10:"Oscar 1995";}',
   `links`               = 'a:2:{i:0;s:80:"http://www.oscars.org/awards/academyawards/oscarlegacy/1990-1999/67nominees.html";i:1;s:112:"http://www.nytimes.com/1995/01/29/movies/bear-hunting-in-oscar-season-five-strategies.html?pagewanted=all&src=pm";}',
-  `place_id`            = 5368361
+  `place_id`            = 2489342526
 ;
 SET @oscar_award_event_id = LAST_INSERT_ID();
 
@@ -294,7 +294,7 @@ INSERT INTO `events` SET
   `end_date`            = '1995-01-21',
   `aliases`             = 'a:1:{i:0;s:24:"Golden Globe Awards 1995";}',
   `links`               = 'a:1:{i:0;s:40:"http://www.imdb.com/event/ev0000292/1995";}',
-  `place_id`            = 5368361
+  `place_id`            = 2489342526
 ;
 SET @golden_globe_award_event_id = LAST_INSERT_ID();
 
