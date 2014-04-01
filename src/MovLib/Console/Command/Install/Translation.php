@@ -43,12 +43,12 @@ class Translation extends \MovLib\Console\Command\AbstractCommand {
    * {@inheritdoc}
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    $translationArray = [];
-    $outputPath = $this->fs->realpath("dr://tmp/MovLib.pot");
+    $potPath = $this->fs->realpath("dr://tmp/MovLib.pot");
+
     $this->writeVerbose("Getting all translation keys from php files...", self::MESSAGE_TYPE_COMMENT);
     $command = "find {$this->fs->realpath("dr://src/MovLib")} -iname '*.php' | xargs xgettext";
     foreach ([
-      "output"    => $outputPath,
+      "output"    => $potPath,
       "language"  => "PHP",
       "from-code" => "UTF-8",
       "keyword"   => 't',
@@ -61,21 +61,16 @@ class Translation extends \MovLib\Console\Command\AbstractCommand {
         $command .= " --{$option}";
       }
     }
-
     $this->exec($command);
-    $this->writeVerbose("Successfully extracted translations!", self::MESSAGE_TYPE_INFO);
 
-    if (($fh = fopen($outputPath, "rb")) === false) {
-      throw new \RuntimeException("Couldn't open '{$outputPath}' for reading");
-    }
-    while ($line = fgets($fh)) {
-      if (substr($line, 0, 6 ) === "msgid ") {
-        $trimmedLine = trim($line);
-        $translationArray[substr($trimmedLine, 7, strlen($trimmedLine)-8)] = "";
+    $this->writeVerbose("Updating po files for all languages.", self::MESSAGE_TYPE_INFO);
+    foreach ($this->intl->systemLocales as $code => $locale) {
+      if ($code != $this->intl->defaultLanguageCode) {
+        $poPath = $this->fs->realpath("dr://var/intl/{$locale}/messages.po");
+        $command = "msgmerge --update {$poPath} {$potPath} && rm {$poPath}~";
+        $this->exec($command);
       }
     }
-    fclose($fh);
-    $this->writeVerbose("Successfully build translations array", self::MESSAGE_TYPE_INFO);
 
     return 0;
   }
