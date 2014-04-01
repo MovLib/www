@@ -43,36 +43,12 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->set = new PersonSet($this->diContainerHTTP);
-    $this->headingBefore =
-      "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/person/create")}'>" .
-        $this->intl->t("Create New Person") .
-      "</a>"
-    ;
-    $this
-      ->initPage($this->intl->t("Persons"))
-      ->initBreadcrumb()
-      ->initLanguageLinks("/persons", null, true)
-      ->sidebarInit([
-        [ $this->request->path, $this->title, [ "class" => "ico ico-person" ] ],
-        [ $this->intl->r("/person/random"), $this->intl->t("Random") ],
-      ])
-      ->paginationInit($this->set)
-    ;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getNoItemsContent() {
-    return new Alert(
-      "<p>{$this->intl->t(
-        "We couldn’t find any persons matching your filter criteria, or there simply aren’t any persons available."
-      )}</p><p>{$this->intl->t(
-        "Would you like to {0}create a person{1}?",
-        [ "<a href='{$this->intl->r("/person/create")}'>", "</a>" ]
-      )}</p>",
-      $this->intl->t("No Persons")
+    $this->initIndex(
+      new PersonSet($this->diContainerHTTP),
+      $this->intl->t("Create New Person"),
+      $this->intl->t("Persons"),
+      "persons",
+      "person"
     );
   }
 
@@ -104,8 +80,16 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
   /**
    * {@inheritdoc}
    */
-  protected function getListing($items) {
-    return "<ol class='hover-list no-list'>{$items}</ol>";
+  public function getNoItemsContent() {
+    return new Alert(
+      "<p>{$this->intl->t(
+        "We couldn’t find any persons matching your filter criteria, or there simply aren’t any persons available."
+      )}</p><p>{$this->intl->t(
+        "Would you like to {0}create a person{1}?",
+        [ "<a href='{$this->intl->r("/person/create")}'>", "</a>" ]
+      )}</p>",
+      $this->intl->t("No Persons")
+    );
   }
 
 }

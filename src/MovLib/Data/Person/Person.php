@@ -48,12 +48,34 @@ class Person extends \MovLib\Data\AbstractEntity {
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
+
+  /**
+   * The person's creation timestamp.
+   *
+   * @var integer
+   */
+  public $created;
+
+  /**
+   * The person's translated biography.
+   *
+   * @var string
+   */
+  public $biography;
+
   /**
    * The person's date of birth in <code>"Y-m-d"</code> format.
    *
    * @var string
    */
   public $birthDate;
+
+  /**
+   * The person's place of birth's identifier.
+   *
+   * @var null|integer
+   */
+  protected $birthPlaceId;
 
   /**
    * The person's birth name.
@@ -68,6 +90,13 @@ class Person extends \MovLib\Data\AbstractEntity {
    * @var string
    */
   public $deathDate;
+
+  /**
+   * The person's place of death's identifier.
+   *
+   * @var null|integer
+   */
+  protected $deathPlaceId;
 
   /**
    * The person's deletion state.
@@ -146,10 +175,17 @@ class Person extends \MovLib\Data\AbstractEntity {
    */
   public $sex;
 
+  /**
+   * The person's translated Wikipedia URL.
+   *
+   * @var string
+   */
+  public $wikipedia;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Initialization Methods
 
-  
+
   /**
    * Initialize new person.
    *
@@ -159,14 +195,16 @@ class Person extends \MovLib\Data\AbstractEntity {
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function init($id) {
-    $stmt = $this->query(
+    $stmt = $this->getMySQLi()->prepare(
       "SELECT
         `deleted`,
         `name`,
         `sex`,
         `birthdate`,
+        `birthplace_id`,
         `born_name`,
         `deathdate`,
+        `deathplace_id`,
         `nickname`,
         `count_movies`,
         `count_series`,
@@ -180,17 +218,19 @@ class Person extends \MovLib\Data\AbstractEntity {
       FROM `persons`
       WHERE
         `id` = ?
-      LIMIT 1",
-      "d",
-      [ $id ]
+      LIMIT 1"
     );
+    $stmt->bind_param("d", $id);
+    $stmt->execute();
     $stmt->bind_result(
       $this->deleted,
       $this->name,
       $this->sex,
       $this->birthDate,
+      $this->birthPlaceId,
       $this->bornName,
       $this->deathDate,
+      $this->deathPlaceId,
       $this->nickname,
       $this->movieCount,
       $this->seriesCount,
@@ -228,6 +268,30 @@ class Person extends \MovLib\Data\AbstractEntity {
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  /**
+   * Get the person's place of birth.
+   *
+   * @return null|\MovLib\Data\Place
+   *   The person's place of birth or <code>NULL</code> if none was found.
+   */
+  public function getBirthPlace() {
+    if ($this->birthPlaceId) {
+      return (new \MovLib\Data\Place($this->diContainer))->init($this->birthPlaceId);
+    }
+  }
+
+  /**
+   * Get the person's place of death.
+   *
+   * @return null|\MovLib\Data\Place
+   *   The person's place of death or <code>NULL</code> if none was found.
+   */
+  public function getDeathPlace() {
+    if ($this->deathPlaceId) {
+      return (new \MovLib\Data\Place($this->diContainer))->init($this->deathPlaceId);
+    }
+  }
 
   /**
    * Get the translated and gendered job title.
