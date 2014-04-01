@@ -23,6 +23,11 @@ use \MovLib\Partial\Alert;
 /**
  * Defines the person index listing.
  *
+ * @link http://schema.org/Person
+ * @link http://www.google.com/webmasters/tools/richsnippets?q=https://en.movlib.org/persons
+ * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/persons
+ * @link http://validator.w3.org/check?uri=https://en.movlib.org/persons
+ * @link http://gsnedders.html5.org/outliner/process.py?url=https://en.movlib.org/persons
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -32,6 +37,7 @@ use \MovLib\Partial\Alert;
  */
 final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
   use \MovLib\Partial\PersonTrait;
+  use \MovLib\Partial\DateTrait;
 
   /**
    * {@inheritdoc}
@@ -76,15 +82,21 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    */
   protected function formatListingItem($person) {
     if (($bornName = $this->getPersonBornName($person))) {
-      $bornName = "<br><span class='small'>{$bornName}</span>";
+      $bornName = "<small>{$bornName}</small>";
     }
-    if (($bioDates = $this->getPersonBioDates($person))) {
-      $bioDates = "<br><span class='small'>{$bioDates}</span>";
+    $bioDates = $this->dateFormatFromTo(
+      $person->birthDate,
+      $person->deathDate,
+      [ "property" => "birthDate", "title" => $this->intl->t("Date of Birth") ],
+      [ "property" => "deathDate", "title" => $this->intl->t("Date of Death") ]
+    );
+    if ($bioDates) {
+      $bioDates = "<small>{$bioDates}</small>";
     }
     return
       "<li class='hover-item r' typeof='Person'>" .
         "<a class='no-link s s1 tac'><img alt='' height='60' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60'></a>" .
-        "<div class='s s9'><a href='{$person->route}' property='url'><span property='name'>{$person->name}</span></a>{$bornName}{$bioDates}</div>" .
+        "<div class='s s9'><h2 class='para'><a href='{$person->route}' property='url'><span property='name'>{$person->name}</span></a>{$bornName}{$bioDates}</h2></div>" .
       "</li>"
     ;
   }

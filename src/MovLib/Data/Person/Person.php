@@ -29,7 +29,7 @@ use \MovLib\Presentation\Error\NotFound;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Person extends \MovLib\Core\AbstractDatabase {
+class Person extends \MovLib\Data\AbstractEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -105,11 +105,25 @@ class Person extends \MovLib\Core\AbstractDatabase {
   public $name;
 
   /**
+   * The person's total movie count.
+   *
+   * @var integer
+   */
+  public $movieCount = 0;
+
+  /**
    * The person's nickname.
    *
    * @var string
    */
   public $nickname;
+
+  /**
+   * The person's total release count.
+   *
+   * @var integer
+   */
+  public $releaseCount = 0;
 
   /**
    * The person's translated route.
@@ -119,6 +133,13 @@ class Person extends \MovLib\Core\AbstractDatabase {
   public $route;
 
   /**
+   * The person's total series count.
+   *
+   * @var integer
+   */
+  public $seriesCount = 0;
+
+  /**
    * The person's sex.
    *
    * @var integer
@@ -126,98 +147,87 @@ class Person extends \MovLib\Core\AbstractDatabase {
   public $sex;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Methods
+  // ------------------------------------------------------------------------------------------------------------------- Initialization Methods
 
-
+  
   /**
-   * Get the total number of the movies this person has appeared in.
+   * Initialize new person.
    *
-   * @return integer
-   *   The count of the person's unique movies.
+   * @param integer $id
+   *   The unique person's identifier to load.
    * @throws \MovLib\Exception\DatabaseException
+   * @throws \MovLib\Presentation\Error\NotFound
    */
-  public function getMoviesCount() {
-    $ids = $this->query(
-      "SELECT DISTINCT
-        `movies`.`id`
-      FROM `movies`
-        LEFT JOIN `movies_directors` AS `md`
-          ON `md`.`movie_id` = `movies`.`id`
-          AND `md`.`person_id` = ?
-        LEFT JOIN `movies_cast` AS `mc`
-          ON `mc`.`movie_id` = `movies`.`id`
-          AND `mc`.`person_id` = ?
-        LEFT JOIN `movies_crew` AS `mcr`
-          ON `mcr`.`movie_id` = `movies`.`id`
-          AND `mcr`.`person_id` = ?
-      WHERE `movies`.`deleted` = false
-        AND NOT (`md`.`person_id` IS NULL AND `mc`.`person_id` IS NULL AND `mcr`.`person_id` IS NULL)",
-      "ddd",
-      [ $this->id, $this->id, $this->id ]
-    )->get_result()->fetch_all();
-    return count($ids);
-  }
-
-  /**
-   * Get all movies matching the offset and row count.
-   *
-   * @param integer $offset
-   *   The offset in the result.
-   * @param integer $limit
-   *   The number of rows to retrieve.
-   * @return \mysqli_result
-   *   The query result.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getPersons($offset, $limit) {
-    return $this->query(
+  public function init($id) {
+    $stmt = $this->query(
       "SELECT
-        `id`,
         `deleted`,
         `name`,
         `sex`,
-        `birthdate` AS `birthDate`,
-        `born_name` AS `bornName`,
-        `deathdate` AS `deathDate`,
+        `birthdate`,
+        `born_name`,
+        `deathdate`,
         `nickname`,
-        `image_uploader_id` AS `uploaderId`,
-        `image_width` AS `width`,
-        `image_height` AS `height`,
-        `image_filesize` AS `filesize`,
-        `image_extension` AS `extension`,
-        UNIX_TIMESTAMP(`image_changed`) AS `changed`,
-        COLUMN_GET(`dyn_image_descriptions`, ? AS BINARY) AS `description`,
-        `image_styles` AS `styles`
+        `count_movies`,
+        `count_series`,
+        `count_releases`,
+        `image_uploader_id`,
+        `image_width`,
+        `image_height`,
+        `image_filesize`,
+        `image_extension`,
+        `image_styles`
       FROM `persons`
-      WHERE `deleted` = false
-      ORDER BY `id` DESC
-      LIMIT ? OFFSET ?",
-      "sdi",
-      [ $this->intl->languageCode, $limit, $offset ]
-    )->get_result();
+      WHERE
+        `id` = ?
+      LIMIT 1",
+      "d",
+      [ $id ]
+    );
+    $stmt->bind_result(
+      $this->deleted,
+      $this->name,
+      $this->sex,
+      $this->birthDate,
+      $this->bornName,
+      $this->deathDate,
+      $this->nickname,
+      $this->movieCount,
+      $this->seriesCount,
+      $this->releaseCount,
+      $this->uploaderId,
+      $this->width,
+      $this->height,
+      $this->filesize,
+      $this->extension,
+      $this->styles
+    );
+    if (!$stmt->fetch()) {
+      throw new NotFound;
+    }
+    $stmt->close();
+    $this->id = $id;
+
+    // The person's photo name is always the person's identifier, so set it here.
+    $this->filename = &$this->id;
+    $this->initFetchObject();
   }
 
   /**
-   * Get the total number of the releases this person has worked on.
+   * Initialize the person with their image, deleted flag and translate their route.
    *
-   * @todo Implement when releases are implemented.
-   * @return integer
-   *   The count of the person's unique releases.
+   * return this
    */
-  public function getReleasesCount() {
-    return 0;
+  public function initFetchObject() {
+    $this->deleted = (boolean) $this->deleted;
+    $this->route   = $this->intl->r("/person/{0}", [ $this->id]);
+    $this->toDates([ &$this->birthDate, &$this->deathDate ]);
+    return $this;
   }
 
-  /**
-   * Get the total number of the series this person has appeared in.
-   *
-   * @todo Implement when series are implemented.
-   * @return integer
-   *   The count of the person's unique series.
-   */
-  public function getSeriesCount() {
-    return 0;
-  }
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * Get the translated and gendered job title.
@@ -254,79 +264,17 @@ class Person extends \MovLib\Core\AbstractDatabase {
   }
 
   /**
-   * Initialize new person.
-   *
-   * @param integer $id
-   *   The unique person's identifier to load.
-   * @throws \MovLib\Exception\DatabaseException
-   * @throws \MovLib\Presentation\Error\NotFound
+   * {@inheritdoc}
    */
-  public function init($id) {
-    $stmt = $this->query(
-      "SELECT
-        `deleted`,
-        `name`,
-        `sex`,
-        `birthdate`,
-        `born_name`,
-        `deathdate`,
-        `nickname`,
-        `image_uploader_id`,
-        `image_width`,
-        `image_height`,
-        `image_filesize`,
-        `image_extension`,
-        `image_styles`
-      FROM `persons`
-      WHERE
-        `id` = ?
-      LIMIT 1",
-      "d",
-      [ $id ]
-    );
-    $stmt->bind_result(
-      $this->deleted,
-      $this->name,
-      $this->sex,
-      $this->birthDate,
-      $this->bornName,
-      $this->deathDate,
-      $this->nickname,
-      $this->uploaderId,
-      $this->width,
-      $this->height,
-      $this->filesize,
-      $this->extension,
-      $this->styles
-    );
-    if (!$stmt->fetch()) {
-      throw new NotFound;
-    }
-    $stmt->close();
-    $this->id = $id;
-
-    // The person's photo name is always the person's identifier, so set it here.
-    $this->filename = &$this->id;
-    $this->initFetchObject();
+  public function getPluralName() {
+    return "persons";
   }
 
   /**
-   * Initialize the person with their image, deleted flag and translate their route.
-   *
-   * return this
+   * {@inheritdoc}
    */
-  public function initFetchObject() {
-    $this->deleted = (boolean) $this->deleted;
-    $this->route   = $this->intl->r("/person/{0}", [ $this->id]);
-    $key           = "edit";
-    if ($this->uploaderId) {
-      $this->imageExists = true;
-      $key               = "photo";
-      $this->styles      = unserialize($this->styles);
-    }
-    $this->imageRoute = $this->intl->r("/person/{0}/{$key}", [ $this->id ]);
-
-    return $this;
+  public function getSingularName() {
+    return "person";
   }
 
 

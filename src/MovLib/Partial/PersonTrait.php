@@ -17,7 +17,7 @@
  */
 namespace MovLib\Partial;
 
-use \MovLib\Partial\Date;
+use \MovLib\Data\Date;
 
 /**
  * Add various person formatting functions to presentation.
@@ -45,33 +45,6 @@ trait PersonTrait {
         "<span property='additionalName'>{$person->bornName}</span>",
         "<i>{$this->intl->t("born name")}</i>",
       ]);
-    }
-  }
-
-  /**
-   * Get a person's biographical dates.
-   *
-   * @param \MovLib\Data\Person\Person $person
-   *   The person to get the biographical dates from.
-   * @return null|string
-   *   The formatted biographical dates or <code>NULL</code> if none were present.
-   */
-  final protected function getPersonBioDates(\MovLib\Data\Person\Person $person) {
-    if ($person->birthDate || $person->deathDate) {
-      $birth = $this->intl->t("Date of Birth");
-      if ($person->birthDate) {
-        $dates = (new Date($this, $person->birthDate))->format($this->intl, [ "property" => "birthDate", "title" => $birth ]);
-      }
-      else {
-        $dates = "<em title='{$birth}'>{$this->intl->t("unknown")}</em>";
-      }
-      if ($person->deathDate) {
-        return $this->intl->t("{0}–{1}", [ $dates, (new Date($this, $person->deathDate))->format($this->intl, [
-          "property" => "deathDate",
-          "title"    => $this->intl->t("Date of Death") ]),
-        ]);
-      }
-      return $dates;
     }
   }
 
