@@ -54,58 +54,28 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-
-    // Build the company's header.
     $this->headingBefore = "<div class='r'><div class='s s10'>";
+
     $infos = new QuickInfo($this->intl);
     $this->entity->links        && $infos->add($this->intl->t("Sites"), $this->formatWeblinks($this->entity->links));
     $this->entity->foundingDate && $infos->add($this->intl->t("Founded"), $this->dateFormat($this->entity->foundingDate, [ "property" => "foundingDate" ]));
     $this->entity->defunctDate  && $infos->add($this->intl->t("Defunct"), $this->dateFormat($this->entity->defunctDate, [ "property" => "defunctDate" ]));
     $this->entity->place->id    && $infos->add($this->intl->t("Based in"), new Place($this, $this->intl, $this->entity->place, [ "property" => "location" ]));
     $this->entity->wikipedia    && $infos->addWikipedia($this->entity->wikipedia);
-    $this->headingAfter .= "{$infos}</div><div id='company-logo' class='s s2'><img alt='' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='140' height='140'></div></div>";
 
-    $this->addContentSection($this->intl->t("Profile"), $this->entity->description);
-    return $this->getContentSections();
+    $this->headingAfter .= "{$infos}</div><div class='s s2'><img alt='' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='140' height='140'></div></div>";
 
-    $companyAliases = $this->company->aliases;
-    if (!empty($companyAliases)) {
-      $aliases = null;
-      $c       = count($companyAliases);
-      for ($i = 0; $i < $c; ++$i) {
-        $aliases .= "<li class='mb10 s s10' property='additionalName'>{$companyAliases[$i]}</li>";
-      }
-      $content .= $this->getSection("aliases", $this->intl->t("Also Known As"), "<ul class='grid-list r'>{$aliases}</ul>");
-    }
-
-    if ($content) {
+    $this->entity->description && $this->addContentSection($this->intl->t("Profile"), $this->entity->description);
+    $this->entity->aliases     && $this->addContentSection($this->intl->t("Also Known As"), $this->formatAliases($this->entity->aliases), false);
+    if (($content = $this->getContentSections())) {
       return $content;
     }
 
     return new Alert(
-      $this->intl->t("{sitename} has no further details about this company.", [ "sitename"    => $this->config->sitename ]),
-      $this->intl->t("No Data Available"),
-      Alert::SEVERITY_INFO
+      "<p>{$this->intl->t("{sitename} doesn’t have further details about this company.", [ "sitename" => $this->config->sitename ])}</p>" .
+      "<p>{$this->intl->t("Would you like to {0}add additional information{1}?", [ "<a href='{$this->intl->r("/company/{0}/edit", $this->entity->id)}'>", "</a>" ])}</p>",
+      $this->intl->t("No Info")
     );
-  }
-
-  /**
-   * Construct a section in the main content and add it to the sidebar.
-   *
-   * @param string $id
-   *   The section's unique identifier.
-   * @param string $title
-   *   The section's translated title.
-   * @param string $content
-   *   The section's content.
-   * @return string
-   *   The section ready for display.
-   */
-  protected function getSection($id, $title, $content) {
-    // Add the section to the sidebar as anchor.
-    $this->sidebarNavigation->menuitems[] = [ "#{$id}", $title ];
-
-    return "<div id='{$id}'><h2>{$title}</h2>{$content}</div>";
   }
 
 }

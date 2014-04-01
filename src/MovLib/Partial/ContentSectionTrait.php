@@ -28,13 +28,60 @@ namespace MovLib\Partial;
  */
 trait ContentSectionTrait {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * The content sections.
+   *
+   * @var array
+   */
   private $sections = [];
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Format additional names.
+   *
+   * @return string
+   *   The formatted additional names.
+   */
+  final protected function formatAliases($aliases) {
+    $formatted = null;
+    $c = count($aliases);
+    for ($i = 0; $i < $c; ++$i) {
+      $formatted .= "<li class='mb10 s s3' property='additionalName'>{$aliases[$i]}</li>";
+    }
+    if ($formatted) {
+      return "<ul class='grid-list r'>{$formatted}</ul>";
+    }
+  }
+
+  /**
+   * Add section to content.
+   *
+   * @param string $title
+   *   The section's title.
+   * @param string $content
+   *   The section's content.
+   * @param boolean $decode
+   *   Whether the content should be HTML decoded or not, defaults to <code>TRUE</code> (content will be decoded).
+   * @return this
+   */
   final protected function addContentSection($title, $content, $decode = true) {
     $this->sections[$title] = $decode ? $this->htmlDecode($content) : $content;
     return $this;
   }
 
+  /**
+   * Get the content sections.
+   *
+   * @return string
+   *   The content sections.
+   */
   final protected function getContentSections() {
     $formatted = null;
     foreach ($this->sections as $title => $content) {

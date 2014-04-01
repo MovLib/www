@@ -88,6 +88,10 @@ final class QuickInfo {
         $formatted .= "<p><span class='ico ico-wikipedia'></span> <a href='{$this->wikipedia}' property='sameAs' target='_blank'>{$this->intl->t("Wikipedia Article")}</a></p>";
       }
 
+      if ($formatted) {
+        $formatted = "<section class='quickinfo'><h2 class='vh'>{$this->intl->t("Infobox")}</h2>{$formatted}</section>";
+      }
+
       return $formatted;
     // @devStart
     // @codeCoverageIgnoreStart

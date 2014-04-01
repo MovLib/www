@@ -130,7 +130,7 @@ final class Date {
       else {
         $this->dateTime = new \DateTime($date);
       }
-      $this->date = $this->format(self::W3C_DATE);
+      $this->date = $this->dateTime->format(self::W3C_DATE);
       list($this->year, $this->month, $this->day) = explode("-", $this->date, 3);
     }
   }

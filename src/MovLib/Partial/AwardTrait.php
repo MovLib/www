@@ -52,12 +52,12 @@ trait AwardTrait {
     }
     foreach ([
       [ "movie", "movies", $this->intl->t("Movies"), $this->entity->movieCount ],
-      [ "series", "series", $this->intl->t("Series"), $this->entity->seriesCount ],
-    ] as list($singular, $plural, $title, $count)) {
+      [ "series separator", "series", $this->intl->t("Series"), $this->entity->seriesCount ],
+    ] as list($icon, $plural, $title, $count)) {
       $items[] = [
         $this->intl->rp("/company/{0}/{$plural}", $this->entity->id),
         "{$title} <span class='fr'>{$this->intl->format("{0,number}", $count)}</span>",
-        [ "class" => "ico ico-{$singular}" ]
+        [ "class" => "ico ico-{$icon}" ]
       ];
     }
     return $items;
