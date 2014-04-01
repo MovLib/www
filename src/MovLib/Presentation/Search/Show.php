@@ -18,10 +18,6 @@
 namespace MovLib\Presentation\Search;
 
 use \Elasticsearch\Client as ElasticClient;
-use \MovLib\Data\Image\AbstractImage;
-use \MovLib\Data\Movie\Movie;
-use \MovLib\Data\Person\Person;
-use \MovLib\Presentation\Partial\Alert;
 
 /**
  * Present search results to the user.
@@ -32,8 +28,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\TraitSidebar;
+final class Show extends \MovLib\Presentation\AbstractPresenter {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -60,12 +55,16 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
     $this->sidebarInit([]);
     $this->breadcrumb->ignoreQuery = true;
 
-    $query       = null;
-    $this->query = filter_input(INPUT_GET, "q", FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_NULL_ON_FAILURE);
-    if ($this->query) {
-      $query = rawurlencode($this->query);
-      $query = "?q={$query}";
+    $this->query = $this->request->filterInput(INPUT_GET, "q", FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
+
+    $filter = explode(",", $this->request->filterInput(INPUT_GET, "filter", FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW));
+    $filterToType = $this->intl->getTranslations("elasticsearch");
+    foreach ($filter as &$f) {
+      if (isset($filterToType[$f])) {
+        $f = $filterToType[$f];
+      }
     }
+
     $this->initLanguageLinks("/search", null, false, $query);
   }
 
