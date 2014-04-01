@@ -15,40 +15,54 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Job;
-
-use \MovLib\Data\Job\JobSet;
-use \MovLib\Exception\RedirectException\SeeOtherException;
-use \MovLib\Partial\Alert;
+namespace MovLib\Data\Job;
 
 /**
- * Random job presentation.
+ * Defines the job set object.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Random {
+final class JobSet extends \MovLib\Data\AbstractSet {
 
   /**
-   * Redirect client to random job presentation.
-   *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP
-   *   The dependency injection container.
-   * @throws \MovLib\Exception\SeeOtherException
+   * {@inheritdoc}
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    if (($id = (new JobSet($diContainerHTTP))->getRandom())) {
-      throw new SeeOtherException($diContainerHTTP->intl->r("/job/{0}", $id));
-    }
-    $diContainerHTTP->response->createCookie("alert", (string) new Alert(
-      $this->intl->t("There is currently no job in our database."),
-      $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    ));
-    throw new SeeOtherException($this->intl->rp("/jobs"));
+  public function getEntityClassName() {
+    return "\\MovLib\\Data\\Job\\Job";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getOrdered($by, $offset, $limit) {
+    // @todo Store counts as columns in table.
+    return $this->getMySQLi()->query(<<<SQL
+SELECT
+  `jobs`.`id` AS `id`,
+  COLUMN_GET(`dyn_names_sex0`, '{$this->intl->languageCode}' AS CHAR) AS `name`,
+  COUNT(DISTINCT `movies_crew`.`movie_id`) AS `movieCount`,
+  COUNT(DISTINCT `episodes_crew`.`series_id`) AS `seriesCount`
+FROM `jobs`
+  LEFT JOIN `movies_crew`
+    ON `movies_crew`.`job_id` = `jobs`.`id`
+  LEFT JOIN `episodes_crew`
+    ON `episodes_crew`.`job_id` = `jobs`.`id`
+WHERE `deleted` = false
+GROUP BY `id`, `name`
+ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}
+SQL
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTableName() {
+    return "jobs";
   }
 
 }
