@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Company;
 
 use \MovLib\Data\Company\Company;
+use \MovLib\Partial\Date;
 use \MovLib\Partial\Place;
 use \MovLib\Partial\QuickInfo;
 
@@ -41,7 +42,6 @@ use \MovLib\Partial\QuickInfo;
 final class Show extends \MovLib\Presentation\AbstractShowPresenter {
   use \MovLib\Partial\CompanyTrait;
   use \MovLib\Partial\ContentSectionTrait;
-  use \MovLib\Partial\DateTrait;
 
   /**
    * {@inheritdoc}
@@ -58,8 +58,8 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
 
     $infos = new QuickInfo($this->intl);
     $this->entity->links        && $infos->add($this->intl->t("Sites"), $this->formatWeblinks($this->entity->links));
-    $this->entity->foundingDate && $infos->add($this->intl->t("Founded"), $this->dateFormat($this->entity->foundingDate, [ "property" => "foundingDate" ]));
-    $this->entity->defunctDate  && $infos->add($this->intl->t("Defunct"), $this->dateFormat($this->entity->defunctDate, [ "property" => "defunctDate" ]));
+    $this->entity->foundingDate && $infos->add($this->intl->t("Founded"), (new Date($this->intl, $this))->format($this->entity->foundingDate, [ "property" => "foundingDate" ]));
+    $this->entity->defunctDate  && $infos->add($this->intl->t("Defunct"), (new Date($this->intl, $this))->format($this->entity->defunctDate, [ "property" => "defunctDate" ]));
     $this->entity->place        && $infos->add($this->intl->t("Based in"), new Place($this, $this->intl, $this->entity->place, [ "property" => "location" ]));
     $this->entity->wikipedia    && $infos->addWikipedia($this->entity->wikipedia);
 

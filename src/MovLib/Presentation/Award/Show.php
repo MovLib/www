@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Award;
 
 use \MovLib\Data\Award\Award;
+use \MovLib\Partial\Date;
 use \MovLib\Partial\QuickInfo;
 
 /**
@@ -40,7 +41,6 @@ use \MovLib\Partial\QuickInfo;
 final class Show extends \MovLib\Presentation\AbstractShowPresenter {
   use \MovLib\Presentation\Award\AwardTrait;
   use \MovLib\Partial\ContentSectionTrait;
-  use \MovLib\Partial\DateTrait;
 
   /**
    * {@inheritdoc}
@@ -57,8 +57,8 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
 
     $infos = new QuickInfo($this->intl);
     $this->entity->links          && $infos->add($this->intl->t("Sites"), $this->formatWeblinks($this->entity->links));
-    $this->entity->firstEventYear && $infos->add($this->intl->t("First Event"), $this->dateFormat($this->entity->firstEventYear));
-    $this->entity->lastEventYear  && $infos->add($this->intl->t("Last Event"), $this->dateFormat($this->entity->lastEventYear));
+    $this->entity->firstEventYear && $infos->add($this->intl->t("First Event"), (new Date($this->intl, $this))->format($this->entity->firstEventYear));
+    $this->entity->lastEventYear  && $infos->add($this->intl->t("Last Event"), (new Date($this->intl, $this))->format($this->entity->lastEventYear));
     $this->entity->wikipedia      && $infos->addWikipedia($this->entity->wikipedia);
 
     $this->headingAfter .= "{$infos}</div><div class='s s2'><img alt='' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='140' height='140'></div></div>";

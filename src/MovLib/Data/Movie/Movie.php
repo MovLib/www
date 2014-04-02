@@ -17,7 +17,7 @@
  */
 namespace MovLib\Data\Movie;
 
-use \MovLib\Data\Genre\GenreSet;
+use \MovLib\Data\Date;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -51,11 +51,31 @@ final class Movie extends \MovLib\Data\AbstractDatabaseEntity {
   public $countries;
 
   /**
-   * The movie's display title for the current locale.
+   * The movie's display title <b>for</b> the current locale.
+   *
+   * <b>NOTE</b><br>
+   * The title itself may have a totally different locale than the current display locale, that's why it says <i>for</i>
+   * in the short comment and not <i>in</i>. Always set the <code>"lang"</code> attribute if you display the title
+   * anywhere if the locale of the title differs from the current display locale.
    *
    * @var string
    */
   public $displayTitle;
+
+  /**
+   * The movie's display title with the year appended in parantheses <b>for</b> the current locale.
+   *
+   * <b>NOTE</b><br>
+   * The value is equals to the display title if the year is unknown.
+   *
+   * <b>NOTE</b><br>
+   * The title itself may have a totally different locale than the current display locale, that's why it says <i>for</i>
+   * in the short comment and not <i>in</i>. Always set the <code>"lang"</code> attribute if you display the title
+   * anywhere if the locale of the title differs from the current display locale.
+   *
+   * @var string
+   */
+  public $displayTitleAndYear;
 
   /**
    * The display title's ISO 639-1 language code.
@@ -225,7 +245,7 @@ SELECT
   `genres`.`id`,
   IFNULL(
     COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`genres`,`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+    COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR)
   ) AS `name`
 FROM `movies_genres`
   INNER JOIN `genres` ON `genres`.`id` = `movies_genres`.`genre_id`
@@ -251,7 +271,13 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
-    $this->toDates([ &$this->year ]);
+    if ($this->year) {
+      $this->displayTitleAndYear = $this->intl->t("{0} ({1})", [ $this->displayTitle, $this->year ]);
+      $this->year = new Date($this->year);
+    }
+    else {
+      $this->displayTitleAndYear = $this->displayTitle;
+    }
     return parent::init();
   }
 

@@ -71,18 +71,24 @@ trait MovieTrait {
    *
    * @param \MovLib\Data\Movie\Movie $movie
    *   The movie to get the display title for.
-   * @param boolean $link [optional]
+   * @param boolean $linkTitle [optional]
    *   Whether to link the movie to its show or not, defaults to <code>TRUE</code>.
+   * @param boolean $linkYear [optional]
+   *   Whether to link the year to it's movie index or not, defaults to <code>FALSE</code>.
    * @return string
    *   The movie's display title enhanced with structured data.
    */
-  final protected function getStructuredDisplayTitle(\MovLib\Data\Movie\Movie $movie, $link = true) {
+  final protected function getStructuredDisplayTitle(\MovLib\Data\Movie\Movie $movie, $linkTitle = true, $linkYear = false) {
     $property = ($movie->displayTitle == $movie->originalTitle) ? "name" : "alternateName";
     $title    = "<span{$this->lang($movie->displayTitleLanguageCode)} property='{$property}'>{$movie->displayTitle}</span>";
     if ($movie->year) {
-      $title = $this->intl->t("{0} ({1})", [ $title, (new Date($this->intl, $this))->formatYear($movie->year, [ "property" => "datePublished" ]) ]);
+      $title = $this->intl->t("{0} ({1})", [ $title, (new Date($this->intl, $this))->formatYear(
+        $movie->year,
+        [ "property" => "datePublished" ],
+        $linkYear ? [ "href" => $this->intl->rp("/year/{0}/movies", $movie->year->year) ] : null
+      ) ]);
     }
-    if ($link) {
+    if ($linkTitle) {
       return "<a href='{$movie->getRoute()}' property='url'>{$title}</a>";
     }
     return $title;
