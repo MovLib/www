@@ -30,7 +30,7 @@ use \MovLib\Data\Place\Place;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Company extends \MovLib\Data\AbstractDatabaseEntity {
+final class Company extends \MovLib\Data\AbstractEntity {
   use \MovLib\Data\Company\CompanyTrait;
 
 

@@ -28,7 +28,7 @@ use \MovLib\Data\Genre\Genre;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class MovieSet extends \MovLib\Data\AbstractDatabaseSet {
+final class MovieSet extends \MovLib\Data\AbstractSet {
   use \MovLib\Data\Movie\MovieTrait;
 
   /**

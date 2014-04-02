@@ -26,7 +26,7 @@ namespace MovLib\Data\Genre;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class GenreSet extends \MovLib\Data\AbstractDatabaseSet {
+final class GenreSet extends \MovLib\Data\AbstractSet {
   use \MovLib\Data\Genre\GenreTrait;
 
   /**

@@ -26,7 +26,7 @@ namespace MovLib\Data\Person;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class PersonSet extends \MovLib\Data\AbstractDatabaseSet {
+final class PersonSet extends \MovLib\Data\AbstractSet {
 
   /**
    * {@inheritdoc}

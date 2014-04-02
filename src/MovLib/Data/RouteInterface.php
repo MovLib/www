@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Country;
+namespace MovLib\Data;
 
 /**
- * Provides properties and methods that are needed by several country objects.
+ * Defines the route interface.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,34 +26,46 @@ namespace MovLib\Data\Country;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-trait CountryTrait {
+interface RouteInterface {
 
   /**
-   * {@inheritdoc}
+   * Get the entity's index route in the current locale.
+   *
+   * @return string
+   *   The entity's index route in the current locale.
    */
-  final public function getPluralKey() {
-    return "countries";
-  }
+  public function getIndexRoute();
 
   /**
-   * {@inheritdoc}
+   * Get the plural all lowercased key in the default locale.
+   *
+   * @return string
+   *   The plural all lowercased key in the default locale.
    */
-  final public function getPluralName() {
-    return $this->intl->t("Countries");
-  }
+  public function getPluralKey();
 
   /**
-   * {@inheritdoc}
+   * Get the plural name of the entity in the current locale.
+   *
+   * @return string
+   *   The plural name of the entity in the current locale.
    */
-  final public function getSingularKey() {
-    return "country";
-  }
+  public function getPluralName();
 
   /**
-   * {@inheritdoc}
+   * Get the singular all lowercased key in the default locale.
+   *
+   * @return string
+   *   The singular all lowercased key in the default locale.
    */
-  final public function getSingularName() {
-    return $this->intl->t("Country");
-  }
+  public function getSingularKey();
+
+  /**
+   * Get the singular name of the entity in the current locale.
+   *
+   * @return string
+   *   The singular of the entity in the current locale.
+   */
+  public function getSingularName();
 
 }

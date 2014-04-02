@@ -26,7 +26,7 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-interface EntityInterface {
+interface EntityInterface extends \MovLib\Data\RouteInterface {
 
   /**
    * Whether this entity is gone or not.
@@ -58,51 +58,11 @@ interface EntityInterface {
   public function getCount($from, $what = "*");
 
   /**
-   * Get the entity's index route in the current locale.
-   *
-   * @return string
-   *   The entity's index route in the current locale.
-   */
-  public function getIndexRoute();
-
-  /**
-   * Get the plural all lowercased key in the default locale.
-   *
-   * @return string
-   *   The plural all lowercased key in the default locale.
-   */
-  public function getPluralKey();
-
-  /**
-   * Get the plural name of the entity in the current locale.
-   *
-   * @return string
-   *   The plural name of the entity in the current locale.
-   */
-  public function getPluralName();
-
-  /**
    * Get the entity's route in the current locale.
    *
    * @return string
    *   The entity's route in the current locale.
    */
   public function getRoute();
-
-  /**
-   * Get the singular all lowercased key in the default locale.
-   *
-   * @return string
-   *   The singular all lowercased key in the default locale.
-   */
-  public function getSingularKey();
-
-  /**
-   * Get the singular name of the entity in the current locale.
-   *
-   * @return string
-   *   The singular of the entity in the current locale.
-   */
-  public function getSingularName();
 
 }

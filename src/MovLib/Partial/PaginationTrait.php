@@ -126,7 +126,7 @@ trait PaginationTrait {
     assert(!empty($this->title), "You have to initialize the page before initializing the pagination trait.");
     assert(!empty($this->breadcrumb), "You have to initialize the breadcrumb before initializing the pagination trait.");
     assert(empty($this->contentAfter), "The \$contentAfter variable will be overwritten by the pagination trait.");
-    assert($this->set instanceof \MovLib\Data\AbstractDatabaseSet, "You have to instantiate and export your set before initalizing the pagination trait.");
+    assert($this->set instanceof \MovLib\Data\AbstractSet, "You have to instantiate and export your set before initalizing the pagination trait.");
     // @codeCoverageIgnoreEnd
     // @devEnd
 

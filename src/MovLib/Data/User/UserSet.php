@@ -26,7 +26,7 @@ namespace MovLib\Data\User;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class UserSet extends \MovLib\Data\AbstractDatabaseSet {
+final class UserSet extends \MovLib\Data\AbstractSet {
 
   /**
    * {@inheritdoc}

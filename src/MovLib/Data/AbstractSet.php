@@ -18,7 +18,7 @@
 namespace MovLib\Data;
 
 /**
- * Defines the base class for set objects.
+ * Defines the base class for database set objects.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,7 +26,8 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractDatabaseSet extends \MovLib\Core\AbstractDatabase implements \MovLib\Data\SetInterface {
+abstract class AbstractSet extends \MovLib\Core\AbstractDatabase implements \MovLib\Data\SetInterface {
+  use \MovLib\Data\RouteTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
@@ -59,17 +60,6 @@ abstract class AbstractDatabaseSet extends \MovLib\Core\AbstractDatabase impleme
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public function getIndexRoute() {
-    static $route;
-    if (!$route) {
-      $route = $this->intl->rp("/{$this->getPluralKey()}");
-    }
-    return $route;
-  }
-
-  /**
    * Get all entities that match the given filter.
    *
    * @param null|string $where [optional]
@@ -82,7 +72,7 @@ abstract class AbstractDatabaseSet extends \MovLib\Core\AbstractDatabase impleme
   protected function getEntities($where = null, $orderBy = null) {
     $entities = null;
     $result   = $this->getMySQLi()->query($this->getEntitiesQuery($where, $orderBy));
-    /* @var $entity \MovLib\Data\AbstractDatabaseEntity */
+    /* @var $entity \MovLib\Data\AbstractEntity */
     while ($entity = $result->fetch_object(substr(static::class, 0, -3), [ $this->diContainer ])) {
       $entities[$entity->id] = $entity;
     }

@@ -26,7 +26,7 @@ namespace MovLib\Data\Award;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class AwardSet extends \MovLib\Data\AbstractDatabaseSet {
+final class AwardSet extends \MovLib\Data\AbstractSet {
   use \MovLib\Data\Award\AwardTrait;
 
   /**

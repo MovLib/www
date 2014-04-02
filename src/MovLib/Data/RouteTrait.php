@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Country;
+namespace MovLib\Data;
 
 /**
- * Defines the country set object.
+ * Defines the generic route methods for the route interface.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,6 +26,28 @@ namespace MovLib\Data\Country;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class CountrySet implements \MovLib\Data\SetInterface {
+trait RouteTrait {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getIndexRoute() {
+    static $route;
+    if (!$route) {
+      $route = $this->intl->rp("/{$this->getPluralKey()}");
+    }
+    return $route;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getRoute() {
+    static $route = [];
+    if (empty($route[$this->id])) {
+      $route[$this->id] = $this->intl->r("/{$this->getSingularKey()}/{0}", $this->id);
+    }
+    return $route[$this->id];
+  }
 
 }

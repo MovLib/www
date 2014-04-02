@@ -18,7 +18,7 @@
 namespace MovLib\Data;
 
 /**
- * Defines the base class for data entities.
+ * Defines the base class for database entity objects.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,7 +26,8 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractDatabaseEntity extends \MovLib\Core\AbstractDatabase implements \MovLib\Data\EntityInterface {
+abstract class AbstractEntity extends \MovLib\Core\AbstractDatabase implements \MovLib\Data\EntityInterface {
+  use \MovLib\Data\RouteTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -67,37 +68,8 @@ abstract class AbstractDatabaseEntity extends \MovLib\Core\AbstractDatabase impl
   /**
    * {@inheritdoc}
    */
-  public function isGone() {
-    return $this->deleted;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function getCount($from, $what = "*") {
     return $this->getMySQLi()->query("SELECT COUNT({$what}) FROM `{$from}` WHERE `{$this->singular}_id` = {$this->id} LIMIT 1")->fetch_row()[0];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getIndexRoute() {
-    static $route;
-    if (!$route) {
-      $route = $this->intl->rp("/{$this->getPluralKey()}");
-    }
-    return $route;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getRoute() {
-    static $route = [];
-    if (empty($route[$this->id])) {
-      $route[$this->id] = $this->intl->r("/{$this->getSingularKey()}/{0}", $this->id);
-    }
-    return $route[$this->id];
   }
 
   /**
@@ -113,6 +85,13 @@ abstract class AbstractDatabaseEntity extends \MovLib\Core\AbstractDatabase impl
     $this->created = new \DateTime($this->created);
     $this->deleted = (boolean) $this->deleted;
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isGone() {
+    return $this->deleted;
   }
 
   /**

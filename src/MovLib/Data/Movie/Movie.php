@@ -29,7 +29,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Movie extends \MovLib\Data\AbstractDatabaseEntity {
+final class Movie extends \MovLib\Data\AbstractEntity {
   use \MovLib\Data\Movie\MovieTrait;
 
 

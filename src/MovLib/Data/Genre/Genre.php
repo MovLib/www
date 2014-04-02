@@ -28,7 +28,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Genre extends \MovLib\Data\AbstractDatabaseEntity {
+final class Genre extends \MovLib\Data\AbstractEntity {
   use \MovLib\Data\Genre\GenreTrait;
 
 
