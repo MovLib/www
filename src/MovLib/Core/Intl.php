@@ -452,6 +452,8 @@ final class Intl {
     // @devStart
     // @codeCoverageIgnoreStart
     assert(!empty($pattern), "The pattern cannot be empty.");
+    assert(strpos("'", $pattern) === false, "Always use the real English apostrophe ( ’ )!");
+    assert(strpos('"', $pattern) === false, "Always use the real English quotation marks ( “ opening, ” closing)!");
     assert(
       preg_match("/^\s*\{[\{\}0-9a-z_\- ]*\}\s*$/i", $pattern) !== 1,
       "A translation that contains placeholder tokens only doesn't make sense. Don't misuse the message formatter to " .
