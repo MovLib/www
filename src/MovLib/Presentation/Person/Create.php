@@ -129,15 +129,15 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
     $this->initPage($this->intl->t("Create Person"));
     $this->initBreadcrumb([ [ $this->intl->rp("/persons"), $this->intl->t("Persons") ] ]);
 
-    $this->inputName      = new InputText("name", $this->intl->t("Name"), [ "placeholder" => $this->intl->t("Enter the person's name"), "required" => true ]);
-    $this->inputBornName  = new InputText("born-name", $this->intl->t("Born as"), [ "placeholder" => $this->intl->t("Enter the person's birth name") ]);
+    $this->inputName      = new InputText("name", $this->intl->t("Name"), [ "placeholder" => $this->intl->t("Enter the person’s name"), "required" => true ]);
+    $this->inputBornName  = new InputText("born-name", $this->intl->t("Born as"), [ "placeholder" => $this->intl->t("Enter the person’s birth name") ]);
     $dateOptions          = [ "year_max" => date("Y"), "year_min" => 1800 ];
     $this->inputBirthDate = new InputDateSeparate("birthdate", $this->intl->t("Date of Birth"), null, [ "class" => "s s6" ], $dateOptions);
     $this->inputDeathDate = new InputDateSeparate("deathdate", $this->intl->t("Date of Death"), null, [ "class" => "s s6" ], $dateOptions);
     $this->inputSex       = new RadioGroup("sex", $this->intl->t("Sex"), [ 2 => $this->intl->t("Female"), 1 => $this->intl->t("Male"), 0 => $this->intl->t("Unknown") ], 0);
     $this->inputWikipedia = new InputURL("wikipedia", $this->intl->t("Wikipedia URL"), [ "data-allow-external" => true ]);
     $this->inputAliases   = new InputLinesText("aliases", $this->intl->t("Additional Names"), [ "placeholder" => $this->intl->t("Please supply one name per line") ]);
-    $this->inputBiography = new InputHTML("biography", $this->intl->t("Biography"), null, [ "placeholder" => $this->intl->t("Enter the person's biography here") ]);
+    $this->inputBiography = new InputHTML("biography", $this->intl->t("Biography"), null, [ "placeholder" => $this->intl->t("Enter the person’s biography here") ]);
     $this->inputBiography->allowBlockqoutes()->allowImages()->allowLists();
     $this->inputLinks     = new InputLinesURL("links", $this->intl->t("External Links"), [ "data-allow-external" => true, "placeholder" => $this->intl->t("Please supply one URL per line") ]);
     $this->form           = new Form($this, [

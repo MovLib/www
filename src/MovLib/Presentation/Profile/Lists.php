@@ -52,7 +52,7 @@ class Lists extends \MovLib\Presentation\Profile\Show {
    */
   protected function getPageContent() {
     return new Alert(
-      $this->intl->t("The lists aren't implemented yet."),
+      $this->intl->t("The lists aren’t implemented yet."),
       $this->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     );
