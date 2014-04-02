@@ -295,6 +295,34 @@ INSERT INTO `movies_original_titles` SET
   `title_id` = @the_shawshank_redemption_ot
 ;
 
+INSERT INTO `movies_taglines` SET
+  `dyn_comments`  = '',
+  `movie_id`      = @the_shawshank_redemption_id,
+  `language_code` = 'en',
+  `tagline`       = 'Fear can hold you prisoner. Hope can set you free.'
+;
+SET @the_shawshank_redemption_en_tagline = LAST_INSERT_ID();
+
+INSERT INTO `movies_display_taglines` SET
+  `movie_id`      = @the_shawshank_redemption_id,
+  `tagline_id`    = @the_shawshank_redemption_en_tagline,
+  `language_code` = 'en'
+;
+
+INSERT INTO `movies_taglines` SET
+  `dyn_comments`  = '',
+  `movie_id`      = @the_shawshank_redemption_id,
+  `language_code` = 'de',
+  `tagline`       = 'Entscheide Dich, ob Du leben oder sterben willst … nur darum geht es.'
+;
+SET @the_shawshank_redemption_de_tagline = LAST_INSERT_ID();
+
+INSERT INTO `movies_display_taglines` SET
+  `movie_id`      = @the_shawshank_redemption_id,
+  `tagline_id`    = @the_shawshank_redemption_de_tagline,
+  `language_code` = 'de'
+;
+
 INSERT INTO `persons` SET
   `name`                   = 'Frank Darabont',
   `birthdate`              = '1959-01-28',

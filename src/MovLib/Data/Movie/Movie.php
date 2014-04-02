@@ -37,6 +37,13 @@ final class Movie extends \MovLib\Data\AbstractDatabaseEntity {
 
 
   /**
+   * The movie's rating.
+   *
+   * @var null|float
+   */
+  public $bayesRating;
+
+  /**
    * The movie's countries.
    *
    * @var null|array
@@ -88,28 +95,21 @@ final class Movie extends \MovLib\Data\AbstractDatabaseEntity {
   /**
    * The movie's global rank.
    *
-   * @var integer
+   * @var null|integer
    */
   public $rank;
 
   /**
-   * The movie's rating.
-   *
-   * @var float
-   */
-  public $rating;
-
-  /**
    * The movie's runtime in seconds.
    *
-   * @var integer
+   * @var null|integer
    */
   public $runtime;
 
   /**
    * The movie's synopsis in the current locale.
    *
-   * @var string
+   * @var null|string
    */
   public $synopsis;
 
@@ -130,7 +130,7 @@ final class Movie extends \MovLib\Data\AbstractDatabaseEntity {
   /**
    * The movie's votes.
    *
-   * @var integer
+   * @var null|integer
    */
   public $votes;
 
@@ -156,23 +156,24 @@ final class Movie extends \MovLib\Data\AbstractDatabaseEntity {
   public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null) {
     parent::__construct($diContainer);
     if ($id) {
-      $stmt = $this->getMySQLi()->prepare(<<<SQL
+      $mysqli = $this->getMySQLi();
+      $stmt   = $mysqli->prepare(<<<SQL
 SELECT
-  `movies`.`id` AS `id`,
-  `movies`.`year` AS `year`,
-  `movies`.`rank` AS `rank`,
-  `movies`.`votes` AS `votes`,
-  `movies`.`rating` AS `rating`,
-  `movies`.`runtime` AS `runtime`,
-  `movies`.`deleted` AS `deleted`,
-  `movies`.`changed` AS `changed`,
-  `movies`.`created` AS `created`,
+  `movies`.`id`,
+  `movies`.`year`,
+  `movies`.`rank`,
+  `movies`.`votes`,
+  `movies`.`rating`,
+  `movies`.`runtime`,
+  `movies`.`deleted`,
+  `movies`.`changed`,
+  `movies`.`created`,
   `movies`.`mean_rating` AS `meanRating`,
-  `movies_taglines`.`tagline` AS `tagline`,
+  `movies_taglines`.`tagline`,
   `original_title`.`title` AS `originalTitle`,
   `original_title`.`language_code` AS `originalTitleLanguageCode`,
   IFNULL(`display_title`.`title`, `original_title`.`title`) AS `displayTitle`,
-  COLUMN_GET(`movies`.`dyn_synopses`, '{$this->intl->languageCode}' AS BINARY) AS `synopsis`,
+  COLUMN_GET(`movies`.`dyn_synopses`, '{$this->intl->languageCode}' AS CHAR) AS `synopsis`,
   IFNULL(`display_title`.`language_code`, `original_title`.`language_code`) AS `displayTitleLanguageCode`
 FROM `movies`
   LEFT JOIN `movies_display_titles`
@@ -218,15 +219,24 @@ SQL
       if (!$found) {
         throw new NotFoundException("Couldn't find Movie {$id}");
       }
-      $result   = $this->getMySQLi()->query("SELECT `genre_id` FROM `movies_genres` WHERE `movie_id` = {$this->id}");
-      $genreIds = $result->fetch_all();
-      $result->free();
-      if (!empty($genreIds)) {
-        $this->genres = (new GenreSet($this->diContainer))->getIdentifiers(
-          array_column($genreIds, 0),
-          "`name` {$this->collations[$this->intl->languageCode]} DESC"
-        );
+
+      $result = $mysqli->query(<<<SQL
+SELECT
+  `genres`.`id`,
+  IFNULL(
+    COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->languageCode}' AS CHAR),
+    COLUMN_GET(`genres`,`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+  ) AS `name`
+FROM `movies_genres`
+  INNER JOIN `genres` ON `genres`.`id` = `movies_genres`.`genre_id`
+WHERE `movies_genres`.`movie_id` = {$this->id}
+ORDER BY `name` {$this->collations[$this->intl->languageCode]} DESC
+SQL
+      );
+      while ($genre = $result->fetch_object("\\MovLib\\Data\\Genre\Genre", [ $this->diContainer ])) {
+        $this->genres[] = $genre;
       }
+      $result->free();
     }
     if ($this->id) {
       $this->init();

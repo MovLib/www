@@ -52,7 +52,10 @@ abstract class AbstractDatabaseSet extends \MovLib\Core\AbstractDatabase impleme
    * {@inheritdoc}
    */
   public function getCount() {
-    return $this->getMySQLi()->query("SELECT COUNT(*) FROM `{$this->getPluralKey()}` WHERE `deleted` = false")->fetch_row()[0];
+    $result = $this->getMySQLi()->query("SELECT COUNT(*) FROM `{$this->getPluralKey()}` WHERE `deleted` = false");
+    $count  = $result->fetch_row()[0];
+    $result->free();
+    return $count;
   }
 
   /**
@@ -81,8 +84,9 @@ abstract class AbstractDatabaseSet extends \MovLib\Core\AbstractDatabase impleme
     $result   = $this->getMySQLi()->query($this->getEntitiesQuery($where, $orderBy));
     /* @var $entity \MovLib\Data\AbstractDatabaseEntity */
     while ($entity = $result->fetch_object(substr(static::class, 0, -3), [ $this->diContainer ])) {
-      $entities[] = $entity;
+      $entities[$entity->id] = $entity;
     }
+    $result->free();
     return $entities;
   }
 
@@ -92,9 +96,9 @@ abstract class AbstractDatabaseSet extends \MovLib\Core\AbstractDatabase impleme
   public function getIdentifiers(array $ids, $orderBy = null) {
     $ids = implode(",", $ids);
     if ($orderBy) {
-      $orderBy = " ORDER BY {$orderBy}";
+      $orderBy = "ORDER BY {$orderBy}";
     }
-    return $this->getEntities("WHERE `id` IN({$ids})");
+    return $this->getEntities("WHERE `id` IN({$ids})", $orderBy);
   }
 
   /**
@@ -108,9 +112,13 @@ abstract class AbstractDatabaseSet extends \MovLib\Core\AbstractDatabase impleme
    * {@inheritdoc}
    */
   public function getRandom() {
-    if (($result = $this->getMySQLi()->query("SELECT `id` FROM `{$this->getPluralKey()}` WHERE `deleted` = false ORDER BY RAND() LIMIT 1"))) {
-      return $result->fetch_row()[0];
+    $id     = null;
+    $result = $this->getMySQLi()->query("SELECT `id` FROM `{$this->getPluralKey()}` WHERE `deleted` = false ORDER BY RAND() LIMIT 1");
+    if ($result) {
+      $id = $result->fetch_row()[0];
     }
+    $result->free();
+    return $id;
   }
 
 }

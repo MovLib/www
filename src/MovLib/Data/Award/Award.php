@@ -73,7 +73,7 @@ final class Award extends \MovLib\Data\AbstractDatabaseEntity {
   /**
    * The award's movie count.
    *
-   * @var integer
+   * @var null|integer
    */
   public $movieCount;
 
@@ -87,7 +87,7 @@ final class Award extends \MovLib\Data\AbstractDatabaseEntity {
   /**
    * The award's series count.
    *
-   * @var integer
+   * @var null|integer
    */
   public $seriesCount = 0;
 

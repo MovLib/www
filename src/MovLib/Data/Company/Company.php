@@ -75,7 +75,7 @@ final class Company extends \MovLib\Data\AbstractDatabaseEntity {
   /**
    * The company's total movie count.
    *
-   * @var integer
+   * @var null|integer
    */
   public $movieCount;
 
@@ -103,14 +103,14 @@ final class Company extends \MovLib\Data\AbstractDatabaseEntity {
   /**
    * The company's total release count.
    *
-   * @var integer
+   * @var null|integer
    */
   public $releaseCount;
 
   /**
    * The company's total series count.
    *
-   * @var integer
+   * @var null|integer
    */
   public $seriesCount;
 

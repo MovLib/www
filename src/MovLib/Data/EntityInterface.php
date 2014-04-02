@@ -58,10 +58,10 @@ interface EntityInterface {
   public function getCount($from, $what = "*");
 
   /**
-   * Get the entity's index route.
+   * Get the entity's index route in the current locale.
    *
    * @return string
-   *   The entity's index route.
+   *   The entity's index route in the current locale.
    */
   public function getIndexRoute();
 
@@ -82,10 +82,10 @@ interface EntityInterface {
   public function getPluralName();
 
   /**
-   * Get the entity's route.
+   * Get the entity's route in the current locale.
    *
    * @return string
-   *   The entity's route.
+   *   The entity's route in the current locale.
    */
   public function getRoute();
 

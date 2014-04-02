@@ -19,6 +19,7 @@ namespace MovLib\Presentation\Award;
 
 use \MovLib\Data\Award\AwardSet;
 use \MovLib\Partial\Alert;
+use \MovLib\Partial\Date;
 
 /**
  * Defines the award index presentation.
@@ -39,7 +40,6 @@ use \MovLib\Partial\Alert;
  * @since 0.0.1-dev
  */
 final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
-  use \MovLib\Partial\DateTrait;
 
   /**
    * {@inheritdoc}
@@ -53,7 +53,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * @param \MovLib\Data\Award\Award $award {@inheritdoc}
    */
   public function formatListingItem(\MovLib\Data\EntityInterface $award, $delta) {
-    $awardDates = $this->dateFormatFromTo(
+    $awardDates = (new Date($this->intl, $this))->formatFromTo(
       $award->firstEventYear,
       $award->lastEventYear,
       [ "title" => $this->intl->t("First Event") ],

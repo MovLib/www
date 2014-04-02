@@ -27,7 +27,46 @@ namespace MovLib\Partial;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-trait DateTrait {
+final class Date {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * The active intl instance.
+   *
+   * @var \MovLib\Core\Intl
+   */
+  protected $intl;
+
+  /**
+   * The presenting presenter.
+   *
+   * @var \MovLib\Presentation\AbstractPresenter
+   */
+  protected $presenter;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new date partial object.
+   *
+   * @param \MovLib\Core\Intl $intl
+   *   The active intl instance.
+   * @param \MovLib\Presentation\AbstractPresenter $presenter
+   *   The presenting presenter.
+   */
+  public function __construct(\MovLib\Core\Intl $intl, \MovLib\Presentation\AbstractPresenter $presenter) {
+    $this->intl      = $intl;
+    $this->presenter = $presenter;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * Get the formatted date.
@@ -41,9 +80,9 @@ trait DateTrait {
    * @return string
    *   The formatted date.
    */
-  final public function dateFormat(\MovLib\Data\Date $date, array $attributes = [], $type = \IntlDateFormatter::MEDIUM) {
-    $attributes["datetime"] = $this->dateFormatISO8601($date);
-    return "<time{$this->expandTagAttributes($attributes)}>{$this->intl->formatDate($date, $type)}</time>";
+  public function format(\MovLib\Data\Date $date, array $attributes = [], $type = \IntlDateFormatter::MEDIUM) {
+    $attributes["datetime"] = $this->formatISO8601($date);
+    return "<time{$this->presenter->expandTagAttributes($attributes)}>{$this->intl->formatDate($date, $type)}</time>";
   }
 
   /**
@@ -64,9 +103,9 @@ trait DateTrait {
    * @return null|string
    *   The formatted dates or <code>NULL</code> if no dates where found for formatting.
    */
-  final public function dateFormatFromTo(\MovLib\Data\Date $dateFrom = null, \MovLib\Data\Date $dateTo = null, array $fromAttributes = [], array $toAttributes = [], $yearsOnly = false) {
+  public function formatFromTo(\MovLib\Data\Date $dateFrom = null, \MovLib\Data\Date $dateTo = null, array $fromAttributes = [], array $toAttributes = [], $yearsOnly = false) {
     if ($dateFrom || $dateTo) {
-      $format = $yearsOnly ? "dateFormatYear" : "dateFormat";
+      $format = $yearsOnly ? "formatYear" : "format";
       if ($dateFrom) {
         $date = $this->$format($dateFrom, $fromAttributes);
       }
@@ -86,7 +125,7 @@ trait DateTrait {
    * @return string
    *   The ISO 8601 formatted date.
    */
-  final public function dateFormatISO8601(\MovLib\Data\Date $date) {
+  public function formatISO8601(\MovLib\Data\Date $date) {
     if ($date->day) {
       return (string) $date;
     }
@@ -107,9 +146,9 @@ trait DateTrait {
    * @return string
    *   The formatted year.
    */
-  final public function dateFormatYear(\MovLib\Data\Date $date, array $attributes = []) {
+  public function formatYear(\MovLib\Data\Date $date, array $attributes = []) {
     $attributes["datetime"] = $date->year;
-    return "<time{$this->expandTagAttributes($attributes)}>{$date->year}</time>";
+    return "<time{$this->presenter->expandTagAttributes($attributes)}>{$date->year}</time>";
   }
 
   /**
@@ -123,7 +162,7 @@ trait DateTrait {
    *   The age of the date in years (with approximation when dates are not complete) or <code>NULL</code> if year part
    *   is missing.
    */
-  final public function dateGetAge(\MovLib\Data\Date $dateFrom, \MovLib\Data\Date $dateTo = null) {
+  public function getAge(\MovLib\Data\Date $dateFrom, \MovLib\Data\Date $dateTo = null) {
     $format = "%Y";
     // We can only calculate the exact date if both dates have all date parts.
     if (isset($dateFrom->month) && isset($dateFrom->day) && isset($dateTo->month) && isset($dateTo->day)) {

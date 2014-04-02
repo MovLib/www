@@ -35,13 +35,13 @@ final class CompanySet extends \MovLib\Data\AbstractDatabaseSet {
   protected function getEntitiesQuery($where = null, $orderBy = null) {
     return <<<SQL
 SELECT
-  `companies`.`id` AS `id`,
-  `companies`.`name` AS `name`,
+  `companies`.`id`,
+  `companies`.`name`,
   `companies`.`founding_date` AS `foundingDate`,
   `companies`.`defunct_date` AS `defunctDate`,
-  `companies`.`deleted` AS `deleted`,
-  `companies`.`changed` AS `changed`,
-  `companies`.`created` AS `created`,
+  `companies`.`deleted`,
+  `companies`.`changed`,
+  `companies`.`created`,
   `companies`.`place_id` AS `placeId`,
   COUNT(DISTINCT `movies_crew`.`movie_id`) AS `movieCount`,
   COUNT(DISTINCT `episodes_crew`.`series_id`) AS `seriesCount`,
@@ -51,7 +51,7 @@ FROM `companies`
   LEFT JOIN `episodes_crew`   ON `episodes_crew`.`company_id`   = `companies`.`id`
   LEFT JOIN `releases_labels` ON `releases_labels`.`company_id` = `companies`.`id`
 {$where}
-GROUP BY `id`, `name`, `foundingDate`, `defunctDate`, `deleted`, `changed`, `created`, `placeId`
+GROUP BY `id`,`name`,`foundingDate`,`defunctDate`,`deleted`,`changed`,`created`,`placeId`
 {$orderBy}
 SQL;
   }

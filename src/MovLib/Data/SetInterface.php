@@ -49,10 +49,10 @@ interface SetInterface {
   public function getIdentifiers(array $ids, $orderBy = null);
 
   /**
-   * Get the entity's index route.
+   * Get the entity's index route in the current locale.
    *
    * @return string
-   *   The entity's index route.
+   *   The entity's index route in the current locale.
    */
   public function getIndexRoute();
 

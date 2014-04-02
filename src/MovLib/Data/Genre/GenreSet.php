@@ -40,7 +40,10 @@ SELECT
   `genres`.`created` AS `created`,
   `genres`.`deleted` AS `deleted`,
   COLUMN_GET(`dyn_descriptions`, '{$this->intl->languageCode}' AS CHAR) AS `description`,
-  IFNULL(COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->languageCode}' AS CHAR), COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `name`,
+  IFNULL(
+    COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->languageCode}' AS CHAR),
+    COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+  ) AS `name`,
   COLUMN_GET(`genres`.`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR) AS `wikipedia`,
   COUNT(DISTINCT `movies_genres`.`movie_id`) AS `movieCount`,
   COUNT(DISTINCT `series_genres`.`series_id`) AS `seriesCount`

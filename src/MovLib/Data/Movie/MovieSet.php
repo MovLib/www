@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data\Movie;
 
+use \MovLib\Data\Genre\Genre;
+
 /**
  * Defines the movie set object.
  *
@@ -32,6 +34,59 @@ final class MovieSet extends \MovLib\Data\AbstractDatabaseSet {
   /**
    * {@inheritdoc}
    */
+  protected function getEntities($where = null, $orderBy = null) {
+    $movies = null;
+    $mysqli = $this->getMySQLi();
+
+    // @devStart
+    // @codeCoverageIgnoreStart
+    $this->log->debug("Fetching movie entities", [ "where" => $where, "order_by" => $orderBy ]);
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    $movieResult = $mysqli->query($this->getEntitiesQuery($where, $orderBy));
+    /* @var $movie \MovLib\Data\Movie\Movie */
+    while ($movie = $movieResult->fetch_object("\\MovLib\\Data\\Movie\\Movie", [ $this->diContainer ])) {
+      $movies[$movie->id] = $movie;
+    }
+    $movieResult->free();
+
+    // @devStart
+    // @codeCoverageIgnoreStart
+    $this->log->debug("Fetching genres for movie entities");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    $movieIds    = implode(",", array_keys($movies));
+    $genreResult = $mysqli->query(<<<SQL
+SELECT DISTINCT
+  `movies_genres`.`movie_id` AS `movieId`,
+  `genres`.`id`,
+  IFNULL(
+    COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->languageCode}' AS CHAR),
+    COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+  ) AS `name`
+FROM `movies_genres`
+  INNER JOIN `genres` ON `genres`.`id` = `movies_genres`.`movie_id`
+WHERE `movies_genres`.`movie_id` IN ({$movieIds})
+ORDER BY `name` {$this->collations[$this->intl->languageCode]} DESC
+SQL
+    );
+    while ($row = $genreResult->fetch_object()) {
+      $genre       = new Genre($this->diContainer);
+      $genre->id   = $row->id;
+      $genre->name = $row->name;
+
+      $movies[$row->movieId]->genres[] = $genre;
+    }
+    $genreResult->free();
+
+    return $movies;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function getEntitiesQuery($where = null, $orderBy = null) {
     return <<<SQL
 SELECT
@@ -43,18 +98,24 @@ SELECT
   IFNULL(`display_title`.`title`, `original_title`.`title`) AS `displayTitle`,
   IFNULL(`display_title`.`language_code`, `original_title`.`language_code`) AS `displayTitleLanguageCode`,
   `original_title`.`title` AS `originalTitle`,
-  `original_title`.`language_code` AS `originalTitleLanguageCode`
+  `original_title`.`language_code` AS `originalTitleLanguageCode`,
+  `movies_taglines`.`tagline`,
+  `movies_taglines`.`language_code` AS `taglineLanguageCode`
 FROM `movies`
+  INNER JOIN `movies_original_titles`
+    ON `movies_original_titles`.`movie_id` = `movies`.`id`
+  INNER JOIN `movies_titles` AS `original_title`
+    ON `original_title`.`id` = `movies_original_titles`.`title_id`
   LEFT JOIN `movies_display_titles`
     ON `movies_display_titles`.`movie_id` = `movies`.`id`
     AND `movies_display_titles`.`language_code` = '{$this->intl->languageCode}'
   LEFT JOIN `movies_titles` AS `display_title`
     ON `display_title`.`id` = `movies_display_titles`.`title_id`
-  LEFT JOIN `movies_original_titles`
-    ON `movies_original_titles`.`movie_id` = `movies`.`id`
-    AND `movies_original_titles`.`language_code` = '{$this->intl->languageCode}'
-  LEFT JOIN `movies_titles` AS `original_title`
-    ON `original_title`.`id` = `movies_original_titles`.`title_id`
+  LEFT JOIN `movies_display_taglines`
+    ON `movies_display_taglines`.`movie_id` = `movies`.`id`
+    AND `movies_display_taglines`.`language_code` = '{$this->intl->languageCode}'
+  LEFT JOIN `movies_taglines`
+    ON `movies_taglines`.`id` = `movies_display_taglines`.`tagline_id`
 {$where} {$orderBy}
 SQL;
   }
