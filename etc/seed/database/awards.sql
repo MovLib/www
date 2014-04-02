@@ -198,8 +198,7 @@ INSERT INTO `movies_awards` SET
   `award_category_id` = @oscar_award_best_actor,
   `event_id`          = @oscar_award_event_id,
   `person_id`         = 8, /* Morgan Freeman */
-  `won`               = false,
-  `year`              = 1995
+  `won`               = false
 ;
 
 INSERT INTO `movies_awards` SET
@@ -208,8 +207,7 @@ INSERT INTO `movies_awards` SET
   `award_category_id` = @oscar_award_best_writing,
   `event_id`          = @oscar_award_event_id,
   `person_id`         = 7, /* Frank Darabont */
-  `won`               = true,
-  `year`              = 1995
+  `won`               = true
 ;
 
 -- END "Oscar"
@@ -293,8 +291,7 @@ INSERT INTO `movies_awards` SET
   `award_category_id` = @golden_globe_award_best_actor,
   `event_id`          = @golden_globe_award_event_id,
   `person_id`         = 8, /* Morgan Freeman */
-  `won`               = false,
-  `year`              = 1995
+  `won`               = false
 ;
 
 INSERT INTO `movies_awards` SET
@@ -303,8 +300,7 @@ INSERT INTO `movies_awards` SET
   `award_category_id` = @golden_globe_award_screenplay,
   `event_id`          = @golden_globe_award_event_id,
   `person_id`         = 7, /* Frank Darabont */
-  `won`               = false,
-  `year`              = 1995
+  `won`               = false
 ;
 
 -- END "Golden Globe"
