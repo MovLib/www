@@ -81,14 +81,14 @@ final class CompanyMovieListing extends \MovLib\Partial\Listing\MovieListing {
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($movie->jobIds)) {
-      throw new \LogicException($this->intl->t("\$movie->jobIds can not be empty!"));
+      throw new \LogicException("\$movie->jobIds can not be empty!");
     }
 
     if (empty($movie->jobTitles)) {
-      throw new \LogicException($this->intl->t("\$movie->jobTitles can not be empty!"));
+      throw new \LogicException("\$movie->jobTitles can not be empty!");
     }
     if (count($movie->jobTitles) != count($movie->jobIds)) {
-      throw new \LogicException($this->intl->t("The count of \$movie->jobTitles and \$movie->jobIds has to be equal!"));
+      throw new \LogicException("The count of \$movie->jobTitles and \$movie->jobIds has to be equal!");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

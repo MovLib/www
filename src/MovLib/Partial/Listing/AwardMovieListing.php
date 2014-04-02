@@ -81,10 +81,10 @@ class AwardMovieListing extends \MovLib\Partial\Listing\MovieListing {
     // @devStart
     // @codeCoverageIgnoreStart
     if (!isset($movie->wonCount)) {
-      throw new \LogicException($this->intl->t("\$movie->wonCount has to be set!"));
+      throw new \LogicException("\$movie->wonCount has to be set!");
     }
     if (!isset($movie->nominationCount)) {
-      throw new \LogicException($this->intl->t("\$movie->nominationCount has to be set!"));
+      throw new \LogicException("\$movie->nominationCount has to be set!");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

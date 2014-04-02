@@ -53,7 +53,7 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->person instanceof \MovLib\Data\Person\Person)) {
-      throw new \LogicException($this->intl->t("\$this->person has to be a valid person object!"));
+      throw new \LogicException("\$this->person has to be a valid person object!");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -77,7 +77,7 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->person instanceof \MovLib\Data\Person\Person)) {
-      throw new \LogicException($this->intl->t("\$this->person has to be a valid person object!"));
+      throw new \LogicException("\$this->person has to be a valid person object!");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -92,7 +92,7 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->person instanceof \MovLib\Data\Person\Person)) {
-      throw new \LogicException($this->intl->t("\$this->person has to be a valid person object!"));
+      throw new \LogicException("\$this->person has to be a valid person object!");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

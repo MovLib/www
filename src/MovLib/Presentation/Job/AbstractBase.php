@@ -59,7 +59,7 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->job instanceof \MovLib\Data\Job)) {
-      throw new \LogicException($this->intl->t("\$this->job has to be a valid job object!"));
+      throw new \LogicException("\$this->job has to be a valid job object!");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -89,7 +89,7 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->job instanceof \MovLib\Data\Job)) {
-      throw new \LogicException($this->intl->t("\$this->job has to be a valid job object!"));
+      throw new \LogicException("\$this->job has to be a valid job object!");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -110,7 +110,7 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->job instanceof \MovLib\Data\Job)) {
-      throw new \LogicException($this->intl->t("\$this->job has to be a valid job object!"));
+      throw new \LogicException("\$this->job has to be a valid job object!");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

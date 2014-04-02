@@ -59,7 +59,7 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->award instanceof \MovLib\Data\Award)) {
-      throw new \LogicException($this->intl->t("\$this->award has to be a valid award object!"));
+      throw new \LogicException("\$this->award has to be a valid award object!");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -89,7 +89,7 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->award instanceof \MovLib\Data\Award)) {
-      throw new \LogicException($this->intl->t("\$this->award has to be a valid award object!"));
+      throw new \LogicException("\$this->award has to be a valid award object!");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -110,7 +110,7 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->award instanceof \MovLib\Data\Award)) {
-      throw new \LogicException($this->intl->t("\$this->award has to be a valid award object!"));
+      throw new \LogicException("\$this->award has to be a valid award object!");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

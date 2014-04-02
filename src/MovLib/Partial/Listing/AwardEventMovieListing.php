@@ -43,25 +43,25 @@ class AwardEventMovieListing extends \MovLib\Partial\Listing\AwardMovieListing {
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($movie->awardCategoryIds)) {
-      throw new \LogicException($this->intl->t("\$movie->awardCategoryIds can not be empty!"));
+      throw new \LogicException("\$movie->awardCategoryIds can not be empty!");
     }
     if (empty($movie->awardCategoryWon)) {
-      throw new \LogicException($this->intl->t("\$movie->awardCategoryWon can not be empty!"));
+      throw new \LogicException("\$movie->awardCategoryWon can not be empty!");
     }
     if (empty($movie->awardedCompanyIds)) {
-      throw new \LogicException($this->intl->t("\$movie->awardedCompanyIds can not be empty!"));
+      throw new \LogicException("\$movie->awardedCompanyIds can not be empty!");
     }
     if (empty($movie->awardedPersonIds)) {
-      throw new \LogicException($this->intl->t("\$movie->awardedPersonIds can not be empty!"));
+      throw new \LogicException("\$movie->awardedPersonIds can not be empty!");
     }
     if (count($movie->awardCategoryIds) != count($movie->awardCategoryWon)) {
-      throw new \LogicException($this->intl->t("The count of \$movie->awardCategoryIds and \$movie->awardCategoryWon has to be equal!"));
+      throw new \LogicException("The count of \$movie->awardCategoryIds and \$movie->awardCategoryWon has to be equal!");
     }
     if (count($movie->awardCategoryIds) != count($movie->awardedCompanyIds)) {
-      throw new \LogicException($this->intl->t("The count of \$movie->awardCategoryIds and \$movie->awardedCompanyIds has to be equal!"));
+      throw new \LogicException("The count of \$movie->awardCategoryIds and \$movie->awardedCompanyIds has to be equal!");
     }
     if (count($movie->awardCategoryIds) != count($movie->awardedPersonIds)) {
-      throw new \LogicException($this->intl->t("The count of \$movie->awardCategoryIds and \$movie->awardedPersonIds has to be equal!"));
+      throw new \LogicException("The count of \$movie->awardCategoryIds and \$movie->awardedPersonIds has to be equal!");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

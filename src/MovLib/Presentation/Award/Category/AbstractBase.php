@@ -66,10 +66,10 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->award instanceof \MovLib\Data\Award)) {
-      throw new \LogicException($this->intl->t("\$this->award has to be a valid award object!"));
+      throw new \LogicException("\$this->award has to be a valid award object!");
     }
     if (!($this->awardCategory instanceof \MovLib\Data\AwardCategory)) {
-      throw new \LogicException($this->intl->t("\$this->awardCategory has to be a valid award category object!"));
+      throw new \LogicException("\$this->awardCategory has to be a valid award category object!");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -99,10 +99,10 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->award instanceof \MovLib\Data\Award)) {
-      throw new \LogicException($this->intl->t("\$this->award has to be a valid award object!"));
+      throw new \LogicException("\$this->award has to be a valid award object!");
     }
     if (!($this->awardCategory instanceof \MovLib\Data\AwardCategory)) {
-      throw new \LogicException($this->intl->t("\$this->awardCategory has to be a valid award category object!"));
+      throw new \LogicException("\$this->awardCategory has to be a valid award category object!");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -125,10 +125,10 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->award instanceof \MovLib\Data\Award)) {
-      throw new \LogicException($this->intl->t("\$this->award has to be a valid award object!"));
+      throw new \LogicException("\$this->award has to be a valid award object!");
     }
     if (!($this->awardCategory instanceof \MovLib\Data\AwardCategory)) {
-      throw new \LogicException($this->intl->t("\$this->awardCategory has to be a valid award category object!"));
+      throw new \LogicException("\$this->awardCategory has to be a valid award category object!");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

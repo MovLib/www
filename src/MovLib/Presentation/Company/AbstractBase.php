@@ -59,7 +59,7 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->company instanceof \MovLib\Data\Company)) {
-      throw new \LogicException($this->intl->t("\$this->company has to be a valid company object!"));
+      throw new \LogicException("\$this->company has to be a valid company object!");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -89,7 +89,7 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->company instanceof \MovLib\Data\Company)) {
-      throw new \LogicException($this->intl->t("\$this->company has to be a valid company object!"));
+      throw new \LogicException("\$this->company has to be a valid company object!");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -110,7 +110,7 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->company instanceof \MovLib\Data\Company)) {
-      throw new \LogicException($this->intl->t("\$this->company has to be a valid company object!"));
+      throw new \LogicException("\$this->company has to be a valid company object!");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

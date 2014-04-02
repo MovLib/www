@@ -119,7 +119,7 @@ class CompanyListing {
         // @devStart
         // @codeCoverageIgnoreStart
         if (!($company instanceof \MovLib\Data\Company)) {
-          throw new \LogicException($this->intl->t("\$company has to be a valid company object!"));
+          throw new \LogicException("\$company has to be a valid company object!");
         }
         // @codeCoverageIgnoreEnd
         // @devEnd

@@ -45,10 +45,10 @@ final class AwardEventListing extends \MovLib\Partial\Listing\EntityIndexListing
       throw new \InvalidArgumentException("\$event must be of type {$this->entity}");
     }
     if (!isset($event->place)) {
-      throw new \LogicException($this->intl->t("\$event->place has to be set!"));
+      throw new \LogicException("\$event->place has to be set!");
     }
     if (!isset($event->startDate)) {
-      throw new \LogicException($this->intl->t("\$event->startDate has to be set!"));
+      throw new \LogicException("\$event->startDate has to be set!");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

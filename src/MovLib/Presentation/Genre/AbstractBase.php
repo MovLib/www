@@ -59,7 +59,7 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->genre instanceof \MovLib\Data\Genre)) {
-      throw new \LogicException($this->intl->t("\$this->genre has to be a valid genre object!"));
+      throw new \LogicException("\$this->genre has to be a valid genre object!");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -89,7 +89,7 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->genre instanceof \MovLib\Data\Genre)) {
-      throw new \LogicException($this->intl->t("\$this->genre has to be a valid genre object!"));
+      throw new \LogicException("\$this->genre has to be a valid genre object!");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -110,7 +110,7 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
     // @devStart
     // @codeCoverageIgnoreStart
     if (!($this->genre instanceof \MovLib\Data\Genre)) {
-      throw new \LogicException($this->intl->t("\$this->genre has to be a valid genre object!"));
+      throw new \LogicException("\$this->genre has to be a valid genre object!");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

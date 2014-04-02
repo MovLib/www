@@ -40,7 +40,7 @@ class AwardCategoryMovieListing extends \MovLib\Partial\Listing\AwardMovieListin
     // @devStart
     // @codeCoverageIgnoreStart
     if (!isset($movie->won)) {
-      throw new \LogicException($this->intl->t("\$movie->won has to be set!"));
+      throw new \LogicException("\$movie->won has to be set!");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
