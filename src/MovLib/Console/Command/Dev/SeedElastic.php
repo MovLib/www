@@ -71,7 +71,7 @@ class SeedElastic extends \MovLib\Console\Command\AbstractCommand {
    * {@inheritdoc}
    */
   protected function configure() {
-    $this->setName("seed-elastic");
+    $this->setName("seed-elasticsearch");
     $this->setDescription("Seed elasticsearch");
     $this->addArgument("type", InputArgument::OPTIONAL | InputArgument::IS_ARRAY, "The entity types to import.", [ "indices", "all" ]);
   }
@@ -97,7 +97,7 @@ class SeedElastic extends \MovLib\Console\Command\AbstractCommand {
     }
 
     if ($this->elasticClient->indices()->exists([ "index" => self::INDEX_NAME ]) === false) {
-      $this->writeVerbose("Index does not exist, creating...", self::MESSAGE_TYPE_INFO);
+      $this->writeDebug("Index does not exist, creating...", self::MESSAGE_TYPE_INFO);
       $this->createIndex();
     }
 
@@ -186,7 +186,7 @@ class SeedElastic extends \MovLib\Console\Command\AbstractCommand {
    */
   protected function deleteByType($type) {
     try {
-    $this->elasticClient->indices()->deleteMapping([ "index" => self::INDEX_NAME, "type" => $type ]);
+      $this->elasticClient->indices()->deleteMapping([ "index" => self::INDEX_NAME, "type" => $type ]);
     }
     catch(\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
       $this->writeDebug("Type <comment>{$type}</comment> already deleted, proceeding...");
@@ -207,8 +207,9 @@ SELECT
   `movies`.`id`,
   `movies`.`year`,
   `movies_titles`.`title`,
-  `movies_display_titles`.`title_id` AS `display_title`,
-  `movies_original_titles`.`title_id` AS `original_title`
+  `movies_display_titles`.`title_id` AS `displayTitle`,
+  `movies_original_titles`.`title_id` AS `originalTitle`,
+  `movies_genres`.`genre_id` AS `genreId`
 FROM `movies`
 INNER JOIN `movies_titles`
   ON `movies_titles`.`movie_id` = `movies`.`id`
@@ -216,21 +217,26 @@ LEFT JOIN `movies_display_titles`
   ON `movies_display_titles`.`title_id` = `movies_titles`.`id`
 LEFT JOIN `movies_original_titles`
   ON `movies_original_titles`.`title_id` = `movies_titles`.`id`
+LEFT JOIN `movies_genres`
+  ON `movies_genres`.`movie_id` = `movies`.`id`
 ORDER BY `movies`.`id` ASC
 SQL
     );
 
     // Aggregate all movie information needed for indexing.
-    while ($row = $result->fetch_assoc()) {
-      $movies[$row["id"]]["year"]     = $row["year"];
-      if (!empty($row["original_title"])) {
-        $movies[$row["id"]]["original_title"] = $row["title"];
+    while ($row = $result->fetch_object()) {
+      $movies[$row->id]["year"]     = $row->year;
+      if ($row->originalTitle) {
+        $movies[$row->id]["original_title"] = $row->title;
       }
-      elseif (!empty($row["display_title"])) {
-        $movies[$row["id"]]["display_titles"][] = $row["title"];
+      elseif ($row->displayTitle) {
+        $movies[$row->id]["display_titles"][] = $row->title;
       }
       else {
-        $movies[$row["id"]]["titles"][] = $row["title"];
+        $movies[$row->id]["titles"][] = $row->title;
+      }
+      if ($row->genreId) {
+        $movies[$row->id]["genres"][] = $row->genreId;
       }
     }
 
@@ -248,10 +254,11 @@ SQL
    */
   protected function movieMapping() {
     return [
-        "titles"         => [ "type" => "string", "analyzer" => "simple"],
-        "display_titles" => [ "type" => "string", "analyzer" => "simple"],
-        "original_title" => [ "type" => "string", "analyzer" => "simple"],
-        "year"           => [ "type" => "short"],
+      "titles"         => [ "type" => "string", "analyzer" => "simple" ],
+      "display_titles" => [ "type" => "string", "analyzer" => "simple", "boost" => 2.0 ],
+      "original_title" => [ "type" => "string", "analyzer" => "simple", "boost" => 2.0 ],
+      "year"           => [ "type" => "short" ],
+      "genres"         => [ "type" => "integer" ],
     ];
   }
 
@@ -267,7 +274,7 @@ SQL
 SELECT
   `persons`.`id`,
   `persons`.`name`,
-  `persons`.`born_name`,
+  `persons`.`born_name` AS `bornName`,
   `persons_aliases`.`alias`
 FROM `persons`
 LEFT JOIN `persons_aliases`
@@ -276,13 +283,13 @@ ORDER BY `persons`.`id` ASC
 SQL
     );
 
-    while ($row = $result->fetch_assoc()) {
-      $persons[$row["id"]]["name"] = $row["name"];
-      if (!empty($row["born_name"])) {
-        $persons[$row["id"]]["born_name"] = $row["born_name"];
+    while ($row = $result->fetch_object()) {
+      $persons[$row->id]["name"] = $row->name;
+      if (!empty($row->bornName)) {
+        $persons[$row->id]["born_name"] = $row->bornName;
       }
-      if (!empty($row["alias"])) {
-        $persons[$row["id"]]["aliases"][] = $row["alias"];
+      if (!empty($row->alias)) {
+        $persons[$row->id]["aliases"][] = $row->alias;
       }
     }
 
@@ -299,9 +306,9 @@ SQL
    */
   protected function personMapping() {
     return [
-      "name"      => [ "type" => "string", "analyzer" => "simple"],
-      "born_name" => [ "type" => "string", "analyzer" => "simple"],
-      "aliases"   => [ "type" => "string", "analyzer" => "simple"],
+      "name"      => [ "type" => "string", "analyzer" => "simple", "boost" => 2.0 ],
+      "born_name" => [ "type" => "string", "analyzer" => "simple", "boost" => 2.0 ],
+      "aliases"   => [ "type" => "string", "analyzer" => "simple" ],
     ];
   }
 
