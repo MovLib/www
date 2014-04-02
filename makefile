@@ -29,7 +29,7 @@
 # Relative path to console commands.
 CP:=src/MovLib/Console/Command
 
-all: ngins-routes seed-aspect-ratios seed-countries seed-currencies seed-languages seed-subtitles
+all: ngins-routes seed-aspect-ratios seed-countries seed-currencies seed-languages seed-subtitles translation
 
 ngins-routes: $(CP)/Admin/NginxRoutes.php
 	movadmin nginx-routes -v
@@ -48,6 +48,9 @@ seed-languages: $(CP)/Install/SeedLanguages.php
 
 seed-subtitles: $(CP)/Install/SeedSubtitles.php
 	movinstall seed-subtitles -v
+
+translation: $(CP)/Install/Translation.php
+	movinstall translation compile -v
 
 clean:
 	rm -rf var/intl/*
