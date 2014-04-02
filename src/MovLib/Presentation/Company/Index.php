@@ -17,12 +17,20 @@
  */
 namespace MovLib\Presentation\Company;
 
-use \MovLib\Data\Company\Company;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Listing\CompanyIndexListing;
+use \MovLib\Data\Company\CompanySet;
+use \MovLib\Partial\Alert;
+use \MovLib\Partial\Date;
 
 /**
- * The latest companies.
+ * Defines the company index presentation.
+ *
+ * @link http://schema.org/Corporation
+ * @link http://www.google.com/webmasters/tools/richsnippets?q=https://en.movlib.org/companies
+ * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/companies
+ * @link http://validator.w3.org/check?uri=https://en.movlib.org/companies
+ * @link http://gsnedders.html5.org/outliner/process.py?url=https://en.movlib.org/companies
+ *
+ * @property \MovLib\Data\Company\CompanySet $set
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
@@ -31,56 +39,61 @@ use \MovLib\Presentation\Partial\Listing\CompanyIndexListing;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitSidebar;
-  use \MovLib\Presentation\TraitPagination;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
+  use \MovLib\Partial\CompanyTrait;
 
   /**
-   * Instantiate new latest companies presentation.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
+   * {@inheritdoc}
    */
-  public function __construct() {
-    global $i18n, $kernel;
-    $this->initPage($i18n->t("Companies"));
-    $this->initBreadcrumb();
-    $this->initLanguageLinks("/companies", null, true);
-    $this->paginationInit(Company::getTotalCount());
-    $this->sidebarInit([
-      [ $kernel->requestPath, $this->title, [ "class" => "ico ico-company" ] ],
-      [ $i18n->r("/company/random"), $i18n->t("Random") ],
-    ]);
+  public function init() {
+    return $this->initIndex(new CompanySet($this->diContainerHTTP), $this->intl->t("Create New Company"));
   }
 
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
+  /**
+   * {@inheritdoc}
+   * @param \MovLib\Data\Company\Company $company {@inheritdoc}
+   */
+  protected function formatListingItem(\MovLib\Data\EntityInterface $company, $id) {
+    $companyDates = (new Date($this->intl, $this))->formatFromTo(
+      $company->foundingDate,
+      $company->defunctDate,
+      [ "property" => "foundingDate", "title" => $this->intl->t("Founding Date") ],
+      [ "property" => "defunctDate",  "title" => $this->intl->t("Defunct Date")  ],
+      true
+    );
+    if ($companyDates) {
+      $companyDates = "<small>{$companyDates}</small>";
+    }
+    $route = $company->getRoute();
+    return
+      "<li class='hover-item r'>" .
+        "<article typeof='Company'>" .
+          "<a class='no-link s s1' href='{$route}'>" .
+            "<img alt='' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
+          "</a>" .
+          "<div class='s s9'>" .
+            "<div class='fr'>" .
+              "<a class='ico ico-movie label' href='{$this->intl->rp("/company/{0}/movies", $id)}' title='{$this->intl->t("Movies")}'>{$company->movieCount}</a>" .
+              "<a class='ico ico-series label' href='{$this->intl->rp("/company/{0}/series", $id)}' title='{$this->intl->t("Series")}'>{$company->seriesCount}</a>" .
+              "<a class='ico ico-release label' href='{$this->intl->rp("/company/{0}/releases", $id)}' title='{$this->intl->t("Releases")}'>{$company->releaseCount}</a>" .
+            "</div>" .
+            "<h2 class='para'><a href='{$route}' property='url'><span property='name'>{$company->name}</span></a></h2>" .
+            $companyDates .
+          "</div>" .
+        "</article>" .
+      "</li>"
+    ;
+  }
 
   /**
-   * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    global $i18n;
-
-    $this->headingBefore =
-      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/company/create")}'>{$i18n->t("Create New Company")}</a>"
-    ;
-
-    $result      = Company::getCompanies($this->paginationOffset, $this->paginationLimit);
-    $noItemText  = new Alert(
-      $i18n->t(
-        "We couldn’t find any company matching your filter criteria, or there simply aren’t any companies available."
-      ), $i18n->t("No Companies"), Alert::SEVERITY_INFO
+  public function getNoItemsContent() {
+    return new Alert(
+      "<p>{$this->intl->t("We couldn’t find any companies matching your filter criteria, or there simply aren’t any companies available.")}</p>" .
+      "<p>{$this->intl->t("Would you like to {0}create a company{1}?", [ "<a href='{$this->intl->r("/company/create")}'>", "</a>" ])}</p>",
+      $this->intl->t("No Companies")
     );
-    $noItemText .=
-      $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/company/create")}'>", "</a>" ]);
-
-    return new CompanyIndexListing($result, $noItemText);
   }
 
 }

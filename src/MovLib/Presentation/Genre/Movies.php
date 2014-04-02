@@ -39,15 +39,12 @@ class Movies extends \MovLib\Presentation\Genre\AbstractBase {
   /**
    * Instantiate new genre movie presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
     $this->genre = new Genre((integer) $_SERVER["GENRE_ID"]);
-    $this->initPage($i18n->t("Movies with {0}", [ $this->genre->name ]));
-    $this->pageTitle = $i18n->t("Movies with {0}", [ "<a href='{$this->genre->route}'>{$this->genre->name}</a>" ]);
-    $this->breadcrumbTitle = $i18n->t("Movies");
+    $this->initPage($this->intl->t("Movies with {0}", [ $this->genre->name ]));
+    $this->pageTitle = $this->intl->t("Movies with {0}", [ "<a href='{$this->genre->route}'>{$this->genre->name}</a>" ]);
+    $this->breadcrumbTitle = $this->intl->t("Movies");
     $this->initLanguageLinks("/genre/{0}/movies", [ $this->genre->id ], true);
     $this->initGenreBreadcrumb();
     $this->sidebarInit();
@@ -61,14 +58,12 @@ class Movies extends \MovLib\Presentation\Genre\AbstractBase {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    * @return \MovLib\Presentation\Partial\Listing\MovieListing
    */
   protected function getPageContent() {
-    global $i18n;
     return new MoviesPartial(
       $this->genre->getMoviesResult(),
-      new Alert($i18n->t("Check back later"), $i18n->t("No movies found."), Alert::SEVERITY_INFO)
+      new Alert($this->intl->t("Check back later"), $this->intl->t("No movies found."), Alert::SEVERITY_INFO)
     );
   }
 

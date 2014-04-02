@@ -37,16 +37,13 @@ class Show extends \MovLib\Presentation\Genre\AbstractBase {
   /**
    * Instantiate new genre presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
-    global $i18n, $kernel;
     $this->genre = new Genre((integer) $_SERVER["GENRE_ID"]);
     $this->initPage($this->genre->name);
     $this->initLanguageLinks("/genre/{0}", [ $this->genre->id]);
-    $this->initBreadcrumb([[ $i18n->rp("/genres"), $i18n->t("Genres") ]]);
+    $this->initBreadcrumb([[ $this->intl->rp("/genres"), $this->intl->t("Genres") ]]);
     $this->sidebarInit();
 
     $kernel->stylesheets[] = "genre";
@@ -58,11 +55,8 @@ class Show extends \MovLib\Presentation\Genre\AbstractBase {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function getPageContent() {
-    global $i18n, $kernel;
-
     // Enhance the page title with microdata.
     $this->schemaType = "Intangible";
     $this->pageTitle  = "<span property='name'>{$this->genre->name}</span>";
@@ -79,7 +73,7 @@ class Show extends \MovLib\Presentation\Genre\AbstractBase {
 
     // Biography section.
     if ($this->genre->description) {
-      $content .= $this->getSection("description", $i18n->t("Description"), $this->htmlDecode($this->genre->description));
+      $content .= $this->getSection("description", $this->intl->t("Description"), $this->htmlDecode($this->genre->description));
     }
 
     if ($content) {
@@ -87,11 +81,11 @@ class Show extends \MovLib\Presentation\Genre\AbstractBase {
     }
 
     return new Alert(
-      $i18n->t(
+      $this->intl->t(
         "{sitename} has no further details about this genre.",
-        [ "sitename"    => $kernel->siteName ]
+        [ "sitename"    => $this->config->sitename ]
       ),
-      $i18n->t("No Data Available"),
+      $this->intl->t("No Data Available"),
       Alert::SEVERITY_INFO
     );
   }

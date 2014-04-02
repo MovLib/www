@@ -32,7 +32,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\Page {
+class Show extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Presentation\TraitSidebar;
 
 
@@ -53,11 +53,9 @@ class Show extends \MovLib\Presentation\Page {
   /**
    * Instantiate new search results presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
    */
   public function __construct() {
-    global $i18n;
-    $this->initPage($i18n->t("Search"));
+    $this->initPage($this->intl->t("Search"));
     $this->initBreadcrumb();
     $this->sidebarInit([]);
     $this->breadcrumb->ignoreQuery = true;
@@ -78,19 +76,15 @@ class Show extends \MovLib\Presentation\Page {
   /**
    * Get the page's content.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @return mixed
    *   The page's content.
    */
   protected function getPageContent() {
-    global $i18n, $kernel;
-
     // We're done if we have no search query.
     if (empty($this->query)) {
       $this->alerts .= new Alert(
-        $i18n->t("No search query submitted."),
-        $i18n->t("Nothing to Search for…"),
+        $this->intl->t("No search query submitted."),
+        $this->intl->t("Nothing to Search for…"),
         Alert::SEVERITY_ERROR
       );
       return;
@@ -116,8 +110,8 @@ class Show extends \MovLib\Presentation\Page {
     // Elastic didn't return anything, we're done.
     if (!isset($result["hits"]) || !isset($result["hits"]["total"]) || $result["hits"]["total"] === 0) {
       $this->alerts .= new Alert(
-        $i18n->t("Your search “{query}” did not match any document.", [ "query" => $this->placeholder($this->query) ]),
-        $i18n->t("No Results"),
+        $this->intl->t("Your search “{query}” did not match any document.", [ "query" => $this->placeholder($this->query) ]),
+        $this->intl->t("No Results"),
         Alert::SEVERITY_INFO
       );
       return;
@@ -131,9 +125,9 @@ class Show extends \MovLib\Presentation\Page {
           $movie   = new Movie($entity["_id"]);
           if ($movie->displayTitle != $movie->originalTitle) {
             $displayTitleItemprop = "alternateName";
-            $movie->originalTitle = "<br><span class='small'>{$i18n->t("{0} ({1})", [
+            $movie->originalTitle = "<br><span class='small'>{$this->intl->t("{0} ({1})", [
               "<span itemprop='name'{$this->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>",
-              $i18n->t("original title"),
+              $this->intl->t("original title"),
             ])}</span>";
           }
           else {
@@ -162,13 +156,13 @@ class Show extends \MovLib\Presentation\Page {
     }
 
     if ($movies) {
-      $title                                = $i18n->t("Movies");
+      $title                                = $this->intl->t("Movies");
       $this->sidebarNavigation->menuitems[] = [ "#movies", $title ];
       $movies                               = "<h2 id='movies'>{$title}</h2><ol class='hover-list no-list'>{$movies}</ol>";
     }
 
     if ($persons) {
-      $title                                = $i18n->t("Persons");
+      $title                                = $this->intl->t("Persons");
       $this->sidebarNavigation->menuitems[] = [ "#persons", $title ];
       $persons                              = "<h2 id='persons'>{$title}</h2><ol class='hover-list no-list'>{$persons}</ol>";
     }

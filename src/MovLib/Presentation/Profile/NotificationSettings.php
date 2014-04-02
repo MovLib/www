@@ -33,33 +33,27 @@ class NotificationSettings extends \MovLib\Presentation\Profile\Show {
   /**
    * Instantiate new user notification settings presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\Session $session
    * @throws \MovLib\Presentation\Error\Unauthorized
    */
   public function __construct() {
-    global $i18n, $session;
-    $session->checkAuthorization($i18n->t("You must be signed in to change your notification settings."));
-    $this->init($i18n->t("Notification Settings"), "/profile/notification-settings", [[ $i18n->r("/profile"), $i18n->t("Profile") ]]);
+    $session->checkAuthorization($this->intl->t("You must be signed in to change your notification settings."));
+    $this->init($this->intl->t("Notification Settings"), "/profile/notification-settings", [[ $this->intl->r("/profile"), $this->intl->t("Profile") ]]);
   }
 
   /**
    * @inhertidoc
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function getBreadcrumbs() {
-    global $i18n;
-    return [[ $i18n->r("/profile"), $i18n->t("Profile") ]];
+    return [[ $this->intl->r("/profile"), $this->intl->t("Profile") ]];
   }
 
   /**
    * @inheritdoc
    */
   protected function getPageContent() {
-    global $i18n;
     return new Alert(
-      $i18n->t("The notification system isn’t implemented yet."),
-      $i18n->t("Check back later"),
+      $this->intl->t("The notification system isn’t implemented yet."),
+      $this->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     );
   }

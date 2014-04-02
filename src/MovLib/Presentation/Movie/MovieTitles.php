@@ -44,16 +44,14 @@ class MovieTitles extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    * Instatiate new movie titles presentation.
    */
   public function __construct() {
-    global $i18n;
     $this->initMovie();
-    $this->init($i18n->t("Titles of {0}", [ $this->title ]));
+    $this->init($this->intl->t("Titles of {0}", [ $this->title ]));
     $this->movieTitles = new MovieTitlesModel($_SERVER["MOVIE_ID"]);
   }
 
   /**
    * Helper mothod to format comments.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param array
    *   One comment as associative array.
    * @return string
@@ -67,17 +65,15 @@ class MovieTitles extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    /**
    * Helper mothod to format titles.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param \MovLib\Data\Movie\MovieTitle $movieTitle
    *   A MovieTitle.
    * @return string
    *   Returns one list item of MovieTitles page.
    */
   public function formatTitles($movieTitle) {
-    global $i18n;
     $language = new Language(Language::FROM_ID, $movieTitle->languageId);
-    $displayTitle = ($movieTitle->isDisplayTitle) ? " ({$i18n->t("display Title")})" : null;
-    $list = new Unordered($movieTitle->dynComments, $i18n->t("There are no Comments."));
+    $displayTitle = ($movieTitle->isDisplayTitle) ? " ({$this->intl->t("display Title")})" : null;
+    $list = new Unordered($movieTitle->dynComments, $this->intl->t("There are no Comments."));
     $list->closure = [ $this, "formatComments" ];
 
     return "({$language->code}) {$movieTitle->title}{$displayTitle}<div class='well well--small'>{$list}</div>";
@@ -87,8 +83,7 @@ class MovieTitles extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    * @inheritdoc
    */
   protected function getPageContent() {
-    global $i18n;
-    $list = new Unordered($this->movieTitles->orderById(), $i18n->t("There are no titles."));
+    $list = new Unordered($this->movieTitles->orderById(), $this->intl->t("There are no titles."));
     $list->closure = [ $this, "formatTitles" ];
 
     return "<h3>{$this->title}</h3>{$list}";

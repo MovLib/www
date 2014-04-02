@@ -54,42 +54,37 @@ class Edit extends \MovLib\Presentation\SystemPage\Show {
   /**
    * Instantiate new system page edit presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\User\Session $session
    * @throws \MovLib\Presentation\Error\Forbidden
    * @throws \MovLib\Presentation\Error\Unauthorized
    */
   public function __construct() {
-    global $i18n, $kernel, $session;
-
     // Don't allow non-admin users to edit this system page.
-    $session->checkAuthorizationAdmin($i18n->t("The page you want to edit can only be changed by administrators of {0}.", [ $kernel->siteName ]));
+    $session->checkAuthorizationAdmin($this->intl->t("The page you want to edit can only be changed by administrators of {0}.", [ $this->config->sitename ]));
 
     // Request authorization from admins who have been logged in for a long time.
-    $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
+    $session->checkAuthorizationTimestamp($this->intl->t("Please sign in again to verify the legitimacy of this request."));
 
     $this->systemPage      = new SystemPage((integer) $_SERVER["ID"]);
-    $this->initPage($i18n->t("Edit {0}", [ $this->systemPage->title ]));
-    $this->initBreadcrumb([[ $i18n->r($this->systemPage->route), $this->systemPage->title ]]);
-    $this->breadcrumbTitle = $i18n->t("Edit");
+    $this->initPage($this->intl->t("Edit {0}", [ $this->systemPage->title ]));
+    $this->initBreadcrumb([[ $this->intl->r($this->systemPage->route), $this->systemPage->title ]]);
+    $this->breadcrumbTitle = $this->intl->t("Edit");
     $this->initLanguageLinks("{$this->systemPage->route}/edit");
 
-    $this->formAddElement(new InputText("title", $i18n->t("Title"), $this->systemPage->title, [
-      "#help-popup" => $i18n->t("A system page’s title cannot contain any HTML."),
+    $this->formAddElement(new InputText("title", $this->intl->t("Title"), $this->systemPage->title, [
+      "#help-popup" => $this->intl->t("A system page’s title cannot contain any HTML."),
       "autofocus"   => true,
-      "placeholder" => $i18n->t("Enter the system page title"),
+      "placeholder" => $this->intl->t("Enter the system page title"),
       "required"    => true,
     ]));
 
-    $this->formAddElement(new TextareaHTMLRaw("content", $i18n->t("Content"), $this->systemPage->text, [
-      "#help-popup" => $i18n->t("A system page’s text content can contain any HTML."),
-      "placeholder" => $i18n->t("Enter the system page content"),
+    $this->formAddElement(new TextareaHTMLRaw("content", $this->intl->t("Content"), $this->systemPage->text, [
+      "#help-popup" => $this->intl->t("A system page’s text content can contain any HTML."),
+      "placeholder" => $this->intl->t("Enter the system page content"),
       "required"    => true,
       "rows"        => 25,
     ]));
 
-    $this->formAddAction($i18n->t("Update"), [ "class" => "btn btn-large btn-success" ]);
+    $this->formAddAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ]);
     $this->formInit();
   }
 
@@ -107,34 +102,30 @@ class Edit extends \MovLib\Presentation\SystemPage\Show {
   /**
    * The submitted form has no auto-validation errors, continue normal program flow.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * \MovLib\Presentation\Redirect\SeeOther
    */
   protected function formValid() {
-    global $i18n, $kernel;
-
     // Store the changes to the system page.
     $this->systemPage->commit();
 
     // Let the user know that the system page was update.
     $kernel->alerts .= new Alert(
-      $i18n->t("The {title} system page was successfully updated.", [ "title" => $this->placeholder($this->systemPage->title) ]),
-      $i18n->t("Successfully Updated"),
+      $this->intl->t("The {title} system page was successfully updated.", [ "title" => $this->placeholder($this->systemPage->title) ]),
+      $this->intl->t("Successfully Updated"),
       Alert::SEVERITY_SUCCESS
     );
 
     // Encourage the user to validate the page.
     $kernel->alerts .= new Alert(
-      $i18n->t("Please {0}validate your HTML with the W3C validator{1}.", [
+      $this->intl->t("Please {0}validate your HTML with the W3C validator{1}.", [
         "<a href='http://validator.w3.org/check?uri=" . rawurlencode("{$kernel->scheme}://{$kernel->hostname}{$this->systemPage->route}") . "'>", "</a>"
       ]),
-      $i18n->t("Valid?"),
+      $this->intl->t("Valid?"),
       Alert::SEVERITY_INFO
     );
 
     // Redirect to the just updated system page.
-    throw new SeeOther($i18n->r($this->systemPage->route));
+    throw new SeeOther($this->intl->r($this->systemPage->route));
   }
 
 }

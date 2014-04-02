@@ -70,15 +70,11 @@ class SystemPage extends \MovLib\Data\Database {
   /**
    * Instantiate new protected page.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param integer $id [optional]
    *   The page's unique identifier, defaults to no identifier which creates an empty object.
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct($id = null) {
-    global $db, $i18n;
-
     if ($id) {
       $stmt = $db->query(
         "SELECT
@@ -111,14 +107,10 @@ class SystemPage extends \MovLib\Data\Database {
   /**
    * Write changes to the system page to the database.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
   public function commit() {
-    global $db, $i18n;
-
     $db->query(
       "UPDATE `system_pages` SET
         `dyn_titles` = COLUMN_ADD(`dyn_titles`, ?, ?),
@@ -141,14 +133,11 @@ class SystemPage extends \MovLib\Data\Database {
   /**
    * Get all available system pages.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return \mysqli_result
    *   All available system pages.
    * @throws \MovLib\Exception\DatabaseException
    */
   public static function getSystemPages() {
-    global $db, $i18n;
     return $db->query(
       "SELECT
         `id`,

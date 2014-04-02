@@ -31,18 +31,17 @@ use \MovLib\Data\Person\FullPerson;
 class Releases extends \MovLib\Presentation\Person\AbstractBase {
 
   /**
-   * Instantiate new person releases presentation.
+   * Initialize person releases presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @throws \MovLib\Presentation\Error\NotFound
    */
-  public function __construct() {
-    global $i18n;
-    $this->person = new FullPerson((integer) $_SERVER["PERSON_ID"]);
-    $this->initPage($i18n->t("Releases with {0}", [ $this->person->name ]));
-    $this->pageTitle        = $i18n->t("Releases with {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
-    $this->breadcrumbTitle  = $i18n->t("Releases");
-    $this->initLanguageLinks($i18n->rp("/person/{0}/releases"), [ $this->person->id ], true);
+  public function init() {
+    $this->person = new FullPerson($this->diContainerHTTP);
+    $this->person->init((integer) $_SERVER["PERSON_ID"]);
+    $this->initPage($this->intl->t("Releases with {0}", [ $this->person->name ]));
+    $this->pageTitle        = $this->intl->t("Releases with {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
+    $this->breadcrumbTitle  = $this->intl->t("Releases");
+    $this->initLanguageLinks($this->intl->rp("/person/{0}/releases"), [ $this->person->id ], true);
     $this->initPersonBreadcrumb();
     $this->sidebarInit();
   }
@@ -51,8 +50,7 @@ class Releases extends \MovLib\Presentation\Person\AbstractBase {
    * @inheritdoc
    */
   protected function getPageContent() {
-    global $i18n;
-    return new \MovLib\Presentation\Partial\Alert($i18n->t("Not implemented yet."), null, \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Partial\Alert($this->intl->t("Not implemented yet."), null, \MovLib\Partial\Alert::SEVERITY_INFO);
   }
 
 }

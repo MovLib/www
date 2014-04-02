@@ -35,7 +35,6 @@ trait TraitMovie {
   /**
    * Construct movie title information for display.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param \MovLib\Data\Movie\Movie $movie
    *   The movie to display the title information for. Can also be <code>\\MovLib\\Data\\Movie\\FullMovie</code>.
    * @param array $attributes [optional]
@@ -47,7 +46,6 @@ trait TraitMovie {
    * @throws \LogicException
    */
   public function getTitleInfo($movie, $attributes = null, $wrap = "p") {
-    global $i18n;
     // @devStart
     // @codeCoverageIgnoreStart
     if (!isset($movie) || !isset($movie->displayTitle)) {
@@ -59,9 +57,9 @@ trait TraitMovie {
     // We have to use different micro-data if display and original title differ.
     if ($movie->displayTitle != $movie->originalTitle) {
       $displayTitleItemprop = "alternateName";
-      $originalTitle = "<br><span class='small'>{$i18n->t("{0} ({1})", [
-        "<span property='name'{$this->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>",
-        "<i>{$i18n->t("original title")}</i>",
+      $originalTitle = "<br><span class='small'>{$this->intl->t("{0} ({1})", [
+        "<span property='name'{$this->presenter->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>",
+        "<i>{$this->intl->t("original title")}</i>",
       ])}</span>";
     }
     // Simply clear the original title if it's the same as the display title.
@@ -69,7 +67,7 @@ trait TraitMovie {
       $displayTitleItemprop = "name";
       $originalTitle = null;
     }
-    $displayTitle = "<a href='{$movie->route}' property='url'><span property='{$displayTitleItemprop}'{$this->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}</span></a>{0}";
+    $displayTitle = "<a href='{$movie->route}' property='url'><span property='{$displayTitleItemprop}'{$this->presenter->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}</span></a>{0}";
 
     // Append year enclosed in micro-data to display title if available.
     if (isset($movie->year)) {
@@ -79,7 +77,7 @@ trait TraitMovie {
       $displayTitle = str_replace("{0}", "", $displayTitle);
     }
 
-    return "<{$wrap}{$this->expandTagAttributes($attributes)}>{$displayTitle}{$originalTitle}</{$wrap}>";
+    return "<{$wrap}{$this->presenter->expandTagAttributes($attributes)}>{$displayTitle}{$originalTitle}</{$wrap}>";
   }
 
 }

@@ -34,18 +34,15 @@ class Crew extends \MovLib\Presentation\Movie\AbstractBase {
   /**
    * Instantiate new movie crew presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
-    global $i18n, $cache;
-
     $cache->cacheable = false;
     $cache->delete();
     $this->movie = new FullMovie($_SERVER["MOVIE_ID"]);
-    $this->initPage($i18n->t("Crew"));
+    $this->initPage($this->intl->t("Crew"));
     $this->initBreadcrumb();
-    $this->pageTitle = $i18n->t(
+    $this->pageTitle = $this->intl->t(
       "Crew of {0}",
       [ "<a href='{$this->movie->route}' property='url'><span property='name'>{$this->movie->displayTitleWithYear}</span></a>" ]
     );
@@ -56,10 +53,8 @@ class Crew extends \MovLib\Presentation\Movie\AbstractBase {
   /**
    * @inheritdoc
    *
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function getPageContent() {
-    global $i18n;
     $this->schemaType = "Movie";
 
     if (($crewResult = $this->movie->getCrew())) {
@@ -84,8 +79,8 @@ class Crew extends \MovLib\Presentation\Movie\AbstractBase {
     }
 
     return new Alert(
-      $i18n->t("No crew assigned yet, please edit this page to provide this information."),
-      $i18n->t("No Crew"),
+      $this->intl->t("No crew assigned yet, please edit this page to provide this information."),
+      $this->intl->t("No Crew"),
       Alert::SEVERITY_INFO
     );
   }

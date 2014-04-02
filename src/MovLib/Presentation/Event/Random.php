@@ -17,9 +17,9 @@
  */
 namespace MovLib\Presentation\Event;
 
-use \MovLib\Data\Event;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
+use \MovLib\Data\Event\EventSet;
+use \MovLib\Exception\RedirectException\SeeOtherException;
+use \MovLib\Partial\Alert;
 
 /**
  * Random event presentation.
@@ -33,41 +33,24 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 class Random {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * A random event identifier.
-   *
-   * @var integer
-   */
-  private $eventId;
-
-
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Redirect to random award presentation.
+   * Redirect to random event presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
-  public function __construct() {
-    global $i18n, $kernel;
-    $this->eventId = Event::getRandomEventId();
-    if (isset($this->eventId)) {
-      throw new SeeOtherRedirect($i18n->r("/event/{0}", [ $this->eventId ]));
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+    if (($id = (new EventSet($diContainerHTTP))->getRandom())) {
+      throw new SeeOtherException($diContainerHTTP->intl->r("/event/{0}", $id));
     }
-    else {
-      $kernel->alerts .= new Alert(
-        $i18n->t("There is currently no event in our database."),
-        $i18n->t("Check back later"),
-        Alert::SEVERITY_INFO
-      );
-      throw new SeeOtherRedirect("/");
-    }
+    $diContainerHTTP->response->createCookie("alert", (string) new Alert(
+      $this->intl->t("There is currently no event in our database."),
+      $this->intl->t("Check back later"),
+      Alert::SEVERITY_INFO
+    ));
+    throw new SeeOtherException($this->intl->rp("/events"));
   }
 
 }

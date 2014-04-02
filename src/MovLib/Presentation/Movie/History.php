@@ -32,15 +32,14 @@ use \MovLib\Presentation\Partial\Alert;
 class History extends \MovLib\Presentation\Movie\AbstractBase {
 
   public function __construct() {
-    global $i18n;
     $this->movie = new Movie($_SERVER["MOVIE_ID"]);
-    $this->initPage($i18n->t("History {title}", [ "title" => $this->movie->displayTitleWithYear ]));
+    $this->initPage($this->intl->t("History {title}", [ "title" => $this->movie->displayTitleWithYear ]));
     $this->initLanguageLinks("/movie/{0}/history", [ $this->movie->id ]);
     $this->initBreadcrumb();
-    $this->breadcrumbTitle = $i18n->t("History");
+    $this->breadcrumbTitle = $this->intl->t("History");
     $this->alerts .= new Alert(
-      $i18n->t("The movie history feature isn’t implemented yet."),
-      $i18n->t("Check back later"),
+      $this->intl->t("The movie history feature isn’t implemented yet."),
+      $this->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     );
   }

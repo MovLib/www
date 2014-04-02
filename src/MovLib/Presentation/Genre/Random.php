@@ -17,9 +17,9 @@
  */
 namespace MovLib\Presentation\Genre;
 
-use \MovLib\Data\Genre;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
+use \MovLib\Data\Genre\GenreSet;
+use \MovLib\Exception\RedirectException\SeeOtherException;
+use \MovLib\Partial\Alert;
 
 /**
  * Random genre presentation.
@@ -33,41 +33,24 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 class Random {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * A random genre identifier.
-   *
-   * @var integer
-   */
-  private $genreId;
-
-
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
    * Redirect to random genre presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
-  public function __construct() {
-    global $i18n, $kernel;
-    $this->genreId = Genre::getRandomGenreId();
-    if (isset($this->genreId)) {
-      throw new SeeOtherRedirect($i18n->r("/genre/{0}", [ $this->genreId ]));
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+    if (($id = (new GenreSet($diContainerHTTP))->getRandom())) {
+      throw new SeeOtherException($diContainerHTTP->intl->r("/genre/{0}", $id));
     }
-    else {
-      $kernel->alerts .= new Alert(
-        $i18n->t("There is currently no genre in our database."),
-        $i18n->t("Check back later"),
-        Alert::SEVERITY_INFO
-      );
-      throw new SeeOtherRedirect("/");
-    }
+    $diContainerHTTP->response->createCookie("alert", (string) new Alert(
+      $this->intl->t("There is currently no genre in our database."),
+      $this->intl->t("Check back later"),
+      Alert::SEVERITY_INFO
+    ));
+    throw new SeeOtherException($this->intl->rp("/genres"));
   }
 
 }

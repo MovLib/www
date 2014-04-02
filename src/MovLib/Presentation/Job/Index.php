@@ -17,71 +17,66 @@
  */
 namespace MovLib\Presentation\Job;
 
-use \MovLib\Data\Job;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Listing\EntityIndexListing;
+use \MovLib\Data\Job\JobSet;
+use \MovLib\Partial\Alert;
 
 /**
- * List of all jobs.
+ * Defines the job index presentation.
  *
+ * @link http://www.google.com/webmasters/tools/richsnippets?q=https://en.movlib.org/jobs
+ * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/jobs
+ * @link http://validator.w3.org/check?uri=https://en.movlib.org/jobs
+ * @link http://gsnedders.html5.org/outliner/process.py?url=https://en.movlib.org/jobs
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitPagination;
-  use \MovLib\Presentation\TraitSidebar;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
 
   /**
-   * Instantiate new jobs show presentation.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
+   * {@inheritdoc}
    */
-  public function __construct() {
-    global $i18n, $kernel;
-    $this->initPage($i18n->t("Jobs"));
-    $this->initBreadcrumb();
-    $this->initLanguageLinks("/jobs", null, true);
-    $this->paginationInit(Job::getTotalCount());
-    $this->sidebarInit([
-      [ $kernel->requestPath, $this->title, [ "class" => "ico ico-job" ] ],
-      [ $i18n->r("/job/random"), $i18n->t("Random") ],
-    ]);
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * @inheritdoc
-   */
-  protected function getPageContent() {
-    global $i18n;
-
-    $this->headingBefore =
-      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/job/create")}'>{$i18n->t("Create New Job")}</a>"
-    ;
-
-    $result      = Job::getJobs($this->paginationOffset, $this->paginationLimit);
-    $noItemText  = new Alert(
-      $i18n->t(
-        "We couldn’t find any job matching your filter criteria, or there simply aren’t any jobs available."
-      ), $i18n->t("No Jobs"), Alert::SEVERITY_INFO
+  public function init() {
+    return $this->initIndex(
+      new JobSet($this->diContainerHTTP),
+      $this->intl->t("Create New Job"),
+      $this->intl->t("Jobs"),
+      "jobs",
+      "job"
     );
-    $noItemText .=
-      $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/job/create")}'>", "</a>" ]);
-
-    $moviesRoute = $i18n->rp("/job/{0}/movies", [ "{{ id }}" ]);
-    $seriesRoute = $i18n->rp("/job/{0}/series", [ "{{ id }}" ]);
-
-    return new EntityIndexListing($result, $noItemText, "Job", $moviesRoute, $seriesRoute);
   }
+
+  /**
+   * {@inheritdoc}
+   * @param \MovLib\Data\Job\Job $job {@inheritdoc}
+   */
+  protected function formatListingItem($job) {
+    return
+      "<li class='hover-item r'>" .
+        "<article>" .
+          "<div class='s s10'>" .
+            "<div class='fr'>" .
+              "<a class='ico ico-movie label' href='{$this->intl->rp("/job/{0}/movies", $job->id)}' title='{$this->intl->t("Movies")}'>{$job->movieCount}</a>" .
+              "<a class='ico ico-series label' href='{$this->intl->rp("/job/{0}/series", $job->id)}' title='{$this->intl->t("Series")}'>{$job->seriesCount}</a>" .
+            "</div>" .
+            "<h2 class='para'><a href='{$job->route}' property='url'><span property='name'>{$job->name}</span></a></h2>" .
+          "</div>" .
+        "</article>" .
+      "</li>"
+    ;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getNoItemsContent() {
+    return new Alert(
+      "<p>{$this->intl->t("We couldn’t find any jobs matching your filter criteria, or there simply aren’t any jobs available.")}</p>" .
+      "<p>{$this->intl->t("Would you like to {0}create an job{1}?", [ "<a href='{$this->intl->r("/job/create")}'>", "</a>" ])}</p>",
+      $this->intl->t("No Jobs")
+    );
+  }
+
 }

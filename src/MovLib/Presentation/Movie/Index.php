@@ -17,11 +17,18 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\Movie\Movie;
-use \MovLib\Presentation\Partial\Listing\MovieListing as MoviesPartial;
+use \MovLib\Data\Movie\MovieSet;
 
 /**
- * The listing for the latest movie additions.
+ * Defines the movie index presentation.
+ *
+ * @link http://schema.org/Movie
+ * @link http://www.google.com/webmasters/tools/richsnippets?q=https://en.movlib.org/movies
+ * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/movies
+ * @link http://validator.w3.org/check?uri=https://en.movlib.org/movies
+ * @link http://gsnedders.html5.org/outliner/process.py?url=https://en.movlib.org/movies
+ *
+ * @property \MovLib\Data\Movie\MovieSet $set
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -29,49 +36,48 @@ use \MovLib\Presentation\Partial\Listing\MovieListing as MoviesPartial;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitSidebar;
-  use \MovLib\Presentation\TraitPagination;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
+  use \MovLib\Presentation\Movie\MovieTrait;
 
   /**
-   * Instantiate new latest movies presentation
-   *
-   * @global \MovLib\Data\I18n $i18n
+   * {@inheritdoc}
    */
-  public function __construct() {
-    global $i18n;
-    $this->initPage($i18n->t("Movies"));
-    $this->initBreadcrumb();
-    $this->initLanguageLinks("/movies", null, true);
-    $this->sidebarInit([
-      [ $i18n->rp("/movies"), $i18n->t("Movies"), [ "class" => "ico ico-movie" ] ],
-      [ $i18n->rp("/movies/charts"), $i18n->t("Charts") ],
-      [ $i18n->r("/movie/random"), $i18n->t("Random") ],
-    ]);
-    $this->paginationInit(Movie::getMoviesCount());
+  public function init() {
+    return $this->initIndex(new MovieSet($this->diContainerHTTP), $this->intl->t("Create New Movie"));
   }
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
+  /**
+   * {@inheritdoc}
+   * @param \MovLib\Data\Movie\Movie $movie {@inheritdoc}
+   */
+  protected function formatListingItem(\MovLib\Data\EntityInterface $movie, $id) {
+    return
+      "<li class='hover-item r'>" .
+        "<article typeof='Movie'>" .
+          "<a class='no-link s s1' href='{$movie->getRoute()}'>" .
+            "<img alt='' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
+          "</a>" .
+          "<div class='s s8'>" .
+            "<h2 class='para'>{$this->getStructuredDisplayTitle($movie)}</h2>" .
+            $this->getStructuredOriginalTitle($movie, "small") .
+            $this->getStructuredTagline($movie, [ "class" => "small" ]) .
+            $this->getGenreLabels($movie->genres, [ "class" => "small" ]) .
+          "</div>" .
+          "<div class='s s1 rating-mean tac'>{$this->intl->format("{0,number}", $movie->meanRating)}</div>" .
+        "</article>" .
+      "</li>"
+    ;
+  }
 
   /**
-   * Get the presentation's page content.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @return string
-   *   The presentation's page content.
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    global $i18n;
-
-    // Ensure it's easy for users to find the page where the can create new movies.
-    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/movie/create")}'>{$i18n->t("Create New Movie")}</a>";
-
-    return new MoviesPartial(Movie::getMovies($this->paginationOffset, $this->paginationLimit));
+  public function getNoItemsContent() {
+    return new Alert(
+      "<p>{$this->intl->t("We couldn’t find any movies matching your filter criteria, or there simply aren’t any movies available.")}</p>" .
+      "<p>{$this->intl->t("Would you like to {0}create a movie{1}?", [ "<a href='{$this->intl->r("/movie/create")}'>", "</a>" ])}</p>",
+      $this->intl->t("No Movies")
+    );
   }
 
 }

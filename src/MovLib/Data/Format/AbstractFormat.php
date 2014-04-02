@@ -51,14 +51,6 @@ abstract class AbstractFormat {
 
   abstract public function getAudioFormats();
 
-  abstract public function getCodecs();
-
-  abstract public function getTvNorms();
-
-  abstract public function getRegionCodes();
-
-  abstract public function getResolutions();
-
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
@@ -85,6 +77,37 @@ abstract class AbstractFormat {
   final public function getSubtitles() {
     return [
 
+    ];
+  }
+
+  /**
+   * Get a list of all available color formats.
+   *
+   * @return array
+   *   The available color formats.
+   *
+   *   Associative array with the format name as key and the translation (if any) as value.
+   *   being the tranlation.
+   */
+  final public function getColorFormats() {
+    return [
+      "Technicolor" => "Technicolor",
+      "Eastmancolor" => "Eastmancolor",
+      "Metrocolor" => "Metrocolor",
+      "Fujicolor" => "Fujicolor",
+      "Cinecolor" => "Cinecolor",
+      "Pathécolor" => "Pathécolor",
+      "Kinemacolor" => "Kinemacolor",
+      "Black & White and Color" => $i18n->t("Black & White and Color"),
+      "Orwocolor" => "Orwocolor",
+      "Sovcolor" => "Sovcolor",
+      "Gevacolor" => "Gevacolor",
+      "Ferraniacolor" => "Ferraniacolor",
+      "Trucolor" => "Trucolor",
+      "Agfacolor" => "Agfacolor",
+      "Prizma" => "Prizma",
+      "Warnercolor" => "Warnercolor",
+      "DeLuxe Color" => "DeLuxe Color",
     ];
   }
 

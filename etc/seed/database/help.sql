@@ -31,10 +31,15 @@ TRUNCATE TABLE `help_articles`;
 -- START "Help Categories"
 
 INSERT INTO `help_categories` SET
-  `dyn_titles` = COLUMN_CREATE(
+  `dyn_titles`       = COLUMN_CREATE(
     'en', 'Database',
-    'de', 'Datenbank'
-  )
+    'de', 'Datanbank'
+  ),
+  `dyn_descriptions` = COLUMN_CREATE(
+    'en', 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore.',
+    'de', 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore.'
+  ),
+  `icon`             = 'ico-movie'
 ;
 SET @help_category_database = LAST_INSERT_ID();
 
@@ -42,7 +47,12 @@ INSERT INTO `help_categories` SET
   `dyn_titles` = COLUMN_CREATE(
     'en', 'Marketplace',
     'de', 'Marktplatz'
-  )
+  ),
+  `dyn_descriptions` = COLUMN_CREATE(
+    'en', 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore.',
+    'de', 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore.'
+  ),
+  `icon`             = 'ico-company'
 ;
 SET @help_category_marketplace = LAST_INSERT_ID();
 
@@ -50,7 +60,12 @@ INSERT INTO `help_categories` SET
   `dyn_titles` = COLUMN_CREATE(
     'en', 'Community',
     'de', 'Community'
-  )
+  ),
+  `dyn_descriptions` = COLUMN_CREATE(
+    'en', 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore.',
+    'de', 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore.'
+  ),
+  `icon`             = 'ico-person'
 ;
 SET @help_category_community = LAST_INSERT_ID();
 

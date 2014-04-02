@@ -17,53 +17,79 @@
  */
 namespace MovLib\Presentation\Person;
 
-use \MovLib\Data\Person\Person;
-use \MovLib\Presentation\Partial\Listing\PersonLifeDateListing;
+use \MovLib\Data\Person\PersonSet;
+use \MovLib\Partial\Alert;
 
 /**
- * The listing for the latest person additions.
+ * Defines the person index listing.
  *
+ * @link http://schema.org/Person
+ * @link http://www.google.com/webmasters/tools/richsnippets?q=https://en.movlib.org/persons
+ * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/persons
+ * @link http://validator.w3.org/check?uri=https://en.movlib.org/persons
+ * @link http://gsnedders.html5.org/outliner/process.py?url=https://en.movlib.org/persons
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitSidebar;
-  use \MovLib\Presentation\TraitPagination;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
+  use \MovLib\Partial\PersonTrait;
+  use \MovLib\Partial\DateTrait;
 
   /**
-   * Instantiate new latest persons presentation.
-   *
-   * @global \MovLib\Data\I18n $i18n
+   * {@inheritdoc}
    */
-  public function __construct() {
-    global $i18n;
-    $this->initPage($i18n->t("Persons"));
-    $this->initBreadcrumb();
-    $this->initLanguageLinks("/persons", null, true);
-    $this->sidebarInit([
-      [ $i18n->rp("/persons"), $i18n->t("Persons"), [ "class" => "ico ico-person" ] ],
-      [ $i18n->r("/person/random"), $i18n->t("Random") ],
-    ]);
-    $this->paginationInit(Person::getTotalCount());
-    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/person/create")}'>{$i18n->t("Create New Person")}</a>";
+  public function init() {
+    $this->initIndex(
+      new PersonSet($this->diContainerHTTP),
+      $this->intl->t("Create New Person"),
+      $this->intl->t("Persons"),
+      "persons",
+      "person"
+    );
   }
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
+  /**
+   * {@inheritdoc}
+   * @param \MovLib\Data\Person\Person $person {@inheritdoc}
+   */
+  protected function formatListingItem($person) {
+    if (($bornName = $this->getPersonBornName($person))) {
+      $bornName = "<small>{$bornName}</small>";
+    }
+    $bioDates = $this->dateFormatFromTo(
+      $person->birthDate,
+      $person->deathDate,
+      [ "property" => "birthDate", "title" => $this->intl->t("Date of Birth") ],
+      [ "property" => "deathDate", "title" => $this->intl->t("Date of Death") ]
+    );
+    if ($bioDates) {
+      $bioDates = "<small>{$bioDates}</small>";
+    }
+    return
+      "<li class='hover-item r' typeof='Person'>" .
+        "<a class='no-link s s1 tac'><img alt='' height='60' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60'></a>" .
+        "<div class='s s9'><h2 class='para'><a href='{$person->route}' property='url'><span property='name'>{$person->name}</span></a>{$bornName}{$bioDates}</h2></div>" .
+      "</li>"
+    ;
+  }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    return new PersonLifeDateListing(Person::getPersons($this->paginationOffset, $this->paginationLimit));
+  public function getNoItemsContent() {
+    return new Alert(
+      "<p>{$this->intl->t(
+        "We couldn’t find any persons matching your filter criteria, or there simply aren’t any persons available."
+      )}</p><p>{$this->intl->t(
+        "Would you like to {0}create a person{1}?",
+        [ "<a href='{$this->intl->r("/person/create")}'>", "</a>" ]
+      )}</p>",
+      $this->intl->t("No Persons")
+    );
   }
 
 }

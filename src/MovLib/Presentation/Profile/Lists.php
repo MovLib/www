@@ -33,33 +33,27 @@ class Lists extends \MovLib\Presentation\Profile\Show {
   /**
    * Instantiate new lists presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\Session $session
    * @throws \MovLib\Presentation\Error\Unauthorized
    */
   public function __construct() {
-    global $i18n, $session;
-    $session->checkAuthorization($i18n->t("You must be signed in to view your lists."));
-    $this->init($i18n->t("My Lists"), "/profile/lists", [[ $i18n->r("/profile"), $i18n->t("Profile") ]]);
+    $session->checkAuthorization($this->intl->t("You must be signed in to view your lists."));
+    $this->init($this->intl->t("My Lists"), "/profile/lists", [[ $this->intl->r("/profile"), $this->intl->t("Profile") ]]);
   }
 
   /**
    * @inhertidoc
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function getBreadcrumbs() {
-    global $i18n;
-    return [[ $i18n->r("/profile"), $i18n->t("Profile") ]];
+    return [[ $this->intl->r("/profile"), $this->intl->t("Profile") ]];
   }
 
   /**
    * @inheritdoc
    */
   protected function getPageContent() {
-    global $i18n;
     return new Alert(
-      $i18n->t("The lists aren't implemented yet."),
-      $i18n->t("Check back later"),
+      $this->intl->t("The lists aren’t implemented yet."),
+      $this->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     );
   }

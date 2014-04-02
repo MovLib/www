@@ -35,26 +35,21 @@ class Index extends \MovLib\Presentation\Person\AbstractBase {
   /**
    * Instantiate new Person Photo presentation.
    *
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\I18n $i18n
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   public function __construct() {
-    global $i18n, $kernel;
-
-
     $this->person = new Person((integer) $_SERVER["PERSON_ID"]);
 
     // Redirect to person edit form, if there is no photo.
     if ($this->person->imageExists === false) {
-      throw new SeeOther($i18n->r("/person/{0}/edit", [ $this->person->id ]));
+      throw new SeeOther($this->intl->r("/person/{0}/edit", [ $this->person->id ]));
     }
 
     $routeArgs = [ $this->person->id ];
 
-    $this->initPage($i18n->t("Photo"));
-    $this->pageTitle        = $i18n->t("Photo of {0}", [
+    $this->initPage($this->intl->t("Photo"));
+    $this->pageTitle        = $this->intl->t("Photo of {0}", [
       "<span property='about' typeof='Person'><a href='{$this->person->route}' property='url'>" .
         "<span property='name'>{$this->person->name}</span>" .
       "</a></span>"
@@ -64,8 +59,8 @@ class Index extends \MovLib\Presentation\Person\AbstractBase {
     $this->sidebarInit();
 
     // Modify sidebar items.
-    $this->sidebarNavigation->menuitems[0] = [ $this->person->route, $i18n->t("Back to Person"), [ "class" => "ico ico-person" ] ];
-    $this->sidebarNavigation->menuitems[count($this->sidebarNavigation->menuitems)] = [ $i18n->r("/person/{0}/photo/delete", $routeArgs), $i18n->t("Delete Photo"), [ "class" => "ico ico-delete" ] ];
+    $this->sidebarNavigation->menuitems[0] = [ $this->person->route, $this->intl->t("Back to Person"), [ "class" => "ico ico-person" ] ];
+    $this->sidebarNavigation->menuitems[count($this->sidebarNavigation->menuitems)] = [ $this->intl->r("/person/{0}/photo/delete", $routeArgs), $this->intl->t("Delete Photo"), [ "class" => "ico ico-delete" ] ];
 
     // Initialize CSS class, schema and stylesheet.
     $this->bodyClasses    .= " imagedetails";
@@ -77,17 +72,16 @@ class Index extends \MovLib\Presentation\Person\AbstractBase {
    * @inheritdoc
    */
   protected function getPageContent() {
-    global $i18n, $kernel;
     $uploader    = new User(User::FROM_ID, $this->person->uploaderId);
     $dateTime    = new DateTime($this->person->changed, [ "property" => "uploadDate" ]);
-    $description = "<dt>{$i18n->t("Description")}</dt>";
+    $description = "<dt>{$this->intl->t("Description")}</dt>";
     if ($this->person->description) {
       $description .= "<dd property='description'>{$this->htmlDecode($this->person->description)}</dd>";
     }
     else {
-      $description .= "<dd>{$i18n->t(
+      $description .= "<dd>{$this->intl->t(
         "No description available, {0}add one{1}?",
-        [ "<a href='{$i18n->r("/person/{0}/edit", [ $this->person->id ])}'>", "</a>" ]
+        [ "<a href='{$this->intl->r("/person/{0}/edit", [ $this->person->id ])}'>", "</a>" ]
       )}</dd>";
     }
     return
@@ -96,13 +90,13 @@ class Index extends \MovLib\Presentation\Person\AbstractBase {
         "<div class='r wrapper'>" .
           "<dl class='s s7 description'>" .
             $description .
-            "<dt>{$i18n->t("Provided by")}</dt><dd><a href='{$uploader->route}' property='accountablePerson'>{$uploader->name}</a></dd>" .
-            "<dt>{$i18n->t("Dimensions")}</dt><dd>{$i18n->t("{width} × {height}", [
-              "width"  => "<span property='width'>{$this->person->width}&nbsp;<abbr title='{$i18n->t("Pixel")}'>px</abbr></span>",
-              "height" => "<span property='height'>{$this->person->height}&nbsp;<abbr title='{$i18n->t("Pixel")}'>px</abbr></span>",
+            "<dt>{$this->intl->t("Provided by")}</dt><dd><a href='{$uploader->route}' property='accountablePerson'>{$uploader->name}</a></dd>" .
+            "<dt>{$this->intl->t("Dimensions")}</dt><dd>{$this->intl->t("{width} × {height}", [
+              "width"  => "<span property='width'>{$this->person->width}&nbsp;<abbr title='{$this->intl->t("Pixel")}'>px</abbr></span>",
+              "height" => "<span property='height'>{$this->person->height}&nbsp;<abbr title='{$this->intl->t("Pixel")}'>px</abbr></span>",
             ])}</dd>" .
-            "<dt>{$i18n->t("File size")}</dt><dd property='contentSize'>{$i18n->t("{0,number} {1}", $this->formatBytes($this->person->filesize))}</dd>" .
-            "<dt>{$i18n->t("Upload on")}</dt><dd>{$dateTime}</dd>" .
+            "<dt>{$this->intl->t("File size")}</dt><dd property='contentSize'>{$this->intl->t("{0,number} {1}", $this->formatBytes($this->person->filesize))}</dd>" .
+            "<dt>{$this->intl->t("Upload on")}</dt><dd>{$dateTime}</dd>" .
           "</dl>" .
           "<div class='s s3 tac image'>{$this->getImage(
             $this->person->getStyle(Person::STYLE_SPAN_02),

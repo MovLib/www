@@ -28,7 +28,8 @@ use \MovLib\Data\Help\HelpCategory;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\Page {
+class Index extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Presentation\TraitSidebar;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -58,7 +59,7 @@ class Index extends \MovLib\Presentation\Page {
    * @inheritdoc
    * @global \MovLib\Data\I18n $i18n
    */
-  protected function getContent() {
+  protected function getPageContent() {
     global $i18n;
 
     $content = "";

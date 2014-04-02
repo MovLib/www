@@ -38,20 +38,16 @@ class Series extends \MovLib\Presentation\Event\AbstractBase {
   /**
    * Instantiate new event series presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
-
     $this->event = new Event((integer) $_SERVER["EVENT_ID"]);
     $this->award = new Award($this->event->awardId);
 
-    $this->initPage($i18n->t("Series with {0}", [ $this->event->name ]));
+    $this->initPage($this->intl->t("Series with {0}", [ $this->event->name ]));
     $this->pageTitle    =
-      $i18n->t("Series with {0}", [ "<a href='{$this->event->route}'>{$this->event->name}</a>" ])
+      $this->intl->t("Series with {0}", [ "<a href='{$this->event->route}'>{$this->event->name}</a>" ])
     ;
-    $this->breadcrumbTitle = $i18n->t("Series");
+    $this->breadcrumbTitle = $this->intl->t("Series");
     $this->initLanguageLinks("/event/{0}/series", [ $this->event->id ], true);
     $this->initEventBreadcrumb();
     $this->sidebarInit();
@@ -65,12 +61,10 @@ class Series extends \MovLib\Presentation\Event\AbstractBase {
 
  /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    * @return \MovLib\Presentation\Partial\Alert
    */
   protected function getPageContent() {
-    global $i18n;
-    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("series with event") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Presentation\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("series with event") ]), $this->intl->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
   }
 
 }

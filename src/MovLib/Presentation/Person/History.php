@@ -26,18 +26,20 @@ use \MovLib\Data\Person\Person;
  */
 class History extends \MovLib\Presentation\Person\AbstractBase {
 
-  public function __construct() {
-    global $i18n;
-    $this->person = new Person((integer) $_SERVER["PERSON_ID"]);
-    $this->initPage($i18n->t("History"));
-    $this->pageTitle        = $i18n->t("History of {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
+  /**
+   * Initialize person history presentation.
+   */
+  public function init() {
+    $this->person = new Person($this->diContainerHTTP);
+    $this->person->init((integer) $_SERVER["PERSON_ID"]);
+    $this->initPage($this->intl->t("History"));
+    $this->pageTitle        = $this->intl->t("History of {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
     $this->initLanguageLinks("/person/{0}/history", [ $this->person->id ]);
     $this->initPersonBreadcrumb();
     $this->sidebarInit();
   }
 
   protected function getPageContent() {
-    global $i18n;
-    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("person history") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("person history") ]), $this->intl->t("Check back later"), \MovLib\Partial\Alert::SEVERITY_INFO);
   }
 }

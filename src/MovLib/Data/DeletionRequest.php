@@ -143,14 +143,11 @@ class DeletionRequest {
   /**
    * Instantiate new Deletion Request.
    *
-   * @global \MovLib\Data\Database $db
    * @param integer $id
    *   The deletion requests unique identifier.
    * @throws \OutOfBoundsException
    */
   public function __construct($id = null) {
-    global $db;
-
     // Only attempt to load the deletion request from the database if an identifier was passed to the constructor.
     if ($id) {
       $this->id = $id;
@@ -223,13 +220,11 @@ class DeletionRequest {
   /**
    * Delete deletion request with given identifier.
    *
-   * @global \MovLib\Data\Database $db
    * @param integer $id
    *   The deletion request's unquie identifier which should be deleted.
    * @throws \MovLib\Exception\DatabaseException
    */
   public static function discard($id) {
-    global $db;
     // Note that any table that is referencing this deletion request's unique identifier is automatically set to NULL
     // by the ON DELETE foreign key clause. Check the database schema!
     $db->query("DELETE FROM `deletion_requests` WHERE `id` = ?", "d", [ $id ])->close();
@@ -238,8 +233,6 @@ class DeletionRequest {
   /**
    * Get total deletion request count for the current language.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param integer $reasonId [optional]
    *   The result will be filtered by this reason if passed.
    * @param string $languageCode [optional]
@@ -249,7 +242,6 @@ class DeletionRequest {
    * @throws \MovLib\Exception\DatabaseException
    */
   public static function getCount($reasonId = null, $languageCode = null) {
-    global $db;
     $query = "SELECT COUNT(*) FROM `deletion_requests`";
     self::checkReasonAndLanguage($reasonId, $languageCode, $query, $types, $params);
     return $db->query($query, $types, $params)->get_result()->fetch_row()[0];
@@ -258,7 +250,6 @@ class DeletionRequest {
   /**
    * Get all deletion requests ordered by creation date, alternatively filtered by reason or language.
    *
-   * @global \MovLib\Data\Database $db
    * @param integer $offset
    *   The offset, usually provided by the pagination trait.
    * @param integer $limit
@@ -272,7 +263,6 @@ class DeletionRequest {
    * @throws \MovLib\Exception\DatabaseException
    */
   public static function getResult($offset, $limit, $reasonId = null, $languageCode = null) {
-    global $db;
     $query =
       "SELECT
         `id`,
@@ -293,8 +283,6 @@ class DeletionRequest {
   /**
    * Get all available deletion types.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @staticvar array $types
    *   Caching variable.
    * @return array
@@ -302,7 +290,6 @@ class DeletionRequest {
    *   the deletion type.
    */
   public static function getTypes() {
-    global $i18n, $kernel;
     static $types = null;
     if (!$types) {
       $types = require "{$kernel->pathTranslations}/deletion_reasons/{$i18n->locale}.php";
@@ -313,9 +300,6 @@ class DeletionRequest {
   /**
    * Request deletion of content.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\User\Session $session
    * @param integer $reasonId
    *   The deletion request's unique reason identifier, use the class constants.
    * @param null|string $info
@@ -327,7 +311,6 @@ class DeletionRequest {
    * @throws \MovLib\Exception\DatabaseException
    */
   public static function request($reasonId, $info, $languageLinks) {
-    global $db, $i18n, $session;
     return $db->query(
       "INSERT INTO `deletion_requests` (`user_id`, `info`, `language_code`, `reason_id`, `routes`) VALUES (?, ?, ?, ?, ?)",
       "dssss",

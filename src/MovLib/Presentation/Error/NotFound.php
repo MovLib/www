@@ -17,38 +17,40 @@
  */
 namespace MovLib\Presentation\Error;
 
-use \MovLib\Presentation\ErrorPage;
-use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Partial\Alert;
 
 /**
- * Represents the "not found" client error.
+ * Defines the not found error page.
  *
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class NotFound extends \MovLib\Exception\AbstractClientException {
+final class NotFound extends \MovLib\Presentation\AbstractPresenter {
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  public function getPresentation() {
-    global $i18n;
+  public function init() {
     http_response_code(404);
-    return (new ErrorPage(
-      $i18n->t("Not Found"),
-      new Alert(
-        $i18n->t(
+    $this->response->cacheable = false;
+    $this->initPage($this->intl->t("Not Found"));
+    $this->initBreadcrumb();
+    $this->alerts .= new Alert(
+      $this->intl->t(
           "There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.",
-          [ "<a href='{$i18n->r("/contact")}'>", "</a>" ]
+          [ "<a href='{$this->intl->r("/contact")}'>", "</a>" ]
         ),
-        $i18n->t("The requested page could not be found."),
-        Alert::SEVERITY_ERROR
-      )
-    ))->getPresentation();
+      $this->intl->t("The requested page could not be found."),
+      Alert::SEVERITY_ERROR
+    );
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {}
 
 }

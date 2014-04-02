@@ -74,22 +74,19 @@ class BackdropUpload extends \MovLib\Presentation\Movie\Backdrops {
   /**
    * Initialize movie image upload page.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return this
    * @throws \MovLib\Presentation\Error\NotFound
    */
   protected function initImagePage() {
-    global $i18n;
-
     // Try to load the movie with the identifier from the request and set the breadcrumb title.
-    $this->initMoviePage($i18n->t("Upload New {image_type_name}", [ "image_type_name" => $this->imageTypeName]));
+    $this->initMoviePage($this->intl->t("Upload New {image_type_name}", [ "image_type_name" => $this->imageTypeName]));
 
     // Create absolute for the image and instantiate an empty one.
     $class       = "\\MovLib\\Data\\Image\\Movie{$this->imageClassName}";
     $this->image = new $class($this->movie->id, $this->movie->displayTitleWithYear);
 
     // Translate the title once, we don't need Intl for replacing. The head title has no anchors and the page title has.
-    $title           = $i18n->t("Upload new {image_type_name} for {title}");
+    $title           = $this->intl->t("Upload new {image_type_name} for {title}");
     $search          = [ "{image_type_name}", "{title}" ];
     $this->initPage(str_replace($search, [ $this->imageTypeName, $this->movie->displayTitleWithYear ], $title));
     $this->pageTitle = str_replace($search, [ $this->imageTypeName, "<a href='{$this->movie->route}'>{$this->movie->displayTitleWithYear}</a>" ], $title);
@@ -98,11 +95,11 @@ class BackdropUpload extends \MovLib\Presentation\Movie\Backdrops {
     $this->initLanguageLinks("/movie/{0}/{$this->routeKey}/upload", [ $this->movie->id]);
 
     // Add entry to parent page.
-    $this->breadcrumb->menuitems[] = [ $i18n->rp("/movie/{0}/{$this->routeKeyPlural}", [ $this->movie->id]), $this->imageTypeNamePlural];
+    $this->breadcrumb->menuitems[] = [ $this->intl->rp("/movie/{0}/{$this->routeKeyPlural}", [ $this->movie->id]), $this->imageTypeNamePlural];
 
     // Instantiate additional input elments and initialize the upload form.
-    $this->selectCountry  = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->image->countryCode);
-    $this->selectLanguage = new Select("language", $i18n->t("Language"), Language::getLanguages(), $this->image->languageCode ?: "xx", [ "required"]);
+    $this->selectCountry  = new Select("country", $this->intl->t("Country"), Country::getCountries(), $this->image->countryCode);
+    $this->selectLanguage = new Select("language", $this->intl->t("Language"), Language::getLanguages(), $this->image->languageCode ?: "xx", [ "required"]);
     $this->initUpload([ $this->selectCountry, $this->selectLanguage]);
 
     // Initialize the sidebar.
@@ -111,10 +108,8 @@ class BackdropUpload extends \MovLib\Presentation\Movie\Backdrops {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\User\Session $session
    */
   protected function valid() {
-    global $session;
     $this->image->countryCode  = $this->selectCountry->value;
     $this->image->description  = $this->inputDescription->value;
     $this->image->languageCode = $this->selectLanguage->value;

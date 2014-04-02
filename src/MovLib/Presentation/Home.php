@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation;
 
-use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Partial\Alert;
 
 /**
  * The global home page for anonymous visitors.
@@ -28,111 +28,96 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Home extends \MovLib\Presentation\Page {
+final class Home extends \MovLib\Presentation\AbstractPresenter {
 
   /**
-   * Instantiate new special home presentation page.
-   *
-   * @global \MovLib\Kernel $kernel
+   * {@inheritdoc}
    */
-  public function __construct() {
-    global $kernel;
-    $this->initPage($kernel->siteName);
-    $kernel->stylesheets[] = "home";
-
-    // A link to the current page would be redundant!
-    $this->initBreadcrumb();
-    unset($this->breadcrumb->menuitems[1]);
-
-    // No need to call i18n for translation, there's nothing to translate.
-    foreach ($kernel->systemLanguages as $code => $locale) {
+  public function init() {
+    $this->initPage($this->config->sitename);
+    foreach ($this->intl->systemLocales as $code => $locale) {
       $this->languageLinks[$code] = "/";
     }
+    $this->initBreadcrumb();
+    // A link to the current page would be redundant!
+    unset($this->breadcrumb->menuitems[1]);
+    $this->stylesheets[] = "home";
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
+   */
+  public function getContent() {
+    $articles = [];
+
+    $articles[$this->intl->t("Movies")] = "<p>{$this->intl->t(
+      "Discover new and old movies, find out about all related details like who was the director, when and where was " .
+      "it released, what releases are available, find poster and lobby card art, plus many, many more …"
+    )}</p>";
+
+    $articles[$this->intl->t("Persons")] = "<p>{$this->intl->t(
+      "You always wanted to collect all movies of a specific director, actor or any other movie related person? This " .
+      "is the place for you to go. Find out all details about the person you admire, or simply add them yourself if " .
+      "you are an expert."
+    )}</p>";
+
+    $articles[$this->intl->t("Marketplace")] = "<p>{$this->intl->t(
+      "Searching for a specific release? Our marketplace is free, open, and built upon the exact release database. " .
+      "This makes it easy for sellers to list their inventory and buyers are able to specify the exact version they " .
+      "want."
+    )}</p>";
+
+    $articles[$this->intl->t("Releases")] = "<p>{$this->intl->t(
+      "Insert text here …"
+    )}</p>";
+
+    $articles[$this->intl->t("My {sitename}", [ "sitename" => $this->config->sitename ])] = "<p>{$this->intl->t(
+      "Insert text here …"
+    )}</p><p><a class='btn btn-success btn-large' href='{$this->intl->r("/profile/join")}'>{$this->intl->t(
+      "Join {sitename}", [ "sitename" => $this->config->sitename ])
+    }</a></p>";
+
+    $articles["<abbr title='{$this->intl->t("Application Programming Interface")}'>{$this->intl->t("API")}</abbr>"] = "<p>{$this->intl->t(
+      "The {sitename} API is a REST interface to access the free movie library. Specifically designed for all " .
+      "developers out there. We want to keep the barrier as low as possible and ensure that everybody can use the " .
+      "data we all collect here at {sitename}.",
+      [ "sitename" => $this->config->sitename ]
+    )}</p><p><a class='btn btn-primary btn-large' href='{$this->intl->r("/help/api")}'>{$this->intl->t(
+      "Read the API documentation"
+    )}</a></p>";
+
+    $content = "";
+    foreach ($articles as $title => $body) {
+      $content .= "<article class='s s4 taj'><h2 class='tac'>{$title}</h2>{$body}</article>";
+    }
+
+    return "<div class='c'><div class='r'>{$content}</div></div>";
+  }
+
+  /**
+   * {@inheritdoc}
    */
   protected function getHeadTitle() {
-    global $kernel;
-    return $kernel->siteNameAndSlogan;
+    return $this->config->sitename;
   }
 
   /**
-   * @inheritdoc
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\User\Session $session
+   * {@inheritdoc}
    */
-  protected function getMainContent() {
-    global $i18n, $kernel, $session;
-    $noscript = new Alert($i18n->t("Please activate JavaScript in your browser to experience our website with all its features."), $i18n->t("JavaScript Disabled"));
-    $content =
+  public function getMainContent($content) {
+    $noscript = new Alert(
+      $this->intl->t("Please activate JavaScript in your browser to experience our website with all its features."),
+      $this->intl->t("JavaScript Disabled")
+    );
+
+    return
       "<main id='m' role='main'>" .
         "<div id='banner'>" .
-          "<h2 class='c'>{$i18n->t("Do you like movies?{0}Great, so do we!", [ "<br>" ])}</h2>" .
+          "<h2 class='c'>{$this->intl->t("Do you like movies?{0}Great, so do we!", [ "<br>" ])}</h2>" .
         "</div>" .
-        "<noscript>{$noscript}</noscript>{$this->alerts}" .
-        "<div class='c'>" .
-          "<div class='r'>" .
-            "<article class='s s4 taj'>" .
-              "<h2 class='tac'>{$i18n->t("Movies")}</h2>" .
-              "<p>{$i18n->t(
-                "Discover new and old movies, find out about all related details like who was the director, when and " .
-                "where was it released, what releases are available, find poster and lobby card art, plus many, many more …"
-              )}</p>" .
-            "</article>" .
-            "<article class='s s4 taj'>" .
-              "<h2 class='tac'>{$i18n->t("Persons")}</h2>" .
-              "<p>{$i18n->t(
-                "You always wanted to collect all movies of a specific director, actor or any other movie related " .
-                "person? This is the place for you to go. Find out all details about the person you admire, or simply " .
-                "add them yourself if you are an expert."
-              )}</p>" .
-            "</article>" .
-            "<article class='s s4 taj'>" .
-              "<h2 class='tac'>{$i18n->t("Marketplace")}</h2>" .
-              "<p>{$i18n->t(
-                "Searching for a specific release? Our marketplace is free, open, and built upon the exact release " .
-                "database. This makes it easy for sellers to list their inventory and buyers are able to specify the " .
-                "exact version they want."
-              )}</p>" .
-            "</article>" .
-          "</div>" .
-          "<div class='r'>" .
-            "<article class='s s4 taj'>" .
-              "<h2 class='tac'>{$i18n->t("Releases")}</h2>" .
-              "<p></p>" .
-            "</article>" .
-            "<article class='s s4 taj'>" .
-              "<h2 class='tac'>{$i18n->t("My {sitename}", [ "sitename" => $kernel->siteName ])}</h2>"
-    ;
-    if (!$session->isAuthenticated) {
-      $content .=
-              "<p></p>" .
-              "<p><a class='btn btn-success btn-large' href='{$i18n->r("/profile/join")}'>{$i18n->t(
-                "Join {sitename}", [ "sitename" => $kernel->siteName ])
-              }</a></p>"
-      ;
-    }
-    $content .=
-            "</article>" .
-            "<article class='s s4 taj'>" .
-              "<h2 class='tac'>{$i18n->t("<abbr title='Application Programming Interface'>API</abbr>")}</h2>" .
-              "<p>{$i18n->t(
-                "The {sitename} API is a REST interface to access the free movie library. Specifically designed for all " .
-                "developers out there. We want to keep the barrier as low as possible and ensure that everybody can " .
-                "use the data we all collect here at {sitename}.",
-                [ "sitename" => $kernel->siteName ]
-              )}</p>" .
-              "<p><a class='btn btn-primary btn-large' href='{$i18n->r("/help/api")}'>{$i18n->t("Read the API documentation")}</a></p>" .
-            "</article>" .
-          "</div>" .
-        "</div>" .
+        "<noscript>{$noscript}</noscript>{$this->alerts}{$content}" .
       "</main>"
     ;
-    return $content;
   }
 
 }

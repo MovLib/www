@@ -38,10 +38,8 @@ class Styles extends \MovLib\Data\DatabaseArrayObject {
   /**
    * Instantiate new styles object.
    *
-   * @global \MovLib\Data\I18n $i18n
    */
   public function __construct() {
-    global $i18n;
     if ($i18n->languageCode != $i18n->defaultLanguageCode) {
       $this->query = "COLUMN_GET(`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS `dynName`,";
     }
@@ -81,12 +79,10 @@ class Styles extends \MovLib\Data\DatabaseArrayObject {
   /**
    * Order selected styles by name.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
   public function orderByName() {
-    global $i18n;
     $this->objectsArray = [];
     $result = $this->query("{$this->query} ORDER BY `style_id` ASC")->get_result();
     /* @var $style \MovLib\Data\Style */

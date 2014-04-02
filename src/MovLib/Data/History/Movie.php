@@ -35,7 +35,6 @@ class Movie extends AbstractHistory {
    * @inheritdoc
    */
   public function __construct($id, $context = "history") {
-    global $kernel;
     parent::__construct($id, $context);
     $this->files = [
       "original_title",

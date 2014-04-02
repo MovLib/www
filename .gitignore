@@ -8,16 +8,14 @@ Desktop.ini
 # Project Specific
 # ----------------------------------------------------------------------
 !/bin/
-/composer.lock
-/conf/mariadb/movlib.mwb.bak
-/etc/mariadb/movlib.mwb.bak
-/private/sandbox/
-/private/subscriptions.txt
-/public/bower/
-/vendor/
-/public/vagrant/
 /.vagrant/
-/etc/vagrant/Visual Studio Project/MovLib Vagrant Bootstrap/publish/
+/composer.lock
+/etc/movlib/movlib.ser
+/etc/mysql/movlib.mwb.bak
 /etc/vagrant/Visual Studio Project/MovLib Vagrant Bootstrap/bin/
 /etc/vagrant/Visual Studio Project/MovLib Vagrant Bootstrap/obj/
-/etc/movlib/movlib.json
+/etc/vagrant/Visual Studio Project/MovLib Vagrant Bootstrap/publish/
+/lib/
+/var/public/bower/
+/var/public/vagrant/
+/private/

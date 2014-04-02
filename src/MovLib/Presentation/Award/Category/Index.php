@@ -39,15 +39,12 @@ class Index extends \MovLib\Presentation\Award\AbstractBase {
   /**
    * Instantiate new award categories presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
     $this->award = new Award((integer) $_SERVER["AWARD_ID"]);
-    $this->initPage($i18n->t("Categories of {0}", [ $this->award->name ]));
-    $this->pageTitle       = $i18n->t("Categories of {0}", [ "<a href='{$this->award->route}'>{$this->award->name}</a>" ]);
-    $this->breadcrumbTitle = $i18n->t("Categories");
+    $this->initPage($this->intl->t("Categories of {0}", [ $this->award->name ]));
+    $this->pageTitle       = $this->intl->t("Categories of {0}", [ "<a href='{$this->award->route}'>{$this->award->name}</a>" ]);
+    $this->breadcrumbTitle = $this->intl->t("Categories");
     $this->initLanguageLinks("/award/{0}/categories", [ $this->award->id ], true);
     $this->initAwardBreadcrumb();
     $this->sidebarInit();
@@ -61,26 +58,24 @@ class Index extends \MovLib\Presentation\Award\AbstractBase {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    * @return \MovLib\Presentation\Partial\Listing\Movies
    */
   protected function getPageContent() {
-    global $i18n;
     $this->headingBefore =
-      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/award/{0}/category/create", [ $this->award->id ])}'>{$i18n->t("Create New Category")}</a>"
+      "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/award/{0}/category/create", [ $this->award->id ])}'>{$this->intl->t("Create New Category")}</a>"
     ;
 
     $result      = $this->award->getCategoriesResult();
     $noItemText  = new Alert(
-      $i18n->t(
+      $this->intl->t(
         "We couldn’t find any categories matching your filter criteria, or there simply aren’t any categories available."
-      ), $i18n->t("No Category"), Alert::SEVERITY_INFO
+      ), $this->intl->t("No Category"), Alert::SEVERITY_INFO
     );
     $noItemText .=
-      $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/award/{0}/category/creat", [ $this->award->id ])}'>", "</a>" ]);
+      $this->intl->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$this->intl->r("/award/{0}/category/creat", [ $this->award->id ])}'>", "</a>" ]);
 
-    $moviesRoute = $i18n->rp("/award/{0}/category/{1}/movies", [ $this->award->id, "{{ id }}" ]);
-    $seriesRoute = $i18n->rp("/award/{0}/category/{1}/series", [ $this->award->id, "{{ id }}" ]);
+    $moviesRoute = $this->intl->rp("/award/{0}/category/{1}/movies", [ $this->award->id, "{{ id }}" ]);
+    $seriesRoute = $this->intl->rp("/award/{0}/category/{1}/series", [ $this->award->id, "{{ id }}" ]);
 
     return new EntityIndexListing($result, $noItemText, "AwardCategory", $moviesRoute, $seriesRoute);
   }

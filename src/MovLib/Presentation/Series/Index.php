@@ -28,29 +28,27 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\Page {
+class Index extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Presentation\TraitSidebar;
 
   public function __construct() {
-    global $i18n;
-    $this->initPage($i18n->t("Series"));
+    $this->initPage($this->intl->t("Series"));
     $this->initLanguageLinks("/series", null, true);
     $this->initBreadcrumb();
     $this->sidebarInit([
-      [ $i18n->rp("/series"), $i18n->t("Series"), [ "class" => "ico ico-series" ] ],
-      [ $i18n->rp("/series/charts"), $i18n->t("Charts") ],
-      [ $i18n->r("/series/random"), $i18n->t("Random") ],
+      [ $this->intl->rp("/series"), $this->intl->t("Series"), [ "class" => "ico ico-series" ] ],
+      [ $this->intl->rp("/series/charts"), $this->intl->t("Charts") ],
+      [ $this->intl->r("/series/random"), $this->intl->t("Random") ],
     ]);
   }
 
   protected function getPageContent() {
-    global $i18n;
     $this->headingBefore =
-      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/series/create")}'>{$i18n->t("Create New Series")}</a>"
+      "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/series/create")}'>{$this->intl->t("Create New Series")}</a>"
     ;
     return new Alert(
-      $i18n->t("The series feature isn’t implemented yet."),
-      $i18n->t("Check back later"),
+      $this->intl->t("The series feature isn’t implemented yet."),
+      $this->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     );
   }

@@ -44,15 +44,13 @@ class Edit extends \MovLib\Presentation\Movie\AbstractBase {
   /**
    * Instantiate new delete movie presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
    */
   public function __construct() {
-    global $i18n;
     $this->movie = new FullMovie($_SERVER["MOVIE_ID"]);
-    $this->initPage($i18n->t("Edit {title}", [ "title" => $this->movie->displayTitleWithYear ]));
+    $this->initPage($this->intl->t("Edit {title}", [ "title" => $this->movie->displayTitleWithYear ]));
     $this->initLanguageLinks("/movie/{0}/edit", [ $this->movie->id ]);
     $this->initBreadcrumb();
-    $this->breadcrumbTitle = $i18n->t("Edit");
+    $this->breadcrumbTitle = $this->intl->t("Edit");
   }
 
 
@@ -63,10 +61,9 @@ class Edit extends \MovLib\Presentation\Movie\AbstractBase {
    * @inheritdoc
    */
   protected function getContent() {
-    global $i18n;
     $this->alerts .= new Alert(
-      $i18n->t("The edit movie feature isn’t implemented yet."),
-      $i18n->t("Check back later"),
+      $this->intl->t("The edit movie feature isn’t implemented yet."),
+      $this->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     );
   }

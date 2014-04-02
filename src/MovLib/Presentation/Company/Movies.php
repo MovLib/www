@@ -17,8 +17,8 @@
  */
 namespace MovLib\Presentation\Company;
 
-use \MovLib\Data\Company\FullCompany;
-use \MovLib\Presentation\Partial\Listing\CompanyMovieListing;
+use \MovLib\Data\Company;
+use \MovLib\Partial\Listing\CompanyMovieListing;
 
 /**
  * Movies with a certain company associated.
@@ -32,29 +32,6 @@ use \MovLib\Presentation\Partial\Listing\CompanyMovieListing;
 class Movies extends \MovLib\Presentation\Company\AbstractBase {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new company movie presentation.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   */
-  public function __construct() {
-    global $i18n, $kernel;
-    $this->company = new FullCompany((integer) $_SERVER["COMPANY_ID"]);
-    $this->initPage($i18n->t("Movies from {0}", [ $this->company->name ]));
-    $this->pageTitle       = $i18n->t("Movies from {0}", [ "<a href='{$this->company->route}'>{$this->company->name}</a>" ]);
-    $this->breadcrumbTitle = $i18n->t("Movies");
-    $this->initLanguageLinks("/company/{0}/movies", [ $this->company->id ], true);
-    $this->initCompanyBreadcrumb();
-    $this->sidebarInit();
-
-    $kernel->stylesheets[] = "company";
-  }
-
-
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
@@ -63,7 +40,20 @@ class Movies extends \MovLib\Presentation\Company\AbstractBase {
    * @return \MovLib\Presentation\Partial\Listing\CompanyMovieListing
    */
   protected function getPageContent() {
-    return new CompanyMovieListing($this->company->getMovieResult());
+    return new CompanyMovieListing($this->diContainerHTTP, $this->company->getMovieResult());
+  }
+
+  /**
+   * Instantiate new company movie presentation.
+   */
+  public function init() {
+    $this->company = (new Company($this->diContainerHTTP))->init((integer) $_SERVER["COMPANY_ID"]);
+    $this->initPage($this->intl->t("Movies from {0}", [ $this->company->name ]));
+    $this->pageTitle       = $this->intl->t("Movies from {0}", [ "<a href='{$this->company->route}'>{$this->company->name}</a>" ]);
+    $this->breadcrumbTitle = $this->intl->t("Movies");
+    $this->initLanguageLinks("/company/{0}/movies", [ $this->company->id ], true);
+    $this->initCompanyBreadcrumb();
+    $this->sidebarInit();
   }
 
 }

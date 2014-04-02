@@ -46,14 +46,14 @@ abstract class AbstractBase extends \MovLib\Presentation\Movie\AbstractBase {
   protected $class;
 
   /**
-   * The translated name of the movie image (e.g. <code>$i18n->t("Poster")</code>).
+   * The translated name of the movie image (e.g. <code>$this->intl->t("Poster")</code>).
    *
    * @var string
    */
   protected $name;
 
   /**
-   * The translated plural name of the movie image (e.g. <code>$i18n->t("Posters")</code>).
+   * The translated plural name of the movie image (e.g. <code>$this->intl->t("Posters")</code>).
    *
    * @var string
    */
@@ -80,13 +80,12 @@ abstract class AbstractBase extends \MovLib\Presentation\Movie\AbstractBase {
   /**
    * Instantiate new movie images presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param string $className
    *   The movie image's class name we have to present, without the leading <code>"Movie"</code>.
    * @param string $name
-   *   The movie image's translated name (e.g. <code>$i18n->t("Poster")</code>).
+   *   The movie image's translated name (e.g. <code>$this->intl->t("Poster")</code>).
    * @param string $namePlural
-   *   The movie image's translated plural name (e.g. <code>$i18n->t("Posters")</code>).
+   *   The movie image's translated plural name (e.g. <code>$this->intl->t("Posters")</code>).
    * @param string $routeKey
    *   The movie image's route key (e.g. <code>"poster"</code>).
    * @param string $routeKeyPlural
@@ -95,8 +94,6 @@ abstract class AbstractBase extends \MovLib\Presentation\Movie\AbstractBase {
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct($className, $name, $namePlural, $routeKey, $routeKeyPlural) {
-    global $i18n;
-
     // Try to load the movie and export all variables to class scope.
     $this->movie          = new Movie((integer) $_SERVER["MOVIE_ID"]);
     $this->class          = "\\MovLib\\Data\\Image\\Movie{$className}";
@@ -106,7 +103,7 @@ abstract class AbstractBase extends \MovLib\Presentation\Movie\AbstractBase {
     $this->routeKeyPlural = $routeKeyPlural;
 
     // Translate title once.
-    $title  = $i18n->t("{image_name} for {title}");
+    $title  = $this->intl->t("{image_name} for {title}");
     $search = [ "{image_name}", "{title}" ];
 
     // Initialize the breadcrumb ...
@@ -117,7 +114,7 @@ abstract class AbstractBase extends \MovLib\Presentation\Movie\AbstractBase {
     $this->initPage(str_replace($search, [ $namePlural, $this->movie->displayTitleWithYear ], $title));
     $pageTitle = "<span itemprop='name'{$this->lang($this->movie->displayTitleLanguageCode)}>{$this->movie->displayTitle}</span>";
     if ($this->movie->year) {
-      $pageTitle = $i18n->t("{0} ({1})", [ $pageTitle, "<span itemprop='datePublished'>{$this->movie->year}</span>" ]);
+      $pageTitle = $this->intl->t("{0} ({1})", [ $pageTitle, "<span itemprop='datePublished'>{$this->movie->year}</span>" ]);
     }
     $this->pageTitle = str_replace($search, [
       $namePlural,
@@ -137,28 +134,25 @@ abstract class AbstractBase extends \MovLib\Presentation\Movie\AbstractBase {
   /**
    * Get the page's content.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The page's content.
    */
   protected function getPageContent() {
-    global $i18n;
-
     // Add large button to the header to ensure that nobody has to search for the upload page.
-    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/movie/{0}/{$this->routeKey}/upload", [ $this->movie->id ])}'>{$i18n->t("Upload New")}</a>";
+    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/movie/{0}/{$this->routeKey}/upload", [ $this->movie->id ])}'>{$this->intl->t("Upload New")}</a>";
 
     // Only build the image listing if there are images to list.
     if ($this->paginationTotalResults === 0) {
       return new Alert(
-        $i18n->t(
+        $this->intl->t(
           "We couldn’t find any {image_name_plural} matching your filter criteria, or there simply aren’t any {image_name_plural} available. Would you like to {0}upload a new {image_name}{1}?",
           [
-            "<a href='{$i18n->r("/movie/{0}/{$this->routeKey}/upload", [ $this->movie->id ])}'>", "</a>",
+            "<a href='{$this->intl->r("/movie/{0}/{$this->routeKey}/upload", [ $this->movie->id ])}'>", "</a>",
             "image_name"        => $this->name,
             "image_name_plural" => $this->namePlural,
           ]
         ),
-        $i18n->t("No {image_name_plural}", [ "image_name_plural" => $this->namePlural ]),
+        $this->intl->t("No {image_name_plural}", [ "image_name_plural" => $this->namePlural ]),
         Alert::SEVERITY_INFO
       );
     }
@@ -182,7 +176,7 @@ abstract class AbstractBase extends \MovLib\Presentation\Movie\AbstractBase {
           true,
           [ "itemprop" => "thumbnail" ],
           [ "itemprop" => "url" ]
-        )}{$country} {$i18n->t("{width} × {height}", [
+        )}{$country} {$this->intl->t("{width} × {height}", [
           // The length unit is mandatory for distances: http://schema.org/Distance
           "width"  => "<span itemprop='width'>{$image->width}<span class='vh'> px</span></span>",
           "height" => "<span itemprop='height'>{$image->height}<span class='vh'> px</span></span>",
@@ -197,28 +191,26 @@ abstract class AbstractBase extends \MovLib\Presentation\Movie\AbstractBase {
   /**
    * Initialize the movie gallery sidebar.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return this
    */
   protected function initSidebar() {
-    global $i18n;
     // Compile arguments array once.
     $args = [ $this->movie->id ];
 
     // Create array containing all available movie image types and their sidebar menuitems. We need all of them because
     // we add the non active ones at the bottom of the sidebar navigation for easy switching between the different types.
     $typePages = [
-      "posters"     => [ $i18n->rp("/movie/{0}/posters", $args), $i18n->t("Posters"), [ "class" => "ico ico-poster" ] ],
-      "lobby-cards" => [ $i18n->rp("/movie/{0}/lobby-cards", $args), $i18n->t("Lobby Cards"), [ "class" => "ico ico-lobby-card" ] ],
-      "backdrops"   => [ $i18n->rp("/movie/{0}/backdrops", $args), $i18n->t("Backdrops"), [ "class" => "ico ico-image" ] ],
+      "posters"     => [ $this->intl->rp("/movie/{0}/posters", $args), $this->intl->t("Posters"), [ "class" => "ico ico-poster" ] ],
+      "lobby-cards" => [ $this->intl->rp("/movie/{0}/lobby-cards", $args), $this->intl->t("Lobby Cards"), [ "class" => "ico ico-lobby-card" ] ],
+      "backdrops"   => [ $this->intl->rp("/movie/{0}/backdrops", $args), $this->intl->t("Backdrops"), [ "class" => "ico ico-image" ] ],
     ];
 
     // Initialize the sidebar menuitems with the menuitem for the current movie image type first and the corresponding
     // upload page second.
     $sidebarMenuitems = [
       $typePages[$this->routeKeyPlural],
-      [ $i18n->r("/movie/{0}/{$this->routeKey}/upload", $args), $i18n->t("Upload"), [ "class" => "ico ico-upload" ] ],
-      [ $this->movie->route, $i18n->t("Back to movie"), [ "class" => "ico ico-movie separator" ] ],
+      [ $this->intl->r("/movie/{0}/{$this->routeKey}/upload", $args), $this->intl->t("Upload"), [ "class" => "ico ico-upload" ] ],
+      [ $this->movie->route, $this->intl->t("Back to movie"), [ "class" => "ico ico-movie separator" ] ],
     ];
 
     // Remove the current movie image sidebar menuitem from the movie image types array and iterate over the remaining

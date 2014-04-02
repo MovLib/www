@@ -17,39 +17,41 @@
  */
 namespace MovLib\Data\User;
 
-use \MovLib\Data\Image\Style;
+use \MovLib\Data\Date;
+use \MovLib\Exception\ClientException\GoneException;
+use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
- * @todo Description of TestUser
+ * Defines the user entity object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class User extends \MovLib\Data\Image\AbstractBaseImage {
+final class User extends \MovLib\Data\AbstractDatabaseEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
 
   /**
-   * Load the user from ID.
+   * Init user via unique identifier.
    *
    * @var string
    */
   const FROM_ID = "id";
 
   /**
-   * Load the user from name.
+   * Init user via name.
    *
    * @var string
    */
   const FROM_NAME = "name";
 
   /**
-   * Load the user from mail.
+   * Init user via email
    *
    * @var string
    */
@@ -76,37 +78,72 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
    */
   const NAME_ILLEGAL_CHARACTERS = "/_@#<>|()[]{}?\\=:;,'\"&$*~";
 
-  /**
-   * Special style for the avatar in the site header.
-   *
-   * @var string
-   */
-  const STYLE_HEADER_USER_NAVIGATION = 50;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The user's unique ID.
+   * The user's profile text.
+   *
+   * @var null|string
+   */
+  public $aboutMe;
+
+  /**
+   * The user's last access (UNIX timestamp).
+   *
+   * @var null|integer
+   */
+  public $access;
+
+  /**
+   * The user's birthday (date).
+   *
+   * @var null|string
+   */
+  public $birthday;
+
+  /**
+   * The user's country code.
+   *
+   * @var null|string
+   */
+  public $countryCode;
+
+  /**
+   * The user's creation time (UNIX timestamp).
+   *
+   * @var null|integer
+   */
+  public $created;
+
+  /**
+   * The user's currency code.
+   *
+   * @var string
+   */
+  public $currencyCode;
+
+  /**
+   * The user's edit counter.
+   *
+   * @var null|integer
+   */
+  public $edits;
+
+  /**
+   * The user's unique email.
+   *
+   * @var null|string
+   */
+  public $email;
+
+  /**
+   * The user's unique identifier.
    *
    * @var integer
    */
   public $id;
-
-  /**
-   * The directory name within the uploads folder.
-   *
-   * @var string
-   */
-  protected $directory = "user";
-
-  /**
-   * The user's unique name sanitized for routes.
-   *
-   * @var string
-   */
-  public $filename;
 
   /**
    * The user's unique name.
@@ -116,6 +153,41 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
   public $name;
 
   /**
+   * The user's hashed password.
+   *
+   * @var null|string
+   */
+  public $password;
+
+  /**
+   * Whether the user's personal data is private or not.
+   *
+   * @var null|boolean
+   */
+  public $private;
+
+  /**
+   * The user's total amount of profile views.
+   *
+   * @var null|integer
+   */
+  public $profileViews;
+
+  /**
+   * The user's real name.
+   *
+   * @var null|string
+   */
+  public $realName;
+
+  /**
+   * The user's reputation count.
+   *
+   * @var null|integer
+   */
+  public $reputation;
+
+  /**
    * The user's translated route.
    *
    * @var string
@@ -123,169 +195,177 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
   public $route;
 
   /**
-   * @inheritdoc
+   * The user's sex according to ISO/IEC 5218.
+   *
+   * We are only using the following three values from the standard:
+   * <ul>
+   *   <li><b><code>0</code>:</b> not known</li>
+   *   <li><b><code>1</code>:</b> male</li>
+   *   <li><b><code>2</code>:</b> female</li>
+   * </ul>
+   * The fourth value makes no sense in our software.
+   *
+   * @link https://en.wikipedia.org/wiki/ISO/IEC_5218
+   * @var null|integer
    */
-  protected $placeholder = "avatar";
+  public $sex;
 
   /**
-   * The user's time zone ID (e.g. <code>"Europe/Vienna"</code>).
+   * The user's preferred system language's code (e.g. <code>"en"</code>).
    *
    * @var null|string
    */
-  public $timeZoneIdentifier;
+  public $systemLanguageCode;
+
+  /**
+   * The user's time zone identifier (e.g. <code>"Europe/Vienna"</code>).
+   *
+   * @var null|string
+   */
+  public $timeZone;
 
   /**
    * The MySQLi bind param types of the columns.
    *
    * @var array
    */
-  protected $types = [
+  protected static $types = [
     self::FROM_ID    => "d",
     self::FROM_EMAIL => "s",
     self::FROM_NAME  => "s",
   ];
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
   /**
-   * Instantiate new user.
+   * The user's website.
    *
-   * If no <var>$from</var> or <var>$value</var> is given, an empty user model will be created.
-   *
-   * @global \MovLib\Data\Database $db
-   * @param string $from [optional]
-   *   Defines how the object should be filled with data, use the various <var>FROM_*</var> class constants.
-   * @param mixed $value [optional]
-   *   Data to identify the user, see the various <var>FROM_*</var> class constants.
-   * @throws \OutOfBoundsException
+   * @var null|string
    */
-  public function __construct($from = null, $value = null) {
-    global $db;
-
-    if ($from && $value) {
-      $stmt = $db->query(
-        "SELECT `id`, `name`, `time_zone_identifier`, UNIX_TIMESTAMP(`image_changed`), `image_extension` FROM `users` WHERE `{$from}` = ?",
-        $this->types[$from],
-        [ $value ]
-      );
-      $stmt->bind_result($this->id, $this->name, $this->timeZoneIdentifier, $this->changed, $this->extension);
-      if (!$stmt->fetch()) {
-        throw new \OutOfBoundsException("Couldn't find user for {$from} '{$value}'");
-      }
-      $stmt->close();
-    }
-
-    if ($this->id) {
-      $this->init();
-    }
-  }
+  public $website;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * Commit the current state of the object to the database.
+   * Initialize existing user from given value.
    *
-   * @global \MovLib\Data\Database $db
+   * @param string $from
+   *   From which column the existing user should be loaded, use the <var>FROM_*</var> class constants.
+   * @param string $value
+   *   The value of the column.
    * @return this
+   * @throws \MovLib\Exception\ClientException\NotFoundException
+   * @throws \MovLib\Exception\ClientException\GoneException
    */
-  public function commit() {
-    global $db;
-    $db->query(
-      "UPDATE `users` SET `image_changed` = FROM_UNIXTIME(?), `image_extension` = ? WHERE `id` = ?",
-      "ssd",
-      [ $this->changed, $this->extension, $this->id ]
+  public function init($from, $value) {
+    $stmt = $this->getMySQLi()->prepare(<<<SQL
+SELECT
+  `id`,
+  `name`,
+  UNIX_TIMESTAMP(`access`),
+  `birthdate`,
+  `country_code`,
+  UNIX_TIMESTAMP(`created`),
+  `currency_code`,
+  COLUMN_GET(`dyn_about_me`, '{$this->intl->languageCode}' AS BINARY),
+  `edits`,
+  `email`,
+  `password`,
+  `private`,
+  `profile_views`,
+  `real_name`,
+  `reputation`,
+  `sex`,
+  `system_language_code`,
+  `time_zone_identifier`,
+  `website`
+FROM `users`
+WHERE `{$from}` = ?
+LIMIT 1
+SQL
     );
-    return $this;
-  }
-
-  /**
-   * Get random user name.
-   *
-   * @global \MovLib\Data\Database $db
-   * @return integer|null
-   *   Random user name or null in case of failure.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public static function getRandomUserName() {
-    global $db;
-    $query = "SELECT `name` FROM `users` ORDER BY RAND() LIMIT 1";
-    if ($result = $db->query($query)->get_result()) {
-      return $result->fetch_assoc()["name"];
+    $stmt->bind_param(self::$types[$from], $value);
+    $stmt->execute();
+    $stmt->bind_result(
+      $this->id,
+      $this->name,
+      $this->access,
+      $this->birthday,
+      $this->countryCode,
+      $this->created,
+      $this->currencyCode,
+      $this->aboutMe,
+      $this->edits,
+      $this->email,
+      $this->password,
+      $this->private,
+      $this->profileViews,
+      $this->realName,
+      $this->reputation,
+      $this->sex,
+      $this->systemLanguageCode,
+      $this->timeZone,
+      $this->website
+    );
+    try {
+      $stmt->fetch();
     }
-  }
-
-  /**
-   * Get the <var>$style</var> for this image.
-   *
-   * @param mixed $style
-   *   The desired style, use the objects <var>STYLE_*</var> class constants. Defaults to <var>STYLE_SPAN_02</var>.
-   * @return \MovLib\Data\Image\Style
-   *   The image's desired style object.
-   */
-  public function getStyle($style = self::STYLE_SPAN_02) {
-    global $i18n;
-    if (!isset($this->stylesCache[$style])) {
-      $this->stylesCache[$style] = new Style(
-        $i18n->t("Avatar image of {0}.", [ $this->name ]),
-        $this->getURL($style),
-        $style,
-        $style,
-        !$this->imageExists,
-        $this->route
-      );
+    catch (\mysqli_sql_exception $e) {
+      throw new NotFoundException("Couldn't find user {$from} '{$value}'");
     }
-    return $this->stylesCache[$style];
+    finally {
+      $stmt->close();
+    }
+    return $this->initFetchObject();
   }
 
   /**
-   * Initialize image properties and user page route.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @return this
+   * {@inheritdoc}
    */
-  public function init() {
-    global $i18n;
-    $this->imageExists   = (boolean) $this->changed;
-    $this->filename = mb_strtolower($this->name);
-    $this->route    = $i18n->r("/user/{0}", [ $this->filename ]);
+  public function initFetchObject() {
+    $this->birthday = new Date($this->birthday);
+    $this->route    = $this->intl->r("/user/{0}", mb_strtolower($this->name));
     return $this;
   }
 
   /**
-   * Upload the <var>$source</var>, overriding any existing image.
+   * Check if given user property is already in use.
    *
-   * @global \MovLib\Data\User\Session $session
-   * @param string $source
-   *   Absolute path to the uploaded image.
-   * @param string $extension
-   *   The three letter image extension (e.g. <code>"jpg"</code>).
-   * @param integer $height
-   *   <b>Unused!</b>
-   * @param integer $width
-   *   <b>Unused!</b>
-   * @return this
-   * @throws \RuntimeException
+   * @param string $what
+   *   Either <var>User::FROM_NAME</var> or <var>User::FROM_EMAIL</var>.
+   * @param string $nameOrEmail
+   *   The name or email address to check.
+   * @return boolean
+   *   <code>TRUE</code> if the email address is already in use, <code>FALSE</code> otherwise.
    */
-  public function upload($source, $extension, $height, $width) {
-    global $session;
+  public function inUse($what, $nameOrEmail) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert($what == self::FROM_EMAIL || $what == self::FROM_NAME, "You can only check usage for 'name' and 'email'.");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    return (null !== $this->query("SELECT `{$what}` FROM `users` WHERE `{$what}` = ? LIMIT 1", "s", [ $nameOrEmail ]));
+  }
 
-    $this->changed     = $_SERVER["REQUEST_TIME"];
-    $this->imageExists = true;
-    $this->extension   = $extension;
-    $this->stylesCache = null;
+  /**
+   * {@inheritdoc}
+   */
+  public function getPluralName() {
+    return "users";
+  }
 
-    $this->convert($source, self::STYLE_SPAN_02, self::STYLE_SPAN_02, self::STYLE_SPAN_02, true);
-    // Generate the small ones based on the span2 result, this will give us best results.
-    $this->convert($this->getPath(self::STYLE_SPAN_02), self::STYLE_SPAN_01);
-    $this->convert($this->getPath(self::STYLE_SPAN_02), self::STYLE_HEADER_USER_NAVIGATION);
+  /**
+   * {@inheritdoc}
+   */
+  public function getSingularName() {
+    return "user";
+  }
 
-    $session->userAvatar = $this->getStyle(self::STYLE_HEADER_USER_NAVIGATION);
-
-    return $this;
+  /**
+   * {@inheritdoc}
+   */
+  public function isGone() {
+    return ($this->email === null);
   }
 
 }

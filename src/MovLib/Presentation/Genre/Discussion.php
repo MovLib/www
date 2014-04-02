@@ -37,14 +37,11 @@ class Discussion extends \MovLib\Presentation\Genre\AbstractBase {
   /**
    * Instantiate new genre discussion presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
     $this->genre = new Genre((integer) $_SERVER["GENRE_ID"]);
-    $this->initPage($i18n->t("Discussion"));
-    $this->pageTitle = $i18n->t("Discussion of {0}", [ "<a href='{$this->genre->route}'>{$this->genre->name}</a>" ]);
+    $this->initPage($this->intl->t("Discussion"));
+    $this->pageTitle = $this->intl->t("Discussion of {0}", [ "<a href='{$this->genre->route}'>{$this->genre->name}</a>" ]);
     $this->initLanguageLinks("/genre/{0}/discussion", [ $this->genre->id ]);
     $this->initGenreBreadcrumb();
     $this->sidebarInit();
@@ -58,12 +55,10 @@ class Discussion extends \MovLib\Presentation\Genre\AbstractBase {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    * @return \MovLib\Presentation\Partial\Alert
    */
   protected function getPageContent() {
-    global $i18n;
-    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("discuss genre") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Presentation\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("discuss genre") ]), $this->intl->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
   }
 
 }

@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Company;
 
-use \MovLib\Data\Company\FullCompany;
+use \MovLib\Data\Company;
 
 
 /**
@@ -32,40 +32,28 @@ use \MovLib\Data\Company\FullCompany;
 class Series extends \MovLib\Presentation\Company\AbstractBase {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new company series presentation.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   */
-  public function __construct() {
-    global $i18n, $kernel;
-    $this->company = new FullCompany((integer) $_SERVER["COMPANY_ID"]);
-    $this->initPage($i18n->t("Series from {0}", [ $this->company->name ]));
-    $this->pageTitle       = $i18n->t("Series from {0}", [ "<a href='{$this->company->route}'>{$this->company->name}</a>" ]);
-    $this->breadcrumbTitle = $i18n->t("Series");
-    $this->initLanguageLinks("/company/{0}/series", [ $this->company->id ], true);
-    $this->initCompanyBreadcrumb();
-    $this->sidebarInit();
-
-    $kernel->stylesheets[] = "company";
-  }
-
-
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
  /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    * @return \MovLib\Presentation\Partial\Alert
    */
   protected function getPageContent() {
-    global $i18n;
-    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("series with company") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("series with company") ]), $this->intl->t("Check back later"), \MovLib\Partial\Alert::SEVERITY_INFO);
+  }
+
+  /**
+   * Instantiate new company series presentation.
+   */
+  public function init() {
+    $this->company = (new Company($this->diContainerHTTP))->init((integer) $_SERVER["COMPANY_ID"]);
+    $this->initPage($this->intl->t("Series from {0}", [ $this->company->name ]));
+    $this->pageTitle       = $this->intl->t("Series from {0}", [ "<a href='{$this->company->route}'>{$this->company->name}</a>" ]);
+    $this->breadcrumbTitle = $this->intl->t("Series");
+    $this->initLanguageLinks("/company/{0}/series", [ $this->company->id ], true);
+    $this->initCompanyBreadcrumb();
+    $this->sidebarInit();
   }
 
 }

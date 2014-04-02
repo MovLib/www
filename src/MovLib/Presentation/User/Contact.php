@@ -62,15 +62,13 @@ class Contact extends \MovLib\Presentation\User\AbstractUserPage {
    *
    * Instantiate new user collection presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
    */
   public function __construct(){
-    global $i18n;
     $this->init();
-    $this->initPage($i18n->t("Contact {0}", [ $this->user->name ]));
+    $this->initPage($this->intl->t("Contact {0}", [ $this->user->name ]));
     $this->initLanguageLinks("/user/{0}/contact", [ $this->user->name ]);
-    $this->pageTitle       = $i18n->t("Contact {username}", [ "username" => "<a href='{$this->user->route}'>{$this->user->name}</a>" ]);
-    $this->breadcrumbTitle = $i18n->t("Contact");
+    $this->pageTitle       = $this->intl->t("Contact {username}", [ "username" => "<a href='{$this->user->route}'>{$this->user->name}</a>" ]);
+    $this->breadcrumbTitle = $this->intl->t("Contact");
   }
 
 
@@ -79,31 +77,26 @@ class Contact extends \MovLib\Presentation\User\AbstractUserPage {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\User\Session $session
    */
   protected function getPageContent(){
-    global $i18n, $kernel, $session;
-
     // Only authenticated users can contact other users.
     if ($session->isAuthenticated === false) {
       return new Alert(
-        $i18n->t("You need to {0}sign in{1} or {2}joing {sitename}{1} to contact other users.", [
-          "<a href='{$i18n->r("/profile/sign-in")}'>", "</a>", "<a href='{$i18n->r("/profile/join")}'>", "sitename" => $kernel->siteName
+        $this->intl->t("You need to {0}sign in{1} or {2}joing {sitename}{1} to contact other users.", [
+          "<a href='{$this->intl->r("/profile/sign-in")}'>", "</a>", "<a href='{$this->intl->r("/profile/join")}'>", "sitename" => $this->config->sitename
         ]),
-        $i18n->t("Authentication Required"),
+        $this->intl->t("Authentication Required"),
         Alert::SEVERITY_INFO
       );
     }
 
-    $this->subject = new InputText("subject", $i18n->t("Subject"), [
-      "placeholder" => $i18n->t("This will appear as title in {username}’s inbox", [ "username" => $this->user->name ]),
+    $this->subject = new InputText("subject", $this->intl->t("Subject"), [
+      "placeholder" => $this->intl->t("This will appear as title in {username}’s inbox", [ "username" => $this->user->name ]),
       "required",
     ]);
-    $this->message = new InputHTML("message", $i18n->t("Message"), null, []);
+    $this->message = new InputHTML("message", $this->intl->t("Message"), null, []);
     $this->form = new Form($this, [ $this->subject, $this->message ]);
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Send"), [ "class" => "btn btn-success btn-large" ]);
+    $this->form->actionElements[] = new InputSubmit($this->intl->t("Send"), [ "class" => "btn btn-success btn-large" ]);
 
     return $this->form;
   }
@@ -112,8 +105,7 @@ class Contact extends \MovLib\Presentation\User\AbstractUserPage {
    * @inheritdoc
    */
   protected function valid() {
-    global $i18n;
-    $this->alerts .= new Alert($i18n->t("Not implemented yet!"));
+    $this->alerts .= new Alert($this->intl->t("Not implemented yet!"));
     return $this;
   }
 

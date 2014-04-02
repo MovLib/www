@@ -26,7 +26,7 @@ namespace MovLib\Presentation\Year;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Filter extends \MovLib\Presentation\Page {
+class Filter extends \MovLib\Presentation\AbstractPresenter {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -70,7 +70,6 @@ class Filter extends \MovLib\Presentation\Page {
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
-    global $i18n;
     $this->filter  = self::$filters[$_SERVER["FILTER"]];
 
     // IMPORTANT!
@@ -79,37 +78,37 @@ class Filter extends \MovLib\Presentation\Page {
     // words that are already translated. We normally never pass parameters to i18n because we can't parse them, but
     // all of the filters are within our translation database from other places, that's why it works here. We have to
     // use the switch solution if we have any special words (e.g. containing a space) in the fitler.
-    $this->filterName = $this->breadcrumbTitle = $i18n->t(ucfirst($this->filter));
+    $this->filterName = $this->breadcrumbTitle = $this->intl->t(ucfirst($this->filter));
 //    switch ($this->filter) {
 //      case "movies":
-//        $this->filterName = $i18n->t("Movies");
+//        $this->filterName = $this->intl->t("Movies");
 //        break;
 //
 //      case "series":
-//        $this->filterName = $i18n->t("Series");
+//        $this->filterName = $this->intl->t("Series");
 //        break;
 //
 //      case "releases":
-//        $this->filterName = $i18n->t("Releases");
+//        $this->filterName = $this->intl->t("Releases");
 //        break;
 //
 //      case "persons":
-//        $this->filterName = $i18n->t("Persons");
+//        $this->filterName = $this->intl->t("Persons");
 //        break;
 //
 //      case "companies":
-//        $this->filterName = $i18n->t("Companies");
+//        $this->filterName = $this->intl->t("Companies");
 //        break;
 //    }
 
     $this->year = (integer) $_SERVER["ID"];
-    $this->initPage($i18n->t("{entity_name} from {year}", [
+    $this->initPage($this->intl->t("{entity_name} from {year}", [
       "entity_name" => $this->filterName,
       "year"        => $this->year,
     ]));
     $this->initBreadcrumb([
-      [ $i18n->rp("/years"), $i18n->t("Years") ],
-      [ $i18n->r("/year/{0}", [ $this->year ]), $this->year ],
+      [ $this->intl->rp("/years"), $this->intl->t("Years") ],
+      [ $this->intl->r("/year/{0}", [ $this->year ]), $this->year ],
     ]);
     $this->initLanguageLinks("/year/{0}/{$this->filter}", [ $this->year ]);
   }

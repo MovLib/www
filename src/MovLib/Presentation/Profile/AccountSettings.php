@@ -52,107 +52,101 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
   /**
    * Instantiate new user account settings presentation.
    *
-   * @global \MovLib\Data\Cache $cache
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\Session $session
    * @throws \MovLib\Presentation\Error\Unauthorized
    */
   public function __construct() {
-    global $cache, $i18n, $kernel, $session;
-
     // Disallow caching of account settings.
     session_cache_limiter("nocache");
     $cache->cacheable = false;
 
-    $session->checkAuthorization($i18n->t("You need to sign in to access this page."));
-    $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
+    $session->checkAuthorization($this->intl->t("You need to sign in to access this page."));
+    $session->checkAuthorizationTimestamp($this->intl->t("Please sign in again to verify the legitimacy of this request."));
 
-    $this->init($i18n->t("Account Settings"), "/profile/account-settings", [[ $i18n->r("/profile"), $i18n->t("Profile") ]]);
+    $this->init($this->intl->t("Account Settings"), "/profile/account-settings", [[ $this->intl->r("/profile"), $this->intl->t("Profile") ]]);
 
     if (isset($_GET["delete_avatar"])) {
       $this->user->deleteAvatar()->commit();
       $kernel->alerts .= new Alert(
-        $i18n->t("Your avatar image was deleted successfully"),
-        $i18n->t("Avatar Deleted Successfully"),
+        $this->intl->t("Your avatar image was deleted successfully"),
+        $this->intl->t("Avatar Deleted Successfully"),
         Alert::SEVERITY_SUCCESS
       );
       throw new SeeOtherRedirect($kernel->requestPath);
     }
 
-//    $this->formAddElement(new InputImage(self::FORM_AVATAR, $i18n->t("Avatar")));
+//    $this->formAddElement(new InputImage(self::FORM_AVATAR, $this->intl->t("Avatar")));
 
-    $this->formAddElement(new InputText("real_name", $i18n->t("Real Name"), $this->user->realName, [
-      "#help-popup" => $i18n->t("Your real name will be displayed on your profile page."),
-      "placeholder" => $i18n->t("Enter our real name"),
+    $this->formAddElement(new InputText("real_name", $this->intl->t("Real Name"), $this->user->realName, [
+      "#help-popup" => $this->intl->t("Your real name will be displayed on your profile page."),
+      "placeholder" => $this->intl->t("Enter our real name"),
     ]));
 
-    $this->formAddElement(new InputSex("sex", $i18n->t("Sex"), $this->user->sex, [
-      "#help-popup" => $i18n->t("Your sex will be displayed on your profile page and is used to create demographic evaluations."),
+    $this->formAddElement(new InputSex("sex", $this->intl->t("Sex"), $this->user->sex, [
+      "#help-popup" => $this->intl->t("Your sex will be displayed on your profile page and is used to create demographic evaluations."),
     ]));
 
     $birthdateMax = (new \DateTime())->sub(new \DateInterval("P6Y"));
     $birthdateMin = (new \DateTime())->sub(new \DateInterval("P120Y"));
-    $this->formAddElement(new InputDate("birthdate", $i18n->t("Date of Birth"), $this->user->birthday, [
-      "#help-popup" => $i18n->t("Your birthday will be displayed on your profile page and is used to create demographic evaluations."),
+    $this->formAddElement(new InputDate("birthdate", $this->intl->t("Date of Birth"), $this->user->birthday, [
+      "#help-popup" => $this->intl->t("Your birthday will be displayed on your profile page and is used to create demographic evaluations."),
       "max"         => $birthdateMax,
       "min"         => $birthdateMin,
-      "title"       => $i18n->t("A birth date must be between {min} (120 years) and {max} (6 years)", [
-        "max" => (new \IntlDateFormatter($i18n->locale, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE))->format($birthdateMax),
-        "min" => (new \IntlDateFormatter($i18n->locale, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE))->format($birthdateMin),
+      "title"       => $this->intl->t("A birth date must be between {min} (120 years) and {max} (6 years)", [
+        "max" => (new \IntlDateFormatter($this->intl->locale, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE))->format($birthdateMax),
+        "min" => (new \IntlDateFormatter($this->intl->locale, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE))->format($birthdateMin),
       ]),
     ]));
 
-    $this->formAddElement(new InputURL("website", $i18n->t("Website"), $this->user->website, [
-      "#help-popup"         => $i18n->t("Your website will be display on your profile page."),
+    $this->formAddElement(new InputURL("website", $this->intl->t("Website"), $this->user->website, [
+      "#help-popup"         => $this->intl->t("Your website will be display on your profile page."),
       "data-allow-external" => "true",
     ]));
 
-    $this->formAddElement(new InputHTML("about_me", $i18n->t("About Me"), $this->user->aboutMe, [
-      "placeholder" => $i18n->t("Tell others about yourself, what do you do, what do you like, …"),
+    $this->formAddElement(new InputHTML("about_me", $this->intl->t("About Me"), $this->user->aboutMe, [
+      "placeholder" => $this->intl->t("Tell others about yourself, what do you do, what do you like, …"),
     ], [ "blockquote", "external", "headings", "lists", ]));
 
     $this->formAddElement(Country::getSelectFormElement($this->user->countryCode, [
-      "#help-popup" => $i18n->t("Your country will be displayed on your profile page and is used to create demographic evaluations."),
+      "#help-popup" => $this->intl->t("Your country will be displayed on your profile page and is used to create demographic evaluations."),
     ]));
 
-    $this->formAddElement(new Select("tzid", $i18n->t("Time Zone"), DateTimeZone::getTranslatedIdentifiers(), $this->user->timeZoneIdentifier, [
-      "#help-popup" => $i18n->t("Your time zone will be used to display any time related information correctly."),
+    $this->formAddElement(new Select("tzid", $this->intl->t("Time Zone"), DateTimeZone::getTranslatedIdentifiers(), $this->user->timeZoneIdentifier, [
+      "#help-popup" => $this->intl->t("Your time zone will be used to display any time related information correctly."),
     ]));
 
     $this->formAddElement(Currency::getSelectFormElement($this->user->currencyCode, [
-      "#help-popup" => $i18n->t("Your currency will be used to display any money related information correctly."),
+      "#help-popup" => $this->intl->t("Your currency will be used to display any money related information correctly."),
     ]));
 
     $langOptions = null;
     foreach ($kernel->systemLanguages as $code => $locale) {
-      $langOptions[$code] = \Locale::getDisplayLanguage($code, $i18n->locale);
+      $langOptions[$code] = \Locale::getDisplayLanguage($code, $this->intl->locale);
     }
-    $i18n->getCollator()->asort($langOptions);
-    $this->formAddElement(new RadioGroup("language", $i18n->t("System Language"), $langOptions, $this->user->systemLanguageCode, [
-      "#help-popup" => $i18n->t(
+    $this->intl->getCollator()->asort($langOptions);
+    $this->formAddElement(new RadioGroup("language", $this->intl->t("System Language"), $langOptions, $this->user->systemLanguageCode, [
+      "#help-popup" => $this->intl->t(
         "Select your preferred system language, this will be used to redirect you if you visit {sitename} without a " .
         "subdomain and may be from other use in the future.",
-        [ "sitename" => $kernel->siteName ]
+        [ "sitename" => $this->config->sitename ]
       ),
     ]));
 
-    $this->formAddElement(new InputCheckbox("private", $i18n->t("Keep my data private!"), $this->user->private, [
-      "#help-popup" => $i18n->t(
+    $this->formAddElement(new InputCheckbox("private", $this->intl->t("Keep my data private!"), $this->user->private, [
+      "#help-popup" => $this->intl->t(
         "Check the following box if you’d like to hide your private data on your profile page. Your data will only be " .
         "used by {sitename} for anonymous demographical evaluation of usage statistics and ratings. By providing basic " .
         "data like sex and country, scientists around the world are enabled to research the human interests in movies " .
         "more closely. Of course your real name won’t be used for anything!",
-        [ $kernel->siteName ]
+        [ $this->config->sitename ]
       ),
     ]));
 
-    $this->formAddAction($i18n->t("Update"), [ "class" => "btn btn-large btn-success" ]);
+    $this->formAddAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ]);
     $this->formInit();
 
     // Display delete button if the user just uploaded a new avatar or one is already present.
 //    if ($this->user->imageExists === true) {
-//      $this->avatar->inputFileAfter = $this->a("?delete_avatar=true", $i18n->t("Delete"), [ "class" => "btn btn-danger"]);
+//      $this->avatar->inputFileAfter = $this->a("?delete_avatar=true", $this->intl->t("Delete"), [ "class" => "btn btn-danger"]);
 //    }
   }
 
@@ -162,11 +156,9 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
 
   /**
    * @inhertidoc
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function getBreadcrumbs() {
-    global $i18n;
-    return [[ $i18n->r("/profile"), $i18n->t("Profile") ]];
+    return [[ $this->intl->r("/profile"), $this->intl->t("Profile") ]];
   }
 
   /**
@@ -178,10 +170,8 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function formValid() {
-    global $i18n;
 //    if ($this->avatar->path) {
 //      $this->user->upload($this->avatar->path, $this->avatar->extension, $this->avatar->height, $this->avatar->width);
 //    }
@@ -197,8 +187,8 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
 //    $this->user->website            = $this->website->value;
 //    $this->user->commit();
 //    $this->alerts                  .= new Alert(
-//      $i18n->t("Your account settings were updated successfully."),
-//      $i18n->t("Account Settings Updated Successfully"),
+//      $this->intl->t("Your account settings were updated successfully."),
+//      $this->intl->t("Account Settings Updated Successfully"),
 //      Alert::SEVERITY_SUCCESS
 //    );
     return $this;

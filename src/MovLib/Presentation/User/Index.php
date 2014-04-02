@@ -17,11 +17,11 @@
  */
 namespace MovLib\Presentation\User;
 
-use \MovLib\Data\User\User;
-use \MovLib\Data\User\Users;
+use \MovLib\Partial\Alert;
+use \MovLib\Data\User\UserSet;
 
 /**
- * Latest users.
+ * Defines the user index persenter.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
@@ -30,83 +30,63 @@ use \MovLib\Data\User\Users;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitPagination;
-  use \MovLib\Presentation\TraitSidebar;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
+final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
 
   /**
-   * The users database instance.
-   *
-   * @var \MovLib\Data\User\Users
+   * {@inheritdoc}
    */
-  protected $users;
-
-  /**
-   * The translated route to user page's.
-   *
-   * @var string
-   */
-  protected $userRoute;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new users show presentation.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   */
-  public function __construct() {
-    global $i18n, $kernel;
-    $this->users = new Users();
-    $this->initPage($i18n->t("Users"));
-    $this->initBreadcrumb();
-    $this->initLanguageLinks("/users", null, true);
-    $this->paginationInit($this->users->getTotalCount());
-    $this->sidebarInit([
-      [ $kernel->requestPath, $this->title ],
-      [ $i18n->r("/user/random"), $i18n->t("Random")],
-    ]);
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\Kernel $kernel
-   * @global \MovLib\Data\User\Session $session
-   */
-  protected function getPageContent() {
-    global $i18n, $kernel, $session;
-    if ($session->isAuthenticated === false) {
+  public function init() {
+    $this->set = new UserSet($this->diContainerHTTP);
+    if ($this->session->isAuthenticated === false) {
       $this->headingBefore =
-        "<a class='btn btn-large btn-success fr' href='{$i18n->r("/profile/join")}'>{$i18n->t(
+        "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/profile/join")}'>{$this->intl->t(
           "Join {sitename}",
-          [ "sitename" => $kernel->siteName ]
+          [ "sitename" => $this->config->sitename ]
         )}</a>"
       ;
     }
-    $list  = null;
-    $users = $this->users->getOrderedByCreatedResult($this->paginationOffset, $this->paginationLimit);
-    /* @var $user \MovLib\Data\User\User */
-    while ($user = $users->fetch_object("\\MovLib\\Data\\User\\User")) {
-      $list .=
-        "<li class='hover-item r' typeof='Person'>" .
-          $this->getImage($user->getStyle(User::STYLE_SPAN_01), $user->route, [ "property" => "image" ], [ "class" => "s s1" ]) .
-          "<span class='s'><a href='{$user->route}' property='url'><span property='name'>{$user->name}</span></a></span>" .
-        "</li>"
-      ;
+    $this
+      ->initPage($this->intl->t("Users"))
+      ->initBreadcrumb()
+      ->initLanguageLinks("/users", null, true)
+      ->sidebarInit([
+        [ $this->request->path, $this->title, [ "class" => "ico ico-user" ] ],
+        [ $this->intl->r("/user/random"), $this->intl->t("Random") ],
+      ])
+      ->paginationInit()
+    ;
+  }
+
+  /**
+   * {@inheritdoc}
+   * @param \MovLib\Data\User\User $user {@inheritdoc}
+   */
+  protected function formatListingItem($user) {
+    return
+      "<li typeof='Person'><article>" .
+        "<a class='hover-item r' href='{$user->route}' property='url'>" .
+          "<img class='s s1' alt='{$user->name}' property='image' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
+          "<div class='s s9'><h2 class='link-color para' property='name'>{$user->name}</h2></div>" .
+        "</a>" .
+      "</article></li>"
+    ;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getNoItemsContent() {
+    $join = null;
+    if ($this->session->isAuthenticated === false) {
+      $join = "<p>{$this->intl->t(
+        "Would you like {0}to join {sitename}{1}?",
+        [ "<a href='{$this->intl->r("/profile/join")}'>", "</a>", "sitename" => $this->config->sitename ]
+      )}</p>";
     }
-    return "<ol class='hover-list no-list'>{$list}</ol>";
+    return new Alert(
+      "<p>{$this->intl->t("We couldn't find any users matching your filter criteria, or there simply isn’t any user available.")}</p>{$join}",
+      $this->intl->t("No Users")
+    );
   }
 
 }

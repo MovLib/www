@@ -31,23 +31,20 @@ use \MovLib\Data\Person\Person;
 class Discussion extends \MovLib\Presentation\Person\AbstractBase {
 
   /**
-   * Instantiate new person discussion presentation.
-   *
-   * @global \MovLib\Data\I18n $i18n
+   * Initialize person discussion presentation.
    */
-  public function __construct() {
-    global $i18n;
-    $this->person = new Person((integer) $_SERVER["PERSON_ID"]);
-    $this->initPage($i18n->t("Discussion"));
-    $this->pageTitle        = $i18n->t("Discussion of {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
+  public function init() {
+    $this->person = new Person($this->diContainerHTTP);
+    $this->person->init((integer) $_SERVER["PERSON_ID"]);
+    $this->initPage($this->intl->t("Discussion"));
+    $this->pageTitle        = $this->intl->t("Discussion of {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
     $this->initLanguageLinks("/person/{0}/discussion", [ $this->person->id ]);
     $this->initPersonBreadcrumb();
     $this->sidebarInit();
   }
 
   protected function getPageContent() {
-    global $i18n;
-    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("discuss person") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("discuss person") ]), $this->intl->t("Check back later"), \MovLib\Partial\Alert::SEVERITY_INFO);
   }
 
 }

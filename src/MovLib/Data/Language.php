@@ -85,15 +85,12 @@ class Language {
   /**
    * Get all supported and translated languages.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @staticvar array $languages
    *   Associative array used for caching.
    * @return array
    *   All supported and translated languages.
    */
   public static function getLanguages() {
-    global $i18n, $kernel;
     static $languages = null;
     if (!isset($languages[$i18n->locale])) {
       $languages[$i18n->locale] = require "{$kernel->pathTranslations}/language/{$i18n->locale}.php";

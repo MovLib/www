@@ -275,9 +275,7 @@ abstract class AbstractBaseImage {
     // Generate the desired image style with ImageMagick. We directly call the binary instead of using some kind of
     // abstraction layer, we don't need any fancy object just to resize an image.
     try {
-      $source      = escapeshellarg($source);
-      $destination = escapeshellarg($destination);
-      Shell::execute("convert {$source} -filter Lanczos -resize {$resizeArg} -quality 75 {$destination}");
+      Shell::execute("convert '{$source}' -filter Lanczos -resize {$resizeArg} -quality 75 '{$destination}'");
     }
     catch (\RuntimeException $e) {
       // @todo Log error, convert command isn't available!
@@ -303,7 +301,6 @@ abstract class AbstractBaseImage {
    * <b>NOTE</b>
    * This method will always return the absolute path to the image, no matter if it exists or not.
    *
-   * @global \MovLib\Kernel $kernel
    * @param mixed $style [optional]
    *   The style for which you want the path, if no style is given (default) the path to the original file is returned.
    * @return string
@@ -311,8 +308,6 @@ abstract class AbstractBaseImage {
    * @throws \LogicException
    */
   protected function getPath($style = null) {
-    global $kernel;
-
     // We always have to generate the absolute path to the image within our persistent storage, doesn't matter if it
     // exists or not, as it may be requested to move or convert an image that was just uploaded. Of course we need the
     // directory, filename and the extension to do so. The concrete image is responsible for this.
@@ -322,17 +317,16 @@ abstract class AbstractBaseImage {
 
     // If no style was given the path to the original is desired.
     if (empty($style)) {
-      return "{$kernel->documentRoot}/private/upload/{$this->directory}/{$this->filename}.{$this->extension}";
+      return "/var/www/private/upload/{$this->directory}/{$this->filename}.{$this->extension}";
     }
 
     // Otherwise the path to the given style.
-    return "{$kernel->documentRoot}/public/upload/{$this->directory}/{$this->filename}.{$style}.{$this->extension}";
+    return "/var/www/public/upload/{$this->directory}/{$this->filename}.{$style}.{$this->extension}";
   }
 
   /**
    * Get the absolute URL to the image.
    *
-   * @global \MovLib\Kernel $kernel
    * @staticvar array $placeholders
    *   Used to cache placeholder URLs.
    * @param mixed $style [optional]
@@ -348,7 +342,7 @@ abstract class AbstractBaseImage {
       if (!isset($placeholders[$this->placeholder])) {
         $placeholders[$this->placeholder] = StreamWrapperFactory::create(
           "asset://img/{$this->placeholder}.{$this->placeholderExtension}"
-        )->getExternalURL();
+        )->getExternalPath();
       }
       return $placeholders[$this->placeholder];
     }
@@ -370,7 +364,6 @@ abstract class AbstractBaseImage {
       // The file's name might still contain characters that aren't save to use in HTML or in requests.
       $this->filenameEncoded = rawurlencode($this->filename);
     }
-    global $kernel;
     return "//{$kernel->domainStatic}/upload/{$this->directory}/{$this->filenameEncoded}.{$style}.{$this->extension}?{$this->changed}";
   }
 

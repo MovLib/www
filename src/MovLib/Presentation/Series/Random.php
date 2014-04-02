@@ -32,10 +32,9 @@ use \MovLib\Presentation\Redirect\SeeOther;
 class Random {
 
   public function __construct() {
-    global $i18n, $kernel;
     $kernel->alerts .= new Alert(
-      $i18n->t("There is currently no series in our database"),
-      $i18n->t("Check back later"),
+      $this->intl->t("There is currently no series in our database"),
+      $this->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     );
     throw new SeeOther("/");

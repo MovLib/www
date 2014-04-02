@@ -28,7 +28,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Create extends \MovLib\Presentation\Page {
+class Create extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Presentation\TraitForm;
 
 
@@ -38,15 +38,11 @@ class Create extends \MovLib\Presentation\Page {
   /**
    * Instantiate new job create presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
-
-    $this->initPage($i18n->t("Create Job"));
-    $this->initBreadcrumb([ [ $i18n->rp("/jobs"), $i18n->t("Jobs") ] ]);
-    $this->breadcrumbTitle = $i18n->t("Create");
+    $this->initPage($this->intl->t("Create Job"));
+    $this->initBreadcrumb([ [ $this->intl->rp("/jobs"), $this->intl->t("Jobs") ] ]);
+    $this->breadcrumbTitle = $this->intl->t("Create");
     $this->initLanguageLinks("/job/create");
 
     $kernel->stylesheets[] = "job";
@@ -58,13 +54,11 @@ class Create extends \MovLib\Presentation\Page {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function getContent() {
-    global $i18n;
     return new Alert(
-      $i18n->t("The create job feature isn’t implemented yet."),
-      $i18n->t("Check back later"),
+      $this->intl->t("The create job feature isn’t implemented yet."),
+      $this->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     );
   }

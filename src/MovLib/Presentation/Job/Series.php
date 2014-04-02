@@ -38,15 +38,12 @@ class Series extends \MovLib\Presentation\Job\AbstractBase {
   /**
    * Instantiate new job series presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
     $this->job = new Job((integer) $_SERVER["JOB_ID"]);
-    $this->initPage($i18n->t("Series with {0}", [ $this->job->name ]));
-    $this->pageTitle = $i18n->t("Series with {0}", [ "<a href='{$this->job->route}'>{$this->job->name}</a>" ]);
-    $this->breadcrumbTitle = $i18n->t("Series");
+    $this->initPage($this->intl->t("Series with {0}", [ $this->job->name ]));
+    $this->pageTitle = $this->intl->t("Series with {0}", [ "<a href='{$this->job->route}'>{$this->job->name}</a>" ]);
+    $this->breadcrumbTitle = $this->intl->t("Series");
     $this->initLanguageLinks("/job/{0}/series", [ $this->job->id ], true);
     $this->initJobBreadcrumb();
     $this->sidebarInit();
@@ -60,12 +57,10 @@ class Series extends \MovLib\Presentation\Job\AbstractBase {
 
  /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    * @return \MovLib\Presentation\Partial\Alert
    */
   protected function getPageContent() {
-    global $i18n;
-    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("series with job") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Presentation\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("series with job") ]), $this->intl->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
   }
 
 }

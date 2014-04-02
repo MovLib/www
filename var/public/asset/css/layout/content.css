@@ -1,0 +1,77 @@
+/*!
+ * This file is part of {@link https://github.com/MovLib MovLib}.
+ *
+ * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
+ *
+ * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with MovLib.
+ * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
+ */
+
+/**
+ * Global content styles.
+ *
+ * The usage of IDs for the header and the title are intended, those elements can only appear once within any
+ * presentation because they uniquely identify this single page within the entire website.
+ *
+ * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
+ * @author Richard Fussenegger <richard@fussenegger.info>
+ * @copyright © 2013 MovLib
+ * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
+ * @link https://movlib.org/
+ * @since 0.0.1-dev
+ */
+
+#m {
+  min-height: 500px;
+  padding-bottom: 40px;
+  margin-top: 50px;
+  background-color: #fff;
+}
+
+#header {
+  margin-bottom: 40px;
+  background-color: #252525;
+}
+
+#header > .c {
+  padding-bottom: 20px;
+  color: #c7c7c7;
+}
+
+#filter {
+  padding: 8px 20px;
+  margin-left: -20px;
+  font-size: 12px;
+  border-top: 1px solid #e5e5e5;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.sex {
+  font-size: 0.8em;
+}
+
+.sex-1 {
+  color: #87cefa;
+}
+
+.sex-2 {
+  color: #f5b4f5;
+}
+
+#aliases .s {
+  word-break: break-all;
+}
+
+#links .grid-list a {
+  box-shadow: none;
+  display: inline-block;
+  transition-property: color, border-color;
+}
+

@@ -38,18 +38,14 @@ class Delete extends \MovLib\Presentation\Event\AbstractBase {
   /**
    * Instantiate new event delete presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
-
     $this->event = new Event((integer) $_SERVER["EVENT_ID"]);
     $this->award = new Award($this->event->awardId);
 
-    $this->initPage($i18n->t("Delete"));
+    $this->initPage($this->intl->t("Delete"));
     $this->pageTitle     =
-      $i18n->t("Delete {0}", [ "<a href='{$this->event->route}'>{$this->event->name}</a>" ])
+      $this->intl->t("Delete {0}", [ "<a href='{$this->event->route}'>{$this->event->name}</a>" ])
     ;
     $this->initLanguageLinks("/event/{0}/delete", [ $this->event->id ]);
     $this->initEventBreadcrumb();
@@ -64,12 +60,10 @@ class Delete extends \MovLib\Presentation\Event\AbstractBase {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    * @return \MovLib\Presentation\Partial\Alert
    */
   protected function getPageContent() {
-    global $i18n;
-    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("delete event") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Presentation\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("delete event") ]), $this->intl->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
   }
 
 }

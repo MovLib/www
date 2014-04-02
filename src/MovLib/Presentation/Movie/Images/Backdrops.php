@@ -31,13 +31,11 @@ class Backdrops extends \MovLib\Presentation\Movie\Images\AbstractBase {
   /**
    * Instantiate new movie images presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
-    global $i18n;
-    parent::__construct("Backdrop", $i18n->t("Backdrop"), $i18n->t("Backdrops"), "backdrop", "backdrops");
+    parent::__construct("Backdrop", $this->intl->t("Backdrop"), $this->intl->t("Backdrops"), "backdrop", "backdrops");
   }
 
 }

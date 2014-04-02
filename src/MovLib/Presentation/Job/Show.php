@@ -38,16 +38,13 @@ class Show extends \MovLib\Presentation\Job\AbstractBase {
   /**
    * Instantiate new job presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
-    global $i18n, $kernel;
     $this->job = new Job((integer) $_SERVER["JOB_ID"]);
     $this->initPage($this->job->name);
     $this->initLanguageLinks("/job/{0}", [ $this->job->id]);
-    $this->initBreadcrumb([[ $i18n->rp("/jobs"), $i18n->t("Jobs") ]]);
+    $this->initBreadcrumb([[ $this->intl->rp("/jobs"), $this->intl->t("Jobs") ]]);
     $this->sidebarInit();
 
     $kernel->stylesheets[] = "job";
@@ -59,12 +56,8 @@ class Show extends \MovLib\Presentation\Job\AbstractBase {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   protected function getPageContent() {
-    global $i18n, $kernel;
-
     // Enhance the page title with microdata.
     $this->schemaType = "Intangible";
     $this->pageTitle  = "<span property='name'>{$this->job->name}</span>";
@@ -75,8 +68,8 @@ class Show extends \MovLib\Presentation\Job\AbstractBase {
 
     $this->pageTitle .=
       " <span class='small'>(" .
-        "<span property='alternateName' class='ico ico-sex1 sex sex-1' title='{$i18n->t("male")}'>{$this->job->maleName}</span>, " .
-        "<span property='alternateName' class='ico ico-sex2 sex sex-2' title='{$i18n->t("female")}'>{$this->job->femaleName}</span>" .
+        "<span property='alternateName' class='ico ico-sex1 sex sex-1' title='{$this->intl->t("male")}'>{$this->job->maleName}</span>, " .
+        "<span property='alternateName' class='ico ico-sex2 sex sex-2' title='{$this->intl->t("female")}'>{$this->job->femaleName}</span>" .
       ")</span>"
     ;
 
@@ -88,7 +81,7 @@ class Show extends \MovLib\Presentation\Job\AbstractBase {
 
     // Biography section.
     if ($this->job->description) {
-      $content .= $this->getSection("description", $i18n->t("Description"), $this->htmlDecode($this->job->description));
+      $content .= $this->getSection("description", $this->intl->t("Description"), $this->htmlDecode($this->job->description));
     }
 
     if ($content) {
@@ -96,11 +89,11 @@ class Show extends \MovLib\Presentation\Job\AbstractBase {
     }
 
     return new Alert(
-      $i18n->t(
+      $this->intl->t(
         "{sitename} has no further details about this job.",
-        [ "sitename"    => $kernel->siteName ]
+        [ "sitename"    => $this->config->sitename ]
       ),
-      $i18n->t("No Data Available"),
+      $this->intl->t("No Data Available"),
       Alert::SEVERITY_INFO
     );
   }

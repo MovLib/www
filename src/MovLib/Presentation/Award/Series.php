@@ -38,15 +38,12 @@ class Series extends \MovLib\Presentation\Award\AbstractBase {
   /**
    * Instantiate new award series presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
     $this->award = new Award((integer) $_SERVER["AWARD_ID"]);
-    $this->initPage($i18n->t("Series with {0}", [ $this->award->name ]));
-    $this->pageTitle       = $i18n->t("Series with {0}", [ "<a href='{$this->award->route}'>{$this->award->name}</a>" ]);
-    $this->breadcrumbTitle = $i18n->t("Series");
+    $this->initPage($this->intl->t("Series with {0}", [ $this->award->name ]));
+    $this->pageTitle       = $this->intl->t("Series with {0}", [ "<a href='{$this->award->route}'>{$this->award->name}</a>" ]);
+    $this->breadcrumbTitle = $this->intl->t("Series");
     $this->initLanguageLinks("/award/{0}/series", [ $this->award->id ], true);
     $this->initAwardBreadcrumb();
     $this->sidebarInit();
@@ -60,12 +57,10 @@ class Series extends \MovLib\Presentation\Award\AbstractBase {
 
  /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    * @return \MovLib\Presentation\Partial\Alert
    */
   protected function getPageContent() {
-    global $i18n;
-    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("series with award") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Presentation\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("series with award") ]), $this->intl->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
   }
 
 }

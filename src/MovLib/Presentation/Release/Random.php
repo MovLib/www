@@ -50,20 +50,17 @@ class Random {
   /**
    * Redirect to random release presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   public function __construct() {
-    global $i18n, $kernel;
     $this->releaseId = Release::getRandomReleaseId();
     if (isset($this->releaseId)) {
-      throw new SeeOtherRedirect($i18n->r("/release/{0}", [ $this->releaseId ]));
+      throw new SeeOtherRedirect($this->intl->r("/release/{0}", [ $this->releaseId ]));
     }
     else {
       $kernel->alerts .= new Alert(
-        $i18n->t("There is currently no release in our database."),
-        $i18n->t("Check back later"),
+        $this->intl->t("There is currently no release in our database."),
+        $this->intl->t("Check back later"),
         Alert::SEVERITY_INFO
       );
       throw new SeeOtherRedirect("/");

@@ -17,149 +17,63 @@
  */
 namespace MovLib\Presentation\Award;
 
-use \MovLib\Data\Award;
-use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Data\Award\Award;
+use \MovLib\Partial\QuickInfo;
 
 /**
- * Presentation of a single award.
+ * Defines the award show presentation.
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @link http://schema.org/Organization
+ * @link http://www.google.com/webmasters/tools/richsnippets?q=https://en.movlib.org/award/{id}
+ * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/award/{id}
+ * @link http://validator.w3.org/check?uri=https://en.movlib.org/award/{id}
+ * @link http://gsnedders.html5.org/outliner/process.py?url=https://en.movlib.org/award/{id}
+ *
+ * @property \MovLib\Data\Award\Award $entity
+ *
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\Award\AbstractBase {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+final class Show extends \MovLib\Presentation\AbstractShowPresenter {
+  use \MovLib\Presentation\Award\AwardTrait;
+  use \MovLib\Partial\ContentSectionTrait;
+  use \MovLib\Partial\DateTrait;
 
   /**
-   * Instantiate new award presentation.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @throws \MovLib\Presentation\Error\NotFound
+   * {@inheritdoc}
    */
-  public function __construct() {
-    global $i18n, $kernel;
-    $this->award = new Award((integer) $_SERVER["AWARD_ID"]);
-    $this->initPage($this->award->name);
-    $this->initLanguageLinks("/award/{0}", [ $this->award->id]);
-    $this->initBreadcrumb([[ $i18n->rp("/awards"), $i18n->t("Awards") ]]);
-    $this->sidebarInit();
-
-    $kernel->stylesheets[] = "award";
+  public function init() {
+    return $this->initShow(new Award($this->diContainerHTTP, $_SERVER["AWARD_ID"]), "Organization");
   }
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
   /**
-   * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    global $i18n, $kernel;
-
-    // Enhance the page title with microdata.
-    $this->schemaType = "Intangible";
-    $this->pageTitle  = "<span property='name'>{$this->award->name}</span>";
-
-    if ($this->award->deleted === true) {
-      return $this->goneGetContent();
-    }
-
-    // Put the award information together.
-    $info = null;
-
-    if ($this->award->firstAwardingYear && $this->award->lastAwardingYear) {
-      $info .=
-        "<span>{$i18n->t("from {0} to {1}", [ $this->award->firstAwardingYear, $this->award->lastAwardingYear ])}</span>"
-      ;
-    }
-    else if ($this->award->firstAwardingYear) {
-      $info .= "<span>{$i18n->t("since {0}", [ $this->award->firstAwardingYear ])}</span>";
-    }
-    else if ($this->award->lastAwardingYear) {
-      $info .= "<span>{$i18n->t("until {0}", [ $this->award->lastAwardingYear ])}</span>";
-    }
-
-    // Construct the wikipedia link.
-    if ($this->award->wikipedia) {
-      if ($info) {
-        $info .= "<br>";
-      }
-      $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->award->wikipedia}' itemprop='sameAs' target='_blank'>{$i18n->t("Wikipedia Article")}</a>";
-    }
-
-    $headerImage = $this->getImage($this->award->getStyle(Award::STYLE_SPAN_02), true, [ "itemprop" => "image" ]);
+  public function getContent() {
     $this->headingBefore = "<div class='r'><div class='s s10'>";
-    $this->headingAfter = "<p>{$info}</p></div><div id='award-logo' class='s s2'>{$headerImage}</div></div>";
 
+    $infos = new QuickInfo($this->intl);
+    $this->entity->links          && $infos->add($this->intl->t("Sites"), $this->formatWeblinks($this->entity->links));
+    $this->entity->firstEventYear && $infos->add($this->intl->t("First Event"), $this->dateFormat($this->entity->firstEventYear));
+    $this->entity->lastEventYear  && $infos->add($this->intl->t("Last Event"), $this->dateFormat($this->entity->lastEventYear));
+    $this->entity->wikipedia      && $infos->addWikipedia($this->entity->wikipedia);
 
-    // ----------------------------------------------------------------------------------------------------------------- Build page sections.
+    $this->headingAfter .= "{$infos}</div><div class='s s2'><img alt='' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='140' height='140'></div></div>";
 
-
-    $content = null;
-    // Description section
-    if ($this->award->description) {
-      $content .= $this->getSection("description", $i18n->t("Description"), $this->htmlDecode($this->award->description));
-    }
-
-    // Additional names section.
-    $awardAliases = $this->award->aliases;
-    if (!empty($awardAliases)) {
-      $aliases = null;
-      $c       = count($awardAliases);
-      for ($i = 0; $i < $c; ++$i) {
-        $aliases .= "<li class='mb10 s s10' property='additionalName'>{$awardAliases[$i]}</li>";
-      }
-      $content .= $this->getSection("aliases", $i18n->t("Also Known As"), "<ul class='grid-list r'>{$aliases}</ul>");
-    }
-
-     // External links section.
-    $awardLinks = $this->award->links;
-    if ($awardLinks) {
-      $links = null;
-      $c     = count($awardLinks);
-      for ($i = 0; $i < $c; ++$i) {
-        $hostname = str_replace("www.", "", parse_url($awardLinks[$i], PHP_URL_HOST));
-        $links .= "<li class='mb10 s s10'><a href='{$awardLinks[$i]}' property='url' rel='nofollow' target='_blank'>{$hostname}</a></li>";
-      }
-      $content .= $this->getSection("links", $i18n->t("External Links"), "<ul class='grid-list r'>{$links}</ul>");
-    }
-
-    if ($content) {
+    $this->entity->description && $this->addContentSection($this->intl->t("Description"), $this->entity->description);
+    $this->entity->aliases     && $this->addContentSection($this->intl->t("Also Known As"), $this->formatAliases($this->entity->aliases), false);
+    if (($content = $this->getContentSections())) {
       return $content;
     }
 
     return new Alert(
-      $i18n->t("{sitename} has no further details about this award.", [ "sitename"    => $kernel->siteName ]),
-      $i18n->t("No Data Available"),
-      Alert::SEVERITY_INFO
+      "<p>{$this->intl->t("{sitename} doesn’t have further details about this award.", [ "sitename" => $this->config->sitename ])}</p>" .
+      "<p>{$this->intl->t("Would you like to {0}add additional information{1}?", [ "<a href='{$this->intl->r("/award/{0}/edit", $this->entity->id)}'>", "</a>" ])}</p>",
+      $this->intl->t("No Info")
     );
-  }
-
-  /**
-   * Construct a section in the main content and add it to the sidebar.
-   *
-   * @param string $id
-   *   The section's unique identifier.
-   * @param string $title
-   *   The section's translated title.
-   * @param string $content
-   *   The section's content.
-   * @return string
-   *   The section ready for display.
-   */
-  protected function getSection($id, $title, $content) {
-    // Add the section to the sidebar as anchor.
-    $this->sidebarNavigation->menuitems[] = [ "#{$id}", $title ];
-
-    return "<div id='{$id}'><h2>{$title}</h2>{$content}</div>";
   }
 
 }

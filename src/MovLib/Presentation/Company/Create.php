@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Company;
 
-use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Partial\Alert;
 
 /**
  * Allows the creation of a new company.
@@ -28,29 +28,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Create extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitForm;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new company create presentation.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   */
-  public function __construct() {
-    global $i18n, $kernel;
-
-    $this->initPage($i18n->t("Create Company"));
-    $this->initBreadcrumb([ [ $i18n->rp("/companies"), $i18n->t("Companies") ] ]);
-    $this->breadcrumbTitle = $i18n->t("Create");
-    $this->initLanguageLinks("/company/create");
-
-    $kernel->stylesheets[] = "company";
-  }
+class Create extends \MovLib\Presentation\AbstractPresenter {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -58,22 +36,23 @@ class Create extends \MovLib\Presentation\Page {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function getContent() {
-    global $i18n;
     return new Alert(
-      $i18n->t("The create company feature isn’t implemented yet."),
-      $i18n->t("Check back later"),
+      $this->intl->t("The create company feature isn’t implemented yet."),
+      $this->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     );
   }
 
   /**
-   * @inheritdoc
+   * Instantiate new company create presentation.
    */
-  protected function formValid() {
-    return $this;
+  public function init() {
+    $this->initPage($this->intl->t("Create Company"));
+    $this->initBreadcrumb([ [ $this->intl->rp("/companies"), $this->intl->t("Companies") ] ]);
+    $this->breadcrumbTitle = $this->intl->t("Create");
+    $this->initLanguageLinks("/company/create");
   }
 
 }

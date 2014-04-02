@@ -25,11 +25,9 @@ use \MovLib\Presentation\Partial\Alert;
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  */
-class Upload extends \MovLib\Presentation\Page {
+class Upload extends \MovLib\Presentation\AbstractPresenter {
 
   public function __construct() {
-    global $i18n;
-
     // Try to load person data.
     $this->person = new Person($_SERVER["PERSON_ID"]);
 
@@ -38,21 +36,20 @@ class Upload extends \MovLib\Presentation\Page {
     $this->initLanguageLinks("/person/{0}/photo", $routeArgs);
 
     // Initialize page.
-    $this->initPage($i18n->t("Upload Photo for {person_name}", [ "person_name" => $this->person->name ]));
-    $this->pageTitle = $i18n->t("Upload Photo for {person_name}", [ "person_name" => "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
+    $this->initPage($this->intl->t("Upload Photo for {person_name}", [ "person_name" => $this->person->name ]));
+    $this->pageTitle = $this->intl->t("Upload Photo for {person_name}", [ "person_name" => "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
 
     // Initialize breadcrumbs.
     $this->initBreadcrumb([
-      [ $i18n->rp("/persons"), $i18n->t("Persons") ],
+      [ $this->intl->rp("/persons"), $this->intl->t("Persons") ],
       [ $this->person->route, $this->person->name ],
     ]);
   }
 
   public function getContent() {
-    global $i18n;
     $this->alerts .= new Alert(
-      $i18n->t("The upload person photo feature isn’t implemented yet."),
-      $i18n->t("Check back later"),
+      $this->intl->t("The upload person photo feature isn’t implemented yet."),
+      $this->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     );
   }

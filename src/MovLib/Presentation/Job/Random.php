@@ -17,9 +17,9 @@
  */
 namespace MovLib\Presentation\Job;
 
-use \MovLib\Data\Job;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
+use \MovLib\Data\Job\JobSet;
+use \MovLib\Exception\RedirectException\SeeOtherException;
+use \MovLib\Partial\Alert;
 
 /**
  * Random job presentation.
@@ -30,44 +30,25 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Random {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
+final class Random {
 
   /**
-   * A random job identifier.
+   * Redirect client to random job presentation.
    *
-   * @var integer
+   * @param \MovLib\Core\HTTP\DIContainerHTTP
+   *   The dependency injection container.
+   * @throws \MovLib\Exception\SeeOtherException
    */
-  private $jobId;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Redirect to random job presentation.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @throws \MovLib\Presentation\Redirect\SeeOther
-   */
-  public function __construct() {
-    global $i18n, $kernel;
-    $this->jobId = Job::getRandomJobId();
-    if (isset($this->jobId)) {
-      throw new SeeOtherRedirect($i18n->r("/job/{0}", [ $this->jobId ]));
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+    if (($id = (new JobSet($diContainerHTTP))->getRandom())) {
+      throw new SeeOtherException($diContainerHTTP->intl->r("/job/{0}", $id));
     }
-    else {
-      $kernel->alerts .= new Alert(
-        $i18n->t("There is currently no job in our database."),
-        $i18n->t("Check back later"),
-        Alert::SEVERITY_INFO
-      );
-      throw new SeeOtherRedirect("/");
-    }
+    $diContainerHTTP->response->createCookie("alert", (string) new Alert(
+      $this->intl->t("There is currently no job in our database."),
+      $this->intl->t("Check back later"),
+      Alert::SEVERITY_INFO
+    ));
+    throw new SeeOtherException($this->intl->rp("/jobs"));
   }
 
 }

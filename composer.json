@@ -5,6 +5,9 @@
   "keywords": [ "MovLib" ],
   "license": "AGPL-3.0",
   "type": "project",
+  "config": {
+    "vendor-dir": "lib"
+  },
   "authors": [
     {
       "name": "Richard Fussenegger",

@@ -130,16 +130,12 @@ class Release {
   /**
    * Instantiate new release.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param identifier $id [optional]
    *   The release's identifier to load, leave empty to create empty instances.
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct($id = null) {
-    global $db, $i18n;
-
     // Try to load the release for the given identifier.
     if ($id) {
       $result = $db->query(
@@ -223,17 +219,30 @@ class Release {
    * Get paginated releases result.
    *
    * @internal The returned {@see \mysqli_result} is prepared for direct instantiating via fetch object of this class.
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param integer $offset
    *   The offset, usually provided by the pagination trait.
-   * @param integer $rowCount
+   * @param integer $limit
    *   The row count, usually provided by the pagination trait.
    * @return \mysqli_result
    *   Paginated releases result.
    */
-  public static function getReleases($offset, $rowCount) {
-    
+  public static function getReleases($offset = 0, $limit = 8) {
+    return $db->query(
+      "SELECT
+        `release`.`changed`,
+        `release`.`created`,
+        `release`.`country_code`,
+        `release`.`title`,
+        `release`.`publishing_date_rental`,
+        `release`.`publishing_date_sale`,
+        `release`.`edition`
+      FROM `release`
+      ORDER BY `release`.`created` DESC
+      OFFSET ?
+      LIMIT ?",
+      "di",
+      [ $offset, $limit ]
+    )->get_result();
   }
 
 }

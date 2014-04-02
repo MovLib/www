@@ -17,8 +17,6 @@
  */
 namespace MovLib\Exception;
 
-use \MovLib\Data\Log;
-
 /**
  * Shell exceptions are thrown if something goes wrong while interacting with the shell.
  *
@@ -33,16 +31,14 @@ final class ShellException extends \RuntimeException {
   /**
    * Instantiate new shell exception.
    *
-   * @global \MovLib\Kernel $kernel
    * @param string $command
    *   The executed command.
    * @param mixed $output [optional]
    *   Either the desired exception code as integer or the output of the command as array or string.
-   * @param \Exception $exception [optional]
+   * @param \Exception $previous [optional]
    *   Any previously thrown exception for chaining.
    */
-  public function __construct($command, $output = null, $previous = null) {
-    global $kernel;
+  public function __construct($command, $output = null, \Exception $previous = null) {
     $message = $code = null;
 
     if (is_integer($output)) {
@@ -53,14 +49,12 @@ final class ShellException extends \RuntimeException {
       $message = implode("\n", $output) . "\n\n";
 
       // Replace tabs with four spaces for console output.
-      if ($kernel->fastCGI === false) {
+      if (PHP_SAPI == "cli") {
         $message = str_replace("\t", "    ", $message);
       }
     }
 
     parent::__construct("Couldn't execute command: {$command}", $code, $previous);
-
-    Log::warning($this);
   }
 
 }

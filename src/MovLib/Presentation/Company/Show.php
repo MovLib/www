@@ -17,147 +17,65 @@
  */
 namespace MovLib\Presentation\Company;
 
-use \MovLib\Data\Company\FullCompany;
-use \MovLib\Presentation\Partial\Place;
-use \MovLib\Presentation\Partial\Date;
+use \MovLib\Data\Company\Company;
+use \MovLib\Partial\Place;
+use \MovLib\Partial\QuickInfo;
 
 /**
- * Presentation of a single company.
+ * Defines the company show presentation.
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @link http://schema.org/Corporation
+ * @link http://www.google.com/webmasters/tools/richsnippets?q=https://en.movlib.org/company/{id}
+ * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/company/{id}
+ * @link http://validator.w3.org/check?uri=https://en.movlib.org/company/{id}
+ * @link http://gsnedders.html5.org/outliner/process.py?url=https://en.movlib.org/company/{id}
+ *
+ * @property \MovLib\Data\Company\Company $entity
+ *
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\Company\AbstractBase {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+final class Show extends \MovLib\Presentation\AbstractShowPresenter {
+  use \MovLib\Partial\CompanyTrait;
+  use \MovLib\Partial\ContentSectionTrait;
+  use \MovLib\Partial\DateTrait;
 
   /**
-   * Instantiate new company presentation.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @throws \MovLib\Presentation\Error\NotFound
+   * {@inheritdoc}
    */
-  public function __construct() {
-    global $i18n, $kernel;
-    $this->company = new FullCompany((integer) $_SERVER["COMPANY_ID"]);
-    $this->initPage($this->company->name);
-    $this->initLanguageLinks("/company/{0}", [ $this->company->id]);
-    $this->initBreadcrumb([[ $i18n->rp("/companies"), $i18n->t("Companies") ]]);
-    $this->sidebarInit();
-
-    $kernel->stylesheets[] = "company";
+  public function init() {
+    $this->initShow(new Company($this->diContainerHTTP, $_SERVER["COMPANY_ID"]), "Corporation");
   }
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
   /**
-   * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    global $i18n;
-
-    // Enhance the page title with microdata.
-    $this->schemaType = "Corporation";
-    $this->pageTitle  = "<span property='name'>{$this->company->name}</span>";
-
-    if ($this->company->deleted === true) {
-      return $this->goneGetContent();
-    }
-
-    // Put the company information together.
-    $info = null;
-    if ($this->company->foundingDate && $this->company->defunctDate) {
-      $info .= (new Date($this->company->foundingDate))->format([ "itemprop" => "foundingDate", "title" => $i18n->t("Founding Date") ]);
-      $info .= " – " . (new Date($this->company->defunctDate))->format([ "title" => $i18n->t("Defunct Date") ]);
-    }
-    else if ($this->company->foundingDate) {
-      $info .= "{$i18n->t("Founded")}: " . (new Date($this->company->foundingDate))->format([ "itemprop" => "foundingDate", "title" => $i18n->t("Founding Date") ]);
-    }
-    if ($this->company->place) {
-      $info .= "<br><span itemprop='location'>". new Place($this->company->place) . "</span>";
-    }
-
-    // Construct the wikipedia link.
-    if ($this->company->wikipedia) {
-      if ($info) {
-        $info .= "<br>";
-      }
-      $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->company->wikipedia}' itemprop='sameAs' target='_blank'>{$i18n->t("Wikipedia Article")}</a>";
-    }
-
-    $headerImage = $this->getImage($this->company->getStyle(FullCompany::STYLE_SPAN_02), true, [ "itemprop" => "image" ]);
+  public function getContent() {
     $this->headingBefore = "<div class='r'><div class='s s10'>";
-    $this->headingAfter = "<p>{$info}</p></div><div id='company-logo' class='s s2'>{$headerImage}</div></div>";
 
+    $infos = new QuickInfo($this->intl);
+    $this->entity->links        && $infos->add($this->intl->t("Sites"), $this->formatWeblinks($this->entity->links));
+    $this->entity->foundingDate && $infos->add($this->intl->t("Founded"), $this->dateFormat($this->entity->foundingDate, [ "property" => "foundingDate" ]));
+    $this->entity->defunctDate  && $infos->add($this->intl->t("Defunct"), $this->dateFormat($this->entity->defunctDate, [ "property" => "defunctDate" ]));
+    $this->entity->place        && $infos->add($this->intl->t("Based in"), new Place($this, $this->intl, $this->entity->place, [ "property" => "location" ]));
+    $this->entity->wikipedia    && $infos->addWikipedia($this->entity->wikipedia);
 
-    // ----------------------------------------------------------------------------------------------------------------- Build page sections.
+    $this->headingAfter .= "{$infos}</div><div class='s s2'><img alt='' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='140' height='140'></div></div>";
 
-
-    $content = null;
-    // Description section
-    if ($this->company->description) {
-      $content .= $this->getSection("description", $i18n->t("Description"), $this->htmlDecode($this->company->description));
-    }
-
-    // Additional names section.
-    $companyAliases = $this->company->aliases;
-    if (!empty($companyAliases)) {
-      $aliases = null;
-      $c       = count($companyAliases);
-      for ($i = 0; $i < $c; ++$i) {
-        $aliases .= "<li class='mb10 s s10' property='additionalName'>{$companyAliases[$i]}</li>";
-      }
-      $content .= $this->getSection("aliases", $i18n->t("Also Known As"), "<ul class='grid-list r'>{$aliases}</ul>");
-    }
-
-     // External links section.
-    $companyLinks = $this->company->links;
-    if ($companyLinks) {
-      $links = null;
-      $c     = count($companyLinks);
-      for ($i = 0; $i < $c; ++$i) {
-        $hostname = str_replace("www.", "", parse_url($companyLinks[$i], PHP_URL_HOST));
-        $links .= "<li class='mb10 s s10'><a href='{$companyLinks[$i]}' property='url' rel='nofollow' target='_blank'>{$hostname}</a></li>";
-      }
-      $content .= $this->getSection("links", $i18n->t("External Links"), "<ul class='grid-list r'>{$links}</ul>");
-    }
-
-    if ($content) {
+    $this->entity->description && $this->addContentSection($this->intl->t("Profile"), $this->entity->description);
+    $this->entity->aliases     && $this->addContentSection($this->intl->t("Also Known As"), $this->formatAliases($this->entity->aliases), false);
+    if (($content = $this->getContentSections())) {
       return $content;
     }
 
     return new Alert(
-      $i18n->t("{sitename} has no further details about this company.", [ "sitename"    => $kernel->siteName ]),
-      $i18n->t("No Data Available"),
-      Alert::SEVERITY_INFO
+      "<p>{$this->intl->t("{sitename} doesn’t have further details about this company.", [ "sitename" => $this->config->sitename ])}</p>" .
+      "<p>{$this->intl->t("Would you like to {0}add additional information{1}?", [ "<a href='{$this->intl->r("/company/{0}/edit", $this->entity->id)}'>", "</a>" ])}</p>",
+      $this->intl->t("No Info")
     );
-  }
-
-  /**
-   * Construct a section in the main content and add it to the sidebar.
-   *
-   * @param string $id
-   *   The section's unique identifier.
-   * @param string $title
-   *   The section's translated title.
-   * @param string $content
-   *   The section's content.
-   * @return string
-   *   The section ready for display.
-   */
-  protected function getSection($id, $title, $content) {
-    // Add the section to the sidebar as anchor.
-    $this->sidebarNavigation->menuitems[] = [ "#{$id}", $title ];
-
-    return "<div id='{$id}'><h2>{$title}</h2>{$content}</div>";
   }
 
 }

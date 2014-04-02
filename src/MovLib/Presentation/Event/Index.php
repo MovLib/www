@@ -17,72 +17,71 @@
  */
 namespace MovLib\Presentation\Event;
 
-use \MovLib\Data\Event;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Listing\AwardEventListing;
+use \MovLib\Data\Event\EventSet;
+use \MovLib\Partial\Alert;
 
 /**
- * The latest Award Events.
+ * Defines the event index presentation.
  *
+ * @link http://www.google.com/webmasters/tools/richsnippets?q=https://en.movlib.org/events
+ * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/events
+ * @link http://validator.w3.org/check?uri=https://en.movlib.org/events
+ * @link http://gsnedders.html5.org/outliner/process.py?url=https://en.movlib.org/events
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitSidebar;
-  use \MovLib\Presentation\TraitPagination;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
+  use \MovLib\Partial\EventTrait;
 
   /**
-   * Instantiate new latest award events presentation.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
+   * {@inheritdoc}
    */
-  public function __construct() {
-    global $i18n, $kernel;
-    $this->initPage($i18n->t("Events"));
-    $this->initBreadcrumb();
-    $this->initLanguageLinks("/events", null, true);
-    $this->paginationInit(Event::getTotalCount());
-    $this->sidebarInit([
-      [ $kernel->requestPath, $this->title, [ "class" => "ico ico-event" ] ],
-      [ $i18n->r("/event/random"), $i18n->t("Random") ],
-    ]);
+  public function init() {
+    return $this->initIndex(
+      new EventSet($this->diContainerHTTP),
+      $this->intl->t("Create New Event"),
+      $this->intl->t("Events"),
+      "events",
+      "event"
+    );
   }
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
+  /**
+   * {@inheritdoc}
+   * @param \MovLib\Data\Event\Event $event {@inheritdoc}
+   */
+  protected function formatListingItem($event) {
+    return
+      "<li class='hover-item r'>" .
+        "<article>" .
+          "<a class='no-link s s1' href='{$event->route}'>" .
+            "<img alt='{$event->name}' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
+          "</a>" .
+          "<div class='s s9'>" .
+            "<div class='fr'>" .
+              "<a class='ico ico-movie label' href='{$this->intl->rp("/event/{0}/movies", $event->id)}' title='{$this->intl->t("Movies")}'>{$event->movieCount}</a>" .
+              "<a class='ico ico-series label' href='{$this->intl->rp("/event/{0}/series", $event->id)}' title='{$this->intl->t("Series")}'>{$event->seriesCount}</a>" .
+            "</div>" .
+            "<h2 class='para'><a href='{$event->route}' property='url'><span property='name'>{$event->name}</span></a></h2>" .
+            "<small>{$this->getEventDates($event)} {$this->getEventPlace($event)}</small>" .
+          "</div>" .
+        "</article>" .
+      "</li>"
+    ;
+  }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    global $i18n;
-
-    $this->headingBefore =
-      "<a class='btn btn-large btn-success fr' href='{$i18n->r("/event/create")}'>{$i18n->t("Create New Event")}</a>"
-    ;
-
-    $result      = Event::getEvents($this->paginationOffset, $this->paginationLimit);
-    $noItemText  = new Alert(
-      $i18n->t(
-        "We couldn’t find any events matching your filter criteria, or there simply aren’t any events available."
-      ), $i18n->t("No Events"), Alert::SEVERITY_INFO
+  public function getNoItemsContent() {
+    return new Alert(
+      "<p>{$this->intl->t("We couldn’t find any events matching your filter criteria, or there simply aren’t any events available.")}</p>" .
+      "<p>{$this->intl->t("Would you like to {0}create an event{1}?", [ "<a href='{$this->intl->r("/event/create")}'>", "</a>" ])}</p>",
+      $this->intl->t("No Events")
     );
-    $noItemText .=
-      $i18n->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$i18n->r("/award/create")}'>", "</a>" ]);
-
-    $moviesRoute = $i18n->rp("/event/{0}/movies", [ "{{ id }}" ]);
-    $seriesRoute = $i18n->rp("/event/{0}/series", [ "{{ id }}" ]);
-
-    return new AwardEventListing($result, $noItemText, "Event", $moviesRoute, $seriesRoute);
   }
 
 }

@@ -26,19 +26,17 @@ namespace MovLib\Presentation;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ErrorPage extends \MovLib\Presentation\Page {
+class ErrorPage extends \MovLib\Presentation\AbstractPresenter {
 
   /**
    * Instantiate new empty page.
    *
-   * @global \MovLib\Data\Cache $cache
    * @param string $title
    *   The translated page's title.
    * @param mixed $content
    *   The translated page's content.
    */
   public function __construct($title, $content) {
-    global $cache;
     $cache->cacheable = false;
     $this->initPage($title);
     $this->initBreadcrumb();
