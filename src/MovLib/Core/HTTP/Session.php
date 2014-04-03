@@ -18,6 +18,8 @@
 namespace MovLib\Core\HTTP;
 
 use \MovLib\Data\User\User;
+use \MovLib\Exception\ClientException\ForbiddenException;
+use \MovLib\Exception\ClientException\UnauthorizedException;
 
 /**
  * The session model loads the basic user information, creates, updates and deletes sessions.
@@ -71,32 +73,25 @@ final class Session extends \MovLib\Core\AbstractDatabase {
   const REGENERATION_GRACE_TIME = 1200; // 1200 seconds = 20 minutes
 
   /**
-   * Session array key for the user's avatar.
-   *
-   * @var integer
-   */
-  const USER_AVATAR = 2;
-
-  /**
    * Session array key for the user's identifier.
    *
    * @var integer
    */
-  const USER_ID = 3;
+  const USER_ID = 2;
 
   /**
    * Session array key for the user's name.
    *
    * @var integer
    */
-  const USER_NAME = 4;
+  const USER_NAME = 3;
 
   /**
    * Session array key for the user's time zone.
    *
    * @var integer
    */
-  const USER_TIME_ZONE = 5;
+  const USER_TIMEZONE = 4;
 
 
 
@@ -115,14 +110,14 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    *
    * @var integer
    */
-  public $authentication = 0;
+  public $authentication;
 
   /**
    * The session's data.
    *
    * @var array
    */
-  public $data = [];
+  protected $data = [];
 
   /**
    * The session's ID.
@@ -167,13 +162,6 @@ final class Session extends \MovLib\Core\AbstractDatabase {
   protected $response;
 
   /**
-   * The user's absolute avatar image URL for the header.
-   *
-   * @var string
-   */
-  public $userAvatar;
-
-  /**
    * The session's user ID.
    *
    * @var integer
@@ -192,7 +180,7 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    *
    * @var string
    */
-  public $userTimeZone;
+  public $userTimezone;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -211,58 +199,46 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function authenticate($email, $rawPassword) {
-    try {
-      // Load necessary user data from storage (if we have any).
-      $user = new User($this->diContainer);
-      $user->init($rawPassword, $user);
-
-      // Validate the submitted password.
-      if ($user->verifyPassword($rawPassword) === false) {
-        return false;
-      }
-
-      // Only create a session if we're serving this request via nginx.
-      if ($kernel->fastCGI === true) {
-        // Export to class scope.
-        $this->authentication           = $this->initTime = $_SERVER["REQUEST_TIME"];
-        $this->userAvatar               = $user->getStyle(User::STYLE_HEADER_USER_NAVIGATION);
-        $this->userId                   = $user->id;
-        $this->userName                 = $user->name;
-        $this->userTimeZone           = $user->timeZoneIdentifier;
-
-        // Export to session storage.
-        $this->data[self::AUTHENTICATION] =& $this->authentication;
-        $this->data[self::INIT_TIME]      =& $this->initTime;
-        $this->data[self::USER_AVATAR]    =& $this->userAvatar;
-        $this->data[self::USER_ID]        =& $this->userId;
-        $this->data[self::USER_NAME]      =& $this->userName;
-        $this->data[self::USER_TIME_ZONE] =& $this->userTimeZone;
-
-        // Maybe the user was doing some work as anonymous user and already has a session active. If so generate new session
-        // ID and if not generate a completely new session.
-        if (session_status() === PHP_SESSION_ACTIVE) {
-          $this->regenerate();
-        }
-        else {
-          $this->start();
-          $kernel->delayMethodCall([ $this, "insert" ]);
-        }
-
-        // Set cookie for preferred system language for nginx. We set the cookie expire time to January 2038. This is the
-        // maximum value that is possible.
-        $kernel->cookieCreate("lang", $user->systemLanguageCode, 2147483647);
-      }
-
-      // @todo Is this unnecessary overhead or a good protection? If PHP updates the default password this would be the
-      //       only way to update the password's of all users. We execute it delayed, so there's only the server load we
-      //       have to worry about. Maybe introduce a configuration option for this?
-      $kernel->delayMethodCall([ $this, "passwordNeedsRehash" ], [ $user->password, $rawPassword ]);
-
-      return true;
-    }
-    catch (\Exception $e) {
+    $stmt = $this->getMySQLi()->prepare("SELECT `id`, `language_code`, `name`, `password`, `timezone` FROM `users` WHERE `email` = ? LIMIT 1");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $stmt->bind_result($this->userId, $languageCode, $this->userName, $passwordHash, $this->userTimezone);
+    $found = $stmt->fetch();
+    if (!$found) {
       return false;
     }
+
+    if (password_verify($rawPassword, $passwordHash) === false) {
+      return false;
+    }
+
+    $this->authentication = $this->initTime = $this->request->time;
+    $this->data[self::AUTHENTICATION] =& $this->authentication;
+    $this->data[self::INIT_TIME]      =& $this->initTime;
+    $this->data[self::USER_ID]        =& $this->userId;
+    $this->data[self::USER_NAME]      =& $this->userName;
+    $this->data[self::USER_TIMEZONE]  =& $this->userTimezone;
+
+    // Maybe the user was doing some work as anonymous user and already has a session active. If so generate new session
+    // identifier and if not generate a completely new session.
+    if (session_status() === PHP_SESSION_ACTIVE) {
+      $this->regenerate();
+    }
+    else {
+      $this->start();
+      $this->kernel->delayMethodCall([ $this, "insert" ]);
+    }
+
+    // Set cookie for preferred system language for nginx. We set the cookie expire time to January 2038. This is the
+    // maximum value that is possible.
+    $this->response->createCookie("lang", $languageCode, 2147483647);
+
+    // @todo Is this unnecessary overhead or a good protection? If PHP updates the default password this would be the
+    //       only way to update the password's of all users. We execute it delayed, so there's only the server load we
+    //       have to worry about. Maybe introduce a configuration option for this?
+    $this->kernel->delayMethodCall([ $this, "rehashPassword" ], [ $this->userId, $rawPassword, $passwordHash ]);
+
+    return true;
   }
 
   /**
@@ -271,11 +247,11 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    * @param string $message
    *   The already translated message that should be passed to the exception as reason for the 401.
    * @return this
-   * @throws \MovLib\Presentation\Error\Unauthorized
+   * @throws \MovLib\Exception\ClientException\UnauthorizedException
    */
   public function checkAuthorization($message) {
     if ($this->isAuthenticated === false) {
-      throw new Unauthorized($message);
+      throw new UnauthorizedException($message);
     }
     return $this;
   }
@@ -286,26 +262,26 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    * @param string $message
    *   The already translated message that should be passed to the exception as reason for the 403.
    * @return this
-   * @throws \MovLib\Presentation\Error\Forbidden
+   * @throws \MovLib\Exception\ClientException\ForbiddenException
    */
   public function checkAuthorizationAdmin($message) {
     if ($this->isAdmin() === false) {
-      throw new Forbidden($message);
+      throw new ForbiddenException($message);
     }
     return $this;
   }
 
   /**
-   * Check if the user is authenticated and if she or he authenticated recently.
+   * Check if the client's authentication is within the grace time.
    *
    * @param string $message
    *   The already translated message that should be passed to the exception as reason for the 401.
    * @return this
-   * @throws \MovLib\Presentation\Error\Unauthorized
+   * @throws \MovLib\Exception\ClientException\UnauthorizedException
    */
-  public function checkAuthorizationTimestamp($message) {
-    if ($this->isAuthenticated === false || ($this->authentication + self::PROTECTION_GRACE_TIME) < $_SERVER["REQUEST_TIME"]) {
-      throw new Unauthorized($message);
+  public function checkAuthorizationTime($message) {
+    if ($this->isAuthenticated === false || ($this->authentication + self::PROTECTION_GRACE_TIME) < $this->request->time) {
+      throw new UnauthorizedException($message);
     }
     return $this;
   }
@@ -318,53 +294,56 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    *   The unique session ID(s) that should be deleted. If no ID is passed along the current session ID of this instance
    *   will be used. If a numeric array is passed all values are treated as session IDs and deleted.
    * @return this
+   * @throws \mysqli_sql_exception
+   * @throws \MemcachedException
    */
   public function delete($sessionId = null) {
-    try {
-      if (!isset($sessionId)) {
-        $result = $db
-          ->query("SELECT `id` FROM `sessions` WHERE `user_id` = ?", "d", [ $this->userId ])
-          ->get_result()
-          ->fetch_all()
-        ;
-        if (!isset($result[0])) {
-          return $this;
-        }
-        $sessionId = $result[0];
+    $mysqli = $this->getMySQLi();
+
+    if (empty($sessionId)) {
+      $result    = $mysqli->query("SELECT `id` FROM `sessions` WHERE `user_id` = {$this->userId} LIMIT 1");
+      $sessionId = $result->fetch_row()[0];
+      $result->free();
+      if (empty($sessionId)) {
+        return $this;
       }
+    }
 
-      // Fetch all configured Memcached servers from the PHP configuration and split them by the delimiter.
-      $sessionPrefix = ini_get("memcached.sess_prefix");
-      $servers       = explode(",", ini_get("session.save_path"));
+    // Fetch all configured Memcached servers from the PHP configuration and split them by the delimiter.
+    $sessionPrefix = ini_get("memcached.sess_prefix");
+    $servers       = explode(",", ini_get("session.save_path"));
 
-      // Build the array as expected by Memcached::addServers().
-      $c = count($servers);
+    // Build the array as expected by Memcached::addServers().
+    $c = count($servers);
+    for ($i = 0; $i < $c; ++$i) {
+      $servers[$i] = explode(":", $servers[$i]);
+      // The port is mandatory!
+      if (!isset($servers[$i][1])) {
+        $servers[$i][1] = 0;
+      }
+    }
+
+    $memcached = new \Memcached();
+    $memcached->addServers($servers);
+    if (is_array($sessionId) && ($c = count($sessionId)) > 0) {
+      $in = null;
       for ($i = 0; $i < $c; ++$i) {
-        $servers[$i] = explode(":", $servers[$i]);
-        // The port is mandatory!
-        if (!isset($servers[$i][1])) {
-          $servers[$i][1] = 0;
+        if ($in) {
+          $in .= ",";
         }
+        $in .= "'" . $mysqli->real_escape_string($sessionId[$i]) . "'";
       }
+      $mysqli->query("DELETE FROM `sessions` WHERE `id` IN ({$in})");
+      for ($i = 0; $i < $c; ++$i) {
+        $sessionId[$i] = "{$sessionPrefix}{$sessionId[$i]}";
+      }
+      $memcached->deleteMulti($sessionId);
+    }
+    else {
+      $mysqli->query("DELETE FROM `sessions` WHERE `id` = '{$mysqli->real_escape_string($sessionId)}'");
+      $memcached->delete("{$sessionPrefix}{$sessionId}");
+    }
 
-      $memcached = new \Memcached();
-      $memcached->addServers($servers);
-      if (is_array($sessionId) && ($c = count($sessionId)) > 0) {
-        $clause = rtrim(str_repeat("?,", $c), ",");
-        $db->query("DELETE FROM `sessions` WHERE `id` IN ({$clause})", str_repeat("s", $c), $sessionId);
-        for ($i = 0; $i < $c; ++$i) {
-          $sessionId[$i] = "{$sessionPrefix}{$sessionId[$i]}";
-        }
-        $memcached->deleteMulti($sessionId);
-      }
-      else {
-        $db->query("DELETE FROM `sessions` WHERE `id` = ?", "s", [ $sessionId ]);
-        $memcached->delete("{$sessionPrefix}{$sessionId}");
-      }
-    }
-    catch (\Exception $e) {
-      Log::critical($e);
-    }
     return $this;
   }
 
@@ -380,89 +359,75 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    * @return this
    */
   public function destroy($deleteAllSessions = false) {
-    // Only execute the following if this request was made through nginx.
-    if ($kernel->fastCGI === true) {
-      // Remove all data associated with this session.
-      if (session_status() === PHP_SESSION_ACTIVE) {
-        session_unset();
-        session_destroy();
-        session_write_close();
-      }
+    // Remove all data associated with this session.
+    if (session_status() === PHP_SESSION_ACTIVE) {
+      session_unset();
+      session_destroy();
+      session_write_close();
+    }
 
-      // Remove the session and language cookie.
-      $kernel->cookieDelete([ $this->config->sessionName, "lang" ]);
+    // Remove the session and language cookie.
+    $this->response->deleteCookie([ $this->config->sessionName, "lang" ]);
 
-      // Delete all sessions if the flag is set.
-      if ($deleteAllSessions === true) {
-        // @devStart
-        // @codeCoverageIgnoreStart
-        Log::debug("Deleting all Sessions");
-        // @codeCoverageIgnoreEnd
-        // @devEnd
-        $this->delete();
-      }
-      // Otherwise only delete the current session.
-      else {
-        // @devStart
-        // @codeCoverageIgnoreStart
-        Log::debug("Deleting Session", [ "id" => $this->id ]);
-        // @codeCoverageIgnoreEnd
-        // @devEnd
-        $this->delete($this->id);
-      }
+    // Delete all sessions if the flag is set.
+    if ($deleteAllSessions === true) {
+      // @devStart
+      // @codeCoverageIgnoreStart
+      $this->log->debug("Deleting all sessions");
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+      $this->delete();
+    }
+    // Otherwise only delete the current session.
+    else {
+      // @devStart
+      // @codeCoverageIgnoreStart
+      $this->log->debug("Deleting session", [ "id" => $this->id ]);
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+      $this->delete($this->id);
     }
 
     // The user is no longer authenticated, keep this outside of the if for PHPUnit tests.
     $this->active          = false;
-    $this->authentication  = 0;
+    $this->authentication  = null;
     $this->isAuthenticated = false;
-    $this->userAvatar      = null;
     $this->userId          = 0;
-    $this->userName        = $kernel->remoteAddress;
-    $this->userTimeZone    = date_default_timezone_get();
+    $this->userName        = $this->request->remoteAddress;
+    $this->userTimezone    = $this->config->timezone;
 
     return $this;
   }
 
   /**
-   * Retrieve a list of all active sessions.
+   * Get all active sessions.
    *
-   * @return \mysqli_result
-   *   Mysqli result ontaining all sessions currently stored in the persistent session storage for the currently signed
-   *   in user. Each entry in the result set contains the following names in the projection:
-   *   <ul>
-   *     <li><code>"id"</code> is the session's unique ID</li>
-   *     <li><code>"authentication"</code> is the timestamp when this session was initially created</li>
-   *     <li><code>"ip_address"</code> is the IP address stored during authentication or regeneration</li>
-   *     <li><code>"user_agent"</code> is the user agent string submitted during authentication or regeneration</li>
-   *   </ul>
+   * @see \MovLib\Stub\Core\HTTP\ActiveSession
+   * @return array
+   *   Array containing all active sessions.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getActiveSessions() {
-    return $db->query(
-      "SELECT `id`, UNIX_TIMESTAMP(`authentication`) AS `authentication`, `ip_address`, `user_agent` FROM `sessions` WHERE `user_id` = ?",
-      "d",
-      [ $this->userId ]
-    )->get_result();
+    $activeSessions = [];
+    $result = $this->getMySQLi()->query("SELECT `authentication`, `id`, `remote_address` AS `remoteAddress`, `user_agent` AS `userAgent` FROM `sessions` WHERE `user_id` = {$this->userId}");
+    while ($activeSession = $result->fetch_object()) {
+      $activeSessions[] = $activeSession;
+    }
+    $result->free();
+    return $activeSessions;
   }
 
   /**
    * Insert newly created session into persistent session storage.
    *
-   * @delayed
    * @return this
    */
   public function insert() {
-    try {
-      $db->query(
-        "INSERT INTO `sessions` (`id`, `user_id`, `user_agent`, `ip_address`, `authentication`) VALUES (?, ?, ?, ?, FROM_UNIXTIME(?))",
-        "sdssi",
-        [ $this->id, $this->userId, $kernel->userAgent, inet_pton($kernel->remoteAddress), $this->authentication ]
-      );
-    }
-    catch (DatabaseException $e) {
-      Log::critical($e);
-    }
+    $remoteAddress = inet_pton($this->request->remoteAddress);
+    $stmt = $this->getMySQLi()->prepare("INSERT INTO `sessions` (`authentication`, `id`, `remote_address`, `user_id`, `user_agent`) VALUES (FROM_UNIXTIME(?), ?, ?, ?, ?)");
+    $stmt->bind_param("iibds", $this->authentication, $this->id, $remoteAddress, $this->userId, $this->request->userAgent);
+    $stmt->execute();
+    $stmt->close();
     return $this;
   }
 
@@ -476,50 +441,15 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    */
   public function isAdmin() {
     static $isAdmin = null;
-    if ($this->isAuthenticated === true) {
-      if (!$isAdmin) {
-        try {
-          $result = $db
-            ->query("SELECT `admin` FROM `users` WHERE `id` = ? LIMIT 1", "d", [ $this->userId ])
-            ->get_result()
-            ->fetch_row()
-          ;
-          $isAdmin = (!empty($result[0]) && $result[0] === 1);
-        }
-        catch (DatabaseException $e) {
-          Log::critical($e);
-          $isAdmin = false;
-        }
+    if ($this->isAuthenticated) {
+      if ($isAdmin === null) {
+        $result  = $this->getMySQLi()->query("SELECT `admin` FROM `users` WHERE `id` = {$this->userId} LIMIT 1");
+        $isAdmin = $result && $result->fetch_row()[0] === 1;
+        $result->free();
       }
       return $isAdmin;
     }
     return false;
-  }
-
-  /**
-   * Test after every authentication if the password needs to be rehashed.
-   *
-   * @delayed
-   * @param string $password
-   *   The hashed password.
-   * @param string $rawPassword
-   *   The unhashed password.
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   * @throws \DomainException
-   */
-  public function passwordNeedsRehash($password, $rawPassword) {
-    if (password_needs_rehash($password, PASSWORD_DEFAULT, $kernel->passwordOptions) === true) {
-      try {
-        $user     = new FullUser(FullUser::FROM_ID, $this->userId);
-        $password = $user->hashPassword($rawPassword);
-        $user->updatePassword($password);
-      }
-      catch (\Exception $e) {
-        Log::critical($e);
-      }
-    }
-    return $this;
   }
 
   /**
@@ -530,21 +460,41 @@ final class Session extends \MovLib\Core\AbstractDatabase {
   protected function regenerate() {
     // @devStart
     // @codeCoverageIgnoreStart
-    Log::debug("Regenerating Session ID");
+    $this->log->debug("Regenerating session identifier");
     // @codeCoverageIgnoreEnd
     // @devEnd
-    if ($kernel->fastCGI === true) {
-      if (session_regenerate_id(true) === true) {
-        if ($this->userId > 0) {
-          $kernel->delayMethodCall([ $this, "update" ], [ $this->id ]);
-        }
-        $this->id       = session_id();
-        $this->initTime = $_SERVER["REQUEST_TIME"];
+    if (session_regenerate_id(true) === true) {
+      if ($this->userId > 0) {
+        $this->kernel->delayMethodCall([ $this, "update" ], [ $this->id ]);
       }
-      else {
-        Log::critical("Couldn't regenerate session identifier", [ "session" => $this ]);
-        $this->destroy();
-      }
+      $this->id       = session_id();
+      $this->initTime = $this->request->time;
+    }
+    else {
+      $this->log->error("Couldn't regenerate session identifier", [ "session" => $this ]);
+      $this->destroy();
+    }
+    return $this;
+  }
+
+  /**
+   * Check if the user's password needs to be rehashed and do so if applicable.
+   *
+   * @param integer $userId
+   *   The unique identifier of the user the password belongs to.
+   * @param string $rawPassword
+   *   The raw password that should be checked.
+   * @param string $passwordHash
+   *   The hashed password.
+   * @return this
+   */
+  public function rehashPassword($userId, $rawPassword, $passwordHash) {
+    if (password_needs_rehash($passwordHash, $this->config->passwordAlgorithm, $this->config->passwordOptions)) {
+      $passwordHash = password_hash($rawPassword, $this->config->passwordAlgorithm, $this->config->passwordOptions);
+      $stmt = $this->getMySQLi()->prepare("UPDATE `users` SET `password` = ? WHERE `id` = ?");
+      $stmt->bind_param("sd", $passwordHash, $userId);
+      $stmt->execute();
+      $stmt->close();
     }
     return $this;
   }
@@ -578,7 +528,7 @@ final class Session extends \MovLib\Core\AbstractDatabase {
     // ensure that HTTP proxies are able to cache anonymous pageviews.
     if (empty($this->request->cookies[$this->config->sessionName])) {
       $this->userName     = $this->request->remoteAddress;
-      $this->userTimeZone = $this->config->timeZone;
+      $this->userTimezone = $this->config->timezone;
     }
     else {
       // Try to resume the session with the ID from the cookie.
@@ -587,71 +537,67 @@ final class Session extends \MovLib\Core\AbstractDatabase {
       // Try to load the session from the persistent session storage for known users if we just generated a new
       // session ID and have no data stored for it.
       if (empty($this->data)) {
-        $stmt = $this->prepare("SELECT UNIX_TIMESTAMP(`authentication`), `user_id` FROM `sessions` WHERE `id` = ? LIMIT 1");
+        // @devStart
+        // @codeCoverageIgnoreStart
+        $this->log->debug("Trying to load session from database.");
+        // @codeCoverageIgnoreEnd
+        // @devEnd
+        $mysqli = $this->getMySQLi();
+        $stmt = $mysqli->prepare(<<<SQL
+SELECT
+  `users`.`id`,
+  `users`.`name`,
+  `users`.`timezone`,
+  `sessions`.`authentication`
+FROM `sessions`
+  INNER JOIN `users` ON `users`.`id` = `sessions`.`user_id`
+WHERE `sessions`.`id` = ? LIMIT 1
+SQL
+        );
         $stmt->bind_param("s", $this->request->cookies[$this->config->sessionName]);
         $stmt->execute();
-        $stmt->bind_result($this->authentication, $this->userId);
+        $stmt->bind_result($this->userId, $this->userName, $this->userTimezone, $this->authentication);
+        $found = $stmt->fetch();
+        $stmt->close();
 
-        // We couldn't find a valid session and we have no data, invalid session.
-        if ($stmt->fetch()) {
-          try {
-            // Try to load the user and directly regenerate the session's identifier.
-            $user = new User(User::FROM_ID, $this->userId);
-            $this->regenerate();
-
-            // Export database result to class scope.
-            $this->userAvatar   = $user->getStyle(User::STYLE_HEADER_USER_NAVIGATION);
-            $this->userName     = $user->name;
-            $this->userTimeZone = $user->timeZoneIdentifier;
-
-            // Export properties to session scope.
-            $this->data[self::AUTHENTICATION] =& $this->authentication;
-            $this->data[self::INIT_TIME]      =& $this->initTime;
-            $this->data[self::USER_ID]        =& $this->userId;
-            $this->data[self::USER_AVATAR]    =& $this->userAvatar;
-            $this->data[self::USER_NAME]      =& $this->userName;
-            $this->data[self::USER_TIME_ZONE] =& $this->userTimeZone;
-
-            $this->isAuthenticated = true;
-            // @devStart
-            // @codeCoverageIgnoreStart
-            Log::debug("Loaded Session from Database");
-            // @codeCoverageIgnoreEnd
-            // @devEnd
-          }
-          // Well, this is akward, we have a valid session but no valid user, destroy session and log this error.
-          catch (\Exception $e) {
-            Log::error(
-              new \RuntimeException("Non-existent user ID from persistent session storage", null, $e),
-              [ "remote address" => $this->request->remoteAddress, "session ID" => $this->request->cookies[$this->config->sessionName] ]
-            );
-            $this->destroy();
-          }
+        // We couldn't find a valid session and we have no data = invalid session.
+        if ($found) {
+          // @devStart
+          // @codeCoverageIgnoreStart
+          $this->log->debug("Loaded Session from Database");
+          // @codeCoverageIgnoreEnd
+          // @devEnd
+          $this->regenerate();
+          $this->data[self::AUTHENTICATION] =& $this->authentication;
+          $this->data[self::INIT_TIME]      =& $this->initTime;
+          $this->data[self::USER_ID]        =& $this->userId;
+          $this->data[self::USER_NAME]      =& $this->userName;
+          $this->data[self::USER_TIMEZONE]  =& $this->userTimezone;
+          $this->isAuthenticated = true;
         }
         else {
           // @devStart
           // @codeCoverageIgnoreStart
-          Log::debug("Couldn't Restore Session from Database");
+          $this->log->debug("Couldn't Restore Session from Database");
           // @codeCoverageIgnoreEnd
           // @devEnd
           $this->destroy();
         }
-        $stmt->close();
       }
       // Session data was loaded from Memcached.
-      elseif (!empty($this->data[self::USER_ID])) {
+      elseif (isset($this->data[self::USER_ID])) {
+        // @devStart
+        // @codeCoverageIgnoreStart
+        $this->log->debug("Loaded Session from Memcached");
+        // @codeCoverageIgnoreEnd
+        // @devEnd
         $this->authentication  =& $this->data[self::AUTHENTICATION];
         $this->initTime        =& $this->data[self::INIT_TIME];
         $this->userAvatar      =& $this->data[self::USER_AVATAR];
         $this->userId          =& $this->data[self::USER_ID];
         $this->userName        =& $this->data[self::USER_NAME];
-        $this->userTimeZone    =& $this->data[self::USER_TIME_ZONE];
+        $this->userTimezone    =& $this->data[self::USER_TIMEZONE];
         $this->isAuthenticated = true;
-        // @devStart
-        // @codeCoverageIgnoreStart
-        Log::debug("Loaded Session from Memcached");
-        // @codeCoverageIgnoreEnd
-        // @devEnd
         if (($this->initTime + self::REGENERATION_GRACE_TIME) < $this->request->time) {
           $this->regenerate();
         }
@@ -703,38 +649,29 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    * @throws \MemcachedException
    */
   protected function start() {
-    // Only attempt to start a new session if we're operating via php-fpm.
-    if ($kernel->fastCGI === true) {
-      // Create backup of existing session data (if any).
-      $sessionData = isset($this->data) ? $this->data : null;
+    // Create backup of existing session data (if any).
+    $sessionData = isset($this->data) ? $this->data : null;
 
-      // Start new session (if exeution was started by nginx).
-      if (($this->active = session_start()) === false) {
-        $e = new \MemcachedException("Couldn't start session (may be Memcached is down?)");
-        Log::critical($e);
-        throw $e;
-      }
-
-      $this->id = session_id();
-
-      // @devStart
-      // @codeCoverageIgnoreStart
-      Log::debug("Started Session");
-      // @codeCoverageIgnoreEnd
-      // @devEnd
-
-      // Restore session data.
-      if ($sessionData) {
-        $this->data += $sessionData;
-      }
+    // Start new session (if exeution was started by nginx).
+    if (($this->active = session_start()) === false) {
+      $e = new \MemcachedException("Couldn't start session (may be Memcached is down?)");
+      $this->log->critical($e);
+      throw $e;
     }
+
+    $this->id = session_id();
+
     // @devStart
     // @codeCoverageIgnoreStart
-    else {
-      Log::debug("Not starting new session, not in cookie supporting environment");
-    }
+    $this->log->debug("Started Session");
     // @codeCoverageIgnoreEnd
     // @devEnd
+
+    // Restore session data.
+    if ($sessionData) {
+      $this->data += $sessionData;
+    }
+
     return $this;
   }
 
@@ -747,16 +684,10 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    * @return this
    */
   public function update($oldId) {
-    try {
-      $db->query(
-        "UPDATE `sessions` SET `id` = ?, `ip_address` = ?, `user_agent` = ? WHERE `id` = ? AND `user_id` = ?",
-        "ssssd",
-        [ $this->id, inet_pton($kernel->remoteAddress), $kernel->userAgent, $oldId, $this->userId ]
-      );
-    }
-    catch (DatabaseException $e) {
-      Log::critical($e);
-    }
+    $stmt = $this->getMySQLi()->prepare("UPDATE `sessions` SET `id` = ?, `remote_address` = ?, `user_agent` = ? WHERE `id` = ? AND `user_id` = ?");
+    $stmt->bind_param("sbssd", $this->id, inet_pton($this->request->remoteAddress), $this->request->userAgent, $oldId, $this->userId);
+    $stmt->execute();
+    $stmt->close();
     return $this;
   }
 
@@ -766,12 +697,7 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    * @return this
    */
   public function updateUserAccess() {
-    try {
-      $db->query("UPDATE `users` SET `access` = CURRENT_TIMESTAMP WHERE `id` = ?", "d", [ $this->userId ]);
-    }
-    catch (DatabaseException $e) {
-      Log::critical($e);
-    }
+    $this->getMySQLi()->query("UPDATE `users` SET `access` = CURRENT_TIMESTAMP WHERE `id` = {$this->userId}");
     return $this;
   }
 

@@ -81,7 +81,7 @@ class Time extends \MovLib\Presentation\AbstractBase {
    *   The string representation of this (date)time.
    */
   public function __toString() {
-    $time = new \IntlDateFormatter($this->intl->locale, \IntlDateFormatter::NONE, $this->timeFormat, $session->userTimeZone);
+    $time = new \IntlDateFormatter($this->intl->locale, \IntlDateFormatter::NONE, $this->timeFormat, $session->userTimezone);
     return "<time>{$time->format($this->time)}</time>";
   }
 

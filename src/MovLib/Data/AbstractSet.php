@@ -53,7 +53,7 @@ abstract class AbstractSet extends \MovLib\Core\AbstractDatabase implements \Mov
    * {@inheritdoc}
    */
   public function getCount() {
-    $result = $this->getMySQLi()->query("SELECT COUNT(*) FROM `{$this->getPluralKey()}` WHERE `deleted` = false");
+    $result = $this->getMySQLi()->query("SELECT COUNT(*) FROM `{$this->getPluralKey()}` WHERE `deleted` = false LIMIT 1");
     $count  = $result->fetch_row()[0];
     $result->free();
     return $count;

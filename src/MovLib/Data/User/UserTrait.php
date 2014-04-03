@@ -18,7 +18,7 @@
 namespace MovLib\Data\User;
 
 /**
- * Defines the user set object.
+ * Provides properties and methods that are needed by several user objects.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,46 +26,42 @@ namespace MovLib\Data\User;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class UserSet extends \MovLib\Data\AbstractSet {
-  use \MovLib\Data\User\UserTrait;
+trait UserTrait {
 
   /**
    * {@inheritdoc}
    */
-  public function getCount() {
-    $result = $this->getMySQLi()->query("SELECT COUNT(*) FROM `users` WHERE `email` IS NOT NULL LIMIT 1");
-    $count  = $result->fetch_row()[0];
-    $result->free();
-    return $count;
+  final public function getPluralKey() {
+    return "users";
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getEntitiesQuery($where = null, $orderBy = null) {
-    return "SELECT `id`, `name`, `access`, `created` FROM `users` {$where} {$orderBy}";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getOrdered($by, $offset, $limit) {
-    return $this->getEntities("WHERE `email` IS NOT NULL", "ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}");
-  }
-
-  /**
-   * {@inheritdoc}
-   * @return null|string
-   *   A random, unique, and existing user's name ready for use as route. <code>NULL</code> if no user could be found.
-   */
-  public function getRandom() {
-    $name   = null;
-    $result = $this->getMySQLi()->query("SELECT `name` FROM `users` WHERE `email` IS NOT NULL ORDER BY RAND() LIMIT 1");
-    if ($result) {
-      $name = mb_strtolower($result->fetch_row()[0]);
+  final public function getPluralName() {
+    static $plural;
+    if (!$plural) {
+      $plural = $this->intl->t("Users");
     }
-    $result->free();
-    return $name;
+    return $plural;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  final public function getSingularKey() {
+    return "user";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  final public function getSingularName() {
+    static $singular;
+    if (!$singular) {
+      $singular = $this->intl->t("User");
+    }
+    return $singular;
   }
 
 }

@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \MovLib\Exception\SeeOtherException;
+use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Alert;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputEmail;
@@ -144,6 +144,12 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function valid() {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    $this->log->debug("Authenticating user", [ "email" => $this->email, "password" => $this->rawPassword ]);
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
     if ($this->session->authenticate($this->email, $this->rawPassword)) {
       $this->alerts .= new Alert(
         $this->intl->t("Successfully Signed In"),

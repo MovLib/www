@@ -179,7 +179,7 @@ final class Date {
     if (isset($dateFrom->month) && isset($dateFrom->day) && isset($dateTo->month) && isset($dateTo->day)) {
       $format = $this->intl->t("~{0}", $format);
     }
-    return $dateFrom->dateTime->diff($dateTo->dateTime)->format($format);
+    return $dateFrom->diff($dateTo)->format($format);
   }
 
 }

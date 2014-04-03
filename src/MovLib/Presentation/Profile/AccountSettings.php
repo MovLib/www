@@ -123,7 +123,7 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
       $langOptions[$code] = \Locale::getDisplayLanguage($code, $this->intl->locale);
     }
     $this->intl->getCollator()->asort($langOptions);
-    $this->formAddElement(new RadioGroup("language", $this->intl->t("System Language"), $langOptions, $this->user->systemLanguageCode, [
+    $this->formAddElement(new RadioGroup("language", $this->intl->t("System Language"), $langOptions, $this->user->languageCode, [
       "#help-popup" => $this->intl->t(
         "Select your preferred system language, this will be used to redirect you if you visit {sitename} without a " .
         "subdomain and may be from other use in the future.",

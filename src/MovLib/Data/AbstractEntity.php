@@ -69,7 +69,10 @@ abstract class AbstractEntity extends \MovLib\Core\AbstractDatabase implements \
    * {@inheritdoc}
    */
   public function getCount($from, $what = "*") {
-    return $this->getMySQLi()->query("SELECT COUNT({$what}) FROM `{$from}` WHERE `{$this->singular}_id` = {$this->id} LIMIT 1")->fetch_row()[0];
+    $result = $this->getMySQLi()->query("SELECT COUNT({$what}) FROM `{$from}` WHERE `{$this->getSingularKey()}_id` = {$this->id} LIMIT 1");
+    $count  = $result->fetch_row()[0];
+    $result->free();
+    return $count;
   }
 
   /**

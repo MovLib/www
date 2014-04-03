@@ -18,7 +18,6 @@
 namespace MovLib\Data\User;
 
 use \MovLib\Data\Date;
-use \MovLib\Exception\ClientException\GoneException;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -30,7 +29,9 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class User extends \MovLib\Data\AbstractEntity {
+final class User extends \MovLib\Core\AbstractDatabase implements \MovLib\Data\EntityInterface {
+  use \MovLib\Data\RouteTrait;
+  use \MovLib\Data\User\UserTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -92,14 +93,14 @@ final class User extends \MovLib\Data\AbstractEntity {
   /**
    * The user's last access (UNIX timestamp).
    *
-   * @var null|integer
+   * @var \DateTime
    */
   public $access;
 
   /**
    * The user's birthday (date).
    *
-   * @var null|string
+   * @var null|\DateTime
    */
   public $birthday;
 
@@ -113,7 +114,7 @@ final class User extends \MovLib\Data\AbstractEntity {
   /**
    * The user's creation time (UNIX timestamp).
    *
-   * @var null|integer
+   * @var \DateTime
    */
   public $created;
 
@@ -136,14 +137,14 @@ final class User extends \MovLib\Data\AbstractEntity {
    *
    * @var null|string
    */
-  public $email;
+  protected $email;
 
   /**
    * The user's unique identifier.
    *
-   * @var integer
+   * @var null|integer
    */
-  public $id;
+  protected $id;
 
   /**
    * The user's unique name.
@@ -151,13 +152,6 @@ final class User extends \MovLib\Data\AbstractEntity {
    * @var string
    */
   public $name;
-
-  /**
-   * The user's hashed password.
-   *
-   * @var null|string
-   */
-  public $password;
 
   /**
    * Whether the user's personal data is private or not.
@@ -188,13 +182,6 @@ final class User extends \MovLib\Data\AbstractEntity {
   public $reputation;
 
   /**
-   * The user's translated route.
-   *
-   * @var string
-   */
-  public $route;
-
-  /**
    * The user's sex according to ISO/IEC 5218.
    *
    * We are only using the following three values from the standard:
@@ -215,14 +202,14 @@ final class User extends \MovLib\Data\AbstractEntity {
    *
    * @var null|string
    */
-  public $systemLanguageCode;
+  public $languageCode;
 
   /**
    * The user's time zone identifier (e.g. <code>"Europe/Vienna"</code>).
    *
    * @var null|string
    */
-  public $timeZone;
+  public $timezone;
 
   /**
    * The MySQLi bind param types of the columns.
@@ -243,88 +230,112 @@ final class User extends \MovLib\Data\AbstractEntity {
   public $website;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Methods
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Initialize existing user from given value.
+   * Instantiate new user object.
    *
-   * @param string $from
-   *   From which column the existing user should be loaded, use the <var>FROM_*</var> class constants.
-   * @param string $value
-   *   The value of the column.
-   * @return this
+   * @param \MovLib\Core\DIContainer $diContainer
+   *   {@inheritdoc}
+   * @param mixed $value [optional]
+   *   The value the column has.
+   * @param string $from [optional]
+   *   From what column the user object should be created, defaults to <var>User::FROM_NAME</var>.
    * @throws \MovLib\Exception\ClientException\NotFoundException
-   * @throws \MovLib\Exception\ClientException\GoneException
    */
-  public function init($from, $value) {
-    $stmt = $this->getMySQLi()->prepare(<<<SQL
+  public function __construct(\MovLib\Core\DIContainer $diContainer, $value = null, $from = self::FROM_NAME) {
+    parent::__construct($diContainer);
+    if ($value && $from) {
+      $stmt = $this->getMySQLi()->prepare(<<<SQL
 SELECT
   `id`,
   `name`,
-  UNIX_TIMESTAMP(`access`),
+  `email`,
+  `access`,
+  `created`,
   `birthdate`,
   `country_code`,
-  UNIX_TIMESTAMP(`created`),
   `currency_code`,
-  COLUMN_GET(`dyn_about_me`, '{$this->intl->languageCode}' AS BINARY),
+  COLUMN_GET(`dyn_about_me`, '{$this->intl->languageCode}' AS CHAR),
   `edits`,
-  `email`,
-  `password`,
   `private`,
   `profile_views`,
   `real_name`,
   `reputation`,
   `sex`,
-  `system_language_code`,
-  `time_zone_identifier`,
+  `language_code`,
+  `timezone`,
   `website`
-FROM `users`
-WHERE `{$from}` = ?
-LIMIT 1
+FROM `users` WHERE `{$from}` = ? LIMIT 1
 SQL
-    );
-    $stmt->bind_param(self::$types[$from], $value);
-    $stmt->execute();
-    $stmt->bind_result(
-      $this->id,
-      $this->name,
-      $this->access,
-      $this->birthday,
-      $this->countryCode,
-      $this->created,
-      $this->currencyCode,
-      $this->aboutMe,
-      $this->edits,
-      $this->email,
-      $this->password,
-      $this->private,
-      $this->profileViews,
-      $this->realName,
-      $this->reputation,
-      $this->sex,
-      $this->systemLanguageCode,
-      $this->timeZone,
-      $this->website
-    );
-    try {
-      $stmt->fetch();
-    }
-    catch (\mysqli_sql_exception $e) {
-      throw new NotFoundException("Couldn't find user {$from} '{$value}'");
-    }
-    finally {
+      );
+      $stmt->bind_param(self::$types[$from], $value);
+      $stmt->execute();
+      $stmt->bind_result(
+        $this->id,
+        $this->name,
+        $this->email,
+        $this->access,
+        $this->created,
+        $this->birthday,
+        $this->countryCode,
+        $this->currencyCode,
+        $this->aboutMe,
+        $this->edits,
+        $this->private,
+        $this->profileViews,
+        $this->realName,
+        $this->reputation,
+        $this->sex,
+        $this->languageCode,
+        $this->timezone,
+        $this->website
+      );
+      $found = $stmt->fetch();
       $stmt->close();
+      if (!$found) {
+        throw new NotFoundException("Couldn't find user {$from} {$value}");
+      }
     }
-    return $this->initFetchObject();
+    if ($this->id) {
+      $this->init();
+    }
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCount($from, $what = "*") {
+    $result = $this->getMySQLi()->query("SELECT COUNT({$what}) FROM `{$from}` WHERE `user_id` = {$this->id} LIMIT 1");
+    $count  = $result->fetch_row()[0];
+    $result->free();
+    return $count;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function initFetchObject() {
-    $this->birthday = new Date($this->birthday);
-    $this->route    = $this->intl->r("/user/{0}", mb_strtolower($this->name));
+  public function getRoute() {
+    static $route = [];
+    if (empty($route[$this->id])) {
+      $route[$this->id] = $this->intl->r("/{$this->getSingularKey()}/{0}", $this->id);
+    }
+    return $route[$this->id];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function init() {
+    $this->access   = new \DateTime($this->access);
+    $this->created  = new \DateTime($this->created);
+    $this->private  = (boolean) $this->private;
+    $this->birthday && ($this->birthday = new Date($this->birthday));
     return $this;
   }
 
@@ -344,21 +355,7 @@ SQL
     assert($what == self::FROM_EMAIL || $what == self::FROM_NAME, "You can only check usage for 'name' and 'email'.");
     // @codeCoverageIgnoreEnd
     // @devEnd
-    return (null !== $this->query("SELECT `{$what}` FROM `users` WHERE `{$what}` = ? LIMIT 1", "s", [ $nameOrEmail ]));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getPluralName() {
-    return "users";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getSingularName() {
-    return "user";
+    return ($this->query("SELECT `{$what}` FROM `users` WHERE `{$what}` = ? LIMIT 1", "s", [ $nameOrEmail ]) !== null);
   }
 
   /**

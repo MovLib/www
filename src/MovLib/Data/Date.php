@@ -18,7 +18,7 @@
 namespace MovLib\Data;
 
 /**
- * Extends PHP's date time class with handling of partial dates.
+ * Defines the date object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,7 +26,7 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Date {
+final class Date extends \DateTime {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -51,20 +51,6 @@ final class Date {
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   * The date as valid SQL date string.
-   *
-   * @var string
-   */
-  public $date;
-
-  /**
-   * Datetime instance of the current date.
-   *
-   * @var \DateTime
-   */
-  public $dateTime;
 
   /**
    * The date's day part, or <code>NULL</code> if the date doesn't contain the day part.
@@ -114,23 +100,14 @@ final class Date {
         }
       }
 
-      // Make sure that the final date has perfectl valid SQL date syntax.
-      $this->date = sprintf("%04s-%02s-%02s", $this->year, $this->month, $this->day);
-
       // Now we can safely use the date parts to instantiate PHP's DateTime object. We have to ensure that month and
       // day, in case they're NULL, have correct values, therefore we use 1 in those cases. We also add the time parts
       // to ensure that absolutely nothing can go wrong.
-      $this->dateTime = new \DateTime(sprintf("%04s-%'0'11s-%'0'11s 00:00:00", $this->year, $this->month, $this->day));
+      parent::__construct(sprintf("%04s-%'0'11s-%'0'11s 00:00:00", $this->year, $this->month, $this->day));
     }
     // If we got anything else let PHP handle the date/time and try to export it afterwards into class scope.
     else {
-      if ($date instanceof \DateTime) {
-        $this->dateTime = $date;
-      }
-      else {
-        $this->dateTime = new \DateTime($date);
-      }
-      $this->date = $this->dateTime->format(self::W3C_DATE);
+      parent::__construct($date);
       list($this->year, $this->month, $this->day) = explode("-", $this->date, 3);
     }
   }
@@ -142,7 +119,7 @@ final class Date {
    *   The string representation of the date.
    */
   public function __toString() {
-    return $this->date;
+    return sprintf("%04s-%02s-%02s", $this->year, $this->month, $this->day);
   }
 
 }

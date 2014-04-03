@@ -113,7 +113,7 @@ class DateTime {
    *   The string representation of this (date)time.
    */
   public function __toString() {
-    $time = new \IntlDateFormatter($this->intl->locale, $this->dateFormat, $this->timeFormat, $this->session->userTimeZone);
+    $time = new \IntlDateFormatter($this->intl->locale, $this->dateFormat, $this->timeFormat, $this->session->userTimezone);
     return "<time{$this->presenter->expandTagAttributes($this->attributes)}>{$time->format($this->dateTime)}</time>";
   }
 

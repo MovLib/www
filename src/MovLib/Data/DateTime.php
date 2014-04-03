@@ -15,11 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Partial\FormElement;
+namespace MovLib\Data;
 
 /**
- * Specialized input element for choosing sex according to {@link https://en.wikipedia.org/wiki/ISO/IEC_5218 ISO IEC
- * 5218}.
+ * Defines the date and time object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -27,32 +26,10 @@ namespace MovLib\Partial\FormElement;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class InputSex extends \MovLib\Partial\FormElement\RadioGroup {
+final class DateTime extends \DateTime {
 
-  /**
-   * Instantiate new input sex element.
-   *
-   * @param string $id
-   *   {@inheritdoc}
-   * @param string $label
-   *   {@inheritdoc}
-   * @param mixed $value
-   *   {@inheritdoc}
-   * @param null|string $help
-   *   The input's help text (if any).
-   * @param null|string $helpPopup
-   *   The input's help popup (if any).
-   *
-   */
-  public function __construct($id, $label, &$value, $help = null, $helpPopup = false) {
-    parent::__construct($id, $label, [
-      self::FEMALE  => $this->intl->t("Female"),
-      self::MALE    => $this->intl->t("Male"),
-      self::UNKNOWN => $this->intl->t("Unknown"),
-    ], $value);
-    if ($helpPopup) {
-      $this->attributes["#help-popup"] = $help;
-    }
+  public function __toString() {
+    return $this->format(self::W3C);
   }
 
 }
