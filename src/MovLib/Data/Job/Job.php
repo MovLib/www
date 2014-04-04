@@ -29,6 +29,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @since 0.0.1-dev
  */
 final class Job extends \MovLib\Data\AbstractEntity {
+  use \MovLib\Data\Job\JobTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -123,99 +124,83 @@ final class Job extends \MovLib\Data\AbstractEntity {
 
 
   /**
-   * Instantiate new job.
+   * Instantiate new job object.
    *
-   * @param integer $id
-   *   The job's unique identifier, omit to create empty instance.
-   * @throws \MovLib\Presentation\Error\NotFound
+   * @param \MovLib\Core\DIContainer $diContainer
+   *   {@inheritdoc}
+   * @param integer $id [optional]
+   *   The job's unique identifier to instantiate, defaults to <code>NULL</code> (no job will be loaded).
+   * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function init($id) {
-    $stmt = $this->getMySQLi()->prepare("
-      {$this->getDefaultQuery()}
-      WHERE
-        `id` = ?
-      LIMIT 1"
-    );
-    $stmt->bind_param(
-      "sssssd",
-      $this->intl->languageCode,
-      $this->intl->languageCode,
-      $this->intl->languageCode,
-      $this->intl->languageCode,
-      $this->intl->languageCode,
-      $id
-    );
-    $stmt->execute();
-    $stmt->bind_result(
-      $this->changed,
-      $this->created,
-      $this->deleted,
-      $this->description,
-      $this->femaleName,
-      $this->id,
-      $this->maleName,
-      $this->name,
-      $this->wikipedia
-    );
-    $found = $stmt->fetch();
-    $stmt->close();
-    if ($found === null) {
-      throw new NotFoundException("Couldn't find job for '{$id}'!");
+  public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null) {
+    parent::__construct($diContainer);
+    if ($id) {
+      $stmt = $this->getMySQLi()->prepare(<<<SQL
+SELECT
+  `changed`,
+  `created`,
+  `deleted`,
+  COLUMN_GET(`dyn_descriptions`, ? AS CHAR) AS `description`,
+  IFNULL(COLUMN_GET(`dyn_names_sex2`, ? AS CHAR), COLUMN_GET(`dyn_names_sex2`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `femaleName`,
+  `id`,
+  IFNULL(COLUMN_GET(`dyn_names_sex1`, ? AS CHAR), COLUMN_GET(`dyn_names_sex1`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `maleName`,
+  IFNULL(COLUMN_GET(`dyn_names_sex0`, ? AS CHAR), COLUMN_GET(`dyn_names_sex0`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `name`,
+  IFNULL(COLUMN_GET(`dyn_wikipedia`, ? AS CHAR), COLUMN_GET(`dyn_wikipedia`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `wikipedia`,
+  COUNT(DISTINCT `movies_crew`.`movie_id`) AS `movieCount`,
+  COUNT(DISTINCT `episodes_crew`.`series_id`) AS `seriesCount`
+FROM `jobs`
+  LEFT JOIN `movies_crew`
+    ON `movies_crew`.`job_id` = `jobs`.`id`
+  LEFT JOIN `episodes_crew`
+    ON `episodes_crew`.`job_id` = `jobs`.`id`
+WHERE `id` = ?
+LIMIT 1"
+SQL
+      );
+      $stmt->bind_param(
+        "sssssd",
+        $this->intl->languageCode,
+        $this->intl->languageCode,
+        $this->intl->languageCode,
+        $this->intl->languageCode,
+        $this->intl->languageCode,
+        $id
+      );
+      $stmt->execute();
+      $stmt->bind_result(
+        $this->changed,
+        $this->created,
+        $this->deleted,
+        $this->description,
+        $this->femaleName,
+        $this->id,
+        $this->maleName,
+        $this->name,
+        $this->wikipedia,
+        $this->movieCount,
+        $this->seriesCount
+      );
+      $found = $stmt->fetch();
+      $stmt->close();
+      if (!$found) {
+        throw new NotFoundException("Couldn't find Award {$id}");
+      }
     }
-
-    // @todo Store counts as columns in table.
-    $this->movieCount  = $this->getCount("movies_crew", "DISTINCT `movie_id`");
-    $this->seriesCount = $this->getCount("episodes_crew", "DISTINCT `series_id`");
-
-    return $this->initFetchObject();
+    if ($this->id) {
+      $this->init();
+    }
   }
-
-  /**
-   * Initialize after instantiation via PHP's built in <code>\mysqli_result::fetch_object()}
-   */
-  public function initFetchObject() {
-    $this->deleted = (boolean) $this->deleted;
-    $this->route   = $this->intl->r("/job/{0}", $this->id);
-    return $this;
-  }
-
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * The default query.
-   *
-   * @return string
-   */
-  public function getDefaultQuery() {
-    return
-      "SELECT
-        `changed`,
-        `created`,
-        `deleted`,
-        COLUMN_GET(`dyn_descriptions`, ? AS CHAR) AS `description`,
-        IFNULL(COLUMN_GET(`dyn_names_sex2`, ? AS CHAR), COLUMN_GET(`dyn_names_sex2`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `femaleName`,
-        `id`,
-        IFNULL(COLUMN_GET(`dyn_names_sex1`, ? AS CHAR), COLUMN_GET(`dyn_names_sex1`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `maleName`,
-        IFNULL(COLUMN_GET(`dyn_names_sex0`, ? AS CHAR), COLUMN_GET(`dyn_names_sex0`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `name`,
-        IFNULL(COLUMN_GET(`dyn_wikipedia`, ? AS CHAR), COLUMN_GET(`dyn_wikipedia`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `wikipedia`
-      FROM `jobs`"
-    ;
-  }
-
-  /**
    * {@inheritdoc}
    */
-  public function getPluralName() {
-    return "jobs";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getSingularName() {
-    return "job";
+  protected function init() {
+    $this->deleted = (boolean) $this->deleted;
+    $this->route   = $this->intl->r("/job/{0}", $this->id);
+    return parent::init();
   }
 
   /**

@@ -176,6 +176,7 @@ SQL
   protected function init() {
     $this->deleted = (boolean) $this->deleted;
     $this->route   = $this->intl->r("/genre/{0}", $this->id);
+    return parent::init();
   }
 
 }

@@ -234,6 +234,7 @@ SQL
     $this->aliases = $this->aliases ? unserialize($this->aliases) : [];
     $this->links   = $this->links ? unserialize($this->links) : [];
     $this->route   = $this->intl->r("/event/{0}", $this->id);
+    return parent::init();
   }
 
  /**

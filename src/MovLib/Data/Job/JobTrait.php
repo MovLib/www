@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -18,7 +18,7 @@
 namespace MovLib\Data\Job;
 
 /**
- * Defines the job set object.
+ * Provides properties and methods that are needed by several job objects.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -26,29 +26,42 @@ namespace MovLib\Data\Job;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class JobSet extends \MovLib\Data\AbstractSet {
-  use \MovLib\Data\Job\JobTrait;
-
+trait JobTrait {
 
   /**
    * {@inheritdoc}
    */
-  protected function getEntitiesQuery($where = null, $orderBy = null) {
-    return <<<SQL
-SELECT
-  `jobs`.`id` AS `id`,
-  COLUMN_GET(`dyn_names_sex0`, '{$this->intl->languageCode}' AS CHAR) AS `name`,
-  COUNT(DISTINCT `movies_crew`.`movie_id`) AS `movieCount`,
-  COUNT(DISTINCT `episodes_crew`.`series_id`) AS `seriesCount`
-FROM `jobs`
-  LEFT JOIN `movies_crew`
-    ON `movies_crew`.`job_id` = `jobs`.`id`
-  LEFT JOIN `episodes_crew`
-    ON `episodes_crew`.`job_id` = `jobs`.`id`
-{$where}
-GROUP BY `id`, `name`
-{$orderBy}
-SQL;
+  final public function getPluralKey() {
+    return "jobs";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  final public function getPluralName() {
+    static $plural;
+    if (!$plural) {
+      $plural = $this->intl->t("Jobs");
+    }
+    return $plural;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  final public function getSingularKey() {
+    return "job";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  final public function getSingularName() {
+    static $singular;
+    if (!$singular) {
+      $singular = $this->intl->t("Job");
+    }
+    return $singular;
   }
 
 }

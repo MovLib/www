@@ -18,7 +18,7 @@
 namespace MovLib\Data\Event;
 
 /**
- * Provides properties and methods that are needed by several award objects.
+ * Provides properties and methods that are needed by several event objects.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
