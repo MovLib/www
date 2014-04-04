@@ -19,6 +19,7 @@ namespace MovLib\Presentation\Person;
 
 use \MovLib\Data\Person\PersonSet;
 use \MovLib\Partial\Alert;
+use \MovLib\Partial\Date;
 
 /**
  * Defines the person index listing.
@@ -28,6 +29,9 @@ use \MovLib\Partial\Alert;
  * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/persons
  * @link http://validator.w3.org/check?uri=https://en.movlib.org/persons
  * @link http://gsnedders.html5.org/outliner/process.py?url=https://en.movlib.org/persons
+ *
+ * @property \MovLib\Data\Person\PersonSet $set
+ *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -37,30 +41,24 @@ use \MovLib\Partial\Alert;
  */
 final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
   use \MovLib\Partial\PersonTrait;
-  use \MovLib\Partial\DateTrait;
 
   /**
    * {@inheritdoc}
    */
   public function init() {
-    $this->initIndex(
-      new PersonSet($this->diContainerHTTP),
-      $this->intl->t("Create New Person"),
-      $this->intl->t("Persons"),
-      "persons",
-      "person"
-    );
+    $this->initIndex(new PersonSet($this->diContainerHTTP), $this->intl->t("Create New Company"));
   }
 
   /**
    * {@inheritdoc}
    * @param \MovLib\Data\Person\Person $person {@inheritdoc}
    */
-  protected function formatListingItem($person) {
+  protected function formatListingItem(\MovLib\Data\EntityInterface $person, $id) {
     if (($bornName = $this->getPersonBornName($person))) {
       $bornName = "<small>{$bornName}</small>";
     }
-    $bioDates = $this->dateFormatFromTo(
+
+    $bioDates = (new Date($this->intl, $this))->formatFromTo(
       $person->birthDate,
       $person->deathDate,
       [ "property" => "birthDate", "title" => $this->intl->t("Date of Birth") ],
@@ -69,10 +67,25 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
     if ($bioDates) {
       $bioDates = "<small>{$bioDates}</small>";
     }
+    $route = $person->getRoute();
     return
-      "<li class='hover-item r' typeof='Person'>" .
-        "<a class='no-link s s1 tac'><img alt='' height='60' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60'></a>" .
-        "<div class='s s9'><h2 class='para'><a href='{$person->route}' property='url'><span property='name'>{$person->name}</span></a>{$bornName}{$bioDates}</h2></div>" .
+      "<li class='hover-item r'>" .
+        "<article typeof='Person'>" .
+          "<a class='no-link s s1' href='{$route}'>" .
+            "<img alt='' height='60' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60'>" .
+          "</a>" .
+          "<div class='s s9'>" .
+            "<div class='fr'>" .
+              "<a class='ico ico-movie label' href='{$this->intl->rp("/person/{0}/movies", [ $id ])}' title='{$this->intl->t("Movies")}'>{$person->movieCount}</a>" .
+              "<a class='ico ico-series label' href='{$this->intl->rp("/person/{0}/series", [ $id ])}' title='{$this->intl->t("Series")}'>{$person->seriesCount}</a>" .
+              "<a class='ico ico-release label' href='{$this->intl->rp("/person/{0}/releases", [ $id ])}' title='{$this->intl->t("Releases")}'>{$person->releaseCount}</a>" .
+              "<a class='ico ico-award label' href='{$this->intl->rp("/person/{0}/awards", [ $id ])}' title='{$this->intl->t("Awards")}'>{$person->awardCount}</a>" .
+            "</div>" .
+            "<h2 class='para'>" .
+              "<a href='{$route}' property='url'><span property='name'>{$person->name}</span></a>" .
+            "</h2>" .
+          "{$bornName}{$bioDates}</div>" .
+        "</article>" .
       "</li>"
     ;
   }
