@@ -249,7 +249,7 @@ final class Intl {
       if (!$date->month) {
         $fmt->setPattern(self::$dateFormats[$type]);
       }
-      return $fmt->format($date->dateTime);
+      return $fmt->format($date);
     }
     return $date->year;
   }
