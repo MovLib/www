@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \MovLib\Exception\SeeOtherException;
+use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Alert;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputEmail;
@@ -59,6 +59,13 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
    */
   protected $rawPassword;
 
+  /**
+   * The route to which we should redirect after successful sign in.
+   *
+   * @var string
+   */
+  protected $redirectTo;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Setup
 
@@ -90,10 +97,10 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
     }
 
     // Append the URL to the action attribute of our form.
-    $redirectTo = $this->request->filterInput(INPUT_GET, $redirectToKey, FILTER_SANITIZE_STRING, FILTER_REQUIRE_SCALAR | FILTER_FLAG_STRIP_LOW);
-    if ($redirectTo && $redirectTo != $route) {
-      $redirectTo = rawurlencode(rawurldecode($redirectTo));
-      $this->request->uri .= "?{$redirectToKey}={$redirectTo}";
+    $this->redirectTo = $this->request->filterInput(INPUT_GET, $redirectToKey, FILTER_SANITIZE_STRING, FILTER_REQUIRE_SCALAR | FILTER_FLAG_STRIP_LOW);
+    if ($this->redirectTo && $this->redirectTo != $route) {
+      $this->redirectTo = rawurlencode(rawurldecode($this->redirectTo));
+      $this->request->uri .= "?{$redirectToKey}={$this->redirectTo}";
     }
 
     // Start rendering the page.
@@ -144,6 +151,12 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function valid() {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    $this->log->debug("Authenticating user", [ "email" => $this->email, "password" => $this->rawPassword ]);
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
     if ($this->session->authenticate($this->email, $this->rawPassword)) {
       $this->alerts .= new Alert(
         $this->intl->t("Successfully Signed In"),
@@ -151,8 +164,7 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
         Alert::SEVERITY_SUCCESS
       );
 
-      $redirectTo = $this->request->filterInput(INPUT_GET, $this->intl->r("redirect_to"), FILTER_SANITIZE_STRING);
-      throw new SeeOtherException($redirectTo ?: $this->intl->r("/my"));
+      throw new SeeOtherException($this->redirectTo ?: $this->intl->r("/my"));
     }
 
     $this->alerts .= new Alert(

@@ -18,7 +18,7 @@
 namespace MovLib\Data;
 
 /**
- * Defines the entity interface.
+ * Defines the generic route methods for the route interface.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,43 +26,28 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-interface EntityInterface extends \MovLib\Data\RouteInterface {
+trait RouteTrait {
 
   /**
-   * Whether this entity is gone or not.
-   *
-   * @return boolean
-   *   <code>TRUE</code> if the entity is gone, <code>FALSE</code> otherwise.
+   * {@inheritdoc}
    */
-  public function isGone();
+  public function getIndexRoute() {
+    static $route;
+    if (!$route) {
+      $route = $this->intl->rp("/{$this->getPluralKey()}");
+    }
+    return $route;
+  }
 
   /**
-   * Get the count of a relationship.
-   *
-   * <b>EXAMPLE</b><br>
-   * <code><?php
-   *
-   * public function getCount($from, $what = "*") {
-   *   return $this->getMySQLi()->query("SELECT COUNT({$what}) FROM `{$from}` WHERE `id` = 1 LIMIT 1")->fetch_row()[0];
-   * }
-   *
-   * ?></code>
-   *
-   * @param string $from
-   *   The table defining the relationship that is to be counted.
-   * @param string $what
-   *   The content of the <code>COUNT()</code> function in the SQL query.
-   * @return integer
-   *   The count of the relationship.
+   * {@inheritdoc}
    */
-  public function getCount($from, $what = "*");
-
-  /**
-   * Get the entity's route in the current locale.
-   *
-   * @return string
-   *   The entity's route in the current locale.
-   */
-  public function getRoute();
+  public function getRoute() {
+    static $route = [];
+    if (empty($route[$this->id])) {
+      $route[$this->id] = $this->intl->r("/{$this->getSingularKey()}/{0}", $this->id);
+    }
+    return $route[$this->id];
+  }
 
 }

@@ -15,45 +15,38 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Country;
+namespace MovLib\Data\Release;
 
 /**
- * Provides properties and methods that are needed by several country objects.
+ * Defines the release set object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-trait CountryTrait {
+final class ReleaseSet extends \MovLib\Data\AbstractSet {
+  use \MovLib\Data\Release\ReleaseTrait;
 
   /**
    * {@inheritdoc}
    */
-  final public function getPluralKey() {
-    return "countries";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  final public function getPluralName() {
-    return $this->intl->t("Countries");
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  final public function getSingularKey() {
-    return "country";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  final public function getSingularName() {
-    return $this->intl->t("Country");
+  protected function getEntitiesQuery($where = null, $orderBy = null) {
+    return <<<SQL
+SELECT
+  `release`.`changed`,
+  `release`.`created`,
+  `release`.`country_code`,
+  `release`.`title`,
+  `release`.`publishing_date_rental`,
+  `release`.`publishing_date_sale`,
+  `release`.`edition`
+FROM `release`
+{$where}
+{$orderBy}
+SQL;
   }
 
 }

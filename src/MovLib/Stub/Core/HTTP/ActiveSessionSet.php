@@ -15,10 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Stub\Core\HTTP;
 
 /**
- * Defines the entity interface.
+ * Defines the active session set stub.
+ *
+ * @see \MovLib\Core\HTTP\Session::getActiveSessions()
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,43 +28,34 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-interface EntityInterface extends \MovLib\Data\RouteInterface {
+abstract class ActiveSessionSet {
 
   /**
-   * Whether this entity is gone or not.
+   * The active session's authentication time.
    *
-   * @return boolean
-   *   <code>TRUE</code> if the entity is gone, <code>FALSE</code> otherwise.
+   * @var string
    */
-  public function isGone();
+  public $authentication;
 
   /**
-   * Get the count of a relationship.
+   * The active session's unique identifier.
    *
-   * <b>EXAMPLE</b><br>
-   * <code><?php
-   *
-   * public function getCount($from, $what = "*") {
-   *   return $this->getMySQLi()->query("SELECT COUNT({$what}) FROM `{$from}` WHERE `id` = 1 LIMIT 1")->fetch_row()[0];
-   * }
-   *
-   * ?></code>
-   *
-   * @param string $from
-   *   The table defining the relationship that is to be counted.
-   * @param string $what
-   *   The content of the <code>COUNT()</code> function in the SQL query.
-   * @return integer
-   *   The count of the relationship.
+   * @var string
    */
-  public function getCount($from, $what = "*");
+  public $id;
 
   /**
-   * Get the entity's route in the current locale.
+   * The active session's remote (IP) address.
    *
-   * @return string
-   *   The entity's route in the current locale.
+   * @var string
    */
-  public function getRoute();
+  public $remoteAddress;
+
+  /**
+   * The active sessions's user agent string.
+   *
+   * @var string
+   */
+  public $userAgent;
 
 }

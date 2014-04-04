@@ -135,7 +135,7 @@ final class Request {
   /**
    * The request's start timestamp.
    *
-   * @var float
+   * @var integer
    */
   public $time;
 
@@ -183,12 +183,12 @@ final class Request {
     $this->protocol      =  $_SERVER["SERVER_PROTOCOL"];
     $this->query         =& $_GET;
     $this->queryString   =  $_SERVER["QUERY_STRING"];
-    $this->remoteAddress =  $this->filterInput(INPUT_SERVER, "REMOTE_ADDR", FILTER_VALIDATE_IP, FILTER_REQUIRE_SCALAR);
+    $this->remoteAddress =  filter_var($_SERVER["REMOTE_ADDR"], FILTER_VALIDATE_IP, FILTER_REQUIRE_SCALAR);
     $this->scheme        =  $_SERVER["SCHEME"];
     $this->time          =  $_SERVER["REQUEST_TIME"];
     $this->timeFloat     =  $_SERVER["REQUEST_TIME_FLOAT"];
     $this->uri           =  $_SERVER["REQUEST_URI"];
-    $this->userAgent     =  $this->filterInput(INPUT_SERVER, "HTTP_USER_AGENT", FILTER_SANITIZE_STRING, FILTER_REQUIRE_SCALAR | FILTER_FLAG_STRIP_LOW);
+    $this->userAgent     =  filter_var($_SERVER["HTTP_USER_AGENT"], FILTER_SANITIZE_STRING, FILTER_REQUIRE_SCALAR | FILTER_FLAG_STRIP_LOW);
 
     // Careful, it wouldn't make much sense to tell the client to read our privacy policy and at the same time block
     // that page. Therefore we have to make sure that the client without IP address and/or user agent string is at least

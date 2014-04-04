@@ -17,7 +17,6 @@
  */
 namespace MovLib\Partial;
 
-use \MovLib\Data\Date;
 
 /**
  * Add various person formatting functions to presentation.

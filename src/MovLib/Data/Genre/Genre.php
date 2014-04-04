@@ -28,7 +28,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Genre extends \MovLib\Data\AbstractDatabaseEntity {
+final class Genre extends \MovLib\Data\AbstractEntity {
   use \MovLib\Data\Genre\GenreTrait;
 
 
@@ -36,11 +36,39 @@ final class Genre extends \MovLib\Data\AbstractDatabaseEntity {
 
 
   /**
+   * The timestamp on which this genre was changed.
+   *
+   * @var integer
+   */
+  public $changed;
+
+  /**
+   * The timestamp on which this genre was created.
+   *
+   * @var integer
+   */
+  public $created;
+
+  /**
+   * The genre's deletion state.
+   *
+   * @var boolean
+   */
+  public $deleted;
+
+  /**
    * The genre's description in the current locale.
    *
    * @var null|string
    */
   public $description;
+
+  /**
+   * The genre's unique identifier.
+   *
+   * @var integer
+   */
+  public $id;
 
   /**
    * The genre's movie count.
@@ -55,6 +83,13 @@ final class Genre extends \MovLib\Data\AbstractDatabaseEntity {
    * @var string
    */
   public $name;
+
+  /**
+   * The translated route of this event.
+   *
+   * @var string
+   */
+  public $route;
 
   /**
    * The genre's series count.
@@ -132,5 +167,15 @@ SQL
   }
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function init() {
+    $this->route   = $this->intl->r("/genre/{0}", $this->id);
+    return parent::init();
+  }
 
 }

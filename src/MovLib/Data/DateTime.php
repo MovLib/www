@@ -3,7 +3,7 @@
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
- * Copyright Â© 2013-present {@link https://movlib.org/ MovLib}.
+ * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
  *
  * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
  * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
@@ -15,43 +15,21 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Person;
+namespace MovLib\Data;
 
 /**
- * Defines the person set object.
+ * Defines the date and time object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright Â© 2014 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class PersonSet extends \MovLib\Data\AbstractSet {
-  use \MovLib\Data\Person\PersonTrait;
+final class DateTime extends \DateTime {
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntitiesQuery($where = null, $orderBy = null) {
-    return <<<SQL
-SELECT
-  `persons`.`id`,
-  `persons`.`name`,
-  `persons`.`sex`,
-  `persons`.`birthdate` AS `birthDate`,
-  `persons`.`born_name` AS `bornName`,
-  `persons`.`deathdate` AS `deathDate`,
-  `persons`.`award_count` AS `awardCount`,
-  `persons`.`movie_count` AS `movieCount`,
-  `persons`.`release_count` AS `releaseCount`,
-  `persons`.`series_count` AS `seriesCount`,
-  `persons`.`deleted`,
-  `persons`.`changed`,
-  `persons`.`created`
-FROM `persons`
-{$where}
-{$orderBy}
-SQL;
+  public function __toString() {
+    return $this->format(self::W3C);
   }
 
 }

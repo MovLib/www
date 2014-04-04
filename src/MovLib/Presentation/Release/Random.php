@@ -17,54 +17,38 @@
  */
 namespace MovLib\Presentation\Release;
 
-use \MovLib\Data\Release;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
+use \MovLib\Data\Release\ReleaseSet;
+use \MovLib\Exception\RedirectException\SeeOtherException;
+use \MovLib\Partial\Alert;
 
 /**
- * Random release presentation.
+ * Random user presentation.
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Random {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
+final class Random {
 
   /**
-   * A random genre identifier.
+   * Redirect client to random user profile.
    *
-   * @var integer
+   * @param \MovLib\Core\HTTP\DIContainerHTTP
+   *   The dependency injection container.
+   * @throws \MovLib\Exception\SeeOtherException
    */
-  private $releaseId;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Redirect to random release presentation.
-   *
-   * @throws \MovLib\Presentation\Redirect\SeeOther
-   */
-  public function __construct() {
-    $this->releaseId = Release::getRandomReleaseId();
-    if (isset($this->releaseId)) {
-      throw new SeeOtherRedirect($this->intl->r("/release/{0}", [ $this->releaseId ]));
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+    if (($id = (new ReleaseSet($diContainerHTTP))->getRandom())) {
+      throw new SeeOtherException($diContainerHTTP->intl->r("/release/{0}", $id));
     }
-    else {
-      $kernel->alerts .= new Alert(
-        $this->intl->t("There is currently no release in our database."),
-        $this->intl->t("Check back later"),
-        Alert::SEVERITY_INFO
-      );
-      throw new SeeOtherRedirect("/");
-    }
+    $diContainerHTTP->response->createCookie("alert", (string) new Alert(
+      $diContainerHTTP->intl->t("There is currently no release in our database."),
+      $diContainerHTTP->intl->t("Check back later"),
+      Alert::SEVERITY_INFO
+    ));
+    throw new SeeOtherException($diContainerHTTP->intl->rp("/releases"));
   }
 
 }

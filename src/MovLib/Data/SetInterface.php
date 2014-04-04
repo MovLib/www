@@ -26,7 +26,7 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-interface SetInterface {
+interface SetInterface extends \MovLib\Data\RouteInterface {
 
   /**
    * Get the total count of available (not deleted) entities.
@@ -49,30 +49,6 @@ interface SetInterface {
   public function getIdentifiers(array $ids, $orderBy = null);
 
   /**
-   * Get the entity's index route in the current locale.
-   *
-   * @return string
-   *   The entity's index route in the current locale.
-   */
-  public function getIndexRoute();
-
-  /**
-   * Get the plural all lowercased key in the default locale.
-   *
-   * @return string
-   *   The plural all lowercased key in the default locale.
-   */
-  public function getPluralKey();
-
-  /**
-   * Get the plural name of the entity in the current locale.
-   *
-   * @return string
-   *   The plural name of the entity in the current locale.
-   */
-  public function getPluralName();
-
-  /**
    * Get all entities ordered and partitioned by the given parameters.
    *
    * @param string $by
@@ -93,21 +69,5 @@ interface SetInterface {
    *   A random, unique, existing entity's identifier from the set.
    */
   public function getRandom();
-
-  /**
-   * Get the singular all lowercased key in the default locale.
-   *
-   * @return string
-   *   The singular all lowercased key in the default locale.
-   */
-  public function getSingularKey();
-
-  /**
-   * Get the singular name of the entity in the current locale.
-   *
-   * @return string
-   *   The singular of the entity in the current locale.
-   */
-  public function getSingularName();
 
 }

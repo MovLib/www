@@ -219,7 +219,7 @@ class Config {
    *
    * @var string
    */
-  public $timeZone = "UTC";
+  public $timezone = "UTC";
 
   /**
    * The system user.

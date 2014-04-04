@@ -21,48 +21,38 @@ namespace MovLib\Data\Event;
  * Defines the event set object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class EventSet extends \MovLib\Data\AbstractDatabaseSet {
+final class EventSet extends \MovLib\Data\AbstractSet {
+  use \MovLib\Data\Event\EventTrait;
 
   /**
    * {@inheritdoc}
    */
-  public function getEntityClassName() {
-    return "\\MovLib\\Data\\Event\\Event";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getOrdered($by, $offset, $limit) {
-    return $this->getMySQLi()->query(<<<SQL
+  protected function getEntitiesQuery($where = null, $orderBy = null) {
+    return <<<SQL
 SELECT
   `events`.`id` AS `id`,
+  `events`.`award_id` AS `awardId`,
+  `events`.`deleted` AS `deleted`,
+  `events`.`changed` AS `changed`,
+  `events`.`created` AS `created`,
   `events`.`name` AS `name`,
-  `events`.`end_date` AS `endDate`,
-  COUNT(DISTINCT `movies_awards`.`movie_id`) AS `movieCount`,
   `events`.`place_id` AS `place`,
+  `events`.`end_date` AS `endDate`,
+  `events`.`start_date` AS `startDate`,
   '0' AS `seriesCount`,
-  `events`.`start_date` AS `startDate`
+  COUNT(DISTINCT `movies_awards`.`movie_id`) AS `movieCount`
 FROM `events`
-  LEFT JOIN `movies_awards`
-    ON `events`.`id` = `movies_awards`.`event_id`
-WHERE `deleted` = false
-GROUP BY `id`, `name`, `endDate`, `place`, `seriesCount`, `startDate`
-ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}
-SQL
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getTableName() {
-    return "events";
+  LEFT JOIN `movies_awards` ON `events`.`id` = `movies_awards`.`event_id`
+{$where}
+GROUP BY `id`, `awardId`, `deleted`, `changed`, `created`, `name`, `place`, `startDate`, `endDate`, `seriesCount`
+{$orderBy}
+SQL;
   }
 
 }

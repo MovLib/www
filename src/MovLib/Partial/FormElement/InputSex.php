@@ -30,27 +30,6 @@ namespace MovLib\Partial\FormElement;
 final class InputSex extends \MovLib\Partial\FormElement\RadioGroup {
 
   /**
-   * 0
-   *
-   * Unknown sex according to the standard.
-   */
-  const UNKNOWN = 0;
-
-  /**
-   * 1
-   *
-   * Male sex according to the standard.
-   */
-  const MALE = 1;
-
-  /**
-   * 2
-   *
-   * Female sex according to the standard.
-   */
-  const FEMALE = 2;
-
-  /**
    * Instantiate new input sex element.
    *
    * @param string $id

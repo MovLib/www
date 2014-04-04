@@ -134,7 +134,7 @@ class FullUserTest extends \MovLib\TestCase {
     $this->userFull->private            = true;
     $this->userFull->realName           = "PHPUnit PHPUnit";
     $this->userFull->sex                = 10;
-    $this->userFull->systemLanguageCode = "xx";
+    $this->userFull->languageCode = "xx";
     $this->userFull->timeZoneIdentifier = "PHPUnit/PHPUnit";
     $this->userFull->website            = "http://phpunit.net/";
     $this->userFull->commit();
@@ -147,7 +147,7 @@ class FullUserTest extends \MovLib\TestCase {
     $this->assertTrue($this->userFull->private);
     $this->assertEquals("PHPUnit PHPUnit", $this->userFull->realName);
     $this->assertEquals(10, $this->userFull->sex);
-    $this->assertEquals("xx", $this->userFull->systemLanguageCode);
+    $this->assertEquals("xx", $this->userFull->languageCode);
     $this->assertEquals("PHPUnit/PHPUnit", $this->userFull->timeZoneIdentifier);
     $this->assertEquals("http://phpunit.net/", $this->userFull->website);
 

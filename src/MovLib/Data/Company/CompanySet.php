@@ -26,7 +26,7 @@ namespace MovLib\Data\Company;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class CompanySet extends \MovLib\Data\AbstractDatabaseSet {
+final class CompanySet extends \MovLib\Data\AbstractSet {
   use \MovLib\Data\Company\CompanyTrait;
 
   /**

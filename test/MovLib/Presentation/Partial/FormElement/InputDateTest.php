@@ -58,9 +58,9 @@ class InputDateTest extends \MovLib\TestCase {
     $dateTime  = DateTimeImmutable::createFromFormat("!Y-m-d", $date);
     $timestamp = $dateTime->getTimestamp();
     $inputDate = new InputDate("phpunit", "PHPUnit", [
-      "value" => $dateTime->setTimezone(new DateTimeZone($session->userTimeZone))->format("Y-m-d"),
+      "value" => $dateTime->setTimezone(new DateTimeZone($session->userTimezone))->format("Y-m-d"),
     ]);
-    $inputDate->normalizeDate($session->userTimeZone);
+    $inputDate->normalizeDate($session->userTimezone);
     $this->assertEquals($date, $inputDate->value);
     $this->assertEquals($timestamp, $inputDate->timestamp);
   }

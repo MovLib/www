@@ -74,7 +74,7 @@ class TestKernel extends \MovLib\Tool\Kernel {
     $session->isAuthenticated = true;
     $session->userId          = 1;
     $session->userName        = "Fleshgrinder";
-    $session->userTimeZone  = "Europe/Vienna";
+    $session->userTimezone  = "Europe/Vienna";
 
     // Set a user agent string for PHPUnit tests.
     $this->userAgent          = ini_get("user_agent");

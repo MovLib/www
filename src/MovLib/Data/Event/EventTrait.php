@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Data\Event;
 
 /**
- * Defines the entity interface.
+ * Provides properties and methods that are needed by several event objects.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,43 +26,42 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-interface EntityInterface extends \MovLib\Data\RouteInterface {
+trait EventTrait {
 
   /**
-   * Whether this entity is gone or not.
-   *
-   * @return boolean
-   *   <code>TRUE</code> if the entity is gone, <code>FALSE</code> otherwise.
+   * {@inheritdoc}
    */
-  public function isGone();
+  final public function getPluralKey() {
+    return "events";
+  }
 
   /**
-   * Get the count of a relationship.
-   *
-   * <b>EXAMPLE</b><br>
-   * <code><?php
-   *
-   * public function getCount($from, $what = "*") {
-   *   return $this->getMySQLi()->query("SELECT COUNT({$what}) FROM `{$from}` WHERE `id` = 1 LIMIT 1")->fetch_row()[0];
-   * }
-   *
-   * ?></code>
-   *
-   * @param string $from
-   *   The table defining the relationship that is to be counted.
-   * @param string $what
-   *   The content of the <code>COUNT()</code> function in the SQL query.
-   * @return integer
-   *   The count of the relationship.
+   * {@inheritdoc}
    */
-  public function getCount($from, $what = "*");
+  final public function getPluralName() {
+    static $plural;
+    if (!$plural) {
+      $plural = $this->intl->t("Events");
+    }
+    return $plural;
+  }
 
   /**
-   * Get the entity's route in the current locale.
-   *
-   * @return string
-   *   The entity's route in the current locale.
+   * {@inheritdoc}
    */
-  public function getRoute();
+  final public function getSingularKey() {
+    return "event";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  final public function getSingularName() {
+    static $singular;
+    if (!$singular) {
+      $singular = $this->intl->t("Event");
+    }
+    return $singular;
+  }
 
 }

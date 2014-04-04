@@ -137,12 +137,6 @@ abstract class AbstractDatabase {
       return self::$mysqli;
     }
 
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert(strpos(static::class, "\\Data\\") !== false, "Only data classes are allowed to extend the database class!");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
     // We don't want to check all over the place if anything returned FALSE, exceptions are much better.
     $driver = new \mysqli_driver();
     $driver->report_mode = MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT;

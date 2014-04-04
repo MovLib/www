@@ -18,7 +18,7 @@
 namespace MovLib\Data;
 
 /**
- * Defines the entity interface.
+ * Defines the route interface.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,43 +26,46 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-interface EntityInterface extends \MovLib\Data\RouteInterface {
+interface RouteInterface {
 
   /**
-   * Whether this entity is gone or not.
-   *
-   * @return boolean
-   *   <code>TRUE</code> if the entity is gone, <code>FALSE</code> otherwise.
-   */
-  public function isGone();
-
-  /**
-   * Get the count of a relationship.
-   *
-   * <b>EXAMPLE</b><br>
-   * <code><?php
-   *
-   * public function getCount($from, $what = "*") {
-   *   return $this->getMySQLi()->query("SELECT COUNT({$what}) FROM `{$from}` WHERE `id` = 1 LIMIT 1")->fetch_row()[0];
-   * }
-   *
-   * ?></code>
-   *
-   * @param string $from
-   *   The table defining the relationship that is to be counted.
-   * @param string $what
-   *   The content of the <code>COUNT()</code> function in the SQL query.
-   * @return integer
-   *   The count of the relationship.
-   */
-  public function getCount($from, $what = "*");
-
-  /**
-   * Get the entity's route in the current locale.
+   * Get the entity's index route in the current locale.
    *
    * @return string
-   *   The entity's route in the current locale.
+   *   The entity's index route in the current locale.
    */
-  public function getRoute();
+  public function getIndexRoute();
+
+  /**
+   * Get the plural all lowercased key in the default locale.
+   *
+   * @return string
+   *   The plural all lowercased key in the default locale.
+   */
+  public function getPluralKey();
+
+  /**
+   * Get the plural name of the entity in the current locale.
+   *
+   * @return string
+   *   The plural name of the entity in the current locale.
+   */
+  public function getPluralName();
+
+  /**
+   * Get the singular all lowercased key in the default locale.
+   *
+   * @return string
+   *   The singular all lowercased key in the default locale.
+   */
+  public function getSingularKey();
+
+  /**
+   * Get the singular name of the entity in the current locale.
+   *
+   * @return string
+   *   The singular of the entity in the current locale.
+   */
+  public function getSingularName();
 
 }

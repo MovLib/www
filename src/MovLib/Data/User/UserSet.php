@@ -26,55 +26,46 @@ namespace MovLib\Data\User;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class UserSet extends \MovLib\Data\AbstractDatabaseSet {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getEntityClassName() {
-    return "\\MovLib\\Data\\User\\User";
-  }
+final class UserSet extends \MovLib\Data\AbstractSet {
+  use \MovLib\Data\User\UserTrait;
 
   /**
    * {@inheritdoc}
    */
   public function getCount() {
-    return $this->getMySQLi()->query("SELECT COUNT(*) FROM `users` WHERE `email` IS NOT NULL LIMIT 1")->fetch_row()[0];
+    $result = $this->getMySQLi()->query("SELECT COUNT(*) FROM `users` WHERE `email` IS NOT NULL LIMIT 1");
+    $count  = $result->fetch_row()[0];
+    $result->free();
+    return $count;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getEntitiesQuery($where = null, $orderBy = null) {
+    return "SELECT `id`, `name`, `access`, `created` FROM `users` {$where} {$orderBy}";
   }
 
   /**
    * {@inheritdoc}
    */
   public function getOrdered($by, $offset, $limit) {
-    return $this->getMySQLi()->query(<<<SQL
-SELECT
-  `id`,
-  `name`,
-  UNIX_TIMESTAMP(`image_changed`) AS `imageChanged`,
-  `image_extension` AS `imageExtension`
-FROM `users`
-WHERE `email` IS NOT NULL
-ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}
-SQL
-    );
+    return $this->getEntities("WHERE `email` IS NOT NULL", "ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}");
   }
 
   /**
    * {@inheritdoc}
-   * @return string|null
+   * @return null|string
    *   A random, unique, and existing user's name ready for use as route. <code>NULL</code> if no user could be found.
    */
   public function getRandom() {
-    if (($result = $this->getMySQLi()->query("SELECT `name` FROM `users` WHERE `email` IS NOT NULL ORDER BY RAND() LIMIT 1"))) {
-      return mb_strtolower($result->fetch_row()[0]);
+    $name   = null;
+    $result = $this->getMySQLi()->query("SELECT `name` FROM `users` WHERE `email` IS NOT NULL ORDER BY RAND() LIMIT 1");
+    if ($result) {
+      $name = mb_strtolower($result->fetch_row()[0]);
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getTableName() {
-    return "users";
+    $result->free();
+    return $name;
   }
 
 }

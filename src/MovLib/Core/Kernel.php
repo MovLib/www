@@ -190,7 +190,7 @@ final class Kernel {
 
     // Try to initialize the session and presentation and send it to the client.
     try {
-      $this->diContainer->session->resume($this->diContainer->request, $this->diContainer->response);
+      $this->diContainer->session->resume();
       $presenterClass = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
       $this->diContainer->presenter = new $presenterClass($this->diContainer);
       $this->diContainer->presenter->init();

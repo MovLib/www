@@ -100,8 +100,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`users` (
   `real_name` TINYBLOB NULL COMMENT 'The user’s real name.',
   `reputation` BIGINT UNSIGNED NULL DEFAULT 0 COMMENT 'The user’s reputation.',
   `sex` TINYINT UNSIGNED NULL DEFAULT 0 COMMENT 'The user\'s sex according to ISO 5218.\n\n0 = not known\n1 = male\n2 = female\n9 = not applicable',
-  `system_language_code` CHAR(2) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL DEFAULT 'en' COMMENT 'The user’s preferred system language’s code (e.g. en).',
-  `time_zone_identifier` VARCHAR(30) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL DEFAULT 'UTC' COMMENT 'User’s time zone ID.',
+  `language_code` CHAR(2) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL COMMENT 'The user’s preferred system language code (e.g. en).',
+  `timezone` VARCHAR(30) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL COMMENT 'User’s time zone ID.',
   `website` TINYTEXT NULL COMMENT 'The user’s website URL.',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uq_users_name` (`name` ASC),
@@ -149,13 +149,17 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`persons` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The person’s unique ID.',
+  `award_count` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The person’s total number of awards.',
   `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the person was last changed.',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the person was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this person is marked as deleted (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_biographies` BLOB NOT NULL COMMENT 'The person’s biography in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_wikipedia` BLOB NOT NULL COMMENT 'The person\'s Wikipedia link in various languages. The language code serves as key.',
   `dyn_image_descriptions` BLOB NOT NULL COMMENT 'The person’s translated photo description.',
+  `movie_count` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The person’s total number of movie participations.',
   `name` VARCHAR(255) NOT NULL COMMENT 'The person’s full name.',
+  `release_count` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The person’s total number of release participations.',
+  `series_count` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The person’s total number of series participations.',
   `sex` TINYINT NOT NULL DEFAULT 0 COMMENT 'The person\'s sex according to ISO 5218.\n\n0 = not known\n1 = male\n2 = female\n9 = not applicable',
   `birthdate` DATE NULL COMMENT 'The person’s date of birth.',
   `birthplace_id` BIGINT UNSIGNED NULL COMMENT 'The person’s birthplace.',
@@ -173,26 +177,27 @@ CREATE TABLE IF NOT EXISTS `movlib`.`persons` (
   `image_width` SMALLINT NULL COMMENT 'The person photo’s original width.',
   `nickname` MEDIUMTEXT NULL COMMENT 'The person’s nickname.',
   PRIMARY KEY (`id`),
-  INDEX `fk_persons_places1_idx` (`birthplace_id` ASC),
-  INDEX `fk_persons_places2_idx` (`deathplace_id` ASC),
-  INDEX `fk_persons_causes_of_death1_idx` (`cause_of_death_id` ASC),
-  INDEX `fk_persons_users1_idx` (`image_uploader_id` ASC),
-  CONSTRAINT `fk_persons_places1`
+  INDEX `fk_persons_places_birth` (`birthplace_id` ASC),
+  INDEX `fk_persons_places_death` (`deathplace_id` ASC),
+  INDEX `fk_persons_causes_of_death` (`cause_of_death_id` ASC),
+  INDEX `fk_persons_users` (`image_uploader_id` ASC),
+  INDEX `persons_created` (`created` ASC),
+  CONSTRAINT `fk_persons_places_birth`
     FOREIGN KEY (`birthplace_id`)
     REFERENCES `movlib`.`places` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_persons_places2`
+  CONSTRAINT `fk_persons_places_death`
     FOREIGN KEY (`deathplace_id`)
     REFERENCES `movlib`.`places` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_persons_causes_of_death1`
+  CONSTRAINT `fk_persons_causes_of_death`
     FOREIGN KEY (`cause_of_death_id`)
     REFERENCES `movlib`.`causes_of_death` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_persons_users1`
+  CONSTRAINT `fk_persons_users`
     FOREIGN KEY (`image_uploader_id`)
     REFERENCES `movlib`.`users` (`id`)
     ON DELETE NO ACTION
@@ -597,24 +602,23 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_awards` (
   `company_id` BIGINT UNSIGNED NULL COMMENT 'The company’s unique ID (who received the award).',
   `person_id` BIGINT UNSIGNED NULL COMMENT 'The person’s unique ID (who received the award).',
   `won` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this award has been won (TRUE(1)) or not (FALSE(0), default is FALSE (0).',
-  `year` SMALLINT(4) UNSIGNED ZEROFILL NOT NULL COMMENT 'The year in which the movie won the award.',
   PRIMARY KEY (`id`),
-  INDEX `fk_awards_movies_movies` (`movie_id` ASC),
-  INDEX `fk_persons_awards_persons` (`person_id` ASC),
-  INDEX `fk_persons_awards_companies` (`company_id` ASC),
-  INDEX `fk_movies_awards_awards_categories_idx` (`award_category_id` ASC),
-  INDEX `fk_movies_awards_awards_events_idx` (`event_id` ASC),
+  INDEX `fk_movies_awards_movies` (`movie_id` ASC),
+  INDEX `fk_movies_awards_persons` (`person_id` ASC),
+  INDEX `fk_movies_awards_companies` (`company_id` ASC),
+  INDEX `fk_movies_awards_awards_categories` (`award_category_id` ASC),
+  INDEX `fk_movies_awards_events` (`event_id` ASC),
   CONSTRAINT `fk_movies_awards_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_persons_awards_persons`
+  CONSTRAINT `fk_movies_awards_persons`
     FOREIGN KEY (`person_id`)
     REFERENCES `movlib`.`persons` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_persons_awards_companies`
+  CONSTRAINT `fk_movies_awards_companies`
     FOREIGN KEY (`company_id`)
     REFERENCES `movlib`.`companies` (`id`)
     ON DELETE NO ACTION
@@ -629,7 +633,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_awards` (
     REFERENCES `movlib`.`awards` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_awards_awards_events`
+  CONSTRAINT `fk_movies_awards_events`
     FOREIGN KEY (`event_id`)
     REFERENCES `movlib`.`events` (`id`)
     ON DELETE NO ACTION
@@ -701,40 +705,20 @@ KEY_BLOCK_SIZE = 8;
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`video_qualities`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`video_qualities` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT 'The video quality’s unique identifier.',
-  `name` VARCHAR(50) NOT NULL COMMENT 'The video quality\'s name (e.g. 1080p).',
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `name_UNIQUE` (`name` ASC))
-ENGINE = InnoDB
-COMMENT = 'Contains all video qualities.'
-ROW_FORMAT = COMPRESSED;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
 -- Table `movlib`.`movies_trailers`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_trailers` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The movie trailer’s unique ID.',
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
-  `video_quality_id` BIGINT NOT NULL,
+  `video_quality` TINYTEXT NULL,
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The trailer\'s translated descriptions.',
   `language_code` CHAR(2) NOT NULL COMMENT 'The movie trailer’s ISO alpha-2 language code.',
   `url` VARCHAR(255) NOT NULL COMMENT 'The movie trailer’s url, e.g. youtube.',
   PRIMARY KEY (`id`),
-  INDEX `fk_movies_trailers_video_qualities` (`video_quality_id` ASC),
   CONSTRAINT `fk_movies_trailers_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
     ON DELETE CASCADE
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_trailers_video_qualities`
-    FOREIGN KEY (`video_quality_id`)
-    REFERENCES `movlib`.`video_qualities` (`id`)
-    ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Contains all movie trailers.';
@@ -1061,8 +1045,8 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`sessions` (
   `id` VARBINARY(86) NOT NULL COMMENT 'The session’s unique ID.',
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique ID.',
-  `authentication` TIMESTAMP NOT NULL COMMENT 'Timestamp when this session was initialized.',
-  `ip_address` VARBINARY(128) NOT NULL COMMENT 'The session’s IP address.',
+  `authentication` DATETIME NOT NULL COMMENT 'Timestamp when this session was initialized.',
+  `remote_address` VARBINARY(128) NOT NULL COMMENT 'The session’s IP address.',
   `user_agent` TINYBLOB NOT NULL COMMENT 'The session’s user agent string.',
   PRIMARY KEY (`id`, `user_id`),
   INDEX `fk_sessions_users` (`user_id` ASC),
@@ -1690,6 +1674,137 @@ CREATE TABLE IF NOT EXISTS `movlib`.`media_movies` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 ROW_FORMAT = COMPRESSED;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`persons_awards`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`persons_awards` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The person award’s unique identifier.',
+  `award_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award’s identifier.',
+  `award_category_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award category’s identifier.',
+  `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s identifier.',
+  `event_id` BIGINT UNSIGNED NOT NULL COMMENT 'The event’s identifier.',
+  `won` TINYINT(1) NOT NULL DEFAULT FALSE COMMENT 'The flag that determines whether this award has been won (TRUE(1)) or not (FALSE(0), default is FALSE (0).',
+  INDEX `fk_persons_awards_awards_categories` (`award_category_id` ASC),
+  INDEX `fk_persons_awards_awards` (`award_id` ASC),
+  PRIMARY KEY (`id`),
+  INDEX `fk_persons_awards_events` (`event_id` ASC),
+  CONSTRAINT `fk_persons_awards_persons`
+    FOREIGN KEY (`person_id`)
+    REFERENCES `movlib`.`persons` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_persons_awards_awards_categories`
+    FOREIGN KEY (`award_category_id`)
+    REFERENCES `movlib`.`awards_categories` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_persons_awards_awards`
+    FOREIGN KEY (`award_id`)
+    REFERENCES `movlib`.`awards` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_persons_awards_events`
+    FOREIGN KEY (`event_id`)
+    REFERENCES `movlib`.`events` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains all awards belonging to persons alone.';
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`series_awards`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`series_awards` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The series award’s unique identifier.',
+  `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The series’  identifier.',
+  `award_category_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award category’s unique identifier.',
+  `award_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award’s unique identifier.',
+  `event_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award event’s unique identifier.',
+  `company_id` BIGINT UNSIGNED NULL COMMENT 'The company’s unique identifier (who received the award).',
+  `person_id` BIGINT UNSIGNED NULL COMMENT 'The person’s unique identifier (who received the award).',
+  `won` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this award has been won (TRUE(1)) or not (FALSE(0), default is FALSE (0).',
+  PRIMARY KEY (`id`),
+  INDEX `fk_series_awards_persons` (`person_id` ASC),
+  INDEX `fk_series_awards_companies` (`company_id` ASC),
+  INDEX `fk_series_awards_awards_categories` (`award_category_id` ASC),
+  INDEX `fk_series_awards_events` (`event_id` ASC),
+  INDEX `fk_series_awards_series` (`series_id` ASC),
+  CONSTRAINT `fk_series_awards_persons`
+    FOREIGN KEY (`person_id`)
+    REFERENCES `movlib`.`persons` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_series_awards_companies`
+    FOREIGN KEY (`company_id`)
+    REFERENCES `movlib`.`companies` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_series_awards_awards_categories`
+    FOREIGN KEY (`award_category_id`)
+    REFERENCES `movlib`.`awards_categories` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_series_awards_awards`
+    FOREIGN KEY (`award_id`)
+    REFERENCES `movlib`.`awards` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_series_awards_events`
+    FOREIGN KEY (`event_id`)
+    REFERENCES `movlib`.`events` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_series_awards_series`
+    FOREIGN KEY (`series_id`)
+    REFERENCES `movlib`.`series` (`series_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains all awards belonging to series.';
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`releases_crew`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`releases_crew` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `release_id` BIGINT UNSIGNED NOT NULL,
+  `job_id` BIGINT UNSIGNED NOT NULL,
+  `company_id` BIGINT UNSIGNED NULL,
+  `person_id` BIGINT UNSIGNED NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_releases_crew_releases` (`release_id` ASC),
+  INDEX `fk_releases_crew_persons` (`person_id` ASC),
+  INDEX `fk_releases_crew_companies` (`company_id` ASC),
+  INDEX `fk_releases_crew_jobs` (`job_id` ASC),
+  CONSTRAINT `fk_releases_crew_releases`
+    FOREIGN KEY (`release_id`)
+    REFERENCES `movlib`.`releases` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_releases_crew_persons`
+    FOREIGN KEY (`person_id`)
+    REFERENCES `movlib`.`persons` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_releases_crew_companies`
+    FOREIGN KEY (`company_id`)
+    REFERENCES `movlib`.`companies` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_releases_crew_jobs`
+    FOREIGN KEY (`job_id`)
+    REFERENCES `movlib`.`jobs` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains the crew of a release.';
 
 SHOW WARNINGS;
 

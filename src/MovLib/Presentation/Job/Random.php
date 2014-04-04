@@ -44,11 +44,11 @@ final class Random {
       throw new SeeOtherException($diContainerHTTP->intl->r("/job/{0}", $id));
     }
     $diContainerHTTP->response->createCookie("alert", (string) new Alert(
-      $this->intl->t("There is currently no job in our database."),
-      $this->intl->t("Check back later"),
+      $diContainerHTTP->intl->t("There is currently no job in our database."),
+      $diContainerHTTP->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     ));
-    throw new SeeOtherException($this->intl->rp("/jobs"));
+    throw new SeeOtherException($diContainerHTTP->intl->rp("/jobs"));
   }
 
 }

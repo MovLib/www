@@ -30,27 +30,25 @@ use \MovLib\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Random {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+final class Random {
 
   /**
-   * Redirect to random event presentation.
+   * Redirect client to random event presentation.
    *
-   * @throws \MovLib\Presentation\Redirect\SeeOther
+   * @param \MovLib\Core\HTTP\DIContainerHTTP
+   *   The dependency injection container.
+   * @throws \MovLib\Exception\SeeOtherException
    */
   public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
     if (($id = (new EventSet($diContainerHTTP))->getRandom())) {
       throw new SeeOtherException($diContainerHTTP->intl->r("/event/{0}", $id));
     }
     $diContainerHTTP->response->createCookie("alert", (string) new Alert(
-      $this->intl->t("There is currently no event in our database."),
-      $this->intl->t("Check back later"),
+      $diContainerHTTP->intl->t("There is currently no event in our database."),
+      $diContainerHTTP->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     ));
-    throw new SeeOtherException($this->intl->rp("/events"));
+    throw new SeeOtherException($diContainerHTTP->intl->rp("/events"));
   }
 
 }

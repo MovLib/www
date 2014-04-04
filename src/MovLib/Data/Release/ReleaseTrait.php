@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,42 +15,53 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Genre;
-
-use \MovLib\Data\Genre\GenreSet;
-use \MovLib\Exception\RedirectException\SeeOtherException;
-use \MovLib\Partial\Alert;
+namespace MovLib\Data\Release;
 
 /**
- * Random genre presentation.
+ * Provides properties and methods that are needed by several release objects.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Random {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+trait ReleaseTrait {
 
   /**
-   * Redirect to random genre presentation.
-   *
-   * @throws \MovLib\Presentation\Redirect\SeeOther
+   * {@inheritdoc}
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    if (($id = (new GenreSet($diContainerHTTP))->getRandom())) {
-      throw new SeeOtherException($diContainerHTTP->intl->r("/genre/{0}", $id));
+  final public function getPluralKey() {
+    return "releases";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  final public function getPluralName() {
+    static $plural;
+    if (!$plural) {
+      $plural = $this->intl->t("Releases");
     }
-    $diContainerHTTP->response->createCookie("alert", (string) new Alert(
-      $diContainerHTTP->intl->t("There is currently no genre in our database."),
-      $diContainerHTTP->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    ));
-    throw new SeeOtherException($diContainerHTTP->intl->rp("/genres"));
+    return $plural;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  final public function getSingularKey() {
+    return "release";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  final public function getSingularName() {
+    static $singular;
+    if (!$singular) {
+      $singular = $this->intl->t("Release");
+    }
+    return $singular;
   }
 
 }

@@ -37,7 +37,7 @@ abstract class AbstractIndexPresenter extends \MovLib\Presentation\AbstractPrese
   /**
    * The set to present.
    *
-   * @var \MovLib\Data\AbstractDatabaseSet
+   * @var \MovLib\Data\AbstractSet
    */
   protected $set;
 
@@ -64,7 +64,7 @@ abstract class AbstractIndexPresenter extends \MovLib\Presentation\AbstractPrese
   /**
    * Initialize default index presentation.
    *
-   * @param \MovLib\Data\AbstractDatabaseSet $set
+   * @param \MovLib\Data\AbstractSet $set
    *   The set to present.
    * @param string $createText
    *   The translated text for the creation button (title case).

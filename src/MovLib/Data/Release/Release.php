@@ -17,18 +17,20 @@
  */
 namespace MovLib\Data\Release;
 
-use \MovLib\Presentation\Error\NotFound;
+use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
  * Represents a single release.
  *
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Release {
+class Event extends \MovLib\Data\AbstractEntity {
+  use \MovLib\Data\Release\ReleaseTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -128,86 +130,98 @@ class Release {
 
 
   /**
-   * Instantiate new release.
+   * Instantiate new event object.
    *
-   * @param identifier $id [optional]
-   *   The release's identifier to load, leave empty to create empty instances.
-   * @throws \MovLib\Exception\DatabaseException
-   * @throws \MovLib\Presentation\Error\NotFound
+   * @param \MovLib\Core\DIContainer $diContainer
+   *   {@inheritdoc}
+   * @param integer $id [optional]
+   *   The event's unique identifier to instantiate, defaults to <code>NULL</code> (no event will be loaded).
+   * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct($id = null) {
-    // Try to load the release for the given identifier.
+  public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null) {
+    parent::__construct($diContainer);
     if ($id) {
-      $result = $db->query(
-        "SELECT
-          `release`.`changed`,
-          `release`.`created`,
-          `release`.`country_code`,
-          IFNULL(
-            COLUMN_GET(`release`.`dyn_notes`, ? AS BINARY),
-            COLUMN_GET(`release`.`dyn_notes`, {$i18n->defaultLanguageCode} AS BINARY)
-          ) AS `notes`,
-          `release`.`title`,
-          `release`.`publishing_date_rental`,
-          `release`.`publishing_date_sale`,
-          `release`.`edition`,
-          `release`.`bin_identifiers`,
-          `releases_media`.`medium_id`,
-          `media`.`changed` AS `medium_changed`,
-          `media`.`created` AS `medium_created`,
-          `media`.`bootleg` AS `medium_bootleg`,
-          IFNULL(
-            COLUMN_GET(`media`.`dyn_notes`, ? AS BINARY),
-            COLUMN_GET(`media`.`dyn_notes`, {$i18n->defaultLanguageCode} AS BINARY)
-          ) AS `medium_notes`,
-          `media`.`bin_format` AS `medium_format`,
-          `media_movies`.`movie_id`,
-          `movies`.`deleted` AS `movie_deleted`,
-          `movies`.`year` AS `movie_year`,
-          `movies`.`mean_rating` AS `movie_mean_rating`,
-          IFNULL(`dt`.`title`, `ot`.`title`) AS `movie_display_title`,
-          IFNULL(`dt`.`language_code`, `ot`.`language_code`) AS `movie_display_title_language_code`,
-          `ot`.`title` AS `movie_original_title`,
-          `ot`.`language_code` AS `movie_original_title_language_code`,
-          `releases_labels`.`company_id`,
-          `companies`.`name` AS `company_name`
-        FROM `releases`
-        INNER JOIN `releases_media`
-          ON `releases_media`.`release_id` = ?
-        INNER JOIN `media`
-          ON `media`.`id` = `releases_media`.`medium_id`
-        LEFT JOIN `media_movies`
-          ON `media_movies`.`medium_id` = `media`.`id`
-        LEFT JOIN `movies` FORCE INDEX (movies_deleted)
-          ON `movies`.`id` = `media_movies`.`movie_id`
-        LEFT JOIN `movies_display_titles` AS `mdt`
-          ON `mdt`.`movie_id` = `movies`.`id`
-          AND `mdt`.`language_code` = ?
-        LEFT JOIN `movies_titles` AS `dt`
-          ON `dt`.`movie_id` = `movies`.`id`
-          AND `dt`.`id` = `mdt`.`title_id`
-        LEFT JOIN `movies_original_titles` AS `mot`
-          ON `mot`.`movie_id` = `movies`.`id`
-        LEFT JOIN `movies_titles` AS `ot`
-          ON `ot`.`movie_id` = `movies`.`id`
-          AND `ot`.`id` = `mot`.`title_id`
-        LEFT JOIN `releases_labels`
-          ON `releases_labels`.`release_id` = ?
-        LEFT JOIN `companies`
-          ON `companies`.`id` = `releases_label`.`company_id`
-        WHERE `releases`.`id` = ?",
-        "sdsdd",
-        [ $i18n->languageCode, $id, $i18n->languageCode, $id, $id ]
-      )->get_result();
-
-      while ($row = $result->fetch_object()) {
-        \FB::send($row);
+      $stmt = $this->getMySQLi()->prepare(<<<SQL
+SELECT
+  `release`.`changed`,
+  `release`.`created`,
+  `release`.`country_code`,
+  IFNULL(
+    COLUMN_GET(`release`.`dyn_notes`, ? AS BINARY),
+    COLUMN_GET(`release`.`dyn_notes`, {$this->intl->defaultLanguageCode} AS BINARY)
+  ) AS `notes`,
+  `release`.`title`,
+  `release`.`publishing_date_rental`,
+  `release`.`publishing_date_sale`,
+  `release`.`edition`,
+  `release`.`bin_identifiers`,
+  `releases_media`.`medium_id`,
+  `media`.`changed` AS `medium_changed`,
+  `media`.`created` AS `medium_created`,
+  `media`.`bootleg` AS `medium_bootleg`,
+  IFNULL(
+    COLUMN_GET(`media`.`dyn_notes`, ? AS BINARY),
+    COLUMN_GET(`media`.`dyn_notes`, {$this->intl->defaultLanguageCode} AS BINARY)
+  ) AS `medium_notes`,
+  `media`.`bin_format` AS `medium_format`,
+  `media_movies`.`movie_id`,
+  `movies`.`deleted` AS `movie_deleted`,
+  `movies`.`year` AS `movie_year`,
+  `movies`.`mean_rating` AS `movie_mean_rating`,
+  IFNULL(`dt`.`title`, `ot`.`title`) AS `movie_display_title`,
+  IFNULL(`dt`.`language_code`, `ot`.`language_code`) AS `movie_display_title_language_code`,
+  `ot`.`title` AS `movie_original_title`,
+  `ot`.`language_code` AS `movie_original_title_language_code`,
+  `releases_labels`.`company_id`,
+  `companies`.`name` AS `company_name`
+FROM `releases`
+INNER JOIN `releases_media`
+  ON `releases_media`.`release_id` = ?
+INNER JOIN `media`
+  ON `media`.`id` = `releases_media`.`medium_id`
+LEFT JOIN `media_movies`
+  ON `media_movies`.`medium_id` = `media`.`id`
+LEFT JOIN `movies` FORCE INDEX (movies_deleted)
+  ON `movies`.`id` = `media_movies`.`movie_id`
+LEFT JOIN `movies_display_titles` AS `mdt`
+  ON `mdt`.`movie_id` = `movies`.`id`
+  AND `mdt`.`language_code` = ?
+LEFT JOIN `movies_titles` AS `dt`
+  ON `dt`.`movie_id` = `movies`.`id`
+  AND `dt`.`id` = `mdt`.`title_id`
+LEFT JOIN `movies_original_titles` AS `mot`
+  ON `mot`.`movie_id` = `movies`.`id`
+LEFT JOIN `movies_titles` AS `ot`
+  ON `ot`.`movie_id` = `movies`.`id`
+  AND `ot`.`id` = `mot`.`title_id`
+LEFT JOIN `releases_labels`
+  ON `releases_labels`.`release_id` = ?
+LEFT JOIN `companies`
+  ON `companies`.`id` = `releases_label`.`company_id`
+WHERE `releases`.`id` = ?
+SQL
+      );
+      $stmt->bind_param("ssd", $this->intl->languageCode, $this->intl->languageCode, $id);
+      $stmt->execute();
+      $stmt->bind_result(
+        $this->changed,
+        $this->created,
+        $this->countryCode,
+        $this->notes,
+        $this->title,
+        $this->publishingDateRental,
+        $this->publishingDateSale,
+        $this->edition,
+        $this->identifiers
+      );
+      $found = $stmt->fetch();
+      $stmt->close();
+      if (!$found) {
+        throw new NotFoundException("Couldn't find Release {$id}");
       }
-      if (!$this->created) {
-        throw new NotFound;
-      }
-
-      $this->id = $id;
+    }
+    if ($this->id) {
+      $this->init();
     }
   }
 
@@ -216,33 +230,11 @@ class Release {
 
 
   /**
-   * Get paginated releases result.
-   *
-   * @internal The returned {@see \mysqli_result} is prepared for direct instantiating via fetch object of this class.
-   * @param integer $offset
-   *   The offset, usually provided by the pagination trait.
-   * @param integer $limit
-   *   The row count, usually provided by the pagination trait.
-   * @return \mysqli_result
-   *   Paginated releases result.
+   * {@inheritdoc}
    */
-  public static function getReleases($offset = 0, $limit = 8) {
-    return $db->query(
-      "SELECT
-        `release`.`changed`,
-        `release`.`created`,
-        `release`.`country_code`,
-        `release`.`title`,
-        `release`.`publishing_date_rental`,
-        `release`.`publishing_date_sale`,
-        `release`.`edition`
-      FROM `release`
-      ORDER BY `release`.`created` DESC
-      OFFSET ?
-      LIMIT ?",
-      "di",
-      [ $offset, $limit ]
-    )->get_result();
+  protected function init() {
+    $this->route   = $this->intl->r("/release/{0}", $this->id);
+    return parent::init();
   }
 
 }

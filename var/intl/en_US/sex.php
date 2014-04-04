@@ -15,24 +15,21 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Release;
 
 /**
- * Represents a single release with all data contained.
+ * Sex translations.
  *
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class FullRelease {
-
-  /**
-   *
-   */
-  public function __construct() {
-
-  }
-
-}
+// @codeCoverageIgnoreStart
+return [
+  0 => "unknown",
+  1 => "male",
+  2 => "female",
+  9 => "not applicable",
+];
+// @codeCoverageIgnoreEnd

@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,17 +15,53 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Country;
+namespace MovLib\Data\Person;
 
 /**
- * Defines the country set object.
+ * rovides properties and methods that are needed by several person objects.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class CountrySet implements \MovLib\Data\SetInterface {
+trait PersonTrait {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPluralKey() {
+    return "persons";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPluralName() {
+    static $plural;
+    if (!$plural) {
+      $plural = $this->intl->t("Persons");
+    }
+    return $plural;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getSingularKey() {
+    return "person";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getSingularName() {
+    static $singular;
+    if (!$singular) {
+      $singular = $this->intl->t("Person");
+    }
+    return $singular;
+  }
 
 }

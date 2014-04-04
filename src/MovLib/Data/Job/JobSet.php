@@ -26,21 +26,15 @@ namespace MovLib\Data\Job;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class JobSet extends \MovLib\Data\AbstractDatabaseSet {
+final class JobSet extends \MovLib\Data\AbstractSet {
+  use \MovLib\Data\Job\JobTrait;
+
 
   /**
    * {@inheritdoc}
    */
-  public function getEntityClassName() {
-    return "\\MovLib\\Data\\Job\\Job";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getOrdered($by, $offset, $limit) {
-    // @todo Store counts as columns in table.
-    return $this->getMySQLi()->query(<<<SQL
+  protected function getEntitiesQuery($where = null, $orderBy = null) {
+    return <<<SQL
 SELECT
   `jobs`.`id` AS `id`,
   COLUMN_GET(`dyn_names_sex0`, '{$this->intl->languageCode}' AS CHAR) AS `name`,
@@ -51,18 +45,10 @@ FROM `jobs`
     ON `movies_crew`.`job_id` = `jobs`.`id`
   LEFT JOIN `episodes_crew`
     ON `episodes_crew`.`job_id` = `jobs`.`id`
-WHERE `deleted` = false
+{$where}
 GROUP BY `id`, `name`
-ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}
-SQL
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getTableName() {
-    return "jobs";
+{$orderBy}
+SQL;
   }
 
 }

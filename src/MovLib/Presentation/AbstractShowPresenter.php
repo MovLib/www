@@ -38,7 +38,7 @@ abstract class AbstractShowPresenter extends \MovLib\Presentation\AbstractPresen
   /**
    * The entity to present.
    *
-   * @var \MovLib\Data\AbstractDatabaseEntity
+   * @var \MovLib\Data\AbstractEntity
    */
   protected $entity;
 
@@ -49,7 +49,7 @@ abstract class AbstractShowPresenter extends \MovLib\Presentation\AbstractPresen
   /**
    * Initialize the show presenter.
    *
-   * @param \MovLib\Data\AbstractDatabaseEntity $entity
+   * @param \MovLib\Data\AbstractEntity $entity
    *   The entity to present.
    * @param string $typeOf
    *   The structured data type of the entity.
@@ -57,7 +57,7 @@ abstract class AbstractShowPresenter extends \MovLib\Presentation\AbstractPresen
    *   The structure data property of the title, defaults to <code>"name"</code>.
    * @return this
    */
-  protected function initShow(\MovLib\Data\AbstractDatabaseEntity $entity, $typeOf, $titleProperty = "name") {
+  protected function initShow(\MovLib\Data\AbstractEntity $entity, $typeOf, $titleProperty = "name") {
     $this->entity                = $entity;
     $this->schemaType            = $typeOf;
     $this->headingSchemaProperty = $titleProperty;

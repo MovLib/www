@@ -110,7 +110,7 @@ final class Date {
         $date = $this->$format($dateFrom, $fromAttributes);
       }
       else {
-        $date = $this->placeholder("unknown");
+        $date = $this->presenter->placeholder("unknown");
       }
       if ($dateTo) {
         $date = $this->intl->t("{0}–{1}", [ $date, $this->$format($dateTo, $toAttributes) ]);
@@ -143,12 +143,23 @@ final class Date {
    * @param array $attributes [optional]
    *   Additional attributes for the <code><time></code> element. Note that any <code>"datetime"</code> key will be
    *   overwritten.
+   * @param array $route [optional]
+   *   An attributes array that defines an HTML anchor, if present the year will be enclosed in this link, defaults to
+   *   <code>NULL</code>.
    * @return string
    *   The formatted year.
    */
-  public function formatYear(\MovLib\Data\Date $date, array $attributes = []) {
-    $attributes["datetime"] = $date->year;
-    return "<time{$this->presenter->expandTagAttributes($attributes)}>{$date->year}</time>";
+  public function formatYear(\MovLib\Data\Date $date, array $attributes = [], array $route = null) {
+    $year = $attributes["datetime"] = $date->year;
+    if ($route) {
+      // @devStart
+      // @codeCoverageIgnoreStart
+      assert(!empty($route["href"]), "The href attribute of a route cannot be empty!");
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+      $year = "<a{$this->presenter->expandTagAttributes($route)}>{$year}</a>";
+    }
+    return "<time{$this->presenter->expandTagAttributes($attributes)}>{$year}</time>";
   }
 
   /**
@@ -168,7 +179,7 @@ final class Date {
     if (isset($dateFrom->month) && isset($dateFrom->day) && isset($dateTo->month) && isset($dateTo->day)) {
       $format = $this->intl->t("~{0}", $format);
     }
-    return $dateFrom->dateTime->diff($dateTo->dateTime)->format($format);
+    return $dateFrom->diff($dateTo)->format($format);
   }
 
 }
