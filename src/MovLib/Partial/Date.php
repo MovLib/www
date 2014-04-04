@@ -110,7 +110,7 @@ final class Date {
         $date = $this->$format($dateFrom, $fromAttributes);
       }
       else {
-        $date = $this->placeholder("unknown");
+        $date = $this->presenter->placeholder("unknown");
       }
       if ($dateTo) {
         $date = $this->intl->t("{0}–{1}", [ $date, $this->$format($dateTo, $toAttributes) ]);
