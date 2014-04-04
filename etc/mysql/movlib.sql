@@ -149,13 +149,17 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`persons` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The person’s unique ID.',
+  `award_count` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The person’s total number of awards.',
   `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the person was last changed.',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the person was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this person is marked as deleted (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_biographies` BLOB NOT NULL COMMENT 'The person’s biography in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_wikipedia` BLOB NOT NULL COMMENT 'The person\'s Wikipedia link in various languages. The language code serves as key.',
   `dyn_image_descriptions` BLOB NOT NULL COMMENT 'The person’s translated photo description.',
+  `movie_count` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The person’s total number of movie participations.',
   `name` VARCHAR(255) NOT NULL COMMENT 'The person’s full name.',
+  `release_count` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The person’s total number of release participations.',
+  `series_count` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The person’s total number of series participations.',
   `sex` TINYINT NOT NULL DEFAULT 0 COMMENT 'The person\'s sex according to ISO 5218.\n\n0 = not known\n1 = male\n2 = female\n9 = not applicable',
   `birthdate` DATE NULL COMMENT 'The person’s date of birth.',
   `birthplace_id` BIGINT UNSIGNED NULL COMMENT 'The person’s birthplace.',
@@ -173,26 +177,27 @@ CREATE TABLE IF NOT EXISTS `movlib`.`persons` (
   `image_width` SMALLINT NULL COMMENT 'The person photo’s original width.',
   `nickname` MEDIUMTEXT NULL COMMENT 'The person’s nickname.',
   PRIMARY KEY (`id`),
-  INDEX `fk_persons_places1_idx` (`birthplace_id` ASC),
-  INDEX `fk_persons_places2_idx` (`deathplace_id` ASC),
-  INDEX `fk_persons_causes_of_death1_idx` (`cause_of_death_id` ASC),
-  INDEX `fk_persons_users1_idx` (`image_uploader_id` ASC),
-  CONSTRAINT `fk_persons_places1`
+  INDEX `fk_persons_places_birth` (`birthplace_id` ASC),
+  INDEX `fk_persons_places_death` (`deathplace_id` ASC),
+  INDEX `fk_persons_causes_of_death` (`cause_of_death_id` ASC),
+  INDEX `fk_persons_users` (`image_uploader_id` ASC),
+  INDEX `persons_created` (`created` ASC),
+  CONSTRAINT `fk_persons_places_birth`
     FOREIGN KEY (`birthplace_id`)
     REFERENCES `movlib`.`places` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_persons_places2`
+  CONSTRAINT `fk_persons_places_death`
     FOREIGN KEY (`deathplace_id`)
     REFERENCES `movlib`.`places` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_persons_causes_of_death1`
+  CONSTRAINT `fk_persons_causes_of_death`
     FOREIGN KEY (`cause_of_death_id`)
     REFERENCES `movlib`.`causes_of_death` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_persons_users1`
+  CONSTRAINT `fk_persons_users`
     FOREIGN KEY (`image_uploader_id`)
     REFERENCES `movlib`.`users` (`id`)
     ON DELETE NO ACTION
