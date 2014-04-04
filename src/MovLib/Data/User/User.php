@@ -31,7 +31,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class User extends \MovLib\Core\AbstractDatabase implements \MovLib\Data\EntityInterface, \MovLib\Data\Image\ImageInterface {
+final class User extends \MovLib\Data\AbstractEntity {
   use \MovLib\Data\Image\ImageTrait;
   use \MovLib\Data\RouteTrait;
   use \MovLib\Data\User\UserTrait;
@@ -148,6 +148,13 @@ final class User extends \MovLib\Core\AbstractDatabase implements \MovLib\Data\E
    * @var null|integer
    */
   public $id;
+
+  /**
+   * The user's image directory.
+   *
+   * @var string
+   */
+  public $imageDirectory = "upload://user";
 
   /**
    * The user's unique name.
@@ -343,7 +350,7 @@ SQL
    */
   public function init() {
     $this->access        = new DateTime($this->access);
-    $this->birthday && ($this->birthday = new Date($this->birthday));
+    $this->birthday      && ($this->birthday = new Date($this->birthday));
     $this->created       = new DateTime($this->created);
     $this->deleted       = (boolean) $this->email;
     $this->imageExists   = (boolean) $this->imageChanged;

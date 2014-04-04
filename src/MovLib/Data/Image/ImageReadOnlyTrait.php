@@ -163,7 +163,7 @@ trait ImageReadOnlyTrait {
    *   The image's URI.
    */
   public function getImageURI() {
-    return "dr://var/public/uploads/{$this->imageDirectory}/{$this->imageFilename}.{$this->imageExtension}";
+    return "{$this->imageDirectory}/{$this->imageFilename}.{$this->imageExtension}";
   }
 
   /**
@@ -251,7 +251,7 @@ trait ImageReadOnlyTrait {
    *   The image style's URI.
    */
   public function getImageStyleURI($style) {
-    return "dr://var/public/uploads/{$this->imageDirectory}/{$this->imageFilename}.{$style}.{$this->imageExtension}";
+    return "{$this->imageDirectory}/{$this->imageFilename}.{$style}.{$this->imageExtension}";
   }
 
   /**
@@ -265,7 +265,7 @@ trait ImageReadOnlyTrait {
    *   The image style's URl.
    */
   public function getImageStyleURL($style) {
-    return "//{$this->config->hostnameStatic}/uploads/{$this->imageDirectory}/{$this->imageFilename}.{$style}.{$this->imageExtension}?{$this->imageChanged->getTimestamp()}";
+    return $this->fs->getExternalURL($this->getImageStyleURI($style), $this->imageChanged->getTimestamp());
   }
 
 }
