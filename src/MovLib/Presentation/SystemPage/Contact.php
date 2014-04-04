@@ -17,12 +17,12 @@
  */
 namespace MovLib\Presentation\SystemPage;
 
-use \MovLib\Presentation\Email\Webmaster;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Form;
-use \MovLib\Presentation\Partial\FormElement\InputHTML;
-use \MovLib\Presentation\Partial\FormElement\InputSubmit;
-use \MovLib\Presentation\Partial\FormElement\InputText;
+use \MovLib\Partial\Form;
+use \MovLib\Partial\FormElement\InputEmail;
+use \MovLib\Partial\FormElement\InputHTML;
+use \MovLib\Partial\FormElement\InputText;
+use \MovLib\Mail\Mailer;
+use \MovLib\Mail\Webmaster;
 
 /**
  * Contact page presentation.
@@ -34,23 +34,36 @@ use \MovLib\Presentation\Partial\FormElement\InputText;
  * @since 0.0.1-dev
  */
 class Contact extends \MovLib\Presentation\SystemPage\Show {
-  use \MovLib\Presentation\TraitForm;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
+   * The presenation's form.
+   *
+   * @var \MovLib\Partial\Form
+   */
+  protected $form;
+
+  /**
    * The email's body.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputHTML
+   * @var string
    */
   protected $message;
 
   /**
+   * The email's sender.
+   *
+   * @var string
+   */
+  protected $sender;
+
+  /**
    * The email's subject.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputText
+   * @var string
    */
   protected $subject;
 
@@ -69,16 +82,22 @@ class Contact extends \MovLib\Presentation\SystemPage\Show {
    * Instantiate new contact system page.
    *
    */
-  public function __construct() {
-    parent::__construct();
-    $this->subject                = new InputText("subject", $this->intl->t("Subject"), [
+  public function init() {
+    parent::init();
+    $this->form = new Form($this->diContainerHTTP);
+    // Add email input for non-authenticated users.
+    if ($this->session->isAuthenticated === false) {
+      $this->form->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email address"), $this->sender));
+    }
+    else {
+      $this->sender = "{$this->session->userName}@movlib.org";
+    }
+    $this->form->addElement(new InputText($this->diContainerHTTP, "subject", $this->intl->t("Subject"), $this->subject), [
       "placeholder" => $this->intl->t("This will appear as subject of your message"),
-      "required",
+      "required" => "required",
     ]);
-    $this->message                = new InputHTML("message", $this->intl->t("Message"));
-    $this->message->attributes[]  = "required";
-    $this->form                   = new Form($this, [ $this->subject, $this->message ]);
-    $this->form->actionElements[] = new InputSubmit($this->intl->t("Send"), [ "class" => "btn btn-success btn-large" ]);
+    $this->form->addElement(new InputHTML($this->diContainerHTTP, "message", $this->intl->t("Message"), $this->message, [ "required" => "required"]));
+    $this->form->addAction($this->intl->t("Send"), [ "class" => "btn btn-large btn-success" ]);
   }
 
 
@@ -88,9 +107,9 @@ class Contact extends \MovLib\Presentation\SystemPage\Show {
   /**
    * @inheritdoc
    */
-  protected function getPageContent(){
+  public function getContent(){
     $append = $this->success ?: $this->form;
-    return "<div class='c'><div class='r'><div class='s s10'>{$this->htmlDecode($this->systemPage->text)}{$append}</div></div></div>";
+    return "{$this->htmlDecode($this->systemPage->text)}{$append}";
   }
 
   /**
@@ -98,13 +117,20 @@ class Contact extends \MovLib\Presentation\SystemPage\Show {
    */
   protected function valid() {
     // Send the contact email to the webmaster.
-    $kernel->sendEmail(new Webmaster($this->subject->value, $this->htmlDecode($this->message->value)));
+    (new Mailer())->send(
+      $this->diContainerHTTP,
+      new Webmaster(
+        $this->diContainerHTTP,
+        $this->subject,
+        "<a href='mailto:{$this->sender}'>{$this->sender}</a>wrote:<br>{$this->htmlDecode($this->message)}"
+      )
+    );
 
     // Submission was successful but further action is required, let the client know.
     http_response_code(202);
 
     // Display success alert so the user knows that the submission was successful.
-    $this->success = new Alert(
+    $this->alerts .= new Alert(
       $this->intl->t("Contact Successful"),
       $this->intl->t("Contact Successful"),
       Alert::SEVERITY_SUCCESS
