@@ -471,35 +471,15 @@ abstract class AbstractPresenter {
   /**
    * Get the external URL of the given URI.
    *
+   * @deprecated
    * @param string $uri
    *   The URI to get the external URL for.
    * @return string
    *   The external URL of the given URI.
    */
   final public function getExternalURL($uri) {
-    static $streamWrappers = [], $uris = [];
-    if (empty($uris[$uri])) {
-      // @devStart
-      // @codeCoverageIgnoreStart
-      if (strpos($uri, "://") === false) {
-        throw new \LogicException("\$uri must be a valid URI in the form <scheme>://<path>.");
-      }
-      // @codeCoverageIgnoreEnd
-      // @devEnd
-      $scheme = explode($uri, "://", 2)[0];
-      if (empty($streamWrappers[$scheme])) {
-        $streamWrappers[$scheme] = $this->fs->getStreamWrapper($uri);
-      }
-      // @devStart
-      // @codeCoverageIgnoreStart
-      if (empty($streamWrappers[$scheme]) || !method_exists($streamWrappers[$scheme], "getExternalPath")) {
-        throw new \LogicException("There is not external URL available for your URI '{$uri}'.");
-      }
-      // @codeCoverageIgnoreEnd
-      // @devEnd
-      $uris[$uri] = $streamWrappers[$scheme]->getExternalPath($this->fs, $uri);
-    }
-    return $uris[$uri];
+    $this->log->debug("Please use \$this->fs->getExternalURI(\$uri)!");
+    return $this->fs->getExternalURL($uri);
   }
 
   /**
@@ -593,10 +573,10 @@ abstract class AbstractPresenter {
           "<section id='f-logos' class='s s12 tac'>" .
             "<h3 class='vh'>{$this->intl->t("Sponsors and external resources")}</h3>" .
             "<a class='no-link' href='http://www.fh-salzburg.ac.at/' target='_blank'>" .
-              "<img alt='Fachhochschule Salzburg' height='30' src='{$this->getExternalURL("asset://img/footer/fachhochschule-salzburg.svg")}' width='48'>" .
+              "<img alt='Fachhochschule Salzburg' height='30' src='{$this->fs->getExternalURL("asset://img/footer/fachhochschule-salzburg.svg")}' width='48'>" .
             "</a>" .
             "<a class='no-link' href='https://github.com/MovLib' target='_blank'>" .
-              "<img alt='GitHub' height='30' src='{$this->getExternalURL("asset://img/footer/github.svg")}' width='48'>" .
+              "<img alt='GitHub' height='30' src='{$this->fs->getExternalURL("asset://img/footer/github.svg")}' width='48'>" .
             "</a>" .
           "</section>" .
           $languageLinks .
@@ -686,7 +666,7 @@ abstract class AbstractPresenter {
         // wants us to use multiple <h1>s for multiple sections, so here we go. The header is always the MovLib header.
         "<h1 class='s s3'>{$this->a(
           "/",
-          "<img alt='' height='42' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='42'> {$this->config->sitename}",
+          "<img alt='' height='42' src='{$this->fs->getExternalURL("asset://img/logo/vector.svg")}' width='42'> {$this->config->sitename}",
           [ "id" => "l", "title" => $this->intl->t("Go back to the home page.") ]
         )}</h1>" .
         "<div class='s s9'>" .
@@ -723,6 +703,59 @@ abstract class AbstractPresenter {
         "</div>" .
       "</div></div></header>"
     ;
+  }
+
+  /**
+   * Get an image.
+   *
+   * @param \MovLib\Data\Image\ImageStyle $imageStyle
+   *   The image style to get the image for.
+   * @param array $attributes [optional]
+   *   Additional attributes that should be applied to the image tag, defaults to <code>[]</code>.
+   * @param boolean|string $route [optional]
+   *   Whether to use the default route from the image style for linking (<code>TRUE</code> and default) or not
+   *   <code>FALSE</code> or an arbitrary route.
+   * @param array $routeAttributes [optional]
+   *   Additional attributes that should be applied to the wrapping anchor element if <var>$route</var> is set to
+   *   <code>TRUE</code> or an arbitrary route is given.
+   * @return string
+   *   The image.
+   */
+  final public function getImage(\MovLib\Data\Image\ImageStyle $imageStyle, array $attributes = [], $route = true, array $routeAttributes = null) {
+    // The alt attribute is mandatory on image elements.
+    if (empty($attributes["alt"])) {
+      $attributes["alt"] = $imageStyle->alt;
+    }
+
+    // Add CSS class for additional styling and be sure to remove any structured data from the image tag if this is a
+    // placeholder image we're going to display.
+    if ($imageStyle->placeholder) {
+      $this->addClass("placeholder", $attributes);
+
+      if (isset($attributes["property"])) {
+        unset($attributes["property"]);
+      }
+    }
+
+    // Extract the necessary image tag attributes from the image style.
+    $attributes["src"]    = $imageStyle->src;
+    $attributes["width"]  = $imageStyle->width;
+    $attributes["height"] = $imageStyle->height;
+    $image                = "<img{$this->expandTagAttributes($attributes)}>";
+
+    if ($route !== false) {
+      // @devStart
+      // @codeCoverageIgnoreStart
+      assert(
+        empty($attributes["property"]),
+        "Don't set a property and link an image, this won't be interpreted correctly by structured data tools!"
+      );
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+      $image = "<a{$this->expandTagAttributes($routeAttributes)}>{$image}</a>";
+    }
+
+    return $image;
   }
 
   /**
@@ -764,7 +797,7 @@ abstract class AbstractPresenter {
     $stylesheets = null;
     $i = count($this->stylesheets);
     while ($i--) {
-      $stylesheets .= "<link href='{$this->getExternalURL("asset://css/module/{$this->stylesheets[$i]}.css")}' rel='stylesheet'>";
+      $stylesheets .= "<link href='{$this->fs->getExternalURL("asset://css/module/{$this->stylesheets[$i]}.css")}' rel='stylesheet'>";
     }
 
     // Apply additional CSS class if the current request is made from a signed in user.
@@ -776,12 +809,12 @@ abstract class AbstractPresenter {
     $this->javascriptSettings["hostnameStatic"] = $this->config->hostnameStatic;
     $c = count($this->javascripts);
     for ($i = 0; $i < $c; ++$i) {
-      $this->javascriptSettings["modules"][$this->javascripts[$i]] = $this->getExternalURL("asset://js/module/{$this->javascripts[$i]}.js");
+      $this->javascriptSettings["modules"][$this->javascripts[$i]] = $this->fs->getExternalURL("asset://js/module/{$this->javascripts[$i]}.js");
     }
     $jsSettings = json_encode($this->javascriptSettings, JSON_UNESCAPED_UNICODE);
 
     $htmlAttr = " dir='{$this->intl->direction}' id='nojs' lang='{$this->intl->languageCode}' prefix='og: http://ogp.me/ns#'";
-    $logo256  = $this->getExternalURL("asset://img/logo/256.png");
+    $logo256  = $this->fs->getExternalURL("asset://img/logo/256.png");
     $title    = $this->getHeadTitle();
 
     return
@@ -791,16 +824,16 @@ abstract class AbstractPresenter {
       "<head>" .
         "<title>{$title}</title>" .
         // Include the global styles and any presentation specific ones.
-        "<link href='{$this->getExternalURL("asset://css/MovLib.css")}' rel='stylesheet'>{$stylesheets}" .
+        "<link href='{$this->fs->getExternalURL("asset://css/MovLib.css")}' rel='stylesheet'>{$stylesheets}" .
         // Yes, we could create these in a loop, but why should we implement a loop for static data? To be honest, I
         // generated it with a loop and simply copied the output here.
-        "<link href='{$this->getExternalURL("asset://img/logo/vector.svg")}' rel='icon' type='image/svg+xml'>" .
+        "<link href='{$this->fs->getExternalURL("asset://img/logo/vector.svg")}' rel='icon' type='image/svg+xml'>" .
         "<link href='{$logo256}' rel='icon' sizes='256x256' type='image/png'>" .
-        "<link href='{$this->getExternalURL("asset://img/logo/128.png")}' rel='icon' sizes='128x128' type='image/png'>" .
-        "<link href='{$this->getExternalURL("asset://img/logo/64.png")}' rel='icon' sizes='64x64' type='image/png'>" .
-        "<link href='{$this->getExternalURL("asset://img/logo/32.png")}' rel='icon' sizes='32x32' type='image/png'>" .
-        "<link href='{$this->getExternalURL("asset://img/logo/24.png")}' rel='icon' sizes='24x24' type='image/png'>" .
-        "<link href='{$this->getExternalURL("asset://img/logo/16.png")}' rel='icon' sizes='16x16' type='image/png'>" .
+        "<link href='{$this->fs->getExternalURL("asset://img/logo/128.png")}' rel='icon' sizes='128x128' type='image/png'>" .
+        "<link href='{$this->fs->getExternalURL("asset://img/logo/64.png")}' rel='icon' sizes='64x64' type='image/png'>" .
+        "<link href='{$this->fs->getExternalURL("asset://img/logo/32.png")}' rel='icon' sizes='32x32' type='image/png'>" .
+        "<link href='{$this->fs->getExternalURL("asset://img/logo/24.png")}' rel='icon' sizes='24x24' type='image/png'>" .
+        "<link href='{$this->fs->getExternalURL("asset://img/logo/16.png")}' rel='icon' sizes='16x16' type='image/png'>" .
         "<link href='https://plus.google.com/115387876584819891316?rel=publisher' property='publisher'>" .
         "<meta property='og:description' content='{$this->intl->t("The free online movie database that anyone can edit.")}'>" .
         "<meta property='og:image' content='{$this->request->scheme}:{$logo256}'>" .
@@ -818,7 +851,7 @@ abstract class AbstractPresenter {
       "<body id='{$this->id}' class='{$this->bodyClasses}' vocab='http://schema.org/'>" .
         "{$this->getHeader()}{$content}{$this->getFooter()}" .
         "<script id='jss' type='application/json'>{$jsSettings}</script>" .
-        "<script async src='{$this->getExternalURL("asset://js/MovLib.js")}'></script>"
+        "<script async src='{$this->fs->getExternalURL("asset://js/MovLib.js")}'></script>"
     ;
   }
 
@@ -831,13 +864,14 @@ abstract class AbstractPresenter {
    *   The raw HTML string.
    */
   final public function htmlDecode($text) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (empty($text) || !is_string($text)) {
-      throw new \InvalidArgumentException("\$text cannot be empty and must be of type string.");
+    if (empty($text)) {
+      // @devStart
+      // @codeCoverageIgnoreStart
+      $this->log->debug("You should avoid passing empty texts to htmlDecode");
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+      return $text;
     }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
     return htmlspecialchars_decode($text, ENT_QUOTES | ENT_HTML5);
   }
 
@@ -854,13 +888,14 @@ abstract class AbstractPresenter {
    *   <var>$text</var> with all HTML entities decoded.
    */
   final public function htmlDecodeEntities($text) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (empty($text) || !is_string($text)) {
-      throw new \InvalidArgumentException("\$text cannot be empty and must be of type string.");
+    if (empty($text)) {
+      // @devStart
+      // @codeCoverageIgnoreStart
+      $this->log->debug("You should avoid passing empty texts to htmlDecodeEntities");
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+      return $text;
     }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
     return html_entity_decode($text, ENT_QUOTES | ENT_HTML5);
   }
 
@@ -875,13 +910,14 @@ abstract class AbstractPresenter {
    *   <var>$text</var> with encoded HTML special characters.
    */
   final public function htmlEncode($text) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (empty($text) || !(is_string($text) || is_numeric($text))) {
-      throw new \InvalidArgumentException("\$text cannot be empty and must be of type string.");
+    if (empty($text)) {
+      // @devStart
+      // @codeCoverageIgnoreStart
+      $this->log->debug("You should avoid passing empty texts to htmlEncode");
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+      return $text;
     }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
     return htmlspecialchars($text, ENT_QUOTES | ENT_HTML5);
   }
 

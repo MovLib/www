@@ -48,14 +48,14 @@ abstract class AbstractIndexPresenter extends \MovLib\Presentation\AbstractPrese
   /**
    * Format a single listing's item.
    *
-   * @param \MovLib\Data\EntityInterface $item
+   * @param \MovLib\Data\AbstractEntity $item
    *   The listing's item to format.
    * @param integer $delta
    *   The current loops delta.
    * @return string
    *   The formatted listing's item.
    */
-  abstract protected function formatListingItem(\MovLib\Data\EntityInterface $item, $delta);
+  abstract protected function formatListingItem(\MovLib\Data\AbstractEntity $item, $delta);
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods

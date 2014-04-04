@@ -26,53 +26,60 @@ namespace MovLib\Data\Image;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Style {
+final class ImageStyle {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The image style's translated <code>alt</code> attribute content.
+   * The image style's default alternative text.
    *
    * @var string
    */
   public $alt;
 
   /**
-   * The image style's absolute URL.
+   * The image style's height in Pixel.
    *
-   * @var string
-   */
-  public $src;
-
-  /**
-   * The image style's width.
-   *
-   * @var int
-   */
-  public $width;
-
-  /**
-   * The image style's height.
-   *
-   * @var int
+   * @var integer
    */
   public $height;
 
   /**
-   * Whether this is a placeholder image or not.
+   * Whether a placeholder image is in use or not.
    *
    * @var boolean
    */
   public $placeholder;
 
   /**
-   * The image style's route to its details page.
+   * The image's default route arguments.
+   *
+   * @var mixed
+   */
+  protected $routeArguments;
+
+  /**
+   * The image's default route key.
    *
    * @var string
    */
-  public $route;
+  protected $routeKey;
+
+  /**
+   * The image style's URL.
+   *
+   * @var string
+   */
+  public $src;
+
+  /**
+   * The image style's width in Pixel.
+   *
+   * @var integer
+   */
+  public $width;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -81,26 +88,22 @@ class Style {
   /**
    * Instantiate new image style.
    *
-   * @param string $alt
-   *   The image style's translated <code>alt</code> attribute content.
-   * @param string $src
-   *   The image style's absolute URL.
-   * @param int $width
-   *   The image style's width.
-   * @param int $height
-   *   The image style's height.
-   * @param boolean $placeholder
-   *   Whether this is a placeholder image or not.
-   * @param string $route
-   *   The image style's route to its details page.
+   * @param type $url
+   * @param type $alternativeText
+   * @param type $width
+   * @param type $height
+   * @param type $placeholder
+   * @param type $routeKey
+   * @param type $routeArguments
    */
-  public function __construct($alt, $src, $width, $height, $placeholder, $route) {
-    $this->alt         = $alt;
-    $this->src         = $src;
-    $this->width       = $width;
-    $this->height      = $height;
-    $this->placeholder = $placeholder;
-    $this->route       = $route;
+  public function __construct($url, $alternativeText, $width, $height, $placeholder, $routeKey, $routeArguments) {
+    $this->alt            = $alternativeText;
+    $this->height         = $height;
+    $this->placeholder    = (boolean) $placeholder;
+    $this->routeArguments = $routeArguments;
+    $this->routeKey       = $routeKey;
+    $this->src            = $url;
+    $this->width          = $width;
   }
 
 }

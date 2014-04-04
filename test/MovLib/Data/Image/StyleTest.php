@@ -17,7 +17,7 @@
  */
 namespace MovLib\Data\Image;
 
-use \MovLib\Data\Image\Style;
+use \MovLib\Data\Image\ImageStyle;
 
 /**
  * @coversDefaultClass \MovLib\Data\Image\Style
@@ -40,7 +40,7 @@ class StyleTest extends \MovLib\TestCase {
       "height" => 42,
       "route"  => "/",
     ];
-    $style    = new Style($expected["alt"], $expected["src"], $expected["width"], $expected["height"], $expected["route"]);
+    $style    = new ImageStyle($expected["alt"], $expected["src"], $expected["width"], $expected["height"], $expected["route"]);
     foreach ($expected as $property => $value) {
       $this->assertObjectHasAttribute($property, $style);
       $this->assertAttributeEquals($value, $property, $style);

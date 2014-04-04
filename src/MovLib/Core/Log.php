@@ -50,21 +50,21 @@ final class Log {
   protected $logger;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Initialize
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
    * Instantiate new logger.
    *
-   * @param string $name
-   *   The log entry's name, use hostname for HTTP and process title's for CLI.
    * @param \MovLib\Core\Config $config
    *   Active global configuration instance.
+   * @param string $name
+   *   The log entry's name, use hostname for HTTP and process title's for CLI.
    * @param boolean $http
    *   Whether this logger is executing in HTTP context or not.
    * @throws \ErrorException
    */
-  public function init($name, \MovLib\Core\Config $config, $http) {
+  public function __construct(\MovLib\Core\Config $config, $name, $http) {
     // @devStart
     // @codeCoverageIgnoreStart
     assert(!empty($name), "Log name cannot be empty.");

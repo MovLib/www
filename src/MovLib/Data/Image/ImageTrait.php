@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Core\StreamWrapper;
+namespace MovLib\Data\Image;
 
 /**
- * Defines the dr (document root) stream wrapper for the <code>"dr://"</code> scheme.
+ * Default implementation for concrete classes that implement the image interface.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,20 +26,7 @@ namespace MovLib\Core\StreamWrapper;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class DocumentRootStreamWrapper extends \MovLib\Core\StreamWrapper\AbstractLocalStreamWrapper {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getExternalPath($uri = null, $cacheBuster = null) {
-    throw new \LogicException("Files in the document root aren't accessible via the web!");
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getPath() {
-    return self::$fs->documentRoot;
-  }
+trait ImageTrait {
+  use \MovLib\Data\Image\ImageReadOnlyTrait;
 
 }

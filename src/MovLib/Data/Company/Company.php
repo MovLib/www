@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data\Company;
 
+use \MovLib\Data\Date;
+use \MovLib\Data\Route\EntityRoute;
 use \MovLib\Exception\ClientException\NotFoundException;
 use \MovLib\Data\Place\Place;
 
@@ -199,11 +201,12 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
-    $this->unserialize([ &$this->aliases, &$this->links ]);
-    $this->toDates([ &$this->foundingDate, &$this->defunctDate ]);
-    if ($this->placeId) {
-      $this->place = new Place($this->diContainer, $this->placeId);
-    }
+    $this->aliases      && ($this->aliases      = unserialize($this->aliases));
+    $this->links        && ($this->links        = unserialize($this->links));
+    $this->foundingDate && ($this->foundingDate = new Date($this->foundingDate));
+    $this->defunctDate  && ($this->defunctDate  = new Date($this->defunctDate));
+    $this->placeId      && ($this->place        = new Place($this->diContainer, $this->placeId));
+    $this->route        = new EntityRoute($this->intl, "/company/{0}", $this->id, "/companies");
     return parent::init();
   }
 

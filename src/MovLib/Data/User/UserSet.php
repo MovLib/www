@@ -43,7 +43,18 @@ final class UserSet extends \MovLib\Data\AbstractSet {
    * {@inheritdoc}
    */
   protected function getEntitiesQuery($where = null, $orderBy = null) {
-    return "SELECT `id`, `name`, `access`, `created` FROM `users` {$where} {$orderBy}";
+    return <<<SQL
+SELECT
+  `id`,
+  `name`,
+  `access`,
+  `created`,
+  `image_changed` AS `imageChanged`,
+  `image_extension` AS `imageExtension`
+FROM `users`
+{$where}
+{$orderBy}
+SQL;
   }
 
   /**

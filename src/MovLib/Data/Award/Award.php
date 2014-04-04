@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data\Award;
 
+use \MovLib\Data\Date;
+use \MovLib\Data\Route\EntityRoute;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -170,8 +172,11 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
-    $this->unserialize([ &$this->aliases, &$this->links ]);
-    $this->toDates([ &$this->firstEventYear, &$this->lastEventYear ]);
+    $this->aliases        && ($this->aliases        = unserialize(($this->aliases)));
+    $this->links          && ($this->links          = unserialize($this->links));
+    $this->firstEventYear && ($this->firstEventYear = new Date($this->firstEventYear));
+    $this->lastEventYear  && ($this->lastEventYear  = new Date($this->lastEventYear));
+    $this->route          = new EntityRoute($this->intl, "/award/{0}", $this->id, "/awards");
     return parent::init();
   }
 

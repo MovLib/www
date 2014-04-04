@@ -50,11 +50,11 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    * @param \MovLib\Data\Movie\Movie $movie {@inheritdoc}
    */
-  protected function formatListingItem(\MovLib\Data\EntityInterface $movie, $id) {
+  protected function formatListingItem(\MovLib\Data\AbstractEntity $movie, $id) {
     return
       "<li class='hover-item r'>" .
         "<article typeof='Movie'>" .
-          "<a class='no-link s s1' href='{$movie->getRoute()}'>" .
+          "<a class='no-link s s1' href='{$movie->route}'>" .
             "<img alt='' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
           "</a>" .
           "<div class='s s8'>" .

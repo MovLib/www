@@ -105,22 +105,13 @@ final class Kernel {
   protected function boot($documentRoot, $logName, $language = null) {
     // @devStart
     // @codeCoverageIgnoreStart
+    if (empty($documentRoot) || !is_string($documentRoot) || is_link($documentRoot) || realpath($documentRoot) === false) {
+      throw new \InvalidArgumentException("\$documentRoot cannot be empty, must be of type string and point to an existing directory.");
+    }
     if ($this->booted) {
       throw new \LogicException("Kernel already booted!");
     }
     $this->booted = true;
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
-    $this->diContainer->kernel = $this;
-    $this->diContainer->log    = new Log();
-    $this->diContainer->fs     = new FileSystem($documentRoot, $this->diContainer->log);
-
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (empty($documentRoot) || !is_string($documentRoot) || is_link($documentRoot) || realpath($documentRoot) === false) {
-      throw new \InvalidArgumentException("\$documentRoot cannot be empty, must be of type string and point to an existing directory.");
-    }
     // @codeCoverageIgnoreEnd
     // @devEnd
 
@@ -132,6 +123,7 @@ final class Kernel {
     else {
       $this->diContainer->config = new Config();
     }
+
     // @devStart
     // @codeCoverageIgnoreStart
     // @todo REMOVE ME as soon as we have no coming soon page!
@@ -139,8 +131,10 @@ final class Kernel {
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-    $this->diContainer->log->init($logName, $this->diContainer->config, $this->http);
-    $this->diContainer->intl = new Intl($this->diContainer->config, $language);
+    $this->diContainer->kernel = $this;
+    $this->diContainer->log    = new Log($this->diContainer->config, $logName, $this->http);
+    $this->diContainer->fs     = new FileSystem($this->diContainer->config, $this->diContainer->log, $documentRoot);
+    $this->diContainer->intl   = new Intl($this->diContainer->config, $language);
 
     return $this;
   }
@@ -155,13 +149,12 @@ final class Kernel {
    * @return this
    */
   public function bootCLI($documentRoot, $basename) {
-    $this->cli = true;
+    $this->cli         = true;
     $this->diContainer = new DIContainer();
     $this->boot($documentRoot, "{$basename}-cli");
     $this->diContainer->fs->setProcessOwner($this->diContainer->config->user, $this->diContainer->config->group);
     (new Application($this->diContainer, $basename))->run();
     $this->shutdown();
-
     return $this;
   }
 
@@ -181,8 +174,8 @@ final class Kernel {
     register_shutdown_function([ $this, "fatalErrorHandler" ]);
     ini_set("display_errors", false);
 
-    $this->http = true;
-    $this->diContainer = new DIContainerHTTP();
+    $this->http                  = true;
+    $this->diContainer           = new DIContainerHTTP();
     $this->boot($documentRoot, $_SERVER["SERVER_NAME"], $_SERVER["LANGUAGE_CODE"]);
     $this->diContainer->request  = new Request($this->diContainer->intl);
     $this->diContainer->response = new Response($this->diContainer->config, $this->diContainer->request);

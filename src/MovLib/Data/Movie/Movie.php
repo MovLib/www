@@ -18,6 +18,7 @@
 namespace MovLib\Data\Movie;
 
 use \MovLib\Data\Date;
+use \MovLib\Data\Route\EntityRoute;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -30,6 +31,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @since 0.0.1-dev
  */
 final class Movie extends \MovLib\Data\AbstractEntity {
+  use \MovLib\Data\Image\ImageReadOnlyTrait;
   use \MovLib\Data\Movie\MovieTrait;
 
 
@@ -194,7 +196,12 @@ SELECT
   `original_title`.`language_code` AS `originalTitleLanguageCode`,
   IFNULL(`display_title`.`title`, `original_title`.`title`) AS `displayTitle`,
   COLUMN_GET(`movies`.`dyn_synopses`, '{$this->intl->languageCode}' AS CHAR) AS `synopsis`,
-  IFNULL(`display_title`.`language_code`, `original_title`.`language_code`) AS `displayTitleLanguageCode`
+  IFNULL(`display_title`.`language_code`, `original_title`.`language_code`) AS `displayTitleLanguageCode`,
+  `posters`.`id` AS `imageFilename`,
+  `posters`.`changed` AS `imageChanged`,
+  `posters`.`deleted` AS `imageExists`,
+  `posters`.`extension` AS `imageExtension`,
+  `posters`.`styles` AS `imageStyles`
 FROM `movies`
   LEFT JOIN `movies_display_titles`
     ON `movies_display_titles`.`movie_id` = `movies`.`id`
@@ -210,6 +217,11 @@ FROM `movies`
     AND `movies_display_taglines`.`language_code` = '{$this->intl->languageCode}'
   LEFT JOIN `movies_taglines`
     ON `movies_taglines`.`id` = `movies_display_taglines`.`tagline_id`
+  LEFT JOIN `display_posters`
+    ON `display_posters`.`movie_id` = `movies`.`id`
+    AND `display_posters`.`language_code` = '{$this->intl->languageCode}'
+  LEFT JOIN `posters`
+    ON `posters`.`id` = `display_posters`.`poster_id`
 WHERE `movies`.`id` = ?
 LIMIT 1
 SQL
@@ -278,6 +290,7 @@ SQL
     else {
       $this->displayTitleAndYear = $this->displayTitle;
     }
+    $this->route = new EntityRoute($this->intl, "/movie/{0}", $this->id, "/movies");
     return parent::init();
   }
 

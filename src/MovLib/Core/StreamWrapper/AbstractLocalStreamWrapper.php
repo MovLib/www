@@ -54,12 +54,11 @@ abstract class AbstractLocalStreamWrapper {
   public $context;
 
   /**
-   * Canonical absolute path to the document root.
+   * The active file system intance.
    *
-   * @see \MovLib\Core\FileSystem::__construct()
-   * @var string
+   * @var \MovLib\Core\FileSystem
    */
-  public static $documentRoot;
+  public static $fs;
 
   /**
    * Generic resource handle.
@@ -67,14 +66,6 @@ abstract class AbstractLocalStreamWrapper {
    * @var null|resource
    */
   public $handle;
-
-  /**
-   * The stream wrapper's scheme.
-   *
-   * @see StreamWrapperFactory::create()
-   * @var string
-   */
-  public $scheme;
 
   /**
    * Instance URI (stream).
@@ -105,14 +96,14 @@ abstract class AbstractLocalStreamWrapper {
   /**
    * Get the external path for this stream wrapper.
    *
-   * @param \MovLib\Core\FileSystem $fs
-   *   File system instance for path encoding.
    * @param string $uri [optional]
    *   The URI to get the external path for.
+   * @param string $cacheBuster [optional]
+   *   A cache buster string that should be appended to the file's URL.
    * @return string
    *   The external path for this stream wrapper.
    */
-  abstract public function getExternalPath(\MovLib\Core\FileSystem $fs, $uri = null);
+  abstract public function getExternalPath($uri = null, $cacheBuster = null);
 
   /**
    * Get the canonical absolute path to the directory the stream wrapper is responsible for.
@@ -160,12 +151,12 @@ abstract class AbstractLocalStreamWrapper {
    */
   public function chmod($realpath, $mode) {
     $status = chmod($realpath, $mode);
-    if (isset($this->context["privileged"]) && $this->context["privileged"]) {
-      if (isset($this->context["user"])) {
-        chown($this->realpath(), $this->context["user"]);
+    if (self::$fs->privileged) {
+      if (isset(self::$fs->user)) {
+        chown($this->realpath(), self::$fs->user);
       }
-      if (isset($this->context["group"])) {
-        chgrp($this->realpath(), $this->context["group"]);
+      if (isset(self::$fs->group)) {
+        chgrp($this->realpath(), self::$fs->group);
       }
     }
     clearstatcache(true, $realpath);

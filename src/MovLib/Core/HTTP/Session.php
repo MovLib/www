@@ -780,8 +780,9 @@ SQL
    * @return this
    */
   public function update($oldId) {
+    $remoteAddress = inet_pton($this->request->remoteAddress);
     $stmt = $this->getMySQLi()->prepare("UPDATE `sessions` SET `id` = ?, `remote_address` = ?, `user_agent` = ? WHERE `id` = ? AND `user_id` = ?");
-    $stmt->bind_param("sbssd", $this->id, inet_pton($this->request->remoteAddress), $this->request->userAgent, $oldId, $this->userId);
+    $stmt->bind_param("sbssd", $this->id, $remoteAddress, $this->request->userAgent, $oldId, $this->userId);
     $stmt->execute();
     $stmt->close();
     return $this;

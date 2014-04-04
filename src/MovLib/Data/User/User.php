@@ -18,6 +18,8 @@
 namespace MovLib\Data\User;
 
 use \MovLib\Data\Date;
+use \MovLib\Data\DateTime;
+use \MovLib\Data\Route\EntityRoute;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -29,7 +31,8 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class User extends \MovLib\Core\AbstractDatabase implements \MovLib\Data\EntityInterface {
+final class User extends \MovLib\Core\AbstractDatabase implements \MovLib\Data\EntityInterface, \MovLib\Data\Image\ImageInterface {
+  use \MovLib\Data\Image\ImageTrait;
   use \MovLib\Data\RouteTrait;
   use \MovLib\Data\User\UserTrait;
 
@@ -137,14 +140,14 @@ final class User extends \MovLib\Core\AbstractDatabase implements \MovLib\Data\E
    *
    * @var null|string
    */
-  protected $email;
+  public $email;
 
   /**
    * The user's unique identifier.
    *
    * @var null|integer
    */
-  protected $id;
+  public $id;
 
   /**
    * The user's unique name.
@@ -259,6 +262,8 @@ SELECT
   `currency_code`,
   COLUMN_GET(`dyn_about_me`, '{$this->intl->languageCode}' AS CHAR),
   `edits`,
+  `image_changed` AS `imageChanged`,
+  `image_extension` AS `imageExtension`
   `private`,
   `profile_views`,
   `real_name`,
@@ -283,6 +288,8 @@ SQL
         $this->currencyCode,
         $this->aboutMe,
         $this->edits,
+        $this->imageChanged,
+        $this->imageExtension,
         $this->private,
         $this->profileViews,
         $this->realName,
@@ -320,22 +327,30 @@ SQL
   /**
    * {@inheritdoc}
    */
+  public function getImageDirectory() {
+    return "upload://user";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getRoute() {
-    static $route = [];
-    if (empty($route[$this->id])) {
-      $route[$this->id] = $this->intl->r("/{$this->getSingularKey()}/{0}", $this->id);
-    }
-    return $route[$this->id];
+    return $this->intl->r("/user/{0}", $this->id);
   }
 
   /**
    * {@inheritdoc}
    */
   public function init() {
-    $this->access   = new \DateTime($this->access);
-    $this->created  = new \DateTime($this->created);
-    $this->private  = (boolean) $this->private;
+    $this->access        = new DateTime($this->access);
     $this->birthday && ($this->birthday = new Date($this->birthday));
+    $this->created       = new DateTime($this->created);
+    $this->deleted       = (boolean) $this->email;
+    $this->imageExists   = (boolean) $this->imageChanged;
+    $this->imageChanged  = new DateTime($this->imageChanged);
+    $this->imageFilename = mb_strtolower($this->name);
+    $this->private       = (boolean) $this->private;
+    $this->route         = new EntityRoute($this->intl, "/user/{0}", $this->imageFilename, "/users");
     return $this;
   }
 

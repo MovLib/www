@@ -29,17 +29,23 @@ namespace MovLib\Core\StreamWrapper;
 final class UploadStreamWrapper extends \MovLib\Core\StreamWrapper\AbstractLocalStreamWrapper {
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  public function getExternalPath(\MovLib\Core\FileSystem $fs, $uri = null) {
-    return $fs->urlEncodePath("/upload/{$this->getTarget($uri)}");
+  public function getExternalPath($uri = null, $cacheBuster = null) {
+    $hostnameStatic = self::$fs->config->hostnameStatic;
+    $target         = self::$fs->urlEncodePath("/uploads/{$this->getTarget($uri)}");
+    if ($cacheBuster) {
+      $cacheBuster = "?{$cacheBuster}";
+    }
+    return "//{$hostnameStatic}{$target}{$cacheBuster}";
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getPath() {
-    return self::$documentRoot . "/var/uploads";
+    $documentRoot = self::$fs->documentRoot;
+    return "{$documentRoot}/var/public/uploads";
   }
 
 }

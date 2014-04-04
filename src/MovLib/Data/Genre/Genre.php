@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\Genre;
 
+use \MovLib\Data\Route\EntityRoute;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -174,7 +175,7 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
-    $this->route   = $this->intl->r("/genre/{0}", $this->id);
+    $this->route = new EntityRoute($this->intl, "/genre/{0}", $this->id, "/genres");
     return parent::init();
   }
 

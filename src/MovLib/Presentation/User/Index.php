@@ -61,11 +61,17 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    * @param \MovLib\Data\User\User $user {@inheritdoc}
    */
-  protected function formatListingItem($user) {
+  protected function formatListingItem(\MovLib\Data\AbstractEntity $user, $delta) {
+    if ($user->imageExists) {
+      $image = $this->getImage($user->getImageStyle("s1"), [ "class" => "s s1", "property" => "image" ], false);
+    }
+    else {
+      $image = "<img class='s s1' alt='' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>";
+    }
     return
       "<li typeof='Person'><article>" .
         "<a class='hover-item r' href='{$user->route}' property='url'>" .
-          "<img class='s s1' alt='{$user->name}' property='image' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
+          $image .
           "<div class='s s9'><h2 class='link-color para' property='name'>{$user->name}</h2></div>" .
         "</a>" .
       "</article></li>"

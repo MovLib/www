@@ -54,31 +54,35 @@ final class AssetStreamWrapper extends \MovLib\Core\StreamWrapper\AbstractLocalS
 
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  public function getExternalPath(\MovLib\Core\FileSystem $fs, $uri = null) {
-    $target    = $this->getTarget($uri);
+  public function getExternalPath($uri = null, $cacheBuster = null) {
+    $target    = self::$fs->urlEncodePath($this->getTarget($uri));
     $extension = pathinfo($target, PATHINFO_EXTENSION);
 
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (!is_array(self::$cacheBusters[$extension])) {
-      self::$cacheBusters[$extension] = [];
+    $hostnameStatic = self::$fs->config->hostnameStatic;
+    if (!$cacheBuster) {
+      // @devStart
+      // @codeCoverageIgnoreStart
+      if (!is_array(self::$cacheBusters[$extension])) {
+        self::$cacheBusters[$extension] = [];
+      }
+      if (!isset(self::$cacheBusters[$extension][$target])) {
+        self::$cacheBusters[$extension][$target] = md5_file($this->realpath($uri));
+      }
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+      $cacheBuster = self::$cacheBusters[$extension][$target];
     }
-    if (!isset(self::$cacheBusters[$extension][$target])) {
-      self::$cacheBusters[$extension][$target] = md5_file($this->realpath());
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
-    return "/asset/{$fs->urlEncodePath($target)}?" . self::$cacheBusters[$extension][$target];
+    return "//{$hostnameStatic}/asset/{$target}?{$cacheBuster}";
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getPath() {
-    return self::$documentRoot . "/var/public/asset";
+    $documentRoot = self::$fs->documentRoot;
+    return "{$documentRoot}/var/public/asset";
   }
 
 }

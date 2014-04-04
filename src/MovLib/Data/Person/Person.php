@@ -17,7 +17,9 @@
  */
 namespace MovLib\Data\Person;
 
-use \MovLib\Presentation\Error\NotFound;
+use \MovLib\Data\Date;
+use \MovLib\Data\Route\EntityRoute;
+use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
  * Represents a single person including their photo.
@@ -31,19 +33,6 @@ use \MovLib\Presentation\Error\NotFound;
  */
 class Person extends \MovLib\Data\AbstractEntity {
   use \MovLib\Data\Person\PersonTrait;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
-  /**
-   * 220x220>
-   *
-   * Image style used on the show page to display the person photo.
-   *
-   * @var integer
-   */
-  const STYLE_SPAN_03 = null;//\MovLib\Data\Image\SPAN_03;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -168,25 +157,22 @@ SELECT
   `id`,
   `deleted`,
   `name`,
-  COLUMN_GET(`dyn_biographies`, ? AS CHAR),
+  COLUMN_GET(`dyn_biographies`, '{$this->intl->languageCode}' AS CHAR),
   `sex`,
   `birthdate`,
   `birthplace_id`,
   `born_name`,
   `deathdate`,
   `deathplace_id`,
-  COLUMN_GET(`dyn_wikipedia`, ? AS CHAR),
+  COLUMN_GET(`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR),
   `award_count`,
   `movie_count`,
   `series_count`,
   `release_count`
-FROM `persons`
-WHERE
-  `id` = ?
-LIMIT 1
+FROM `persons` WHERE `id` = ? LIMIT 1
 SQL
       );
-      $stmt->bind_param("ssd", $this->intl->languageCode, $this->intl->languageCode, $id);
+      $stmt->bind_param("d", $id);
       $stmt->execute();
       $stmt->bind_result(
         $this->id,
@@ -207,7 +193,7 @@ SQL
       $found = $stmt->fetch();
       $stmt->close();
       if (!$found) {
-        throw new NotFound;
+        throw new NotFoundException("Couldn't find person {$id}");
       }
     }
     if ($this->id) {
@@ -219,7 +205,9 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
-    $this->toDates([ &$this->birthDate, &$this->deathDate ]);
+    $this->birthDate && ($this->birthDate = new Date($this->birthDate));
+    $this->deathDate && ($this->deathDate = new Date($this->deathDate));
+    $this->route     = new EntityRoute($this->intl, "/person/{0}", $this->id, "/persons");
     return parent::init();
   }
 

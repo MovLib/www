@@ -52,7 +52,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    * @param \MovLib\Data\Award\Award $award {@inheritdoc}
    */
-  public function formatListingItem(\MovLib\Data\EntityInterface $award, $delta) {
+  public function formatListingItem(\MovLib\Data\AbstractEntity $award, $delta) {
     $awardDates = (new Date($this->intl, $this))->formatFromTo(
       $award->firstEventYear,
       $award->lastEventYear,
@@ -63,7 +63,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
     if ($awardDates) {
       $awardDates = "<small>{$awardDates}</small>";
     }
-    $route = $award->getRoute();
+    $route = $award->route;
     return
       "<li class='hover-item r'>" .
         "<article typeof='Organization'>" .

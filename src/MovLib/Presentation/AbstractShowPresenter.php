@@ -91,13 +91,13 @@ abstract class AbstractShowPresenter extends \MovLib\Presentation\AbstractPresen
     $singularKey = $this->entity->getSingularKey();
     if ($this->entity->isGone()) {
       return [
-        [ $this->entity->getRoute(), $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
+        [ $this->entity->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
         [ $this->intl->r("/{$singularKey}/{0}/discussion", $this->entity->id), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
         [ $this->intl->r("/{$singularKey}/{0}/history", $this->entity->id), $this->intl->t("History"), [ "class" => "ico ico-history" ] ]
       ];
     }
     return [
-      [ $this->entity->getRoute(), $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
+      [ $this->entity->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
       [ $this->intl->r("/{$singularKey}/{0}/edit", $this->entity->id), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
       [ $this->intl->r("/{$singularKey}/{0}/discussion", $this->entity->id), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
       [ $this->intl->r("/{$singularKey}/{0}/history", $this->entity->id), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],

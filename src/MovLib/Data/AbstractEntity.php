@@ -26,8 +26,7 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractEntity extends \MovLib\Core\AbstractDatabase implements \MovLib\Data\EntityInterface {
-  use \MovLib\Data\RouteTrait;
+abstract class AbstractEntity extends \MovLib\Core\AbstractDatabase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -61,6 +60,13 @@ abstract class AbstractEntity extends \MovLib\Core\AbstractDatabase implements \
    */
   public $deleted = false;
 
+  /**
+   * The entity's routing information.
+   *
+   * @var \MovLib\Data\Route\EntityRoute
+   */
+  public $route;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
@@ -87,51 +93,6 @@ abstract class AbstractEntity extends \MovLib\Core\AbstractDatabase implements \
     $this->changed = new \DateTime($this->changed);
     $this->created = new \DateTime($this->created);
     $this->deleted = (boolean) $this->deleted;
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function isGone() {
-    return $this->deleted;
-  }
-
-  /**
-   * Transform the properties to date objecs.
-   *
-   * <b>NOTE</b><br>
-   * The properties must be passed as reference.
-   *
-   * @param array $properties
-   *   The properties to transform.
-   * @return this
-   */
-  protected function toDates(array $properties) {
-    foreach ($properties as &$property) {
-      if (isset($property)) {
-        $property = new \MovLib\Data\Date($property);
-      }
-    }
-    return $this;
-  }
-
-  /**
-   * Unserialize the given properties.
-   *
-   * <b>NOTE</b><br>
-   * The properties must be passed as reference.
-   *
-   * @param array $properties
-   *   The properties to unserialize.
-   * @return this
-   */
-  protected function unserialize(array $properties) {
-    foreach ($properties as &$property) {
-      if (isset($property)) {
-        $property = unserialize($property);
-      }
-    }
     return $this;
   }
 

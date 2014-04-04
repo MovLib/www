@@ -19,7 +19,7 @@ namespace MovLib\Data\Image;
 
 use \MovLib\Data\Shell;
 use \MovLib\Data\FileSystem;
-use \MovLib\Data\Image\Style;
+use \MovLib\Data\Image\ImageStyle;
 
 /**
  * Default image implementation.
@@ -235,7 +235,7 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
 
     // Use cache entry if we already generated this style once.
     if (!isset($this->stylesCache[$style])) {
-      $this->stylesCache[$style] = new Style(
+      $this->stylesCache[$style] = new ImageStyle(
         $this->alternativeText,
         $this->getURL($style),
         $this->styles[$style]["width"],

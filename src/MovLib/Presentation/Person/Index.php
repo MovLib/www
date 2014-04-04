@@ -53,7 +53,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    * @param \MovLib\Data\Person\Person $person {@inheritdoc}
    */
-  protected function formatListingItem(\MovLib\Data\EntityInterface $person, $id) {
+  protected function formatListingItem(\MovLib\Data\AbstractEntity $person, $id) {
     if (($bornName = $this->getPersonBornName($person))) {
       $bornName = "<small>{$bornName}</small>";
     }
@@ -67,7 +67,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
     if ($bioDates) {
       $bioDates = "<small>{$bioDates}</small>";
     }
-    $route = $person->getRoute();
+    $route = $person->route;
     return
       "<li class='hover-item r'>" .
         "<article typeof='Person'>" .
