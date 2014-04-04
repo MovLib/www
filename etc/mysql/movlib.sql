@@ -1207,6 +1207,9 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`help_categories` (
   `id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The help category’s unique identifier.',
+  `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the help category was last changed.',
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the help category was created.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this help category is marked as deleted (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_titles` BLOB NOT NULL COMMENT 'The help category’s title in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The help category’s description in various languages. Keys are ISO alpha-2 language codes.',
   `icon` VARCHAR(255) NOT NULL,
@@ -1224,6 +1227,9 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`help_subcategories` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The help subcategory’s unique identifier.',
   `help_category_id` TINYINT UNSIGNED NOT NULL COMMENT 'The help category’s unique id.',
+  `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the help subcategory was last changed.',
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the help subcategory was created.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this help subcategory is marked as deleted (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_titles` BLOB NOT NULL COMMENT 'The help subcategory’s title in various languages. Keys are ISO alpha-2 language codes.',
   PRIMARY KEY (`id`),
   INDEX `fk_help_subcategories_help_category_id` (`help_category_id` ASC),
