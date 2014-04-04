@@ -18,7 +18,7 @@
 namespace MovLib\Data\Event;
 
 use \MovLib\Data\Movie\FullMovie;
-use \MovLib\Data\Place;
+use \MovLib\Data\Place\Place;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -31,6 +31,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @since 0.0.1-dev
  */
 class Event extends \MovLib\Data\AbstractEntity {
+  use \MovLib\Data\Event\EventTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -153,60 +154,69 @@ class Event extends \MovLib\Data\AbstractEntity {
 
 
   /**
-   * Instantiate new event.
+   * Instantiate new event object.
    *
-   * @param integer $id
-   *   The event's unique identifier, omit to create empty instance.
-   * @throws \MovLib\Presentation\Error\NotFound
+   * @param \MovLib\Core\DIContainer $diContainer
+   *   {@inheritdoc}
+   * @param integer $id [optional]
+   *   The event's unique identifier to instantiate, defaults to <code>NULL</code> (no event will be loaded).
+   * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function init($id) {
-    $stmt = $this->getMySQLi()->prepare("
-      {$this->getDefaultQuery()}
-      WHERE
-        `id` = ?
-      LIMIT 1"
-    );
-    $stmt->bind_param("ssd", $this->intl->languageCode, $this->intl->languageCode, $id);
-    $stmt->execute();
-    $stmt->bind_result(
-      $this->aliases,
-      $this->awardId,
-      $this->changed,
-      $this->created,
-      $this->deleted,
-      $this->description,
-      $this->endDate,
-      $this->id,
-      $this->links,
-      $this->name,
-      $this->place,
-      $this->startDate,
-      $this->wikipedia
-    );
-    $found = $stmt->fetch();
-    $stmt->close();
-    if ($found === null) {
-      throw new NotFoundException("Couldn't find event for '{$id}'!");
+  public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null) {
+    parent::__construct($diContainer);
+    if ($id) {
+      $stmt = $this->getMySQLi()->prepare(<<<SQL
+SELECT
+  `awards`.`aliases` AS `aliases`,
+  `events`.`award_id` AS `awardId`,
+  `events`.`changed` AS `changed`,
+  `events`.`created` AS `created`,
+  `events`.`deleted` AS `deleted`,
+   COLUMN_GET(`dyn_descriptions`, '{$this->intl->languageCode}' AS CHAR) AS `description`,
+  `events`.`end_date` AS `endDate`,
+  `events`.`id` AS `id`,
+  `awards`.`links` AS `links`,
+  `events`.`name` AS `name`,
+  `events`.`place_id` AS `place`,
+  `events`.`start_date` AS `startDate`,
+  COLUMN_GET(`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR) AS `wikipedia`,
+  '0' AS `seriesCount`,
+  COUNT(DISTINCT `movies_awards`.`movie_id`) AS `movieCount`
+FROM `events`
+  LEFT JOIN `movies_awards` ON `events`.`id` = `movies_awards`.`event_id`
+WHERE `id` = ?
+GROUP BY `id`, `deleted`, `changed`, `created`, `name`, `place`, `startDate`, `endDate`, `description`, `links`, `wikipedia`, aliases`, `seriesCount`
+LIMIT 1
+SQL
+      );
+      $stmt->bind_param("ssd", $this->intl->languageCode, $this->intl->languageCode, $id);
+      $stmt->execute();
+      $stmt->bind_result(
+        $this->aliases,
+        $this->awardId,
+        $this->changed,
+        $this->created,
+        $this->deleted,
+        $this->description,
+        $this->endDate,
+        $this->id,
+        $this->links,
+        $this->name,
+        $this->place,
+        $this->startDate,
+        $this->wikipedia,
+        $this->seriesCount,
+        $this->movieCount
+      );
+      $found = $stmt->fetch();
+      $stmt->close();
+      if (!$found) {
+        throw new NotFoundException("Couldn't find Event {$id}");
+      }
     }
-
-    // @todo Store counts as columns in table.
-    $this->movieCount  = $this->getCount("movies_genres", "DISTINCT `movie_id`");
-    $this->seriesCount = $this->getCount("series_genres", "DISTINCT `series_id`");
-
-    return $this->initFetchObject();
-  }
-
-  /**
-   * Initialize after instantiation via PHP's built in <code>\mysqli_result::fetch_object()}
-   */
-  public function initFetchObject() {
-    if ($this->place) {
-      $this->place = (new Place($this->diContainer))->init($this->place);
+    if ($this->id) {
+      $this->init();
     }
-    $this->deleted = (boolean) $this->deleted;
-    $this->aliases = $this->aliases ? unserialize($this->aliases) : [];
-    $this->links   = $this->links ? unserialize($this->links) : [];
-    $this->route   = $this->intl->r("/event/{0}", $this->id);
   }
 
 
@@ -214,42 +224,16 @@ class Event extends \MovLib\Data\AbstractEntity {
 
 
   /**
-   * The default query.
-   *
-   * @return string
-   */
-  public function getDefaultQuery() {
-    return
-      "SELECT
-        `aliases`
-        `award_id` AS `awardId`,
-        `changed`,
-        `created`,
-        `deleted`,
-        COLUMN_GET(`dyn_descriptions`, ? AS CHAR) AS `description`,
-        `end_date` AS `endDate`,
-        `id`,
-        `links`,
-        `name`,
-        `place_id` AS `place`,
-        `start_date` AS `startDate`,
-        IFNULL(COLUMN_GET(`dyn_wikipedia`, ? AS CHAR), COLUMN_GET(`dyn_wikipedia`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `wikipedia`
-      FROM `events`"
-    ;
-  }
-
-  /**
    * {@inheritdoc}
    */
-  public function getPluralName() {
-    return "events";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getSingularName() {
-    return "event";
+  protected function init() {
+    if ($this->place) {
+      $this->place = new Place($this->diContainer, $this->place);
+    }
+    $this->deleted = (boolean) $this->deleted;
+    $this->aliases = $this->aliases ? unserialize($this->aliases) : [];
+    $this->links   = $this->links ? unserialize($this->links) : [];
+    $this->route   = $this->intl->r("/event/{0}", $this->id);
   }
 
  /**

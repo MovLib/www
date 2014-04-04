@@ -17,7 +17,8 @@
  */
 namespace MovLib\Partial;
 
-use \MovLib\Partial\DateTime;
+use \MovLib\Data\Date;
+use \MovLib\Partial\Date as DatePartial;
 use \MovLib\Partial\Place;
 
 /**
@@ -43,13 +44,15 @@ trait EventTrait {
   protected function getEventDates(\MovLib\Data\Event\Event $event) {
     $dates = null;
     if (($event->startDate && $event->endDate) && ($event->startDate != $event->endDate)) {
-      $dates = "{$this->intl->t("from {0} to {1}", [
-        new DateTime($this->diContainerHTTP, $event->startDate),
-        new DateTime($this->diContainerHTTP, $event->endDate)
-      ])} ";
+      $dates = (new DatePartial($this->intl, $this->diContainerHTTP->presenter))->formatFromTo(
+        new Date($event->startDate),
+        new Date($event->endDate)
+      );
     }
     else if ($event->startDate) {
-      $dates = "{$this->intl->t("on {0}", [ new DateTime($this->diContainerHTTP, $event->startDate) ])} ";
+      $dates = "{$this->intl->t("on {0}", [
+        (new DatePartial($this->intl, $this->diContainerHTTP->presenter))->format(new Date($event->startDate))
+      ])} ";
     }
     return $dates;
   }

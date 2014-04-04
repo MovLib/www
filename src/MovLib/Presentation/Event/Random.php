@@ -30,16 +30,14 @@ use \MovLib\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Random {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+final class Random {
 
   /**
-   * Redirect to random event presentation.
+   * Redirect client to random event presentation.
    *
-   * @throws \MovLib\Presentation\Redirect\SeeOther
+   * @param \MovLib\Core\HTTP\DIContainerHTTP
+   *   The dependency injection container.
+   * @throws \MovLib\Exception\SeeOtherException
    */
   public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
     if (($id = (new EventSet($diContainerHTTP))->getRandom())) {
