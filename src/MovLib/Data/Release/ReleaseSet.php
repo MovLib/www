@@ -15,40 +15,38 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Release;
-
-use \MovLib\Data\Release\ReleaseSet;
-use \MovLib\Exception\RedirectException\SeeOtherException;
-use \MovLib\Partial\Alert;
+namespace MovLib\Data\Release;
 
 /**
- * Random user presentation.
+ * Defines the release set object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Random {
+final class ReleaseSet extends \MovLib\Data\AbstractSet {
+  use \MovLib\Data\Release\ReleaseTrait;
 
   /**
-   * Redirect client to random user profile.
-   *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP
-   *   The dependency injection container.
-   * @throws \MovLib\Exception\SeeOtherException
+   * {@inheritdoc}
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    if (($id = (new ReleaseSet($diContainerHTTP))->getRandom())) {
-      throw new SeeOtherException($diContainerHTTP->intl->r("/release/{0}", $id));
-    }
-    $diContainerHTTP->response->createCookie("alert", (string) new Alert(
-      $diContainerHTTP->intl->t("There is currently no release in our database."),
-      $diContainerHTTP->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    ));
-    throw new SeeOtherException($diContainerHTTP->intl->rp("/releases"));
+  protected function getEntitiesQuery($where = null, $orderBy = null) {
+    return <<<SQL
+SELECT
+  `release`.`changed`,
+  `release`.`created`,
+  `release`.`country_code`,
+  `release`.`title`,
+  `release`.`publishing_date_rental`,
+  `release`.`publishing_date_sale`,
+  `release`.`edition`
+FROM `release`
+{$where}
+{$orderBy}
+SQL;
   }
 
 }
