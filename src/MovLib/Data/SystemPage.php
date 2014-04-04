@@ -29,7 +29,7 @@ use \MovLib\Presentation\Error\NotFound;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class SystemPage extends \MovLib\Data\Database {
+class SystemPage extends \MovLib\Data\AbstractEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -43,7 +43,7 @@ class SystemPage extends \MovLib\Data\Database {
   public $id;
 
   /**
-   * The page's localized route.
+   * The page's route key.
    *
    * @var string
    */
@@ -68,36 +68,43 @@ class SystemPage extends \MovLib\Data\Database {
 
 
   /**
-   * Instantiate new protected page.
+   * Instantiate new company object.
    *
-   * @param integer $id [optional]
-   *   The page's unique identifier, defaults to no identifier which creates an empty object.
-   * @throws \MovLib\Presentation\Error\NotFound
+   * @param \MovLib\Core\DIContainer $diContainer
+   *   {@inheritdoc}
+   * @param integer $id
+   *   The system page's unique identifier to instantiate.
+   * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct($id = null) {
-    if ($id) {
-      $stmt = $db->query(
-        "SELECT
-          `id`,
-          COLUMN_GET(`dyn_titles`, ? AS CHAR(255)) AS `title`,
-          COLUMN_GET(`dyn_texts`, ? AS BINARY) AS `text`,
-          COLUMN_GET(`dyn_titles`, '{$i18n->defaultLanguageCode}' AS CHAR(255)) AS `route`
-        FROM `system_pages`
-        WHERE `id` = ?
-        LIMIT 1",
-        "ssi",
-        [ $i18n->languageCode, $i18n->languageCode, $id ]
-      );
-      $stmt->bind_result($this->id, $this->title, $this->text, $this->route);
-      if (!$stmt->fetch()) {
-        throw new NotFound;
-      }
+  public function __construct(\MovLib\Core\DIContainer $diContainer, $id) {
+    parent::__construct($diContainer);
+    $stmt = $this->getMySQLi()->prepare(<<<SQL
+SELECT
+  `id`,
+  COLUMN_GET(`dyn_titles`, ? AS CHAR(255)) AS `title`,
+  COLUMN_GET(`dyn_texts`, ? AS BINARY) AS `text`,
+  COLUMN_GET(`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR(255)) AS `route`
+FROM `system_pages`
+WHERE `id` = ?
+LIMIT 1
+SQL
+    );
+    $stmt->bind_param("ssd", $this->intl->languageCode, $this->intl->languageCode, $id);
+    $stmt->execute();
+    $stmt->bind_result($this->id, $this->title, $this->text, $this->route);
+    $found = $stmt->fetch();
+    $stmt->close();
+    if (!$found) {
+      throw new NotFound;
     }
 
-    if ($this->route) {
-      $this->route = FileSystem::sanitizeFilename($this->route);
-      $this->route = "/{$this->route}";
-    }
+    $this->init();
+  }
+
+  protected function init() {
+    $this->route = $this->fs->sanitizeFilename($this->route);
+    $this->route = "/{$this->route}";
+    return parent::init();
   }
 
 
@@ -130,23 +137,36 @@ class SystemPage extends \MovLib\Data\Database {
     return $this;
   }
 
-  /**
-   * Get all available system pages.
-   *
-   * @return \mysqli_result
-   *   All available system pages.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public static function getSystemPages() {
-    return $db->query(
-      "SELECT
-        `id`,
-        COLUMN_GET(`dyn_titles`, ? AS CHAR(255)) AS `title`,
-        COLUMN_GET(`dyn_titles`, '{$i18n->defaultLanguageCode}' AS CHAR(255)) AS `route`
-      FROM `system_pages`",
-      "s",
-      [ $i18n->languageCode ]
-    )->get_result();
+  public function getPluralKey() {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    throw new \LogicException("Do not use this method for system pages!");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+  }
+
+  public function getPluralName() {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    throw new \LogicException("Do not use this method for system pages!");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+  }
+
+  public function getSingularKey() {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    throw new \LogicException("Do not use this method for system pages!");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+  }
+
+  public function getSingularName() {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    throw new \LogicException("Do not use this method for system pages!");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
   }
 
 }

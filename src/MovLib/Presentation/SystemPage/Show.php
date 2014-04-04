@@ -29,7 +29,7 @@ use \MovLib\Data\SystemPage;
  * @since 0.0.1-dev
  */
 class Show extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\TraitSidebar;
+  use \MovLib\Partial\SidebarTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -43,38 +43,33 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
   protected $systemPage;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new system page presentation.
-   *
-   * @throws \MovLib\Presentation\Error\NotFound
-   */
-  public function __construct() {
-    $this->systemPage = new SystemPage((integer) $_SERVER["SYSTEM_PAGE_ID"]);
-    $this->initPage($this->systemPage->title);
-    $this->initLanguageLinks($this->systemPage->route);
-    $this->initBreadcrumb();
-
-    $menuitems   = null;
-    $systemPages = SystemPage::getSystemPages();
-    /* @var $systemPage \MovLib\Data\SystemPage */
-    while ($systemPage = $systemPages->fetch_object("\\MovLib\\Data\\SystemPage")) {
-      $menuitems[] = [ $this->intl->r($systemPage->route), $systemPage->title ];
-    }
-    $this->sidebarInit($menuitems);
-  }
-
-
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    return "<div class='c'><div class='r'><div class='s s10'>{$this->htmlDecode($this->systemPage->text)}</div></div></div>";
+  public function getContent() {
+    return $this->htmlDecode($this->systemPage->text);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function init() {
+    $this->systemPage = new SystemPage($this->diContainerHTTP, (integer) $_SERVER["SYSTEM_PAGE_ID"]);
+    $this->initPage($this->systemPage->title);
+    $this->initBreadcrumb();
+    $this->initLanguageLinks($this->systemPage->route);
+    $this->sidebarInit([
+      [ $this->intl->r("/about-movlib"), $this->intl->t("About MovLib") ],
+      [ $this->intl->r("/team"), $this->intl->t("Team") ],
+      [ $this->intl->r("/privacy-policy"), $this->intl->t("Privacy Policy") ],
+      [ $this->intl->r("/terms-of-use"), $this->intl->t("Terms of Use") ],
+      [ $this->intl->r("/impressum"), $this->intl->t("Impressum") ],
+      [ $this->intl->r("/contact"), $this->intl->t("Contact") ],
+      [ $this->intl->r("/articles-of-association"), $this->intl->t("Articles of Association") ],
+    ]);
   }
 
 }
