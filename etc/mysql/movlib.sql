@@ -1277,11 +1277,10 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`system_pages` (
   `id` SMALLINT NOT NULL AUTO_INCREMENT COMMENT 'The page’s unique identifier.',
+  `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The creation date of the page as timestamp.',
   `dyn_titles` BLOB NOT NULL COMMENT 'Thepage’s text in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_texts` BLOB NOT NULL COMMENT 'The help’s title in various languages. Keys are ISO alpha-2 language codes.',
-  `commit` CHAR(40) NULL COMMENT 'The article’s last history commit sha-1 hash.',
-  `presenter` VARCHAR(255) NOT NULL DEFAULT 'Show',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 COMMENT = 'Contains all system pages, e.g. Imprint.'
