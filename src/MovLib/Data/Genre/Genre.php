@@ -36,11 +36,39 @@ final class Genre extends \MovLib\Data\AbstractEntity {
 
 
   /**
+   * The timestamp on which this genre was changed.
+   *
+   * @var integer
+   */
+  public $changed;
+
+  /**
+   * The timestamp on which this genre was created.
+   *
+   * @var integer
+   */
+  public $created;
+
+  /**
+   * The genre's deletion state.
+   *
+   * @var boolean
+   */
+  public $deleted;
+
+  /**
    * The genre's description in the current locale.
    *
    * @var null|string
    */
   public $description;
+
+  /**
+   * The genre's unique identifier.
+   *
+   * @var integer
+   */
+  public $id;
 
   /**
    * The genre's movie count.
@@ -55,6 +83,13 @@ final class Genre extends \MovLib\Data\AbstractEntity {
    * @var string
    */
   public $name;
+
+  /**
+   * The translated route of this event.
+   *
+   * @var string
+   */
+  public $route;
 
   /**
    * The genre's series count.
@@ -132,5 +167,15 @@ SQL
   }
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function init() {
+    $this->deleted = (boolean) $this->deleted;
+    $this->route   = $this->intl->r("/genre/{0}", $this->id);
+  }
 
 }

@@ -55,5 +55,4 @@ GROUP BY `id`, `awardId`, `deleted`, `changed`, `created`, `name`, `place`, `sta
 SQL;
   }
 
-
 }
