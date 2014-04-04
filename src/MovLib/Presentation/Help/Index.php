@@ -17,71 +17,63 @@
  */
 namespace MovLib\Presentation\Help;
 
-use \MovLib\Data\Help\HelpCategory;
+use \MovLib\Data\Help\Category\CategorySet;
+use \MovLib\Partial\Alert;
 
 /**
- * The main help page.
+ * Defines the help category index presentation.
  *
+ * @link http://www.google.com/webmasters/tools/richsnippets?q=https://en.movlib.org/help
+ * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/help
+ * @link http://validator.w3.org/check?uri=https://en.movlib.org/help
+ * @link http://gsnedders.html5.org/outliner/process.py?url=https://en.movlib.org/help
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\TraitSidebar;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+final class Index extends \MovLib\Presentation\AbstractPresenter {
 
   /**
-   * Instantiate new help presentation.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
+   * {@inheritdoc}
    */
-  public function __construct() {
-    global $i18n, $kernel;
-
-    $this->initPage($i18n->t("Help"));
+  public function init() {
+    $this->initPage($this->intl->t("Help"));
     $this->initLanguageLinks("/help");
     $this->initBreadcrumb();
 
     $kernel->stylesheets[] = "help";
   }
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
+  /**
+   * {@inheritdoc}
+   * @param \MovLib\Data\Help\Category\Category $category {@inheritdoc}
+   */
+  protected function formatListingItem(\MovLib\Data\EntityInterface $category, $delta) {
+    return
+      "<li class='hover-item r'>" .
+//        "<article>" .
+//          "<div class='s s10'>" .
+//            "<div class='fr'>" .
+//              "<a class='ico ico-movie label' href='{$this->intl->rp("/help/{0}/movies", $helpCategory->id)}' title='{$this->intl->t("Movies")}'>{$helpCategory->movieCount}</a>" .
+//              "<a class='ico ico-series label' href='{$this->intl->rp("/help/{0}/series", $helpCategory->id)}' title='{$this->intl->t("Series")}'>{$helpCategory->seriesCount}</a>" .
+//            "</div>" .
+//            "<h2 class='para'><a href='{$helpCategory->route}' property='url'><span property='name'>{$helpCategory->name}</span></a></h2>" .
+//          "</div>" .
+//        "</article>" .
+      "</li>"
+    ;
+  }
 
   /**
-   * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    global $i18n;
-
-    $content = "";
-    $categoryResult = HelpCategory::getHelpCategoryIds();
-    while ($row = $categoryResult->fetch_object()) {
-      /* @var $category \MovLib\Data\Help\HelpCategory */
-      $category = new HelpCategory($row->id);
-
-      $content .=
-        "<div class='s s4'>" .
-          "<h2 class='ico {$category->icon} tac'> {$category->title}</h2>" .
-          "<p>{$category->description}</p>" .
-          "<p class='tac'>" .
-            "<a class='btn btn-success btn-large' href='{$category->route}'>" .
-              $i18n->t("{0} Help", [ $category->title ]) .
-            "</a>" .
-          "</p>" .
-        "</div>"
-      ;
-    }
-
-    return "<div class='c'><div class='r'>{$content}</div></div>";
+  public function getNoItemsContent() {
+    return new Alert(
+      "<p>{$this->intl->t("We couldn’t find any help categories matching your filter criteria, or there simply aren’t any help categories available.")}</p>",
+      $this->intl->t("No Help Categories")
+    );
   }
 
 }

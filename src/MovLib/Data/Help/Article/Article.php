@@ -15,13 +15,15 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Help;
+namespace MovLib\Data\Help\Article;
 
 use \MovLib\Data\FileSystem;
-use \MovLib\Presentation\Error\NotFound;
+use \MovLib\Data\Help\Category\Category;
+use \MovLib\Data\Help\SubCategory\SubCategory;
+use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
- * Handling of one or more help articles.
+ * Defines the help article entity object.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -29,11 +31,19 @@ use \MovLib\Presentation\Error\NotFound;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class HelpArticle extends \MovLib\Data\Database {
+final class Article extends \MovLib\Data\AbstractEntity {
+  use \MovLib\Data\Help\Article\ArticleTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
+
+  /**
+   * The help article's deletion state.
+   *
+   * @var boolean
+   */
+  public $deleted;
 
   /**
    * The help article category.
@@ -55,13 +65,6 @@ class HelpArticle extends \MovLib\Data\Database {
    * @var integer
    */
   public $created;
-
-  /**
-   * The help article's view count.
-   *
-   * @var integer
-   */
-  public $viewCount;
 
   /**
    * The help article's deletion state.
@@ -112,47 +115,69 @@ class HelpArticle extends \MovLib\Data\Database {
    */
   public $title;
 
+  /**
+   * The help article's view count.
+   *
+   * @var integer
+   */
+  public $viewCount;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new help article.
+   * Instantiate new help article object.
    *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
+   * @param \MovLib\Core\DIContainer $diContainer
+   *   {@inheritdoc}
    * @param integer $id [optional]
-   *   The help article's unique identifier, omit to create empty instance.
-   * @throws \MovLib\Presentation\Error\NotFound
+   *   The helb article's unique identifier to instantiate, defaults to <code>NULL</code> (no helb article will be loaded).
+   * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct($id = null) {
-    global $db, $i18n;
+  public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null) {
+    parent::__construct($diContainer);
     if ($id) {
-      $query = self::getQuery();
-      $stmt = $db->query("
-        {$query}
-        WHERE
-          `id` = ?
-        LIMIT 1",
-        "ssd",
-        [ $i18n->languageCode, $i18n->languageCode, $id ]
+      $stmt = $this->getMySQLi()->prepare(<<<SQL
+SELECT
+  `help_articles`.`id` AS `id`,
+  `help_articles`.`help_category_id` AS `category`,
+  `help_articles`.`help_subcategory_id` AS `subCategory`,
+  `help_articles`.`changed` AS `changed`,
+  `help_articles`.`created` AS `created`,
+  `help_articles`.`deleted` AS `deleted`,
+  IFNULL(
+    COLUMN_GET(`help_articles`.`dyn_texts`, ? AS CHAR),
+    COLUMN_GET(`help_articles`.`dyn_texts`, '{$this->intl->defaultLanguageCode}' AS CHAR)'
+  ) AS `text`,
+  IFNULL(
+    COLUMN_GET(`help_articles`.`dyn_titles`, ? AS CHAR),
+    COLUMN_GET(`help_articles`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)'
+  ) AS `title`,
+  `help_articles`.`view_count` as `viewCount`
+FROM `help_articles`
+WHERE `id` = ?
+LIMIT 1
+SQL
       );
+      $stmt->bind_param("ssd", $this->intl->languageCode, $this->intl->languageCode, $id);
+      $stmt->execute();
       $stmt->bind_result(
+        $this->id,
         $this->category,
+        $this->subCategory,
         $this->changed,
         $this->created,
-        $this->viewCount,
         $this->deleted,
-        $this->id,
-        $this->subCategory,
         $this->text,
-        $this->title
+        $this->title,
+        $this->viewCount
       );
-      if (!$stmt->fetch()) {
-        throw new NotFound;
-      }
+      $found = $stmt->fetch();
       $stmt->close();
-      $this->id = $id;
+      if (!$found) {
+        throw new NotFoundException("Couldn't find help article {$id}");
+      }
     }
     if ($this->id) {
       $this->init();
@@ -164,96 +189,26 @@ class HelpArticle extends \MovLib\Data\Database {
 
 
   /**
-   * Get all help articles.
-   *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
-   * @return \mysqli_result
-   *   The query result.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public static function getHelpArticles() {
-    global $db, $i18n;
-    $query = self::getQuery();
-    return $db->query("
-        {$query}
-        ORDER BY `category` DESC, `subCategory` DESC",
-      "ss",
-      [ $i18n->languageCode, $i18n->languageCode ]
-    )->get_result();
-  }
-
-  /**
-   * Get all help article ids.
-   *
-   * @global \MovLib\Data\Database $db
-   * @return \mysqli_result
-   *   The query result.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public static function getHelpArticleIds() {
-    global $db;
-
-    return $db->query("SELECT `id` FROM `help_articles`")->get_result();
-  }
-
-  /**
-   * Get the default query.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @staticvar string $query
-   *   Used to cache the default query.
-   * @return string
-   *   The default query.
-   */
-  public static function getQuery() {
-    global $i18n;
-    static $query = null;
-    if (!$query) {
-      $query =
-        "SELECT
-          `help_category_id` AS `category`,
-          `changed`,
-          `created`,
-          `view_count` as `viewCount`,
-          `deleted`,
-          `id`,
-          `help_subcategory_id` AS `subCategory`,
-          IFNULL(COLUMN_GET(`dyn_texts`, ? AS CHAR), COLUMN_GET(`dyn_texts`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `text`,
-          IFNULL(COLUMN_GET(`dyn_titles`, ? AS CHAR), COLUMN_GET(`dyn_titles`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `title`
-        FROM `help_articles`"
-      ;
-    }
-    return $query;
-  }
-
-  /**
-   * Initialize award.
-   *
-   * @global type $i18n
+   * {@inheritdoc}
    */
   protected function init() {
-    global $i18n;
-
-    $this->deleted  = (boolean) $this->deleted;
-    $this->category = new HelpCategory($this->category);
+    $this->category = new Category($this->category);
 
     if (isset($this->subCategory)) {
-      $this->subCategory = new HelpSubCategory($this->subCategory);
-      $this->routeKey    = "/help/{0}/{1}/{2}";
-      $this->route       = $i18n->r($this->routeKey, [
+      $this->subCategory = new SubCategory($this->subCategory);
+      $this->route       = $this->intl->r("/help/{0}/{1}/{2}", [
         FileSystem::sanitizeFilename($this->category->title),
         FileSystem::sanitizeFilename($this->subCategory->title),
         FileSystem::sanitizeFilename($this->title)
       ]);
     }
     else {
-      $this->routeKey    = "/help/{0}/{1}";
-      $this->route       = $i18n->r($this->routeKey, [
+      $this->route = $this->intl->r("/help/{0}/{1}", [
         FileSystem::sanitizeFilename($this->category->title),
         FileSystem::sanitizeFilename($this->title)
       ]);
     }
+    return parent::init();
   }
 
 }
