@@ -296,14 +296,7 @@ final class Form {
       // Validate the form's token if we have an active session.
       if ($this->session->active === true) {
         // Assume that we don't have a form token stored in the user's session.
-        $formToken = false;
-
-        // If we have create local copy of it and remove it from the user's session, we want to ensure that this token
-        // cannot be re-used for this form.
-        if (isset($this->session->data["form_tokens"][$this->id])) {
-          $formToken = $this->session->data["form_tokens"][$this->id];
-          unset($this->session->data["form_tokens"][$this->id]);
-        }
+        $formToken = $this->session->storageGet("form_{$this->id}", false, true);
 
         // Check if we have a token for this form in session and submitted via HTTP plus compare both tokens.
         if ($formToken === false || empty($_POST["form_token"]) || $_POST["form_token"] != $formToken) {
@@ -379,8 +372,10 @@ final class Form {
     // Generate one-time CSRF token for this form and add it to the user's session, the user can only have a single
     // token per unique form.
     if ($this->session->active === true) {
-      $this->session->data["form_tokens"][$this->id] = hash("sha512", openssl_random_pseudo_bytes(1024));
-      $this->hiddenElements .= "<input name='form_token' type='hidden' value='{$this->session->data["form_tokens"][$this->id]}'>";
+      $this->hiddenElements .= "<input name='form_token' type='hidden' value='{$this->session->storageSave(
+        "form_{$this->id}",
+        hash("sha512", openssl_random_pseudo_bytes(1024))
+      )}'>";
     }
 
     return "<form{$this->presenter->expandTagAttributes($this->attributes)}>{$this->hiddenElements}";

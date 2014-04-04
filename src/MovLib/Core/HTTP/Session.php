@@ -17,7 +17,6 @@
  */
 namespace MovLib\Core\HTTP;
 
-use \MovLib\Data\User\User;
 use \MovLib\Exception\ClientException\ForbiddenException;
 use \MovLib\Exception\ClientException\UnauthorizedException;
 
@@ -113,13 +112,6 @@ final class Session extends \MovLib\Core\AbstractDatabase {
   public $authentication;
 
   /**
-   * The session's data.
-   *
-   * @var array
-   */
-  protected $data = [];
-
-  /**
    * The session's ID.
    *
    * @var string
@@ -139,13 +131,6 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    * @var boolean
    */
   public $isAuthenticated = false;
-
-  /**
-   * Active log instance.
-   *
-   * @var \MovLib\Core\Log
-   */
-  protected $log;
 
   /**
    * The active request instance.
@@ -183,6 +168,22 @@ final class Session extends \MovLib\Core\AbstractDatabase {
   public $userTimezone;
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new session object.
+   *
+   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   *   The HTTP dependency injection container.
+   */
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+    parent::__construct($diContainerHTTP);
+    $this->request  = $diContainerHTTP->request;
+    $this->response = $diContainerHTTP->response;
+  }
+
+
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
@@ -205,19 +206,29 @@ final class Session extends \MovLib\Core\AbstractDatabase {
     $stmt->bind_result($this->userId, $languageCode, $this->userName, $passwordHash, $this->userTimezone);
     $found = $stmt->fetch();
     if (!$found) {
+      // @devStart
+      // @codeCoverageIgnoreStart
+      $this->log->debug("Couldn't find user for '{$email}'.");
+      // @codeCoverageIgnoreEnd
+      // @devEnd
       return false;
     }
 
     if (password_verify($rawPassword, $passwordHash) === false) {
+      // @devStart
+      // @codeCoverageIgnoreStart
+      $this->log->debug("Password didn't match stored password hash.");
+      // @codeCoverageIgnoreEnd
+      // @devEnd
       return false;
     }
 
     $this->authentication = $this->initTime = $this->request->time;
-    $this->data[self::AUTHENTICATION] =& $this->authentication;
-    $this->data[self::INIT_TIME]      =& $this->initTime;
-    $this->data[self::USER_ID]        =& $this->userId;
-    $this->data[self::USER_NAME]      =& $this->userName;
-    $this->data[self::USER_TIMEZONE]  =& $this->userTimezone;
+    $_SESSION[self::AUTHENTICATION] =& $this->authentication;
+    $_SESSION[self::INIT_TIME]      =& $this->initTime;
+    $_SESSION[self::USER_ID]        =& $this->userId;
+    $_SESSION[self::USER_NAME]      =& $this->userName;
+    $_SESSION[self::USER_TIMEZONE]  =& $this->userTimezone;
 
     // Maybe the user was doing some work as anonymous user and already has a session active. If so generate new session
     // identifier and if not generate a completely new session.
@@ -388,7 +399,7 @@ final class Session extends \MovLib\Core\AbstractDatabase {
       $this->delete($this->id);
     }
 
-    // The user is no longer authenticated, keep this outside of the if for PHPUnit tests.
+    // The user is no longer authenticated.
     $this->active          = false;
     $this->authentication  = null;
     $this->isAuthenticated = false;
@@ -423,9 +434,14 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    * @return this
    */
   public function insert() {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    $this->log->debug("Inserting session into persistent session storage.");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     $remoteAddress = inet_pton($this->request->remoteAddress);
     $stmt = $this->getMySQLi()->prepare("INSERT INTO `sessions` (`authentication`, `id`, `remote_address`, `user_id`, `user_agent`) VALUES (FROM_UNIXTIME(?), ?, ?, ?, ?)");
-    $stmt->bind_param("iibds", $this->authentication, $this->id, $remoteAddress, $this->userId, $this->request->userAgent);
+    $stmt->bind_param("isbds", $this->authentication, $this->id, $remoteAddress, $this->userId, $this->request->userAgent);
     $stmt->execute();
     $stmt->close();
     return $this;
@@ -502,18 +518,11 @@ final class Session extends \MovLib\Core\AbstractDatabase {
   /**
    * Resume existing HTTP session.
    *
-   * @param \MovLib\Core\HTTP\Request $request
-   *   The active request instance.
-   * @param \MovLib\Core\HTTP\Response $response
-   *   The active response instance.
    * @return this
    * @throws \MemcachedException
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function resume(\MovLib\Core\HTTP\Request $request, \MovLib\Core\HTTP\Response $response) {
-    $this->data     =& $_SESSION;
-    $this->request  =  $request;
-    $this->response =  $response;
+  public function resume() {
 
     // Add all alerts that are stored in a cookie to the current presentation. The page is automatically not cacheable
     // anymore because we're displaying alert messages, we also remove the cookie directly after displaying the alerts
@@ -536,7 +545,7 @@ final class Session extends \MovLib\Core\AbstractDatabase {
 
       // Try to load the session from the persistent session storage for known users if we just generated a new
       // session ID and have no data stored for it.
-      if (empty($this->data)) {
+      if (empty($_SESSION)) {
         // @devStart
         // @codeCoverageIgnoreStart
         $this->log->debug("Trying to load session from database.");
@@ -564,39 +573,38 @@ SQL
         if ($found) {
           // @devStart
           // @codeCoverageIgnoreStart
-          $this->log->debug("Loaded Session from Database");
+          $this->log->debug("Loaded session from database");
           // @codeCoverageIgnoreEnd
           // @devEnd
           $this->regenerate();
-          $this->data[self::AUTHENTICATION] =& $this->authentication;
-          $this->data[self::INIT_TIME]      =& $this->initTime;
-          $this->data[self::USER_ID]        =& $this->userId;
-          $this->data[self::USER_NAME]      =& $this->userName;
-          $this->data[self::USER_TIMEZONE]  =& $this->userTimezone;
+          $_SESSION[self::AUTHENTICATION] =& $this->authentication;
+          $_SESSION[self::INIT_TIME]      =& $this->initTime;
+          $_SESSION[self::USER_ID]        =& $this->userId;
+          $_SESSION[self::USER_NAME]      =& $this->userName;
+          $_SESSION[self::USER_TIMEZONE]  =& $this->userTimezone;
           $this->isAuthenticated = true;
         }
         else {
           // @devStart
           // @codeCoverageIgnoreStart
-          $this->log->debug("Couldn't Restore Session from Database");
+          $this->log->debug("Couldn't restore Session from database");
           // @codeCoverageIgnoreEnd
           // @devEnd
           $this->destroy();
         }
       }
       // Session data was loaded from Memcached.
-      elseif (isset($this->data[self::USER_ID])) {
+      elseif (isset($_SESSION[self::USER_ID])) {
         // @devStart
         // @codeCoverageIgnoreStart
-        $this->log->debug("Loaded Session from Memcached");
+        $this->log->debug("Loaded session from memcached");
         // @codeCoverageIgnoreEnd
         // @devEnd
-        $this->authentication  =& $this->data[self::AUTHENTICATION];
-        $this->initTime        =& $this->data[self::INIT_TIME];
-        $this->userAvatar      =& $this->data[self::USER_AVATAR];
-        $this->userId          =& $this->data[self::USER_ID];
-        $this->userName        =& $this->data[self::USER_NAME];
-        $this->userTimezone    =& $this->data[self::USER_TIMEZONE];
+        $this->authentication  =& $_SESSION[self::AUTHENTICATION];
+        $this->initTime        =& $_SESSION[self::INIT_TIME];
+        $this->userId          =& $_SESSION[self::USER_ID];
+        $this->userName        =& $_SESSION[self::USER_NAME];
+        $this->userTimezone    =& $_SESSION[self::USER_TIMEZONE];
         $this->isAuthenticated = true;
         if (($this->initTime + self::REGENERATION_GRACE_TIME) < $this->request->time) {
           $this->regenerate();
@@ -616,14 +624,25 @@ SQL
    */
   public function shutdown() {
     // Absolutely no session data is present (default state).
-    if (empty($this->data)) {
+    if (empty($_SESSION)) {
       // Destroy this session if one is active without any data associated to it.
       if (session_status() === PHP_SESSION_ACTIVE) {
+        // @devStart
+        // @codeCoverageIgnoreStart
+        $this->log->debug("Active session with no session data, destroying...");
+        // @codeCoverageIgnoreEnd
+        // @devEnd
         $this->destroy();
       }
     }
     // We have session data and we have an active session.
     elseif (session_status() === PHP_SESSION_ACTIVE) {
+      // @devStart
+      // @codeCoverageIgnoreStart
+      $this->log->debug("Found session data with active session, updating user access and storing session.");
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+
       // If this session belongs to an authenticated user, update the last access time.
       if ($this->isAuthenticated === true) {
         $this->kernel->delayMethodCall([ $this, "updateUserAccess" ]);
@@ -634,6 +653,11 @@ SQL
     }
     // We have session data but no active session, this means that we have to start a new session for an anonymous user.
     else {
+      // @devStart
+      // @codeCoverageIgnoreStart
+      $this->log->debug("Found session data for non-existend session, starting new anonymous session.");
+      // @codeCoverageIgnoreEnd
+      // @devEnd
       session_set_cookie_params(0);
       $this->start();
       session_write_close();
@@ -649,8 +673,8 @@ SQL
    * @throws \MemcachedException
    */
   protected function start() {
-    // Create backup of existing session data (if any).
-    $sessionData = isset($this->data) ? $this->data : null;
+    // Save current session data, because PHP will destroy it.
+    $data = empty($_SESSION) ? null : $_SESSION;
 
     // Start new session (if exeution was started by nginx).
     if (($this->active = session_start()) === false) {
@@ -663,16 +687,88 @@ SQL
 
     // @devStart
     // @codeCoverageIgnoreStart
-    $this->log->debug("Started Session");
+    $this->log->debug("Started Session {$this->id}");
     // @codeCoverageIgnoreEnd
     // @devEnd
 
     // Restore session data.
-    if ($sessionData) {
-      $this->data += $sessionData;
+    if ($data) {
+      $_SESSION += $data;
     }
 
     return $this;
+  }
+
+  /**
+   * Get the value from the current sessions.
+   *
+   * @param string $key
+   *   The session's unique key to get the value for.
+   * @param mixed $default [optional]
+   *   The default value to return if the key is missing from the current storage.
+   * @param boolean $delete [optional]
+   *   Whether to delete the key after retrieval or not.
+   * @return mixed
+   *   The value identified by key from the current session's storage.
+   * @throws \InvalidArgumentException
+   */
+  public function storageGet($key, $default = null, $delete = false) {
+    if (isset($_SESSION[$key])) {
+      $default = $_SESSION[$key];
+      if ($delete) {
+        unset($_SESSION[$key]);
+      }
+    }
+    return $default;
+  }
+
+  /**
+   * Delete a key from the current session.
+   *
+   * @param string $key
+   *   The session's unique key to delete.
+   * @return this
+   * @throws \InvalidArgumentException
+   */
+  public function storageDelete($key) {
+    // We use integers to store the sessions' data in the session array, make sure nobody else is using numeric keys
+    // because they might overwrite the existing session's data.
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (is_numeric($key)) {
+      throw new \InvalidArgumentException("A session's key cannot be numeric!");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    if (isset($_SESSION[$key])) {
+      unset($_SESSION[$key]);
+    }
+    return $this;
+  }
+
+  /**
+   * Store a value in the current user's session.
+   *
+   * @param string $key
+   *   The unique session's key to identify the record.
+   * @param mixed $value
+   *   The value to store under <var>$key</var>.
+   * @return mixed
+   *   The stored <var>$value</var>.
+   * @throws \InvalidArgumentException
+   */
+  public function storageSave($key, $value) {
+    // We use integers to store the sessions' data in the session array, make sure nobody else is using numeric keys
+    // because they might overwrite the existing session's data.
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (is_numeric($key)) {
+      throw new \InvalidArgumentException("A session's key cannot be numeric!");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    $_SESSION[$key] = $value;
+    return $value;
   }
 
   /**
