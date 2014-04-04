@@ -44,11 +44,11 @@ final class Random {
       throw new SeeOtherException($diContainerHTTP->intl->r("/event/{0}", $id));
     }
     $diContainerHTTP->response->createCookie("alert", (string) new Alert(
-      $this->intl->t("There is currently no event in our database."),
-      $this->intl->t("Check back later"),
+      $diContainerHTTP->intl->t("There is currently no event in our database."),
+      $diContainerHTTP->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     ));
-    throw new SeeOtherException($this->intl->rp("/events"));
+    throw new SeeOtherException($diContainerHTTP->intl->rp("/events"));
   }
 
 }

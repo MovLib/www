@@ -230,7 +230,6 @@ SQL
     if ($this->place) {
       $this->place = new Place($this->diContainer, $this->place);
     }
-    $this->deleted = (boolean) $this->deleted;
     $this->aliases = $this->aliases ? unserialize($this->aliases) : [];
     $this->links   = $this->links ? unserialize($this->links) : [];
     $this->route   = $this->intl->r("/event/{0}", $this->id);

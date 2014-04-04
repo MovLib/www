@@ -46,11 +46,11 @@ class Random {
       throw new SeeOtherException($diContainerHTTP->intl->r("/genre/{0}", $id));
     }
     $diContainerHTTP->response->createCookie("alert", (string) new Alert(
-      $this->intl->t("There is currently no genre in our database."),
-      $this->intl->t("Check back later"),
+      $diContainerHTTP->intl->t("There is currently no genre in our database."),
+      $diContainerHTTP->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     ));
-    throw new SeeOtherException($this->intl->rp("/genres"));
+    throw new SeeOtherException($diContainerHTTP->intl->rp("/genres"));
   }
 
 }

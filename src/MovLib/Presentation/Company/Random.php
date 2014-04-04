@@ -17,12 +17,12 @@
  */
 namespace MovLib\Presentation\Company;
 
-use \MovLib\Data\Company;
+use \MovLib\Data\Company\CompanySet;
+use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Alert;
-use \MovLib\Exception\SeeOtherException;
 
 /**
- * Random company presentation.
+ * Random user presentation.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -30,46 +30,25 @@ use \MovLib\Exception\SeeOtherException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Random extends \MovLib\Presentation\AbstractPresenter {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
+final class Random {
 
   /**
-   * A random company identifier.
+   * Redirect client to random user profile.
    *
-   * @var integer
-   */
-  private $companyId;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * {@inheritdoc}
-   *
-   * @return \MovLib\Partial\Alert
-   */
-  public function getContent() {
-    return new Alert(
-      $this->intl->t(
-        "There aren’t any companies available."
-      ), $this->intl->t("No Companies"), Alert::SEVERITY_INFO
-    );
-  }
-
-  /**
-   * Redirect to random company presentation.
-   *
+   * @param \MovLib\Core\HTTP\DIContainerHTTP
+   *   The dependency injection container.
    * @throws \MovLib\Exception\SeeOtherException
    */
-  public function init() {
-    $this->companyId = (new Company($this->diContainerHTTP))->getRandomCompanyId();
-    if (isset($this->companyId)) {
-      throw new SeeOtherException($this->intl->r("/company/{0}", [ $this->companyId ]));
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+    if (($id = (new CompanySet($diContainerHTTP))->getRandom())) {
+      throw new SeeOtherException($diContainerHTTP->intl->r("/company/{0}", $id));
     }
+    $diContainerHTTP->response->createCookie("alert", (string) new Alert(
+      $diContainerHTTP->intl->t("There is currently no company in our database."),
+      $diContainerHTTP->intl->t("Check back later"),
+      Alert::SEVERITY_INFO
+    ));
+    throw new SeeOtherException($diContainerHTTP->intl->rp("/companies"));
   }
 
 }

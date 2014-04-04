@@ -198,7 +198,6 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
-    $this->deleted = (boolean) $this->deleted;
     $this->route   = $this->intl->r("/job/{0}", $this->id);
     return parent::init();
   }
