@@ -29,14 +29,14 @@ namespace MovLib\Core\StreamWrapper;
 final class DocumentRootStreamWrapper extends \MovLib\Core\StreamWrapper\AbstractLocalStreamWrapper {
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getExternalPath(\MovLib\Core\FileSystem $fs, $uri = null) {
-    return $fs->urlEncodePath($this->getTarget($uri));
+    throw new \LogicException("Files in the document root aren't accessible via the web!");
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getPath() {
     return self::$documentRoot;
