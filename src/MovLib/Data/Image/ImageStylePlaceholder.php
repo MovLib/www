@@ -18,7 +18,7 @@
 namespace MovLib\Data\Image;
 
 /**
- * Defines the base class for image entities.
+ * Defines the placeholder image style.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,22 +26,17 @@ namespace MovLib\Data\Image;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractImageEntity extends \MovLib\Data\Image\AbstractReadOnlyImageEntity {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
+class ImageStylePlaceholder extends \MovLib\Data\Image\ImageStyle {
 
   /**
-   * Delete image styles.
+   * Instantiate new image style placeholder.
    *
-   * @return this
+   * @param integer $width
+   *   The width of the image style placeholder.
    */
-  final protected function imageDeleteStyles() {
-    foreach (static::$imageStylesMap as $style) {
-      unlink($this->imageGetStyleURI($style));
-    }
-    return $this;
+  public function __construct($width) {
+    parent::__construct(null, $width, $width);
+    $this->placeholder = true;
   }
 
 }

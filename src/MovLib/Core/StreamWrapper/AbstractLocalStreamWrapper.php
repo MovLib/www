@@ -80,11 +80,15 @@ abstract class AbstractLocalStreamWrapper {
 
   // @devStart
   // @codeCoverageIgnoreStart
-  public function __construct() {
+  final public function __construct() {
     $path = $this->getPath();
     if (realpath($path) === false) {
       throw new \LogicException("A stream wrapper's path must exist on the file system but '{$path}' doesn't");
     }
+  }
+
+  final public function __destruct() {
+    // Do nothing, just ensure that nobody implements the destructor.
   }
   // @codeCoverageIgnoreEnd
   // @devEnd
@@ -127,7 +131,7 @@ abstract class AbstractLocalStreamWrapper {
    * @return boolean
    *   <code>TRUE</code> on success or <code>FALSE</code> on failure.
    */
-  public function chgrp($realpath, $group) {
+  final public function chgrp($realpath, $group) {
     $status = chgrp($realpath, $group);
     clearstatcache(true, $realpath);
     return $status;
@@ -149,7 +153,7 @@ abstract class AbstractLocalStreamWrapper {
    * @return boolean
    *   <code>TRUE</code> on success or <code>FALSE</code> on failure.
    */
-  public function chmod($realpath, $mode) {
+  final public function chmod($realpath, $mode) {
     $status = chmod($realpath, $mode);
     if (self::$fs->privileged) {
       if (isset(self::$fs->user)) {
@@ -173,7 +177,7 @@ abstract class AbstractLocalStreamWrapper {
    * @return boolean
    *   <code>TRUE</code> on success or <code>FALSE</code> on failure.
    */
-  protected function chown($realpath, $user) {
+  final public function chown($realpath, $user) {
     $status = chown($realpath, $user);
     clearstatcache(true, $realpath);
     return $status;
@@ -187,7 +191,7 @@ abstract class AbstractLocalStreamWrapper {
    *   <code>TRUE</code> on success or <code>FALSE</code> on failure.
    * @throws \MovLib\Exception\StreamException
    */
-  public function dir_closedir() {
+  final public function dir_closedir() {
     try {
       return (boolean) (closedir($this->handle));
     }
@@ -206,7 +210,7 @@ abstract class AbstractLocalStreamWrapper {
    *   <code>TRUE</code> on success or <code>FALSE</code> on failure.
    * @throws \MovLib\Exception\StreamException
    */
-  public function dir_opendir($uri) {
+  final public function dir_opendir($uri) {
     try {
       $this->uri = $uri;
       return (boolean) ($this->handle = opendir($this->realpath()));
@@ -224,7 +228,7 @@ abstract class AbstractLocalStreamWrapper {
    *   The next filename or <code>FALSE</code> if there is no next file.
    * @throws \MovLib\Exception\StreamException
    */
-  public function dir_readdir() {
+  final public function dir_readdir() {
     try {
       return readdir($this->handle);
     }
@@ -241,7 +245,7 @@ abstract class AbstractLocalStreamWrapper {
    *   Always <code>TRUE</code> because there's no way to find out if the function call succeeded.
    * @throws \MovLib\Exception\StreamException
    */
-  public function dir_rewinddir() {
+  final public function dir_rewinddir() {
     try {
       rewinddir($this->handle);
       return true;
@@ -262,7 +266,7 @@ abstract class AbstractLocalStreamWrapper {
    *   The name of the directory from given URI.
    * @throws \MovLib\Exception\StreamException
    */
-  public function dirname($uri = null) {
+  final public function dirname($uri = null) {
     static $dirnames = [];
     try {
       if (!$uri) {
@@ -291,7 +295,7 @@ abstract class AbstractLocalStreamWrapper {
    *   The canonical absolute writable local path of the URI.
    * @throws \MovLib\Exception\StreamException
    */
-  protected function getTarget($uri = null) {
+  final protected function getTarget($uri = null) {
     static $targets = [];
     try {
       if (!$uri) {
@@ -323,7 +327,7 @@ abstract class AbstractLocalStreamWrapper {
    *   <code>TRUE</code> on success or <code>FALSE</code> on failure.
    * @throws \MovLib\Exception\StreamException
    */
-  public function mkdir($uri, $mode, $options, $recursion = false) {
+  final public function mkdir($uri, $mode, $options, $recursion = false) {
     try {
       // Nothing to do if the directory already exists, but ensure correct permission mode.
       if (is_dir($uri)) {
@@ -380,7 +384,7 @@ abstract class AbstractLocalStreamWrapper {
    *   The canonical absolute local path of the URI or <code>FALSE</code> if the path couldn't be resolved.
    * @throws \MovLib\Exception\StreamException
    */
-  public function realpath($uri = null) {
+  final public function realpath($uri = null) {
     try {
       if (!$uri) {
         $uri = $this->uri;
@@ -419,7 +423,7 @@ abstract class AbstractLocalStreamWrapper {
    *   <code>TRUE</code> on success or <code>FALSE</code> on failure.
    * @throws \MovLib\Exception\StreamException
    */
-  public function rename($fromURI, $toURI) {
+  final public function rename($fromURI, $toURI) {
     try {
       return rename($this->realpath($fromURI), $this->realpath($toURI));
     }
@@ -438,7 +442,7 @@ abstract class AbstractLocalStreamWrapper {
    *   <code>TRUE</code> on success or <code>FALSE</code> on failure.
    * @throws \MovLib\Exception\StreamException
    */
-  public function rmdir($uri) {
+  final public function rmdir($uri) {
     try {
       $this->uri = $uri;
       return rmdir($this->realpath());
@@ -459,7 +463,7 @@ abstract class AbstractLocalStreamWrapper {
    *   Always <code>FALSE</code>, indicating that this method is not supported.
    * @throws \MovLib\Exception\StreamException
    */
-  public function stream_cast($castAs) {
+  final public function stream_cast($castAs) {
     return false;
   }
 
@@ -471,7 +475,7 @@ abstract class AbstractLocalStreamWrapper {
    *   <code>TRUE</code> on success or <code>FALSE</code> on failure.
    * @throws \MovLib\Exception\StreamException
    */
-  public function stream_close() {
+  final public function stream_close() {
     try {
       $status = fclose($this->handle);
       if (isset($this->context["privileged"]) && $this->context["privileged"]) {
@@ -498,7 +502,7 @@ abstract class AbstractLocalStreamWrapper {
    *   <code>FALSE</code> otherwise.
    * @throws \MovLib\Exception\StreamException
    */
-  public function stream_eof() {
+  final public function stream_eof() {
     try {
       return feof($this->handle);
     }
@@ -516,7 +520,7 @@ abstract class AbstractLocalStreamWrapper {
    *   <code>FALSE</code> if the data couldn't be stored.
    * @throws \MovLib\Exception\StreamException
    */
-  public function stream_flush() {
+  final public function stream_flush() {
     try {
       return fflush($this->handle);
     }
@@ -541,7 +545,7 @@ abstract class AbstractLocalStreamWrapper {
    *   Always <code>TRUE</code>.
    * @throws \MovLib\Exception\StreamException
    */
-  public function stream_lock($operation) {
+  final public function stream_lock($operation) {
     try {
       return flock($this->handle, $operation);
     }
@@ -581,7 +585,7 @@ abstract class AbstractLocalStreamWrapper {
    *   <code>TRUE</code> on success and <code>FALSE</code> on failure or if the desired function is not implemented.
    * @throws \MovLib\Exception\StreamException
    */
-  public function stream_metadata($uri, $option, $value) {
+  final public function stream_metadata($uri, $option, $value) {
     try {
       $this->uri = $uri;
       $realpath  = $this->realpath();
@@ -623,7 +627,7 @@ abstract class AbstractLocalStreamWrapper {
    *   <code>TRUE</code> is file was opened successfully, otherwise <code>FALSE</code>.
    * @throws \MovLib\Exception\StreamException
    */
-  public function stream_open($uri, $mode, $options, &$openedPath) {
+  final public function stream_open($uri, $mode, $options, &$openedPath) {
     try {
       $this->uri = $uri;
       $realpath  = $this->realpath();
@@ -648,7 +652,7 @@ abstract class AbstractLocalStreamWrapper {
    *   The string that was read, or <code>FALSE</code> in case of error.
    * @throws \MovLib\Exception\StreamException
    */
-  public function stream_read($count) {
+  final public function stream_read($count) {
     try {
       return fread($this->handle, $count);
     }
@@ -674,7 +678,7 @@ abstract class AbstractLocalStreamWrapper {
    *   <code>TRUE</code> on success and <code>FALSE</code> on failure.
    * @throws \MovLib\Exception\StreamException
    */
-  public function stream_seek($offset, $whence = SEEK_SET) {
+  final public function stream_seek($offset, $whence = SEEK_SET) {
     try {
       // fseek returns 0 on success and -1 on a failure.
       // stream_seek 1 on success and 0 on a failure.
@@ -699,7 +703,7 @@ abstract class AbstractLocalStreamWrapper {
    *   <code>TRUE</code> on success and <code>FALSE</code> on failure or if the desired function is not implemented.
    * @throws \MovLib\Exception\StreamException
    */
-  public function stream_set_option($option, $arg1, $arg2) {
+  final public function stream_set_option($option, $arg1, $arg2) {
     try {
       switch ($option) {
         case STREAM_OPTION_BLOCKING:
@@ -727,7 +731,7 @@ abstract class AbstractLocalStreamWrapper {
    *  {@link http://at1.php.net/manual/en/function.stat.php} for a description of this array.
    * @throws \MovLib\Exception\StreamException
    */
-  public function stream_stat() {
+  final public function stream_stat() {
     try {
       return fstat($this->handle);
     }
@@ -744,7 +748,7 @@ abstract class AbstractLocalStreamWrapper {
    *   The current offset in bytes from the beginning of the file.
    * @throws \MovLib\Exception\StreamException
    */
-  public function stream_tell() {
+  final public function stream_tell() {
     try {
       return ftell($this->handle);
     }
@@ -763,7 +767,7 @@ abstract class AbstractLocalStreamWrapper {
    *   <code>TRUE</code> on success and <code>FALSE</code> on failure.
    * @throws \MovLib\Exception\StreamException
    */
-  public function stream_truncate($newSize) {
+  final public function stream_truncate($newSize) {
     try {
       return ftruncate($this->handle, $newSize);
     }
@@ -781,7 +785,7 @@ abstract class AbstractLocalStreamWrapper {
    *   The number of bytes written.
    * @throws \MovLib\Exception\StreamException
    */
-  public function stream_write($data) {
+  final public function stream_write($data) {
     try {
       return fwrite($this->handle, $data);
     }
@@ -803,7 +807,7 @@ abstract class AbstractLocalStreamWrapper {
    *   <code>TRUE</code> on success or <code>FALSE</code> on failure.
    * @throws \MovLib\Exception\StreamException
    */
-  protected function touch($realpath, $modificationTime = null, $accessTime = null) {
+  final public function touch($realpath, $modificationTime = null, $accessTime = null) {
     return touch($realpath, $modificationTime, $accessTime);
   }
 
@@ -817,7 +821,7 @@ abstract class AbstractLocalStreamWrapper {
    *   <code>TRUE</code> on success or <code>FALSE</code> on failure.
    * @throws \MovLib\Exception\StreamException
    */
-  public function unlink($uri) {
+  final public function unlink($uri) {
     try {
       $this->uri = $uri;
       $realpath  = $this->realpath();
@@ -844,7 +848,7 @@ abstract class AbstractLocalStreamWrapper {
    *  {@link http://at1.php.net/manual/en/function.stat.php} for a description of this array.
    * @throws \MovLib\Exception\StreamException
    */
-  public function url_stat($uri, $flags) {
+  final public function url_stat($uri, $flags) {
     try {
       $this->uri = $uri;
       $realpath  = $this->realpath();

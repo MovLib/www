@@ -79,7 +79,7 @@ final class LanguageSelection extends \MovLib\Presentation\AbstractPresenter {
     return
       "<main class='{$this->id}-content' id='m' role='main'><div class='c'>" .
         "<h1 class='cf'>" .
-          "<img alt='' height='192' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='192'>" .
+          "<img alt='' height='192' src='{$this->fs->getExternalURL("asset://img/logo/vector.svg")}' width='192'>" .
           "<span>{$this->config->sitename}{$this->intl->t(
             "{0}The {1}free{2} movie library.{3}",
             [ "<small>", "<em>", "</em>", "</small>" ]

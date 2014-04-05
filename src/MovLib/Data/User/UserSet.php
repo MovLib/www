@@ -48,9 +48,11 @@ SELECT
   `id`,
   `name`,
   `access`,
+  `changed`,
   `created`,
-  `image_changed` AS `imageChanged`,
-  `image_extension` AS `imageExtension`
+  HEX(`image_cache_buster`) AS `imageCacheBuster`,
+  `image_extension` AS `imageExtension`,
+  `image_styles` AS `imageStyles`
 FROM `users`
 {$where}
 {$orderBy}

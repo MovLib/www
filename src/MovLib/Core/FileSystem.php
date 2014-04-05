@@ -63,16 +63,6 @@ final class FileSystem {
 
 
   /**
-   * The active config instance.
-   *
-   * <b>NOTE</b><br>
-   * Must be public to allow stream wrappers to access the configuration.
-   *
-   * @var \MovLib\Core\Config
-   */
-  public $config;
-
-  /**
    * The real document root path.
    *
    * <b>NOTE</b><br>
@@ -83,21 +73,18 @@ final class FileSystem {
   public $documentRoot;
 
   /**
+   * The hostname for static content.
+   *
+   * @var string
+   */
+  public $hostnameStatic;
+
+  /**
    * The process group.
    *
    * @var string
    */
   public $group;
-
-  /**
-   * The active log instance.
-   *
-   * <b>NOTE</b><br>
-   * Must be public to allow stream wrappers to access the configuration.
-   *
-   * @var \MovLib\Core\Log
-   */
-  public $log;
 
   /**
    * Whether this process has elevated privileges or not.
@@ -139,14 +126,14 @@ final class FileSystem {
   /**
    * Instantiate new file system object.
    *
-   * @param \MovLib\Core\Config $config
-   * @param \MovLib\Core\Log $log
-   * @param type $documentRoot
+   * @param string $documentRoot
+   *   The canonical absolute document root path.
+   * @param string $hostnameStatic
+   *   The hostname for static content.
    */
-  public function __construct(\MovLib\Core\Config $config, \MovLib\Core\Log $log, $documentRoot) {
-    $this->config       = $config;
-    $this->documentRoot = $documentRoot;
-    $this->log          = $log;
+  public function __construct($documentRoot, $hostnameStatic) {
+    $this->documentRoot   = $documentRoot;
+    $this->hostnameStatic = "//{$hostnameStatic}";
 
     /* @var $class \MovLib\Core\StreamWrapper\AbstractLocalStream */
     foreach (self::$streamWrappers as $scheme => $class) {
@@ -188,9 +175,11 @@ final class FileSystem {
   /**
    * Delete all files that were registered for deletion.
    *
+   * @param \MovLib\Core\Log $log
+   *   The active log instance.
    * @return this
    */
-  public function deleteRegisteredFiles() {
+  public function deleteRegisteredFiles(\MovLib\Core\Log $log) {
     foreach (self::$registeredFiles as $uri => $recursive) {
       try {
         if ($recursive === true) {
@@ -212,7 +201,7 @@ final class FileSystem {
         }
       }
       catch (\Exception $e) {
-        $this->log->error($e);
+        $log->error($e);
       }
     }
     return $this;
@@ -235,15 +224,20 @@ final class FileSystem {
    *   If the given URI doesn't support external URLs.
    */
   public function getExternalURL($uri, $cacheBuster = null) {
-    static $streamWrappers = [], $urls = [];
-    if (isset($urls[$uri])) {
-      return $urls[$uri];
+    try {
+      static $streamWrappers = [], $urls = [];
+      if (isset($urls[$uri])) {
+        return $urls[$uri];
+      }
+      $scheme = explode("://", $uri, 2)[0];
+      if (empty($streamWrappers[$scheme])) {
+        $streamWrappers[$scheme] = new self::$streamWrappers[$scheme]();
+      }
+      return ($urls[$uri] = $streamWrappers[$scheme]->getExternalPath($uri, $cacheBuster));
     }
-    $scheme = explode("://", $uri, 2)[0];
-    if (empty($streamWrappers[$scheme])) {
-      $streamWrappers[$scheme] = new self::$streamWrappers[$scheme]();
+    catch (\ErrorException $e) {
+      throw new FileSystemException("Couldn'f generated external URL for {$uri}!", null, $e);
     }
-    return ($urls[$uri] = $streamWrappers[$scheme]->getExternalPath($uri, $cacheBuster));
   }
 
   /**

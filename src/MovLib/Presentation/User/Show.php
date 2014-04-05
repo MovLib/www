@@ -123,7 +123,7 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
     }
 
 //    $avatar = $this->getImage($this->user->getStyle(), false, [ "itemprop" => "image" ]);
-    $avatar = "<img alt='' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='120' height='120'>";
+    $avatar = "<img alt='' src='{$this->fs->getExternalURL("asset://img/logo/vector.svg")}' width='120' height='120'>";
 
     // Display additional info about this user after the name and the avatar to the right of it.
     $this->headingAfter = "{$personalData}<small>{$this->intl->t("Joined {date} and was last seen {time}.", [

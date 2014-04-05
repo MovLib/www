@@ -26,30 +26,96 @@ namespace MovLib\Data\Image;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class ImageStyle {
+class ImageStyle {
 
-  public $src;
 
-  public $uri;
+  // ------------------------------------------------------------------------------------------------------------------- Properties
 
+
+  /**
+   * The image style's alternative text in the current locale.
+   *
+   * @var string
+   */
   public $alt;
 
-  public $width;
-
+  /**
+   * The image style's height in Pixel.
+   *
+   * @var integer
+   */
   public $height;
 
+  /**
+   * Whether this image style is a placeholder or not.
+   *
+   * @var boolean
+   */
+  public $placeholder = false;
+
+  /**
+   * The image style's effect that was applied on it.
+   *
+   * @var \MovLib\Data\Image\ImageEffect
+   */
+  public $effect;
+
+  /**
+   * The image style's route in the current locale.
+   *
+   * @var string
+   */
   public $route;
 
-  public $placeholder = true;
+  /**
+   * The image style's URI.
+   *
+   * @var null|string
+   */
+  public $uri;
 
-  public function __construct($src, $width, $height = null, $uri = null) {
-    $this->src    = $src;
+  /**
+   * The image style's URL.
+   *
+   * @var string
+   */
+  public $url;
+
+  /**
+   * The image style's width in Pixel.
+   *
+   * @var integer
+   */
+  public $width;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new image style.
+   *
+   * @param string $uri
+   *   The image style's URI.
+   * @param integer $width
+   *   The image style's width in Pixel.
+   * @param integer $height
+   *   The image style's height in Pixel.
+   */
+  public function __construct($uri, $width, $height) {
+    $this->height = $height;
+    $this->uri    = $uri;
     $this->width  = $width;
-    $this->height = $height ?: $width;
-    if ($uri) {
-      $this->placeholder = false;
-      $this->uri         = $uri;
-    }
+  }
+
+  /**
+   * Called if this object is serialized.
+   *
+   * @return array
+   *   Array containing the names of the propertyies that should be serialized.
+   */
+  public function __sleep() {
+    return [ "height", "effect", "width" ];
   }
 
 }

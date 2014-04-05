@@ -30,7 +30,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Movie extends \MovLib\Data\AbstractEntity {
+final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity {
   use \MovLib\Data\Movie\MovieTrait;
 
 
@@ -189,18 +189,17 @@ SELECT
   `movies`.`deleted`,
   `movies`.`changed`,
   `movies`.`created`,
-  `movies`.`mean_rating` AS `meanRating`,
+  `movies`.`mean_rating`,
   `movies_taglines`.`tagline`,
-  `original_title`.`title` AS `originalTitle`,
-  `original_title`.`language_code` AS `originalTitleLanguageCode`,
-  IFNULL(`display_title`.`title`, `original_title`.`title`) AS `displayTitle`,
-  COLUMN_GET(`movies`.`dyn_synopses`, '{$this->intl->languageCode}' AS CHAR) AS `synopsis`,
-  IFNULL(`display_title`.`language_code`, `original_title`.`language_code`) AS `displayTitleLanguageCode`,
-  `posters`.`id` AS `imageFilename`,
-  `posters`.`changed` AS `imageChanged`,
-  `posters`.`deleted` AS `imageExists`,
-  `posters`.`extension` AS `imageExtension`,
-  `posters`.`styles` AS `imageStyles`
+  `original_title`.`title`,
+  `original_title`.`language_code`,
+  IFNULL(`display_title`.`title`, `original_title`.`title`),
+  COLUMN_GET(`movies`.`dyn_synopses`, '{$this->intl->languageCode}' AS CHAR),
+  IFNULL(`display_title`.`language_code`, `original_title`.`language_code`),
+  `posters`.`id`,
+  HEX(`posters`.`cache_buster`),
+  `posters`.`extension`,
+  `posters`.`styles`
 FROM `movies`
   LEFT JOIN `movies_display_titles`
     ON `movies_display_titles`.`movie_id` = `movies`.`id`
@@ -221,6 +220,7 @@ FROM `movies`
     AND `display_posters`.`language_code` = '{$this->intl->languageCode}'
   LEFT JOIN `posters`
     ON `posters`.`id` = `display_posters`.`poster_id`
+    AND `posters`.`deleted` = false
 WHERE `movies`.`id` = ?
 LIMIT 1
 SQL
@@ -243,7 +243,11 @@ SQL
         $this->originalTitleLanguageCode,
         $this->displayTitle,
         $this->synopsis,
-        $this->displayTitleLanguageCode
+        $this->displayTitleLanguageCode,
+        $this->imageFilename,
+        $this->imageCacheBuster,
+        $this->imageExtension,
+        $this->imageStyles
       );
       $found = $stmt->fetch();
       $stmt->close();
@@ -289,7 +293,9 @@ SQL
     else {
       $this->displayTitleAndYear = $this->displayTitle;
     }
-    $this->route = new EntityRoute($this->intl, "/movie/{0}", $this->id, "/movies");
+    $this->imageAlternativeText = $this->intl->t("{movie_title} poster.", [ "movie_title" => $this->displayTitleAndYear ]);
+    $this->imageDirectory       = "upload://movie/{$this->id}/poster";
+    $this->route                = new EntityRoute($this->intl, "/movie/{0}", $this->id, "/movies");
     return parent::init();
   }
 

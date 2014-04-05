@@ -19,6 +19,7 @@ namespace MovLib\Data\User;
 
 use \MovLib\Data\Date;
 use \MovLib\Data\DateTime;
+use \MovLib\Data\Image\ImageEffect;
 use \MovLib\Data\Route\EntityRoute;
 use \MovLib\Exception\ClientException\NotFoundException;
 
@@ -149,13 +150,6 @@ final class User extends \MovLib\Data\Image\AbstractImageEntity {
   public $id;
 
   /**
-   * The user's image directory.
-   *
-   * @var string
-   */
-  public $imageDirectoryURI = "upload://user";
-
-  /**
    * The user's unique name.
    *
    * @var string
@@ -262,14 +256,16 @@ SELECT
   `name`,
   `email`,
   `access`,
+  `changed`,
   `created`,
   `birthdate`,
   `country_code`,
   `currency_code`,
   COLUMN_GET(`dyn_about_me`, '{$this->intl->languageCode}' AS CHAR),
   `edits`,
-  `image_changed` AS `imageChanged`,
-  `image_extension` AS `imageExtension`
+  HEX(`image_cache_buster`),
+  `image_extension`,
+  `image_styles`,
   `private`,
   `profile_views`,
   `real_name`,
@@ -288,14 +284,16 @@ SQL
         $this->name,
         $this->email,
         $this->access,
+        $this->changed,
         $this->created,
         $this->birthday,
         $this->countryCode,
         $this->currencyCode,
         $this->aboutMe,
         $this->edits,
-        $this->imageChanged,
+        $this->imageCacheBuster,
         $this->imageExtension,
+        $this->imageStyles,
         $this->private,
         $this->profileViews,
         $this->realName,
@@ -350,15 +348,20 @@ SQL
   public function init() {
     $this->access               = new DateTime($this->access);
     $this->birthday             && ($this->birthday = new Date($this->birthday));
-    $this->created              = new DateTime($this->created);
     $this->deleted              = (boolean) $this->email;
     $this->imageAlternativeText = $this->intl->t("{username}’s avatar image.", [ "username" => $this->name ]);
-    $this->imageExists          = (boolean) $this->imageChanged;
-    $this->imageChanged         = new DateTime($this->imageChanged);
+    $this->imageDirectory       = "upload://user";
     $this->imageFilename        = mb_strtolower($this->name);
     $this->private              = (boolean) $this->private;
     $this->route                = new EntityRoute($this->intl, "/user/{0}", $this->imageFilename, "/users");
-    return $this;
+    return parent::init();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function imageGetEffects() {
+    return parent::imageGetEffects() + [ "nav" => new ImageEffect(50, 50, true) ];
   }
 
   /**

@@ -59,7 +59,7 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
     $infos = new QuickInfo($this->intl);
 
 
-    $this->headingAfter .= "{$infos}</div><div class='s s2'><img alt='' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='140' height='140'></div></div>";
+    $this->headingAfter .= "{$infos}</div><div class='s s2'><img alt='' src='{$this->fs->getExternalURL("asset://img/logo/vector.svg")}' width='140' height='140'></div></div>";
   }
 
   /**

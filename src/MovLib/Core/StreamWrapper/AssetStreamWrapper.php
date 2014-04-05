@@ -60,7 +60,7 @@ final class AssetStreamWrapper extends \MovLib\Core\StreamWrapper\AbstractLocalS
     $target    = self::$fs->urlEncodePath($this->getTarget($uri));
     $extension = pathinfo($target, PATHINFO_EXTENSION);
 
-    $hostnameStatic = self::$fs->config->hostnameStatic;
+    $hostnameStatic = self::$fs->hostnameStatic;
     if (!$cacheBuster) {
       // @devStart
       // @codeCoverageIgnoreStart
@@ -74,7 +74,7 @@ final class AssetStreamWrapper extends \MovLib\Core\StreamWrapper\AbstractLocalS
       // @devEnd
       $cacheBuster = self::$cacheBusters[$extension][$target];
     }
-    return "//{$hostnameStatic}/asset/{$target}?{$cacheBuster}";
+    return "{$hostnameStatic}/asset/{$target}?{$cacheBuster}";
   }
 
   /**

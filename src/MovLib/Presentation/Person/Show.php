@@ -192,7 +192,7 @@ class Show extends \MovLib\Presentation\AbstractShowPresenter {
     $personPhoto = "<a class='no-link' href='{$this->intl->r(
       "/person/{0}/photo",
       [ $this->person->id ]
-    )}' property='image'><img alt='' height='140' src='{$this->getExternalURL(
+    )}' property='image'><img alt='' height='140' src='{$this->fs->getExternalURL(
       "asset://img/logo/vector.svg"
     )}' width='140'></a>";
 //    $personPhoto         = $this->getImage(
@@ -328,7 +328,7 @@ class Show extends \MovLib\Presentation\AbstractShowPresenter {
 //    ($deathplace = $this->entity->getDeathPlace()) && $infos->add($this->intl->t("Place of Death"), $deathplace);
     $this->entity->wikipedia && $infos->addWikipedia($this->entity->wikipedia);
 
-    $this->headingAfter .= "{$infos}</div><div class='s s2'><img alt='' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='140' height='140'></div></div>";
+    $this->headingAfter .= "{$infos}</div><div class='s s2'><img alt='' src='{$this->fs->getExternalURL("asset://img/logo/vector.svg")}' width='140' height='140'></div></div>";
 
     if (($content = $this->getContentSections())) {
       return $content;

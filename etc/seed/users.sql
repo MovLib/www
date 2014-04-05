@@ -31,25 +31,25 @@ TRUNCATE TABLE `users`;
 -- START "Fleshgrinder"
 
 INSERT INTO `users` SET
-  `name`            = 'Fleshgrinder',
-  `admin`           = TRUE,
-  `birthdate`       = '1985-06-27',
-  `country_code`    = 'AT',
-  `created`         = '2013-04-22 19:15:35', -- initial commit
-  `currency_code`   = 'EUR',
-  `dyn_about_me`    = COLUMN_CREATE(
+  `name`               = 'Fleshgrinder',
+  `admin`              = TRUE,
+  `birthdate`          = '1985-06-27',
+  `country_code`       = 'AT',
+  `created`            = '2013-04-22 19:15:35', -- initial commit
+  `currency_code`      = 'EUR',
+  `dyn_about_me`       = COLUMN_CREATE(
     'en', '&lt;p&gt;My English profile text.&lt;/p&gt;',
     'de', '&lt;p&gt;Mein deutscher Profiltext.&lt;/p&gt;'
   ),
-  `email`           = 'richard@fussenegger.info',
-  `image_changed`   = '2013-04-22 19:15:35', -- initial commit
-  `image_extension` = 'jpg',
-  `password`        = '$2y$13$LFDTAUaaxs5D6XulZkDU4uKtYgJBuyjDBS2ax7k.oqsASEXstzQDu',
-  `real_name`       = 'Richard Fussenegger',
-  `sex`             = 1,
-  `language_code`   = 'en',
-  `timezone`        = 'Europe/Vienna',
-  `website`         = 'http://richard.fussenegger.info/'
+  `email`              = 'richard@fussenegger.info',
+  `image_cache_buster` = UNHEX('96edb4cb1a85927f151e74e687636d6b'),
+  `image_extension`    = 'jpg',
+  `password`           = '$2y$13$LFDTAUaaxs5D6XulZkDU4uKtYgJBuyjDBS2ax7k.oqsASEXstzQDu',
+  `real_name`          = 'Richard Fussenegger',
+  `sex`                = 1,
+  `language_code`      = 'en',
+  `timezone`           = 'Europe/Vienna',
+  `website`            = 'http://richard.fussenegger.info/'
 ;
 
 INSERT INTO `movies_ratings` (`movie_id`, `user_id`, `rating`) VALUES
@@ -64,33 +64,35 @@ UPDATE `movies` SET `rating` = (1 / (1 + 100)) * 4 + (100 / (1 + 100)), `mean_ra
 -- END "Fleshgrinder"
 
 INSERT INTO `users` SET
-  `name`          = 'Ravenlord',
-  `admin`         = TRUE,
-  `country_code`  = 'AT',
-  `created`       = '2013-05-03 07:48:30', -- initial commit
-  `currency_code` = 'EUR',
-  `dyn_about_me`  = '',
-  `email`         = 'markus@deutschl.at',
-  `password`      = '$2y$13$xtl5jmUnz3F/Tss5qXyzt.fJ1Rppz/d2HGitxd.ig1MUM7gkXQCPC',
-  `real_name`     = 'Markus Deutschl',
-  `sex`           = 1,
-  `language_code` = 'en',
-  `timezone`      = 'Europe/Vienna'
+  `name`               = 'Ravenlord',
+  `admin`              = TRUE,
+  `country_code`       = 'AT',
+  `created`            = '2013-05-03 07:48:30', -- initial commit
+  `currency_code`      = 'EUR',
+  `dyn_about_me`       = '',
+  `email`              = 'markus@deutschl.at',
+  `image_cache_buster` = UNHEX('f5156ce289d48b9229a1b425f4a03356'),
+  `image_extension`    = 'jpg',
+  `password`           = '$2y$13$xtl5jmUnz3F/Tss5qXyzt.fJ1Rppz/d2HGitxd.ig1MUM7gkXQCPC',
+  `real_name`          = 'Markus Deutschl',
+  `sex`                = 1,
+  `language_code`      = 'en',
+  `timezone`           = 'Europe/Vienna'
 ;
 
 INSERT INTO `users` SET
-  `name`            = 'ftorghele',
-  `admin`           = TRUE,
-  `country_code`    = 'AT',
-  `created`         = '2013-05-27 01:29:57', -- initial commit
-  `currency_code`   = 'EUR',
-  `dyn_about_me`    = '',
-  `email`           = 'franz@torghele.at',
-  `image_changed`   = '2013-05-27 01:29:57', -- initial commit
-  `image_extension` = 'jpg',
-  `password`        = '$2y$13$UZQYCsImiKIDQQu1OPfaTe9pZSsOd5OCgsEPVXgAVm98ygQLN0Mje',
-  `real_name`       = 'Franz Torghele',
-  `sex`             = 1,
-  `language_code`   = 'en',
-  `timezone`        = 'Europe/Vienna'
+  `name`               = 'ftorghele',
+  `admin`              = TRUE,
+  `country_code`       = 'AT',
+  `created`            = '2013-05-27 01:29:57', -- initial commit
+  `currency_code`      = 'EUR',
+  `dyn_about_me`       = '',
+  `email`              = 'franz@torghele.at',
+  `image_cache_buster` = UNHEX('7ef0468e9f45ae317cfdd33cae75d4b7'),
+  `image_extension`    = 'jpg',
+  `password`           = '$2y$13$UZQYCsImiKIDQQu1OPfaTe9pZSsOd5OCgsEPVXgAVm98ygQLN0Mje',
+  `real_name`          = 'Franz Torghele',
+  `sex`                = 1,
+  `language_code`      = 'en',
+  `timezone`           = 'Europe/Vienna'
 ;

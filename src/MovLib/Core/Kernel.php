@@ -133,7 +133,7 @@ final class Kernel {
 
     $this->diContainer->kernel = $this;
     $this->diContainer->log    = new Log($this->diContainer->config, $logName, $this->http);
-    $this->diContainer->fs     = new FileSystem($this->diContainer->config, $this->diContainer->log, $documentRoot);
+    $this->diContainer->fs     = new FileSystem($documentRoot, $this->diContainer->config->hostnameStatic);
     $this->diContainer->intl   = new Intl($this->diContainer->config, $language);
 
     return $this;
@@ -178,7 +178,7 @@ final class Kernel {
     $this->diContainer           = new DIContainerHTTP();
     $this->boot($documentRoot, $_SERVER["SERVER_NAME"], $_SERVER["LANGUAGE_CODE"]);
     $this->diContainer->request  = new Request($this->diContainer->intl);
-    $this->diContainer->response = new Response($this->diContainer->config, $this->diContainer->request);
+    $this->diContainer->response = new Response($this->diContainer->request, $this->diContainer->config->hostname);
     $this->diContainer->session  = new Session($this->diContainer);
 
     // Try to initialize the session and presentation and send it to the client.
@@ -416,7 +416,7 @@ EOT;
    */
   protected function shutdown() {
     $this->executeDelayedMethods();
-    $this->diContainer->fs->deleteRegisteredFiles();
+    $this->diContainer->fs->deleteRegisteredFiles($this->diContainer->log);
     return $this;
   }
 

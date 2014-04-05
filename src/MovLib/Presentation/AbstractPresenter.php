@@ -469,20 +469,6 @@ abstract class AbstractPresenter {
   }
 
   /**
-   * Get the external URL of the given URI.
-   *
-   * @deprecated
-   * @param string $uri
-   *   The URI to get the external URL for.
-   * @return string
-   *   The external URL of the given URI.
-   */
-  final public function getExternalURL($uri) {
-    $this->log->debug("Please use \$this->fs->getExternalURI(\$uri)!");
-    return $this->fs->getExternalURL($uri);
-  }
-
-  /**
    * Get the reference footer.
    *
    * @return string
@@ -721,7 +707,7 @@ abstract class AbstractPresenter {
    * @return string
    *   The image.
    */
-  final public function getImage(\MovLib\Data\Image\ImageStyle $imageStyle, array $attributes = [], $route = true, array $routeAttributes = null) {
+  final public function img(\MovLib\Data\Image\ImageStyle $imageStyle, array $attributes = [], $route = true, array $routeAttributes = null) {
     // The alt attribute is mandatory on image elements.
     if (empty($attributes["alt"])) {
       $attributes["alt"] = $imageStyle->alt;
@@ -738,7 +724,7 @@ abstract class AbstractPresenter {
     }
 
     // Extract the necessary image tag attributes from the image style.
-    $attributes["src"]    = $imageStyle->src;
+    $attributes["src"]    = $imageStyle->url;
     $attributes["width"]  = $imageStyle->width;
     $attributes["height"] = $imageStyle->height;
     $image                = "<img{$this->expandTagAttributes($attributes)}>";
@@ -752,6 +738,11 @@ abstract class AbstractPresenter {
       );
       // @codeCoverageIgnoreEnd
       // @devEnd
+      if ($route === true) {
+        $route = $imageStyle->route;
+      }
+      $routeAttributes["href"] = $route;
+      $this->addClass("no-link", $routeAttributes);
       $image = "<a{$this->expandTagAttributes($routeAttributes)}>{$image}</a>";
     }
 

@@ -53,7 +53,7 @@ abstract class AbstractSet extends \MovLib\Core\AbstractDatabase implements \Mov
    * {@inheritdoc}
    */
   public function getCount() {
-    $result = $this->getMySQLi()->query("SELECT COUNT(*) FROM `{$this->getPluralKey()}` WHERE `deleted` = false LIMIT 1");
+    $result = $this->getMySQLi()->query("SELECT COUNT(*) FROM `{$this->getPluralKey()}` WHERE `{$this->getPluralKey()}`.`deleted` = false LIMIT 1");
     $count  = $result->fetch_row()[0];
     $result->free();
     return $count;
@@ -95,7 +95,7 @@ abstract class AbstractSet extends \MovLib\Core\AbstractDatabase implements \Mov
    * {@inheritdoc}
    */
   public function getOrdered($by, $offset, $limit) {
-    return $this->getEntities("WHERE `deleted` = false", "ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}");
+    return $this->getEntities("WHERE `{$this->getPluralKey()}`.`deleted` = false", "ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}");
   }
 
   /**

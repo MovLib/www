@@ -61,7 +61,7 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
     $this->entity->lastEventYear  && $infos->add($this->intl->t("Last Event"), (new Date($this->intl, $this))->format($this->entity->lastEventYear));
     $this->entity->wikipedia      && $infos->addWikipedia($this->entity->wikipedia);
 
-    $this->headingAfter .= "{$infos}</div><div class='s s2'><img alt='' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='140' height='140'></div></div>";
+    $this->headingAfter .= "{$infos}</div><div class='s s2'><img alt='' src='{$this->fs->getExternalURL("asset://img/logo/vector.svg")}' width='140' height='140'></div></div>";
 
     $this->entity->description && $this->addContentSection($this->intl->t("Description"), $this->entity->description);
     $this->entity->aliases     && $this->addContentSection($this->intl->t("Also Known As"), $this->formatAliases($this->entity->aliases), false);

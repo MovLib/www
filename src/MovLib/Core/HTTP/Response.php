@@ -43,11 +43,11 @@ final class Response {
   public $cacheable = false;
 
   /**
-   * The active config instance.
+   * The default hostname.
    *
-   * @var \MovLib\Core\Config
+   * @var string
    */
-  protected $config;
+  protected $hostname;
 
   /**
    * The active request instance.
@@ -63,15 +63,15 @@ final class Response {
   /**
    * Instantiate new HTTP request object.
    *
-   * @param \MovLib\Core\Config $config
-   *   The active config instance.
    * @param \MovLib\Core\HTTP\Request $request
    *   The active request instance.
+   * @param string $hostname
+   *   The default hostname.
    */
-  public function __construct(\MovLib\Core\Config $config, \MovLib\Core\HTTP\Request $request) {
-    $this->config    = $config;
-    $this->request   = $request;
+  public function __construct(\MovLib\Core\HTTP\Request &$request, $hostname) {
     $this->cacheable = $request->methodGET;
+    $this->hostname  = $hostname;
+    $this->request  =& $request;
   }
 
 
@@ -94,7 +94,7 @@ final class Response {
    * @return this
    */
   public function createCookie($identifier, $value, $expire = 0, $httpOnly = false) {
-    setcookie($identifier, $value, $expire, "/", $this->config->hostname, $this->request->https, $httpOnly);
+    setcookie($identifier, $value, $expire, "/", $this->hostname, $this->request->https, $httpOnly);
     return $this;
   }
 

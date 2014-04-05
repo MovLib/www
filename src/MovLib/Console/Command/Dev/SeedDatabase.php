@@ -49,7 +49,7 @@ final class SeedDatabase extends \MovLib\Console\Command\AbstractCommand {
    *
    * @var string
    */
-  protected $scriptDirectory = "dr://etc/seed/database";
+  protected $scriptDirectory = "dr://etc/seed";
 
   /**
    * URI to the SQL script order file.
