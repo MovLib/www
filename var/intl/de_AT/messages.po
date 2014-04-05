@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Movlib 0.0.1-dev\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-04 12:27+0000\n"
+"POT-Creation-Date: 2014-04-05 08:02+0000\n"
 "PO-Revision-Date: 2014-04-01 18:21+0100\n"
 "Last-Translator: MovLib Developers <info@movlib.org>\n"
 "Language-Team: German <info@movlib.org>\n"
@@ -36,44 +36,6 @@ msgstr "Tätigkeiten"
 #: /src/MovLib/Partial/Format/AbstractFormat.php:101
 msgid "Black & White and Color"
 msgstr ""
-
-#: /src/MovLib/Data/Image/MoviePoster.php:62
-#: /src/MovLib/Presentation/Movie/Images/Posters.php:38
-msgid "Poster"
-msgstr "Poster"
-
-#: /src/MovLib/Data/Image/MoviePoster.php:62
-#: /src/MovLib/Presentation/Movie/Images/AbstractBase.php:203
-#: /src/MovLib/Presentation/Movie/Images/Posters.php:38
-msgid "Posters"
-msgstr "Poster"
-
-#: /src/MovLib/Data/Image/MovieLobbyCard.php:62
-#: /src/MovLib/Presentation/Movie/Images/LobbyCards.php:38
-msgid "Lobby Card"
-msgstr "Aushangbild"
-
-#: /src/MovLib/Data/Image/MovieLobbyCard.php:62
-#: /src/MovLib/Presentation/Movie/Images/AbstractBase.php:204
-#: /src/MovLib/Presentation/Movie/Images/LobbyCards.php:38
-msgid "Lobby Cards"
-msgstr "Aushangbilder"
-
-#: /src/MovLib/Data/Image/AbstractMovieImage.php:236
-#: /src/MovLib/Presentation/Movie/Images/AbstractBase.php:106
-msgid "{image_name} for {title}"
-msgstr "{image_name} für {title}"
-
-#: /src/MovLib/Data/Image/MovieBackdrop.php:62
-#: /src/MovLib/Presentation/Movie/Images/Backdrops.php:38
-msgid "Backdrop"
-msgstr "Hintergrund"
-
-#: /src/MovLib/Data/Image/MovieBackdrop.php:62
-#: /src/MovLib/Presentation/Movie/Images/AbstractBase.php:205
-#: /src/MovLib/Presentation/Movie/Images/Backdrops.php:38
-msgid "Backdrops"
-msgstr "Hintegründe"
 
 #: /src/MovLib/Data/Award/AwardTrait.php:44
 #: /src/MovLib/Presentation/Award/AbstractBase.php:98
@@ -119,6 +81,34 @@ msgstr "Unternehmen"
 msgid "Company"
 msgstr "Unternehmen"
 
+#: /src/MovLib/Data/Help/Category/CategoryTrait.php:44
+#, fuzzy
+msgid "Help Categories"
+msgstr "Kategorien"
+
+#: /src/MovLib/Data/Help/Category/CategoryTrait.php:62
+#, fuzzy
+msgid "Help Category"
+msgstr "Kategorie Anlegen"
+
+#: /src/MovLib/Data/Help/SubCategory/SubCategoryTrait.php:44
+#, fuzzy
+msgid "Sub Categories"
+msgstr "Kategorien"
+
+#: /src/MovLib/Data/Help/SubCategory/SubCategoryTrait.php:62
+#, fuzzy
+msgid "Sub Category"
+msgstr "Kategorie Anlegen"
+
+#: /src/MovLib/Data/Help/Article/ArticleTrait.php:44
+msgid "Help Articles"
+msgstr ""
+
+#: /src/MovLib/Data/Help/Article/ArticleTrait.php:62
+msgid "Help Article"
+msgstr ""
+
 #: /src/MovLib/Data/Movie/MovieTrait.php:44
 #: /src/MovLib/Partial/Listing/EntityIndexListing.php:96
 #: /src/MovLib/Partial/CompanyTrait.php:56
@@ -143,7 +133,7 @@ msgstr "Filme"
 msgid "Movie"
 msgstr "Filme"
 
-#: /src/MovLib/Data/Movie/Movie.php:275
+#: /src/MovLib/Data/Movie/Movie.php:302
 #: /src/MovLib/Partial/License.php:100
 #: /src/MovLib/Partial/PersonTrait.php:43
 #: /src/MovLib/Console/Command/Install/SeedAspectRatios.php:90
@@ -153,6 +143,10 @@ msgstr "Filme"
 #: /src/MovLib/Presentation/Movie/MovieTrait.php:113
 #: /src/MovLib/Presentation/Person/Show.php:93
 msgid "{0} ({1})"
+msgstr "{0} ({1})"
+
+#: /src/MovLib/Data/Movie/Movie.php:308
+msgid "{movie_title} poster."
 msgstr ""
 
 #: /src/MovLib/Data/Release/ReleaseTrait.php:44
@@ -187,36 +181,24 @@ msgstr "Personen"
 msgid "Person"
 msgstr "Personen"
 
-#: /src/MovLib/Data/Person/FullPerson.php:400
-msgid "Himself"
-msgstr ""
-
-#: /src/MovLib/Data/Person/FullPerson.php:404
-msgid "Herself"
-msgstr ""
-
-#: /src/MovLib/Data/Person/FullPerson.php:408
-msgid "Self"
-msgstr ""
-
 #: /src/MovLib/Data/Genre/GenreTrait.php:44
 #: /src/MovLib/Presentation/Genre/AbstractBase.php:98
 #: /src/MovLib/Presentation/Genre/Index.php:45
 #: /src/MovLib/Presentation/Genre/Create.php:44
 #: /src/MovLib/Presentation/Genre/Show.php:46
 msgid "Genres"
-msgstr ""
+msgstr "Genres"
 
 #: /src/MovLib/Data/Genre/GenreTrait.php:62
 msgid "Genre"
-msgstr ""
+msgstr "Genre"
 
 #: /src/MovLib/Data/User/UserTrait.php:44
 #: /src/MovLib/Presentation/Profile/SignIn.php:108
 #: /src/MovLib/Presentation/Profile/ResetPassword.php:86
 #: /src/MovLib/Presentation/Profile/Join.php:101
-#: /src/MovLib/Presentation/User/Index.php:50
-#: /src/MovLib/Presentation/User/Show.php:61
+#: /src/MovLib/Presentation/User/Index.php:49
+#: /src/MovLib/Presentation/User/Show.php:59
 #: /src/MovLib/Presentation/User/AbstractUserPage.php:75
 msgid "Users"
 msgstr "Benutzer"
@@ -226,61 +208,65 @@ msgstr "Benutzer"
 msgid "User"
 msgstr "Benutzer"
 
+#: /src/MovLib/Data/User/User.php:352
+msgid "{username}’s avatar image."
+msgstr ""
+
 #: /src/MovLib/Data/User/Collection.php:66
 #: /src/MovLib/Data/User/Collection.php:93
 msgid "Mint (M)"
-msgstr ""
+msgstr "Wie Neu (M)"
 
 #: /src/MovLib/Data/User/Collection.php:67
 #: /src/MovLib/Data/User/Collection.php:94
 msgid "Near Mint (NM or M-)"
-msgstr ""
+msgstr "Fast Wie Neu (NM oder M−)"
 
 #: /src/MovLib/Data/User/Collection.php:68
 #: /src/MovLib/Data/User/Collection.php:95
 msgid "Very Good Plus (VG+)"
-msgstr ""
+msgstr "Sehr Gut Plus (VG+)"
 
 #: /src/MovLib/Data/User/Collection.php:69
 #: /src/MovLib/Data/User/Collection.php:96
 msgid "Very Good (VG)"
-msgstr ""
+msgstr "Sehr Gut (VG)"
 
 #: /src/MovLib/Data/User/Collection.php:70
 #: /src/MovLib/Data/User/Collection.php:97
 msgid "Good Plus (G+)"
-msgstr ""
+msgstr "Gut Plus (G+)"
 
 #: /src/MovLib/Data/User/Collection.php:71
 #: /src/MovLib/Data/User/Collection.php:98
 msgid "Good (G)"
-msgstr ""
+msgstr "Gut (G)"
 
 #: /src/MovLib/Data/User/Collection.php:72
 #: /src/MovLib/Data/User/Collection.php:99
 msgid "Fair (F)"
-msgstr ""
+msgstr "OK (F)"
 
 #: /src/MovLib/Data/User/Collection.php:73
 #: /src/MovLib/Data/User/Collection.php:100
 msgid "Poor (P)"
-msgstr ""
+msgstr "Schlecht (P)"
 
 #: /src/MovLib/Data/User/Collection.php:91
 msgid "Generic"
-msgstr ""
+msgstr "Generisch"
 
 #: /src/MovLib/Data/User/Collection.php:92
 msgid "No Cover"
-msgstr ""
+msgstr "Kein Cover"
 
 #: /src/MovLib/Data/Place/PlaceTrait.php:49
 msgid "Places"
-msgstr ""
+msgstr "Orte"
 
 #: /src/MovLib/Data/Place/PlaceTrait.php:63
 msgid "Place"
-msgstr ""
+msgstr "Ort"
 
 #: /src/MovLib/Data/Event/EventTrait.php:44
 #: /src/MovLib/Presentation/Award/Event/Index.php:47
@@ -289,11 +275,11 @@ msgstr ""
 #: /src/MovLib/Presentation/Event/Create.php:58
 #: /src/MovLib/Presentation/Event/Show.php:54
 msgid "Events"
-msgstr ""
+msgstr "Veranstaltungen"
 
 #: /src/MovLib/Data/Event/EventTrait.php:62
 msgid "Event"
-msgstr ""
+msgstr "Veranstaltung"
 
 #: /src/MovLib/Core/HTTP/Request.php:203
 #: /src/MovLib/Presentation/SystemPage/Show.php:67
@@ -303,11 +289,11 @@ msgstr "Datenschutz"
 #: /src/MovLib/Partial/Date.php:116
 #: /src/MovLib/Presentation/TraitPerson.php:55
 msgid "{0}–{1}"
-msgstr ""
+msgstr "{0}–{1}"
 
-#: /src/MovLib/Partial/Date.php:180
+#: /src/MovLib/Partial/Date.php:183
 msgid "~{0}"
-msgstr ""
+msgstr "~{0}"
 
 #: /src/MovLib/Partial/EventTrait.php:71
 #: /src/MovLib/Partial/Listing/AwardEventListing.php:71
@@ -328,42 +314,42 @@ msgstr "Sprache"
 
 #: /src/MovLib/Partial/PaginationTrait.php:158
 msgid "Page {0, number, integer}"
-msgstr ""
+msgstr "Seite {0, number, integer}"
 
 #: /src/MovLib/Partial/PaginationTrait.php:246
 msgid "Pagination"
-msgstr ""
+msgstr "Paginierung"
 
 #: /src/MovLib/Partial/Form.php:308
 msgid "Form Outdated"
-msgstr ""
+msgstr "Formular Abgelaufen"
 
 #: /src/MovLib/Partial/Form.php:351
 msgid "Validation Error"
-msgstr ""
+msgstr "Validierungsfehler"
 
 #: /src/MovLib/Partial/Duration.php:119
 msgid "{0, number, integer} min."
-msgstr ""
+msgstr "{0, number, integer} min."
 
 #: /src/MovLib/Partial/QuickInfo.php:80
 #: /src/MovLib/Partial/Place.php:125
 #: /src/MovLib/Presentation/AbstractPresenter.php:463
 msgid "{0}, {1}"
-msgstr ""
+msgstr "{0}, {1}"
 
 #: /src/MovLib/Partial/FormElement/TextareaHTMLRaw.php:175
 msgid "You must be signed in and have administrator privileges to enter raw HTML."
-msgstr ""
+msgstr "Du musst angemeldet sein und Administratorprivilegien besitzen um ungefiltertes HTML eingeben zu können."
 
 #: /src/MovLib/Partial/FormElement/InputFloat.php:59
 #: /src/MovLib/Partial/FormElement/InputInteger.php:44
 msgid "The “{0}” field must be an integer."
-msgstr ""
+msgstr "Das „{0}”-Fled muss eine Ganzzahl sein."
 
 #: /src/MovLib/Partial/FormElement/InputFloat.php:65
 msgid "The “{0}” is too large, the value must be {1,number} or less."
-msgstr ""
+msgstr "Die „{0}” ist zu groß, der Wert muss {1,number} oder weniger sein."
 
 #: /src/MovLib/Partial/FormElement/InputFloat.php:68
 msgid "The “{0}” is too low, the value must be {1,number} or more."
@@ -495,76 +481,76 @@ msgstr ""
 msgid "The checkbox is required."
 msgstr ""
 
-#: /src/MovLib/Partial/FormElement/InputHTML.php:339
+#: /src/MovLib/Partial/FormElement/InputHTML.php:340
 msgid "Invalid HTML in “{label}” text."
 msgstr ""
 
-#: /src/MovLib/Partial/FormElement/InputHTML.php:362
+#: /src/MovLib/Partial/FormElement/InputHTML.php:363
 msgid "Invalid HTML after the validation in “{label}” text."
 msgstr ""
 
-#: /src/MovLib/Partial/FormElement/InputHTML.php:386
+#: /src/MovLib/Partial/FormElement/InputHTML.php:387
 msgid "Links without a link target in “{label}” text."
 msgstr ""
 
-#: /src/MovLib/Partial/FormElement/InputHTML.php:392
-#: /src/MovLib/Partial/FormElement/InputHTML.php:448
+#: /src/MovLib/Partial/FormElement/InputHTML.php:393
+#: /src/MovLib/Partial/FormElement/InputHTML.php:449
 msgid "Invalid link in “{label}” text ({link_url})."
 msgstr ""
 
-#: /src/MovLib/Partial/FormElement/InputHTML.php:408
+#: /src/MovLib/Partial/FormElement/InputHTML.php:409
 msgid "No external links are allowed in “{label}” text."
 msgstr ""
 
-#: /src/MovLib/Partial/FormElement/InputHTML.php:435
+#: /src/MovLib/Partial/FormElement/InputHTML.php:436
 msgid "Credentials are not allowed in “{label}” text ({link_url})."
 msgstr ""
 
-#: /src/MovLib/Partial/FormElement/InputHTML.php:441
+#: /src/MovLib/Partial/FormElement/InputHTML.php:442
 msgid "Ports are not allowed in “{label}” text ({link_url})."
 msgstr ""
 
-#: /src/MovLib/Partial/FormElement/InputHTML.php:488
+#: /src/MovLib/Partial/FormElement/InputHTML.php:489
 msgid "The “{label}” text contains a quotation without source."
 msgstr ""
 
-#: /src/MovLib/Partial/FormElement/InputHTML.php:493
+#: /src/MovLib/Partial/FormElement/InputHTML.php:494
 msgid "The “{label}” text contains quotation without text."
 msgstr ""
 
-#: /src/MovLib/Partial/FormElement/InputHTML.php:532
+#: /src/MovLib/Partial/FormElement/InputHTML.php:533
 msgid "Found disallowed tag {tag} in quotation."
 msgstr ""
 
-#: /src/MovLib/Partial/FormElement/InputHTML.php:560
+#: /src/MovLib/Partial/FormElement/InputHTML.php:561
 msgid "Found disallowed HTML tags in image caption, allowed tags are: {taglist}"
 msgstr ""
 
-#: /src/MovLib/Partial/FormElement/InputHTML.php:563
+#: /src/MovLib/Partial/FormElement/InputHTML.php:564
 msgid "Found disallowed HTML tags, allowed tags are: {taglist}"
 msgstr ""
 
-#: /src/MovLib/Partial/FormElement/InputHTML.php:623
+#: /src/MovLib/Partial/FormElement/InputHTML.php:624
 msgid "The image caption is mandatory and cannot be empty."
 msgstr ""
 
-#: /src/MovLib/Partial/FormElement/InputHTML.php:628
+#: /src/MovLib/Partial/FormElement/InputHTML.php:629
 msgid "The image is mandatory and cannot be empty."
 msgstr ""
 
-#: /src/MovLib/Partial/FormElement/InputHTML.php:647
+#: /src/MovLib/Partial/FormElement/InputHTML.php:648
 msgid "Image URL seems to be invalid."
 msgstr ""
 
-#: /src/MovLib/Partial/FormElement/InputHTML.php:652
+#: /src/MovLib/Partial/FormElement/InputHTML.php:653
 msgid "Only images from {movlib} are allowed."
 msgstr ""
 
-#: /src/MovLib/Partial/FormElement/InputHTML.php:660
+#: /src/MovLib/Partial/FormElement/InputHTML.php:661
 msgid "Image doesn’t exist ({image_src})."
 msgstr ""
 
-#: /src/MovLib/Partial/FormElement/InputHTML.php:744
+#: /src/MovLib/Partial/FormElement/InputHTML.php:745
 msgid "Disallowed CSS classes in “{label}” text, allowed values are: {classes}"
 msgstr ""
 
@@ -612,7 +598,7 @@ msgstr ""
 #: /src/MovLib/Presentation/Person/Create.php:137
 #: /src/MovLib/Presentation/Person/Show.php:85
 #: /src/MovLib/Presentation/Person/Show.php:306
-#: /src/MovLib/Presentation/User/Show.php:95
+#: /src/MovLib/Presentation/User/Show.php:93
 msgid "Female"
 msgstr "Weiblich"
 
@@ -620,7 +606,7 @@ msgstr "Weiblich"
 #: /src/MovLib/Presentation/Person/Create.php:137
 #: /src/MovLib/Presentation/Person/Show.php:82
 #: /src/MovLib/Presentation/Person/Show.php:303
-#: /src/MovLib/Presentation/User/Show.php:95
+#: /src/MovLib/Presentation/User/Show.php:93
 msgid "Male"
 msgstr "Männlich"
 
@@ -637,7 +623,7 @@ msgstr ""
 #: /src/MovLib/Partial/Listing/MovieListing.php:130
 #: /src/MovLib/Partial/Listing/AwardMovieListing.php:58
 #: /src/MovLib/Partial/Listing/CompanyMovieListing.php:58
-#: /src/MovLib/Presentation/Movie/Index.php:79
+#: /src/MovLib/Presentation/Movie/Index.php:77
 msgid "No Movies"
 msgstr ""
 
@@ -1808,7 +1794,7 @@ msgid "Your new password equals your existing password, please enter a new one."
 msgstr ""
 
 #: /src/MovLib/Presentation/Stacktrace.php:64
-#: /src/MovLib/Presentation/Error/InternalServerError.php:88
+#: /src/MovLib/Presentation/Error/InternalServerError.php:84
 msgid "Stacktrace for {0}"
 msgstr "Stacktrace für {0}"
 
@@ -2088,6 +2074,7 @@ msgstr "Charts"
 #: /src/MovLib/Presentation/Series/Charts.php:46
 #: /src/MovLib/Presentation/Movie/Charts.php:46
 #: /src/MovLib/Presentation/AbstractIndexPresenter.php:83
+#: /src/MovLib/Presentation/User/Index.php:54
 msgid "Random"
 msgstr ""
 
@@ -2199,37 +2186,37 @@ msgstr ""
 msgid "You’re currently viewing this page."
 msgstr "Du betrachtest diese Seite momentan."
 
-#: /src/MovLib/Presentation/AbstractPresenter.php:604
+#: /src/MovLib/Presentation/AbstractPresenter.php:570
 msgid "love"
 msgstr "Liebe"
 
-#: /src/MovLib/Presentation/AbstractPresenter.php:738
+#: /src/MovLib/Presentation/AbstractPresenter.php:763
 msgid "{page_title} — {sitename}"
 msgstr "{page_title} – {sitename}"
 
-#: /src/MovLib/Presentation/AbstractPresenter.php:933
+#: /src/MovLib/Presentation/AbstractPresenter.php:961
 #: /src/MovLib/Presentation/Home.php:109
 msgid "Please activate JavaScript in your browser to experience our website with all its features."
 msgstr ""
 
-#: /src/MovLib/Presentation/AbstractPresenter.php:934
+#: /src/MovLib/Presentation/AbstractPresenter.php:962
 #: /src/MovLib/Presentation/Home.php:110
 msgid "JavaScript Disabled"
 msgstr ""
 
-#: /src/MovLib/Presentation/AbstractPresenter.php:959
+#: /src/MovLib/Presentation/AbstractPresenter.php:987
 msgid "Home"
 msgstr "Startseite"
 
-#: /src/MovLib/Presentation/AbstractPresenter.php:959
+#: /src/MovLib/Presentation/AbstractPresenter.php:987
 msgid "Go back to the home page."
 msgstr "Gehe zurück zur Startseite."
 
-#: /src/MovLib/Presentation/AbstractPresenter.php:969
+#: /src/MovLib/Presentation/AbstractPresenter.php:997
 msgid "…"
 msgstr ""
 
-#: /src/MovLib/Presentation/AbstractPresenter.php:975
+#: /src/MovLib/Presentation/AbstractPresenter.php:1003
 msgid "You are here: "
 msgstr ""
 
@@ -2253,11 +2240,21 @@ msgstr ""
 msgid "No Results"
 msgstr ""
 
-#: /src/MovLib/Presentation/Help/Index.php:42
+#: /src/MovLib/Presentation/Help/Index.php:44
+#, fuzzy
+msgid "Create New Help"
+msgstr "Neues Genre Anlegen"
+
+#: /src/MovLib/Presentation/Help/Index.php:45
 msgid "Help"
 msgstr "Hilfe"
 
-#: /src/MovLib/Presentation/Help/Index.php:70
+#: /src/MovLib/Presentation/Help/Index.php:78
+#: /src/MovLib/Presentation/Genre/Index.php:78
+msgid "No Genres"
+msgstr ""
+
+#: /src/MovLib/Presentation/Help/Category/Index.php:48
 #, fuzzy
 msgid "{0} Help"
 msgstr "Hilfe"
@@ -2380,6 +2377,10 @@ msgstr ""
 msgid "The movies charts feature isn’t implemented yet."
 msgstr ""
 
+#: /src/MovLib/Presentation/Movie/Images/AbstractBase.php:106
+msgid "{image_name} for {title}"
+msgstr "{image_name} für {title}"
+
 #: /src/MovLib/Presentation/Movie/Images/AbstractBase.php:148
 msgid "We couldn’t find any {image_name_plural} matching your filter criteria, or there simply aren’t any {image_name_plural} available. Would you like to {0}upload a new {image_name}{1}?"
 msgstr ""
@@ -2388,9 +2389,36 @@ msgstr ""
 msgid "No {image_name_plural}"
 msgstr ""
 
+#: /src/MovLib/Presentation/Movie/Images/AbstractBase.php:203
+#: /src/MovLib/Presentation/Movie/Images/Posters.php:38
+msgid "Posters"
+msgstr "Poster"
+
+#: /src/MovLib/Presentation/Movie/Images/AbstractBase.php:204
+#: /src/MovLib/Presentation/Movie/Images/LobbyCards.php:38
+msgid "Lobby Cards"
+msgstr "Aushangbilder"
+
+#: /src/MovLib/Presentation/Movie/Images/AbstractBase.php:205
+#: /src/MovLib/Presentation/Movie/Images/Backdrops.php:38
+msgid "Backdrops"
+msgstr "Hintegründe"
+
 #: /src/MovLib/Presentation/Movie/Images/AbstractBase.php:213
 msgid "Back to movie"
 msgstr "Zurück zum Film"
+
+#: /src/MovLib/Presentation/Movie/Images/Posters.php:38
+msgid "Poster"
+msgstr "Poster"
+
+#: /src/MovLib/Presentation/Movie/Images/Backdrops.php:38
+msgid "Backdrop"
+msgstr "Hintergrund"
+
+#: /src/MovLib/Presentation/Movie/Images/LobbyCards.php:38
+msgid "Lobby Card"
+msgstr "Aushangbild"
 
 #: /src/MovLib/Presentation/Movie/Edit.php:50
 msgid "Edit {title}"
@@ -2719,49 +2747,54 @@ msgstr ""
 msgid "Valid?"
 msgstr ""
 
-#: /src/MovLib/Presentation/SystemPage/Contact.php:74
+#: /src/MovLib/Presentation/SystemPage/Contact.php:90
+#, fuzzy
+msgid "Email address"
+msgstr "E-Mail-Adresse"
+
+#: /src/MovLib/Presentation/SystemPage/Contact.php:95
 #: /src/MovLib/Presentation/User/Contact.php:93
 msgid "Subject"
 msgstr "Betreff"
 
-#: /src/MovLib/Presentation/SystemPage/Contact.php:75
+#: /src/MovLib/Presentation/SystemPage/Contact.php:96
 msgid "This will appear as subject of your message"
 msgstr "Dies wird der Betreff deiner Nachricht"
 
-#: /src/MovLib/Presentation/SystemPage/Contact.php:78
+#: /src/MovLib/Presentation/SystemPage/Contact.php:99
 #: /src/MovLib/Presentation/User/Contact.php:97
 msgid "Message"
-msgstr ""
+msgstr "Nachricht"
 
-#: /src/MovLib/Presentation/SystemPage/Contact.php:81
+#: /src/MovLib/Presentation/SystemPage/Contact.php:100
 #: /src/MovLib/Presentation/User/Contact.php:99
 msgid "Send"
 msgstr "Senden"
 
-#: /src/MovLib/Presentation/SystemPage/Contact.php:108
-#: /src/MovLib/Presentation/SystemPage/Contact.php:109
+#: /src/MovLib/Presentation/SystemPage/Contact.php:134
+#: /src/MovLib/Presentation/SystemPage/Contact.php:135
 msgid "Contact Successful"
-msgstr ""
+msgstr "Kontakt Erfolgreich"
 
 #: /src/MovLib/Presentation/SystemPage/Show.php:65
 #, fuzzy
-msgid "About MovLib"
-msgstr "Über Mich"
+msgid "About {sitename}"
+msgstr "Über {sitename}"
 
 #: /src/MovLib/Presentation/SystemPage/Show.php:66
 msgid "Team"
-msgstr ""
+msgstr "Team"
 
 #: /src/MovLib/Presentation/SystemPage/Show.php:69
 msgid "Impressum"
-msgstr ""
+msgstr "Impressum"
 
 #: /src/MovLib/Presentation/SystemPage/Show.php:70
 #: /src/MovLib/Presentation/User/Contact.php:71
-#: /src/MovLib/Presentation/User/Show.php:65
+#: /src/MovLib/Presentation/User/Show.php:63
 #: /src/MovLib/Presentation/User/AbstractUserPage.php:83
 msgid "Contact"
-msgstr ""
+msgstr "Kontakt"
 
 #: /src/MovLib/Presentation/SystemPage/Show.php:71
 msgid "Articles of Association"
@@ -2778,10 +2811,6 @@ msgstr ""
 #: /src/MovLib/Presentation/Genre/Index.php:44
 msgid "Create New Genre"
 msgstr "Neues Genre Anlegen"
-
-#: /src/MovLib/Presentation/Genre/Index.php:78
-msgid "No Genres"
-msgstr ""
 
 #: /src/MovLib/Presentation/Genre/Random.php:49
 msgid "There is currently no genre in our database."
@@ -2851,11 +2880,6 @@ msgstr "{date}: {user} hat angefordert, dass {0}dieser Inhalt{1} gelöscht werde
 msgid "{date}: {user} has requested that {0}this content{1} should be deleted for the reason: “{reason}”"
 msgstr ""
 
-#: /src/MovLib/Presentation/User/Index.php:49
-#, fuzzy
-msgid "Join {sitename}"
-msgstr "Mein {sitename}"
-
 #: /src/MovLib/Presentation/User/Random.php:47
 msgid "There is currently no user in our database"
 msgstr ""
@@ -2891,7 +2915,7 @@ msgstr ""
 #: /src/MovLib/Presentation/User/Show.php:160
 #: /src/MovLib/Presentation/User/Show.php:165
 msgid "No rated Movies"
-msgstr ""
+msgstr "Keine bewerteten Filme"
 
 #: /src/MovLib/Presentation/User/Show.php:163
 msgid "{username} hasn’t rated a single movie yet, that makes us a sad panda."
@@ -2968,67 +2992,3 @@ msgstr ""
 #: /src/plural.php:2
 msgid "{@count, plural, one{Series} other{Series}}"
 msgstr ""
-
-#, fuzzy
-#~ msgid "Countries"
-#~ msgstr "Land"
-
-#~ msgid "No countries assigned yet, {0}add countries{1}?"
-#~ msgstr "Keine Länder zugeordnet, {0}Länder hinzufügen{1}?"
-
-#~ msgid "No genres assigned yet, {0}add genres{1}?"
-#~ msgstr "Keine Genres zugeordnet, {0}Genres hinzufügen{1}?"
-
-#~ msgid "Awful"
-#~ msgstr "Furchtbar"
-
-#~ msgid "Bad"
-#~ msgstr "Schlecht"
-
-#~ msgid "Okay"
-#~ msgstr "OK"
-
-#~ msgid "Fine"
-#~ msgstr "Gut"
-
-#~ msgid "Awesome"
-#~ msgstr "Großartig"
-
-#~ msgid "No one has rated this movie so far, be the first."
-#~ msgstr "Niemand hat diesen Film bisher bewertet, sei der Erste."
-
-#~ msgid "You’re the only one who rated this movie (yet)."
-#~ msgstr "Nur du hast diesen Film (bisher) bewertet."
-
-#~ msgid "Rated by {votes} user with {rating}."
-#~ msgstr "Bewertet von {votes} Benutzer mit {rating}."
-
-#~ msgid "Rated by {votes} users with a {0}mean rating{1} of {rating}."
-#~ msgstr "Bewertet von {votes} Benutzern mit einer {0}Durchschnittsbewertung{1} von {rating}."
-
-#~ msgid "Directors"
-#~ msgstr "Regisseure"
-
-#~ msgid "No directors assigned yet, {0}add directors{1}?"
-#~ msgstr "Keine Regisseure zugeordnet, {0}Regisseure hinzufügen{1}?"
-
-#~ msgid "No cast assigned yet, {0}add cast{1}?"
-#~ msgstr "Keine Darsteller zugeordnet, {0}Darsteller hinzufügen{1}?"
-
-#~ msgid "Synopsis"
-#~ msgstr "Synopsis"
-
-#~ msgid "No synopsis available, {0}write synopsis{1}?"
-#~ msgstr "Keine Synopsis vorhanden, {0}Synopsis verfassen{1}?"
-
-#~ msgid "Trailers"
-#~ msgstr "Trailer"
-
-#~ msgid "Reviews"
-#~ msgstr "Rezensionen"
-
-#~ msgid "Please {sign_in} or {join} to rate this movie."
-#~ msgstr "Bitte {sign_in} oder {join} um diesen Film zu bewerten."
-
-#~ msgid "Create New Person"
-#~ msgstr "Neue Person Anlegen"

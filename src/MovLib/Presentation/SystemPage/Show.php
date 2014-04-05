@@ -62,7 +62,7 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
     $this->initBreadcrumb();
     $this->initLanguageLinks($this->systemPage->route);
     $this->sidebarInit([
-      [ $this->intl->r("/about-movlib"), $this->intl->t("About MovLib") ],
+      [ $this->intl->r("/about-movlib"), $this->intl->t("About {sitename}", [ "sitename" => $this->config->sitename ]) ],
       [ $this->intl->r("/team"), $this->intl->t("Team") ],
       [ $this->intl->r("/privacy-policy"), $this->intl->t("Privacy Policy") ],
       [ $this->intl->r("/terms-of-use"), $this->intl->t("Terms of Use") ],

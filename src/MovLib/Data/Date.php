@@ -108,7 +108,7 @@ final class Date extends \DateTime {
     // If we got anything else let PHP handle the date/time and try to export it afterwards into class scope.
     else {
       parent::__construct($date);
-      list($this->year, $this->month, $this->day) = explode("-", $this->date, 3);
+      list($this->year, $this->month, $this->day) = explode("-", $this->format(self::W3C_DATE), 3);
     }
   }
 
