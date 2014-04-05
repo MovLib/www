@@ -365,6 +365,20 @@ SQL
   }
 
   /**
+   * Save the image styles to persistent storage.
+   *
+   * @return this
+   */
+  protected function imageSaveStyles() {
+    $styles = serialize($this->imageStyles);
+    $stmt   = $this->getMySQLi()->prepare("UPDATE `users` SET `image_styles` = ? WHERE `id` = ?");
+    $stmt->bind_param("sd", $styles, $this->id);
+    $stmt->execute();
+    $stmt->close();
+    return $this;
+  }
+
+  /**
    * Check if given user property is already in use.
    *
    * @param string $what
