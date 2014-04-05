@@ -18,7 +18,7 @@
 namespace MovLib\Data\Image;
 
 /**
- * Default implementation for concrete classes that implement the image interface.
+ * Defines the base class for image entities.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,7 +26,7 @@ namespace MovLib\Data\Image;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-trait ImageTrait {
-  use \MovLib\Data\Image\ImageReadOnlyTrait;
+abstract class AbstractImageEntity extends \MovLib\Data\Image\AbstractReadOnlyImage {
+
 
 }

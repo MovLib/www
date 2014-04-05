@@ -31,8 +31,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class User extends \MovLib\Data\AbstractEntity {
-  use \MovLib\Data\Image\ImageTrait;
+final class User extends \MovLib\Data\Image\AbstractImageEntity {
   use \MovLib\Data\RouteTrait;
   use \MovLib\Data\User\UserTrait;
 
@@ -154,7 +153,7 @@ final class User extends \MovLib\Data\AbstractEntity {
    *
    * @var string
    */
-  public $imageDirectory = "upload://user";
+  public $imageDirectoryURI = "upload://user";
 
   /**
    * The user's unique name.
@@ -349,15 +348,16 @@ SQL
    * {@inheritdoc}
    */
   public function init() {
-    $this->access        = new DateTime($this->access);
-    $this->birthday      && ($this->birthday = new Date($this->birthday));
-    $this->created       = new DateTime($this->created);
-    $this->deleted       = (boolean) $this->email;
-    $this->imageExists   = (boolean) $this->imageChanged;
-    $this->imageChanged  = new DateTime($this->imageChanged);
-    $this->imageFilename = mb_strtolower($this->name);
-    $this->private       = (boolean) $this->private;
-    $this->route         = new EntityRoute($this->intl, "/user/{0}", $this->imageFilename, "/users");
+    $this->access               = new DateTime($this->access);
+    $this->birthday             && ($this->birthday = new Date($this->birthday));
+    $this->created              = new DateTime($this->created);
+    $this->deleted              = (boolean) $this->email;
+    $this->imageAlternativeText = $this->intl->t("{username}’s avatar image.", [ "username" => $this->name ]);
+    $this->imageExists          = (boolean) $this->imageChanged;
+    $this->imageChanged         = new DateTime($this->imageChanged);
+    $this->imageFilename        = mb_strtolower($this->name);
+    $this->private              = (boolean) $this->private;
+    $this->route                = new EntityRoute($this->intl, "/user/{0}", $this->imageFilename, "/users");
     return $this;
   }
 

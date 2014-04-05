@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\User;
 
 use \MovLib\Partial\Alert;
+use \MovLib\Data\User\User;
 use \MovLib\Data\User\UserSet;
 
 /**
@@ -63,7 +64,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    */
   protected function formatListingItem(\MovLib\Data\AbstractEntity $user, $delta) {
     if ($user->imageExists) {
-      $image = $this->getImage($user->getImageStyle("s1"), [ "class" => "s s1", "property" => "image" ], false);
+      $image = $this->getImage($user->getImageStyle(User::S01), [ "class" => "s s1", "property" => "image" ], false);
     }
     else {
       $image = "<img class='s s1' alt='' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>";

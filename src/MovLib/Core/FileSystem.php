@@ -227,12 +227,14 @@ final class FileSystem {
    *   Used to cache generated URLs.
    * @param string $uri
    *   The URI to get the external URL for.
+   * @param string $cacheBuster [optional]
+   *   A cache buster that should be appended to the URL, defaults to <code>NULL</code>.
    * @return string
    *   The external URL for the given URI.
    * @throws \LogicException
    *   If the given URI doesn't support external URLs.
    */
-  public function getExternalURL($uri) {
+  public function getExternalURL($uri, $cacheBuster = null) {
     static $streamWrappers = [], $urls = [];
     if (isset($urls[$uri])) {
       return $urls[$uri];
@@ -241,7 +243,7 @@ final class FileSystem {
     if (empty($streamWrappers[$scheme])) {
       $streamWrappers[$scheme] = new self::$streamWrappers[$scheme]();
     }
-    return ($urls[$uri] = $streamWrappers[$scheme]->getExternalPath($uri));
+    return ($urls[$uri] = $streamWrappers[$scheme]->getExternalPath($uri, $cacheBuster));
   }
 
   /**

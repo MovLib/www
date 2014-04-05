@@ -18,92 +18,38 @@
 namespace MovLib\Data\Image;
 
 /**
- * Default image style implementation.
+ * Defines the image style object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
 final class ImageStyle {
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The image style's default alternative text.
-   *
-   * @var string
-   */
-  public $alt;
-
-  /**
-   * The image style's height in Pixel.
-   *
-   * @var integer
-   */
-  public $height;
-
-  /**
-   * Whether a placeholder image is in use or not.
-   *
-   * @var boolean
-   */
-  public $placeholder;
-
-  /**
-   * The image's default route arguments.
-   *
-   * @var mixed
-   */
-  protected $routeArguments;
-
-  /**
-   * The image's default route key.
-   *
-   * @var string
-   */
-  protected $routeKey;
-
-  /**
-   * The image style's URL.
-   *
-   * @var string
-   */
   public $src;
 
-  /**
-   * The image style's width in Pixel.
-   *
-   * @var integer
-   */
+  public $uri;
+
+  public $alt;
+
   public $width;
 
+  public $height;
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+  public $route;
 
+  public $placeholder = true;
 
-  /**
-   * Instantiate new image style.
-   *
-   * @param type $url
-   * @param type $alternativeText
-   * @param type $width
-   * @param type $height
-   * @param type $placeholder
-   * @param type $routeKey
-   * @param type $routeArguments
-   */
-  public function __construct($url, $alternativeText, $width, $height, $placeholder, $routeKey, $routeArguments) {
-    $this->alt            = $alternativeText;
-    $this->height         = $height;
-    $this->placeholder    = (boolean) $placeholder;
-    $this->routeArguments = $routeArguments;
-    $this->routeKey       = $routeKey;
-    $this->src            = $url;
-    $this->width          = $width;
+  public function __construct($src, $width, $height = null, $uri = null) {
+    $this->src    = $src;
+    $this->width  = $width;
+    $this->height = $height ?: $width;
+    if ($uri) {
+      $this->placeholder = false;
+      $this->uri         = $uri;
+    }
   }
 
 }

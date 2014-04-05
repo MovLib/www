@@ -31,7 +31,6 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @since 0.0.1-dev
  */
 final class Movie extends \MovLib\Data\AbstractEntity {
-  use \MovLib\Data\Image\ImageReadOnlyTrait;
   use \MovLib\Data\Movie\MovieTrait;
 
 
