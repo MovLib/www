@@ -177,6 +177,7 @@ class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
     foreach ($this->imageGetEffects() as $style => $imageEffect) {
       $this->imageGenerateStyle($style, $imageEffect);
     }
+    $this->imageSaveStyles();
     return $this;
   }
 
@@ -233,6 +234,7 @@ class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
         $this->imageGenerateStyles();
         $this->log->error("Missing image style from persistent storage, re-applying image effect.");
         $this->imageStylesCache[$style] = $this->imageGenerateStyle($style, $this->imageGetEffects()[$style]);
+        $this->imageSaveStyles();
       }
       $this->imageStylesCache[$style]->url = $this->fs->getExternalURL($this->imageGetStyleURI($style), $this->imageCacheBuster);
     }
@@ -272,6 +274,20 @@ class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
    */
   final protected function imageGetURI() {
     return str_replace("upload://", "dr://var/lib/uploads/", "{$this->imageDirectory}/{$this->imageFilename}.{$this->imageExtension}");
+  }
+
+  /**
+   * Save the image styles to persistent storage.
+   *
+   * @return this
+   */
+  protected function imageSaveStyles() {
+    $styles = serialize($this->imageStyles);
+    $stmt   = $this->getMySQLi()->prepare("UPDATE `{$this->getPluralKey()}` SET `styles` = ? WHERE `id` = ?");
+    $stmt->bind_param("sd", $styles, $this->id);
+    $stmt->execute();
+    $stmt->close();
+    return $this;
   }
 
   /**

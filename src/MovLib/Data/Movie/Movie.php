@@ -285,6 +285,18 @@ SQL
   /**
    * {@inheritdoc}
    */
+  protected function imageSaveStyles() {
+    $styles = serialize($this->imageStyles);
+    $stmt   = $this->getMySQLi()->prepare("UPDATE `posters` SET `styles` = ? WHERE `movie_id` = ?");
+    $stmt->bind_param("sd", $styles, $this->id);
+    $stmt->execute();
+    $stmt->close();
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function init() {
     if ($this->year) {
       $this->displayTitleAndYear = $this->intl->t("{0} ({1})", [ $this->displayTitle, $this->year ]);
