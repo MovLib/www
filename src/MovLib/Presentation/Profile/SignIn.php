@@ -130,6 +130,8 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
     $this->form->addAction($this->intl->t("Sign In"), [ "class" => "btn btn-large btn-success" ]);
 
     $this->form->init([ $this, "valid" ], [ "class" => "s s6 o3" ]);
+
+    return $this;
   }
 
 

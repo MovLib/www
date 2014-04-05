@@ -113,7 +113,7 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
         "type"  => "submit",
         "value" => $activeSession["id"],
       ];
-      if ($activeSession["id"] == $session->id) {
+      if ($activeSession["id"] == $session->ssid) {
         $btnAttributes["title"] = $this->intl->t("If you use this button all your active session will be terminated and you’ll be signe out!");
         $btnText                = $this->intl->t("Sign Out");
       }
@@ -195,7 +195,7 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
     }
 
     // Delete own session means sign out.
-    if ($_POST["session_id"] == $session->id) {
+    if ($_POST["session_id"] == $session->ssid) {
       $session->destroy(true);
       throw new SeeOtherRedirect($this->intl->r("/profile/sign-in"));
     }

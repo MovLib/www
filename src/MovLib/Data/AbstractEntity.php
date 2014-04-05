@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data;
 
+use \MovLib\Data\DateTime;
+
 /**
  * Defines the base class for database entity objects.
  *
@@ -90,8 +92,8 @@ abstract class AbstractEntity extends \MovLib\Core\AbstractDatabase {
    * @return this
    */
   protected function init() {
-    $this->changed = new \DateTime($this->changed);
-    $this->created = new \DateTime($this->created);
+    $this->changed = new DateTime($this->changed);
+    $this->created = new DateTime($this->created);
     $this->deleted = (boolean) $this->deleted;
     return $this;
   }

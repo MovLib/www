@@ -46,6 +46,7 @@ final class NotFound extends \MovLib\Presentation\AbstractPresenter {
       $this->intl->t("The requested page could not be found."),
       Alert::SEVERITY_ERROR
     );
+    return $this;
   }
 
   /**

@@ -166,7 +166,7 @@ abstract class AbstractFormElement {
    * Instantiate new form element.
    *
    * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
-   *   HTTP dependency injection container.
+   *   The HTTP dependency injection container.
    * @param string $id
    *   The form element's unique global identifier.
    * @param string $label

@@ -18,7 +18,7 @@
 namespace MovLib\Partial;
 
 /**
- * DateTime presentation.
+ * Defines methods to format date with time.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -26,32 +26,11 @@ namespace MovLib\Partial;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class DateTime {
+final class DateTime {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   * The attributes array.
-   *
-   * @var array
-   */
-  protected $attributes;
-
-  /**
-   * The Intl ICU date format to use for formatting.
-   *
-   * @var integer
-   */
-  public $dateFormat = \IntlDateFormatter::SHORT;
-
-  /**
-   * The time's {@see \DateTime} instance.
-   *
-   * @var \DateTime
-   */
-  protected $dateTime;
 
   /**
    * The active intl instance.
@@ -68,53 +47,66 @@ class DateTime {
   protected $presenter;
 
   /**
-   * The active session.
+   * The timezone to use for formatting.
    *
-   * @var \MovLib\Core\HTTP\Session
+   * @var string
    */
-  protected $session;
-
-  /**
-   * The Intl ICU time format to use for formatting.
-   *
-   * @var integer
-   */
-  public $timeFormat = \IntlDateFormatter::SHORT;
+  protected $timezone;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new time partial.
+   * Instantiate new date and time partial.
    *
-   * @param string $time [optional]
-   *   A date/time string in a valid format as explined in {@link http://www.php.net/manual/en/datetime.formats.php Date
-   *   and Time Formats} or an integer, which is treated as UNIX timestamp. Defaults to <code>"now"</code>.
-   * @param array $attributes [optional]
-   *   Additional attributes that should be applied to the element.
+   * @param \MovLib\Core\Intl $intl
+   *   The active intl instance.
+   * @param \MovLib\Presentation\AbstractPresenter $presenter
+   *   The presenting presenter.
+   * @param string $timezone [optional]
+   *   The timezone identifier to use for formatting, defaults to <code>NULL</code> (the default timezone will be used).
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $time = "now", array $attributes = null) {
-    if (is_int($time)) {
-      $time = "@{$time}";
-    }
-    $this->presenter              = $diContainer->presenter;
-    $this->intl                   = $diContainer->intl;
-    $this->session                = $diContainer->session;
-    $this->dateTime               = new \DateTime($time);
-    $this->attributes             = $attributes;
-    $this->attributes["datetime"] = $this->dateTime->format(\DateTime::W3C);
+  public function __construct(\MovLib\Core\Intl $intl, \MovLib\Presentation\AbstractPresenter $presenter, $timezone = null) {
+    $this->intl      = $intl;
+    $this->presenter = $presenter;
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
-   * Get the string representation of this (date)time.
+   * Get the date and time formatted in the current locale.
    *
+   * @param \MovLib\Data\DateTime $dateTime
+   *   The date and time to format.
+   * @param array $attributes [optional]
+   *   Additional attributes that should be applied to the <code><time></code> element, default to <code>NULL</code>.
+   *   Note that the <code>"datetime"</code> will always be overwritten.
+   * @param integer $dateType [optional]
+   *   Any of the {@see \IntlDateFormatter} constants, defaults to {@see \IntlDateFormatter::MEDIUM}.
+   * @param integer $timeType [optional]
+   *   Any of the {@see \IntlDateFormatter} constants, defaults to {@see \IntlDateFormatter::MEDIUM}.
+   * @param string $timezone [optional]
+   *   Use a different timezone to format this date and time, defaults to <code>NULL</code> and first falls back to the
+   *   timezone that was passed to the constructor and then to the default server timezone.
+   * @param string $locale [optional]
+   *   Use a different locale to format this date and time, defaults to <code>NULL</code> and the current locale will be
+   *   used.
    * @return string
-   *   The string representation of this (date)time.
+   *   The date and time formatted in the current locale.
    */
-  public function __toString() {
-    $time = new \IntlDateFormatter($this->intl->locale, $this->dateFormat, $this->timeFormat, $this->session->userTimezone);
-    return "<time{$this->presenter->expandTagAttributes($this->attributes)}>{$time->format($this->dateTime)}</time>";
+  public function format(\MovLib\Data\DateTime $dateTime, array $attributes = null, $dateType = \IntlDateFormatter::MEDIUM, $timeType = \IntlDateFormatter::MEDIUM, $timezone = null, $locale = null) {
+    if (!$timezone) {
+      $timezone = $this->timezone;
+    }
+    if (!$locale) {
+      $locale = $this->intl->locale;
+    }
+    $time                   = new \IntlDateFormatter($locale, $dateType, $timeType, $timezone);
+    $attributes["datetime"] = (string) $dateTime;
+    return "<time{$this->presenter->expandTagAttributes($attributes)}>{$time->format($dateTime)}</time>";
   }
 
 }

@@ -132,7 +132,7 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    *
    * @var string
    */
-  public $id;
+  public $ssid;
 
   /**
    * The time this session's identifier was last regenerated.
@@ -428,10 +428,10 @@ SQL
     else {
       // @devStart
       // @codeCoverageIgnoreStart
-      $this->log->debug("Deleting session", [ "id" => $this->id ]);
+      $this->log->debug("Deleting session", [ "id" => $this->ssid ]);
       // @codeCoverageIgnoreEnd
       // @devEnd
-      $this->delete($this->id);
+      $this->delete($this->ssid);
     }
 
     // The user is no longer authenticated.
@@ -501,7 +501,7 @@ SQL
     // @devEnd
     $remoteAddress = inet_pton($this->request->remoteAddress);
     $stmt = $this->getMySQLi()->prepare("INSERT INTO `sessions` (`authentication`, `id`, `remote_address`, `user_id`, `user_agent`) VALUES (FROM_UNIXTIME(?), ?, ?, ?, ?)");
-    $stmt->bind_param("isbds", $this->authentication, $this->id, $remoteAddress, $this->userId, $this->request->userAgent);
+    $stmt->bind_param("isbds", $this->authentication, $this->ssid, $remoteAddress, $this->userId, $this->request->userAgent);
     $stmt->execute();
     $stmt->close();
     return $this;
@@ -541,9 +541,9 @@ SQL
     // @devEnd
     if (session_regenerate_id(true) === true) {
       if ($this->userId > 0) {
-        $this->kernel->delayMethodCall([ $this, "update" ], [ $this->id ]);
+        $this->kernel->delayMethodCall([ $this, "update" ], [ $this->ssid ]);
       }
-      $this->id       = session_id();
+      $this->ssid       = session_id();
       $this->initTime = $this->request->time;
     }
     else {
@@ -749,11 +749,11 @@ SQL
       throw $e;
     }
 
-    $this->id = session_id();
+    $this->ssid = session_id();
 
     // @devStart
     // @codeCoverageIgnoreStart
-    $this->log->debug("Started Session {$this->id}");
+    $this->log->debug("Started Session {$this->ssid}");
     // @codeCoverageIgnoreEnd
     // @devEnd
 
@@ -848,7 +848,7 @@ SQL
   public function update($oldId) {
     $remoteAddress = inet_pton($this->request->remoteAddress);
     $stmt = $this->getMySQLi()->prepare("UPDATE `sessions` SET `id` = ?, `remote_address` = ?, `user_agent` = ? WHERE `id` = ? AND `user_id` = ?");
-    $stmt->bind_param("sbssd", $this->id, $remoteAddress, $this->request->userAgent, $oldId, $this->userId);
+    $stmt->bind_param("sbssd", $this->ssid, $remoteAddress, $this->request->userAgent, $oldId, $this->userId);
     $stmt->execute();
     $stmt->close();
     return $this;
