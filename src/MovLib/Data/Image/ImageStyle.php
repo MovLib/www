@@ -37,7 +37,7 @@ class ImageStyle {
    *
    * @var string
    */
-  public $alt;
+  public $alt = "";
 
   /**
    * The image style's height in Pixel.
@@ -56,7 +56,7 @@ class ImageStyle {
   /**
    * The image style's effect that was applied on it.
    *
-   * @var \MovLib\Data\Image\ImageEffect
+   * @var null|\MovLib\Data\Image\ImageEffect
    */
   public $effect;
 

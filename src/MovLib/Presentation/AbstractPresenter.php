@@ -617,7 +617,8 @@ abstract class AbstractPresenter {
     ;
 
     if ($this->session->isAuthenticated === true) {
-      $userIcon = "<div class='clicker ico ico-settings authenticated'><span class='badge'>2</span></div>";
+      $avatar   = $this->img($this->session->imageGetStyle());
+      $userIcon = "<div class='clicker ico ico-settings authenticated'>{$avatar}<span class='badge'>2</span></div>";
       $userNavigation =
         "<ul class='o1 sm2 no-list'>" .
           "<li>{$this->a($this->intl->r("/profile/messages"), $this->intl->t("Messages"), [ "class" => "ico ico-email" ])}</li>" .
@@ -629,8 +630,8 @@ abstract class AbstractPresenter {
           "<li>{$this->a($this->intl->r("/profile/account-settings"), $this->intl->t("Settings"), [ "class" => "ico ico-settings" ])}</li>" .
           "<li class='separator name'>{$this->session->userName}</li>" .
           "<li>{$this->a($this->intl->r("/profile/sign-out"), $this->intl->t("Sign Out"), [ "class" => "danger" ])}</li>" .
-        "</ul>";
-        //$this->getImage($this->session->userAvatar, $this->intl->r("/profile"));
+        "</ul>" .
+        "<a href='{$this->intl->r("/profile")}'>{$avatar}</a>";
     }
     else {
       $userIcon = "<div class='btn btn-inverse clicker ico ico-user-add'></div>";

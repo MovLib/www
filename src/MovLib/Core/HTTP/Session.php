@@ -17,6 +17,8 @@
  */
 namespace MovLib\Core\HTTP;
 
+use \MovLib\Data\Image\ImageStyle;
+use \MovLib\Data\Image\ImageStylePlaceholder;
 use \MovLib\Exception\ClientException\ForbiddenException;
 use \MovLib\Exception\ClientException\UnauthorizedException;
 
@@ -79,18 +81,32 @@ final class Session extends \MovLib\Core\AbstractDatabase {
   const USER_ID = 2;
 
   /**
+   * Session array key for the user's MD5 image cache buster string.
+   *
+   * @var integer
+   */
+  const USER_IMAGE_CACHE_BUSTER = 3;
+
+  /**
+   * Session array key for the user's imag extension.
+   *
+   * @var integer
+   */
+  const USER_IMAGE_EXTENSION = 4;
+
+  /**
    * Session array key for the user's name.
    *
    * @var integer
    */
-  const USER_NAME = 3;
+  const USER_NAME = 5;
 
   /**
    * Session array key for the user's time zone.
    *
    * @var integer
    */
-  const USER_TIMEZONE = 4;
+  const USER_TIMEZONE = 6;
 
 
 
@@ -147,21 +163,35 @@ final class Session extends \MovLib\Core\AbstractDatabase {
   protected $response;
 
   /**
-   * The session's user ID.
+   * The session user's unique identifier.
    *
    * @var integer
    */
   public $userId = 0;
 
   /**
-   * The session's user name.
+   * The session user's image cachge buster.
+   *
+   * @var null|string
+   */
+  protected $userImageCacheBuster;
+
+  /**
+   * The session user's image extension.
+   *
+   * @var null|string
+   */
+  protected $userImageExtension;
+
+  /**
+   * The session user's unique name.
    *
    * @var string
    */
   public $userName;
 
   /**
-   * The session's user time zone ID.
+   * The session user's timezone.
    *
    * @var string
    */
@@ -200,10 +230,13 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function authenticate($email, $rawPassword) {
-    $stmt = $this->getMySQLi()->prepare("SELECT `id`, `language_code`, `name`, `password`, `timezone` FROM `users` WHERE `email` = ? LIMIT 1");
+    $stmt = $this->getMySQLi()->prepare(<<<SQL
+SELECT `id`, HEX(`image_cache_buster`), `image_extension`, `language_code`, `name`, `password`, `timezone` FROM `users` WHERE `email` = ? LIMIT 1
+SQL
+    );
     $stmt->bind_param("s", $email);
     $stmt->execute();
-    $stmt->bind_result($this->userId, $languageCode, $this->userName, $passwordHash, $this->userTimezone);
+    $stmt->bind_result($this->userId, $this->userImageCacheBuster, $this->userImageExtension, $languageCode, $this->userName, $passwordHash, $this->userTimezone);
     $found = $stmt->fetch();
     if (!$found) {
       // @devStart
@@ -224,11 +257,13 @@ final class Session extends \MovLib\Core\AbstractDatabase {
     }
 
     $this->authentication = $this->initTime = $this->request->time;
-    $_SESSION[self::AUTHENTICATION] =& $this->authentication;
-    $_SESSION[self::INIT_TIME]      =& $this->initTime;
-    $_SESSION[self::USER_ID]        =& $this->userId;
-    $_SESSION[self::USER_NAME]      =& $this->userName;
-    $_SESSION[self::USER_TIMEZONE]  =& $this->userTimezone;
+    $_SESSION[self::AUTHENTICATION]          =& $this->authentication;
+    $_SESSION[self::INIT_TIME]               =& $this->initTime;
+    $_SESSION[self::USER_ID]                 =& $this->userId;
+    $_SESSION[self::USER_IMAGE_CACHE_BUSTER] =& $this->userImageCacheBuster;
+    $_SESSION[self::USER_IMAGE_EXTENSION]    =& $this->userImageExtension;
+    $_SESSION[self::USER_NAME]               =& $this->userName;
+    $_SESSION[self::USER_TIMEZONE]           =& $this->userTimezone;
 
     // Maybe the user was doing some work as anonymous user and already has a session active. If so generate new session
     // identifier and if not generate a completely new session.
@@ -400,12 +435,14 @@ final class Session extends \MovLib\Core\AbstractDatabase {
     }
 
     // The user is no longer authenticated.
-    $this->active          = false;
-    $this->authentication  = null;
-    $this->isAuthenticated = false;
-    $this->userId          = 0;
-    $this->userName        = $this->request->remoteAddress;
-    $this->userTimezone    = $this->config->timezone;
+    $this->active               = false;
+    $this->authentication       = null;
+    $this->isAuthenticated      = false;
+    $this->userId               = 0;
+    $this->userImageCacheBuster = null;
+    $this->userImageExtension   = null;
+    $this->userName             = $this->request->remoteAddress;
+    $this->userTimezone         = $this->config->timezone;
 
     return $this;
   }
@@ -426,6 +463,29 @@ final class Session extends \MovLib\Core\AbstractDatabase {
     }
     $result->free();
     return $activeSessions;
+  }
+
+  /**
+   * Fast version of image style retrieval for the user's session image.
+   *
+   * <b>NOTE</b><br>
+   * The session doesn't support any styles, there is only one style available!
+   *
+   * @see \MovLib\Data\User\User::imageGetEffects()
+   * @return \MovLib\Data\Image\ImageStyle
+   *   The session user image style.
+   */
+  public function imageGetStyle() {
+    if (isset($this->userImageCacheBuster)) {
+      $filename        = mb_strtolower($this->userName);
+      $imageStyle      = new ImageStyle("upload://user/{$filename}.{$this->userImageExtension}", 50, 50);
+      $imageStyle->url = "//{$this->config->hostnameStatic}/uploads/user/{$filename}.nav.{$this->userImageExtension}?{$this->userImageCacheBuster}";
+    }
+    else {
+      $imageStyle = new ImageStylePlaceholder(50);
+    }
+    $imageStyle->route = $this->intl->r("/profile");
+    return $imageStyle;
   }
 
   /**
@@ -555,6 +615,8 @@ final class Session extends \MovLib\Core\AbstractDatabase {
         $stmt = $mysqli->prepare(<<<SQL
 SELECT
   `users`.`id`,
+  HEX(`users`.`image_cache_buster`),
+  `users`.`image_extension`,
   `users`.`name`,
   `users`.`timezone`,
   `sessions`.`authentication`
@@ -565,7 +627,7 @@ SQL
         );
         $stmt->bind_param("s", $this->request->cookies[$this->config->sessionName]);
         $stmt->execute();
-        $stmt->bind_result($this->userId, $this->userName, $this->userTimezone, $this->authentication);
+        $stmt->bind_result($this->userId, $this->userImageCacheBuster, $this->userImageExtension, $this->userName, $this->userTimezone, $this->authentication);
         $found = $stmt->fetch();
         $stmt->close();
 
@@ -577,11 +639,13 @@ SQL
           // @codeCoverageIgnoreEnd
           // @devEnd
           $this->regenerate();
-          $_SESSION[self::AUTHENTICATION] =& $this->authentication;
-          $_SESSION[self::INIT_TIME]      =& $this->initTime;
-          $_SESSION[self::USER_ID]        =& $this->userId;
-          $_SESSION[self::USER_NAME]      =& $this->userName;
-          $_SESSION[self::USER_TIMEZONE]  =& $this->userTimezone;
+          $_SESSION[self::AUTHENTICATION]          =& $this->authentication;
+          $_SESSION[self::INIT_TIME]               =& $this->initTime;
+          $_SESSION[self::USER_ID]                 =& $this->userId;
+          $_SESSION[self::USER_IMAGE_CACHE_BUSTER] =& $this->userImageCacheBuster;
+          $_SESSION[self::USER_IMAGE_EXTENSION]    =& $this->userImageExtension;
+          $_SESSION[self::USER_NAME]               =& $this->userName;
+          $_SESSION[self::USER_TIMEZONE]           =& $this->userTimezone;
           $this->isAuthenticated = true;
         }
         else {
@@ -600,12 +664,14 @@ SQL
         $this->log->debug("Loaded session from memcached");
         // @codeCoverageIgnoreEnd
         // @devEnd
-        $this->authentication  =& $_SESSION[self::AUTHENTICATION];
-        $this->initTime        =& $_SESSION[self::INIT_TIME];
-        $this->userId          =& $_SESSION[self::USER_ID];
-        $this->userName        =& $_SESSION[self::USER_NAME];
-        $this->userTimezone    =& $_SESSION[self::USER_TIMEZONE];
-        $this->isAuthenticated = true;
+        $this->authentication       = $_SESSION[self::AUTHENTICATION];
+        $this->initTime             = $_SESSION[self::INIT_TIME];
+        $this->userId               = $_SESSION[self::USER_ID];
+        $this->userImageCacheBuster = $_SESSION[self::USER_IMAGE_CACHE_BUSTER];
+        $this->userImageExtension   = $_SESSION[self::USER_IMAGE_EXTENSION];
+        $this->userName             = $_SESSION[self::USER_NAME];
+        $this->userTimezone         = $_SESSION[self::USER_TIMEZONE];
+        $this->isAuthenticated      = true;
         if (($this->initTime + self::REGENERATION_GRACE_TIME) < $this->request->time) {
           $this->regenerate();
         }
