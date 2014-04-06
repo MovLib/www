@@ -18,7 +18,6 @@
 namespace MovLib\Data\Movie;
 
 use \MovLib\Data\Date;
-use \MovLib\Data\Route\EntityRoute;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -31,7 +30,6 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @since 0.0.1-dev
  */
 final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity {
-  use \MovLib\Data\Movie\MovieTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -305,9 +303,11 @@ SQL
     else {
       $this->displayTitleAndYear = $this->displayTitle;
     }
-    $this->imageAlternativeText = $this->intl->t("{movie_title} poster.", [ "movie_title" => $this->displayTitleAndYear ]);
+    $this->imageAlternativeText = $this->intl->t("{movie_title} poster.", [ "movie_title" => $this->displayTitleAndYear]);
     $this->imageDirectory       = "upload://movie/{$this->id}/poster";
-    $this->route                = new EntityRoute($this->intl, "/movie/{0}", $this->id, "/movies");
+    $this->pluralKey            = $this->tableName = "movies";
+    $this->route                = $this->intl->r("/movie/{0}", $this->id);
+    $this->singularKey          = "movie";
     return parent::init();
   }
 

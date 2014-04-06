@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Person;
+namespace MovLib\Data;
 
 /**
- * rovides properties and methods that are needed by several person objects.
+ * Configuration for database classes.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -26,42 +26,51 @@ namespace MovLib\Data\Person;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-trait PersonTrait {
+abstract class AbstractConfig extends \MovLib\Core\AbstractDatabase {
+
 
   /**
-   * {@inheritdoc}
+   * The plural translation key.
+   *
+   * @var string
    */
-  public function getPluralKey() {
-    return "persons";
-  }
+  public $pluralKey;
 
   /**
-   * {@inheritdoc}
+   * The route in the current locale;
+   *
+   * @var string
    */
-  public function getPluralName() {
-    static $plural;
-    if (!$plural) {
-      $plural = $this->intl->t("Persons");
+  public $route;
+
+  /**
+   * The singular translation key.
+   *
+   * @var string
+   */
+  public $singularKey;
+
+  /**
+   * The table name.
+   *
+   * @var string
+   */
+  public $tableName;
+
+  /**
+   * Initialize the configurable object.
+   *
+   * @return this
+   */
+  protected function init() {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    foreach ([ "pluralKey", "route", "singularKey", "tableName" ] as $property) {
+      assert(!empty($this->{$property}), "You must initialize the \${$property} in your class " . static::class . ".");
     }
-    return $plural;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getSingularKey() {
-    return "person";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getSingularName() {
-    static $singular;
-    if (!$singular) {
-      $singular = $this->intl->t("Person");
-    }
-    return $singular;
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    return $this;
   }
 
 }

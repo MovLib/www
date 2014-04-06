@@ -46,7 +46,12 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    return $this->initShow(new Award($this->diContainerHTTP, $_SERVER["AWARD_ID"]), "Organization");
+    return $this->initShow(
+      new Award($this->diContainerHTTP, $_SERVER["AWARD_ID"]),
+      $this->intl->t("Awards"),
+      $this->intl->t("Award"),
+      "Organization"
+    );
   }
 
   /**

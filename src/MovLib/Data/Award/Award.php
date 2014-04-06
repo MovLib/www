@@ -18,20 +18,19 @@
 namespace MovLib\Data\Award;
 
 use \MovLib\Data\Date;
-use \MovLib\Data\Route\EntityRoute;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
  * Defines the award entity object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
 final class Award extends \MovLib\Data\AbstractEntity {
-  use \MovLib\Data\Award\AwardTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -176,7 +175,9 @@ SQL
     $this->links          && ($this->links          = unserialize($this->links));
     $this->firstEventYear && ($this->firstEventYear = new Date($this->firstEventYear));
     $this->lastEventYear  && ($this->lastEventYear  = new Date($this->lastEventYear));
-    $this->route          = new EntityRoute($this->intl, "/award/{0}", $this->id, "/awards");
+    $this->pluralKey      = $this->tableName = "awards";
+    $this->route          = $this->intl->r("/award/{0}", [ $this->id]);
+    $this->singularKey    = "award";
     return parent::init();
   }
 

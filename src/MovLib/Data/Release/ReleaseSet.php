@@ -22,13 +22,13 @@ namespace MovLib\Data\Release;
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
 final class ReleaseSet extends \MovLib\Data\AbstractSet {
-  use \MovLib\Data\Release\ReleaseTrait;
 
   /**
    * {@inheritdoc}
@@ -47,6 +47,16 @@ FROM `release`
 {$where}
 {$orderBy}
 SQL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function init() {
+    $this->pluralKey   = $this->tableName = "releases";
+    $this->route       = $this->intl->rp("/releases");
+    $this->singularKey = "release";
+    return parent::init();
   }
 
 }

@@ -46,7 +46,11 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    return $this->initIndex(new CompanySet($this->diContainerHTTP), $this->intl->t("Create New Company"));
+    return $this->initIndex(
+      new CompanySet($this->diContainerHTTP),
+      $this->intl->t("Companies"),
+      $this->intl->t("Create New Company")
+    );
   }
 
   /**

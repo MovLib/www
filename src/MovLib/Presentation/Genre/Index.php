@@ -41,10 +41,8 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
   public function init() {
     return $this->initIndex(
       new GenreSet($this->diContainerHTTP),
-      $this->intl->t("Create New Genre"),
       $this->intl->t("Genres"),
-      "genres",
-      "genre"
+      $this->intl->t("Create New Genre")
     );
   }
 

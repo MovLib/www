@@ -29,7 +29,6 @@ use \MovLib\Data\Genre\Genre;
  * @since 0.0.1-dev
  */
 final class MovieSet extends \MovLib\Data\AbstractSet {
-  use \MovLib\Data\Movie\MovieTrait;
 
   /**
    * {@inheritdoc}
@@ -128,6 +127,16 @@ FROM `movies`
     AND `posters`.`deleted` = false
 {$where} {$orderBy}
 SQL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function init() {
+    $this->pluralKey   = $this->tableName = "movies";
+    $this->route       = $this->intl->rp("/movies");
+    $this->singularKey = "movie";
+    return parent::init();
   }
 
 }

@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data\Genre;
 
-use \MovLib\Data\Route\EntityRoute;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -30,7 +29,6 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @since 0.0.1-dev
  */
 final class Genre extends \MovLib\Data\AbstractEntity {
-  use \MovLib\Data\Genre\GenreTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -175,7 +173,9 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
-    $this->route = new EntityRoute($this->intl, "/genre/{0}", $this->id, "/genres");
+    $this->pluralKey   = $this->tableName = "genres";
+    $this->route       = $this->intl->r("/genre/{0}", $this->id);
+    $this->singularKey = "genre";
     return parent::init();
   }
 

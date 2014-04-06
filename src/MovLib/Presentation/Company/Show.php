@@ -47,7 +47,12 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->initShow(new Company($this->diContainerHTTP, $_SERVER["COMPANY_ID"]), "Corporation");
+    $this->initShow(
+      new Company($this->diContainerHTTP, $_SERVER["COMPANY_ID"]),
+      $this->intl->t("Companies"),
+      $this->intl->t("Company"),
+      "Corporation"
+    );
   }
 
   /**

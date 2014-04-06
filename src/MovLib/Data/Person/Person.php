@@ -18,7 +18,6 @@
 namespace MovLib\Data\Person;
 
 use \MovLib\Data\Date;
-use \MovLib\Data\Route\EntityRoute;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -32,7 +31,6 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @since 0.0.1-dev
  */
 class Person extends \MovLib\Data\Image\AbstractImageEntity {
-  use \MovLib\Data\Person\PersonTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -191,6 +189,7 @@ SQL
         $this->bornName,
         $this->deathDate,
         $this->deathPlaceId,
+        $this->wikipedia,
         $this->awardCount,
         $this->movieCount,
         $this->seriesCount,
@@ -219,10 +218,12 @@ SQL
   protected function init() {
     $this->birthDate && ($this->birthDate = new Date($this->birthDate));
     $this->deathDate && ($this->deathDate = new Date($this->deathDate));
-    $this->route                = new EntityRoute($this->intl, "/person/{0}", $this->id, "/persons");
     $this->imageAlternativeText = $this->intl->t("Photo of {name}", [ "name" => $this->name]);
     $this->imageDirectory       = "upload://person";
     $this->imageFilename        = $this->id;
+    $this->pluralKey            = $this->tableName = "persons";
+    $this->route                = $this->intl->r("/person/{0}", [ $this->id]);
+    $this->singularKey          = "person";
     return parent::init();
   }
 

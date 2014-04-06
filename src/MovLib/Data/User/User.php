@@ -20,7 +20,6 @@ namespace MovLib\Data\User;
 use \MovLib\Data\Date;
 use \MovLib\Data\DateTime;
 use \MovLib\Data\Image\ImageEffect;
-use \MovLib\Data\Route\EntityRoute;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -352,8 +351,10 @@ SQL
     $this->imageAlternativeText = $this->intl->t("{username}’s avatar image.", [ "username" => $this->name ]);
     $this->imageDirectory       = "upload://user";
     $this->imageFilename        = mb_strtolower($this->name);
+    $this->pluralKey            = $this->tableName = "users";
     $this->private              = (boolean) $this->private;
-    $this->route                = new EntityRoute($this->intl, "/user/{0}", $this->imageFilename, "/users");
+    $this->route                = $this->intl->r("/user/{0}", $this->imageFilename);
+    $this->singularKey          = "user";
     return parent::init();
   }
 

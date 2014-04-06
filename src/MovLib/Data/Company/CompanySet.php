@@ -21,13 +21,13 @@ namespace MovLib\Data\Company;
  * Defines the companies set object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
 final class CompanySet extends \MovLib\Data\AbstractSet {
-  use \MovLib\Data\Company\CompanyTrait;
 
   /**
    * {@inheritdoc}
@@ -54,6 +54,16 @@ FROM `companies`
 GROUP BY `id`,`name`,`foundingDate`,`defunctDate`,`deleted`,`changed`,`created`,`placeId`
 {$orderBy}
 SQL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function init() {
+    $this->pluralKey   = $this->tableName = "companies";
+    $this->route       = $this->intl->rp("/companies");
+    $this->singularKey = "company";
+    return parent::init();
   }
 
 }

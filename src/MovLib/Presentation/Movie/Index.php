@@ -43,7 +43,11 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    return $this->initIndex(new MovieSet($this->diContainerHTTP), $this->intl->t("Create New Movie"));
+    return $this->initIndex(
+      new MovieSet($this->diContainerHTTP),
+      $this->intl->t("Movies"),
+      $this->intl->t("Create New Movie")
+    );
   }
 
   /**

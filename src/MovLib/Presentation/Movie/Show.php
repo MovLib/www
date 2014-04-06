@@ -44,7 +44,13 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->initShow(new Movie($this->diContainerHTTP, $_SERVER["MOVIE_ID"]), "Movie", null);
+    $this->initShow(
+      new Movie($this->diContainerHTTP, $_SERVER["MOVIE_ID"]),
+      $this->intl->t("Movies"),
+      $this->intl->t("Movie"),
+      "Movie",
+      null
+    );
     $this->stylesheets[] = "movie";
     $this->javascripts[] = "Movie";
     $this->pageTitle     = $this->getStructuredDisplayTitle($this->entity, false, true);

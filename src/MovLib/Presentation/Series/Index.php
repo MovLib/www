@@ -28,24 +28,17 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\TraitSidebar;
+class Index extends \MovLib\Presentation\AbstractIndexPresenter {
 
-  public function __construct() {
-    $this->initPage($this->intl->t("Series"));
-    $this->initLanguageLinks("/series", null, true);
-    $this->initBreadcrumb();
-    $this->sidebarInit([
-      [ $this->intl->rp("/series"), $this->intl->t("Series"), [ "class" => "ico ico-series" ] ],
-      [ $this->intl->rp("/series/charts"), $this->intl->t("Charts") ],
-      [ $this->intl->r("/series/random"), $this->intl->t("Random") ],
-    ]);
+  public function init() {
+    // @todo: implement.
   }
 
-  protected function getPageContent() {
-    $this->headingBefore =
-      "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/series/create")}'>{$this->intl->t("Create New Series")}</a>"
-    ;
+  protected function formatListingItem(\MovLib\Data\AbstractEntity $item, $delta) {
+    return "";
+  }
+
+  public function getNoItemsContent() {
     return new Alert(
       $this->intl->t("The series feature isn’t implemented yet."),
       $this->intl->t("Check back later"),

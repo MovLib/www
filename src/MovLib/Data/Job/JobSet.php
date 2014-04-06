@@ -21,13 +21,13 @@ namespace MovLib\Data\Job;
  * Defines the job set object.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
 final class JobSet extends \MovLib\Data\AbstractSet {
-  use \MovLib\Data\Job\JobTrait;
 
 
   /**
@@ -49,6 +49,16 @@ FROM `jobs`
 GROUP BY `id`, `name`
 {$orderBy}
 SQL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function init() {
+    $this->pluralKey   = $this->tableName = "jobs";
+    $this->route       = $this->intl->rp("/jobs");
+    $this->singularKey = "job";
+    return parent::init();
   }
 
 }

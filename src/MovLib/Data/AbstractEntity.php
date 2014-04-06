@@ -28,7 +28,7 @@ use \MovLib\Data\DateTime;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractEntity extends \MovLib\Core\AbstractDatabase {
+abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -62,13 +62,6 @@ abstract class AbstractEntity extends \MovLib\Core\AbstractDatabase {
    */
   public $deleted = false;
 
-  /**
-   * The entity's routing information.
-   *
-   * @var \MovLib\Data\Route\EntityRoute
-   */
-  public $route;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
@@ -95,7 +88,16 @@ abstract class AbstractEntity extends \MovLib\Core\AbstractDatabase {
     $this->changed = new DateTime($this->changed);
     $this->created = new DateTime($this->created);
     $this->deleted = (boolean) $this->deleted;
-    return $this;
+    return parent::init();
+  }
+
+  /**
+   * Get the entity's deleted state.
+   *
+   * @return boolean
+   */
+  public function isGone() {
+    return $this->deleted;
   }
 
 }

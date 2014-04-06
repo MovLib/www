@@ -81,4 +81,14 @@ SQL;
     return $name;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  protected function init() {
+    $this->pluralKey   = $this->tableName = "users";
+    $this->route       = $this->intl->rp("/users");
+    $this->singularKey = "user";
+    return parent::init();
+  }
+
 }
