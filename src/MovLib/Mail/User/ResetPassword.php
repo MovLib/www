@@ -17,7 +17,7 @@
  */
 namespace MovLib\Mail\User;
 
-use \MovLib\Data\Temporary;
+use \MovLib\Data\TemporaryStorage;
 use \MovLib\Data\User\User;
 
 /**
@@ -75,7 +75,7 @@ class ResetPassword extends \MovLib\Mail\AbstractEmail {
   public function init() {
     try {
       $this->user    = new User(User::FROM_EMAIL, $this->recipient);
-      $token         = (new Temporary())->set([
+      $token         = (new TemporaryStorage())->set([
         "user_id"        => $this->user->id,
         "reset_password" => true,
       ]);

@@ -156,6 +156,13 @@ final class User extends \MovLib\Data\Image\AbstractImageEntity {
   public $name;
 
   /**
+   * The user's hashed password.
+   *
+   * @var string
+   */
+  public $passwordHash;
+
+  /**
    * Whether the user's personal data is private or not.
    *
    * @var null|boolean
@@ -254,6 +261,7 @@ SELECT
   `id`,
   `name`,
   `email`,
+  `password`,
   `access`,
   `changed`,
   `created`,
@@ -282,6 +290,7 @@ SQL
         $this->id,
         $this->name,
         $this->email,
+        $this->passwordHash,
         $this->access,
         $this->changed,
         $this->created,
@@ -316,6 +325,20 @@ SQL
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  /**
+   * Delete this user's account.
+   *
+   * @return this
+   */
+  public function delete() {
+    $this->getMySQLi()->query("UPDATE `users` SET `" . implode("` = NULL, `", [
+      "admin", "birthdate", "country_code", "dyn_about_me", "edits", "email", "image_cache_buster", "image_extension",
+      "image_styles", "password", "private", "profile_views", "real_name", "reputation", "sex", "language_code",
+      "timezone", "website",
+    ]) . "` = NULL WHERE `id` = {$this->id}");
+    return $this;
+  }
 
   /**
    * {@inheritdoc}
@@ -402,10 +425,36 @@ SQL
   }
 
   /**
-   * {@inheritdoc}
+   * Update the user's email address.
+   *
+   * @param string $newEmail
+   *   The valid new email address.
+   * @return this
+   * @throws \mysqli_sql_exception
    */
-  public function isGone() {
-    return ($this->email === null);
+  public function updateEmail($newEmail) {
+    $stmt = $this->getMySQLi()->prepare("UPDATE `users` SET `email` = ? WHERE `id` = {$this->id}");
+    $stmt->bind_param("s", $newEmail);
+    $stmt->execute();
+    $stmt->close();
+    return $this;
+  }
+
+  /**
+   * Update the user's password.
+   *
+   * @param string $rawPassword
+   *   The (raw) new password.
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function updatePassword($rawPassword) {
+    $this->passwordHash = password_hash($rawPassword, $this->config->passwordAlgorithm, $this->config->passwordOptions);
+    $stmt = $this->getMySQLi()->prepare("UPDATE `users` SET `password` = ? WHERE `id` = {$this->id}");
+    $stmt->bind_param("s", $this->passwordHash);
+    $stmt->execute();
+    $stmt->close();
+    return $this;
   }
 
 }

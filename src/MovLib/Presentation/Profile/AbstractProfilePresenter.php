@@ -17,8 +17,10 @@
  */
 namespace MovLib\Presentation\Profile;
 
+use \MovLib\Data\User\User;
+
 /**
- * Defines methods and properties shared by all profile presenters.
+ * Defines the base class for most profile presenters.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,8 +28,23 @@ namespace MovLib\Presentation\Profile;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-trait ProfileTrait {
+abstract class AbstractProfilePresenter extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Partial\SidebarTrait;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * The currently signed in user.
+   *
+   * @var null|\MovLib\Data\User\User
+   */
+  protected $user;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * Initialize a profile presentation.
@@ -39,9 +56,14 @@ trait ProfileTrait {
    *   The presentation's translated title.
    * @param string $routeKey
    *   The presentations' untranslated route key for the language links.
+   * @param boolean $initUser [optional]
+   *   Whether to instantiate the user object based on the current session or not, defaults to <code>FALSE</code>.
+   * @param null|string $authTimeMessage [optional]
+   *   The message to display if the authentication time is exceeding the grace time, defaults to <code>NULL</code> and
+   *   the authentication time won't be validated.
    * @return this
    */
-  final protected function initProfilePresentation($unauthorizedMessage, $title, $routeKey) {
+  final protected function initProfilePresentation($unauthorizedMessage, $title, $routeKey, $initUser = false, $authTimeMessage = null) {
     // All profile presentations' require at least an active and valid session.
     $this->session->checkAuthorization($unauthorizedMessage);
 
@@ -71,6 +93,16 @@ trait ProfileTrait {
       [ $this->intl->r("/profile/password-settings"), $this->intl->t("Password"), [ "class" => "ico ico-lock" ] ],
       [ $this->intl->r("/profile/danger-zone"), $this->intl->t("Danger Zone"), [ "class" => "ico ico-alert" ] ],
     ]);
+
+    if ($initUser) {
+      $this->user = new User($this->diContainerHTTP, $this->session->userId, User::FROM_ID);
+    }
+
+    if ($authTimeMessage) {
+      session_cache_limiter("nocache");
+      $this->response->cacheable = false;
+      $this->session->checkAuthorizationTime($authTimeMessage);
+    }
 
     return $this;
   }

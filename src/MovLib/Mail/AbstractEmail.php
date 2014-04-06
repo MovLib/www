@@ -173,9 +173,10 @@ abstract class AbstractEmail {
    */
   final protected function url($route, array $query = null) {
     if ($query) {
-      $query = "?" . implode("&", array_walk($query, function ($value, $key) {
-        return "{$this->fs->urlEncodePath($this->intl->r($key))}={$this->fs->urlEncodePath($value)}";
-      }));
+      array_walk($query, function (&$value, $key) {
+        $value = rawurlencode($this->intl->r($key)) . "=" . rawurlencode($value);
+      });
+      $query = "?" . implode("&", $query);
     }
     return "{$this->request->scheme}://{$this->request->hostname}{$this->fs->urlEncodePath($route)}{$query}";
   }

@@ -1045,12 +1045,12 @@ SHOW WARNINGS;
 -- Table `movlib`.`sessions`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`sessions` (
-  `id` VARBINARY(86) NOT NULL COMMENT 'The session’s unique ID.',
+  `ssid` VARBINARY(86) NOT NULL COMMENT 'The session’s unique identifier.',
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique ID.',
   `authentication` DATETIME NOT NULL COMMENT 'Timestamp when this session was initialized.',
   `remote_address` VARBINARY(128) NOT NULL COMMENT 'The session’s IP address.',
   `user_agent` TINYBLOB NOT NULL COMMENT 'The session’s user agent string.',
-  PRIMARY KEY (`id`, `user_id`),
+  PRIMARY KEY (`ssid`),
   INDEX `fk_sessions_users` (`user_id` ASC),
   CONSTRAINT `fk_sessions_users`
     FOREIGN KEY (`user_id`)

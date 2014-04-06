@@ -15,9 +15,9 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Mail\User;
+namespace MovLib\Mail\Profile;
 
-use \MovLib\Data\Temporary;
+use \MovLib\Data\TemporaryStorage;
 
 /**
  * This email template is used if a user requests an email change.
@@ -29,7 +29,7 @@ use \MovLib\Data\Temporary;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class EmailChange extends \MovLib\Mail\AbstractEmail {
+final class EmailAddressChangeEmail extends \MovLib\Mail\AbstractEmail {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -65,6 +65,11 @@ class EmailChange extends \MovLib\Mail\AbstractEmail {
    *   for them to update their email address.
    */
   public function __construct(\MovLib\Data\User\User $user, $newEmail) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert(!empty($newEmail), "\$newEmail cannot be empty.");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     $this->user      = $user;
     $this->recipient = $newEmail;
   }
@@ -74,22 +79,20 @@ class EmailChange extends \MovLib\Mail\AbstractEmail {
 
 
   /**
-   * Initialize email properties.
-   *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
-   *   The dependency injection container.
-   * @return this
+   * {@inheritdoc}
    */
   public function init(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
     parent::init($diContainerHTTP);
     $this->subject = $this->intl->t("Requested Email Change");
-    $token         = (new Temporary())->set([ "user_id" => $this->user->id, "new_email" => $this->recipient ]);
-    $this->link    = $this->url($this->request->path, [ "token" => $token ]);
+    $this->link    = $this->url($this->request->path, [ "token" => (new TemporaryStorage($this->diContainerHTTP))->set((object) [
+      "userId"   => $this->user->id,
+      "newEmail" => $this->recipient,
+    ])]);
     return $this;
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getHTML() {
     return
@@ -104,7 +107,7 @@ class EmailChange extends \MovLib\Mail\AbstractEmail {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getPlainText() {
     return <<<EOT

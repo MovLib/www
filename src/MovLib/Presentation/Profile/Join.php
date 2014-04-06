@@ -71,7 +71,7 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
   /**
    * The full user object we create during a valid join attempt.
    *
-   * @var \MovLib\Data\User\FullUser
+   * @var \MovLib\Data\User\User
    */
   protected $user;
 

@@ -26,7 +26,7 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Temporary extends \MovLib\Core\AbstractDatabase {
+final class TemporaryStorage extends \MovLib\Core\AbstractDatabase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -98,8 +98,9 @@ final class Temporary extends \MovLib\Core\AbstractDatabase {
     if (!$key) {
       $key = hash("sha256", openssl_random_pseudo_bytes(1024));
     }
+    $data = serialize($data);
     $stmt = $this->getMySQLi()->prepare("INSERT INTO `tmp` (`data`, `key`, `ttl`) VALUES (?, ?, ?)");
-    $stmt->bind_param("sss", serialize($data), $key, $ttl);
+    $stmt->bind_param("sss", $data, $key, $ttl);
     $stmt->execute();
     $stmt->close();
     return $key;
@@ -118,8 +119,9 @@ final class Temporary extends \MovLib\Core\AbstractDatabase {
    * @throws \mysqli_sql_exception
    */
   public function update($data, $key, $ttl = self::TMP_TTL_DAILY) {
+    $data = serialize($data);
     $stmt = $this->getMySQLi()->prepare("UPDATE `tmp` SET `created` = CURRENT_TIMESTAMP, `data` = ?, `ttl` = ?  WHERE `key` = ?");
-    $stmt->bind_param("sss", serialize($data), $ttl, $key);
+    $stmt->bind_param("sss", $data, $ttl, $key);
     $stmt->execute();
     $stmt->close();
     return $this;

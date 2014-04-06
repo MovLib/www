@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,42 +15,31 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Profile;
-
-use \MovLib\Partial\Alert;
+namespace MovLib\Stub\Mail\Profile;
 
 /**
- * Defines the profile wantlist presentation.
+ * Defines the password change object that is temporarily stored in the database if a user wants to change the password.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Wantlist extends \MovLib\Presentation\Profile\AbstractProfilePresenter {
+abstract class PasswordChange {
 
   /**
-   * {@inheritdoc}
+   * The user's unique identifier who requested the email changed for the given token.
+   *
+   * @var string
    */
-  public function init() {
-    return $this->initProfilePresentation(
-      $this->intl->t("You must be signed in to view your wantlist."),
-      $this->intl->t("My Wantlist"),
-      "/profile/wantlist"
-    );
-  }
+  public $userId;
 
   /**
-   * {@inheritdoc}
+   * The user's requested new (unhashed) password.
+   *
+   * @var string
    */
-  public function getContent() {
-    return new Alert(
-      $this->intl->t("The wantlist system isn’t implemented yet."),
-      $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    );
-  }
+  public $newPassword;
 
 }

@@ -17,7 +17,7 @@
  */
 namespace MovLib\Mail\Users;
 
-use \MovLib\Data\Temporary;
+use \MovLib\Data\TemporaryStorage;
 
 /**
  * Email template that is sent to clients after successfully joining MovLib.
@@ -92,7 +92,7 @@ class Join extends \MovLib\Mail\AbstractEmail {
     $this->subject   = $this->intl->t("Welcome to {0}!", [ $kernel->sitename ]);
     $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$this->intl->r("/profile/join")}?{$this->intl->r("token")}=" . rawurlencode(base64_encode($this->recipient));
     $key             = "jointoken{$this->user->email}";
-    $tmp             = new Temporary();
+    $tmp             = new TemporaryStorage();
     $user            = $tmp->get($key);
     if ($user === false) {
       $tmp->set($this->user, $key);

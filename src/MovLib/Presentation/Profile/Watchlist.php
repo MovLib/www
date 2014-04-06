@@ -29,8 +29,7 @@ use \MovLib\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Watchlist extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\Profile\ProfileTrait;
+final class Watchlist extends \MovLib\Presentation\Profile\AbstractProfilePresenter {
 
   /**
    * {@inheritdoc}

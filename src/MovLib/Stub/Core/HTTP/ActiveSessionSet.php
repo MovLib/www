@@ -33,7 +33,7 @@ abstract class ActiveSessionSet {
   /**
    * The active session's authentication time.
    *
-   * @var string
+   * @var \MovLib\Data\DateTime
    */
   public $authentication;
 
@@ -42,7 +42,7 @@ abstract class ActiveSessionSet {
    *
    * @var string
    */
-  public $id;
+  public $ssid;
 
   /**
    * The active session's remote (IP) address.

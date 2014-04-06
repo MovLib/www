@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \MovLib\Data\User\User;
 use \MovLib\Partial\DateTime;
 
 /**
@@ -29,8 +28,7 @@ use \MovLib\Partial\DateTime;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Show extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\Profile\ProfileTrait;
+final class Show extends \MovLib\Presentation\Profile\AbstractProfilePresenter {
 
   /**
    * {@inheritdoc}
@@ -39,7 +37,8 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
     return $this->initProfilePresentation(
       $this->intl->t("You must be signed in to view your profile."),
       $this->intl->t("My Profile"),
-      "/profile"
+      "/profile",
+      true
     );
   }
 
@@ -47,21 +46,20 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    $user = new User($this->diContainerHTTP, $this->session->userId, User::FROM_ID);
-    $dateTime = new DateTime($this->intl, $this, $user->timezone);
+    $dateTime = new DateTime($this->intl, $this, $this->user->timezone);
     return
       "<h2>{$this->intl->t("Your Account Summary")}</h2>" .
       "<div class='r'>" .
         "<dl class='dl--horizontal s s7'>" .
-          "<dt>{$this->intl->t("Username")}</dt><dd>{$user->name}</dd>" .
-          "<dt>{$this->intl->t("User ID")}</dt><dd>{$user->id}</dd>" .
-          "<dt>{$this->intl->t("Edits")}</dt><dd>{$user->edits}</dd>" .
-          "<dt>{$this->intl->t("Reputation")}</dt><dd>{$user->reputation}</dd>" .
-          "<dt>{$this->intl->t("Email Address")}</dt><dd>{$user->email}</dd>" .
-          "<dt>{$this->intl->t("Joined")}</dt><dd>{$dateTime->format($user->created)}</dd>" .
-          "<dt>{$this->intl->t("Last visit")}</dt><dd>{$dateTime->format($user->access)}</dd>" .
+          "<dt>{$this->intl->t("Username")}</dt><dd>{$this->user->name}</dd>" .
+          "<dt>{$this->intl->t("User ID")}</dt><dd>{$this->user->id}</dd>" .
+          "<dt>{$this->intl->t("Edits")}</dt><dd>{$this->user->edits}</dd>" .
+          "<dt>{$this->intl->t("Reputation")}</dt><dd>{$this->user->reputation}</dd>" .
+          "<dt>{$this->intl->t("Email Address")}</dt><dd>{$this->user->email}</dd>" .
+          "<dt>{$this->intl->t("Joined")}</dt><dd>{$dateTime->format($this->user->created)}</dd>" .
+          "<dt>{$this->intl->t("Last visit")}</dt><dd>{$dateTime->format($this->user->access)}</dd>" .
         "</dl>" .
-        "<div class='s s2'>{$this->img($user->imageGetStyle())}</div>" .
+        "<div class='s s2'>{$this->img($this->user->imageGetStyle())}</div>" .
       "</div>"
     ;
   }

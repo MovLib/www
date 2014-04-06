@@ -15,9 +15,9 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Mail\User;
+namespace MovLib\Mail\Profile;
 
-use \MovLib\Data\Temporary;
+use \MovLib\Data\TemporaryStorage;
 
 /**
  * This email template is used if a user requests a password change.
@@ -29,7 +29,7 @@ use \MovLib\Data\Temporary;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class PasswordChange extends \MovLib\Mail\AbstractEmail {
+final class PasswordChangeEmail extends \MovLib\Mail\AbstractEmail {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -63,20 +63,15 @@ class PasswordChange extends \MovLib\Mail\AbstractEmail {
   /**
    * Instantiate new user password change email.
    *
-   * @param \MovLib\Data\Full $user
+   * @param \MovLib\Data\User\User $user
    *   The user who requested the password change.
    * @param string $rawPassword
    *   The new unhashed password.
    */
-  public function __construct($user, $rawPassword) {
+  public function __construct(\MovLib\Data\User\User $user, $rawPassword) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (!($user instanceof \MovLib\Data\User\FullUser)) {
-      throw new \InvalidArgumentException("\$user must be instance of \\MovLib\\Data\\User\\FullUser");
-    }
-    if (empty($rawPassword)) {
-      throw new \InvalidArgumentException("\$rawPassword cannot be empty.");
-    }
+    assert(!empty($rawPassword), "\$rawPassword cannot be empty.");
     // @codeCoverageIgnoreEnd
     // @devEnd
     $this->user        = $user;
@@ -88,25 +83,24 @@ class PasswordChange extends \MovLib\Mail\AbstractEmail {
 
 
   /**
-   * Initialize email properties.
-   *
-   * @return this
+   * {@inheritdoc}
    */
-  public function init() {
+  public function init(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+    parent::init($diContainerHTTP);
     $this->recipient = $this->user->email;
     $this->subject   = $this->intl->t("Requested Password Change");
-    $token           = (new Temporary())->set([
-      "user_id"      => $this->user->id,
-      "new_password" => $this->user->hashPassword($this->rawPassword),
-    ]);
-    $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$kernel->requestURI}?token={$token}";
+    $this->link      = $this->url($this->request->path, [ "token" => (new TemporaryStorage($diContainerHTTP))->set((object) [
+      "userId"      => $this->user->id,
+      "newPassword" => $this->rawPassword,
+    ])]);
     return $this;
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getHTML() {
+    return
       "<p>{$this->intl->t("Hi {0}!", [ $this->user->name ])}</p>" .
       "<p>{$this->intl->t("You (or someone else) requested to change your account’s password.")} {$this->intl->t("You may now confirm this action by {0}clicking this link{1}.", [
         "<a href='{$this->link}'>",
@@ -118,7 +112,7 @@ class PasswordChange extends \MovLib\Mail\AbstractEmail {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getPlainText() {
     return <<<EOT

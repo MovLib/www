@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\Date;
-use \MovLib\Data\User\User;
 use \MovLib\Partial\Country;
 use \MovLib\Partial\Currency;
 use \MovLib\Partial\Form;
@@ -41,15 +40,7 @@ use \MovLib\Partial\FormElement\Select;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class AccountSettings extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\Profile\ProfileTrait;
-
-  /**
-   * The currently signed in user.
-   *
-   * @var \MovLib\Data\User\User
-   */
-  protected $user;
+final class AccountSettings extends \MovLib\Presentation\Profile\AbstractProfilePresenter {
 
   /**
    * {@inheritdoc}
@@ -59,16 +50,13 @@ final class AccountSettings extends \MovLib\Presentation\AbstractPresenter {
    *   If the user with the unique identifier from the session couldn't be found in the database.
    */
   public function init() {
-    session_cache_limiter("nocache");
-    $this->response->cacheable = false;
-    $this->initProfilePresentation(
+    return $this->initProfilePresentation(
       $this->intl->t("You must be signed in to edit your account settings."),
       $this->intl->t("Account Settings"),
-      "/profile/account-settings"
+      "/profile/account-settings",
+      true,
+      $this->intl->t("Please sign in again to verify the legitimacy of this request.")
     );
-    $this->session->checkAuthorizationTime($this->intl->t("Please sign in again to verify the legitimacy of this request."));
-    $this->user = new User($this->diContainerHTTP, $this->session->userId, User::FROM_ID);
-    return $this;
   }
 
   /**

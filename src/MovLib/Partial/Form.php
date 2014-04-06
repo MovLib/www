@@ -102,7 +102,7 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
     try {
     // @codeCoverageIgnoreEnd
     // @devEnd
-      $elements = implode($this->elements);
+      $elements = $this->elements ? implode($this->elements) : null;
       return "{$this->open()}{$elements}{$this->close()}";
     // @devStart
     // @codeCoverageIgnoreStart
@@ -288,20 +288,22 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
       // Used to collect error messages of all form elements.
       $errors = null;
 
-      // Iterate through all form elements and validate them.
-      /* @var $formElement \MovLib\Presentation\Partial\FormElement\AbstractFormElement */
-      foreach ($this->elements as $formElement) {
-        // Used to collect the error messages of this specific form element.
-        $error = null;
+      if ($this->elements) {
+        // Iterate through all form elements and validate them.
+        /* @var $formElement \MovLib\Presentation\Partial\FormElement\AbstractFormElement */
+        foreach ($this->elements as $formElement) {
+          // Used to collect the error messages of this specific form element.
+          $error = null;
 
-        // Let the form element validate itself.
-        $formElement->validate($error);
+          // Let the form element validate itself.
+          $formElement->validate($error);
 
-        // If we have one or more errors for this form element collect them under its unique identifier for easy access
-        // later on within the concrete class. This allows a concrete class to alter certain error messages or react
-        // on certain errors.
-        if ($error) {
-          $errors[$formElement->id] = $error;
+          // If we have one or more errors for this form element collect them under its unique identifier for easy access
+          // later on within the concrete class. This allows a concrete class to alter certain error messages or react
+          // on certain errors.
+          if ($error) {
+            $errors[$formElement->id] = $error;
+          }
         }
       }
 
@@ -315,6 +317,9 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
         // Join all error messages of a specific form element with a break.
         foreach ($errors as $id => $error) {
           $errors[$id] = implode("<br>", (array) $error);
+          if (isset($this->elements[$id])) {
+            $this->elements[$id]->invalid();
+          }
         }
 
         // Join all error messages with paragraphs.

@@ -79,7 +79,7 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
     //
     // We won't append the redirect to query string to the language links in the footer because we have no chance to
     // find out what the translated version of that route would be.
-    if ($this->request->uri != $route) {
+    if ($this->request->path != $route) {
       $this->request->uri = "{$route}?{$redirectToKey}={$this->request->path}";
     }
     // If the client is signed in, but didn't request to be signed out or is currently submitting this form, redirect to
@@ -91,8 +91,7 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
     // Append the URL to the action attribute of our form.
     $this->redirectTo = $this->request->filterInput(INPUT_GET, $redirectToKey, FILTER_SANITIZE_STRING, FILTER_REQUIRE_SCALAR | FILTER_FLAG_STRIP_LOW);
     if ($this->redirectTo && $this->redirectTo != $route) {
-      $this->redirectTo = rawurlencode(rawurldecode($this->redirectTo));
-      $this->request->uri .= "?{$redirectToKey}={$this->redirectTo}";
+      $this->request->uri = "{$route}?{$redirectToKey}={$this->redirectTo}";
     }
 
     // Start rendering the page.

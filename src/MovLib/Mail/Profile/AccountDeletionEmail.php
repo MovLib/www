@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Mail\User;
+namespace MovLib\Mail\Profile;
 
-use \MovLib\Data\Temporary;
+use \MovLib\Data\TemporaryStorage;
 
 /**
- * This email template is used if a user requests account deactivation.
+ * Defines the email that is sent if a user wishes to delete the account.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -28,7 +28,7 @@ use \MovLib\Data\Temporary;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Deletion extends \MovLib\Mail\AbstractEmail {
+final class AccountDeletionEmail extends \MovLib\Mail\AbstractEmail {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -55,17 +55,10 @@ class Deletion extends \MovLib\Mail\AbstractEmail {
   /**
    * Instantiate new user deletion email.
    *
-   * @param \MovLib\Data\Full $user
+   * @param \MovLib\Data\User\User $user
    *   The user who requested deletion.
    */
-  public function __construct($user) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (!($user instanceof \MovLib\Data\User\FullUser)) {
-      throw new \InvalidArgumentException("\$user must be instance of \\MovLib\\Data\\User\\FullUser");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
+  public function __construct(\MovLib\Data\User\User $user) {
     $this->user = $user;
   }
 
@@ -78,21 +71,19 @@ class Deletion extends \MovLib\Mail\AbstractEmail {
    *
    * @return this
    */
-  public function init() {
+  public function init(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+    parent::init($diContainerHTTP);
     $this->recipient = $this->user->email;
-    $this->subject   = $this->intl->t("Reqeusted Deletion");
-    $token           = (new Temporary())->set([
-      "user_id"  => $this->user->id,
-      "deletion" => true,
-    ]);
-    $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$kernel->requestURI}?{$this->intl->r("token")}={$token}";
+    $this->subject   = $this->intl->t("Requested Deletion");
+    $this->link      = $this->url($this->request->path, [ "token" => (new TemporaryStorage($this->diContainerHTTP))->set($this->user->id) ]);
     return $this;
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getHTML() {
+    return
       "<p>{$this->intl->t("Hi {0}!", [ $this->user->name ])}</p>" .
       "<p>{$this->intl->t("You (or someone else) requested to delete your account.")} {$this->intl->t("You may now confirm this action by {0}clicking this link{1}.", [
         "<a href='{$this->link}'>",
@@ -108,7 +99,7 @@ class Deletion extends \MovLib\Mail\AbstractEmail {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getPlainText() {
     return <<<EOT

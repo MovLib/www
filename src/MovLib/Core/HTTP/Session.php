@@ -17,6 +17,7 @@
  */
 namespace MovLib\Core\HTTP;
 
+use \MovLib\Data\DateTime;
 use \MovLib\Data\Image\ImageStyle;
 use \MovLib\Data\Image\ImageStylePlaceholder;
 use \MovLib\Exception\ClientException\ForbiddenException;
@@ -336,21 +337,24 @@ SQL
    * Deletes this session from our session database.
    *
    * @delayed
-   * @param string|array $sessionId [optional]
+   * @param string|array $ssid [optional]
    *   The unique session ID(s) that should be deleted. If no ID is passed along the current session ID of this instance
    *   will be used. If a numeric array is passed all values are treated as session IDs and deleted.
    * @return this
    * @throws \mysqli_sql_exception
    * @throws \MemcachedException
    */
-  public function delete($sessionId = null) {
+  public function delete($ssid = null) {
     $mysqli = $this->getMySQLi();
 
-    if (empty($sessionId)) {
-      $result    = $mysqli->query("SELECT `id` FROM `sessions` WHERE `user_id` = {$this->userId} LIMIT 1");
-      $sessionId = $result->fetch_row()[0];
+    if (empty($ssid)) {
+      $ssid = [ $this->ssid ]; // Make sure ssid is of type array and always contains the current ssid if none given.
+      $result = $mysqli->query("SELECT `ssid` FROM `sessions` WHERE `user_id` = {$this->userId}");
+      while ($row = $result->fetch_row()) {
+        $ssid[] = $row[0];
+      }
       $result->free();
-      if (empty($sessionId)) {
+      if (empty($ssid)) {
         return $this;
       }
     }
@@ -371,23 +375,23 @@ SQL
 
     $memcached = new \Memcached();
     $memcached->addServers($servers);
-    if (is_array($sessionId) && ($c = count($sessionId)) > 0) {
+    if (is_array($ssid) && ($c = count($ssid)) > 0) {
       $in = null;
       for ($i = 0; $i < $c; ++$i) {
         if ($in) {
           $in .= ",";
         }
-        $in .= "'" . $mysqli->real_escape_string($sessionId[$i]) . "'";
+        $in .= "'" . $mysqli->real_escape_string($ssid[$i]) . "'";
       }
-      $mysqli->query("DELETE FROM `sessions` WHERE `id` IN ({$in})");
+      $mysqli->query("DELETE FROM `sessions` WHERE `ssid` IN ({$in})");
       for ($i = 0; $i < $c; ++$i) {
-        $sessionId[$i] = "{$sessionPrefix}{$sessionId[$i]}";
+        $ssid[$i] = "{$sessionPrefix}{$ssid[$i]}";
       }
-      $memcached->deleteMulti($sessionId);
+      $memcached->deleteMulti($ssid);
     }
     else {
-      $mysqli->query("DELETE FROM `sessions` WHERE `id` = '{$mysqli->real_escape_string($sessionId)}'");
-      $memcached->delete("{$sessionPrefix}{$sessionId}");
+      $mysqli->query("DELETE FROM `sessions` WHERE `ssid` = '{$mysqli->real_escape_string($ssid)}'");
+      $memcached->delete("{$sessionPrefix}{$ssid}");
     }
 
     return $this;
@@ -416,7 +420,7 @@ SQL
     $this->response->deleteCookie([ $this->config->sessionName, "lang" ]);
 
     // Delete all sessions if the flag is set.
-    if ($deleteAllSessions === true) {
+    if ($deleteAllSessions) {
       // @devStart
       // @codeCoverageIgnoreStart
       $this->log->debug("Deleting all sessions");
@@ -457,9 +461,12 @@ SQL
    */
   public function getActiveSessions() {
     $activeSessions = [];
-    $result = $this->getMySQLi()->query("SELECT `authentication`, `id`, `remote_address` AS `remoteAddress`, `user_agent` AS `userAgent` FROM `sessions` WHERE `user_id` = {$this->userId}");
+    $result = $this->getMySQLi()->query("SELECT `authentication`, `ssid`, `remote_address` AS `remoteAddress`, `user_agent` AS `userAgent` FROM `sessions` WHERE `user_id` = {$this->userId}");
+    /* @var $activeSession \MovLib\Stub\Core\HTTP\ActiveSessionSet */
     while ($activeSession = $result->fetch_object()) {
-      $activeSessions[] = $activeSession;
+      $activeSession->authentication = new DateTime($activeSession->authentication);
+      $activeSession->remoteAddress  = inet_ntop($activeSession->remoteAddress);
+      $activeSessions[]              = $activeSession;
     }
     $result->free();
     return $activeSessions;
@@ -494,16 +501,21 @@ SQL
    * @return this
    */
   public function insert() {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    $this->log->debug("Inserting session into persistent session storage.");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    $remoteAddress = inet_pton($this->request->remoteAddress);
-    $stmt = $this->getMySQLi()->prepare("INSERT INTO `sessions` (`authentication`, `id`, `remote_address`, `user_id`, `user_agent`) VALUES (FROM_UNIXTIME(?), ?, ?, ?, ?)");
-    $stmt->bind_param("isbds", $this->authentication, $this->ssid, $remoteAddress, $this->userId, $this->request->userAgent);
-    $stmt->execute();
-    $stmt->close();
+    if ($this->ssid && $this->userId) {
+      $remoteAddress = inet_pton($this->request->remoteAddress);
+      $stmt          = $this->getMySQLi()->prepare(<<<SQL
+INSERT INTO `sessions` (`authentication`, `ssid`, `remote_address`, `user_id`, `user_agent`)
+VALUES (FROM_UNIXTIME(?), ?, ?, ?, ?)
+ON DUPLICATE KEY UPDATE
+  `authentication` = VALUES(`authentication`),
+  `remote_address` = VALUES(`remote_address`),
+  `user_agent` = VALUES(`user_agent`)
+SQL
+      );
+      $stmt->bind_param("issds", $this->authentication, $this->ssid, $remoteAddress, $this->userId, $this->request->userAgent);
+      $stmt->execute();
+      $stmt->close();
+    }
     return $this;
   }
 
@@ -543,7 +555,7 @@ SQL
       if ($this->userId > 0) {
         $this->kernel->delayMethodCall([ $this, "update" ], [ $this->ssid ]);
       }
-      $this->ssid       = session_id();
+      $this->ssid     = session_id();
       $this->initTime = $this->request->time;
     }
     else {
@@ -622,7 +634,7 @@ SELECT
   `sessions`.`authentication`
 FROM `sessions`
   INNER JOIN `users` ON `users`.`id` = `sessions`.`user_id`
-WHERE `sessions`.`id` = ? LIMIT 1
+WHERE `sessions`.`ssid` = ? LIMIT 1
 SQL
         );
         $stmt->bind_param("s", $this->request->cookies[$this->config->sessionName]);
@@ -672,8 +684,14 @@ SQL
         $this->userName             = $_SESSION[self::USER_NAME];
         $this->userTimezone         = $_SESSION[self::USER_TIMEZONE];
         $this->isAuthenticated      = true;
+
+        // Regenerate the sesson's identifier if the grace time is over.
         if (($this->initTime + self::REGENERATION_GRACE_TIME) < $this->request->time) {
           $this->regenerate();
+        }
+        // Otherwise make sure that the persistent storage contains this session.
+        else {
+          $this->kernel->delayMethodCall([ $this, "insert" ]);
         }
       }
     }
@@ -841,16 +859,28 @@ SQL
    * Update the ID of a session in our persistent session store.
    *
    * @delayed
-   * @param string $oldId
-   *   The old session ID that should be updated.
+   * @param string $oldSsid
+   *   The old session identifier that should be updated.
    * @return this
    */
-  public function update($oldId) {
-    $remoteAddress = inet_pton($this->request->remoteAddress);
-    $stmt = $this->getMySQLi()->prepare("UPDATE `sessions` SET `id` = ?, `remote_address` = ?, `user_agent` = ? WHERE `id` = ? AND `user_id` = ?");
-    $stmt->bind_param("sbssd", $this->ssid, $remoteAddress, $this->request->userAgent, $oldId, $this->userId);
-    $stmt->execute();
-    $stmt->close();
+  public function update($oldSsid) {
+    if ($this->ssid && $this->userId && $this->ssid != $oldSsid) {
+      try {
+        $remoteAddress = inet_pton($this->request->remoteAddress);
+        $stmt = $this->getMySQLi()->prepare("UPDATE `sessions` SET `ssid` = ?, `remote_address` = ?, `user_agent` = ? WHERE `ssid` = ? AND `user_id` = ?");
+        $stmt->bind_param("ssssd", $this->ssid, $remoteAddress, $this->request->userAgent, $oldSsid, $this->userId);
+        $stmt->execute();
+        $stmt->close();
+      }
+      catch (\mysqli_sql_exception $e) {
+        $this->log->warning($e);
+        // @devStart
+        // @codeCoverageIgnoreStart
+        throw $e;
+        // @codeCoverageIgnoreEnd
+        // @devEnd
+      }
+    }
     return $this;
   }
 
@@ -860,7 +890,17 @@ SQL
    * @return this
    */
   public function updateUserAccess() {
-    $this->getMySQLi()->query("UPDATE `users` SET `access` = CURRENT_TIMESTAMP WHERE `id` = {$this->userId}");
+    try {
+      $this->getMySQLi()->query("UPDATE `users` SET `access` = CURRENT_TIMESTAMP WHERE `id` = {$this->userId}");
+    }
+    catch (\mysqli_sql_exception $e) {
+      $this->log->warning($e);
+      // @devStart
+      // @codeCoverageIgnoreStart
+      throw $e;
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+    }
     return $this;
   }
 
