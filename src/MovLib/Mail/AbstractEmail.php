@@ -64,7 +64,7 @@ abstract class AbstractEmail {
    *
    * @var \MovLib\Core\DIContainer
    */
-  protected $diContainer;
+  protected $diContainerHTTP;
 
   /**
    * The active file system instance.
@@ -109,34 +109,32 @@ abstract class AbstractEmail {
   public $recipient;
 
   /**
+   * The active request instance.
+   *
+   * @var \MovLib\Core\HTTP\Request
+   */
+  protected $request;
+
+  /**
+   * The active response instance.
+   *
+   * @var \MovLib\Core\HTTP\Response
+   */
+  protected $response;
+
+  /**
+   * The active session instance.
+   *
+   * @var \MovLib\Core\HTTP\Session
+   */
+  protected $session;
+
+  /**
    * The email's subject.
    *
    * @var string
    */
   public $subject;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new email.
-   *
-   * @param string $recipient
-   *   The email's recipient email address, must comply at least with {@link http://www.ietf.org/rfc/rfc2822.txt RFC 2822}.
-   * @param string $subject
-   *   The email's subject, must comply with {@link http://www.ietf.org/rfc/rfc2047.txt RFC 2047}.
-   */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $recipient, $subject) {
-    $this->diContainer = $diContainer;
-    $this->config      = $diContainer->config;
-    $this->fs          = $diContainer->fs;
-    $this->intl        = $diContainer->intl;
-    $this->kernel      = $diContainer->kernel;
-    $this->log         = $diContainer->log;
-    $this->recipient   = $recipient;
-    $this->subject     = $subject;
-  }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
@@ -157,5 +155,49 @@ abstract class AbstractEmail {
    *   The email's translated plain text message.
    */
   abstract public function getPlainText();
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Get the absolute URL.
+   *
+   * @param string $route
+   *   The route part of the URL.
+   * @param array $query [optional]
+   *   Associative array containing the data for the query string, keys in the array will be keys and values the values
+   *    in the query string.
+   * @return string
+   *   The absolute URL.
+   */
+  final protected function url($route, array $query = null) {
+    if ($query) {
+      $query = "?" . implode("&", array_walk($query, function ($value, $key) {
+        return "{$this->fs->urlEncodePath($this->intl->r($key))}={$this->fs->urlEncodePath($value)}";
+      }));
+    }
+    return "{$this->request->scheme}://{$this->request->hostname}{$this->fs->urlEncodePath($route)}{$query}";
+  }
+
+  /**
+   * Instantiate new email.
+   *
+   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   *   The HTTP dependency injection container.
+   * @return this
+   */
+  public function init(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+    $this->config          = $diContainerHTTP->config;
+    $this->diContainerHTTP = $diContainerHTTP;
+    $this->fs              = $diContainerHTTP->fs;
+    $this->intl            = $diContainerHTTP->intl;
+    $this->kernel          = $diContainerHTTP->kernel;
+    $this->log             = $diContainerHTTP->log;
+    $this->request         = $diContainerHTTP->request;
+    $this->response        = $diContainerHTTP->response;
+    $this->session         = $diContainerHTTP->session;
+    return $this;
+  }
 
 }

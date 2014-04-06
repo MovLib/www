@@ -17,8 +17,6 @@
  */
 namespace MovLib\Partial\FormElement;
 
-use \MovLib\Exception\ValidationException;
-
 /**
  * Input URL form element.
  *
@@ -118,7 +116,9 @@ class InputURL extends \MovLib\Partial\FormElement\AbstractInput {
    */
   public function __toString() {
     $this->attributes["pattern"] = self::PATTERN;
-    $this->attributes["title"]   = $this->intl->t("The URL must start with either http:// or https:// and continue with a valid domain (username, password and port are not allowed)");
+    $this->attributes["title"]   = $this->intl->t(
+      "The URL must start with either http:// or https:// and continue with a valid domain (username, password and port are not allowed)"
+    );
     if (!isset($this->attributes["placeholder"])) {
       $this->attributes["placeholder"] = "http(s)://";
     }
@@ -173,7 +173,7 @@ class InputURL extends \MovLib\Partial\FormElement\AbstractInput {
     }
 
     // Check if this is an external URL.
-    if (strpos($parts["host"], $kernel->domainDefault) === false && isset($this->attributes["data-allow-external"]) && $this->attributes["data-allow-external"] != true) {
+    if (strpos($parts["host"], $this->config->hostname) === false && isset($this->attributes["data-allow-external"]) && $this->attributes["data-allow-external"] != true) {
       $errors[self::ERROR_EXTERNAL] = $this->intl->t("External URLs are not allowed.");
     }
 
@@ -234,7 +234,7 @@ class InputURL extends \MovLib\Partial\FormElement\AbstractInput {
         CURLOPT_SSL_VERIFYPEER => false,
         CURLOPT_TIMEOUT        => 5,
         // It's very important to let other webmasters know who's probing their servers.
-        CURLOPT_USERAGENT      => "Mozilla/5.0 (compatible; MovLib-Validation/{$kernel->version}; +https://{$kernel->domainDefault}/)",
+        CURLOPT_USERAGENT      => "Mozilla/5.0 (compatible; MovLib-Validation/{$this->config->version}; +https://{$this->config->hostname}/)",
       ]);
       curl_exec($ch);
       $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);

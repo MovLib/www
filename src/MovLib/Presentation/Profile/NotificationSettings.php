@@ -17,10 +17,10 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Partial\Alert;
 
 /**
- * Allows a user to manage her or his notification settings.
+ * Defines the profile notification settings presentation.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -28,29 +28,24 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class NotificationSettings extends \MovLib\Presentation\Profile\Show {
+final class NotificationSettings  extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Presentation\Profile\ProfileTrait;
 
   /**
-   * Instantiate new user notification settings presentation.
-   *
-   * @throws \MovLib\Presentation\Error\Unauthorized
+   * {@inheritdoc}
    */
-  public function __construct() {
-    $session->checkAuthorization($this->intl->t("You must be signed in to change your notification settings."));
-    $this->init($this->intl->t("Notification Settings"), "/profile/notification-settings", [[ $this->intl->r("/profile"), $this->intl->t("Profile") ]]);
+  public function init() {
+    return $this->initProfilePresentation(
+      $this->intl->t("You must be signed in to change your notification settings."),
+      $this->intl->t("Notification Settings"),
+      "/profile/notification-settings"
+    );
   }
 
   /**
-   * @inhertidoc
+   * {@inheritdoc}
    */
-  protected function getBreadcrumbs() {
-    return [[ $this->intl->r("/profile"), $this->intl->t("Profile") ]];
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function getPageContent() {
+  public function getContent() {
     return new Alert(
       $this->intl->t("The notification system isn’t implemented yet."),
       $this->intl->t("Check back later"),

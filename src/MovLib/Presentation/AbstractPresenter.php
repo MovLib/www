@@ -30,7 +30,7 @@ use \MovLib\Partial\Navigation;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractPresenter {
+abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInjectionBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -65,13 +65,6 @@ abstract class AbstractPresenter {
   protected $breadcrumbTitle;
 
   /**
-   * Active global config instance.
-   *
-   * @var \MovLib\Core\Config
-   */
-  protected $config;
-
-  /**
    * HTML that should be included after the page's content.
    *
    * @var string
@@ -84,20 +77,6 @@ abstract class AbstractPresenter {
    * @var string
    */
   protected $contentBefore;
-
-  /**
-   * The active dependency injection container.
-   *
-   * @var \MovLib\Core\HTTP\DIContainerHTTP
-   */
-  protected $diContainerHTTP;
-
-  /**
-   * Active file system instance.
-   *
-   * @var \MovLib\Core\FileSystem
-   */
-  protected $fs;
 
   /**
    * Additional elements for the <code><head></code> element.
@@ -143,13 +122,6 @@ abstract class AbstractPresenter {
   public $id;
 
   /**
-   * Active intl instance.
-   *
-   * @var \MovLib\Core\Intl
-   */
-  protected $intl;
-
-  /**
    * Settings to pass along with this presentation.
    *
    * @var array
@@ -164,25 +136,11 @@ abstract class AbstractPresenter {
   public $javascripts = [];
 
   /**
-   * Active kernel instance.
-   *
-   * @var \MovLib\Core\Kernel
-   */
-  protected $kernel;
-
-  /**
    * The page's translated routes.
    *
    * @var array
    */
   private $languageLinks;
-
-  /**
-   * The active log instance.
-   *
-   * @var \MovLib\Core\Log
-   */
-  protected $log;
 
   /**
    * Contains the namespace parts as array.
@@ -207,34 +165,6 @@ abstract class AbstractPresenter {
   protected $schemaType;
 
   /**
-   * Active HTTP session instance.
-   *
-   * @var \MovLib\Core\HTTP\Session
-   */
-  protected $session;
-
-  /**
-   * Active HTTP request instance.
-   *
-   * @var \MovLib\Core\HTTP\Request
-   */
-  protected $request;
-
-  /**
-   * Active HTTP response instance.
-   *
-   * @var \MovLib\Core\HTTP\Response
-   */
-  protected $response;
-
-  /**
-   * The site's name.
-   *
-   * @var string
-   */
-  protected $siteName;
-
-  /**
    * Additional stylesheets for this presentation.
    *
    * @var array
@@ -252,24 +182,15 @@ abstract class AbstractPresenter {
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
-  /**
-   * Instantiate new presenter object.
-   *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
-   *   HTTP dependency injection container.
-   * @throws \Exception
-   */
+  // @devStart
+  // @codeCoverageIgnoreStart
+  //
+  // The constructor is final for all presenters!
   final public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    $this->diContainerHTTP = $diContainerHTTP;
-    $this->config          = $diContainerHTTP->config;
-    $this->fs              = $diContainerHTTP->fs;
-    $this->intl            = $diContainerHTTP->intl;
-    $this->kernel          = $diContainerHTTP->kernel;
-    $this->log             = $diContainerHTTP->log;
-    $this->request         = $diContainerHTTP->request;
-    $this->response        = $diContainerHTTP->response;
-    $this->session         = $diContainerHTTP->session;
+    parent::__construct($diContainerHTTP);
   }
+  // @codeCoverageIgnoreEnd
+  // @devEnd
 
 
   // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
@@ -293,180 +214,6 @@ abstract class AbstractPresenter {
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-
-  /**
-   * Generate an internal link.
-   *
-   * This method should be used if you link to a page, but can't predict or know if this might be the page the user is
-   * currently viewing. We don't want any links within a document to itself, but there are various reasons why you might
-   * need that. Please use common sense. In general you should simply create the anchor element instead of calling this
-   * method.
-   *
-   * @link http://www.w3.org/TR/html5/text-level-semantics.html#the-a-element
-   * @link http://www.nngroup.com/articles/avoid-within-page-links/ Avoid Within-Page Links
-   * @param string $route
-   *   The original English route.
-   * @param string $text
-   *   The translated text that should appear as link on the page.
-   * @param array $attributes [optional]
-   *   Additional attributes that should be applied to the link element.
-   * @param boolean $ignoreQuery [optional]
-   *   Whether to ignore the query string while checking if the link should be marked active or not. Default is to
-   *   ignore the query string.
-   * @return string
-   *   The internal link ready for print.
-   */
-  final public function a($route, $text, array $attributes = null, $ignoreQuery = true) {
-    // We don't want any links to the current page (as per W3C recommendation). We also have to ensure that the anchors
-    // aren't tabbed to, therefor we completely remove the href attribute. While we're at it we also remove the title
-    // attribute because it doesn't add any value for screen readers without any target (plus the user is actually on
-    // this very page).
-    if ($route == $this->request->uri) {
-      // Remove all attributes which aren't allowed on an anchor with empty href attribute.
-      $unset = [ "download", "href", "hreflang", "rel", "target", "type" ];
-      for ($i = 0; $i < 6; ++$i) {
-        if (isset($attributes[$unset[$i]])) {
-          unset($attributes[$unset[$i]]);
-        }
-      }
-      // Ensure that this anchor is still "tabable".
-      $attributes["tabindex"] = "0";
-      $attributes["title"]    = $this->intl->t("You’re currently viewing this page.");
-      $this->addClass("active", $attributes);
-    }
-    else {
-      // We also have to mark the current anchor as active if the caller requested that we ignore the query part of the
-      // URI (default behaviour of this method). We keep the title attribute in this case as it's a clickable link.
-      if ($ignoreQuery === true && $route == $this->request->path) {
-        $this->addClass("active", $attributes);
-      }
-
-      // Add the route to the anchor element.
-      $attributes["href"] = $route{0} == "#" ? $route : $this->fs->urlEncodePath($route);
-    }
-
-    // Put it all together.
-    return "<a{$this->expandTagAttributes($attributes)}>{$text}</a>";
-  }
-
-  /**
-   * Add CSS class(es) to attributes array of an element.
-   *
-   * This method is useful if you're dealing with an element and you don't know if any CSS class(es) have already been
-   * added to it's attributes array.
-   *
-   * @param string $class
-   *   The CSS class(es) that should be added to the element's attributes array.
-   * @param array $attributes [optional]
-   *   The attributes array of the element to which the CSS class(es) should be added.
-   * @return this
-   */
-  final public function addClass($class, array &$attributes = null) {
-    $attributes["class"] = empty($attributes["class"]) ? $class : "{$attributes["class"]} {$class}";
-    return $this;
-  }
-
-  /**
-   * Collapse all kinds of whitespace characters to a single space.
-   *
-   * @param string $string
-   *   The string to collapse.
-   * @return string
-   *   The collapsed string.
-   */
-  final public function collapseWhitespace($string) {
-    return trim(preg_replace("/\s\s+/m", " ", preg_replace("/[\n\r\t\x{00}\x{0B}]+/m", " ", $string)));
-  }
-
-  /**
-   * Expand the given attributes array to string.
-   *
-   * Many page elements aren't easily created by directly typing the string in the source code. Instead the have to go
-   * through many staged of processing. We use associative arrays to allow all stages of processing to alter the
-   * elemtns attributes before the element is finally printed. This method will expand these associative arrays to a
-   * string that can be used to finally print the element.
-   *
-   * <b>Usage Example:</b>
-   * <pre>$attributes = [ "class" => "css-class", "id" => "css-id" ];
-   * echo "<div{$this->expandAttributes($attributes)}></div>";</pre>
-   *
-   * @param null|array $attributes
-   *   Associative array containing the elements attributes. If no attributes are present (e.g. you're handling an
-   *   object which sometimes has attributes but not always) an empty string will be returned.
-   * @return string
-   *   String representation of the attributes array, or empty string if no attributes are present.
-   */
-  final public function expandTagAttributes($attributes) {
-    // Only expand if we have something to expand.
-    if ($attributes) {
-      // Local variables used to collect the expanded tag attributes.
-      $expanded = null;
-
-      // Go through all attributes and expand them.
-      foreach ($attributes as $name => $value) {
-        // Special handling of boolean attributes, only include them if they are true and do not include the value.
-        if ($value === (boolean) $value) {
-          $value && ($expanded .= " {$name}");
-        }
-        // Special handling of empty attributes (added to the attributes array without any key).
-        elseif ($name === (integer) $name) {
-          // @devStart
-          // @codeCoverageIgnoreStart
-          if (empty($value)) {
-            throw new \LogicException("The value of an empty attribute (numeric key) cannot be empty");
-          }
-          // @codeCoverageIgnoreEnd
-          // @devEnd
-          $expanded .= " {$value}";
-        }
-        // All other attributes are treated equally, but only if they have a value. But beware that the alt attribute
-        // is an exception to this rule.
-        elseif ($name == "alt" || !empty($value)) {
-          // @devStart
-          // @codeCoverageIgnoreStart
-          if (empty($name)) {
-            throw new \LogicException("An attribute's name cannot be empty");
-          }
-          // @codeCoverageIgnoreEnd
-          // @devEnd
-
-          // Only output the language attribute if it differs from the current document language.
-          if ($name == "lang") {
-            $expanded .= $this->lang($value);
-          }
-          else {
-            $expanded .= " {$name}='{$this->htmlEncode($value)}'";
-          }
-        }
-      }
-
-      return $expanded;
-    }
-  }
-
-  /**
-   * Format the given weblinks.
-   *
-   * @param array $weblinks
-   *   The weblinks to format.
-   * @return null|string
-   *   The formatted weblinks, <code>NULL</code> if there are no weblinks to format.
-   */
-  final public function formatWeblinks(array $weblinks) {
-    if (empty($weblinks)) {
-      return;
-    }
-    $formatted = null;
-    $c = count($weblinks);
-    for ($i = 0; $i < $c; ++$i) {
-      if ($formatted) {
-        $formatted .= trim($this->intl->t("{0}, {1}"), "{}01");
-      }
-      $weblink = str_replace("www.", "", parse_url($weblinks[$i], PHP_URL_HOST));
-      $formatted .= "<a href='{$weblinks[$i]}' target='_blank'>{$weblink}</a>";
-    }
-    return $formatted;
-  }
 
   /**
    * Get the reference footer.
@@ -693,64 +440,6 @@ abstract class AbstractPresenter {
   }
 
   /**
-   * Get an image.
-   *
-   * @param \MovLib\Data\Image\ImageStyle $imageStyle
-   *   The image style to get the image for.
-   * @param array $attributes [optional]
-   *   Additional attributes that should be applied to the image tag, defaults to <code>[]</code>.
-   * @param boolean|string $route [optional]
-   *   Whether to use the default route from the image style for linking (<code>TRUE</code> and default) or not
-   *   <code>FALSE</code> or an arbitrary route.
-   * @param array $routeAttributes [optional]
-   *   Additional attributes that should be applied to the wrapping anchor element if <var>$route</var> is set to
-   *   <code>TRUE</code> or an arbitrary route is given.
-   * @return string
-   *   The image.
-   */
-  final public function img(\MovLib\Data\Image\ImageStyle $imageStyle, array $attributes = [], $route = true, array $routeAttributes = null) {
-    // The alt attribute is mandatory on image elements.
-    if (empty($attributes["alt"])) {
-      $attributes["alt"] = $imageStyle->alt;
-    }
-
-    // Add CSS class for additional styling and be sure to remove any structured data from the image tag if this is a
-    // placeholder image we're going to display.
-    if ($imageStyle->placeholder) {
-      $this->addClass("placeholder", $attributes);
-
-      if (isset($attributes["property"])) {
-        unset($attributes["property"]);
-      }
-    }
-
-    // Extract the necessary image tag attributes from the image style.
-    $attributes["src"]    = $imageStyle->url;
-    $attributes["width"]  = $imageStyle->width;
-    $attributes["height"] = $imageStyle->height;
-    $image                = "<img{$this->expandTagAttributes($attributes)}>";
-
-    if ($route !== false) {
-      // @devStart
-      // @codeCoverageIgnoreStart
-      assert(
-        empty($attributes["property"]),
-        "Don't set a property and link an image, this won't be interpreted correctly by structured data tools!"
-      );
-      // @codeCoverageIgnoreEnd
-      // @devEnd
-      if ($route === true) {
-        $route = $imageStyle->route;
-      }
-      $routeAttributes["href"] = $route;
-      $this->addClass("no-link", $routeAttributes);
-      $image = "<a{$this->expandTagAttributes($routeAttributes)}>{$image}</a>";
-    }
-
-    return $image;
-  }
-
-  /**
    * Get the head title.
    *
    * Formats the title of this page for the <code><title></code>-element. A special separator string is used before
@@ -845,87 +534,6 @@ abstract class AbstractPresenter {
         "<script id='jss' type='application/json'>{$jsSettings}</script>" .
         "<script async src='{$this->fs->getExternalURL("asset://js/MovLib.js")}'></script>"
     ;
-  }
-
-  /**
-   * Get the raw HTML string.
-   *
-   * @param string $text
-   *   The encoded HTML string that should be decoded.
-   * @return string
-   *   The raw HTML string.
-   */
-  final public function htmlDecode($text) {
-    if (empty($text)) {
-      // @devStart
-      // @codeCoverageIgnoreStart
-      $this->log->debug("You should avoid passing empty texts to htmlDecode");
-      // @codeCoverageIgnoreEnd
-      // @devEnd
-      return $text;
-    }
-    return htmlspecialchars_decode($text, ENT_QUOTES | ENT_HTML5);
-  }
-
-  /**
-   * Decodes all HTML entities including numerical ones to regular UTF-8 bytes.
-   *
-   * Double-escaped entities will only be decoded once (<code>"&amp;lt;"</code> becomes <code>"&lt;"</code>, not
-   * <code>"<"</code>). Be careful when using this function, as it will revert previous sanitization efforts
-   * (<code>"&lt;script&gt;"</code> will become <code>"<script>"</code>).
-   *
-   * @param string $text
-   *   The text to decode entities in.
-   * @return string
-   *   <var>$text</var> with all HTML entities decoded.
-   */
-  final public function htmlDecodeEntities($text) {
-    if (empty($text)) {
-      // @devStart
-      // @codeCoverageIgnoreStart
-      $this->log->debug("You should avoid passing empty texts to htmlDecodeEntities");
-      // @codeCoverageIgnoreEnd
-      // @devEnd
-      return $text;
-    }
-    return html_entity_decode($text, ENT_QUOTES | ENT_HTML5);
-  }
-
-  /**
-   * Encode special characters in a plain-text string for display as HTML.
-   *
-   * <b>Always</b> use this method before displaying any plain-text string to the user.
-   *
-   * @param string $text
-   *   The plain-text string to process.
-   * @return string
-   *   <var>$text</var> with encoded HTML special characters.
-   */
-  final public function htmlEncode($text) {
-    if (empty($text)) {
-      // @devStart
-      // @codeCoverageIgnoreStart
-      $this->log->debug("You should avoid passing empty texts to htmlEncode");
-      // @codeCoverageIgnoreEnd
-      // @devEnd
-      return $text;
-    }
-    return htmlspecialchars($text, ENT_QUOTES | ENT_HTML5);
-  }
-
-  /**
-   * Transform and kind of string to HTML safe ID.
-   *
-   * @param string $string
-   *   The string to convert.
-   * @return string
-   *   The HTML safe ID.
-   */
-  final public function htmlString2ID($string) {
-    if (is_numeric($string{0})) {
-      $string = "n{$string}";
-    }
-    return mb_strtolower(preg_replace("/[^\d\w-_]+/", "-", $string));
   }
 
   /**
@@ -1044,21 +652,6 @@ abstract class AbstractPresenter {
   }
 
   /**
-   * Get global <code>lang</code> attribute for any HTML tag if language differs from current display language.
-   *
-   * @param string $lang
-   *   The ISO alpha-2 language code of the entity you want to display and have compared to the current language.
-   * @return null|string
-   *   <code>NULL</code> if given <var>$lang</var> matches current display language, otherwise the global <code>lang</code>
-   *   attribute ready for print (e.g. <code>" lang='de'"</code>).
-   */
-  final public function lang($lang) {
-    if ($lang != $this->intl->languageCode) {
-      return " lang='{$this->htmlEncode($lang)}'";
-    }
-  }
-
-  /**
    * Add next route to <code><head></code>.
    *
    * @param string $route
@@ -1068,45 +661,6 @@ abstract class AbstractPresenter {
   final protected function next($route) {
     $this->headElements .= "<link rel='next' href='{$route}'>";
     return $this;
-  }
-
-  /**
-   * Normalize all kinds of line feeds to *NIX style (real LF).
-   *
-   * @link http://stackoverflow.com/a/7836692/1251219 How to replace different newline styles in PHP the smartest way?
-   * @param string $text
-   *   The text to normalize.
-   * @return string
-   *   The normalized text.
-   */
-  final public function normalizeLineFeeds($text) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (empty($text) || !is_string($text)) {
-      throw new \InvalidArgumentException("\$text cannot be empty and must be of type string.");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    return preg_replace("/\R/u", "\n", $text);
-  }
-
-  /**
-   * Formats text for emphasized display in a placeholder inside a sentence.
-   *
-   * @param string $text
-   *   The text to format (plain-text).
-   * @return string
-   *   The formatted text (html).
-   */
-  final public function placeholder($text) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (empty($text) || !is_string($text)) {
-      throw new \InvalidArgumentException("\$text cannot be empty and must be of type string.");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    return "<em class='placeholder'>{$this->htmlEncode($text)}</em>";
   }
 
   /**

@@ -383,19 +383,22 @@ SQL
    * Check if given user property is already in use.
    *
    * @param string $what
-   *   Either <var>User::FROM_NAME</var> or <var>User::FROM_EMAIL</var>.
-   * @param string $nameOrEmail
-   *   The name or email address to check.
+   *   The name of the column that should be checked.
+   * @param string $value
+   *   The value to check.
    * @return boolean
-   *   <code>TRUE</code> if the email address is already in use, <code>FALSE</code> otherwise.
+   *   <code>TRUE</code> if the value is already in use, <code>FALSE</code> otherwise.
    */
-  public function inUse($what, $nameOrEmail) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert($what == self::FROM_EMAIL || $what == self::FROM_NAME, "You can only check usage for 'name' and 'email'.");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    return ($this->query("SELECT `{$what}` FROM `users` WHERE `{$what}` = ? LIMIT 1", "s", [ $nameOrEmail ]) !== null);
+  public function inUse($what, $value) {
+    $stmt = $this->getMySQLi()->prepare("SELECT `id` FROM `users` WHERE `{$what}` = ? LIMIT 1");
+    $stmt->bind_param("s", $value);
+    $stmt->execute();
+    $found = $stmt->fetch();
+    $stmt->close();
+    if (!$found) {
+      return false;
+    }
+    return true;
   }
 
   /**

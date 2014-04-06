@@ -76,7 +76,7 @@ class EmailExists extends \MovLib\Mail\AbstractEmail {
   public function getHTML() {
       "<p>{$this->intl->t("Hi {0}!", [ $this->name ])}</p>" .
       "<p>{$this->intl->t("You (or someone else) tried to sign up a new account with this email address. If you forgot your password go to the {0}reset password{1} page to request a new one.", [
-        "<a href='{$this->diContainer->request->scheme}://{$this->diContainer->request->hostname}{$this->intl->r("/user/reset-password")}'>", "</a>"
+        "<a href='{$this->diContainerHTTP->request->scheme}://{$this->diContainerHTTP->request->hostname}{$this->intl->r("/user/reset-password")}'>", "</a>"
       ])}</p>" .
       "<p>{$this->intl->t("If it wasn’t you who requested this action simply ignore this message.")}</p>"
     ;
@@ -91,7 +91,7 @@ class EmailExists extends \MovLib\Mail\AbstractEmail {
 
 {$this->intl->t("You (or someone else) tried to sign up a new account with this email address. If you forgot your password go to the reset password page to request a new one.")}
 
-{$this->diContainer->request->scheme}://{$this->diContainer->request->hostname}{$this->intl->r("/user/reset-password")}
+{$this->diContainerHTTP->request->scheme}://{$this->diContainerHTTP->request->hostname}{$this->intl->r("/user/reset-password")}
 
 {$this->intl->t("If it wasn’t you who requested this action simply ignore this message.")}
 EOT;

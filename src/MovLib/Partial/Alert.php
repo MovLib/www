@@ -119,20 +119,7 @@ final class Alert {
    *   HTML representation of this alert message.
    */
   public function __toString() {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    try {
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-      return "<div class='alert{$this->severity}' role='alert'><div class='c'>{$this->title}{$this->message}</div></div>";
-    // @devStart
-    // @codeCoverageIgnoreStart
-    }
-    catch (\Exception $e) {
-      return (string) new Alert("<pre>{$e}</pre>", "Error Rendering Alert", Alert::SEVERITY_ERROR);
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
+    return "<div class='alert{$this->severity}' role='alert'><div class='c'>{$this->title}{$this->message}</div></div>";
   }
 
 }

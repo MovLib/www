@@ -29,7 +29,7 @@ use \MovLib\Partial\FormElement\AbstractInputFile;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Form {
+final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -66,32 +66,11 @@ final class Form {
   protected $hiddenElements;
 
   /**
-   * The active intl instance.
-   *
-   * @var \MovLib\Core\Intl
-   */
-  protected $intl;
-
-  /**
    * The presenting presenter.
    *
    * @var \MovLib\Presentation\AbstractPresenter
    */
   protected $presenter;
-
-  /**
-   * The active request.
-   *
-   * @var \MovLib\Core\HTTP\Request
-   */
-  protected $request;
-
-  /**
-   * The active session.
-   *
-   * @var \MovLib\Core\HTTP\Session
-   */
-  protected $session;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -106,16 +85,9 @@ final class Form {
    *   Set the form's global unique identifier, defaults to the presenting presenter's identifier.
    */
   public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id = null) {
-    $this->intl      = $diContainerHTTP->intl;
+    parent::__construct($diContainerHTTP);
     $this->presenter = $diContainerHTTP->presenter;
-    $this->request   = $diContainerHTTP->request;
-    $this->session   = $diContainerHTTP->session;
-    if ($id) {
-      $this->id = $id;
-    }
-    else {
-      $this->id = $this->presenter->id;
-    }
+    $this->id        = $id ? $id : $this->presenter->id;
   }
 
   /**
@@ -130,7 +102,8 @@ final class Form {
     try {
     // @codeCoverageIgnoreEnd
     // @devEnd
-      return $this->open() . implode($this->elements) . $this->close();
+      $elements = implode($this->elements);
+      return "{$this->open()}{$elements}{$this->close()}";
     // @devStart
     // @codeCoverageIgnoreStart
     }
@@ -267,12 +240,12 @@ final class Form {
    *     <li><code>"action"</code> is set to <var>$kernel->requestURI</var> if not set</li>
    *     <li><code>"method"</code> is always set to <code>"post"</code></li>
    *   </ul>
-   * @param callable $invalidCallback [optional]
-   *   Callable to call if the form is invalid. The callable will get the errors as first parameter and you have to
-   *   return the same array.
+   * @param callable $validationCallback [optional]
+   *   Callable to call to continue form validation in the presenter. The callable will get the errors as first
+   *   parameter and you have to return the same array.
    * @return this
    */
-  public function init(callable $validCallback, array $attributes = null, callable $invalidCallback = null) {
+  public function init(callable $validCallback, array $attributes = null, callable $validationCallback = null) {
     // @devStart
     // @codeCoverageIgnoreStart
     foreach ([ "accept-charset", "method" ] as $attribute) {
@@ -299,9 +272,9 @@ final class Form {
         $formToken = $this->session->storageGet("form_{$this->id}", false, true);
 
         // Check if we have a token for this form in session and submitted via HTTP plus compare both tokens.
-        if ($formToken === false || empty($_POST["form_token"]) || $_POST["form_token"] != $formToken) {
+        if ($formToken === false || empty($this->request->post["form_token"]) || $this->request->post["form_token"] != $formToken) {
           // Give the user the chance to re-submit this form.
-          $this->alerts .= new Alert(
+          $this->presenter->alerts .= new Alert(
             "<p>{$this->intl->t("The form has become outdated. Copy any unsaved work in the form below and then {0}reload this page{1}.", [
               "<a href='{$this->request->uri}'>", "</a>",
             ])}</p>",
@@ -333,22 +306,22 @@ final class Form {
       }
 
       // Allow concrete classes to extend the validation process or alter certain error messages.
-      if (isset($this->invalidCallback)) {
-        $errors = $invalidCallback($errors);
+      if ($validationCallback) {
+        $errors = $validationCallback($errors);
       }
 
       // If we have errors at this point export them and abort.
       if ($errors) {
         // Join all error messages of a specific form element with a break.
         foreach ($errors as $id => $error) {
-          $errors[$id] = implode("<br>", $error);
+          $errors[$id] = implode("<br>", (array) $error);
         }
 
         // Join all error messages with paragraphs.
         $errors = implode("</p><p>", $errors);
 
         // Finally export all error messages combined in a single alert message.
-        $this->alerts .= new Alert("<p>{$errors}</p>", $this->intl->t("Validation Error"), Alert::SEVERITY_ERROR);
+        $this->presenter->alerts .= new Alert("<p>{$errors}</p>", $this->intl->t("Validation Error"), Alert::SEVERITY_ERROR);
       }
       // If no errors were found continue processing.
       else {

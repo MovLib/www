@@ -17,10 +17,8 @@
  */
 namespace MovLib\Data;
 
-use \MovLib\Exception\DatabaseException;
-
 /**
- * Interface for the temporary database.
+ * Defines the interface to access the temporary database table.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -28,7 +26,7 @@ use \MovLib\Exception\DatabaseException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Temporary extends \MovLib\Data\Database {
+final class Temporary extends \MovLib\Core\AbstractDatabase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -51,10 +49,14 @@ class Temporary extends \MovLib\Data\Database {
    * @param string $key
    *   The key of the entry that should be deleted.
    * @return this
-   * @throws \MovLib\Exception\DatabaseException
+   * @throws \mysqli_sql_exception
    */
   public function delete($key) {
-    return $this->query("DELETE FROM `tmp` WHERE `key` = ?", "s", [ $key ]);
+    $stmt = $this->getMySQLi()->prepare("DELETE FROM `tmp` WHERE `key` = ?");
+    $stmt->bind_param("s", $key);
+    $stmt->execute();
+    $stmt->close();
+    return $this;
   }
 
   /**
@@ -64,13 +66,19 @@ class Temporary extends \MovLib\Data\Database {
    *   The key of the record to get.
    * @return mixed
    *   The unserialized data of the record that was previously stored or <code>FALSE</code> if nothing was found.
-   * @throws \MovLib\Exception\DatabaseException
+   * @throws \mysqli_sql_exception
    */
   public function get($key) {
-    if (!($result = $this->query("SELECT `data` FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ $key ])->get_result()->fetch_row())) {
+    $stmt = $this->getMySQLi()->prepare("SELECT `data` FROM `tmp` WHERE `key` = ? LIMIT 1");
+    $stmt->bind_param("s", $key);
+    $stmt->execute();
+    $stmt->bind_result($data);
+    $found = $stmt->fetch();
+    $stmt->close();
+    if (!$found) {
       return false;
     }
-    return unserialize($result[0]);
+    return unserialize($data);
   }
 
   /**
@@ -84,13 +92,16 @@ class Temporary extends \MovLib\Data\Database {
    *   The cron interval in which this entry should be deleted.
    * @return string
    *   The key of the newly created entry.
-   * @throws \MovLib\Exception\DatabaseException
+   * @throws \mysqli_sql_exception
    */
   public function set($data, $key = null, $ttl = self::TMP_TTL_DAILY) {
     if (!$key) {
       $key = hash("sha256", openssl_random_pseudo_bytes(1024));
     }
-    $this->query("INSERT INTO `tmp` (`data`, `key`, `ttl`) VALUES (?, ?, ?)", "sss", [ serialize($data), $key, $ttl ]);
+    $stmt = $this->getMySQLi()->prepare("INSERT INTO `tmp` (`data`, `key`, `ttl`) VALUES (?, ?, ?)");
+    $stmt->bind_param("sss", serialize($data), $key, $ttl);
+    $stmt->execute();
+    $stmt->close();
     return $key;
   }
 
@@ -104,10 +115,13 @@ class Temporary extends \MovLib\Data\Database {
    * @param string $ttl [optional]
    *   The cron interval in which this entry should be deleted.
    * @return this
-   * @throws \MovLib\Exception\DatabaseException
+   * @throws \mysqli_sql_exception
    */
   public function update($data, $key, $ttl = self::TMP_TTL_DAILY) {
-    $this->query("UPDATE `tmp` SET `created` = CURRENT_TIMESTAMP, `data` = ?, `ttl` = ?  WHERE `key` = ?", "sss", [ serialize($data), $ttl, $key ]);
+    $stmt = $this->getMySQLi()->prepare("UPDATE `tmp` SET `created` = CURRENT_TIMESTAMP, `data` = ?, `ttl` = ?  WHERE `key` = ?");
+    $stmt->bind_param("sss", serialize($data), $ttl, $key);
+    $stmt->execute();
+    $stmt->close();
     return $this;
   }
 

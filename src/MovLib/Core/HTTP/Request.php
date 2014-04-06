@@ -126,7 +126,7 @@ final class Request {
   public $remoteAddress = "127.0.0.1";
 
   /**
-   * The request's scheme.
+   * The request's scheme (e.g. <code>"http"</code>).
    *
    * @var string
    */

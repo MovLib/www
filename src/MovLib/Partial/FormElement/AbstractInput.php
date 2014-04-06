@@ -80,16 +80,12 @@ abstract class AbstractInput extends \MovLib\Partial\FormElement\AbstractFormEle
     try {
     // @codeCoverageIgnoreEnd
     // @devEnd
-      return "{$this->required}{$this->helpPopup}{$this->helpText}<p><label for='{$this->id}'>{$this->label}</label><input{$this->presenter->expandTagAttributes($this->attributes)}></p>";
+      return "{$this->required}{$this->helpPopup}{$this->helpText}<p><label for='{$this->id}'>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
     // @devStart
     // @codeCoverageIgnoreStart
     }
     catch (\Exception $e) {
-      return (string) new \MovLib\Presentation\Partial\Alert(
-        "<pre>{$e}</pre>",
-        "Error Rendering Element",
-        \MovLib\Presentation\Partial\Alert::SEVERITY_ERROR
-      );
+      return (string) new \MovLib\Partial\Alert("<pre>{$e}</pre>", "Error Rendering Element", \MovLib\Partial\Alert::SEVERITY_ERROR);
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

@@ -67,34 +67,6 @@ final class Intl {
 
 
   /**
-   * Associative array containing date formats for missing days.
-   *
-   * Structure: <code>[ "language_code" => [ "IntlDateFormatter_constant" => "format_string" ] ]</code>
-   *
-   * @var array
-   */
-  private static $dateFormats = [
-    "de" => [
-      \IntlDateFormatter::NONE        => "yyyyMM hh:mm a",
-      \IntlDateFormatter::SHORT       => "MM.yy",
-      \IntlDateFormatter::MEDIUM      => "MM.y",
-      \IntlDateFormatter::LONG        => "MMMM y",
-      \IntlDateFormatter::FULL        => "MMMM y",
-      \IntlDateFormatter::TRADITIONAL => "MMMM y",
-      \IntlDateFormatter::GREGORIAN   => "MMMM y",
-    ],
-    "en" => [
-      \IntlDateFormatter::NONE        => "yyyyMM hh:mm a",
-      \IntlDateFormatter::SHORT       => "M/yy",
-      \IntlDateFormatter::MEDIUM      => "MMM, y",
-      \IntlDateFormatter::LONG        => "MMMM, y",
-      \IntlDateFormatter::FULL        => "MMMM, y",
-      \IntlDateFormatter::TRADITIONAL => "MMMM, y",
-      \IntlDateFormatter::GREGORIAN   => "MMMM, y",
-    ],
-  ];
-
-  /**
    * The default language code.
    *
    * @var string
@@ -229,29 +201,26 @@ final class Intl {
   }
 
   /**
-   * Get the date formatted in the current locale.
+   * Format the given value with the given currency.
    *
-   * @param \MovLib\Data\Date $date
-   *   The date to format.
-   * @param integer $type [optional]
-   *   Any of the {@see \IntlDateFormatter} constants, defaults to {@see \IntlDateFormatter::MEDIUM}.
+   * @param mixed $value
+   *   The value to format.
+   * @param string $currencyCode
+   *   The currency code that should be used to format the value.
    * @param string $locale [optional]
-   *   Use a different locale for this translation.
+   *   Use a different locale for this formatted currency.
    * @return string
-   *   The date formatted in the current locale.
+   *   The formatted currency.
    */
-  public function formatDate(\MovLib\Data\Date $date, $type = \IntlDateFormatter::MEDIUM, $locale = null) {
+  public function formatCurrency($value, $currencyCode, $locale = null) {
+    static $fmts = [];
     if (!$locale) {
       $locale = $this->locale;
     }
-    if ($date->day || $date->month) {
-      $fmt = new \IntlDateFormatter($this->locale, $type, \IntlDateFormatter::NONE);
-      if (!$date->month) {
-        $fmt->setPattern(self::$dateFormats[$type]);
-      }
-      return $fmt->format($date);
+    if (empty($fmts[$locale])) {
+      $fmts[$locale] = new \NumberFormatter($locale, \NumberFormatter::CURRENCY);
     }
-    return $date->year;
+    return $fmts[$locale]->formatCurrency($value, $currencyCode);
   }
 
   /**

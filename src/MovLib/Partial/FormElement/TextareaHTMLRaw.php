@@ -58,7 +58,7 @@ class TextareaHTMLRaw extends \MovLib\Partial\FormElement\AbstractFormElement {
       return
         "{$this->required}{$this->helpPopup}{$this->helpText}<p>" .
           "<label for='{$this->id}'>{$this->label}</label>" .
-          "<textarea{$this->expandTagAttributes($this->attributes)}>{$content}</textarea>" .
+          "<textarea{$this->presenter->expandTagAttributes($this->attributes)}>{$content}</textarea>" .
         "</p>"
       ;
     // @devStart

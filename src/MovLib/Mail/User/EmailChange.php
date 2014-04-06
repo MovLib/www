@@ -64,17 +64,7 @@ class EmailChange extends \MovLib\Mail\AbstractEmail {
    *   old email address, because people tend to loose their passwords and stuff, therefor it would be very difficult
    *   for them to update their email address.
    */
-  public function __construct($user, $newEmail) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (!($user instanceof \MovLib\Data\User\FullUser)) {
-      throw new \InvalidArgumentException("\$user must be instance of \\MovLib\\Data\\User\\FullUser");
-    }
-    if (empty($newEmail)) {
-      throw new \InvalidArgumentException("\$newEmail cannot be empty.");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
+  public function __construct(\MovLib\Data\User\User $user, $newEmail) {
     $this->user      = $user;
     $this->recipient = $newEmail;
   }
@@ -86,15 +76,15 @@ class EmailChange extends \MovLib\Mail\AbstractEmail {
   /**
    * Initialize email properties.
    *
+   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   *   The dependency injection container.
    * @return this
    */
-  public function init() {
+  public function init(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+    parent::init($diContainerHTTP);
     $this->subject = $this->intl->t("Requested Email Change");
-    $token         = (new Temporary())->set([
-      "user_id"   => $this->user->id,
-      "new_email" => $this->recipient,
-    ]);
-    $this->link    = "{$kernel->scheme}://{$kernel->hostname}{$kernel->requestURI}?token={$token}";
+    $token         = (new Temporary())->set([ "user_id" => $this->user->id, "new_email" => $this->recipient ]);
+    $this->link    = $this->url($this->request->path, [ "token" => $token ]);
     return $this;
   }
 
@@ -102,6 +92,7 @@ class EmailChange extends \MovLib\Mail\AbstractEmail {
    * @inheritdoc
    */
   public function getHTML() {
+    return
       "<p>{$this->intl->t("Hi {0}!", [ $this->user->name ])}</p>" .
       "<p>{$this->intl->t("You (or someone else) requested to change your account’s email address.")} {$this->intl->t("You may now confirm this action by {0}clicking this link{1}.", [
         "<a href='{$this->link}'>",

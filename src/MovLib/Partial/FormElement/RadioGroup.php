@@ -50,13 +50,13 @@ class RadioGroup extends \MovLib\Partial\FormElement\Select {
         $checked  = $this->value == $value ? " checked" : null;
         $options .=
           "<label class='radio inline'>" .
-            "<input{$checked} name='{$this->id}' required type='radio' value='{$this->presenter->htmlEncode($value)}'>{$option}" .
+            "<input{$checked} name='{$this->id}' required type='radio' value='{$this->htmlEncode($value)}'>{$option}" .
           "</label>"
         ;
       }
       return
         "{$this->required}{$this->helpPopup}{$this->helpText}" .
-        "<fieldset aria-expanded='true'{$this->presenter->expandTagAttributes($this->attributes)}>" .
+        "<fieldset aria-expanded='true'{$this->expandTagAttributes($this->attributes)}>" .
           "<legend>{$this->label}</legend>{$options}" .
         "</fieldset>"
       ;
@@ -65,7 +65,7 @@ class RadioGroup extends \MovLib\Partial\FormElement\Select {
     // @codeCoverageIgnoreStart
     }
     catch (\Exception $e) {
-      return (string) new \MovLib\Presentation\Partial\Alert("<pre>{$e}</pre>", "Error Rendering Element", \MovLib\Presentation\Partial\Alert::SEVERITY_ERROR);
+      return (string) new \MovLib\Partial\Alert("<pre>{$e}</pre>", "Error Rendering Element", \MovLib\Partial\Alert::SEVERITY_ERROR);
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

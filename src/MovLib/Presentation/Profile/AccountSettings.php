@@ -17,10 +17,20 @@
  */
 namespace MovLib\Presentation\Profile;
 
+use \MovLib\Data\Date;
 use \MovLib\Data\User\User;
+use \MovLib\Partial\Country;
+use \MovLib\Partial\Currency;
 use \MovLib\Partial\Form;
-use \MovLib\Partial\FormElement\InputText;
+use \MovLib\Partial\FormElement\InputCheckbox;
+use \MovLib\Partial\FormElement\InputDate;
+use \MovLib\Partial\FormElement\InputHTML;
+use \MovLib\Partial\FormElement\InputImage;
 use \MovLib\Partial\FormElement\InputSex;
+use \MovLib\Partial\FormElement\InputText;
+use \MovLib\Partial\FormElement\InputURL;
+use \MovLib\Partial\FormElement\RadioGroup;
+use \MovLib\Partial\FormElement\Select;
 
 /**
  * Defines the profile account settings presentation.
@@ -78,7 +88,7 @@ final class AccountSettings extends \MovLib\Presentation\AbstractPresenter {
 
     $form = new Form($this->diContainerHTTP);
 
-//    $form->addElement(new InputImage(self::FORM_AVATAR, $this->intl->t("Avatar")));
+    $form->addElement(new InputImage($this->diContainerHTTP, "avatar", $this->intl->t("Avatar"), $this->user));
 
     $form->addElement(new InputText($this->diContainerHTTP, "real_name", $this->intl->t("Real Name"), $this->user->realName, [
       "#help-popup" => $this->intl->t("Your real name will be displayed on your profile page."),
@@ -89,61 +99,61 @@ final class AccountSettings extends \MovLib\Presentation\AbstractPresenter {
       "#help-popup" => $this->intl->t("Your sex will be displayed on your profile page and is used to create demographic evaluations."),
     ]));
 
-//    $birthdateMax = (new \DateTime())->sub(new \DateInterval("P6Y"));
-//    $birthdateMin = (new \DateTime())->sub(new \DateInterval("P120Y"));
-//    $form->addElement(new InputDate("birthdate", $this->intl->t("Date of Birth"), $this->user->birthday, [
-//      "#help-popup" => $this->intl->t("Your birthday will be displayed on your profile page and is used to create demographic evaluations."),
-//      "max"         => $birthdateMax,
-//      "min"         => $birthdateMin,
-//      "title"       => $this->intl->t("A birth date must be between {min} (120 years) and {max} (6 years)", [
-//        "max" => (new \IntlDateFormatter($this->intl->locale, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE))->format($birthdateMax),
-//        "min" => (new \IntlDateFormatter($this->intl->locale, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE))->format($birthdateMin),
-//      ]),
-//    ]));
-//
-//    $form->addElement(new InputURL("website", $this->intl->t("Website"), $this->user->website, [
-//      "#help-popup"         => $this->intl->t("Your website will be display on your profile page."),
-//      "data-allow-external" => "true",
-//    ]));
-//
-//    $form->addElement(new InputHTML("about_me", $this->intl->t("About Me"), $this->user->aboutMe, [
-//      "placeholder" => $this->intl->t("Tell others about yourself, what do you do, what do you like, …"),
-//    ], [ "blockquote", "external", "headings", "lists", ]));
-//
-//    $form->addElement(Country::getSelectFormElement($this->user->countryCode, [
-//      "#help-popup" => $this->intl->t("Your country will be displayed on your profile page and is used to create demographic evaluations."),
-//    ]));
-//
-//    $form->addElement(new Select("tzid", $this->intl->t("Time Zone"), DateTimeZone::getTranslatedIdentifiers(), $this->user->timeZoneIdentifier, [
-//      "#help-popup" => $this->intl->t("Your time zone will be used to display any time related information correctly."),
-//    ]));
-//
-//    $form->addElement(Currency::getSelectFormElement($this->user->currencyCode, [
-//      "#help-popup" => $this->intl->t("Your currency will be used to display any money related information correctly."),
-//    ]));
-//
-//    $langOptions = null;
-//    foreach ($kernel->systemLanguages as $code => $locale) {
-//      $langOptions[$code] = \Locale::getDisplayLanguage($code, $this->intl->locale);
-//    }
-//    $this->intl->getCollator()->asort($langOptions);
-//    $form->addElement(new RadioGroup("language", $this->intl->t("System Language"), $langOptions, $this->user->languageCode, [
-//      "#help-popup" => $this->intl->t(
-//        "Select your preferred system language, this will be used to redirect you if you visit {sitename} without a " .
-//        "subdomain and may be from other use in the future.",
-//        [ "sitename" => $this->config->sitename ]
-//      ),
-//    ]));
-//
-//    $form->addElement(new InputCheckbox("private", $this->intl->t("Keep my data private!"), $this->user->private, [
-//      "#help-popup" => $this->intl->t(
-//        "Check the following box if you’d like to hide your private data on your profile page. Your data will only be " .
-//        "used by {sitename} for anonymous demographical evaluation of usage statistics and ratings. By providing basic " .
-//        "data like sex and country, scientists around the world are enabled to research the human interests in movies " .
-//        "more closely. Of course your real name won’t be used for anything!",
-//        [ $this->config->sitename ]
-//      ),
-//    ]));
+    $birthdateMax = (new Date())->sub(new \DateInterval("P6Y"));
+    $birthdateMin = (new Date())->sub(new \DateInterval("P120Y"));
+    $form->addElement(new InputDate($this->diContainerHTTP, "birthdate", $this->intl->t("Date of Birth"), $this->user->birthday, [
+      "#help-popup" => $this->intl->t("Your birthday will be displayed on your profile page and is used to create demographic evaluations."),
+      "max"         => $birthdateMax,
+      "min"         => $birthdateMin,
+      "title"       => $this->intl->t(
+        "A birth date must be between {min} (120 years) and {max} (6 years)",
+        [ "max" => $birthdateMax->formatIntl($this->intl->locale), "min" => $birthdateMin->formatIntl($this->intl->locale), ]
+      ),
+    ]));
+
+    $form->addElement(new InputURL($this->diContainerHTTP, "website", $this->intl->t("Website"), $this->user->website, [
+      "#help-popup"         => $this->intl->t("Your website will be display on your profile page."),
+      "data-allow-external" => "true",
+    ]));
+
+    $form->addElement(new InputHTML($this->diContainerHTTP, "about_me", $this->intl->t("About Me"), $this->user->aboutMe, [
+      "placeholder" => $this->intl->t("Tell others about yourself, what do you do, what do you like, …"),
+    ], [ "blockquote", "external", "headings", "lists", ]));
+
+    $form->addElement((new Country())->getSelectFormElement($this->diContainerHTTP, $this->user->countryCode, [
+      "#help-popup" => $this->intl->t("Your country will be displayed on your profile page and is used to create demographic evaluations."),
+    ]));
+
+    $form->addElement(new Select($this->diContainerHTTP, "tzid", $this->intl->t("Time Zone"), $this->intl->getTranslations("timezones"), $this->user->timezone, [
+      "#help-popup" => $this->intl->t("Your time zone will be used to display any time related information correctly."),
+    ]));
+
+    $form->addElement((new Currency())->getSelectFormElement($this->diContainerHTTP, $this->user->currencyCode, [
+      "#help-popup" => $this->intl->t("Your currency will be used to display any money related information correctly."),
+    ]));
+
+    $languageOptions = [];
+    foreach ($this->config->locales as $code => $locale) {
+      $languageOptions[$code] = \Locale::getDisplayLanguage($locale, $this->intl->locale);
+    }
+    (new \Collator($this->intl->locale))->asort($languageOptions);
+    $form->addElement(new RadioGroup($this->diContainerHTTP, "language", $this->intl->t("System Language"), $languageOptions, $this->user->languageCode, [
+      "#help-popup" => $this->intl->t(
+        "Select your preferred system language, this will be used to redirect you if you visit {sitename} without a " .
+        "subdomain and may be from other use in the future.",
+        [ "sitename" => $this->config->sitename ]
+      ),
+    ]));
+
+    $form->addElement(new InputCheckbox($this->diContainerHTTP, "private", $this->intl->t("Keep my data private!"), $this->user->private, [
+      "#help-popup" => $this->intl->t(
+        "Check the following box if you’d like to hide your private data on your profile page. Your data will only be " .
+        "used by {sitename} for anonymous demographical evaluation of usage statistics and ratings. By providing basic " .
+        "data like sex and country, scientists around the world are enabled to research the human interests in movies " .
+        "more closely. Of course your real name won’t be used for anything!",
+        [ $this->config->sitename ]
+      ),
+    ]));
 
     $form->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ]);
     $form->init([ $this, "valid" ]);

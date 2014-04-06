@@ -15,51 +15,39 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Image;
+namespace MovLib\Stub\Data;
 
 /**
- * Defines the base class for image entities.
+ * Defines the currency stub.
  *
+ * @link https://en.wikipedia.org/wiki/ISO_4217
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2014 MovLib
+ * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractImageEntity extends \MovLib\Data\Image\AbstractReadOnlyImageEntity {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
+abstract class Currency {
 
   /**
-   * Global minimum height for uploaded images.
+   * The currency's ISO 4217 alpha-3 code.
    *
-   * @var integer
+   * @var string
    */
-  const IMAGE_MIN_HEIGHT = \MovLib\Data\Image\S02;
+  public $code;
 
   /**
-   * Global minimum width for uploaded images.
+   * The currency's translated full name.
    *
-   * @var integer
+   * @var string
    */
-  const IMAGE_MIN_WIDTH = \MovLib\Data\Image\S02;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
+  public $name;
 
   /**
-   * Delete image styles.
+   * The currency's symbol.
    *
-   * @return this
+   * @var string
    */
-  final protected function imageDeleteStyles() {
-    foreach (static::$imageStylesMap as $style) {
-      unlink($this->imageGetStyleURI($style));
-    }
-    return $this;
-  }
+  public $symbol;
 
 }

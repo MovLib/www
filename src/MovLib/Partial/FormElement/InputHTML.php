@@ -153,11 +153,11 @@ class InputHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
    * @param array $attributes [optional]
    *   Additional attributes for the text, defaults to <code>NULL</code> (no additional attributes).
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $id, $label, $value, array $attributes = null) {
-    parent::__construct($diContainer, $id, $label, $value, $attributes);
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, $value, array $attributes = null) {
+    parent::__construct($diContainerHTTP, $id, $label, $value, $attributes);
     // We don't need the JS, because we only use <textarea> for now. This will change when InputHTML is finished.
-    //    $kernel->javascripts[]              = "InputHTML";
-    $kernel->stylesheets[]              = "inputhtml";
+    // $this->presenter->javascripts[] = "InputHTML";
+    $this->presenter->stylesheets[] = "inputhtml";
   }
 
 

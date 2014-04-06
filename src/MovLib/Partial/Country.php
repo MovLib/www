@@ -20,7 +20,7 @@ namespace MovLib\Partial;
 use \MovLib\Partial\FormElement\Select;
 
 /**
- * Represents a single country in HTML and provides an interface to all available countries in the current locale.
+ * Defines formatting methods to represent countries.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -28,104 +28,74 @@ use \MovLib\Partial\FormElement\Select;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Country {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
+final class Country extends \MovLib\Core\Presentation\Base {
 
   /**
-   * The attributes array.
+   * Format a country.
    *
-   * @var array
-   */
-  protected $attributes;
-
-  /**
-   * The country to present.
-   *
-   * @var \MovLib\Data\Country
-   */
-  protected $country;
-
- /**
-   * The active intl instance.
-   *
-   * @var \MovLib\Core\Intl
-   */
-  protected $intl;
-
-  /**
-   * The presenting presenter.
-   *
-   * @var \MovLib\Presentation\AbstractPresenter
-   */
-  protected $presenter;
-
-  /**
-   * The HTML tag to wrap the country.
-   *
-   * @var string
-   */
-  protected $tag;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new country partial.
-   *
-   * @param string $code
-   *   The ISO 3166-1 alpha-2 code of the country.
+   * @param \MovLib\Core\Intl $intl
+   *   The active intl instance.
+   * @param \MovLib\Presentation\AbstractPresenter $presenter
+   *   The presenting presenter.
+   * @param string $countryCode
+   *   The country's ISO 3166-1 alpha-2 code.
    * @param array $attributes [optional]
-   *   Additional attributes that should be applied to the element.
+   *   Additional attributes that should be applied to the element. Note that the <code>"typeof"</code> attribute is
+   *   always overwritten.
    * @param string $tag [optional]
-   *   The tag that should be used to wrap this country, defaults to <code>"span"</code>.
-   */
-  public function __construct(\MovLib\Presentation\AbstractPresenter $presenter, \MovLib\Core\Intl $intl, $code, array $attributes = null, $tag = "span") {
-    $this->presenter            = $presenter;
-    $this->intl                 = $intl;
-    $this->attributes           = $attributes;
-    $this->attributes["typeof"] = "http://schema.org/Country";
-    $this->country              = $this->intl->getTranslations("countries")[$code];
-    $this->tag                  = $tag;
-  }
-
-  /**
-   * Get the string representation of the country.
-   *
+   *   The tag that should be used to wrap the country, defaults to <code>"span"</code>.
    * @return string
+   *   The formatted country.
    */
-  public function __toString() {
-    return "<{$this->tag}{$this->presenter->expandTagAttributes($this->attributes)}><span property='name'>{$this->country->name}</span></{$this->tag}>";
+  public function format(\MovLib\Core\Intl $intl, $countryCode, array $attributes = [], $tag = "span") {
+    $country = $intl->getTranslations("countries")[$countryCode];
+    $attributes["typeof"] = "Country";
+    return "<{$tag}{$this->expandTagAttributes($attributes)}><span property='name'>{$country->name}</span></{$tag}>";
   }
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
   /**
-   * Get the string represntation of the country including a small flag icon.
+   * Format a country with flag icon.
    *
+   * @param \MovLib\Core\FileSystem $fs
+   *   The active file system instance.
+   * @param \MovLib\Core\Intl $intl
+   *   The active intl instance.
+   * @param \MovLib\Presentation\AbstractPresenter $presenter
+   *   The presenting presenter.
+   * @param string $countryCode
+   *   The country's ISO 3166-1 alpha-2 code.
    * @param boolean $nameVisible [optional]
-   *   Whether the name should be visible or not, defaults to invisible.
+   *   Whether the country's name should be visible or not, defaults to <code>FALSE</code> (the name isn't visible).
+   * @param array $attributes [optional]
+   *   Additional attributes that should be applied to the element. Note that the <code>"typeof"</code> attribute is
+   *   always overwritten.
+   * @param string $tag [optional]
+   *   The tag that should be used to wrap the country, defaults to <code>"span"</code>.
    * @return string
-   *   The string represntation of the country including a small flag icon.
+   *   The formatted country with flag icon.
    */
-  public function getFlag($nameVisible = false) {
-    $a = $this->presenter->expandTagAttributes($this->attributes);
-    $i = $this->getURL("asset://img/flag/{$this->country->code}.png");
-    $n = $nameVisible === true
-      ? " <span property='name'>{$this->country->name}</span>"
-      : "<meta property='name' content='{$this->country->name}'>"
+  public function formatWithFlag(\MovLib\Core\FileSystem $fs, \MovLib\Core\Intl $intl, $countryCode, $nameVisible = false, array $attributes = [], $tag = "span") {
+    $country = $intl->getTranslations("countries")[$countryCode];
+    if ($nameVisible) {
+      $name = "<span property='name'>{$country->name}</span>";
+    }
+    else {
+      $name = "<meta property='name' content='{$this->htmlEncode($country->name)}'>";
+    }
+    $attributes["typeof"] = "Country";
+    return
+      "<{$tag}{$this->expandTagAttributes($attributes)}>" .
+        "<img alt='{$this->htmlEncode($country->name)}' class='inline' height='11' property='image' src='{$fs->getExternalURL("asset://img/flag/{$countryCode}.png")}' width='16'>" .
+        $name .
+      "</{$tag}>"
     ;
-    return "<{$this->tag}{$a}><img alt='' class='inline' height='11' property='image' src='{$i}' width='16'>{$n}</{$this->tag}>";
   }
 
   /**
    * Get select form element to select a country.
    *
+   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   *   The HTTP dependency injection container.
    * @param string $value
    *   The form element's value.
    * @param array $attributes [optional]
@@ -137,8 +107,13 @@ final class Country {
    * @return \MovLib\Presentation\Partial\FormElement\Select
    *   The select form element to select a country.
    */
-  public static function getSelectFormElement(&$value, array $attributes = null, $id = "country", $label = null) {
-    return new Select($id, $label ?: $this->intl->t("Country"), self::getCountries(), $value, $attributes);
+  public function getSelectFormElement(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, &$value, array $attributes = null, $id = "country", $label = null) {
+    $options = [];
+    /* @var $country \MovLib\Stub\Data\Country */
+    foreach ($diContainerHTTP->intl->getTranslations("countries") as $country) {
+      $options[$country->code] = $country->name;
+    }
+    return new Select($diContainerHTTP, $id, $label ?: $diContainerHTTP->intl->t("Country"), $options, $value, $attributes);
   }
 
 }

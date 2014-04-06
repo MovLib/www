@@ -258,7 +258,7 @@ class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
 
     // Export dynamic properties to cached image style version and return.
     $this->imageStylesCache[$style]->alt   = $this->imageAlternativeText;
-    $this->imageStylesCache[$style]->route = $this->route->url;
+    $this->imageStylesCache[$style]->route = $this->route;
     return $this->imageStylesCache[$style];
   }
 

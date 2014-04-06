@@ -52,7 +52,8 @@ final class UnauthorizedException extends \RuntimeException implements \MovLib\E
     $diContainerHTTP->response->cacheable = false;
 
     // Trick the sign in presentation.
-    $diContainerHTTP->request->method = "GET";
+    $diContainerHTTP->request->method    = "GET";
+    $diContainerHTTP->request->methodGET = true;
 
     // Use default message if no message was passed.
     if (empty($this->message)) {
