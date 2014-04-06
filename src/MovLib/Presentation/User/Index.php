@@ -84,7 +84,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
       )}</p>";
     }
     return new Alert(
-      "<p>{$this->intl->t("We couldn't find any users matching your filter criteria, or there simply isn’t any user available.")}</p>{$join}",
+      "<p>{$this->intl->t("We couldn’t find any users matching your filter criteria, or there simply isn’t any user available.")}</p>{$join}",
       $this->intl->t("No Users")
     );
   }
