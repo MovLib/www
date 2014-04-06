@@ -219,7 +219,7 @@ class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
       // @codeCoverageIgnoreStart
       $this->log->debug("Found cache buster string.");
       if (!is_file($this->imageGetStyleURI($style))) {
-        $this->log->error("Generating all image styles because file is missing from storage!");
+        $this->log->info("Generating all image styles because file is missing from storage!");
         $this->imageGenerateStyles();
         $this->imageSaveStyles();
       }
@@ -240,7 +240,7 @@ class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
       // @todo This shouldn't be necessary at all!
       else {
         $this->imageGenerateStyles();
-        $this->log->error("Missing image style from persistent storage, re-applying image effect.");
+        $this->log->info("Missing image style from persistent storage, re-applying image effect.");
         $this->imageStylesCache[$style] = $this->imageGenerateStyle($style, $this->imageGetEffects()[$style]);
         $this->imageSaveStyles();
       }
