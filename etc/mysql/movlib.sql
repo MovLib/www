@@ -170,7 +170,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`persons` (
   `commit` CHAR(40) NULL COMMENT 'The person’s last history commit sha-1 hash.',
   `deathdate` DATE NULL COMMENT 'The person’s date of death.',
   `deathplace_id` BIGINT UNSIGNED NULL COMMENT 'The person’s death place.',
-  `image_changed` TIMESTAMP NULL COMMENT 'The last time this person\'s photo was updated as timestamp.',
+  `image_cache_buster` BINARY(16) NULL COMMENT 'The person photo’s MD5 cache buster.',
   `image_extension` CHAR(3) NULL COMMENT 'The person photo’s extension without leading dot.',
   `image_filesize` INT NULL COMMENT 'The person photo’s original size in Bytes.',
   `image_height` SMALLINT NULL COMMENT 'The person photo’s original height.',

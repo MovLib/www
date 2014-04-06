@@ -114,16 +114,16 @@ INSERT INTO `persons` SET
   `deathdate`              = '1890-09-16',
   `dyn_biographies`        = '',
   `dyn_wikipedia`          = '',
+  `image_cache_buster`     = UNHEX('27797ff26adb47b2c91630793ea342f4'),
   `image_width`            = 363,
   `image_height`           = 363,
   `image_filesize`         = 42010,
   `image_extension`        = 'jpg',
-  `image_changed`          = '2013-11-28 15:13:42',
   `dyn_image_descriptions` = COLUMN_CREATE(
     'en', '&lt;p&gt;French cinema pioneer “Louis Le Prince”, the photo was taken from an unknown photographer in the 1880s.&lt;/p&gt;&lt;p&gt;The photo is public domain, see image source for exact licensing information: &lt;a href="https://commons.wikimedia.org/wiki/File%3ALouis_Le_Prince.jpg" rel="nofollow" target=_blank"&gt;Wikimedia Commons&lt;/a&gt;&lt;/p&gt;',
     'de', '&lt;p&gt;Der französische Kino-Pionier „Louis Le Prince”, das Foto wurde von einem unbekannten Fotografen in den 1880er Jahren erstellt.&lt;/p&gt;&lt;p&gt;Das Foto ist gemeinfrei, genaue Lizenzinformationen können der Quelle entnommen werden: &lt;a href="https://commons.wikimedia.org/wiki/File%3ALouis_Le_Prince.jpg" rel="nofollow" target=_blank"&gt;Wikimedia Commons&lt;/a&gt;&lt;/p&gt;'
   ),
-  `image_styles`           = 'a:2:{i:140;a:3:{s:6:"height";i:140;s:5:"width";i:140;s:9:"resizeArg";s:57:"\'140x140>^\' -gravity \'Center\' -crop \'140x140+0+0\' +repage";}i:60;a:3:{s:6:"height";i:60;s:5:"width";i:60;s:9:"resizeArg";s:6:"\'60x>\'";}}',
+  `image_styles`           = 'a:2:{s:2:"s1";O:28:"MovLib\\Data\\Image\\ImageStyle":3:{s:6:"height";i:60;s:6:"effect";O:29:"MovLib\\Data\\Image\\ImageEffect":5:{s:4:"crop";b:0;s:6:"filter";s:7:"Lanczos";s:6:"height";N;s:7:"quality";i:80;s:5:"width";i:60;}s:5:"width";i:60;}s:2:"s2";O:28:"MovLib\\Data\\Image\\ImageStyle":3:{s:6:"height";i:140;s:6:"effect";O:29:"MovLib\\Data\\Image\\ImageEffect":5:{s:4:"crop";b:0;s:6:"filter";s:7:"Lanczos";s:6:"height";N;s:7:"quality";i:80;s:5:"width";i:140;}s:5:"width";i:140;}}',
   `image_uploader_id`          = 1
 ;
 
@@ -209,13 +209,13 @@ INSERT INTO `persons` SET
   `name`                   = 'Sacha Goedegebure',
   `dyn_biographies`        = '',
   `dyn_wikipedia`          = '',
+  `image_cache_buster`     = UNHEX('99c33c66748c51322369d4a61041b34e'),
   `image_width`            = 363,
   `image_height`           = 363,
   `image_filesize`         = 42010,
   `image_extension`        = 'jpg',
-  `image_changed`          = '2013-11-28 15:13:42',
   `dyn_image_descriptions` = '',
-  `image_styles`           = 'a:2:{i:140;a:3:{s:6:"height";i:140;s:5:"width";i:140;s:9:"resizeArg";s:57:"\'140x140>^\' -gravity \'Center\' -crop \'140x140+0+0\' +repage";}i:60;a:3:{s:6:"height";i:60;s:5:"width";i:60;s:9:"resizeArg";s:6:"\'60x>\'";}}',
+  `image_styles`           = 'a:2:{s:2:"s1";O:28:"MovLib\\Data\\Image\\ImageStyle":3:{s:6:"height";i:60;s:6:"effect";O:29:"MovLib\\Data\\Image\\ImageEffect":5:{s:4:"crop";b:0;s:6:"filter";s:7:"Lanczos";s:6:"height";N;s:7:"quality";i:80;s:5:"width";i:60;}s:5:"width";i:60;}s:2:"s2";O:28:"MovLib\\Data\\Image\\ImageStyle":3:{s:6:"height";i:140;s:6:"effect";O:29:"MovLib\\Data\\Image\\ImageEffect":5:{s:4:"crop";b:0;s:6:"filter";s:7:"Lanczos";s:6:"height";N;s:7:"quality";i:80;s:5:"width";i:140;}s:5:"width";i:140;}}',
   `image_uploader_id`          = 1
 ;
 
