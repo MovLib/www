@@ -64,7 +64,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
               "<a class='ico ico-series label' href='{$this->intl->rp("/event/{0}/series", $event->id)}' title='{$this->intl->t("Series")}'>{$event->seriesCount}</a>" .
             "</div>" .
             "<h2 class='para'><a href='{$event->route}' property='url'><span property='name'>{$event->name}</span></a></h2>" .
-            "<small>{$this->getEventDates($event)} {$this->getEventPlace($event)}</small>" .
+            "<small>{$this->getEventDates($event)}</small>" .
           "</div>" .
         "</article>" .
       "</li>"
