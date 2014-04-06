@@ -364,7 +364,7 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
     ;
 
     if ($this->session->isAuthenticated === true) {
-      $avatar   = $this->img($this->session->imageGetStyle());
+      $avatar   = $this->img($this->session->imageGetStyle(), [], false);
       $userIcon = "<div class='clicker ico ico-settings authenticated'>{$avatar}<span class='badge'>2</span></div>";
       $userNavigation =
         "<ul class='o1 sm2 no-list'>" .

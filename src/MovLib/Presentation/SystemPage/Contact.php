@@ -19,7 +19,7 @@ namespace MovLib\Presentation\SystemPage;
 
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputEmail;
-use \MovLib\Partial\FormElement\InputHTML;
+use \MovLib\Partial\FormElement\TextareaHTML;
 use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Mail\Mailer;
 use \MovLib\Mail\Webmaster;
@@ -96,7 +96,7 @@ class Contact extends \MovLib\Presentation\SystemPage\Show {
       "placeholder" => $this->intl->t("This will appear as subject of your message"),
       "required" => "required",
     ]);
-    $this->form->addElement(new InputHTML($this->diContainerHTTP, "message", $this->intl->t("Message"), $this->message, [ "required" => "required"]));
+    $this->form->addElement(new TextareaHTML($this->diContainerHTTP, "message", $this->intl->t("Message"), $this->message, [ "required" => "required"]));
     $this->form->addAction($this->intl->t("Send"), [ "class" => "btn btn-large btn-success" ]);
   }
 

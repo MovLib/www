@@ -23,13 +23,13 @@ use \MovLib\Partial\Currency;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputCheckbox;
 use \MovLib\Partial\FormElement\InputDate;
-use \MovLib\Partial\FormElement\InputHTML;
 use \MovLib\Partial\FormElement\InputImage;
 use \MovLib\Partial\FormElement\InputSex;
 use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Partial\FormElement\InputURL;
 use \MovLib\Partial\FormElement\RadioGroup;
 use \MovLib\Partial\FormElement\Select;
+use \MovLib\Partial\FormElement\TextareaHTML;
 
 /**
  * Defines the profile account settings presentation.
@@ -104,7 +104,7 @@ final class AccountSettings extends \MovLib\Presentation\Profile\AbstractProfile
       "data-allow-external" => "true",
     ]));
 
-    $form->addElement(new InputHTML($this->diContainerHTTP, "about_me", $this->intl->t("About Me"), $this->user->aboutMe, [
+    $form->addElement(new TextareaHTML($this->diContainerHTTP, "about_me", $this->intl->t("About Me"), $this->user->aboutMe, [
       "placeholder" => $this->intl->t("Tell others about yourself, what do you do, what do you like, …"),
     ], [ "blockquote", "external", "headings", "lists", ]));
 

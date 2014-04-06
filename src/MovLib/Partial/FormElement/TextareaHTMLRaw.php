@@ -54,6 +54,7 @@ class TextareaHTMLRaw extends \MovLib\Partial\FormElement\AbstractFormElement {
         tidy_get_output(tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body>{$this->presenter->htmlDecode($this->value)}</body></html>"))
       );
 
+      $this->attributes["id"] = $this->id;
       $this->attributes["aria-multiline"] = "true";
       return
         "{$this->required}{$this->helpPopup}{$this->helpText}<p>" .
