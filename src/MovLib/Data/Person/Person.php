@@ -31,7 +31,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Person extends \MovLib\Data\AbstractEntity {
+class Person extends \MovLib\Data\Image\AbstractImageEntity {
   use \MovLib\Data\Person\PersonTrait;
 
 
@@ -168,7 +168,13 @@ SELECT
   `award_count`,
   `movie_count`,
   `series_count`,
-  `release_count`
+  `release_count`,
+  HEX(`image_cache_buster`),
+  `image_extension`,
+  `image_filesize`,
+  `image_height`,
+  `image_styles`,
+  `image_width`
 FROM `persons` WHERE `id` = ? LIMIT 1
 SQL
       );
@@ -188,7 +194,13 @@ SQL
         $this->awardCount,
         $this->movieCount,
         $this->seriesCount,
-        $this->releaseCount
+        $this->releaseCount,
+        $this->imageCacheBuster,
+        $this->imageExtension,
+        $this->imageFilesize,
+        $this->imageHeight,
+        $this->imageStyles,
+        $this->imageWidth
       );
       $found = $stmt->fetch();
       $stmt->close();
@@ -207,7 +219,10 @@ SQL
   protected function init() {
     $this->birthDate && ($this->birthDate = new Date($this->birthDate));
     $this->deathDate && ($this->deathDate = new Date($this->deathDate));
-    $this->route     = new EntityRoute($this->intl, "/person/{0}", $this->id, "/persons");
+    $this->route                = new EntityRoute($this->intl, "/person/{0}", $this->id, "/persons");
+    $this->imageAlternativeText = $this->intl->t("Photo of {name}", [ "name" => $this->name]);
+    $this->imageDirectory       = "upload://person";
+    $this->imageFilename        = $this->id;
     return parent::init();
   }
 
@@ -237,6 +252,18 @@ SQL
     if ($this->deathPlaceId) {
       return new \MovLib\Data\Place($this->diContainer, $this->deathPlaceId);
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function imageSaveStyles() {
+    $styles = serialize($this->imageStyles);
+    $stmt   = $this->getMySQLi()->prepare("UPDATE `persons` SET `image_styles` = ? WHERE `id` = ?");
+    $stmt->bind_param("sd", $styles, $this->id);
+    $stmt->execute();
+    $stmt->close();
+    return $this;
   }
 
 }

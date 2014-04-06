@@ -46,7 +46,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->initIndex(new PersonSet($this->diContainerHTTP), $this->intl->t("Create New Company"));
+    $this->initIndex(new PersonSet($this->diContainerHTTP), $this->intl->t("Create New Person"));
   }
 
   /**
@@ -71,9 +71,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
     return
       "<li class='hover-item r'>" .
         "<article typeof='Person'>" .
-          "<a class='no-link s s1' href='{$route}'>" .
-            "<img alt='' height='60' src='{$this->fs->getExternalURL("asset://img/logo/vector.svg")}' width='60'>" .
-          "</a>" .
+          $this->img($person->imageGetStyle("s1"), [], $route, [ "class" => "s s1" ]) .
           "<div class='s s9'>" .
             "<div class='fr'>" .
               "<a class='ico ico-movie label' href='{$this->intl->rp("/person/{0}/movies", [ $id ])}' title='{$this->intl->t("Movies")}'>{$person->movieCount}</a>" .

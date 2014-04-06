@@ -47,7 +47,10 @@ SELECT
   `persons`.`series_count` AS `seriesCount`,
   `persons`.`deleted`,
   `persons`.`changed`,
-  `persons`.`created`
+  `persons`.`created`,
+  HEX(`persons`.`image_cache_buster`) AS `imageCacheBuster`,
+  `persons`.`image_extension` AS `imageExtension`,
+  `persons`.`image_styles` AS `imageStyles`
 FROM `persons`
 {$where}
 {$orderBy}
