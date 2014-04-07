@@ -11,14 +11,13 @@
 					"remove",
 					"delete"
 				],
-				"grid": 32,
-				"matchesSearch": false
+				"grid": 32
 			},
 			"properties": {
 				"order": 1,
 				"id": 124,
 				"prevSize": 32,
-				"code": 58889,
+				"code": 58890,
 				"name": "delete",
 				"ligatures": ""
 			},
@@ -33,14 +32,13 @@
 				"tags": [
 					"cassette"
 				],
-				"grid": 16,
-				"matchesSearch": false
+				"grid": 16
 			},
 			"properties": {
 				"order": 2,
 				"id": 1096,
 				"prevSize": 32,
-				"code": 58882,
+				"code": 58883,
 				"name": "release",
 				"ligatures": ""
 			},
@@ -58,14 +56,13 @@
 					"photo",
 					"frame"
 				],
-				"grid": 32,
-				"matchesSearch": false
+				"grid": 32
 			},
 			"properties": {
 				"order": 3,
 				"id": 119,
 				"prevSize": 32,
-				"code": 58888,
+				"code": 58889,
 				"name": "poster",
 				"ligatures": ""
 			},
@@ -82,14 +79,13 @@
 					"images",
 					"photos"
 				],
-				"grid": 32,
-				"matchesSearch": false
+				"grid": 32
 			},
 			"properties": {
 				"order": 4,
 				"id": 328,
 				"prevSize": 32,
-				"code": 58892,
+				"code": 58893,
 				"name": "lobby-card",
 				"ligatures": ""
 			},
@@ -107,14 +103,13 @@
 					"photos",
 					"polaroid"
 				],
-				"grid": 32,
-				"matchesSearch": false
+				"grid": 32
 			},
 			"properties": {
 				"order": 5,
 				"id": 82,
 				"prevSize": 32,
-				"code": 58887,
+				"code": 58888,
 				"name": "image",
 				"ligatures": ""
 			},
@@ -132,14 +127,13 @@
 					"favorite",
 					"rate"
 				],
-				"grid": 14,
-				"matchesSearch": false
+				"grid": 14
 			},
 			"properties": {
 				"order": 6,
 				"id": 6,
 				"prevSize": 28,
-				"code": 58911,
+				"code": 58913,
 				"name": "star",
 				"ligatures": ""
 			},
@@ -160,14 +154,13 @@
 					"protected",
 					"encrypted"
 				],
-				"grid": 14,
-				"matchesSearch": false
+				"grid": 14
 			},
 			"properties": {
 				"order": 7,
 				"id": 33,
 				"prevSize": 28,
-				"code": 58913,
+				"code": 58915,
 				"name": "lock",
 				"ligatures": ""
 			},
@@ -185,14 +178,13 @@
 					"load",
 					"open"
 				],
-				"grid": 14,
-				"matchesSearch": false
+				"grid": 14
 			},
 			"properties": {
 				"order": 8,
 				"id": 139,
 				"prevSize": 28,
-				"code": 58923,
+				"code": 58925,
 				"name": "upload",
 				"ligatures": ""
 			},
@@ -210,14 +202,13 @@
 					"editor",
 					"format"
 				],
-				"grid": 14,
-				"matchesSearch": false
+				"grid": 14
 			},
 			"properties": {
 				"order": 9,
 				"id": 52,
 				"prevSize": 28,
-				"code": 58917,
+				"code": 58919,
 				"name": "align-left",
 				"ligatures": ""
 			},
@@ -235,14 +226,13 @@
 					"editor",
 					"format"
 				],
-				"grid": 14,
-				"matchesSearch": false
+				"grid": 14
 			},
 			"properties": {
 				"order": 10,
 				"id": 53,
 				"prevSize": 28,
-				"code": 58918,
+				"code": 58920,
 				"name": "align-center",
 				"ligatures": ""
 			},
@@ -260,14 +250,13 @@
 					"editor",
 					"format"
 				],
-				"grid": 14,
-				"matchesSearch": false
+				"grid": 14
 			},
 			"properties": {
 				"order": 11,
 				"id": 54,
 				"prevSize": 28,
-				"code": 58919,
+				"code": 58921,
 				"name": "align-right",
 				"ligatures": ""
 			},
@@ -285,14 +274,13 @@
 					"editor",
 					"format"
 				],
-				"grid": 14,
-				"matchesSearch": false
+				"grid": 14
 			},
 			"properties": {
 				"order": 12,
 				"id": 48,
 				"prevSize": 28,
-				"code": 58915,
+				"code": 58917,
 				"name": "bold",
 				"ligatures": ""
 			},
@@ -310,14 +298,13 @@
 					"editor",
 					"format"
 				],
-				"grid": 14,
-				"matchesSearch": false
+				"grid": 14
 			},
 			"properties": {
 				"order": 13,
 				"id": 49,
 				"prevSize": 28,
-				"code": 58916,
+				"code": 58918,
 				"name": "italic",
 				"ligatures": ""
 			},
@@ -333,14 +320,13 @@
 					"list-ul",
 					"bullets"
 				],
-				"grid": 14,
-				"matchesSearch": false
+				"grid": 14
 			},
 			"properties": {
 				"order": 14,
 				"id": 179,
 				"prevSize": 28,
-				"code": 58926,
+				"code": 58928,
 				"name": "ul",
 				"ligatures": ""
 			},
@@ -356,14 +342,13 @@
 					"list-ol",
 					"numbered list"
 				],
-				"grid": 14,
-				"matchesSearch": false
+				"grid": 14
 			},
 			"properties": {
 				"order": 15,
 				"id": 180,
 				"prevSize": 28,
-				"code": 58927,
+				"code": 58929,
 				"name": "ol",
 				"ligatures": ""
 			},
@@ -380,14 +365,13 @@
 					"quote-left",
 					"ldquo"
 				],
-				"grid": 14,
-				"matchesSearch": false
+				"grid": 14
 			},
 			"properties": {
 				"order": 16,
 				"id": 242,
 				"prevSize": 28,
-				"code": 58929,
+				"code": 58931,
 				"name": "quotation",
 				"ligatures": ""
 			},
@@ -405,14 +389,13 @@
 					"chain",
 					"anchor"
 				],
-				"grid": 14,
-				"matchesSearch": false
+				"grid": 14
 			},
 			"properties": {
 				"order": 17,
 				"id": 170,
 				"prevSize": 28,
-				"code": 58925,
+				"code": 58927,
 				"name": "link",
 				"ligatures": ""
 			},
@@ -429,14 +412,13 @@
 					"unlink",
 					"link"
 				],
-				"grid": 14,
-				"matchesSearch": false
+				"grid": 14
 			},
 			"properties": {
 				"order": 18,
 				"id": 266,
 				"prevSize": 28,
-				"code": 58930,
+				"code": 58932,
 				"name": "unlink",
 				"ligatures": ""
 			},
@@ -451,14 +433,13 @@
 				"tags": [
 					"indent-left"
 				],
-				"grid": 14,
-				"matchesSearch": false
+				"grid": 14
 			},
 			"properties": {
 				"order": 19,
 				"id": 57,
 				"prevSize": 28,
-				"code": 58920,
+				"code": 58922,
 				"name": "indent-left",
 				"ligatures": ""
 			},
@@ -473,14 +454,13 @@
 				"tags": [
 					"indent-right"
 				],
-				"grid": 14,
-				"matchesSearch": false
+				"grid": 14
 			},
 			"properties": {
 				"order": 20,
 				"id": 58,
 				"prevSize": 28,
-				"code": 58921,
+				"code": 58923,
 				"name": "indent-right",
 				"ligatures": ""
 			},
@@ -497,14 +477,13 @@
 					"love",
 					"like"
 				],
-				"grid": 14,
-				"matchesSearch": false
+				"grid": 14
 			},
 			"properties": {
 				"order": 21,
 				"id": 5,
 				"prevSize": 28,
-				"code": 58910,
+				"code": 58912,
 				"name": "heart",
 				"ligatures": ""
 			},
@@ -524,14 +503,13 @@
 					"gear",
 					"preferences"
 				],
-				"grid": 14,
-				"matchesSearch": false
+				"grid": 14
 			},
 			"properties": {
 				"order": 22,
 				"id": 19,
 				"prevSize": 28,
-				"code": 58912,
+				"code": 58914,
 				"name": "settings",
 				"ligatures": ""
 			},
@@ -551,14 +529,13 @@
 					"language",
 					"localization"
 				],
-				"grid": 14,
-				"matchesSearch": false
+				"grid": 14
 			},
 			"properties": {
 				"order": 23,
 				"id": 163,
 				"prevSize": 28,
-				"code": 58924,
+				"code": 58926,
 				"name": "languages",
 				"ligatures": ""
 			},
@@ -576,14 +553,13 @@
 					"lookup",
 					"find"
 				],
-				"grid": 20,
-				"matchesSearch": true
+				"grid": 20
 			},
 			"properties": {
 				"order": 24,
 				"id": 37,
 				"prevSize": 20,
-				"code": 58899,
+				"code": 58900,
 				"name": "search",
 				"ligatures": ""
 			},
@@ -599,14 +575,13 @@
 					"cc",
 					"creative commons"
 				],
-				"grid": 20,
-				"matchesSearch": false
+				"grid": 20
 			},
 			"properties": {
 				"order": 25,
 				"id": 226,
 				"prevSize": 20,
-				"code": 58908,
+				"code": 58910,
 				"name": "cc",
 				"ligatures": ""
 			},
@@ -622,14 +597,13 @@
 					"cc-zero",
 					"creative commons"
 				],
-				"grid": 20,
-				"matchesSearch": false
+				"grid": 20
 			},
 			"properties": {
 				"order": 26,
 				"id": 234,
 				"prevSize": 20,
-				"code": 58909,
+				"code": 58911,
 				"name": "cc-zero",
 				"ligatures": ""
 			},
@@ -648,14 +622,13 @@
 					"avatar",
 					"persona"
 				],
-				"grid": 20,
-				"matchesSearch": false
+				"grid": 20
 			},
 			"properties": {
 				"order": 27,
 				"id": 14,
 				"prevSize": 20,
-				"code": 58895,
+				"code": 58896,
 				"name": "user",
 				"ligatures": ""
 			},
@@ -673,14 +646,13 @@
 					"team",
 					"people"
 				],
-				"grid": 20,
-				"matchesSearch": false
+				"grid": 20
 			},
 			"properties": {
 				"order": 28,
 				"id": 15,
 				"prevSize": 20,
-				"code": 58896,
+				"code": 58897,
 				"name": "person",
 				"ligatures": ""
 			},
@@ -695,14 +667,13 @@
 				"tags": [
 					"user-add"
 				],
-				"grid": 20,
-				"matchesSearch": false
+				"grid": 20
 			},
 			"properties": {
 				"order": 29,
 				"id": 16,
 				"prevSize": 20,
-				"code": 58897,
+				"code": 58898,
 				"name": "user-add",
 				"ligatures": ""
 			},
@@ -720,14 +691,13 @@
 					"alert",
 					"notification"
 				],
-				"grid": 20,
-				"matchesSearch": false
+				"grid": 20
 			},
 			"properties": {
 				"order": 30,
 				"id": 40,
 				"prevSize": 20,
-				"code": 58900,
+				"code": 58901,
 				"name": "notification",
 				"ligatures": ""
 			},
@@ -747,14 +717,13 @@
 					"envelope",
 					"contact"
 				],
-				"grid": 20,
-				"matchesSearch": false
+				"grid": 20
 			},
 			"properties": {
 				"order": 31,
 				"id": 5,
 				"prevSize": 20,
-				"code": 58893,
+				"code": 58894,
 				"name": "email",
 				"ligatures": ""
 			},
@@ -770,14 +739,13 @@
 					"history",
 					"time"
 				],
-				"grid": 20,
-				"matchesSearch": true
+				"grid": 20
 			},
 			"properties": {
 				"order": 32,
 				"id": 145,
 				"prevSize": 20,
-				"code": 58905,
+				"code": 58907,
 				"name": "history",
 				"ligatures": ""
 			},
@@ -794,14 +762,13 @@
 					"exclamation",
 					"notification"
 				],
-				"grid": 20,
-				"matchesSearch": false
+				"grid": 20
 			},
 			"properties": {
 				"order": 33,
 				"id": 54,
 				"prevSize": 20,
-				"code": 58901,
+				"code": 58902,
 				"name": "alert",
 				"ligatures": ""
 			},
@@ -821,14 +788,13 @@
 					"discussion",
 					"conversation"
 				],
-				"grid": 20,
-				"matchesSearch": false
+				"grid": 20
 			},
 			"properties": {
 				"order": 34,
 				"id": 33,
 				"prevSize": 20,
-				"code": 58898,
+				"code": 58899,
 				"name": "discussion",
 				"ligatures": ""
 			},
@@ -844,14 +810,13 @@
 					"help",
 					"question"
 				],
-				"grid": 20,
-				"matchesSearch": false
+				"grid": 20
 			},
 			"properties": {
 				"order": 35,
 				"id": 135,
 				"prevSize": 20,
-				"code": 58904,
+				"code": 58906,
 				"name": "help",
 				"ligatures": ""
 			},
@@ -867,14 +832,13 @@
 					"info",
 					"about"
 				],
-				"grid": 20,
-				"matchesSearch": false
+				"grid": 20
 			},
 			"properties": {
 				"order": 36,
 				"id": 133,
 				"prevSize": 20,
-				"code": 58903,
+				"code": 58905,
 				"name": "info",
 				"ligatures": ""
 			},
@@ -891,14 +855,13 @@
 					"previous",
 					"left"
 				],
-				"grid": 20,
-				"matchesSearch": false
+				"grid": 20
 			},
 			"properties": {
 				"order": 37,
 				"id": 214,
 				"prevSize": 20,
-				"code": 58906,
+				"code": 58908,
 				"name": "chevron-left",
 				"ligatures": ""
 			},
@@ -910,14 +873,13 @@
 				"paths": [
 					"M286.704 891.802c-13.722 13.875-13.722 36.25 0 50.125s35.891 13.875 49.613 0l400.896-404.838c13.722-13.875 13.722-36.301 0-50.125l-400.896-404.89c-13.722-13.875-35.891-13.875-49.613 0s-13.722 36.25 0 50.125l365.568 379.802-365.568 379.802z"
 				],
-				"grid": 20,
-				"matchesSearch": false
+				"grid": 20
 			},
 			"properties": {
 				"order": 38,
 				"id": 217,
 				"prevSize": 20,
-				"code": 58907,
+				"code": 58909,
 				"name": "chevron-right",
 				"ligatures": ""
 			},
@@ -933,14 +895,13 @@
 					"eye",
 					"views"
 				],
-				"grid": 20,
-				"matchesSearch": false
+				"grid": 20
 			},
 			"properties": {
 				"order": 39,
 				"id": 61,
 				"prevSize": 20,
-				"code": 58902,
+				"code": 58903,
 				"name": "view",
 				"ligatures": ""
 			},
@@ -959,14 +920,13 @@
 					"edit",
 					"save"
 				],
-				"grid": 20,
-				"matchesSearch": false
+				"grid": 20
 			},
 			"properties": {
 				"order": 40,
 				"id": 7,
 				"prevSize": 20,
-				"code": 58894,
+				"code": 58895,
 				"name": "edit",
 				"ligatures": ""
 			},
@@ -983,14 +943,13 @@
 					"television",
 					"media"
 				],
-				"grid": 48,
-				"matchesSearch": false
+				"grid": 48
 			},
 			"properties": {
 				"order": 41,
 				"id": 39,
 				"prevSize": 48,
-				"code": 58881,
+				"code": 58882,
 				"name": "series",
 				"ligatures": ""
 			},
@@ -1006,8 +965,7 @@
 					"videocamera"
 				],
 				"grid": 16,
-				"defaultCode": 58922,
-				"matchesSearch": false
+				"defaultCode": 58922
 			},
 			"properties": {
 				"order": 42,
@@ -1015,7 +973,7 @@
 				"prevSize": 32,
 				"name": "movie",
 				"ligatures": "",
-				"code": 58884
+				"code": 58885
 			},
 			"setIdx": 2,
 			"iconIdx": 1645
@@ -1032,14 +990,13 @@
 					"rate",
 					"like"
 				],
-				"grid": 14,
-				"matchesSearch": false
+				"grid": 14
 			},
 			"properties": {
 				"order": 43,
 				"id": 323,
 				"prevSize": 28,
-				"code": 58931,
+				"code": 58933,
 				"name": "like",
 				"ligatures": ""
 			},
@@ -1054,8 +1011,7 @@
 				"grid": 0,
 				"tags": [
 					"wikipedia"
-				],
-				"matchesSearch": false
+				]
 			},
 			"properties": {
 				"order": 44,
@@ -1079,14 +1035,13 @@
 					"man",
 					"sex"
 				],
-				"grid": 32,
-				"matchesSearch": false
+				"grid": 32
 			},
 			"properties": {
 				"order": 45,
 				"id": 279,
 				"prevSize": 32,
-				"code": 58890,
+				"code": 58891,
 				"name": "sex1",
 				"ligatures": ""
 			},
@@ -1104,14 +1059,13 @@
 					"sex",
 					"woman"
 				],
-				"grid": 32,
-				"matchesSearch": false
+				"grid": 32
 			},
 			"properties": {
 				"order": 46,
 				"id": 280,
 				"prevSize": 32,
-				"code": 58891,
+				"code": 58892,
 				"name": "sex2",
 				"ligatures": ""
 			},
@@ -1130,14 +1084,13 @@
 					"work",
 					"building"
 				],
-				"grid": 16,
-				"matchesSearch": false
+				"grid": 16
 			},
 			"properties": {
 				"order": 47,
 				"id": 4,
 				"prevSize": 32,
-				"code": 58885,
+				"code": 58886,
 				"name": "company",
 				"ligatures": ""
 			},
@@ -1158,14 +1111,13 @@
 					"win",
 					"tournament"
 				],
-				"grid": 14,
-				"matchesSearch": false
+				"grid": 14
 			},
 			"properties": {
 				"order": 48,
 				"id": 137,
 				"prevSize": 28,
-				"code": 58922,
+				"code": 58924,
 				"name": "award",
 				"ligatures": ""
 			},
@@ -1181,14 +1133,13 @@
 					"suitcase",
 					"briefcase"
 				],
-				"grid": 32,
-				"matchesSearch": false
+				"grid": 32
 			},
 			"properties": {
 				"order": 49,
 				"id": 79,
 				"prevSize": 32,
-				"code": 58886,
+				"code": 58887,
 				"name": "job",
 				"ligatures": ""
 			},
@@ -1206,14 +1157,13 @@
 					"price",
 					"ecommerce"
 				],
-				"grid": 14,
-				"matchesSearch": false
+				"grid": 14
 			},
 			"properties": {
 				"order": 50,
 				"id": 41,
 				"prevSize": 28,
-				"code": 58914,
+				"code": 58916,
 				"name": "genre",
 				"ligatures": ""
 			},
@@ -1229,14 +1179,13 @@
 					"sitemap",
 					"tree"
 				],
-				"grid": 14,
-				"matchesSearch": false
+				"grid": 14
 			},
 			"properties": {
 				"order": 51,
 				"id": 207,
 				"prevSize": 28,
-				"code": 58928,
+				"code": 58930,
 				"name": "category",
 				"ligatures": ""
 			},
@@ -1251,19 +1200,67 @@
 				"tags": [
 					"calendar2"
 				],
-				"grid": 16,
-				"matchesSearch": true
+				"grid": 16
 			},
 			"properties": {
 				"order": 52,
 				"id": 1395,
 				"prevSize": 32,
-				"code": 58883,
+				"code": 58884,
 				"name": "event",
 				"ligatures": ""
 			},
 			"setIdx": 2,
 			"iconIdx": 1394
+		},
+		{
+			"icon": {
+				"paths": [
+					"M204.8 870.4c0 56.525 45.875 102.4 102.4 102.4 56.576 0 102.4-45.875 102.4-102.4s-45.824-102.4-102.4-102.4c-56.525 0-102.4 45.875-102.4 102.4zM716.8 870.4c0 56.525 45.875 102.4 102.4 102.4 56.576 0 102.4-45.875 102.4-102.4s-45.824-102.4-102.4-102.4c-56.525 0-102.4 45.875-102.4 102.4zM386.406 628.326l566.733-161.894c10.803-3.123 19.661-14.848 19.661-26.112v-281.6h-721.92v-87.040c0-11.264-9.165-20.48-20.48-20.48h-158.72c-11.264 0-20.48 9.216-20.48 20.48v81.92h99.482l100.762 463.718 9.728 48.282v76.8c0 11.264 9.216 20.48 20.429 20.48h25.6 645.171c11.213 0 20.429-9.216 20.429-20.48v-76.8h-575.898c-58.829 0-60.058-23.040-10.496-37.274z"
+				],
+				"tags": [
+					"cart",
+					"shop",
+					"buy",
+					"purchase",
+					"ecommerce"
+				],
+				"grid": 20
+			},
+			"properties": {
+				"order": 53,
+				"id": 104,
+				"prevSize": 20,
+				"code": 58904,
+				"name": "marketplace",
+				"ligatures": ""
+			},
+			"setIdx": 4,
+			"iconIdx": 103
+		},
+		{
+			"icon": {
+				"paths": [
+					"M554.666 394.666c0-29.44-23.894-53.334-53.334-53.334s-53.332 23.894-53.332 53.334 23.894 53.334 53.334 53.334 53.332-23.894 53.332-53.334zM170.666 0c-58.88 0-106.666 47.786-106.666 106.666v810.666c0 58.88 47.786 106.666 106.666 106.666h661.334c58.88 0 106.666-47.786 106.666-106.666l0-810.666c0-58.88-47.786-106.666-106.666-106.666h-661.334zM501.334 106.666c159.146 0 288 128.854 288 288 0 82.986-35.008 157.866-91.306 210.346-28.8-21.782-55.68-43.114-71.040-58.666-45.846-45.866-120.106-45.866-165.974 0-34.752 34.774-43.094 86.186-25.174 128.854-127.574-29.654-222.506-144-222.506-280.534 0-159.146 128.852-288 288-288zM170.666 864c0-29.44 23.894-53.334 53.334-53.334s53.334 23.894 53.334 53.334-23.894 53.334-53.334 53.334-53.334-23.894-53.334-53.334zM521.6 606.934c12.8-12.822 33.472-12.822 46.506 0 7.488 7.68 217.194 155.306 241.494 179.626 29.846 30.080 29.846 78.506 0 108.374-29.866 29.846-78.314 29.846-108.374 0-25.6-25.6-172.608-234.666-179.626-241.494-12.8-13.014-12.8-33.706 0-46.506z"
+				],
+				"tags": [
+					"hdd",
+					"hard disk",
+					"store",
+					"save"
+				],
+				"grid": 48
+			},
+			"properties": {
+				"order": 54,
+				"id": 20,
+				"prevSize": 48,
+				"code": 58881,
+				"name": "database",
+				"ligatures": ""
+			},
+			"setIdx": 1,
+			"iconIdx": 19
 		}
 	],
 	"height": 1024,
@@ -1307,6 +1304,7 @@
 		"showLiga": false,
 		"showGrid": true,
 		"showGlyphs": true,
-		"showQuickUse": true
+		"showQuickUse": true,
+		"search": ""
 	}
 }
