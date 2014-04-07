@@ -134,15 +134,15 @@ class Translation extends \MovLib\Console\Command\AbstractCommand {
    * Extract translations to po template and update po files.
    */
   protected function extract() {
-    $potPath    = $this->fs->realpath("dr://var/intl/messages.pot");
-    $srcPath    = $this->fs->realpath("dr://src");
-    $tmpPath    = $this->fs->realpath("dr://tmp");
-    $tmpSrcPath = $this->fs->realpath("dr://tmp/src");
+    $potPath = $this->fs->realpath("dr://var/intl/messages.pot");
+    $srcPath = $this->fs->realpath("dr://tmp/src");
 
-    $this->exec("cp -r {$srcPath} {$tmpPath}");
+    $this->writeVerbose("Make temporary copy of source files to work with...", self::MESSAGE_TYPE_INFO);
+    $this->exec("cp -r {$this->fs->realpath("dr://src")} {$this->fs->realpath("dr://tmp")}");
 
+    $this->writeVerbose("Fixing embedded translations...", self::MESSAGE_TYPE_INFO);
     /* @var $fileinfo \SplFileInfo */
-    foreach ($this->fs->getRecursiveIterator($tmpSrcPath) as  $fileinfo) {
+    foreach ($this->fs->getRecursiveIterator($srcPath) as  $fileinfo) {
       if ($fileinfo->isFile() && $fileinfo->getExtension() == "php") {
         $this->writeDebug("Fixing embedded translations in <comment>{$fileinfo->getPathname()}</comment>");
         $content = file_get_contents($fileinfo);
@@ -157,13 +157,16 @@ class Translation extends \MovLib\Console\Command\AbstractCommand {
     }
 
     $this->writeVerbose("Getting all translation keys from php files...", self::MESSAGE_TYPE_INFO);
-    $command = "find {$tmpSrcPath} -iname '*.php' | xargs xgettext";
+    $command = "find {$srcPath} -iname '*.php' | xargs xgettext";
     foreach ([
-      "output"    => $potPath,
-      "language"  => "PHP",
-      "from-code" => "UTF-8",
-      "keyword"   => "t",
-      "no-wrap"   => null
+      "output"             => $potPath,
+      "language"           => "PHP",
+      "from-code"          => "UTF-8",
+      "keyword"            => "t",
+      "no-wrap"            => null,
+      "package-name"       => "{$this->config->sitename} Messages",
+      "package-version"    => $this->config->version,
+      "msgid-bugs-address" => "https://github.com/MovLib/www/issues?labels=translation",
     ] as $option => $arg) {
       if (isset($arg)) {
         $command .= " --{$option}=" . escapeshellarg($arg);
@@ -174,22 +177,23 @@ class Translation extends \MovLib\Console\Command\AbstractCommand {
     }
     $this->exec($command);
 
-    $this->exec("rm -r {$tmpSrcPath}");
+    $this->writeVerbose("Deleting temporary copy of source files...", self::MESSAGE_TYPE_INFO);
+    $this->exec("rm -r {$srcPath}");
 
-    $this->writeVerbose("Updating po files for all languages.", self::MESSAGE_TYPE_INFO);
+    $this->writeVerbose("Updating po files for all languages...", self::MESSAGE_TYPE_INFO);
     foreach ($this->intl->systemLocales as $code => $locale) {
       if ($code != $this->intl->defaultLanguageCode) {
         $poPath  = $this->fs->realpath("dr://var/intl/{$locale}/messages.po");
         if (file_exists($poPath)) {
-          $this->exec("msgmerge --update --no-wrap {$poPath} {$potPath}");
+          $this->exec("msgmerge --backup='off' --no-wrap --previous --update {$poPath} {$potPath}");
         }
         else {
-          $this->exec("msginit -i {$potPath} -o {$poPath} -l {$locale} --no-translator --no-wrap");
+          $this->exec("msginit --locale='{$locale}' --no-translator --no-wrap -i {$potPath} -o {$poPath}");
         }
-        file_put_contents($poPath, str_replace($this->fs->documentRoot, "", file_get_contents($poPath)));
+        file_put_contents($poPath, str_replace("{$this->fs->documentRoot}/tmp", "", file_get_contents($poPath)));
       }
     }
-    file_put_contents($potPath, str_replace($this->fs->documentRoot, "", file_get_contents($potPath)));
+    file_put_contents($potPath, str_replace("{$this->fs->documentRoot}/tmp", "", file_get_contents($potPath)));
 
     return 0;
   }
