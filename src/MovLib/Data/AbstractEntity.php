@@ -67,7 +67,23 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
 
 
   /**
-   * {@inheritdoc}
+   * Get the count of a relationship.
+   *
+   * <b>EXAMPLE</b><br>
+   * <code><?php
+   *
+   * public function getCount($from, $what = "*") {
+   *   return $this->getMySQLi()->query("SELECT COUNT({$what}) FROM `{$from}` WHERE `id` = 1 LIMIT 1")->fetch_row()[0];
+   * }
+   *
+   * ?></code>
+   *
+   * @param string $from
+   *   The table defining the relationship that is to be counted.
+   * @param string $what
+   *   The content of the <code>COUNT()</code> function in the SQL query.
+   * @return integer
+   *   The count of the relationship.
    */
   public function getCount($from, $what = "*") {
     $result = $this->getMySQLi()->query("SELECT COUNT({$what}) FROM `{$from}` WHERE `{$this->getSingularKey()}_id` = {$this->id} LIMIT 1");
@@ -92,9 +108,10 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
   }
 
   /**
-   * Get the entity's deleted state.
+   * Whether this entity is gone or not.
    *
    * @return boolean
+   *   <code>TRUE</code> if the entity is gone, <code>FALSE</code> otherwise.
    */
   public function isGone() {
     return $this->deleted;
