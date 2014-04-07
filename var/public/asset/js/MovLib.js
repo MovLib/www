@@ -156,16 +156,16 @@
      */
     executeModules: function (modules, context) {
       // The callback method if the module isn't loaded yet.
-      this.execute = this.execute || function (module) {
+      this.executeModules.execute = this.executeModules.execute || function (module) {
         this.modules[module](context);
       };
 
       for (var module in modules) {
-        if (!this.modules[module]) {
-          this.loadModule(modules[module], this.execute.bind(this, module));
+        if (this.modules[module]) {
+          this.modules[module](context);
         }
         else {
-          this.modules[module](context);
+          this.loadModule(modules[module], this.executeModules.execute.bind(this, module));
         }
       }
 
