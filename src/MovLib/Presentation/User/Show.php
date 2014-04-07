@@ -85,9 +85,9 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
     $personalData = null;
 
     // Format the user's birthday if available.
-    if ($this->user->birthday) {
-      $age = (new Date($this->intl, $this))->getAge($this->user->birthday);
-      $personalData[] = "<time datetime='{$this->user->birthday}' property='birthDate'>{$age}</time>";
+    if ($this->user->birthdate) {
+      $age = (new Date($this->intl, $this))->getAge($this->user->birthdate);
+      $personalData[] = "<time datetime='{$this->user->birthdate}' property='birthDate'>{$age}</time>";
     }
     if ($this->user->sex > 0) {
       $gender     = $this->user->sex === 1 ? $this->intl->t("Male") : $this->intl->t("Female");

@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\Date;
+use \MovLib\Partial\Alert;
 use \MovLib\Partial\Country;
 use \MovLib\Partial\Currency;
 use \MovLib\Partial\Form;
@@ -89,7 +90,7 @@ final class AccountSettings extends \MovLib\Presentation\Profile\AbstractProfile
 
     $birthdateMax = (new Date())->sub(new \DateInterval("P6Y"));
     $birthdateMin = (new Date())->sub(new \DateInterval("P120Y"));
-    $form->addElement(new InputDate($this->diContainerHTTP, "birthdate", $this->intl->t("Date of Birth"), $this->user->birthday, [
+    $form->addElement(new InputDate($this->diContainerHTTP, "birthdate", $this->intl->t("Date of Birth"), $this->user->birthdate, [
       "#help-popup" => $this->intl->t("Your birthday will be displayed on your profile page and is used to create demographic evaluations."),
       "max"         => $birthdateMax,
       "min"         => $birthdateMin,
@@ -163,22 +164,12 @@ final class AccountSettings extends \MovLib\Presentation\Profile\AbstractProfile
 //    if ($this->avatar->path) {
 //      $this->user->upload($this->avatar->path, $this->avatar->extension, $this->avatar->height, $this->avatar->width);
 //    }
-//    $this->user->birthday           = $this->birthday->value;
-//    $this->user->countryCode        = $this->country->value;
-//    $this->user->currencyCode       = $this->currency->value;
-//    $this->user->private            = $this->private->value;
-//    $this->user->aboutMe            = $this->aboutMe->value;
-//    $this->user->realName           = $this->realName->value;
-//    $this->user->sex                = $this->sex->value;
-//    $this->user->systemLanguageCode = $this->language->value;
-//    $this->user->timeZoneIdentifier = $this->timezone->value;
-//    $this->user->website            = $this->website->value;
-//    $this->user->commit();
-//    $this->alerts                  .= new Alert(
-//      $this->intl->t("Your account settings were updated successfully."),
-//      $this->intl->t("Account Settings Updated Successfully"),
-//      Alert::SEVERITY_SUCCESS
-//    );
+    $this->user->updateAccount();
+    $this->alerts .= new Alert(
+      $this->intl->t("Your account settings were updated successfully."),
+      $this->intl->t("Account Settings Updated Successfully"),
+      Alert::SEVERITY_SUCCESS
+    );
     return $this;
   }
 

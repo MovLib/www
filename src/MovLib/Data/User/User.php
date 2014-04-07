@@ -104,7 +104,7 @@ final class User extends \MovLib\Data\Image\AbstractImageEntity {
    *
    * @var null|\DateTime
    */
-  public $birthday;
+  public $birthdate;
 
   /**
    * The user's country code.
@@ -294,7 +294,7 @@ SQL
         $this->access,
         $this->changed,
         $this->created,
-        $this->birthday,
+        $this->birthdate,
         $this->countryCode,
         $this->currencyCode,
         $this->aboutMe,
@@ -331,7 +331,7 @@ SQL
    *
    * @return this
    */
-  public function delete() {
+  public function deleteAccount() {
     $this->getMySQLi()->query("UPDATE `users` SET `" . implode("` = NULL, `", [
       "admin", "birthdate", "country_code", "dyn_about_me", "edits", "email", "image_cache_buster", "image_extension",
       "image_styles", "password", "private", "profile_views", "real_name", "reputation", "sex", "language_code",
@@ -369,7 +369,7 @@ SQL
    */
   public function init() {
     $this->access               = new DateTime($this->access);
-    $this->birthday             && ($this->birthday = new Date($this->birthday));
+    $this->birthdate            && ($this->birthdate = new Date($this->birthdate));
     $this->deleted              = (boolean) $this->email;
     $this->imageAlternativeText = $this->intl->t("{username}’s avatar image.", [ "username" => $this->name ]);
     $this->imageDirectory       = "upload://user";
@@ -422,6 +422,51 @@ SQL
       return false;
     }
     return true;
+  }
+
+  /**
+   * Update the user's account.
+   *
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function updateAccount() {
+    $styles    = serialize($this->imageStyles);
+    $stmt = $this->getMySQLi()->prepare(<<<SQL
+UPDATE `users` SET
+  `dyn_about_me`       = COLUMN_ADD(`dyn_about_me`, '{$this->intl->languageCode}', ?),
+  `birthdate`          = ?,
+  `country_code`       = ?,
+  `image_cache_buster` = UNHEX(?),
+  `image_extension`    = ?,
+  `image_styles`       = ?,
+  `private`            = ?,
+  `real_name`          = ?,
+  `sex`                = ?,
+  `language_code`      = ?,
+  `timezone`           = ?,
+  `website`            = ?
+WHERE `id` = {$this->id}
+SQL
+    );
+    $stmt->bind_param(
+      "ssssssisisss",
+      $this->aboutMe,
+      $this->birthdate,
+      $this->countryCode,
+      $this->imageCacheBuster,
+      $this->imageExtension,
+      $styles,
+      $this->private,
+      $this->realName,
+      $this->sex,
+      $this->languageCode,
+      $this->timezone,
+      $this->website
+    );
+    $stmt->execute();
+    $stmt->close();
+    return $this;
   }
 
   /**

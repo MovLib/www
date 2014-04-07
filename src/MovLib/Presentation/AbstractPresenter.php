@@ -378,7 +378,7 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
           "<li class='separator name'>{$this->session->userName}</li>" .
           "<li>{$this->a($this->intl->r("/profile/sign-out"), $this->intl->t("Sign Out"), [ "class" => "danger" ])}</li>" .
         "</ul>" .
-        "<a href='{$this->intl->r("/profile")}'>{$avatar}</a>";
+        "<a class='no-link' href='{$this->intl->r("/profile")}'>{$avatar}</a>";
     }
     else {
       $userIcon = "<div class='btn btn-inverse clicker ico ico-user-add'></div>";

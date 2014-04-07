@@ -212,7 +212,7 @@ final class DangerZone extends \MovLib\Presentation\Profile\AbstractProfilePrese
       ));
     }
 
-    $this->user->delete();
+    $this->user->deleteAccount();
     $this->session->destroy(true);
 
     $this->alerts .= new Alert(

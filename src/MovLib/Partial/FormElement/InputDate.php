@@ -97,7 +97,7 @@ class InputDate extends \MovLib\Partial\FormElement\AbstractInput {
    */
   protected function validateValue($date, &$errors) {
     // Try to parse the date according to the W3C standard.
-    $date = Date::createFromFormat(Date::W3C_DATE, $date);
+    $date = new Date($date);
 
     // Check if parsing the date according to the format failed.
     if ($date === false || (($dateErrors = $date->getLastErrors()) && ($dateErrors["error_count"] !== 0 || $dateErrors["warning_count"] !== 0))) {
