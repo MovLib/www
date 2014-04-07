@@ -147,8 +147,8 @@ class Translation extends \MovLib\Console\Command\AbstractCommand {
         $this->writeDebug("Fixing embedded translations in <comment>{$fileinfo->getPathname()}</comment>");
         $content = file_get_contents($fileinfo);
         $count = [];
-        for ($i = 0; $i < 3; ++$i) {
-          $content = preg_replace('/\{\$[a-z->]*intl[a-z->]*->t\((.*)\)(\s*)\}/sU', '" . $this->intl->t($1) . $2"', $content, -1, $count[]);
+        for ($i = 0; $i < 4; ++$i) {
+          $content = preg_replace('/\{(\$[a-z0-9\$_\->]+)\((.*)\)(\s*)\}/isU', '" . $1($2) . $3"', $content, -1, $count[]);
         }
         $countSum = array_sum($count);
         $this->writeDebug("Fixed {$countSum} patterns in file...");
