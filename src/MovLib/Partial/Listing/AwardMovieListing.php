@@ -90,8 +90,8 @@ class AwardMovieListing extends \MovLib\Partial\Listing\MovieListing {
     // @devEnd
 
     return
-      "<span class='label small'>{$this->intl->t("{0}x won", [ $movie->wonCount ])}</span>" .
-      "<span class='label small'>{$this->intl->t("{0}x nominated", [ $movie->nominationCount ])}</span>"
+      "<span class='label small'>{$this->intl->t("{0} × won", [ $movie->wonCount ])}</span>" .
+      "<span class='label small'>{$this->intl->t("{0} × nominated", [ $movie->nominationCount ])}</span>"
     ;
   }
 

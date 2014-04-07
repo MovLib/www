@@ -19,3 +19,4 @@ Desktop.ini
 /var/public/bower/
 /var/public/vagrant/
 /private/
+*.mo

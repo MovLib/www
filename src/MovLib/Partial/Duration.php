@@ -116,7 +116,7 @@ class Duration extends \MovLib\Presentation\AbstractBase {
     }
     // @todo Can't we translate the unit with Intl ICU? Couldn't find anything.
     else {
-      $this->text = $this->intl->t("{0, number, integer} min.", [ ceil($this->duration / 60) ]);
+      $this->text = $this->intl->t("{0,number,integer} min.", [ ceil($this->duration / 60) ]);
     }
   }
 

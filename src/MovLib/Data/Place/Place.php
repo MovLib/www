@@ -124,7 +124,7 @@ SQL
    */
   protected function init() {
     $this->pluralKey   = $this->tableName = "places";
-    $this->route       = $this->intl->t("/place/{0}", [ $this->id]);
+    $this->route       = $this->intl->r("/place/{0}", [ $this->id]);
     $this->singularKey = "place";
     return parent::init();
   }

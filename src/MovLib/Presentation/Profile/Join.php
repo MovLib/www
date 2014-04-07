@@ -134,7 +134,7 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
       ]))
       ->addElement(new InputCheckbox($this->diContainerHTTP, "terms", $this->intl->t(
         "I accept the {a1}privacy policy{a} and the {a2}terms of use{a}.",
-        [ "a" => "</a>", "a1" => "<a href='{$this->intl->t("/privacy-policy")}'>", "a2" => "<a href='{$this->intl->r("/terms-of-use")}'>" ]
+        [ "a" => "</a>", "a1" => "<a href='{$this->intl->r("/privacy-policy")}'>", "a2" => "<a href='{$this->intl->r("/terms-of-use")}'>" ]
       ), $terms, [
         "required" => true,
       ]))
