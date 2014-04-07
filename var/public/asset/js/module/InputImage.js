@@ -179,7 +179,6 @@
       this.newImg.src    = event.target.result;
       this.newImg.setAttribute("width", this.img.width);
       this.newImg.onload = this.previewImageOnload;
-
       return this;
     },
 
@@ -218,7 +217,8 @@
     insertNewImage: function () {
       this.preview.removeChild(this.img);
       this.preview.appendChild(this.newImg);
-
+      this.img    = this.newImg;
+      this.newImg = document.createElement("img");
       return this;
     },
 
@@ -266,11 +266,9 @@
       else {
         // The new image should have better quality if we're updating an existing image.
         if (this.height && this.width && (this.newImg.naturalHeight < this.height || this.newImg.naturalWidth < this.width)) {
-          if (confirm(this.alerts.quality.split("{height_new}").join(this.newImg.naturalHeight).split("{width_new}").join(this.newImg.naturalWidth)) === true) {
-            this.insertNewImage();
-          }
-          else {
+          if (confirm(this.alerts.quality.split("{height_new}").join(this.newImg.naturalHeight).split("{width_new}").join(this.newImg.naturalWidth)) === false) {
             this.reset();
+            return this;
           }
         }
         // Make sure the user knows that this is only a preview.
@@ -279,8 +277,8 @@
           this.button.parentNode.appendChild(previewAlert);
           previewAlert.classList.add("show");
           this.element.classList.add("preview-alert");
-          this.insertNewImage();
         }
+        this.insertNewImage();
       }
 
       return this;

@@ -223,7 +223,7 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
    */
   public function getFooter() {
     $languageLinks = null;
-    $teamOffset = " o4";
+    $teamOffset    = " o4";
 
     if ($this->languageLinks) {
       $teamOffset = null;
@@ -523,7 +523,7 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
         "<meta property='og:type' content='website'>" .
         "<meta property='og:url' content='{$this->request->scheme}://{$this->config->hostname}{$this->request->uri}'>" .
         "<meta name='application-name' content='{$this->config->sitename}'>" .
-        "<meta name='msapplication-tooltip' content='{$this->config->slogan}'>" .
+        "<meta name='msapplication-tooltip' content='{$this->intl->t("The free movie library.")}'>" .
         "<meta name='msapplication-starturl' content='{$this->request->scheme}://{$this->config->hostname}/'>" .
         "<meta name='msapplication-navbutton-color' content='#ffffff'>" .
         // @todo Add opensearch tag (rel="search").

@@ -20,7 +20,7 @@ namespace MovLib\Data\User;
 use \MovLib\Core\HTTP\Session;
 use \MovLib\Data\Date;
 use \MovLib\Data\DateTime;
-use \MovLib\Data\Image\ImageEffect;
+use \MovLib\Data\Image\ImageResizeEffect;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -389,7 +389,11 @@ SQL
    * {@inheritdoc}
    */
   protected function imageGetEffects() {
-    return parent::imageGetEffects() + [ "nav" => new ImageEffect(50, 50, true) ];
+    return [
+      "nav" => new ImageResizeEffect(50, 50, true),
+      "s1"  => new ImageResizeEffect(\MovLib\Data\Image\S01, \MovLib\Data\Image\S01, true),
+      "s2"  => new ImageResizeEffect(\MovLib\Data\Image\S02, \MovLib\Data\Image\S02, true),
+    ];
   }
 
   /**
@@ -403,6 +407,15 @@ SQL
     $stmt->bind_param("sd", $styles, $this->id);
     $stmt->execute();
     $stmt->close();
+    return $this->imageUpdateSession();
+  }
+
+  /**
+   * Update the session after the user image has changed.
+   *
+   * @return this
+   */
+  protected function imageUpdateSession() {
     if ($this->kernel->http) {
       $_SESSION[Session::USER_IMAGE_CACHE_BUSTER] = $this->imageCacheBuster;
       $_SESSION[Session::USER_IMAGE_EXTENSION]    = $this->imageExtension;
@@ -443,7 +456,12 @@ SQL
    * @throws \mysqli_sql_exception
    */
   public function updateAccount() {
-    $styles    = serialize($this->imageStyles);
+    // If a new image was uploaded rename the images with the temporary name to the actual name.
+    if ($this->imageUploaded) {
+      $this->imageRename($this->imageFilename, mb_strtolower($this->name))->imageUpdateSession();
+    }
+
+    $styles = serialize($this->imageStyles);
     $stmt = $this->getMySQLi()->prepare(<<<SQL
 UPDATE `users` SET
   `dyn_about_me`       = COLUMN_ADD(`dyn_about_me`, '{$this->intl->languageCode}', ?),

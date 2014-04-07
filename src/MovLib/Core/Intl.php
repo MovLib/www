@@ -277,11 +277,9 @@ final class Intl {
    * @throws \IntlException
    */
   public function r($route, $args = null, $locale = null) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert($route != "/", "Translating the root route '/' doesn't make sense.");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
+    if ($route == "/") {
+      return "/";
+    }
     return $this->translate($route, $args, "routes/singular", $locale);
   }
 
@@ -300,11 +298,9 @@ final class Intl {
    * @throws \IntlException
    */
   public function rp($route, $args = null, $locale = null) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert($route != "/", "Translating the root route '/' doesn't make sense.");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
+    if ($route == "/") {
+      return "/";
+    }
     return $this->translate($route, $args, "routes/plural", $locale);
   }
 

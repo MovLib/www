@@ -338,13 +338,13 @@
      */
     invalidate: function (element, message) {
       // Callback for the change event on the element.
-      this.invalidateReset = this.invalidateReset || function () {
+      this.invalidate.reset = this.invalidate.reset || function () {
         element.setCustomValidity("");
-        element.removeEventListener(this.invalidateReset);
+        element.removeEventListener("change", this.invalidate.reset, false);
       }.bind(this);
 
       // Remove possible HTML from message and set the custom validity error message on the element.
-      var stripTags = document.createElement("div");
+      var stripTags       = document.createElement("div");
       stripTags.innerHTML = message;
       element.setCustomValidity((stripTags.textContent || stripTags.innerText));
 
@@ -355,7 +355,7 @@
       }
 
       // Observe any changes to this input field and reset the validity error message.
-      element.addEventListener("change", this.invalidateReset, false);
+      element.addEventListener("change", this.invalidate.reset, false);
 
       return this;
     },

@@ -40,7 +40,7 @@ final class LanguageSelection extends \MovLib\Presentation\AbstractPresenter {
    */
   public function getContent() {
     $prerender = $menuitems = null;
-    foreach ($this->config->locales as $code => $locale) {
+    foreach ($this->intl->systemLocales as $code => $locale) {
       $href = "//{$code}.{$this->config->hostname}/";
       // Doesn't validate, but the browsers like it. Please note that Chrome doesn't prerender more than one URL and
       // no HTTPS pages; there's nothing we can do about that. But it works great in Gecko and IE.

@@ -17,7 +17,8 @@
  */
 namespace MovLib\Data\Image;
 
-use \MovLib\Data\Image\ImageEffect;
+use \MovLib\Data\Image\ImageFullsizeEffect;
+use \MovLib\Data\Image\ImageResizeEffect;
 use \MovLib\Data\Image\ImageStyle;
 use \MovLib\Data\Image\ImageStylePlaceholder;
 
@@ -55,7 +56,7 @@ const S12 = 940;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
+abstract class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -132,7 +133,7 @@ class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
    *
    * @var array
    */
-  protected $imageStyles;
+  public $imageStyles;
 
   /**
    * The image's styles cache.
@@ -149,29 +150,20 @@ class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
   public $imageWidth;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Methods
+  // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
 
 
   /**
-   * Generate image style by applying given image effect.
+   * Save the image styles to persistent storage.
    *
-   * @param string $style
-   *   The name of the image style.
-   * @param \MovLib\Data\Image\ImageEffect $imageEffect
-   *   The image effect to apply.
-   * @return type
-   * @throws \RuntimeException
-   *   If applying of the image effect fails.
+   * @return this
+   * @throws \mysqli_sql_exception
    */
-  final protected function imageGenerateStyle($style, \MovLib\Data\Image\ImageEffect $imageEffect) {
-    $source                            = $this->imageGetURI();
-    $destination                       = $this->imageGetStyleURI($style);
-    $imageEffect->apply($this->fs, $source, $destination);
-    list($width, $height)              = getimagesize($destination);
-    $this->imageStyles[$style]         = new ImageStyle($destination, $width, $height);
-    $this->imageStyles[$style]->effect = $imageEffect;
-    return $this->imageStyles[$style];
-  }
+  abstract protected function imageSaveStyles();
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * Generate image styles.
@@ -181,10 +173,10 @@ class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
    *   If applying of the image effect fails.
    */
   final protected function imageGenerateStyles() {
+    /* @var $imageEffect \MovLib\Data\Image\AbstractImageEffect */
     foreach ($this->imageGetEffects() as $style => $imageEffect) {
-      $this->imageGenerateStyle($style, $imageEffect);
+      $imageEffect->apply($this, $this->fs, $style, $this->imageGetURI(), $this->imageGetStyleURI($style));
     }
-    $this->imageSaveStyles();
     return $this;
   }
 
@@ -196,8 +188,9 @@ class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
    */
   protected function imageGetEffects() {
     return [
-      "s1" => new ImageEffect(\MovLib\Data\Image\S01),
-      "s2" => new ImageEffect(\MovLib\Data\Image\S02),
+      ""   => new ImageFullsizeEffect(),
+      "s1" => new ImageResizeEffect(\MovLib\Data\Image\S01),
+      "s2" => new ImageResizeEffect(\MovLib\Data\Image\S02),
     ];
   }
 
@@ -210,11 +203,6 @@ class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
    *   The desired image's style.
    */
   final public function imageGetStyle($style = "s2") {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    $this->log->debug("Getting image style.", [ "style" => $style ]);
-    // @codeCoverageIgnoreEnd
-    // @devEnd
     // Nothing to do if we have this style already cached.
     if (isset($this->imageStylesCache[$style])) {
       return $this->imageStylesCache[$style];
@@ -222,43 +210,14 @@ class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
 
     // Check if the image exists.
     if ($this->imageCacheBuster) {
-      // @devStart
-      // @codeCoverageIgnoreStart
-      $this->log->debug("Found cache buster string.");
-      if (!is_file($this->imageGetStyleURI($style))) {
-        $this->log->info("Generating all image styles because file is missing from storage!");
-        $this->imageGenerateStyles();
-        $this->imageSaveStyles();
+      if (!isset($this->imageStyles[$style]) || !is_file($this->imageGetStyleURI($style))) {
+        $this->log->warning("Generating all image styles because file is missing from storage!");
+        $this->imageGenerateStyles()->imageSaveStyles();
       }
-      // @codeCoverageIgnoreEnd
-      // @devEnd
-
-      // Check if we have data from the database for this style.
-      if (isset($this->imageStyles[$style])) {
-        // @devStart
-        // @codeCoverageIgnoreStart
-        $this->log->debug("Using existing image style from database.");
-        // @codeCoverageIgnoreEnd
-        // @devEnd
-        $this->imageStylesCache[$style] = $this->imageStyles[$style];
-      }
-      // If not try to recover.
-      //
-      // @todo This shouldn't be necessary at all!
-      else {
-        $this->imageGenerateStyles();
-        $this->log->info("Missing image style from persistent storage, re-applying image effect.");
-        $this->imageStylesCache[$style] = $this->imageGenerateStyle($style, $this->imageGetEffects()[$style]);
-        $this->imageSaveStyles();
-      }
+      $this->imageStylesCache[$style] = $this->imageStyles[$style];
       $this->imageStylesCache[$style]->url = $this->fs->getExternalURL($this->imageGetStyleURI($style), $this->imageCacheBuster);
     }
     else {
-      // @devStart
-      // @codeCoverageIgnoreStart
-      $this->log->info("Couldn't find image, using placeholder.");
-      // @codeCoverageIgnoreEnd
-      // @devEnd
       $this->imageStylesCache[$style] = new ImageStylePlaceholder(
         $this->imageGetEffects()[$style]->width,
         $this->fs->getExternalURL($this->imagePlaceholder)
@@ -275,12 +234,15 @@ class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
    * Get the URI of the image or image style.
    *
    * @param string $style [optional]
-   *   The style to get the URI for, defaults to <code>NULL</code> and returns the URI of the non-resized image.
+   *   The style to get the URI for, defaults to <code>NULL</code> and returns the URI of the fullsize image.
    * @return string
    *   The URI of the image or image style.
    */
   final protected function imageGetStyleURI($style = null) {
-    return "{$this->imageDirectory}/{$this->imageFilename}.{$style}.{$this->imageExtension}";
+    if (!empty($style)) {
+      $style = ".{$style}";
+    }
+    return "{$this->imageDirectory}/{$this->imageFilename}{$style}.{$this->imageExtension}";
   }
 
   /**
@@ -291,20 +253,6 @@ class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
    */
   final protected function imageGetURI() {
     return str_replace("upload://", "dr://var/lib/uploads/", "{$this->imageDirectory}/{$this->imageFilename}.{$this->imageExtension}");
-  }
-
-  /**
-   * Save the image styles to persistent storage.
-   *
-   * @return this
-   */
-  protected function imageSaveStyles() {
-    $styles = serialize($this->imageStyles);
-    $stmt   = $this->getMySQLi()->prepare("UPDATE `{$this->getPluralKey()}` SET `styles` = ? WHERE `id` = ?");
-    $stmt->bind_param("sd", $styles, $this->id);
-    $stmt->execute();
-    $stmt->close();
-    return $this;
   }
 
   /**

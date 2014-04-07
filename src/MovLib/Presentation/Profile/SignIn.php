@@ -117,7 +117,7 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
       )}</a>"
     ;
 
-    $form = (new Form($this->diContainerHTTP))
+    $form = (new Form($this->diContainerHTTP, [ "class" => "s s6 o3" ]))
       ->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email Address"), $this->email, [
         "#help-text"  => "<a href='{$this->intl->r("/profile/reset-password")}'>{$this->intl->t("Forgot your password?")}</a>",
         "autofocus"   => true,
@@ -129,7 +129,7 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
         "required"    => true,
       ]))
       ->addAction($this->intl->t("Sign In"), [ "class" => "btn btn-large btn-success" ])
-      ->init([ $this, "valid" ], [ "class" => "s s6 o3" ])
+      ->init([ $this, "valid" ])
     ;
 
     return "<div class='c'><div class='r'>{$form}</div></div>";

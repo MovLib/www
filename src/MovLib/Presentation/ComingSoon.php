@@ -139,7 +139,7 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   protected function getHeadTitle() {
-    return $this->intl->t("{0}, {1}.", [ $this->config->sitename, $this->config->slogan ]);
+    return $this->intl->t("{0}, {1}.", [ $this->config->sitename, $this->intl->t("the free movie library") ]);
   }
 
   /**

@@ -21,7 +21,7 @@ use \MovLib\Core\FileSystem;
 use \MovLib\Core\Shell;
 
 /**
- * Defines the image effect object.
+ * Defines the base class for all image effects.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -29,66 +29,42 @@ use \MovLib\Core\Shell;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class ImageEffect {
+abstract class AbstractImageEffect {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * Whether this effect requires cropping or not.
+   * The image to apply the style on.
    *
-   * @var boolean
+   * @var \MovLib\Data\Image\AbstractReadOnlyImageEntity
    */
-  public $crop = false;
+  protected $image;
 
   /**
-   * The image effects filter.
+   * The name of the style that the concrete image gave this image effect.
    *
    * @var string
    */
-  public $filter = "Lanczos";
-
-  /**
-   * The image effect's height in Pixel.
-   *
-   * @var null|integer
-   */
-  public $height;
-
-  /**
-   * The image effect's quality.
-   *
-   * @var integer
-   */
-  public $quality = 80;
-
-  /**
-   * The image effect's width in Pixel.
-   *
-   * @var integer
-   */
-  public $width;
+  protected $styleName;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+  // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
 
 
   /**
-   * Instantiate new image effect object.
+   * Convert the source image to the image effect.
    *
-   * @param integer $width
-   *   The image effect's width.
-   * @param integer $height [optional]
-   *   The image effect's height, defaults to <code>NULL</code>.
-   * @param boolean $crop [optional]
-   *   Whether this image effect requires cropping or not, defaults to <code>FALSE</code>.
+   * @param \MovLib\Core\Shell $shell
+   *   A shell instance to execute commands.
+   * @param string $source
+   *   Canonical absolute path to the source file.
+   * @param string $destination
+   *   Canonical absolute path to the destination file.
+   * @return this
    */
-  public function __construct($width, $height = null, $crop = false) {
-    $this->crop   = $crop;
-    $this->height = $height;
-    $this->width  = $width;
-  }
+  abstract protected function convert(\MovLib\Core\Shell $shell, $source, $destination);
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -97,8 +73,12 @@ final class ImageEffect {
   /**
    * Apply the image effect.
    *
+   * @param \MovLib\Data\Image\AbstractReadOnlyImageEntity $image
+   *   The image to apply the effect on.
    * @param \MovLib\Core\FileSystem $fs
    *   The active file system instance.
+   * @param string $styleName
+   *   The image style's name.
    * @param string $source
    *   URI or canonical absolute path of the source image.
    * @param string $destination
@@ -107,29 +87,19 @@ final class ImageEffect {
    * @throws \MovLib\Exception\ShellException
    *   If the ImageMagick call fails.
    */
-  public function apply(\MovLib\Core\FileSystem $fs, $source, $destination) {
-    // Build the ImageMagick resize argument.
-    if ($this->crop) {
-      $resize = "'{$this->width}x{$this->height}>^' -gravity 'Center' -crop '{$this->width}x{$this->height}+0+0' +repage";
-    }
-    else {
-      $resize = "'{$this->width}x{$this->height}>'";
-    }
-
+  public function apply(\MovLib\Data\Image\AbstractReadOnlyImageEntity $image, \MovLib\Core\FileSystem $fs, $styleName, $source, $destination) {
+    static $shell = null;
+    $this->image     = $image;
+    $this->styleName = $styleName;
     // Create the destination's directory if it doesn't exist.
     $directory = dirname($destination);
-    if (is_dir($directory) === false) {
+    if (!is_dir($directory)) {
       mkdir($directory, FileSystem::MODE_DIR, true);
     }
-
-    // Build canonical absolute paths to source and destination.
-    $s = escapeshellarg($fs->realpath($source));
-    $d = escapeshellarg($fs->realpath($destination));
-
-    // Try to execute the ImageMagick command.
-    (new Shell())->execute("convert {$s} -filter '{$this->filter}' -resize {$resize} -quality {$this->quality} {$d}");
-
-    return $this;
+    if (!$shell) {
+      $shell = new Shell();
+    }
+    return $this->convert($shell, $fs->realpath($source), $fs->realpath($destination));
   }
 
 }
