@@ -118,6 +118,11 @@ abstract class AbstractImageEntity extends \MovLib\Data\Image\AbstractReadOnlyIm
    */
   final protected function imageRename($oldFilename, $newFilename) {
     if ($oldFilename != $newFilename) {
+      // Rename the original.
+      $uri = $this->imageGetURI();
+      rename($uri, str_replace($oldFilename, $newFilename, $uri));
+
+      // Rename all generated styles.
       foreach ($this->imageGetEffects() as $style => $imageEffect) {
         $uri = $this->imageGetStyleURI($style);
         rename($uri, str_replace($oldFilename, $newFilename, $uri));
