@@ -62,7 +62,6 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
           "<div class='s s8'>" .
             "<h2 class='para'>{$this->getStructuredDisplayTitle($movie)}</h2>" .
             $this->getStructuredOriginalTitle($movie, "small") .
-            $this->getStructuredTagline($movie, [ "class" => "small" ]) .
             $this->getGenreLabels($movie->genres, [ "class" => "small" ]) .
           "</div>" .
           "<div class='s s1 rating-mean tac'>{$this->intl->format("{0,number}", $movie->meanRating)}</div>" .

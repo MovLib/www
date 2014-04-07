@@ -98,8 +98,6 @@ SELECT
   IFNULL(`display_title`.`language_code`, `original_title`.`language_code`) AS `displayTitleLanguageCode`,
   `original_title`.`title` AS `originalTitle`,
   `original_title`.`language_code` AS `originalTitleLanguageCode`,
-  `movies_taglines`.`tagline`,
-  `movies_taglines`.`language_code` AS `taglineLanguageCode`,
   `posters`.`id` AS `imageFilename`,
   HEX(`posters`.`cache_buster`) AS `imageCacheBuster`,
   `posters`.`extension` AS `imageExtension`,
@@ -114,11 +112,6 @@ FROM `movies`
     AND `movies_display_titles`.`language_code` = '{$this->intl->languageCode}'
   LEFT JOIN `movies_titles` AS `display_title`
     ON `display_title`.`id` = `movies_display_titles`.`title_id`
-  LEFT JOIN `movies_display_taglines`
-    ON `movies_display_taglines`.`movie_id` = `movies`.`id`
-    AND `movies_display_taglines`.`language_code` = '{$this->intl->languageCode}'
-  LEFT JOIN `movies_taglines`
-    ON `movies_taglines`.`id` = `movies_display_taglines`.`tagline_id`
   LEFT JOIN `display_posters`
     ON `display_posters`.`movie_id` = `movies`.`id`
     AND `display_posters`.`language_code` = '{$this->intl->languageCode}'

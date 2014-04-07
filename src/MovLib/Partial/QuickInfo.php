@@ -28,6 +28,10 @@ namespace MovLib\Partial;
  */
 final class QuickInfo {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /**
    * The infos of the quick info.
    *
@@ -48,6 +52,10 @@ final class QuickInfo {
    * @var string
    */
   protected $wikipedia;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
    * Instantiate new quick info partial.
@@ -102,6 +110,10 @@ final class QuickInfo {
     // @codeCoverageIgnoreEnd
     // @devEnd
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * Add new info to the quick infos.
