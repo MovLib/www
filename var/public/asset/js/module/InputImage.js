@@ -195,9 +195,9 @@
 
       if (this.fileReader === true) {
         // Bind once and keep forever.
-        this.fileReaderOnload  = this.fileReaderOnload.bind(this);
-        this.previewImage      = this.previewImage.bind(this);
-        this.previeImageOnload = this.previewImage.bind(this);
+        this.fileReaderOnload   = this.fileReaderOnload.bind(this);
+        this.previewImage       = this.previewImage.bind(this);
+        this.previewImageOnload = this.previewImageOnload.bind(this);
 
         // Instantiate FileReader and bind onload/event listeners.
         this.fileReader        = new FileReader();

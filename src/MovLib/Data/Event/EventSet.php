@@ -28,7 +28,6 @@ namespace MovLib\Data\Event;
  * @since 0.0.1-dev
  */
 final class EventSet extends \MovLib\Data\AbstractSet {
-  use \MovLib\Data\Event\EventTrait;
 
   /**
    * {@inheritdoc}
@@ -53,6 +52,16 @@ FROM `events`
 GROUP BY `id`, `awardId`, `deleted`, `changed`, `created`, `name`, `place`, `startDate`, `endDate`, `seriesCount`
 {$orderBy}
 SQL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function init() {
+    $this->pluralKey   = $this->tableName = "events";
+    $this->route       = $this->intl->rp("/events");
+    $this->singularKey = "event";
+    return parent::init();
   }
 
 }

@@ -35,7 +35,6 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @since 0.0.1-dev
  */
 class Deploy extends \MovLib\Console\Command\AbstractCommand {
-  use \MovLib\Data\Image\TraitOptimizeImage;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants

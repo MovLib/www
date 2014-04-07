@@ -132,7 +132,7 @@ class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
    * {@inheritdoc}
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    $this->db = new MySQLi($this->diContainer);
+    $this->db = new MySQLi("movlib");
 
     // Don't remove the $db variable just because it's unused, it's used in the included routes.php file!
     $this->writeVerbose("Starting to translate and compile nginx routes ...", self::MESSAGE_TYPE_COMMENT);

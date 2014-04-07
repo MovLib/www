@@ -36,7 +36,7 @@ abstract class AbstractRedirectException extends \RuntimeException implements \M
    */
   public function getPresentation(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
     $diContainerHTTP->response->cacheable = false;
-    $route = $this->message;
+    $route = rawurldecode($this->message);
     $code  = $this->getHttpStatusCode($diContainerHTTP->request->protocol == "HTTP/1.0");
     $title = $diContainerHTTP->intl->translate($code, null, "http-status-codes", null);
 

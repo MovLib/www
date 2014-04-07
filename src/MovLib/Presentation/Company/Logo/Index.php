@@ -56,7 +56,7 @@ class Index extends \MovLib\Presentation\Company\AbstractBase {
 
     // @todo: display real company logo
     $companyLogo =
-      "<img alt='' height='220' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='220'>"
+      "<img alt='' height='220' src='{$this->fs->getExternalURL("asset://img/logo/vector.svg")}' width='220'>"
     ;
 
     return

@@ -82,7 +82,7 @@ final class Date {
    */
   public function format(\MovLib\Data\Date $date, array $attributes = [], $type = \IntlDateFormatter::MEDIUM) {
     $attributes["datetime"] = $this->formatISO8601($date);
-    return "<time{$this->presenter->expandTagAttributes($attributes)}>{$this->intl->formatDate($date, $type)}</time>";
+    return "<time{$this->presenter->expandTagAttributes($attributes)}>{$date->formatIntl($this->intl->locale, $type)}</time>";
   }
 
   /**
@@ -175,8 +175,11 @@ final class Date {
    */
   public function getAge(\MovLib\Data\Date $dateFrom, \MovLib\Data\Date $dateTo = null) {
     $format = "%Y";
+    if (!$dateTo) {
+      $dateTo = new \MovLib\Data\Date();
+    }
     // We can only calculate the exact date if both dates have all date parts.
-    if (isset($dateFrom->month) && isset($dateFrom->day) && isset($dateTo->month) && isset($dateTo->day)) {
+    if (empty($dateFrom->month) || empty($dateFrom->day) || empty($dateTo->month) || empty($dateTo->day)) {
       $format = $this->intl->t("~{0}", $format);
     }
     return $dateFrom->diff($dateTo)->format($format);

@@ -29,7 +29,6 @@ use \MovLib\Data\Genre\Genre;
  * @since 0.0.1-dev
  */
 final class MovieSet extends \MovLib\Data\AbstractSet {
-  use \MovLib\Data\Movie\MovieTrait;
 
   /**
    * {@inheritdoc}
@@ -100,7 +99,11 @@ SELECT
   `original_title`.`title` AS `originalTitle`,
   `original_title`.`language_code` AS `originalTitleLanguageCode`,
   `movies_taglines`.`tagline`,
-  `movies_taglines`.`language_code` AS `taglineLanguageCode`
+  `movies_taglines`.`language_code` AS `taglineLanguageCode`,
+  `posters`.`id` AS `imageFilename`,
+  HEX(`posters`.`cache_buster`) AS `imageCacheBuster`,
+  `posters`.`extension` AS `imageExtension`,
+  `posters`.`styles` AS `imageStyles`
 FROM `movies`
   INNER JOIN `movies_original_titles`
     ON `movies_original_titles`.`movie_id` = `movies`.`id`
@@ -116,8 +119,24 @@ FROM `movies`
     AND `movies_display_taglines`.`language_code` = '{$this->intl->languageCode}'
   LEFT JOIN `movies_taglines`
     ON `movies_taglines`.`id` = `movies_display_taglines`.`tagline_id`
+  LEFT JOIN `display_posters`
+    ON `display_posters`.`movie_id` = `movies`.`id`
+    AND `display_posters`.`language_code` = '{$this->intl->languageCode}'
+  LEFT JOIN `posters`
+    ON `posters`.`id` = `display_posters`.`poster_id`
+    AND `posters`.`deleted` = false
 {$where} {$orderBy}
 SQL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function init() {
+    $this->pluralKey   = $this->tableName = "movies";
+    $this->route       = $this->intl->rp("/movies");
+    $this->singularKey = "movie";
+    return parent::init();
   }
 
 }

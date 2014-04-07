@@ -73,6 +73,34 @@ final class Date extends \DateTime {
    */
   public $year;
 
+  /**
+   * Associative array containing date formats for missing days.
+   *
+   * Structure: <code>[ "language_code" => [ "IntlDateFormatter_constant" => "format_string" ] ]</code>
+   *
+   * @var array
+   */
+  private static $patterns = [
+    "de" => [
+      \IntlDateFormatter::NONE        => "yyyyMM hh:mm a",
+      \IntlDateFormatter::SHORT       => "MM.yy",
+      \IntlDateFormatter::MEDIUM      => "MM.y",
+      \IntlDateFormatter::LONG        => "MMMM y",
+      \IntlDateFormatter::FULL        => "MMMM y",
+      \IntlDateFormatter::TRADITIONAL => "MMMM y",
+      \IntlDateFormatter::GREGORIAN   => "MMMM y",
+    ],
+    "en" => [
+      \IntlDateFormatter::NONE        => "yyyyMM hh:mm a",
+      \IntlDateFormatter::SHORT       => "M/yy",
+      \IntlDateFormatter::MEDIUM      => "MMM, y",
+      \IntlDateFormatter::LONG        => "MMMM, y",
+      \IntlDateFormatter::FULL        => "MMMM, y",
+      \IntlDateFormatter::TRADITIONAL => "MMMM, y",
+      \IntlDateFormatter::GREGORIAN   => "MMMM, y",
+    ],
+  ];
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -108,7 +136,7 @@ final class Date extends \DateTime {
     // If we got anything else let PHP handle the date/time and try to export it afterwards into class scope.
     else {
       parent::__construct($date);
-      list($this->year, $this->month, $this->day) = explode("-", $this->date, 3);
+      list($this->year, $this->month, $this->day) = explode("-", $this->format(self::W3C_DATE), 3);
     }
   }
 
@@ -120,6 +148,31 @@ final class Date extends \DateTime {
    */
   public function __toString() {
     return sprintf("%04s-%02s-%02s", $this->year, $this->month, $this->day);
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Format the date according to the intl rules of the given locale.
+   *
+   * @param string $locale
+   *   The locale to use for formatting.
+   * @param integer $type [optional]
+   *   Any of the {@see \IntlDateFormatter} constants, defaults to {@see \IntlDateFormatter::MEDIUM}.
+   * @return string
+   *   The date according to the intl rules of the given locale.
+   */
+  public function formatIntl($locale, $type = \IntlDateFormatter::MEDIUM) {
+    if ($this->day || $this->month) {
+      $fmt = new \IntlDateFormatter($locale, $type, \IntlDateFormatter::NONE);
+      if (!$this->month) {
+        $fmt->setPattern(self::$patterns[$type]);
+      }
+      return $fmt->format($this);
+    }
+    return $this->year;
   }
 
 }

@@ -46,13 +46,6 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
   protected $email;
 
   /**
-   * The presentation's form.
-   *
-   * @var \MovLib\Partial\Form
-   */
-  protected $form;
-
-  /**
    * The submitted (raw) password.
    *
    * @var string
@@ -75,10 +68,10 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
    */
   public function init() {
     // We need to know the translated version of the sign in route for comparison.
-    $routeKey = "/profile/sign-in";
+    $routeKey      = "/profile/sign-in";
     $redirectToKey = $this->intl->r("redirect_to");
+    $route         = $this->intl->r($routeKey);
     $this->initLanguageLinks($routeKey);
-    $route = $this->intl->r($routeKey);
 
     // Snatch the current requested URI if a redirect was requested and no redirect is already active. We have to build
     // the complete target URI to ensure that this presenter will receive the submitted form, but at the same time we
@@ -86,21 +79,19 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
     //
     // We won't append the redirect to query string to the language links in the footer because we have no chance to
     // find out what the translated version of that route would be.
-    if ($this->request->uri != $route) {
-      if (empty($this->request->query[$redirectToKey])) {
-        $this->request->query[$redirectToKey] = $this->request->uri;
-      }
+    if ($this->request->path != $route) {
+      $this->request->uri = "{$route}?{$redirectToKey}={$this->request->path}";
     }
-    // If the user is logged in, but didn't request to be signed out, redirect her or him to the personal dashboard.
-    elseif ($this->session->isAuthenticated) {
+    // If the client is signed in, but didn't request to be signed out or is currently submitting this form, redirect to
+    // the personal dashboard.
+    elseif ($this->request->methodGET && $this->session->isAuthenticated) {
       throw new SeeOtherException($this->intl->r("/my"));
     }
 
     // Append the URL to the action attribute of our form.
     $this->redirectTo = $this->request->filterInput(INPUT_GET, $redirectToKey, FILTER_SANITIZE_STRING, FILTER_REQUIRE_SCALAR | FILTER_FLAG_STRIP_LOW);
     if ($this->redirectTo && $this->redirectTo != $route) {
-      $this->redirectTo = rawurlencode(rawurldecode($this->redirectTo));
-      $this->request->uri .= "?{$redirectToKey}={$this->redirectTo}";
+      $this->request->uri = "{$route}?{$redirectToKey}={$this->redirectTo}";
     }
 
     // Start rendering the page.
@@ -108,28 +99,7 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
     $this->initBreadcrumb([[ $this->intl->rp("/users"), $this->intl->t("Users") ]]);
     $this->breadcrumb->ignoreQuery = true;
 
-    $this->headingBefore = "<a class='btn btn-large btn-primary fr' href='{$this->intl->r("/profile/join")}'>{$this->intl->t(
-      "Join {sitename}",
-      [ "sitename" => $this->config->sitename ]
-    )}</a>";
-
-    $this->form = new Form($this->diContainerHTTP);
-
-    $this->form->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email Address"), $this->email, [
-      "#help-text"  => "<a href='{$this->intl->r("/profile/reset-password")}'>{$this->intl->t("Forgot your password?")}</a>",
-      "autofocus"   => true,
-      "placeholder" => $this->intl->t("Enter your email address"),
-      "required"    => true,
-    ]));
-
-    $this->form->addElement(new InputPassword($this->diContainerHTTP, "password", $this->intl->t("Password"), $this->rawPassword, [
-      "placeholder" => $this->intl->t("Enter your password"),
-      "required"    => true,
-    ]));
-
-    $this->form->addAction($this->intl->t("Sign In"), [ "class" => "btn btn-large btn-success" ]);
-
-    $this->form->init([ $this, "valid" ], [ "class" => "s s6 o3" ]);
+    return $this;
   }
 
 
@@ -140,7 +110,29 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return "<div class='c'><div class='r'>{$this->form}</div></div>";
+    $this->headingBefore =
+      "<a class='btn btn-large btn-primary fr' href='{$this->intl->r("/profile/join")}'>{$this->intl->t(
+        "Join {sitename}",
+        [ "sitename" => $this->config->sitename ]
+      )}</a>"
+    ;
+
+    $form = (new Form($this->diContainerHTTP))
+      ->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email Address"), $this->email, [
+        "#help-text"  => "<a href='{$this->intl->r("/profile/reset-password")}'>{$this->intl->t("Forgot your password?")}</a>",
+        "autofocus"   => true,
+        "placeholder" => $this->intl->t("Enter your email address"),
+        "required"    => true,
+      ]))
+      ->addElement(new InputPassword($this->diContainerHTTP, "password", $this->intl->t("Password"), $this->rawPassword, [
+        "placeholder" => $this->intl->t("Enter your password"),
+        "required"    => true,
+      ]))
+      ->addAction($this->intl->t("Sign In"), [ "class" => "btn btn-large btn-success" ])
+      ->init([ $this, "valid" ], [ "class" => "s s6 o3" ])
+    ;
+
+    return "<div class='c'><div class='r'>{$form}</div></div>";
   }
 
 

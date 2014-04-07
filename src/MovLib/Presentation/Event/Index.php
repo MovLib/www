@@ -42,10 +42,8 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
   public function init() {
     return $this->initIndex(
       new EventSet($this->diContainerHTTP),
-      $this->intl->t("Create New Event"),
       $this->intl->t("Events"),
-      "events",
-      "event"
+      $this->intl->t("Create New Event")
     );
   }
 
@@ -53,12 +51,12 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    * @param \MovLib\Data\Event\Event $event {@inheritdoc}
    */
-  protected function formatListingItem(\MovLib\Data\EntityInterface $event, $delta) {
+  protected function formatListingItem(\MovLib\Data\AbstractEntity $event, $delta) {
     return
       "<li class='hover-item r'>" .
         "<article>" .
           "<a class='no-link s s1' href='{$event->route}'>" .
-            "<img alt='{$event->name}' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
+            "<img alt='{$event->name}' src='{$this->fs->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
           "</a>" .
           "<div class='s s9'>" .
             "<div class='fr'>" .
@@ -66,7 +64,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
               "<a class='ico ico-series label' href='{$this->intl->rp("/event/{0}/series", $event->id)}' title='{$this->intl->t("Series")}'>{$event->seriesCount}</a>" .
             "</div>" .
             "<h2 class='para'><a href='{$event->route}' property='url'><span property='name'>{$event->name}</span></a></h2>" .
-            "<small>{$this->getEventDates($event)} {$this->getEventPlace($event)}</small>" .
+            "<small>{$this->getEventDates($event)}</small>" .
           "</div>" .
         "</article>" .
       "</li>"

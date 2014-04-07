@@ -17,8 +17,8 @@
  */
 namespace MovLib\Exception\ClientException;
 
+use \MovLib\Partial\Alert;
 use \MovLib\Presentation\Profile\SignIn;
-use \MovLib\Presentation\Partial\Alert;
 
 /**
  * 401 Unauthorized
@@ -45,40 +45,37 @@ final class UnauthorizedException extends \RuntimeException implements \MovLib\E
   /**
    * {@inheritdoc}
    */
-  public function getPresentation() {
-    header("WWW-Authenticate: {$config->sitename} location='{$i18n->r("/profile/sign-in")}'", true, 401);
+  public function getPresentation(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+    header("WWW-Authenticate: {$diContainerHTTP->config->sitename} location='{$diContainerHTTP->intl->r("/profile/sign-in")}'", true, 401);
 
     // Never cache an unauthorized response.
-    $response->cacheable = false;
+    $diContainerHTTP->response->cacheable = false;
 
     // Trick the sign in presentation.
-    $request->method = "GET";
+    $diContainerHTTP->request->method    = "GET";
+    $diContainerHTTP->request->methodGET = true;
 
-    // Use default message if no message was set.
+    // Use default message if no message was passed.
     if (empty($this->message)) {
-      $this->message = $i18n->t(
-        "Please use the form below to sign in or {0}join {sitename}{1}.",
-        [ "<a href='{$i18n->r("/profile/join")}'>", "</a>", "sitename" => $config->sitename ]
+      $this->message = $diContainerHTTP->intl->t(
+        "You must be signed in to access this content. Please use the form below to sign in or {0}join {sitename}{1}.",
+        [ "<a href='{$diContainerHTTP->intl->r("/profile/join")}'>", "</a>", "sitename" => $diContainerHTTP->config->sitename ]
       );
     }
 
-    // Allow classes to define their own alert partial.
-    if (!is_object($this->message)) {
+    // Allow classes to define custom alert messages.
+    if (!($this->message instanceof Alert)) {
       $this->message = new Alert(
         $this->message,
-        $i18n->t("You must be signed in to access this content."),
+        $diContainerHTTP->intl->t("Unauthorized"),
         Alert::SEVERITY_ERROR
       );
     }
 
     // Put the unauthorized exception together.
-    $presenter = new SignIn();
-    $presenter->alerts .= $this->message;
-    $content = $presenter->getContent();
-    $header  = $presenter->getHeader();
-    $main    = $presenter->getMainContent($content);
-    $footer  = $presenter->getFooter();
-    return $presenter->getPresentation($header, $main, $footer);
+    $diContainerHTTP->presenter = (new SignIn($diContainerHTTP))->init();
+    $diContainerHTTP->presenter->alerts .= $this->message;
+    return $diContainerHTTP->presenter->getPresentation($diContainerHTTP->presenter->getContent());
   }
 
 }

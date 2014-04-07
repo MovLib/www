@@ -32,30 +32,6 @@ use \Symfony\Component\Console\Output\OutputInterface;
  */
 class Translation extends \MovLib\Console\Command\AbstractCommand {
 
-
-  /**
-   * Cleaning up translation files.
-   *
-   * Removes document root out of translation files.
-   */
-  protected function cleanTranslationFiles() {
-    $this->writeVerbose("Cleaning translation files..", self::MESSAGE_TYPE_INFO);
-    $paths = [
-      $this->fs->realpath("dr://var/intl/messages.pot"),
-      $this->fs->realpath("dr://var/intl/plural.pot"),
-    ];
-    foreach ($this->intl->systemLocales as $code => $locale) {
-      if ($code != $this->intl->defaultLanguageCode) {
-        $paths[] = $this->fs->realpath("dr://var/intl/{$locale}/messages.po");
-      }
-    }
-    foreach ($paths as $path) {
-      file_put_contents($path, str_replace($this->fs->documentRoot, "", file_get_contents($path)));
-    }
-
-    return 0;
-  }
-
   /**
    * Compile all translations.
    */
@@ -80,33 +56,35 @@ class Translation extends \MovLib\Console\Command\AbstractCommand {
             $line   = trim($line);
             $msgid  = substr($line, 7, strlen($line) - 8);
             $line   = trim(fgets($fh));
-            $msgstr = substr($line, 8, strlen($line) - 9);
+            if (substr($line, 0, 7) == "msgstr ") {
+              $msgstr = substr($line, 8, strlen($line) - 9);
 
-            if (strpos($msgstr, "'") !== false) {
-              throw new \LogicException("\"'\" not alowed in {$poPath} on line {$lineNumber}");
-            }
-            if (strpos($msgstr, '"') !== false) {
-              throw new \LogicException("'\"' not alowed in {$poPath} on line {$lineNumber}");
-            }
-            if (strpos($msgstr, '$') !== false && isset($msgstr[strpos($msgstr, '$') + 1]) && $msgstr[strpos($msgstr, '$') + 1]!== " ") {
-              throw new \LogicException("No PHP variable allowed in {$poPath} on line {$lineNumber}");
-            }
+              if (strpos($msgstr, "'") !== false) {
+                throw new \LogicException("\"'\" not alowed in {$poPath} on line {$lineNumber}");
+              }
+              if (strpos($msgstr, '"') !== false) {
+                throw new \LogicException("'\"' not alowed in {$poPath} on line {$lineNumber}");
+              }
+              if (strpos($msgstr, '$') !== false && isset($msgstr[strpos($msgstr, '$') + 1]) && $msgstr[strpos($msgstr, '$') + 1]!== " ") {
+                throw new \LogicException("No PHP variable allowed in {$poPath} on line {$lineNumber}");
+              }
 
-            if (strpos($msgid, "'") !== false) {
-              throw new \LogicException("\"'\" not alowed in: \n{$comments}");
-            }
-            if (strpos($msgid, '"') !== false) {
-              throw new \LogicException("'\"' not alowed not alowed in: \n{$comments}");
-            }
-            if (strpos($msgid, '$') !== false && isset($msgid[strpos($msgid, '$') + 1]) && $msgid[strpos($msgid, '$') + 1]!== " ") {
-              throw new \LogicException("No PHP variable allowed in: \n{$comments}");
-            }
+              if (strpos($msgid, "'") !== false) {
+                throw new \LogicException("\"'\" not alowed in: \n{$comments}");
+              }
+              if (strpos($msgid, '"') !== false) {
+                throw new \LogicException("'\"' not alowed not alowed in: \n{$comments}");
+              }
+              if (strpos($msgid, '$') !== false && isset($msgid[strpos($msgid, '$') + 1]) && $msgid[strpos($msgid, '$') + 1]!== " ") {
+                throw new \LogicException("No PHP variable allowed in: \n{$comments}");
+              }
 
-            $comments = "";
-            if (empty($msgstr) || $msgid == $msgstr) {
-              continue;
+              $comments = "";
+              if (empty($msgstr) || $msgid == $msgstr) {
+                continue;
+              }
+              $translations .= "\"{$msgid}\"=>\"{$msgstr}\",";
             }
-            $translations .= "\"{$msgid}\"=>\"{$msgstr}\",";
           }
         }
         fclose($fh);
@@ -156,73 +134,39 @@ class Translation extends \MovLib\Console\Command\AbstractCommand {
    * Extract translations to po template and update po files.
    */
   protected function extract() {
-    $this->extractPlural();
+    $potPath = $this->fs->realpath("dr://var/intl/messages.pot");
+    $srcPath = $this->fs->realpath("dr://tmp/src");
+
+    $this->writeVerbose("Make temporary copy of source files to work with...", self::MESSAGE_TYPE_INFO);
+    $this->exec("cp -r {$this->fs->realpath("dr://src")} {$this->fs->realpath("dr://tmp")}");
+
+    $this->writeVerbose("Fixing embedded translations...", self::MESSAGE_TYPE_INFO);
+    /* @var $fileinfo \SplFileInfo */
+    foreach ($this->fs->getRecursiveIterator($srcPath) as  $fileinfo) {
+      if ($fileinfo->isFile() && $fileinfo->getExtension() == "php") {
+        $this->writeDebug("Fixing embedded translations in <comment>{$fileinfo->getPathname()}</comment>");
+        $content = file_get_contents($fileinfo);
+        $count = [];
+        for ($i = 0; $i < 4; ++$i) {
+          $content = preg_replace('/\{(\$[a-z0-9\$_\->]+)\((.*)\)(\s*)\}/isU', '" . $1($2) . $3"', $content, -1, $count[]);
+        }
+        $countSum = array_sum($count);
+        $this->writeDebug("Fixed {$countSum} patterns in file...");
+        file_put_contents($fileinfo, $content);
+      }
+    }
 
     $this->writeVerbose("Getting all translation keys from php files...", self::MESSAGE_TYPE_INFO);
-    $this->xGetText();
-
-    $this->writeVerbose("Updating po files for all languages.", self::MESSAGE_TYPE_INFO);
-    foreach ($this->intl->systemLocales as $code => $locale) {
-      if ($code != $this->intl->defaultLanguageCode) {
-        $poPath  = $this->fs->realpath("dr://var/intl/{$locale}/messages.po");
-        $potPath = $this->fs->realpath("dr://var/intl/messages.pot");
-        $command = "msgmerge --update --no-wrap {$poPath} {$potPath}";
-        $this->exec($command);
-      }
-    }
-
-    $this->cleanTranslationFiles();
-
-    return 0;
-  }
-
-  /**
-   * Extract plural translations.
-   */
-  protected function extractPlural() {
-    $this->writeVerbose("Expand plural translations", self::MESSAGE_TYPE_INFO);
-
-    $potPath = $this->fs->realpath("dr://var/intl/plural.pot");
-    $this->xGetText("tp", $potPath);
-
-    $tCalls = PHP_EOL;
-    $fh = fopen($potPath, "rb");
-    while ($line = fgets($fh)) {
-      if (substr($line, 0, 6) == "msgid ") {
-        $line   = trim($line);
-        $msgid  = substr($line, 7, strlen($line) - 8);
-        if (!empty($msgid)) {
-          $tCalls .= "t(\"{@count, plural, one{{$msgid}} other{{$msgid}}}\");".PHP_EOL;
-        }
-      }
-    }
-    fclose($fh);
-    file_put_contents("dr://src/plural.php", "<?php {$tCalls}");
-
-    return 0;
-  }
-
-  /**
-   * Wrapper around xgettext.
-   *
-   * @param string $key [optional]
-   *   The method key (e.g. t or tp).
-   * @param string $potPath [optional]
-   *   The URI where the po template file should be stored.
-   * @param string $searchPath [optional]
-   *   The URI of the source folder.
-   */
-  protected function xGetText($key = "t", $potPath = "dr://var/intl/messages.pot", $searchPath = "dr://src") {
-    $potPath    = $this->fs->realpath($potPath);
-    $searchPath = $this->fs->realpath($searchPath);
-
-    $command = "find {$searchPath} -iname '*.php' | xargs xgettext";
+    $command = "find {$srcPath} -iname '*.php' | xargs xgettext";
     foreach ([
-      "output"    => $potPath,
-      "language"  => "PHP",
-      "from-code" => "UTF-8",
-      "keyword"   => $key,
-      "no-wrap"   => null
+      "output"             => $potPath,
+      "language"           => "PHP",
+      "from-code"          => "UTF-8",
+      "keyword"            => "t",
+      "no-wrap"            => null,
+      "package-name"       => "{$this->config->sitename} Messages",
+      "package-version"    => $this->config->version,
+      "msgid-bugs-address" => "https://github.com/MovLib/www/issues?labels=translation",
     ] as $option => $arg) {
       if (isset($arg)) {
         $command .= " --{$option}=" . escapeshellarg($arg);
@@ -232,6 +176,24 @@ class Translation extends \MovLib\Console\Command\AbstractCommand {
       }
     }
     $this->exec($command);
+
+    $this->writeVerbose("Deleting temporary copy of source files...", self::MESSAGE_TYPE_INFO);
+    $this->exec("rm -r {$srcPath}");
+
+    $this->writeVerbose("Updating po files for all languages...", self::MESSAGE_TYPE_INFO);
+    foreach ($this->intl->systemLocales as $code => $locale) {
+      if ($code != $this->intl->defaultLanguageCode) {
+        $poPath  = $this->fs->realpath("dr://var/intl/{$locale}/messages.po");
+        if (file_exists($poPath)) {
+          $this->exec("msgmerge --backup='off' --no-wrap --previous --update {$poPath} {$potPath}");
+        }
+        else {
+          $this->exec("msginit --locale='{$locale}' --no-translator --no-wrap -i {$potPath} -o {$poPath}");
+        }
+        file_put_contents($poPath, str_replace("{$this->fs->documentRoot}/tmp", "", file_get_contents($poPath)));
+      }
+    }
+    file_put_contents($potPath, str_replace("{$this->fs->documentRoot}/tmp", "", file_get_contents($potPath)));
 
     return 0;
   }

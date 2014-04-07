@@ -113,10 +113,10 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
           "<section id='f-logos' class='s s12 tac'>" .
             "<h3 class='vh'>{$this->intl->t("Sponsors and external resources")}</h3>" .
             "<a class='no-link' href='http://www.fh-salzburg.ac.at/' target='_blank'>" .
-              "<img alt='Fachhochschule Salzburg' height='30' src='{$this->getExternalURL("asset://img/footer/fachhochschule-salzburg.svg")}' width='48'>" .
+              "<img alt='Fachhochschule Salzburg' height='30' src='{$this->fs->getExternalURL("asset://img/footer/fachhochschule-salzburg.svg")}' width='48'>" .
             "</a>" .
             "<a class='no-link' href='https://github.com/MovLib' target='_blank'>" .
-              "<img alt='GitHub' height='30' src='{$this->getExternalURL("asset://img/footer/github.svg")}' width='48'>" .
+              "<img alt='GitHub' height='30' src='{$this->fs->getExternalURL("asset://img/footer/github.svg")}' width='48'>" .
             "</a>" .
           "</section>" .
           "<p class='last s s12 tac'>{$this->intl->t("Wanna see the current alpha version of {sitename}? Go to {alpha_url}", [
@@ -149,7 +149,7 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
     return
       "<main class='{$this->id}-content' id='m' role='main'><div class='c'>" .
         "<h1 class='cf'>" .
-          "<img alt='' height='192' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='192'>" .
+          "<img alt='' height='192' src='{$this->fs->getExternalURL("asset://img/logo/vector.svg")}' width='192'>" .
           "<span>{$this->config->sitename}{$this->intl->t(
             "{0}The {1}free{2} movie library.{3}",
             [ "<small>", "<em>", "</em>", "</small>" ]

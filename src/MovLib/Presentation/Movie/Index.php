@@ -43,20 +43,22 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    return $this->initIndex(new MovieSet($this->diContainerHTTP), $this->intl->t("Create New Movie"));
+    return $this->initIndex(
+      new MovieSet($this->diContainerHTTP),
+      $this->intl->t("Movies"),
+      $this->intl->t("Create New Movie")
+    );
   }
 
   /**
    * {@inheritdoc}
-   * @param \MovLib\Data\Movie\Movie $movie {@inheritdoc}
    */
-  protected function formatListingItem(\MovLib\Data\EntityInterface $movie, $id) {
+  protected function formatListingItem(\MovLib\Data\AbstractEntity $movie, $id) {
+    /* @var $movie \MovLib\Data\Movie\Movie */
     return
       "<li class='hover-item r'>" .
         "<article typeof='Movie'>" .
-          "<a class='no-link s s1' href='{$movie->getRoute()}'>" .
-            "<img alt='' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
-          "</a>" .
+          "<div class='s s1' property='image'>{$this->img($movie->imageGetStyle("s1"))}</div>" .
           "<div class='s s8'>" .
             "<h2 class='para'>{$this->getStructuredDisplayTitle($movie)}</h2>" .
             $this->getStructuredOriginalTitle($movie, "small") .

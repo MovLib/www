@@ -19,7 +19,6 @@ namespace MovLib\Partial;
 
 use \MovLib\Data\Date;
 use \MovLib\Partial\Date as DatePartial;
-use \MovLib\Partial\Place;
 
 /**
  * @todo Description of EventTrait
@@ -55,22 +54,6 @@ trait EventTrait {
       ])} ";
     }
     return $dates;
-  }
-
-  /**
-   * Get the event's place.
-   *
-   * @param \MovLib\Data\Event\Event $event
-   *   The event to get the place from.
-   * @return string
-   *   The formatted place or <code>NULL</code> if there was none.
-   */
-  protected function getEventPlace(\MovLib\Data\Event\Event $event) {
-    $place = null;
-    if ($event->place) {
-      $place = $this->intl->t("in {0}", [ new Place($this->diContainerHTTP->presenter, $this->diContainerHTTP->intl, $event->place) ]);
-    }
-    return $place;
   }
 
 }

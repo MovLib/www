@@ -225,6 +225,7 @@ return [
   "/terms-of-use"                              => "/nutzungsbedingungen",
   "/terms-of-use/edit"                         => "/nutzungsbedingungen/bearbeiten",
   // ------------------------------------------------------------------------------------------------------------------- Queries
+  "delete_avatar"                              => "avatar_löschen",
   "page"                                       => "seite",
   "reason"                                     => "grund",
   "redirect_to"                                => "umleiten_nach",

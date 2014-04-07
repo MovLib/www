@@ -44,7 +44,13 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->initShow(new Movie($this->diContainerHTTP, $_SERVER["MOVIE_ID"]), "Movie", null);
+    $this->initShow(
+      new Movie($this->diContainerHTTP, $_SERVER["MOVIE_ID"]),
+      $this->intl->t("Movies"),
+      $this->intl->t("Movie"),
+      "Movie",
+      null
+    );
     $this->stylesheets[] = "movie";
     $this->javascripts[] = "Movie";
     $this->pageTitle     = $this->getStructuredDisplayTitle($this->entity, false, true);
@@ -59,7 +65,7 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
     $infos = new QuickInfo($this->intl);
 
 
-    $this->headingAfter .= "{$infos}</div><div class='s s2'><img alt='' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='140' height='140'></div></div>";
+    $this->headingAfter .= "{$infos}</div><div class='s s2'><img alt='' src='{$this->fs->getExternalURL("asset://img/logo/vector.svg")}' width='140' height='140'></div></div>";
   }
 
   /**

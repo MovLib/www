@@ -46,14 +46,18 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    return $this->initIndex(new CompanySet($this->diContainerHTTP), $this->intl->t("Create New Company"));
+    return $this->initIndex(
+      new CompanySet($this->diContainerHTTP),
+      $this->intl->t("Companies"),
+      $this->intl->t("Create New Company")
+    );
   }
 
   /**
    * {@inheritdoc}
    * @param \MovLib\Data\Company\Company $company {@inheritdoc}
    */
-  protected function formatListingItem(\MovLib\Data\EntityInterface $company, $id) {
+  protected function formatListingItem(\MovLib\Data\AbstractEntity $company, $id) {
     $companyDates = (new Date($this->intl, $this))->formatFromTo(
       $company->foundingDate,
       $company->defunctDate,
@@ -64,12 +68,12 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
     if ($companyDates) {
       $companyDates = "<small>{$companyDates}</small>";
     }
-    $route = $company->getRoute();
+    $route = $company->route;
     return
       "<li class='hover-item r'>" .
         "<article typeof='Company'>" .
           "<a class='no-link s s1' href='{$route}'>" .
-            "<img alt='' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
+            "<img alt='' src='{$this->fs->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
           "</a>" .
           "<div class='s s9'>" .
             "<div class='fr'>" .

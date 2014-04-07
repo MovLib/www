@@ -17,40 +17,35 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Partial\Alert;
 
 /**
- * Allows a user to manage her or his messages.
+ * Defines the profile messages presentation.
  *
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Messages extends \MovLib\Presentation\Profile\Show {
+final class Messages extends \MovLib\Presentation\Profile\AbstractProfilePresenter {
 
   /**
-   * Instantiate new messages presentation.
-   *
-   * @throws \MovLib\Presentation\Error\Unauthorized
+   * {@inheritdoc}
    */
-  public function __construct() {
-    $session->checkAuthorization($this->intl->t("You must be signed in to view your messages."));
-    $this->init($this->intl->t("My Messages"), "/profile/messages", [[ $this->intl->r("/profile"), $this->intl->t("Profile") ]]);
+  public function init() {
+    return $this->initProfilePresentation(
+      $this->intl->t("You must be signed in to view your messages."),
+      $this->intl->t("My Messages"),
+      "/profile/messages"
+    );
   }
 
   /**
-   * @inhertidoc
+   * {@inheritdoc}
    */
-  protected function getBreadcrumbs() {
-    return [[ $this->intl->r("/profile"), $this->intl->t("Profile") ]];
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function getPageContent() {
+  public function getContent() {
     return new Alert(
       $this->intl->t("The messaging system isn’t implemented yet."),
       $this->intl->t("Check back later"),

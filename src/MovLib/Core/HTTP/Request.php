@@ -126,7 +126,7 @@ final class Request {
   public $remoteAddress = "127.0.0.1";
 
   /**
-   * The request's scheme.
+   * The request's scheme (e.g. <code>"http"</code>).
    *
    * @var string
    */
@@ -166,6 +166,10 @@ final class Request {
 
   /**
    * Instantiate new client request object.
+   *
+   * <b>NOTE</b><br>
+   * For some reason we can't use <code>filter_input()</code> for the server variables, therefore we fall back to
+   * <code>filter_var()</code>.
    *
    * @param \MovLib\Core\Intl $intl
    *   Active intl instance.
@@ -251,6 +255,28 @@ final class Request {
    */
   public function filterInputArray($type, array $definition, $addEmpty = true) {
     return filter_input_array($type, $definition, $addEmpty);
+  }
+  // @codeCoverageIgnoreEnd
+
+  // @codeCoverageIgnoreStart
+  /**
+   * Get variable from input by name and apply the string filter with require scaler plus stripping of low characters.
+   *
+   * This is a proxy method for {@see filter_input()} that allows us to utilize PHP's built in filter mechanism and
+   * unit testing our implementations.
+   *
+   * @link http://php.net/manual/function.filter-input.php
+   * @param integer $type
+   *   One of <code>INPUT_GET</code>, <code>INPUT_POST</code>, <code>INPUT_COOKIE</code>, <code>INPUT_SERVER</code>, or
+   *   <code>INPUT_ENV</code>.
+   * @param string $name
+   *   The name of the variable to get.
+   * @param integer $filter [optional]
+   *   The identifier of the filter to apply
+   * @param type $options
+   */
+  public function filterInputString($type, $name) {
+    return filter_input($type, $name, FILTER_SANITIZE_STRING, FILTER_REQUIRE_SCALAR | FILTER_FLAG_STRIP_LOW);
   }
   // @codeCoverageIgnoreEnd
 

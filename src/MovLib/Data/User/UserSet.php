@@ -27,7 +27,6 @@ namespace MovLib\Data\User;
  * @since 0.0.1-dev
  */
 final class UserSet extends \MovLib\Data\AbstractSet {
-  use \MovLib\Data\User\UserTrait;
 
   /**
    * {@inheritdoc}
@@ -43,7 +42,20 @@ final class UserSet extends \MovLib\Data\AbstractSet {
    * {@inheritdoc}
    */
   protected function getEntitiesQuery($where = null, $orderBy = null) {
-    return "SELECT `id`, `name`, `access`, `created` FROM `users` {$where} {$orderBy}";
+    return <<<SQL
+SELECT
+  `id`,
+  `name`,
+  `access`,
+  `changed`,
+  `created`,
+  HEX(`image_cache_buster`) AS `imageCacheBuster`,
+  `image_extension` AS `imageExtension`,
+  `image_styles` AS `imageStyles`
+FROM `users`
+{$where}
+{$orderBy}
+SQL;
   }
 
   /**
@@ -66,6 +78,16 @@ final class UserSet extends \MovLib\Data\AbstractSet {
     }
     $result->free();
     return $name;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function init() {
+    $this->pluralKey   = $this->tableName = "users";
+    $this->route       = $this->intl->rp("/users");
+    $this->singularKey = "user";
+    return parent::init();
   }
 
 }

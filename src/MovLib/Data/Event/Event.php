@@ -31,7 +31,6 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @since 0.0.1-dev
  */
 class Event extends \MovLib\Data\AbstractEntity {
-  use \MovLib\Data\Event\EventTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -232,7 +231,9 @@ SQL
     }
     $this->aliases = $this->aliases ? unserialize($this->aliases) : [];
     $this->links   = $this->links ? unserialize($this->links) : [];
-    $this->route   = $this->intl->r("/event/{0}", $this->id);
+    $this->pluralKey   = $this->tableName = "events";
+    $this->route       = $this->intl->r("/event/{0}", $this->id);
+    $this->singularKey = "event";
     return parent::init();
   }
 

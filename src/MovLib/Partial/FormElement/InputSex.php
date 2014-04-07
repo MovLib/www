@@ -30,26 +30,12 @@ namespace MovLib\Partial\FormElement;
 final class InputSex extends \MovLib\Partial\FormElement\RadioGroup {
 
   /**
-   * Instantiate new input sex element.
-   *
-   * @param string $id
-   *   {@inheritdoc}
-   * @param string $label
-   *   {@inheritdoc}
-   * @param mixed $value
-   *   {@inheritdoc}
-   * @param null|string $help
-   *   The input's help text (if any).
-   * @param null|string $helpPopup
-   *   The input's help popup (if any).
-   *
+   * {@inheritdoc}
    */
-  public function __construct($id, $label, &$value, $help = null, $helpPopup = false) {
-    parent::__construct($id, $label, [
-      self::FEMALE  => $this->intl->t("Female"),
-      self::MALE    => $this->intl->t("Male"),
-      self::UNKNOWN => $this->intl->t("Unknown"),
-    ], $value);
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, &$value, $help = null, $helpPopup = false) {
+    $options = $diContainerHTTP->intl->getTranslations("sex");
+    unset($options[9]); // We remove the "not applicable" option from this input element.
+    parent::__construct($diContainerHTTP, $id, $label, $options, $value);
     if ($helpPopup) {
       $this->attributes["#help-popup"] = $help;
     }

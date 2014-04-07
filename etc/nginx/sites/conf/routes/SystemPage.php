@@ -29,12 +29,27 @@
 
 /* @var $this \MovLib\Console\Command\Admin\NginxRoutes */
 
-$stmt = $this->db->query(
-  "SELECT `id`, COLUMN_GET(`dyn_titles`, ? AS CHAR(255)) AS `title`, `presenter` FROM `system_pages`",
-  "s",
-  [ $this->intl->defaultLanguageCode ]
-);
+// Please note that the contace page will always have the first identifier and needs special handling.
+?>
+location = <?= $this->r("/contact") ?> {
+  <?= $this->set("Contact") ?>
+  <?= $this->set(1, "system_page_id") ?>
+  <?= $this->cache() ?>
+}
 
+location = <?= $this->r("/contact/edit") ?> {
+  <?= $this->set("Edit") ?>
+  <?= $this->set(1, "system_page_id") ?>
+  <?= $this->cache() ?>
+}
+
+<?php
+// Generate routes for all system pages except contact.
+$stmt = $this->db->prepare(
+  "SELECT `id`, COLUMN_GET(`dyn_titles`, ? AS CHAR(255)) AS `title` FROM `system_pages` WHERE `id` > 1 ORDER BY `id` ASC"
+);
+$stmt->bind_param("s", $this->intl->defaultLanguageCode);
+$stmt->execute();
 /* @var $systemPages \mysqli_result */
 $systemPages = $stmt->get_result();
 
@@ -44,7 +59,7 @@ while ($systemPage = $systemPages->fetch_object()):
 ?>
 
 location = <?= $this->r("/{$systemPage->title}") ?> {
-  <?= $this->set($systemPage->presenter) ?>
+  <?= $this->set("Show") ?>
   <?= $this->set($systemPage->id, "system_page_id") ?>
   <?= $this->cache() ?>
 }

@@ -41,18 +41,16 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
   public function init() {
     return $this->initIndex(
       new JobSet($this->diContainerHTTP),
-      $this->intl->t("Create New Job"),
       $this->intl->t("Jobs"),
-      "jobs",
-      "job"
+      $this->intl->t("Create New Job")
     );
   }
 
   /**
    * {@inheritdoc}
-   * @param \MovLib\Data\Award\Award $award {@inheritdoc}
+   * @param \MovLib\Data\Job\Job $job {@inheritdoc}
    */
-  public function formatListingItem(\MovLib\Data\EntityInterface $job, $delta) {
+  public function formatListingItem(\MovLib\Data\AbstractEntity $job, $delta) {
     return
       "<li class='hover-item r'>" .
         "<article>" .

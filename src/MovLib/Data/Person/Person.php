@@ -17,7 +17,8 @@
  */
 namespace MovLib\Data\Person;
 
-use \MovLib\Presentation\Error\NotFound;
+use \MovLib\Data\Date;
+use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
  * Represents a single person including their photo.
@@ -29,21 +30,7 @@ use \MovLib\Presentation\Error\NotFound;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Person extends \MovLib\Data\AbstractEntity {
-  use \MovLib\Data\Person\PersonTrait;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
-  /**
-   * 220x220>
-   *
-   * Image style used on the show page to display the person photo.
-   *
-   * @var integer
-   */
-  const STYLE_SPAN_03 = null;//\MovLib\Data\Image\SPAN_03;
+class Person extends \MovLib\Data\Image\AbstractImageEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -168,25 +155,28 @@ SELECT
   `id`,
   `deleted`,
   `name`,
-  COLUMN_GET(`dyn_biographies`, ? AS CHAR),
+  COLUMN_GET(`dyn_biographies`, '{$this->intl->languageCode}' AS CHAR),
   `sex`,
   `birthdate`,
   `birthplace_id`,
   `born_name`,
   `deathdate`,
   `deathplace_id`,
-  COLUMN_GET(`dyn_wikipedia`, ? AS CHAR),
+  COLUMN_GET(`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR),
   `award_count`,
   `movie_count`,
   `series_count`,
-  `release_count`
-FROM `persons`
-WHERE
-  `id` = ?
-LIMIT 1
+  `release_count`,
+  HEX(`image_cache_buster`),
+  `image_extension`,
+  `image_filesize`,
+  `image_height`,
+  `image_styles`,
+  `image_width`
+FROM `persons` WHERE `id` = ? LIMIT 1
 SQL
       );
-      $stmt->bind_param("ssd", $this->intl->languageCode, $this->intl->languageCode, $id);
+      $stmt->bind_param("d", $id);
       $stmt->execute();
       $stmt->bind_result(
         $this->id,
@@ -199,15 +189,22 @@ SQL
         $this->bornName,
         $this->deathDate,
         $this->deathPlaceId,
+        $this->wikipedia,
         $this->awardCount,
         $this->movieCount,
         $this->seriesCount,
-        $this->releaseCount
+        $this->releaseCount,
+        $this->imageCacheBuster,
+        $this->imageExtension,
+        $this->imageFilesize,
+        $this->imageHeight,
+        $this->imageStyles,
+        $this->imageWidth
       );
       $found = $stmt->fetch();
       $stmt->close();
       if (!$found) {
-        throw new NotFound;
+        throw new NotFoundException("Couldn't find person {$id}");
       }
     }
     if ($this->id) {
@@ -219,7 +216,14 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
-    $this->toDates([ &$this->birthDate, &$this->deathDate ]);
+    $this->birthDate && ($this->birthDate = new Date($this->birthDate));
+    $this->deathDate && ($this->deathDate = new Date($this->deathDate));
+    $this->imageAlternativeText = $this->intl->t("Photo of {name}", [ "name" => $this->name]);
+    $this->imageDirectory       = "upload://person";
+    $this->imageFilename        = $this->id;
+    $this->pluralKey            = $this->tableName = "persons";
+    $this->route                = $this->intl->r("/person/{0}", [ $this->id]);
+    $this->singularKey          = "person";
     return parent::init();
   }
 
@@ -249,6 +253,18 @@ SQL
     if ($this->deathPlaceId) {
       return new \MovLib\Data\Place($this->diContainer, $this->deathPlaceId);
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function imageSaveStyles() {
+    $styles = serialize($this->imageStyles);
+    $stmt   = $this->getMySQLi()->prepare("UPDATE `persons` SET `image_styles` = ? WHERE `id` = ?");
+    $stmt->bind_param("sd", $styles, $this->id);
+    $stmt->execute();
+    $stmt->close();
+    return $this;
   }
 
 }

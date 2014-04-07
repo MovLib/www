@@ -29,8 +29,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Movie extends \MovLib\Data\AbstractEntity {
-  use \MovLib\Data\Movie\MovieTrait;
+final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -188,13 +187,17 @@ SELECT
   `movies`.`deleted`,
   `movies`.`changed`,
   `movies`.`created`,
-  `movies`.`mean_rating` AS `meanRating`,
+  `movies`.`mean_rating`,
   `movies_taglines`.`tagline`,
-  `original_title`.`title` AS `originalTitle`,
-  `original_title`.`language_code` AS `originalTitleLanguageCode`,
-  IFNULL(`display_title`.`title`, `original_title`.`title`) AS `displayTitle`,
-  COLUMN_GET(`movies`.`dyn_synopses`, '{$this->intl->languageCode}' AS CHAR) AS `synopsis`,
-  IFNULL(`display_title`.`language_code`, `original_title`.`language_code`) AS `displayTitleLanguageCode`
+  `original_title`.`title`,
+  `original_title`.`language_code`,
+  IFNULL(`display_title`.`title`, `original_title`.`title`),
+  COLUMN_GET(`movies`.`dyn_synopses`, '{$this->intl->languageCode}' AS CHAR),
+  IFNULL(`display_title`.`language_code`, `original_title`.`language_code`),
+  `posters`.`id`,
+  HEX(`posters`.`cache_buster`),
+  `posters`.`extension`,
+  `posters`.`styles`
 FROM `movies`
   LEFT JOIN `movies_display_titles`
     ON `movies_display_titles`.`movie_id` = `movies`.`id`
@@ -210,6 +213,12 @@ FROM `movies`
     AND `movies_display_taglines`.`language_code` = '{$this->intl->languageCode}'
   LEFT JOIN `movies_taglines`
     ON `movies_taglines`.`id` = `movies_display_taglines`.`tagline_id`
+  LEFT JOIN `display_posters`
+    ON `display_posters`.`movie_id` = `movies`.`id`
+    AND `display_posters`.`language_code` = '{$this->intl->languageCode}'
+  LEFT JOIN `posters`
+    ON `posters`.`id` = `display_posters`.`poster_id`
+    AND `posters`.`deleted` = false
 WHERE `movies`.`id` = ?
 LIMIT 1
 SQL
@@ -232,7 +241,11 @@ SQL
         $this->originalTitleLanguageCode,
         $this->displayTitle,
         $this->synopsis,
-        $this->displayTitleLanguageCode
+        $this->displayTitleLanguageCode,
+        $this->imageFilename,
+        $this->imageCacheBuster,
+        $this->imageExtension,
+        $this->imageStyles
       );
       $found = $stmt->fetch();
       $stmt->close();
@@ -270,6 +283,18 @@ SQL
   /**
    * {@inheritdoc}
    */
+  protected function imageSaveStyles() {
+    $styles = serialize($this->imageStyles);
+    $stmt   = $this->getMySQLi()->prepare("UPDATE `posters` SET `styles` = ? WHERE `movie_id` = ?");
+    $stmt->bind_param("sd", $styles, $this->id);
+    $stmt->execute();
+    $stmt->close();
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function init() {
     if ($this->year) {
       $this->displayTitleAndYear = $this->intl->t("{0} ({1})", [ $this->displayTitle, $this->year ]);
@@ -278,6 +303,11 @@ SQL
     else {
       $this->displayTitleAndYear = $this->displayTitle;
     }
+    $this->imageAlternativeText = $this->intl->t("{movie_title} poster.", [ "movie_title" => $this->displayTitleAndYear]);
+    $this->imageDirectory       = "upload://movie/{$this->id}/poster";
+    $this->pluralKey            = $this->tableName = "movies";
+    $this->route                = $this->intl->r("/movie/{0}", $this->id);
+    $this->singularKey          = "movie";
     return parent::init();
   }
 

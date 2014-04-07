@@ -17,8 +17,8 @@
  */
 namespace MovLib\Partial\FormElement;
 
-use \MovLib\Data\Image\AbstractBaseImage;
-use \MovLib\Presentation\Error\Unauthorized;
+use \MovLib\Data\Image\AbstractImageEntity;
+use \MovLib\Exception\ClientException\UnauthorizedException;
 
 /**
  * HTML input type file form element specialized for image uploads.
@@ -49,6 +49,13 @@ final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
     IMAGETYPE_JPEG => "jpg",
     IMAGETYPE_PNG  => "png",
   ];
+
+  /**
+   * The image that is to be uploaded.
+   *
+   * @var \MovLib\Data\Image\AbstractImageEntity
+   */
+  protected $image;
 
   /**
    * Insert HTML after input file HTML element.
@@ -101,66 +108,60 @@ final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
   /**
    * Instantiate new input form element of type file.
    *
+   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   *   The HTTP dependency injection container.
    * @param string $id
    *   The form element's global unique identifier.
    * @param string $label
    *   The label test.
-   * @param \MovLib\Data\Image\AbstractBaseImage $concreteImage
-   *   The abstract image instance that's responsible for this image.
+   * @param \MovLib\Data\Image\AbstractImageEntity $image
+   *   The image that is to be uploaded.
    * @param array $attributes [optional]
    *   Additional attributes.
+   * @param string $inputFileAfter [optional]
+   *   Any content that should be included in the rendered input image form element, defaults to <code>NULL</code>.
    * @throws \MovLib\Presentation\Error\Unauthorized
    */
-  public function __construct($id, $label, $concreteImage, array $attributes = null) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (!($concreteImage instanceof AbstractBaseImage)) {
-      throw new \LogicException("The instance of image passed to the image input element must be of \\MovLib\\Data\\Image\\AbstractBaseImage.");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, \MovLib\Data\Image\AbstractImageEntity $image, array $attributes = null, $inputFileAfter = null) {
     // Only authenticated users are allowed to upload images.
-    if ($session->isAuthenticated === false) {
-      throw new Unauthorized($this->intl->t(
+    if ($diContainerHTTP->session->isAuthenticated === false) {
+      throw new UnauthorizedException($this->intl->t(
         "You must be signed in to upload images. If you don’t have an account yet why not {0}join {sitename}{1}?.",
-        [ "<a href='{$this->intl->r("/profile/join")}'>", "</a>", "sitename" => $kernel->sitename ]
+        [ "<a href='{$this->intl->r("/profile/join")}'>", "</a>", "sitename" => $this->config->sitename ]
       ));
     }
 
-    // Instantiate the input element.
-    parent::__construct($id, $label, $attributes);
-
     // We need some JavaScript to make our input element more awesome.
-    $kernel->javascripts[] = "InputImage";
+    $diContainerHTTP->presenter->javascripts[] = "InputImage";
 
     // Initialize attributes and properties.
-    $this->image       = $concreteImage;
-    $this->maxFilesize = ini_get("upload_max_filesize");
-    $this->minHeight   = $this->image->height ? : AbstractBaseImage::IMAGE_MIN_HEIGHT;
-    $this->minWidth    = $this->image->width ? : AbstractBaseImage::IMAGE_MIN_WIDTH;
+    $this->image          = $image;
+    $this->inputFileAfter = $inputFileAfter;
+    $this->maxFilesize    = ini_get("upload_max_filesize");
+    $this->minHeight      = $this->image->imageHeight ?: AbstractImageEntity::IMAGE_MIN_HEIGHT;
+    $this->minWidth       = $this->image->imageWidth  ?: AbstractImageEntity::IMAGE_MIN_WIDTH;
 
-    list($this->maxFilesizeFormatted, $this->maxFilesizeUnit) = $this->formatBytes($this->maxFilesize);
+    $this->maxFilesizeFormatted = $diContainerHTTP->intl->formatBytes($this->maxFilesize);
 
-    $this->setHelp($this->intl->t("Image must be larger than {width} × {height} pixels and less than {size,number,integer} {unit}. Allowed image types: JPG and PNG", [
+    $attributes["#help-popup"] = $diContainerHTTP->intl->t("Image must be larger than {width} × {height} pixels and less than {size}. Allowed image types: JPG and PNG", [
       "width"  => $this->minWidth,
       "height" => $this->minHeight,
       "size"   => $this->maxFilesizeFormatted,
-      "unit"   => $this->maxFilesizeUnit,
-    ]));
+    ]);
+
+    parent::__construct($diContainerHTTP, $id, $label, $attributes);
 
     // Translate some error messages right away, we need them in render() and in validate()
     $this->errorMessages = [
       "preview" => $this->intl->t("The image you see is only a preview, you still have to submit the form."),
-      "large"   => $this->intl->t("The image you are trying to upload is too large, it must be {size,number,integer} {unit} or smaller.", [
+      "large"   => $this->intl->t("The image you are trying to upload is too large, it must be {size} or smaller.", [
         "size" => $this->maxFilesizeFormatted,
-        "unit" => $this->maxFilesizeUnit,
       ]),
       "quality" => $this->intl->t(
         "New images should have a better quality than already existing images, this includes the resolution. The " .
         "current image’s resolution is {width} × {height} and your new image’s is {width_new} × {height_new} pixels. " .
         "Please confirm that your upload has a better quality than the existing one despite the fact of smaller dimensions.",
-        [ "width" => $this->image->width, "height" => $this->image->height ]
+        [ "width" => $this->image->imageWidth, "height" => $this->image->imageHeight ]
       ),
       "small"   => $this->intl->t("The image is too small, it must be larger than {width} × {height} pixels.", [
         "height" => $this->minHeight,
@@ -171,24 +172,37 @@ final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  protected function render() {
-    $JSON     = json_encode($this->errorMessages);
-    $height   = $this->image->height ? " data-height='{$this->image->height}'" : null;
-    $width    = $this->image->width  ? " data-width='{$this->image->width}'"   : null;
+  public function __toString() {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    try {
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+      $JSON     = json_encode($this->errorMessages);
+      $height   = $this->image->imageHeight ? " data-height='{$this->image->imageHeight}'" : null;
+      $width    = $this->image->imageWidth  ? " data-width='{$this->image->imageWidth}'"   : null;
 
-    return
-      "<div class='inputimage r' data-max-filesize='{$this->maxFilesize}' data-min-height='{$this->minHeight}' data-min-width='{$this->minWidth}'{$height}{$width}>" .
-        "<script type='application/json'>{$JSON}</script>" .
-        "<div class='s s2 preview'>{$this->getImage($this->image->getStyle(AbstractBaseImage::STYLE_SPAN_02), false)}</div>" .
-        "<div class='s s8'>{$this->required}{$this->helpPopup}<label for='{$this->id}'>{$this->label}</label>" .
-          "<span class='btn input-file'><span aria-hidden='true'>{$this->intl->t("Choose Image …")}</span>" .
-            "<input id='{$this->id}' name='{$this->id}' type='file' accept='image/jpeg,image/png'{$this->expandTagAttributes($this->attributes)}>" .
-          "</span>{$this->inputFileAfter}" .
-        "</div>" .
-      "</div>"
-    ;
+      return
+        "<div class='inputimage r' data-max-filesize='{$this->maxFilesize}' data-min-height='{$this->minHeight}' data-min-width='{$this->minWidth}'{$height}{$width}>" .
+          "<script type='application/json'>{$JSON}</script>" .
+          "<div class='s s2 preview'>{$this->presenter->img($this->image->imageGetStyle("s2"), [ "class" => "preview" ], false)}</div>" .
+          "<div class='s s8'>{$this->required}{$this->helpPopup}<label for='{$this->id}'>{$this->label}</label>" .
+            "<span class='btn input-file'><span aria-hidden='true'>{$this->intl->t("Choose Image …")}</span>" .
+              "<input id='{$this->id}' name='{$this->id}' type='file' accept='image/jpeg,image/png'{$this->expandTagAttributes($this->attributes)}>" .
+            "</span>{$this->inputFileAfter}" .
+          "</div>" .
+        "</div>"
+      ;
+    // @devStart
+    // @codeCoverageIgnoreStart
+    }
+    catch (\Exception $e) {
+      return (string) new \MovLib\Partial\Alert("<pre>{$e}</pre>", "Error Rendering Input Image Form Element", \MovLib\Partial\Alert::SEVERITY_ERROR);
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
   }
 
 

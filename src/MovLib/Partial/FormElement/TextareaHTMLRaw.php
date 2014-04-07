@@ -51,21 +51,22 @@ class TextareaHTMLRaw extends \MovLib\Partial\FormElement\AbstractFormElement {
       $content = str_replace(
         [ "\n\n", "<br>", "<p>", "</p>", "=''", '=""' ],
         [ "\n", "", "", "\n", "", "" ],
-        tidy_get_output(tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body>{$this->htmlDecode($this->value)}</body></html>"))
+        tidy_get_output(tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body>{$this->presenter->htmlDecode($this->value)}</body></html>"))
       );
 
+      $this->attributes["id"] = $this->id;
       $this->attributes["aria-multiline"] = "true";
       return
         "{$this->required}{$this->helpPopup}{$this->helpText}<p>" .
           "<label for='{$this->id}'>{$this->label}</label>" .
-          "<textarea{$this->expandTagAttributes($this->attributes)}>{$content}</textarea>" .
+          "<textarea{$this->presenter->expandTagAttributes($this->attributes)}>{$content}</textarea>" .
         "</p>"
       ;
     // @devStart
     // @codeCoverageIgnoreStart
     }
     catch (\Exception $e) {
-      return (string) new \MovLib\Presentation\Partial\Alert("<pre>{$e}</pre>", "Error Rendering Element", \MovLib\Presentation\Partial\Alert::SEVERITY_ERROR);
+      return (string) new \MovLib\Partial\Alert("<pre>{$e}</pre>", "Error Rendering Element", \MovLib\Partial\Alert::SEVERITY_ERROR);
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

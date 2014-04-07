@@ -17,7 +17,10 @@
  */
 namespace MovLib\Data\User;
 
+use \MovLib\Core\HTTP\Session;
 use \MovLib\Data\Date;
+use \MovLib\Data\DateTime;
+use \MovLib\Data\Image\ImageEffect;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -29,9 +32,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class User extends \MovLib\Core\AbstractDatabase implements \MovLib\Data\EntityInterface {
-  use \MovLib\Data\RouteTrait;
-  use \MovLib\Data\User\UserTrait;
+final class User extends \MovLib\Data\Image\AbstractImageEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -102,7 +103,7 @@ final class User extends \MovLib\Core\AbstractDatabase implements \MovLib\Data\E
    *
    * @var null|\DateTime
    */
-  public $birthday;
+  public $birthdate;
 
   /**
    * The user's country code.
@@ -137,14 +138,14 @@ final class User extends \MovLib\Core\AbstractDatabase implements \MovLib\Data\E
    *
    * @var null|string
    */
-  protected $email;
+  public $email;
 
   /**
    * The user's unique identifier.
    *
    * @var null|integer
    */
-  protected $id;
+  public $id;
 
   /**
    * The user's unique name.
@@ -152,6 +153,13 @@ final class User extends \MovLib\Core\AbstractDatabase implements \MovLib\Data\E
    * @var string
    */
   public $name;
+
+  /**
+   * The user's hashed password.
+   *
+   * @var string
+   */
+  public $passwordHash;
 
   /**
    * Whether the user's personal data is private or not.
@@ -252,13 +260,18 @@ SELECT
   `id`,
   `name`,
   `email`,
+  `password`,
   `access`,
+  `changed`,
   `created`,
   `birthdate`,
   `country_code`,
   `currency_code`,
   COLUMN_GET(`dyn_about_me`, '{$this->intl->languageCode}' AS CHAR),
   `edits`,
+  HEX(`image_cache_buster`),
+  `image_extension`,
+  `image_styles`,
   `private`,
   `profile_views`,
   `real_name`,
@@ -276,13 +289,18 @@ SQL
         $this->id,
         $this->name,
         $this->email,
+        $this->passwordHash,
         $this->access,
+        $this->changed,
         $this->created,
-        $this->birthday,
+        $this->birthdate,
         $this->countryCode,
         $this->currencyCode,
         $this->aboutMe,
         $this->edits,
+        $this->imageCacheBuster,
+        $this->imageExtension,
+        $this->imageStyles,
         $this->private,
         $this->profileViews,
         $this->realName,
@@ -308,6 +326,39 @@ SQL
 
 
   /**
+   * Delete this user's account.
+   *
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function deleteAccount() {
+    $this->getMySQLi()->query("UPDATE `users` SET `" . implode("` = NULL, `", [
+      "admin", "birthdate", "country_code", "dyn_about_me", "edits", "email", "image_cache_buster", "image_extension",
+      "image_styles", "password", "private", "profile_views", "real_name", "reputation", "sex", "language_code",
+      "timezone", "website",
+    ]) . "` = NULL WHERE `id` = {$this->id}");
+    return $this;
+  }
+
+  /**
+   * Delete the user's avatar image.
+   *
+   * @param \MovLib\Core\HTTP\Session $session
+   *   The user's active session.
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function deleteAvatar(\MovLib\Core\HTTP\Session $session) {
+    if ($this->imageExists === true) {
+      $this->imageDeleteStyles();
+      $this->imageDelete();
+      $this->getMySQLi()->query("UPDATE `users` SET `image_cache_buster` = NULL, `image_extension` = NULL, `image_styles` = NULL WHERE `id` = {$this->id}");
+      $session->userImageCacheBuster = $session->userImageExtension = $_SESSION[Session::USER_IMAGE_CACHE_BUSTER] = $_SESSION[Session::USER_IMAGE_EXTENSION] = null;
+    }
+    return $this;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function getCount($from, $what = "*") {
@@ -320,22 +371,46 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function getRoute() {
-    static $route = [];
-    if (empty($route[$this->id])) {
-      $route[$this->id] = $this->intl->r("/{$this->getSingularKey()}/{0}", $this->id);
-    }
-    return $route[$this->id];
+  public function init() {
+    $this->access               = new DateTime($this->access);
+    $this->birthdate            && ($this->birthdate = new Date($this->birthdate));
+    $this->deleted              = (boolean) $this->email;
+    $this->imageAlternativeText = $this->intl->t("{username}’s avatar image.", [ "username" => $this->name ]);
+    $this->imageDirectory       = "upload://user";
+    $this->imageFilename        = mb_strtolower($this->name);
+    $this->pluralKey            = $this->tableName = "users";
+    $this->private              = (boolean) $this->private;
+    $this->route                = $this->intl->r("/user/{0}", $this->imageFilename);
+    $this->singularKey          = "user";
+    return parent::init();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function init() {
-    $this->access   = new \DateTime($this->access);
-    $this->created  = new \DateTime($this->created);
-    $this->private  = (boolean) $this->private;
-    $this->birthday && ($this->birthday = new Date($this->birthday));
+  protected function imageGetEffects() {
+    return parent::imageGetEffects() + [ "nav" => new ImageEffect(50, 50, true) ];
+  }
+
+  /**
+   * Save the image styles to persistent storage.
+   *
+   * @return this
+   */
+  protected function imageSaveStyles() {
+    $styles = serialize($this->imageStyles);
+    $stmt   = $this->getMySQLi()->prepare("UPDATE `users` SET `image_styles` = ? WHERE `id` = ?");
+    $stmt->bind_param("sd", $styles, $this->id);
+    $stmt->execute();
+    $stmt->close();
+    if ($this->kernel->http) {
+      $_SESSION[Session::USER_IMAGE_CACHE_BUSTER] = $this->imageCacheBuster;
+      $_SESSION[Session::USER_IMAGE_EXTENSION]    = $this->imageExtension;
+      if (isset($this->diContainer->session)) {
+        $this->diContainer->session->userImageCacheBuster = $this->imageCacheBuster;
+        $this->diContainer->session->userImageExtension   = $this->imageExtension;
+      }
+    }
     return $this;
   }
 
@@ -343,26 +418,100 @@ SQL
    * Check if given user property is already in use.
    *
    * @param string $what
-   *   Either <var>User::FROM_NAME</var> or <var>User::FROM_EMAIL</var>.
-   * @param string $nameOrEmail
-   *   The name or email address to check.
+   *   The name of the column that should be checked.
+   * @param string $value
+   *   The value to check.
    * @return boolean
-   *   <code>TRUE</code> if the email address is already in use, <code>FALSE</code> otherwise.
+   *   <code>TRUE</code> if the value is already in use, <code>FALSE</code> otherwise.
    */
-  public function inUse($what, $nameOrEmail) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert($what == self::FROM_EMAIL || $what == self::FROM_NAME, "You can only check usage for 'name' and 'email'.");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    return ($this->query("SELECT `{$what}` FROM `users` WHERE `{$what}` = ? LIMIT 1", "s", [ $nameOrEmail ]) !== null);
+  public function inUse($what, $value) {
+    $stmt = $this->getMySQLi()->prepare("SELECT `id` FROM `users` WHERE `{$what}` = ? LIMIT 1");
+    $stmt->bind_param("s", $value);
+    $stmt->execute();
+    $found = $stmt->fetch();
+    $stmt->close();
+    if (!$found) {
+      return false;
+    }
+    return true;
   }
 
   /**
-   * {@inheritdoc}
+   * Update the user's account.
+   *
+   * @return this
+   * @throws \mysqli_sql_exception
    */
-  public function isGone() {
-    return ($this->email === null);
+  public function updateAccount() {
+    $styles    = serialize($this->imageStyles);
+    $stmt = $this->getMySQLi()->prepare(<<<SQL
+UPDATE `users` SET
+  `dyn_about_me`       = COLUMN_ADD(`dyn_about_me`, '{$this->intl->languageCode}', ?),
+  `birthdate`          = ?,
+  `country_code`       = ?,
+  `image_cache_buster` = UNHEX(?),
+  `image_extension`    = ?,
+  `image_styles`       = ?,
+  `private`            = ?,
+  `real_name`          = ?,
+  `sex`                = ?,
+  `language_code`      = ?,
+  `timezone`           = ?,
+  `website`            = ?
+WHERE `id` = {$this->id}
+SQL
+    );
+    $stmt->bind_param(
+      "ssssssisisss",
+      $this->aboutMe,
+      $this->birthdate,
+      $this->countryCode,
+      $this->imageCacheBuster,
+      $this->imageExtension,
+      $styles,
+      $this->private,
+      $this->realName,
+      $this->sex,
+      $this->languageCode,
+      $this->timezone,
+      $this->website
+    );
+    $stmt->execute();
+    $stmt->close();
+    return $this;
+  }
+
+  /**
+   * Update the user's email address.
+   *
+   * @param string $newEmail
+   *   The valid new email address.
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function updateEmail($newEmail) {
+    $stmt = $this->getMySQLi()->prepare("UPDATE `users` SET `email` = ? WHERE `id` = {$this->id}");
+    $stmt->bind_param("s", $newEmail);
+    $stmt->execute();
+    $stmt->close();
+    return $this;
+  }
+
+  /**
+   * Update the user's password.
+   *
+   * @param string $rawPassword
+   *   The (raw) new password.
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function updatePassword($rawPassword) {
+    $this->passwordHash = password_hash($rawPassword, $this->config->passwordAlgorithm, $this->config->passwordOptions);
+    $stmt = $this->getMySQLi()->prepare("UPDATE `users` SET `password` = ? WHERE `id` = {$this->id}");
+    $stmt->bind_param("s", $this->passwordHash);
+    $stmt->execute();
+    $stmt->close();
+    return $this;
   }
 
 }

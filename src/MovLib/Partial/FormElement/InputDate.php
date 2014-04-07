@@ -17,7 +17,7 @@
  */
 namespace MovLib\Partial\FormElement;
 
-use \MovLib\Presentation\Partial\Date;
+use \MovLib\Data\Date;
 
 /**
  * Input date form element.
@@ -48,21 +48,14 @@ class InputDate extends \MovLib\Partial\FormElement\AbstractInput {
 
   // @devStart
   // @codeCoverageIgnoreStart
-  public function __construct($id, $label, &$value, array $attributes = null) {
-    if (isset($attributes["placeholder"])) {
-      throw new \LogicException("Date input's aren't allowed to have a placeholder attribute");
-    }
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, \MovLib\Data\Date &$value, array $attributes = null) {
+    assert(empty($attributes["placeholder"]), "Date input's aren't allowed to have a placeholder attribute");
     foreach ([ "max", "min", "value" ] as $attribute) {
-      if (isset($attributes[$attribute])) {
-        if (is_string($attributes[$attribute]) && preg_match(Date::REGEXP_W3C, $attributes[$attribute]) == false) {
-          throw new \InvalidArgumentException("Date {$attribute} must be in W3C format if passed as string");
-        }
-        elseif (!($attributes[$attribute] instanceof \DateTime)) {
-          throw new \InvalidArgumentException("Date {$attribute} must be either a string in W3C format or a \\DateTime instance");
-        }
+      if (isset($attribute[$attribute])) {
+        assert($attribute[$attribute] instanceof Date, "The attributes max, min, and value must be an instance of \\MovLib\\Data\\Date.");
       }
     }
-    parent::__construct($id, $label, $value, $attributes);
+    parent::__construct($diContainerHTTP, $id, $label, $value, $attributes);
   }
   // @codeCoverageIgnoreEnd
   // @devEnd
@@ -74,12 +67,25 @@ class InputDate extends \MovLib\Partial\FormElement\AbstractInput {
    *   The input date form element.
    */
   public function __toString() {
-    foreach ([ "max", "min", "value" ] as $attribute) {
-      if (isset($this->attributes[$attribute]) && $this->attributes[$attribute] instanceof \DateTime) {
-        $this->attributes[$attribute] = $this->attributes[$attribute]->format(Date::FORMAT_W3C);
+    // @devStart
+    // @codeCoverageIgnoreStart
+    try {
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+      foreach ([ "max", "min", "value" ] as $attribute) {
+        if (isset($this->attributes[$attribute])) {
+          $this->attributes[$attribute] = $this->attributes[$attribute]->format(Date::W3C_DATE);
+        }
       }
+      return parent::__toString();
+    // @devStart
+    // @codeCoverageIgnoreStart
     }
-    return parent::__toString();
+    catch (\Exception $e) {
+      return (string) new \MovLib\Partial\Alert("<pre>{$e}</pre>", "Error Rendering Input Date Form Element", \MovLib\Partial\Alert::SEVERITY_ERROR);
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
   }
 
 
@@ -87,43 +93,34 @@ class InputDate extends \MovLib\Partial\FormElement\AbstractInput {
 
 
   /**
-   * Validate the submitted date.
-   *
-   * @param string $text
-   *   The user submitted text to validate.
-   * @param mixed $errors
-   *   Parameter to collect error messages.
-   * @return string
-   *   The valid and sanitized text.
+   * {@inheritdoc}
    */
   protected function validateValue($date, &$errors) {
     // Try to parse the date according to the W3C standard.
-    $date = \DateTime::createFromFormat(Date::FORMAT_W3C, $date);
+    $date = new Date($date);
 
     // Check if parsing the date according to the format failed.
-    if ($date === false || (($errors = $date->getLastErrors()) && ($errors["error_count"] !== 0 || $errors["warning_count"] !== 0))) {
+    if ($date === false || (($dateErrors = $date->getLastErrors()) && ($dateErrors["error_count"] !== 0 || $dateErrors["warning_count"] !== 0))) {
       $errors = $this->intl->t("The “{0}” date is invalid, only the following format is valid: {format}.", [ $this->label, "format" => Date::FORMAT_W3C ]);
     }
 
     // Validate maximum date value if present and only if we have no errors so far.
     if (!$errors && isset($this->attributes["max"])) {
-      $max = \DateTime::createFromFormat(Date::FORMAT_W3C, $this->attributes["max"]);
-      if ($date > $max) {
-        $errors = $this->intl->t("The date {0} must not be greater than {1}.", [
-          \IntlDateFormatter::create($this->intl->locale, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE)->format($date),
-          \IntlDateFormatter::create($this->intl->locale, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE)->format($max),
-        ]);
+      if ($date > $this->attributes["max"]) {
+        $errors = $this->intl->t(
+          "The date {0} must not be greater than {1}.",
+          [ $date->formatIntl($this->intl->locale), $this->attributes["max"]->formatIntl($this->intl->locale) ]
+        );
       }
     }
 
     // Validate minimum date value if present and only if we have no errors so far.
     if (!$errors && isset($this->attributes["min"])) {
-      $min = \DateTime::createFromFormat(Date::FORMAT_W3C, $this->attributes["min"]);
-      if ($date < $min) {
-        $errors = $this->intl->t("The date {0} must not be less than {1}.", [
-          \IntlDateFormatter::create($this->intl->locale, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE)->format($date),
-          \IntlDateFormatter::create($this->intl->locale, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE)->format($min),
-        ]);
+      if ($date < $this->attributes["min"]) {
+        $errors = $this->intl->t(
+          "The date {0} must not be less than {1}.",
+          [ $date->formatIntl($this->intl->locale), $this->attributes["min"]->formatIntl($this->intl->locale) ]
+        );
       }
     }
 

@@ -48,14 +48,14 @@ abstract class AbstractIndexPresenter extends \MovLib\Presentation\AbstractPrese
   /**
    * Format a single listing's item.
    *
-   * @param \MovLib\Data\EntityInterface $item
+   * @param \MovLib\Data\AbstractEntity $item
    *   The listing's item to format.
    * @param integer $delta
    *   The current loops delta.
    * @return string
    *   The formatted listing's item.
    */
-  abstract protected function formatListingItem(\MovLib\Data\EntityInterface $item, $delta);
+  abstract protected function formatListingItem(\MovLib\Data\AbstractEntity $item, $delta);
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -66,21 +66,21 @@ abstract class AbstractIndexPresenter extends \MovLib\Presentation\AbstractPrese
    *
    * @param \MovLib\Data\AbstractSet $set
    *   The set to present.
+   * @param string $title
+   *   The title for page title and breadcrumb.
    * @param string $createText
    *   The translated text for the creation button (title case).
    * @return this
    */
-  public function initIndex(\MovLib\Data\SetInterface $set, $createText) {
-    $singularKey         = $set->getSingularKey();
-    $title               = $set->getPluralName();
+  public function initIndex(\MovLib\Data\AbstractSet $set, $title, $createText) {
     $this->set           = $set;
-    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/{$singularKey}/create")}'>{$createText}</a>";
+    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/{$set->singularKey}/create")}'>{$createText}</a>";
     $this->initPage($title);
     $this->initBreadcrumb();
-    $this->initLanguageLinks("/{$set->getPluralKey()}", null, true);
+    $this->initLanguageLinks("/{$set->pluralKey}", null, true);
     $this->sidebarInit([
-      [ $set->getIndexRoute(), $title, [ "class" => "ico ico-{$singularKey}" ] ],
-      [ $this->intl->r("/{$singularKey}/random"), $this->intl->t("Random") ],
+      [ $set->route, $title, [ "class" => "ico ico-{$set->singularKey}" ] ],
+      [ $this->intl->r("/{$set->singularKey}/random"), $this->intl->t("Random") ],
     ]);
     $this->paginationInit();
     return $this;

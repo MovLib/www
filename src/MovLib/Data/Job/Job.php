@@ -23,13 +23,13 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * Defines the job entity object.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
 final class Job extends \MovLib\Data\AbstractEntity {
-  use \MovLib\Data\Job\JobTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -198,7 +198,9 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
-    $this->route   = $this->intl->r("/job/{0}", $this->id);
+    $this->pluralKey   = $this->tableName = "jobs";
+    $this->route       = $this->intl->r("/job/{0}", $this->id);
+    $this->singularKey = "job";
     return parent::init();
   }
 

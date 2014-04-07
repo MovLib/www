@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data;
 
+use \MovLib\Data\DateTime;
+
 /**
  * Defines the base class for database entity objects.
  *
@@ -26,8 +28,7 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractEntity extends \MovLib\Core\AbstractDatabase implements \MovLib\Data\EntityInterface {
-  use \MovLib\Data\RouteTrait;
+abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -66,7 +67,23 @@ abstract class AbstractEntity extends \MovLib\Core\AbstractDatabase implements \
 
 
   /**
-   * {@inheritdoc}
+   * Get the count of a relationship.
+   *
+   * <b>EXAMPLE</b><br>
+   * <code><?php
+   *
+   * public function getCount($from, $what = "*") {
+   *   return $this->getMySQLi()->query("SELECT COUNT({$what}) FROM `{$from}` WHERE `id` = 1 LIMIT 1")->fetch_row()[0];
+   * }
+   *
+   * ?></code>
+   *
+   * @param string $from
+   *   The table defining the relationship that is to be counted.
+   * @param string $what
+   *   The content of the <code>COUNT()</code> function in the SQL query.
+   * @return integer
+   *   The count of the relationship.
    */
   public function getCount($from, $what = "*") {
     $result = $this->getMySQLi()->query("SELECT COUNT({$what}) FROM `{$from}` WHERE `{$this->getSingularKey()}_id` = {$this->id} LIMIT 1");
@@ -84,55 +101,20 @@ abstract class AbstractEntity extends \MovLib\Core\AbstractDatabase implements \
    * @return this
    */
   protected function init() {
-    $this->changed = new \DateTime($this->changed);
-    $this->created = new \DateTime($this->created);
+    $this->changed = new DateTime($this->changed);
+    $this->created = new DateTime($this->created);
     $this->deleted = (boolean) $this->deleted;
-    return $this;
+    return parent::init();
   }
 
   /**
-   * {@inheritdoc}
+   * Whether this entity is gone or not.
+   *
+   * @return boolean
+   *   <code>TRUE</code> if the entity is gone, <code>FALSE</code> otherwise.
    */
   public function isGone() {
     return $this->deleted;
-  }
-
-  /**
-   * Transform the properties to date objecs.
-   *
-   * <b>NOTE</b><br>
-   * The properties must be passed as reference.
-   *
-   * @param array $properties
-   *   The properties to transform.
-   * @return this
-   */
-  protected function toDates(array $properties) {
-    foreach ($properties as &$property) {
-      if (isset($property)) {
-        $property = new \MovLib\Data\Date($property);
-      }
-    }
-    return $this;
-  }
-
-  /**
-   * Unserialize the given properties.
-   *
-   * <b>NOTE</b><br>
-   * The properties must be passed as reference.
-   *
-   * @param array $properties
-   *   The properties to unserialize.
-   * @return this
-   */
-  protected function unserialize(array $properties) {
-    foreach ($properties as &$property) {
-      if (isset($property)) {
-        $property = unserialize($property);
-      }
-    }
-    return $this;
   }
 
 }

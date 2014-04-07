@@ -17,7 +17,7 @@
  */
 namespace MovLib\Core;
 
-use \MovLib\Core\Log;
+use \MovLib\Core\Shell;
 use \MovLib\Exception\FileSystemException;
 
 /**
@@ -65,9 +65,19 @@ final class FileSystem {
   /**
    * The real document root path.
    *
+   * <b>NOTE</b><br>
+   * Must be public to allow stream wrappers to access the configuration.
+   *
    * @var string
    */
   public $documentRoot;
+
+  /**
+   * The hostname for static content.
+   *
+   * @var string
+   */
+  public $hostnameStatic;
 
   /**
    * The process group.
@@ -114,43 +124,21 @@ final class FileSystem {
 
 
   /**
-   * Instantiate new file system.
+   * Instantiate new file system object.
    *
-   * @staticvar boolean $registered
-   *   <code>TRUE</code> if stream wrappers were already registered, otherwise <code>FALSE</code>.
    * @param string $documentRoot
-   *   Canonical absolute document root path.
-   * @param \MovLib\Core\Log $log
-   *   Log instance.
-   * @param string $user [optional]
-   *   Process user, defaults to <code>"movlib"</code>.
-   * @param string $group [optional]
-   *   Process group, defaults to <code>"movlib"</code>.
+   *   The canonical absolute document root path.
+   * @param string $hostnameStatic
+   *   The hostname for static content.
    */
-  public function __construct($documentRoot, \MovLib\Core\Log $log) {
-    static $registered = false;
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (empty($documentRoot) || !is_string($documentRoot) || realpath($documentRoot) === false) {
-      throw new \InvalidArgumentException("\$documentRoot cannot be empty, must be of type string and exist on the local file system.");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    $this->documentRoot = $documentRoot;
-    $this->log          = $log;
+  public function __construct($documentRoot, $hostnameStatic) {
+    $this->documentRoot   = $documentRoot;
+    $this->hostnameStatic = "//{$hostnameStatic}";
 
-    // Register the stream wrappers if they weren't registered yet.
-    if ($registered === false) {
-      /* @var $class \MovLib\Core\StreamWrapper\AbstractLocalStream */
-      foreach (self::$streamWrappers as $scheme => $class) {
-        $class::$documentRoot = $this->documentRoot;
-        if (stream_wrapper_register($scheme, $class) === false) {
-          $log->warning(
-            "Couldn't register '{$class}' as stream wrapper for scheme '{$scheme}://'. This might be because another " .
-            "stream wrapper is already registered for this scheme."
-          );
-        }
-      }
+    /* @var $class \MovLib\Core\StreamWrapper\AbstractLocalStream */
+    foreach (self::$streamWrappers as $scheme => $class) {
+      $class::$fs = $this;
+      stream_wrapper_register($scheme, $class);
     }
   }
 
@@ -170,7 +158,7 @@ final class FileSystem {
   public function compress($uri) {
     try {
       $realpath = $this->realpath($uri);
-      Shell::execute("zopfli --ext 'gz' --gzip --verbose '{$realpath}'");
+      (new Shell())->execute("zopfli --ext 'gz' --gzip --verbose '{$realpath}'");
       $urigz = "{$uri}.gz";
       touch($urigz, filemtime($uri));
       if ($this->privileged && $this->user && $this->group) {
@@ -187,9 +175,11 @@ final class FileSystem {
   /**
    * Delete all files that were registered for deletion.
    *
+   * @param \MovLib\Core\Log $log
+   *   The active log instance.
    * @return this
    */
-  public function deleteRegisteredFiles() {
+  public function deleteRegisteredFiles(\MovLib\Core\Log $log) {
     foreach (self::$registeredFiles as $uri => $recursive) {
       try {
         if ($recursive === true) {
@@ -211,10 +201,43 @@ final class FileSystem {
         }
       }
       catch (\Exception $e) {
-        Log::error($e);
+        $log->error($e);
       }
     }
     return $this;
+  }
+
+  /**
+   * Get the external URL for the given URI.
+   *
+   * @staticvar array $streamWrappers
+   *   Used to cache the stream wrapper instances.
+   * @staticvar array $urls
+   *   Used to cache generated URLs.
+   * @param string $uri
+   *   The URI to get the external URL for.
+   * @param string $cacheBuster [optional]
+   *   A cache buster that should be appended to the URL, defaults to <code>NULL</code>.
+   * @return string
+   *   The external URL for the given URI.
+   * @throws \LogicException
+   *   If the given URI doesn't support external URLs.
+   */
+  public function getExternalURL($uri, $cacheBuster = null) {
+    try {
+      static $streamWrappers = [], $urls = [];
+      if (isset($urls[$uri])) {
+        return $urls[$uri];
+      }
+      $scheme = explode("://", $uri, 2)[0];
+      if (empty($streamWrappers[$scheme])) {
+        $streamWrappers[$scheme] = new self::$streamWrappers[$scheme]();
+      }
+      return ($urls[$uri] = $streamWrappers[$scheme]->getExternalPath($uri, $cacheBuster));
+    }
+    catch (\ErrorException $e) {
+      throw new FileSystemException("Couldn'f generated external URL for {$uri}!", null, $e);
+    }
   }
 
   /**
@@ -262,17 +285,13 @@ final class FileSystem {
   public function getStreamWrapper($uri) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (empty($uri) || !is_string($uri)) {
-      throw new \InvalidArgumentException("\$uri cannot be empty and must be of type string.");
-    }
+    assert(strpos($uri, "://") !== false, "A valid URI has the format <scheme>://<path>, your URI is {$uri}!");
     // @codeCoverageIgnoreEnd
     // @devEnd
     try {
-      $scheme           = explode("://", $uri, 2)[0];
-      $instance         = new self::$streamWrappers[$scheme]();
-      $instance->scheme = $scheme;
-      $instance->uri    = $uri;
-      return $instance;
+      $streamWrapper = new self::$streamWrappers[explode("://", $uri, 2)[0]]();
+      $streamWrapper->uri = $uri;
+      return $streamWrapper;
     }
     catch (\ErrorException $e) {
       throw new FileSystemException("No stream wrapper available to handle '{$uri}'.", null, $e);
@@ -339,12 +358,8 @@ final class FileSystem {
   public function registerFileForDeletion($uri, $force = false) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (empty($uri) || !is_string($uri)) {
-      throw new \InvalidArgumentException("\$uri cannot be empty and must be of type string.");
-    }
-    if (!is_bool($force)) {
-      throw new \InvalidArgumentException("\$force must be of type boolean.");
-    }
+    assert(!empty($uri) && is_string($uri), "\$uri cannot be empty and must be of type string.");
+    assert(is_bool($force), "\$force must be of type boolean.");
     // @codeCoverageIgnoreEnd
     // @devEnd
     self::$registeredFiles[$uri] = $force;
@@ -366,9 +381,7 @@ final class FileSystem {
   public function sanitizeFilename($filename) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (empty($filename) || !is_string($filename)) {
-      throw new \InvalidArgumentException("\$filename cannot be empty and must be of type string.");
-    }
+    assert(!empty($filename) && is_string($filename), "\$filename cannot be empty and must be of type string.");
     // @codeCoverageIgnoreEnd
     // @devEnd
 
@@ -395,8 +408,11 @@ final class FileSystem {
    * @return this
    */
   public function setProcessOwner($user, $group) {
-    // Make sure this method is called in CLI context.
-    assert(PHP_SAPI == "cli");
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert(PHP_SAPI == "cli", "Process owner is set by php-fpm in HTTP context and you aren't allowed to change it!");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
 
     // Determine if current process is privileged.
     $this->privileged = (posix_getuid() === 0);
@@ -419,13 +435,6 @@ final class FileSystem {
       $this->group = posix_getgrgid(posix_getgid())["name"];
     }
 
-    // Notify all stream wrappers about the ownership change.
-    stream_context_set_default(array_fill_keys(array_keys(self::$streamWrappers), [
-      "group"      => $group,
-      "privileged" => $this->privileged,
-      "user"       => $user,
-    ]));
-
     return $this;
   }
 
@@ -440,15 +449,6 @@ final class FileSystem {
    * @throws \MovLib\Exception\FileSystemException
    */
   public function symlink($target, $link) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    foreach ([ "target", "link" ] as $param) {
-      if (empty(${$param}) || !is_string($param)) {
-        throw new \InvalidArgumentException("\${$param} cannot be empty and must be of type string.");
-      }
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
     try {
       if (!is_link($link)) {
         symlink($this->realpath($target), $this->realpath($link));
@@ -469,13 +469,9 @@ final class FileSystem {
    *   The encoded URL path.
    */
   public function urlEncodePath($path) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (empty($path) || !is_string($path)) {
-      throw new \InvalidArgumentException("\$path cannot be empty and must be of type string.");
+    if (empty($path) || $path == "/") {
+      return $path;
     }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
     return str_replace("%2F", "/", rawurlencode($path));
   }
 

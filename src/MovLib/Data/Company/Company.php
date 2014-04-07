@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\Company;
 
+use \MovLib\Data\Date;
 use \MovLib\Exception\ClientException\NotFoundException;
 use \MovLib\Data\Place\Place;
 
@@ -31,7 +32,6 @@ use \MovLib\Data\Place\Place;
  * @since 0.0.1-dev
  */
 final class Company extends \MovLib\Data\AbstractEntity {
-  use \MovLib\Data\Company\CompanyTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -199,11 +199,14 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
-    $this->unserialize([ &$this->aliases, &$this->links ]);
-    $this->toDates([ &$this->foundingDate, &$this->defunctDate ]);
-    if ($this->placeId) {
-      $this->place = new Place($this->diContainer, $this->placeId);
-    }
+    $this->aliases      && ($this->aliases      = unserialize($this->aliases));
+    $this->links        && ($this->links        = unserialize($this->links));
+    $this->foundingDate && ($this->foundingDate = new Date($this->foundingDate));
+    $this->defunctDate  && ($this->defunctDate  = new Date($this->defunctDate));
+    $this->placeId      && ($this->place        = new Place($this->diContainer, $this->placeId));
+    $this->pluralKey    = $this->tableName    = "companies";
+    $this->route        = $this->intl->r("/company/{0}", [ $this->id]);
+    $this->singularKey  = "company";
     return parent::init();
   }
 

@@ -45,14 +45,18 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    return $this->initIndex(new AwardSet($this->diContainerHTTP), $this->intl->t("Create New Award"));
+    return $this->initIndex(
+      new AwardSet($this->diContainerHTTP),
+      $this->intl->t("Awards"),
+      $this->intl->t("Create New Award")
+    );
   }
 
   /**
    * {@inheritdoc}
    * @param \MovLib\Data\Award\Award $award {@inheritdoc}
    */
-  public function formatListingItem(\MovLib\Data\EntityInterface $award, $delta) {
+  public function formatListingItem(\MovLib\Data\AbstractEntity $award, $delta) {
     $awardDates = (new Date($this->intl, $this))->formatFromTo(
       $award->firstEventYear,
       $award->lastEventYear,
@@ -63,12 +67,12 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
     if ($awardDates) {
       $awardDates = "<small>{$awardDates}</small>";
     }
-    $route = $award->getRoute();
+    $route = $award->route;
     return
       "<li class='hover-item r'>" .
         "<article typeof='Organization'>" .
           "<a class='no-link s s1' href='{$route}'>" .
-            "<img alt='{$award->name}' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
+            "<img alt='{$award->name}' src='{$this->fs->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
           "</a>" .
           "<div class='s s9'>" .
             "<div class='fr'>" .

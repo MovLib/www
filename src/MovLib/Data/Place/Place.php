@@ -30,7 +30,6 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @since 0.0.1-dev
  */
 final class Place extends \MovLib\Data\AbstractEntity {
-  use \MovLib\Data\Place\PlaceTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -117,18 +116,17 @@ SQL
   }
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+  // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
    * {@inheritdoc}
    */
-  public function getRoute() {
-    static $route;
-    if (!$route) {
-      $route = $this->intl->r("/place/{0}", $this->id);
-    }
-    return $route;
+  protected function init() {
+    $this->pluralKey   = $this->tableName = "places";
+    $this->route       = $this->intl->t("/place/{0}", [ $this->id]);
+    $this->singularKey = "place";
+    return parent::init();
   }
 
 }

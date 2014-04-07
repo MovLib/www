@@ -57,7 +57,7 @@ trait MovieTrait {
         if ($formatted) {
           $formatted .= " ";
         }
-        $formatted .= "<a class='label' href='{$genre->getRoute()}' property='genre'>{$genre->name}</a>";
+        $formatted .= "<a class='label' href='{$genre->route}' property='genre'>{$genre->name}</a>";
       }
       if ($formatted) {
         $hideLabel = $hideLabel ? " class='vh'" : null;
@@ -89,7 +89,7 @@ trait MovieTrait {
       ) ]);
     }
     if ($linkTitle) {
-      return "<a href='{$movie->getRoute()}' property='url'>{$title}</a>";
+      return "<a href='{$movie->route}' property='url'>{$title}</a>";
     }
     return $title;
   }

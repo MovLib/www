@@ -27,7 +27,6 @@ namespace MovLib\Data\Genre;
  * @since 0.0.1-dev
  */
 final class GenreSet extends \MovLib\Data\AbstractSet {
-  use \MovLib\Data\Genre\GenreTrait;
 
   /**
    * {@inheritdoc}
@@ -52,6 +51,16 @@ FROM `genres`
 GROUP BY `id`, `deleted`, `created`, `changed`, `name`
 {$orderBy}
 SQL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function init() {
+    $this->pluralKey   = $this->tableName = "genres";
+    $this->route       = $this->intl->rp("/genres");
+    $this->singularKey = "genre";
+    return parent::init();
   }
 
 }

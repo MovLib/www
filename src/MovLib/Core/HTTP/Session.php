@@ -17,6 +17,9 @@
  */
 namespace MovLib\Core\HTTP;
 
+use \MovLib\Data\DateTime;
+use \MovLib\Data\Image\ImageStyle;
+use \MovLib\Data\Image\ImageStylePlaceholder;
 use \MovLib\Exception\ClientException\ForbiddenException;
 use \MovLib\Exception\ClientException\UnauthorizedException;
 
@@ -79,18 +82,32 @@ final class Session extends \MovLib\Core\AbstractDatabase {
   const USER_ID = 2;
 
   /**
+   * Session array key for the user's MD5 image cache buster string.
+   *
+   * @var integer
+   */
+  const USER_IMAGE_CACHE_BUSTER = 3;
+
+  /**
+   * Session array key for the user's imag extension.
+   *
+   * @var integer
+   */
+  const USER_IMAGE_EXTENSION = 4;
+
+  /**
    * Session array key for the user's name.
    *
    * @var integer
    */
-  const USER_NAME = 3;
+  const USER_NAME = 5;
 
   /**
    * Session array key for the user's time zone.
    *
    * @var integer
    */
-  const USER_TIMEZONE = 4;
+  const USER_TIMEZONE = 6;
 
 
 
@@ -116,7 +133,7 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    *
    * @var string
    */
-  public $id;
+  public $ssid;
 
   /**
    * The time this session's identifier was last regenerated.
@@ -147,21 +164,35 @@ final class Session extends \MovLib\Core\AbstractDatabase {
   protected $response;
 
   /**
-   * The session's user ID.
+   * The session user's unique identifier.
    *
    * @var integer
    */
   public $userId = 0;
 
   /**
-   * The session's user name.
+   * The session user's image cachge buster.
+   *
+   * @var null|string
+   */
+  public $userImageCacheBuster;
+
+  /**
+   * The session user's image extension.
+   *
+   * @var null|string
+   */
+  public $userImageExtension;
+
+  /**
+   * The session user's unique name.
    *
    * @var string
    */
   public $userName;
 
   /**
-   * The session's user time zone ID.
+   * The session user's timezone.
    *
    * @var string
    */
@@ -200,10 +231,13 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function authenticate($email, $rawPassword) {
-    $stmt = $this->getMySQLi()->prepare("SELECT `id`, `language_code`, `name`, `password`, `timezone` FROM `users` WHERE `email` = ? LIMIT 1");
+    $stmt = $this->getMySQLi()->prepare(<<<SQL
+SELECT `id`, HEX(`image_cache_buster`), `image_extension`, `language_code`, `name`, `password`, `timezone` FROM `users` WHERE `email` = ? LIMIT 1
+SQL
+    );
     $stmt->bind_param("s", $email);
     $stmt->execute();
-    $stmt->bind_result($this->userId, $languageCode, $this->userName, $passwordHash, $this->userTimezone);
+    $stmt->bind_result($this->userId, $this->userImageCacheBuster, $this->userImageExtension, $languageCode, $this->userName, $passwordHash, $this->userTimezone);
     $found = $stmt->fetch();
     if (!$found) {
       // @devStart
@@ -224,11 +258,13 @@ final class Session extends \MovLib\Core\AbstractDatabase {
     }
 
     $this->authentication = $this->initTime = $this->request->time;
-    $_SESSION[self::AUTHENTICATION] =& $this->authentication;
-    $_SESSION[self::INIT_TIME]      =& $this->initTime;
-    $_SESSION[self::USER_ID]        =& $this->userId;
-    $_SESSION[self::USER_NAME]      =& $this->userName;
-    $_SESSION[self::USER_TIMEZONE]  =& $this->userTimezone;
+    $_SESSION[self::AUTHENTICATION]          =& $this->authentication;
+    $_SESSION[self::INIT_TIME]               =& $this->initTime;
+    $_SESSION[self::USER_ID]                 =& $this->userId;
+    $_SESSION[self::USER_IMAGE_CACHE_BUSTER] =& $this->userImageCacheBuster;
+    $_SESSION[self::USER_IMAGE_EXTENSION]    =& $this->userImageExtension;
+    $_SESSION[self::USER_NAME]               =& $this->userName;
+    $_SESSION[self::USER_TIMEZONE]           =& $this->userTimezone;
 
     // Maybe the user was doing some work as anonymous user and already has a session active. If so generate new session
     // identifier and if not generate a completely new session.
@@ -301,21 +337,24 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    * Deletes this session from our session database.
    *
    * @delayed
-   * @param string|array $sessionId [optional]
+   * @param string|array $ssid [optional]
    *   The unique session ID(s) that should be deleted. If no ID is passed along the current session ID of this instance
    *   will be used. If a numeric array is passed all values are treated as session IDs and deleted.
    * @return this
    * @throws \mysqli_sql_exception
    * @throws \MemcachedException
    */
-  public function delete($sessionId = null) {
+  public function delete($ssid = null) {
     $mysqli = $this->getMySQLi();
 
-    if (empty($sessionId)) {
-      $result    = $mysqli->query("SELECT `id` FROM `sessions` WHERE `user_id` = {$this->userId} LIMIT 1");
-      $sessionId = $result->fetch_row()[0];
+    if (empty($ssid)) {
+      $ssid = [ $this->ssid ]; // Make sure ssid is of type array and always contains the current ssid if none given.
+      $result = $mysqli->query("SELECT `ssid` FROM `sessions` WHERE `user_id` = {$this->userId}");
+      while ($row = $result->fetch_row()) {
+        $ssid[] = $row[0];
+      }
       $result->free();
-      if (empty($sessionId)) {
+      if (empty($ssid)) {
         return $this;
       }
     }
@@ -336,23 +375,23 @@ final class Session extends \MovLib\Core\AbstractDatabase {
 
     $memcached = new \Memcached();
     $memcached->addServers($servers);
-    if (is_array($sessionId) && ($c = count($sessionId)) > 0) {
+    if (is_array($ssid) && ($c = count($ssid)) > 0) {
       $in = null;
       for ($i = 0; $i < $c; ++$i) {
         if ($in) {
           $in .= ",";
         }
-        $in .= "'" . $mysqli->real_escape_string($sessionId[$i]) . "'";
+        $in .= "'" . $mysqli->real_escape_string($ssid[$i]) . "'";
       }
-      $mysqli->query("DELETE FROM `sessions` WHERE `id` IN ({$in})");
+      $mysqli->query("DELETE FROM `sessions` WHERE `ssid` IN ({$in})");
       for ($i = 0; $i < $c; ++$i) {
-        $sessionId[$i] = "{$sessionPrefix}{$sessionId[$i]}";
+        $ssid[$i] = "{$sessionPrefix}{$ssid[$i]}";
       }
-      $memcached->deleteMulti($sessionId);
+      $memcached->deleteMulti($ssid);
     }
     else {
-      $mysqli->query("DELETE FROM `sessions` WHERE `id` = '{$mysqli->real_escape_string($sessionId)}'");
-      $memcached->delete("{$sessionPrefix}{$sessionId}");
+      $mysqli->query("DELETE FROM `sessions` WHERE `ssid` = '{$mysqli->real_escape_string($ssid)}'");
+      $memcached->delete("{$sessionPrefix}{$ssid}");
     }
 
     return $this;
@@ -381,7 +420,7 @@ final class Session extends \MovLib\Core\AbstractDatabase {
     $this->response->deleteCookie([ $this->config->sessionName, "lang" ]);
 
     // Delete all sessions if the flag is set.
-    if ($deleteAllSessions === true) {
+    if ($deleteAllSessions) {
       // @devStart
       // @codeCoverageIgnoreStart
       $this->log->debug("Deleting all sessions");
@@ -393,19 +432,21 @@ final class Session extends \MovLib\Core\AbstractDatabase {
     else {
       // @devStart
       // @codeCoverageIgnoreStart
-      $this->log->debug("Deleting session", [ "id" => $this->id ]);
+      $this->log->debug("Deleting session", [ "id" => $this->ssid ]);
       // @codeCoverageIgnoreEnd
       // @devEnd
-      $this->delete($this->id);
+      $this->delete($this->ssid);
     }
 
     // The user is no longer authenticated.
-    $this->active          = false;
-    $this->authentication  = null;
-    $this->isAuthenticated = false;
-    $this->userId          = 0;
-    $this->userName        = $this->request->remoteAddress;
-    $this->userTimezone    = $this->config->timezone;
+    $this->active               = false;
+    $this->authentication       = null;
+    $this->isAuthenticated      = false;
+    $this->userId               = 0;
+    $this->userImageCacheBuster = null;
+    $this->userImageExtension   = null;
+    $this->userName             = $this->request->remoteAddress;
+    $this->userTimezone         = $this->config->timezone;
 
     return $this;
   }
@@ -420,12 +461,38 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    */
   public function getActiveSessions() {
     $activeSessions = [];
-    $result = $this->getMySQLi()->query("SELECT `authentication`, `id`, `remote_address` AS `remoteAddress`, `user_agent` AS `userAgent` FROM `sessions` WHERE `user_id` = {$this->userId}");
+    $result = $this->getMySQLi()->query("SELECT `authentication`, `ssid`, `remote_address` AS `remoteAddress`, `user_agent` AS `userAgent` FROM `sessions` WHERE `user_id` = {$this->userId}");
+    /* @var $activeSession \MovLib\Stub\Core\HTTP\ActiveSessionSet */
     while ($activeSession = $result->fetch_object()) {
-      $activeSessions[] = $activeSession;
+      $activeSession->authentication = new DateTime($activeSession->authentication);
+      $activeSession->remoteAddress  = inet_ntop($activeSession->remoteAddress);
+      $activeSessions[]              = $activeSession;
     }
     $result->free();
     return $activeSessions;
+  }
+
+  /**
+   * Fast version of image style retrieval for the user's session image.
+   *
+   * <b>NOTE</b><br>
+   * The session doesn't support any styles, there is only one style available!
+   *
+   * @see \MovLib\Data\User\User::imageGetEffects()
+   * @return \MovLib\Data\Image\ImageStyle
+   *   The session user image style.
+   */
+  public function imageGetStyle() {
+    if ($this->userImageCacheBuster) {
+      $filename        = mb_strtolower($this->userName);
+      $imageStyle      = new ImageStyle("upload://user/{$filename}.{$this->userImageExtension}", 50, 50);
+      $imageStyle->url = "//{$this->config->hostnameStatic}/uploads/user/{$filename}.nav.{$this->userImageExtension}?{$this->userImageCacheBuster}";
+    }
+    else {
+      $imageStyle = new ImageStylePlaceholder(50, $this->fs->getExternalURL("asset://img/logo/vector.svg"));
+    }
+    $imageStyle->route = $this->intl->r("/profile");
+    return $imageStyle;
   }
 
   /**
@@ -434,16 +501,21 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    * @return this
    */
   public function insert() {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    $this->log->debug("Inserting session into persistent session storage.");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    $remoteAddress = inet_pton($this->request->remoteAddress);
-    $stmt = $this->getMySQLi()->prepare("INSERT INTO `sessions` (`authentication`, `id`, `remote_address`, `user_id`, `user_agent`) VALUES (FROM_UNIXTIME(?), ?, ?, ?, ?)");
-    $stmt->bind_param("isbds", $this->authentication, $this->id, $remoteAddress, $this->userId, $this->request->userAgent);
-    $stmt->execute();
-    $stmt->close();
+    if ($this->ssid && $this->userId) {
+      $remoteAddress = inet_pton($this->request->remoteAddress);
+      $stmt          = $this->getMySQLi()->prepare(<<<SQL
+INSERT INTO `sessions` (`authentication`, `ssid`, `remote_address`, `user_id`, `user_agent`)
+VALUES (FROM_UNIXTIME(?), ?, ?, ?, ?)
+ON DUPLICATE KEY UPDATE
+  `authentication` = VALUES(`authentication`),
+  `remote_address` = VALUES(`remote_address`),
+  `user_agent` = VALUES(`user_agent`)
+SQL
+      );
+      $stmt->bind_param("issds", $this->authentication, $this->ssid, $remoteAddress, $this->userId, $this->request->userAgent);
+      $stmt->execute();
+      $stmt->close();
+    }
     return $this;
   }
 
@@ -481,9 +553,9 @@ final class Session extends \MovLib\Core\AbstractDatabase {
     // @devEnd
     if (session_regenerate_id(true) === true) {
       if ($this->userId > 0) {
-        $this->kernel->delayMethodCall([ $this, "update" ], [ $this->id ]);
+        $this->kernel->delayMethodCall([ $this, "update" ], [ $this->ssid ]);
       }
-      $this->id       = session_id();
+      $this->ssid     = session_id();
       $this->initTime = $this->request->time;
     }
     else {
@@ -555,17 +627,19 @@ final class Session extends \MovLib\Core\AbstractDatabase {
         $stmt = $mysqli->prepare(<<<SQL
 SELECT
   `users`.`id`,
+  HEX(`users`.`image_cache_buster`),
+  `users`.`image_extension`,
   `users`.`name`,
   `users`.`timezone`,
   `sessions`.`authentication`
 FROM `sessions`
   INNER JOIN `users` ON `users`.`id` = `sessions`.`user_id`
-WHERE `sessions`.`id` = ? LIMIT 1
+WHERE `sessions`.`ssid` = ? LIMIT 1
 SQL
         );
         $stmt->bind_param("s", $this->request->cookies[$this->config->sessionName]);
         $stmt->execute();
-        $stmt->bind_result($this->userId, $this->userName, $this->userTimezone, $this->authentication);
+        $stmt->bind_result($this->userId, $this->userImageCacheBuster, $this->userImageExtension, $this->userName, $this->userTimezone, $this->authentication);
         $found = $stmt->fetch();
         $stmt->close();
 
@@ -577,11 +651,13 @@ SQL
           // @codeCoverageIgnoreEnd
           // @devEnd
           $this->regenerate();
-          $_SESSION[self::AUTHENTICATION] =& $this->authentication;
-          $_SESSION[self::INIT_TIME]      =& $this->initTime;
-          $_SESSION[self::USER_ID]        =& $this->userId;
-          $_SESSION[self::USER_NAME]      =& $this->userName;
-          $_SESSION[self::USER_TIMEZONE]  =& $this->userTimezone;
+          $_SESSION[self::AUTHENTICATION]          =& $this->authentication;
+          $_SESSION[self::INIT_TIME]               =& $this->initTime;
+          $_SESSION[self::USER_ID]                 =& $this->userId;
+          $_SESSION[self::USER_IMAGE_CACHE_BUSTER] =& $this->userImageCacheBuster;
+          $_SESSION[self::USER_IMAGE_EXTENSION]    =& $this->userImageExtension;
+          $_SESSION[self::USER_NAME]               =& $this->userName;
+          $_SESSION[self::USER_TIMEZONE]           =& $this->userTimezone;
           $this->isAuthenticated = true;
         }
         else {
@@ -600,14 +676,22 @@ SQL
         $this->log->debug("Loaded session from memcached");
         // @codeCoverageIgnoreEnd
         // @devEnd
-        $this->authentication  =& $_SESSION[self::AUTHENTICATION];
-        $this->initTime        =& $_SESSION[self::INIT_TIME];
-        $this->userId          =& $_SESSION[self::USER_ID];
-        $this->userName        =& $_SESSION[self::USER_NAME];
-        $this->userTimezone    =& $_SESSION[self::USER_TIMEZONE];
-        $this->isAuthenticated = true;
+        $this->authentication       = $_SESSION[self::AUTHENTICATION];
+        $this->initTime             = $_SESSION[self::INIT_TIME];
+        $this->userId               = $_SESSION[self::USER_ID];
+        $this->userImageCacheBuster = $_SESSION[self::USER_IMAGE_CACHE_BUSTER];
+        $this->userImageExtension   = $_SESSION[self::USER_IMAGE_EXTENSION];
+        $this->userName             = $_SESSION[self::USER_NAME];
+        $this->userTimezone         = $_SESSION[self::USER_TIMEZONE];
+        $this->isAuthenticated      = true;
+
+        // Regenerate the sesson's identifier if the grace time is over.
         if (($this->initTime + self::REGENERATION_GRACE_TIME) < $this->request->time) {
           $this->regenerate();
+        }
+        // Otherwise make sure that the persistent storage contains this session.
+        else {
+          $this->kernel->delayMethodCall([ $this, "insert" ]);
         }
       }
     }
@@ -683,11 +767,11 @@ SQL
       throw $e;
     }
 
-    $this->id = session_id();
+    $this->ssid = session_id();
 
     // @devStart
     // @codeCoverageIgnoreStart
-    $this->log->debug("Started Session {$this->id}");
+    $this->log->debug("Started Session {$this->ssid}");
     // @codeCoverageIgnoreEnd
     // @devEnd
 
@@ -775,15 +859,28 @@ SQL
    * Update the ID of a session in our persistent session store.
    *
    * @delayed
-   * @param string $oldId
-   *   The old session ID that should be updated.
+   * @param string $oldSsid
+   *   The old session identifier that should be updated.
    * @return this
    */
-  public function update($oldId) {
-    $stmt = $this->getMySQLi()->prepare("UPDATE `sessions` SET `id` = ?, `remote_address` = ?, `user_agent` = ? WHERE `id` = ? AND `user_id` = ?");
-    $stmt->bind_param("sbssd", $this->id, inet_pton($this->request->remoteAddress), $this->request->userAgent, $oldId, $this->userId);
-    $stmt->execute();
-    $stmt->close();
+  public function update($oldSsid) {
+    if ($this->ssid && $this->userId && $this->ssid != $oldSsid) {
+      try {
+        $remoteAddress = inet_pton($this->request->remoteAddress);
+        $stmt = $this->getMySQLi()->prepare("UPDATE `sessions` SET `ssid` = ?, `remote_address` = ?, `user_agent` = ? WHERE `ssid` = ? AND `user_id` = ?");
+        $stmt->bind_param("ssssd", $this->ssid, $remoteAddress, $this->request->userAgent, $oldSsid, $this->userId);
+        $stmt->execute();
+        $stmt->close();
+      }
+      catch (\mysqli_sql_exception $e) {
+        $this->log->warning($e);
+        // @devStart
+        // @codeCoverageIgnoreStart
+        throw $e;
+        // @codeCoverageIgnoreEnd
+        // @devEnd
+      }
+    }
     return $this;
   }
 
@@ -793,7 +890,17 @@ SQL
    * @return this
    */
   public function updateUserAccess() {
-    $this->getMySQLi()->query("UPDATE `users` SET `access` = CURRENT_TIMESTAMP WHERE `id` = {$this->userId}");
+    try {
+      $this->getMySQLi()->query("UPDATE `users` SET `access` = CURRENT_TIMESTAMP WHERE `id` = {$this->userId}");
+    }
+    catch (\mysqli_sql_exception $e) {
+      $this->log->warning($e);
+      // @devStart
+      // @codeCoverageIgnoreStart
+      throw $e;
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+    }
     return $this;
   }
 

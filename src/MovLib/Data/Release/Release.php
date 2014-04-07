@@ -30,7 +30,6 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @since 0.0.1-dev
  */
 class Event extends \MovLib\Data\AbstractEntity {
-  use \MovLib\Data\Release\ReleaseTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -233,7 +232,9 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
-    $this->route   = $this->intl->r("/release/{0}", $this->id);
+    $this->pluralKey   = $this->tableName = "releases";
+    $this->route       = $this->intl->r("/release/{0}", $this->id);
+    $this->singularKey = "release";
     return parent::init();
   }
 

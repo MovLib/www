@@ -18,6 +18,7 @@
 namespace MovLib\Partial\FormElement;
 
 use \MovLib\Data\UploadedFile;
+use \MovLib\Exception\ClientException\UnauthorizedException;
 
 /**
  * Overrides the default validate method to validate the <var>$_FILES</var> array instead of the <var>$_POST</var>
@@ -71,8 +72,8 @@ abstract class AbstractInputFile extends \MovLib\Partial\FormElement\AbstractFor
    */
   public function validate(&$errors) {
     // Only authenticated user's are allowed to upload files, directly abort if we encounter this error.
-    if ($session->isAuthenticated === false) {
-      throw new Unauthorized;
+    if ($this->session->isAuthenticated === false) {
+      throw new UnauthorizedException("Only signed in users are allowed to upload files.");
     }
 
     // Instantiate uploaded file object.

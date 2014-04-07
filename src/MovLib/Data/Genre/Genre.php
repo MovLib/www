@@ -29,7 +29,6 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @since 0.0.1-dev
  */
 final class Genre extends \MovLib\Data\AbstractEntity {
-  use \MovLib\Data\Genre\GenreTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -174,7 +173,9 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
-    $this->route   = $this->intl->r("/genre/{0}", $this->id);
+    $this->pluralKey   = $this->tableName = "genres";
+    $this->route       = $this->intl->r("/genre/{0}", $this->id);
+    $this->singularKey = "genre";
     return parent::init();
   }
 

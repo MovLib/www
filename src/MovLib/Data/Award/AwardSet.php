@@ -21,13 +21,13 @@ namespace MovLib\Data\Award;
  * Defines the award set object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
 final class AwardSet extends \MovLib\Data\AbstractSet {
-  use \MovLib\Data\Award\AwardTrait;
 
   /**
    * {@inheritdoc}
@@ -53,6 +53,16 @@ FROM `awards`
 GROUP BY `id`, `name`, `links`, `aliases`, `deleted`, `changed`, `created`, `lastEventYear`, `firstEventYear`, `wikipedia`, `description`
 {$orderBy}
 SQL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function init() {
+    $this->pluralKey   = $this->tableName = "awards";
+    $this->route       = $this->intl->rp("/awards");
+    $this->singularKey = "award";
+    return parent::init();
   }
 
 }

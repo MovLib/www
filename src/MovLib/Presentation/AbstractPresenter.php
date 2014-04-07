@@ -30,7 +30,7 @@ use \MovLib\Partial\Navigation;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractPresenter {
+abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInjectionBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -65,13 +65,6 @@ abstract class AbstractPresenter {
   protected $breadcrumbTitle;
 
   /**
-   * Active global config instance.
-   *
-   * @var \MovLib\Core\Config
-   */
-  protected $config;
-
-  /**
    * HTML that should be included after the page's content.
    *
    * @var string
@@ -84,20 +77,6 @@ abstract class AbstractPresenter {
    * @var string
    */
   protected $contentBefore;
-
-  /**
-   * The active dependency injection container.
-   *
-   * @var \MovLib\Core\HTTP\DIContainerHTTP
-   */
-  protected $diContainerHTTP;
-
-  /**
-   * Active file system instance.
-   *
-   * @var \MovLib\Core\FileSystem
-   */
-  protected $fs;
 
   /**
    * Additional elements for the <code><head></code> element.
@@ -143,13 +122,6 @@ abstract class AbstractPresenter {
   public $id;
 
   /**
-   * Active intl instance.
-   *
-   * @var \MovLib\Core\Intl
-   */
-  protected $intl;
-
-  /**
    * Settings to pass along with this presentation.
    *
    * @var array
@@ -164,25 +136,11 @@ abstract class AbstractPresenter {
   public $javascripts = [];
 
   /**
-   * Active kernel instance.
-   *
-   * @var \MovLib\Core\Kernel
-   */
-  protected $kernel;
-
-  /**
    * The page's translated routes.
    *
    * @var array
    */
   private $languageLinks;
-
-  /**
-   * The active log instance.
-   *
-   * @var \MovLib\Core\Log
-   */
-  protected $log;
 
   /**
    * Contains the namespace parts as array.
@@ -207,34 +165,6 @@ abstract class AbstractPresenter {
   protected $schemaType;
 
   /**
-   * Active HTTP session instance.
-   *
-   * @var \MovLib\Core\HTTP\Session
-   */
-  protected $session;
-
-  /**
-   * Active HTTP request instance.
-   *
-   * @var \MovLib\Core\HTTP\Request
-   */
-  protected $request;
-
-  /**
-   * Active HTTP response instance.
-   *
-   * @var \MovLib\Core\HTTP\Response
-   */
-  protected $response;
-
-  /**
-   * The site's name.
-   *
-   * @var string
-   */
-  protected $siteName;
-
-  /**
    * Additional stylesheets for this presentation.
    *
    * @var array
@@ -252,24 +182,15 @@ abstract class AbstractPresenter {
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
-  /**
-   * Instantiate new presenter object.
-   *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
-   *   HTTP dependency injection container.
-   * @throws \Exception
-   */
+  // @devStart
+  // @codeCoverageIgnoreStart
+  //
+  // The constructor is final for all presenters!
   final public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    $this->diContainerHTTP = $diContainerHTTP;
-    $this->config          = $diContainerHTTP->config;
-    $this->fs              = $diContainerHTTP->fs;
-    $this->intl            = $diContainerHTTP->intl;
-    $this->kernel          = $diContainerHTTP->kernel;
-    $this->log             = $diContainerHTTP->log;
-    $this->request         = $diContainerHTTP->request;
-    $this->response        = $diContainerHTTP->response;
-    $this->session         = $diContainerHTTP->session;
+    parent::__construct($diContainerHTTP);
   }
+  // @codeCoverageIgnoreEnd
+  // @devEnd
 
 
   // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
@@ -293,214 +214,6 @@ abstract class AbstractPresenter {
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-
-  /**
-   * Generate an internal link.
-   *
-   * This method should be used if you link to a page, but can't predict or know if this might be the page the user is
-   * currently viewing. We don't want any links within a document to itself, but there are various reasons why you might
-   * need that. Please use common sense. In general you should simply create the anchor element instead of calling this
-   * method.
-   *
-   * @link http://www.w3.org/TR/html5/text-level-semantics.html#the-a-element
-   * @link http://www.nngroup.com/articles/avoid-within-page-links/ Avoid Within-Page Links
-   * @param string $route
-   *   The original English route.
-   * @param string $text
-   *   The translated text that should appear as link on the page.
-   * @param array $attributes [optional]
-   *   Additional attributes that should be applied to the link element.
-   * @param boolean $ignoreQuery [optional]
-   *   Whether to ignore the query string while checking if the link should be marked active or not. Default is to
-   *   ignore the query string.
-   * @return string
-   *   The internal link ready for print.
-   */
-  final public function a($route, $text, array $attributes = null, $ignoreQuery = true) {
-    // We don't want any links to the current page (as per W3C recommendation). We also have to ensure that the anchors
-    // aren't tabbed to, therefor we completely remove the href attribute. While we're at it we also remove the title
-    // attribute because it doesn't add any value for screen readers without any target (plus the user is actually on
-    // this very page).
-    if ($route == $this->request->uri) {
-      // Remove all attributes which aren't allowed on an anchor with empty href attribute.
-      $unset = [ "download", "href", "hreflang", "rel", "target", "type" ];
-      for ($i = 0; $i < 6; ++$i) {
-        if (isset($attributes[$unset[$i]])) {
-          unset($attributes[$unset[$i]]);
-        }
-      }
-      // Ensure that this anchor is still "tabable".
-      $attributes["tabindex"] = "0";
-      $attributes["title"]    = $this->intl->t("You’re currently viewing this page.");
-      $this->addClass("active", $attributes);
-    }
-    else {
-      // We also have to mark the current anchor as active if the caller requested that we ignore the query part of the
-      // URI (default behaviour of this method). We keep the title attribute in this case as it's a clickable link.
-      if ($ignoreQuery === true && $route == $this->request->path) {
-        $this->addClass("active", $attributes);
-      }
-
-      // Add the route to the anchor element.
-      $attributes["href"] = $route{0} == "#" ? $route : $this->fs->urlEncodePath($route);
-    }
-
-    // Put it all together.
-    return "<a{$this->expandTagAttributes($attributes)}>{$text}</a>";
-  }
-
-  /**
-   * Add CSS class(es) to attributes array of an element.
-   *
-   * This method is useful if you're dealing with an element and you don't know if any CSS class(es) have already been
-   * added to it's attributes array.
-   *
-   * @param string $class
-   *   The CSS class(es) that should be added to the element's attributes array.
-   * @param array $attributes [optional]
-   *   The attributes array of the element to which the CSS class(es) should be added.
-   * @return this
-   */
-  final public function addClass($class, array &$attributes = null) {
-    $attributes["class"] = empty($attributes["class"]) ? $class : "{$attributes["class"]} {$class}";
-    return $this;
-  }
-
-  /**
-   * Collapse all kinds of whitespace characters to a single space.
-   *
-   * @param string $string
-   *   The string to collapse.
-   * @return string
-   *   The collapsed string.
-   */
-  final public function collapseWhitespace($string) {
-    return trim(preg_replace("/\s\s+/m", " ", preg_replace("/[\n\r\t\x{00}\x{0B}]+/m", " ", $string)));
-  }
-
-  /**
-   * Expand the given attributes array to string.
-   *
-   * Many page elements aren't easily created by directly typing the string in the source code. Instead the have to go
-   * through many staged of processing. We use associative arrays to allow all stages of processing to alter the
-   * elemtns attributes before the element is finally printed. This method will expand these associative arrays to a
-   * string that can be used to finally print the element.
-   *
-   * <b>Usage Example:</b>
-   * <pre>$attributes = [ "class" => "css-class", "id" => "css-id" ];
-   * echo "<div{$this->expandAttributes($attributes)}></div>";</pre>
-   *
-   * @param null|array $attributes
-   *   Associative array containing the elements attributes. If no attributes are present (e.g. you're handling an
-   *   object which sometimes has attributes but not always) an empty string will be returned.
-   * @return string
-   *   String representation of the attributes array, or empty string if no attributes are present.
-   */
-  final public function expandTagAttributes($attributes) {
-    // Only expand if we have something to expand.
-    if ($attributes) {
-      // Local variables used to collect the expanded tag attributes.
-      $expanded = null;
-
-      // Go through all attributes and expand them.
-      foreach ($attributes as $name => $value) {
-        // Special handling of boolean attributes, only include them if they are true and do not include the value.
-        if ($value === (boolean) $value) {
-          $value && ($expanded .= " {$name}");
-        }
-        // Special handling of empty attributes (added to the attributes array without any key).
-        elseif ($name === (integer) $name) {
-          // @devStart
-          // @codeCoverageIgnoreStart
-          if (empty($value)) {
-            throw new \LogicException("The value of an empty attribute (numeric key) cannot be empty");
-          }
-          // @codeCoverageIgnoreEnd
-          // @devEnd
-          $expanded .= " {$value}";
-        }
-        // All other attributes are treated equally, but only if they have a value. But beware that the alt attribute
-        // is an exception to this rule.
-        elseif ($name == "alt" || !empty($value)) {
-          // @devStart
-          // @codeCoverageIgnoreStart
-          if (empty($name)) {
-            throw new \LogicException("An attribute's name cannot be empty");
-          }
-          // @codeCoverageIgnoreEnd
-          // @devEnd
-
-          // Only output the language attribute if it differs from the current document language.
-          if ($name == "lang") {
-            $expanded .= $this->lang($value);
-          }
-          else {
-            $expanded .= " {$name}='{$this->htmlEncode($value)}'";
-          }
-        }
-      }
-
-      return $expanded;
-    }
-  }
-
-  /**
-   * Format the given weblinks.
-   *
-   * @param array $weblinks
-   *   The weblinks to format.
-   * @return null|string
-   *   The formatted weblinks, <code>NULL</code> if there are no weblinks to format.
-   */
-  final public function formatWeblinks(array $weblinks) {
-    if (empty($weblinks)) {
-      return;
-    }
-    $formatted = null;
-    $c = count($weblinks);
-    for ($i = 0; $i < $c; ++$i) {
-      if ($formatted) {
-        $formatted .= trim($this->intl->t("{0}, {1}"), "{}01");
-      }
-      $weblink = str_replace("www.", "", parse_url($weblinks[$i], PHP_URL_HOST));
-      $formatted .= "<a href='{$weblinks[$i]}' target='_blank'>{$weblink}</a>";
-    }
-    return $formatted;
-  }
-
-  /**
-   * Get the external URL of the given URI.
-   *
-   * @param string $uri
-   *   The URI to get the external URL for.
-   * @return string
-   *   The external URL of the given URI.
-   */
-  final public function getExternalURL($uri) {
-    static $streamWrappers = [], $uris = [];
-    if (empty($uris[$uri])) {
-      // @devStart
-      // @codeCoverageIgnoreStart
-      if (strpos($uri, "://") === false) {
-        throw new \LogicException("\$uri must be a valid URI in the form <scheme>://<path>.");
-      }
-      // @codeCoverageIgnoreEnd
-      // @devEnd
-      $scheme = explode($uri, "://", 2)[0];
-      if (empty($streamWrappers[$scheme])) {
-        $streamWrappers[$scheme] = $this->fs->getStreamWrapper($uri);
-      }
-      // @devStart
-      // @codeCoverageIgnoreStart
-      if (empty($streamWrappers[$scheme]) || !method_exists($streamWrappers[$scheme], "getExternalPath")) {
-        throw new \LogicException("There is not external URL available for your URI '{$uri}'.");
-      }
-      // @codeCoverageIgnoreEnd
-      // @devEnd
-      $uris[$uri] = $streamWrappers[$scheme]->getExternalPath($this->fs, $uri);
-    }
-    return $uris[$uri];
-  }
 
   /**
    * Get the reference footer.
@@ -593,10 +306,10 @@ abstract class AbstractPresenter {
           "<section id='f-logos' class='s s12 tac'>" .
             "<h3 class='vh'>{$this->intl->t("Sponsors and external resources")}</h3>" .
             "<a class='no-link' href='http://www.fh-salzburg.ac.at/' target='_blank'>" .
-              "<img alt='Fachhochschule Salzburg' height='30' src='{$this->getExternalURL("asset://img/footer/fachhochschule-salzburg.svg")}' width='48'>" .
+              "<img alt='Fachhochschule Salzburg' height='30' src='{$this->fs->getExternalURL("asset://img/footer/fachhochschule-salzburg.svg")}' width='48'>" .
             "</a>" .
             "<a class='no-link' href='https://github.com/MovLib' target='_blank'>" .
-              "<img alt='GitHub' height='30' src='{$this->getExternalURL("asset://img/footer/github.svg")}' width='48'>" .
+              "<img alt='GitHub' height='30' src='{$this->fs->getExternalURL("asset://img/footer/github.svg")}' width='48'>" .
             "</a>" .
           "</section>" .
           $languageLinks .
@@ -651,7 +364,8 @@ abstract class AbstractPresenter {
     ;
 
     if ($this->session->isAuthenticated === true) {
-      $userIcon = "<div class='clicker ico ico-settings authenticated'><span class='badge'>2</span></div>";
+      $avatar   = $this->img($this->session->imageGetStyle(), [], false);
+      $userIcon = "<div class='clicker ico ico-settings authenticated'>{$avatar}<span class='badge'>2</span></div>";
       $userNavigation =
         "<ul class='o1 sm2 no-list'>" .
           "<li>{$this->a($this->intl->r("/profile/messages"), $this->intl->t("Messages"), [ "class" => "ico ico-email" ])}</li>" .
@@ -663,8 +377,8 @@ abstract class AbstractPresenter {
           "<li>{$this->a($this->intl->r("/profile/account-settings"), $this->intl->t("Settings"), [ "class" => "ico ico-settings" ])}</li>" .
           "<li class='separator name'>{$this->session->userName}</li>" .
           "<li>{$this->a($this->intl->r("/profile/sign-out"), $this->intl->t("Sign Out"), [ "class" => "danger" ])}</li>" .
-        "</ul>";
-        //$this->getImage($this->session->userAvatar, $this->intl->r("/profile"));
+        "</ul>" .
+        "<a class='no-link' href='{$this->intl->r("/profile")}'>{$avatar}</a>";
     }
     else {
       $userIcon = "<div class='btn btn-inverse clicker ico ico-user-add'></div>";
@@ -686,7 +400,7 @@ abstract class AbstractPresenter {
         // wants us to use multiple <h1>s for multiple sections, so here we go. The header is always the MovLib header.
         "<h1 class='s s3'>{$this->a(
           "/",
-          "<img alt='' height='42' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='42'> {$this->config->sitename}",
+          "<img alt='' height='42' src='{$this->fs->getExternalURL("asset://img/logo/vector.svg")}' width='42'> {$this->config->sitename}",
           [ "id" => "l", "title" => $this->intl->t("Go back to the home page.") ]
         )}</h1>" .
         "<div class='s s9'>" .
@@ -764,7 +478,7 @@ abstract class AbstractPresenter {
     $stylesheets = null;
     $i = count($this->stylesheets);
     while ($i--) {
-      $stylesheets .= "<link href='{$this->getExternalURL("asset://css/module/{$this->stylesheets[$i]}.css")}' rel='stylesheet'>";
+      $stylesheets .= "<link href='{$this->fs->getExternalURL("asset://css/module/{$this->stylesheets[$i]}.css")}' rel='stylesheet'>";
     }
 
     // Apply additional CSS class if the current request is made from a signed in user.
@@ -776,12 +490,12 @@ abstract class AbstractPresenter {
     $this->javascriptSettings["hostnameStatic"] = $this->config->hostnameStatic;
     $c = count($this->javascripts);
     for ($i = 0; $i < $c; ++$i) {
-      $this->javascriptSettings["modules"][$this->javascripts[$i]] = $this->getExternalURL("asset://js/module/{$this->javascripts[$i]}.js");
+      $this->javascriptSettings["modules"][$this->javascripts[$i]] = $this->fs->getExternalURL("asset://js/module/{$this->javascripts[$i]}.js");
     }
     $jsSettings = json_encode($this->javascriptSettings, JSON_UNESCAPED_UNICODE);
 
     $htmlAttr = " dir='{$this->intl->direction}' id='nojs' lang='{$this->intl->languageCode}' prefix='og: http://ogp.me/ns#'";
-    $logo256  = $this->getExternalURL("asset://img/logo/256.png");
+    $logo256  = $this->fs->getExternalURL("asset://img/logo/256.png");
     $title    = $this->getHeadTitle();
 
     return
@@ -791,16 +505,16 @@ abstract class AbstractPresenter {
       "<head>" .
         "<title>{$title}</title>" .
         // Include the global styles and any presentation specific ones.
-        "<link href='{$this->getExternalURL("asset://css/MovLib.css")}' rel='stylesheet'>{$stylesheets}" .
+        "<link href='{$this->fs->getExternalURL("asset://css/MovLib.css")}' rel='stylesheet'>{$stylesheets}" .
         // Yes, we could create these in a loop, but why should we implement a loop for static data? To be honest, I
         // generated it with a loop and simply copied the output here.
-        "<link href='{$this->getExternalURL("asset://img/logo/vector.svg")}' rel='icon' type='image/svg+xml'>" .
+        "<link href='{$this->fs->getExternalURL("asset://img/logo/vector.svg")}' rel='icon' type='image/svg+xml'>" .
         "<link href='{$logo256}' rel='icon' sizes='256x256' type='image/png'>" .
-        "<link href='{$this->getExternalURL("asset://img/logo/128.png")}' rel='icon' sizes='128x128' type='image/png'>" .
-        "<link href='{$this->getExternalURL("asset://img/logo/64.png")}' rel='icon' sizes='64x64' type='image/png'>" .
-        "<link href='{$this->getExternalURL("asset://img/logo/32.png")}' rel='icon' sizes='32x32' type='image/png'>" .
-        "<link href='{$this->getExternalURL("asset://img/logo/24.png")}' rel='icon' sizes='24x24' type='image/png'>" .
-        "<link href='{$this->getExternalURL("asset://img/logo/16.png")}' rel='icon' sizes='16x16' type='image/png'>" .
+        "<link href='{$this->fs->getExternalURL("asset://img/logo/128.png")}' rel='icon' sizes='128x128' type='image/png'>" .
+        "<link href='{$this->fs->getExternalURL("asset://img/logo/64.png")}' rel='icon' sizes='64x64' type='image/png'>" .
+        "<link href='{$this->fs->getExternalURL("asset://img/logo/32.png")}' rel='icon' sizes='32x32' type='image/png'>" .
+        "<link href='{$this->fs->getExternalURL("asset://img/logo/24.png")}' rel='icon' sizes='24x24' type='image/png'>" .
+        "<link href='{$this->fs->getExternalURL("asset://img/logo/16.png")}' rel='icon' sizes='16x16' type='image/png'>" .
         "<link href='https://plus.google.com/115387876584819891316?rel=publisher' property='publisher'>" .
         "<meta property='og:description' content='{$this->intl->t("The free online movie database that anyone can edit.")}'>" .
         "<meta property='og:image' content='{$this->request->scheme}:{$logo256}'>" .
@@ -818,86 +532,8 @@ abstract class AbstractPresenter {
       "<body id='{$this->id}' class='{$this->bodyClasses}' vocab='http://schema.org/'>" .
         "{$this->getHeader()}{$content}{$this->getFooter()}" .
         "<script id='jss' type='application/json'>{$jsSettings}</script>" .
-        "<script async src='{$this->getExternalURL("asset://js/MovLib.js")}'></script>"
+        "<script async src='{$this->fs->getExternalURL("asset://js/MovLib.js")}'></script>"
     ;
-  }
-
-  /**
-   * Get the raw HTML string.
-   *
-   * @param string $text
-   *   The encoded HTML string that should be decoded.
-   * @return string
-   *   The raw HTML string.
-   */
-  final public function htmlDecode($text) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (empty($text) || !is_string($text)) {
-      throw new \InvalidArgumentException("\$text cannot be empty and must be of type string.");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    return htmlspecialchars_decode($text, ENT_QUOTES | ENT_HTML5);
-  }
-
-  /**
-   * Decodes all HTML entities including numerical ones to regular UTF-8 bytes.
-   *
-   * Double-escaped entities will only be decoded once (<code>"&amp;lt;"</code> becomes <code>"&lt;"</code>, not
-   * <code>"<"</code>). Be careful when using this function, as it will revert previous sanitization efforts
-   * (<code>"&lt;script&gt;"</code> will become <code>"<script>"</code>).
-   *
-   * @param string $text
-   *   The text to decode entities in.
-   * @return string
-   *   <var>$text</var> with all HTML entities decoded.
-   */
-  final public function htmlDecodeEntities($text) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (empty($text) || !is_string($text)) {
-      throw new \InvalidArgumentException("\$text cannot be empty and must be of type string.");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    return html_entity_decode($text, ENT_QUOTES | ENT_HTML5);
-  }
-
-  /**
-   * Encode special characters in a plain-text string for display as HTML.
-   *
-   * <b>Always</b> use this method before displaying any plain-text string to the user.
-   *
-   * @param string $text
-   *   The plain-text string to process.
-   * @return string
-   *   <var>$text</var> with encoded HTML special characters.
-   */
-  final public function htmlEncode($text) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (empty($text) || !(is_string($text) || is_numeric($text))) {
-      throw new \InvalidArgumentException("\$text cannot be empty and must be of type string.");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    return htmlspecialchars($text, ENT_QUOTES | ENT_HTML5);
-  }
-
-  /**
-   * Transform and kind of string to HTML safe ID.
-   *
-   * @param string $string
-   *   The string to convert.
-   * @return string
-   *   The HTML safe ID.
-   */
-  final public function htmlString2ID($string) {
-    if (is_numeric($string{0})) {
-      $string = "n{$string}";
-    }
-    return mb_strtolower(preg_replace("/[^\d\w-_]+/", "-", $string));
   }
 
   /**
@@ -1016,21 +652,6 @@ abstract class AbstractPresenter {
   }
 
   /**
-   * Get global <code>lang</code> attribute for any HTML tag if language differs from current display language.
-   *
-   * @param string $lang
-   *   The ISO alpha-2 language code of the entity you want to display and have compared to the current language.
-   * @return null|string
-   *   <code>NULL</code> if given <var>$lang</var> matches current display language, otherwise the global <code>lang</code>
-   *   attribute ready for print (e.g. <code>" lang='de'"</code>).
-   */
-  final public function lang($lang) {
-    if ($lang != $this->intl->languageCode) {
-      return " lang='{$this->htmlEncode($lang)}'";
-    }
-  }
-
-  /**
    * Add next route to <code><head></code>.
    *
    * @param string $route
@@ -1040,45 +661,6 @@ abstract class AbstractPresenter {
   final protected function next($route) {
     $this->headElements .= "<link rel='next' href='{$route}'>";
     return $this;
-  }
-
-  /**
-   * Normalize all kinds of line feeds to *NIX style (real LF).
-   *
-   * @link http://stackoverflow.com/a/7836692/1251219 How to replace different newline styles in PHP the smartest way?
-   * @param string $text
-   *   The text to normalize.
-   * @return string
-   *   The normalized text.
-   */
-  final public function normalizeLineFeeds($text) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (empty($text) || !is_string($text)) {
-      throw new \InvalidArgumentException("\$text cannot be empty and must be of type string.");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    return preg_replace("/\R/u", "\n", $text);
-  }
-
-  /**
-   * Formats text for emphasized display in a placeholder inside a sentence.
-   *
-   * @param string $text
-   *   The text to format (plain-text).
-   * @return string
-   *   The formatted text (html).
-   */
-  final public function placeholder($text) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (empty($text) || !is_string($text)) {
-      throw new \InvalidArgumentException("\$text cannot be empty and must be of type string.");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    return "<em class='placeholder'>{$this->htmlEncode($text)}</em>";
   }
 
   /**

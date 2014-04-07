@@ -17,10 +17,10 @@
  */
 namespace MovLib\Partial;
 
-use \MovLib\Presentation\Partial\FormElement\Select;
+use \MovLib\Partial\FormElement\Select;
 
 /**
- * Represents a single currency in HTML and provides an interface to all available currencies in the current locale.
+ * Defines formatting methods to represent currencies.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -28,90 +28,13 @@ use \MovLib\Presentation\Partial\FormElement\Select;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Currency extends \MovLib\Presentation\AbstractBase {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The attributes array.
-   *
-   * @var array
-   */
-  protected $attributes;
-
-  /**
-   * The currency to present.
-   *
-   * @var \MovLib\Data\Currency
-   */
-  protected $currency;
-
-  /**
-   * The HTML tag to wrap the country.
-   *
-   * @var string
-   */
-  protected $tag;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new currency partial.
-   *
-   * @todo Implement schema.org mark-up for marketplace listings.
-   * @param string $code
-   *   The ISO 3166-1 alpha-2 code of the country.
-   * @param array $attributes [optional]
-   *   Additional attributes that should be applied to the element.
-   * @param string $tag [optional]
-   *   The tag that should be used to wrap this country, defaults to <code>"span"</code>.
-   */
-  public function __construct($code, array $attributes = null, $tag = "span") {
-    $this->attributes = $attributes;
-    $this->currency   = new \MovLib\Data\Currency($code);
-    $this->tag        = $tag;
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * Format the given value.
-   *
-   * @staticvar array $currencies
-   *   Array used to cache the created HTML currencies.
-   * @param integer|float $value
-   *   The value to format.
-   * @return string
-   *   The formatted value.
-   */
-  public function format($value) {
-    static $currencies = null;
-
-    // If we created this string before, re-use it.
-    if (isset($currencies[$this->intl->locale][$this->currency->code])) {
-      return $currencies[$this->intl->locale][$this->currency->code];
-    }
-
-    // Get the formatted string from our parent with the desired locale and replace the currency symbol with appropriate
-    // HTML mark-up.
-    $currencies[$this->intl->locale][$this->currency->code] = str_replace(
-      $this->currency->symbol,
-      "<abbr title='{$this->currency->name}'>{$this->currency->symbol}</abbr>",
-      $this->currency->format($value)
-    );
-
-    return $currencies[$this->intl->locale][$this->currency->code];
-  }
+final class Currency extends \MovLib\Core\Presentation\Base {
 
   /**
    * Get select form element to select a currency.
    *
+   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   *   The HTTP dependency injection container.
    * @param string $value
    *   The form element's value.
    * @param array $attributes [optional]
@@ -123,8 +46,13 @@ final class Currency extends \MovLib\Presentation\AbstractBase {
    * @return \MovLib\Presentation\Partial\FormElement\Select
    *   The select form element to select a currency.
    */
-  public static function getSelectFormElement(&$value, array $attributes = null, $id = "currency", $label = null) {
-    return new Select($id, $label ?: $this->intl->t("Currency"), $this->intl->getTranslations("currencies"), $value, $attributes);
+  public function getSelectFormElement(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, &$value, array $attributes = null, $id = "currency", $label = null) {
+    $options = [];
+    /* @var $currency \MovLib\Stub\Data\Currency */
+    foreach ($diContainerHTTP->intl->getTranslations("currencies") as $currency) {
+      $options[$currency->code] = $diContainerHTTP->intl->t("{0} ({1})", [ $currency->symbol, $currency->name ]);
+    }
+    return new Select($diContainerHTTP, $id, $label ?: $diContainerHTTP->intl->t("Currency"), $options, $value, $attributes);
   }
 
 }

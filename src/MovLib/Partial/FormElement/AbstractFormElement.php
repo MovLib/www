@@ -27,7 +27,7 @@ namespace MovLib\Partial\FormElement;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractFormElement {
+abstract class AbstractFormElement extends \MovLib\Core\Presentation\DependencyInjectionBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -52,25 +52,11 @@ abstract class AbstractFormElement {
   protected $attributes;
 
   /**
-   * The global config instance.
-   *
-   * @var \MovLib\Core\Config
-   */
-  protected $config;
-
-  /**
    * Attribute used to collect error messages during validation.
    *
    * @var mixed
    */
   protected $errors;
-
-  /**
-   * The active file system instance.
-   *
-   * @var \MovLib\Core\FileSystem
-   */
-  protected $fs;
 
   /**
    * The form element's help popup (if any).
@@ -96,20 +82,6 @@ abstract class AbstractFormElement {
   public $id;
 
   /**
-   * The active intl instance.
-   *
-   * @var \MovLib\Core\Intl
-   */
-  protected $intl;
-
-  /**
-   * The active kernel instance.
-   *
-   * @var \MovLib\Core\Kernel
-   */
-  protected $kernel;
-
-  /**
    * The form element's label content.
    *
    * @var string
@@ -124,32 +96,11 @@ abstract class AbstractFormElement {
   protected $presenter;
 
   /**
-   * The active request instance.
-   *
-   * @var \MovLib\Core\HTTP\Request
-   */
-  protected $request;
-
-  /**
    * Contains a popup that describes that this form element is required.
    *
    * @var string
    */
   protected $required;
-
-  /**
-   * The active response instance.
-   *
-   * @var \MovLib\Core\HTTP\Response
-   */
-  protected $response;
-
-  /**
-   * The active session instance.
-   *
-   * @var \MovLib\Core\HTTP\Session
-   */
-  protected $session;
 
   /**
    * The form element's atomic value.
@@ -166,7 +117,7 @@ abstract class AbstractFormElement {
    * Instantiate new form element.
    *
    * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
-   *   HTTP dependency injection container.
+   *   The HTTP dependency injection container.
    * @param string $id
    *   The form element's unique global identifier.
    * @param string $label
@@ -177,14 +128,8 @@ abstract class AbstractFormElement {
    *   The form element's attributes array, defaults to <code>NULL</code> (no additional attributes).
    */
   public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, &$value, array $attributes = null) {
-    $this->config    = $diContainerHTTP->config;
-    $this->fs        = $diContainerHTTP->fs;
-    $this->intl      = $diContainerHTTP->intl;
-    $this->kernel    = $diContainerHTTP->kernel;
+    parent::__construct($diContainerHTTP);
     $this->presenter = $diContainerHTTP->presenter;
-    $this->request   = $diContainerHTTP->request;
-    $this->response  = $diContainerHTTP->response;
-    $this->session   = $diContainerHTTP->session;
 
     // @devStart
     // @codeCoverageIgnoreStart

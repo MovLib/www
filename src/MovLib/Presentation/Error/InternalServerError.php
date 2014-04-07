@@ -75,16 +75,12 @@ final class InternalServerError extends \MovLib\Presentation\AbstractPresenter {
     if (!($this->exception instanceof \Exception)) {
       $this->exception = new \RuntimeException("No exception was set for the internal server error.");
     }
+    $message = $this->formatExceptionMessage($this->exception);
+    if (($previous = $this->exception->getPrevious())) {
+      $message .= "<br>{$this->formatExceptionMessage($previous)}";
+    }
     $alert = new Alert(
-      "<div id='stacktrace-details'><div class='title'><i class='ico ico-info'></i> {$this->intl->t(
-        "{exception_message} in {class} on line {line, number}", [
-          "exception_message" => nl2br($this->exception->getMessage(), false),
-          "class"             => str_replace(
-            [ $this->fs->documentRoot, $this->config->documentRoot, "/src/", "/lib/" ], "", $this->exception->getFile()
-          ),
-          "line"              => $this->exception->getLine(),
-        ]
-      )}</div><table>{$this->formatStacktrace($this->exception->getTrace())}</table></div>",
+      "<div id='stacktrace-details'><div class='title'>{$message}</div><table>{$this->formatStacktrace($this->exception->getTrace())}</table></div>",
       $this->intl->t("Stacktrace for {0}", [ $this->placeholder(get_class($this->exception)) ]),
       Alert::SEVERITY_INFO
     );
@@ -94,6 +90,24 @@ final class InternalServerError extends \MovLib\Presentation\AbstractPresenter {
 
   // ------------------------------------------------------------------------------------------------------------------- Helper Methods
 
+
+  /**
+   * Format exception message for stacktrace title.
+   *
+   * @param \Exception $e
+   *   The exception to format the message.
+   * @return string
+   *   The exception's message formatted for the stacktrace title.
+   */
+  protected function formatExceptionMessage(\Exception $e) {
+    return "<i class='ico ico-info'></i> {$this->intl->t(
+      "{exception_message} in {class} on line {line, number}", [
+        "exception_message" => nl2br($e->getMessage(), false),
+        "class"             => str_replace([ $this->fs->documentRoot, $this->config->documentRoot, "/src/", "/lib/" ], "", $e->getFile()),
+        "line"              => $e->getLine(),
+      ]
+    )}";
+  }
 
   /**
    * Format the stacktrace entry's function arguments.

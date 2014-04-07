@@ -83,8 +83,9 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`users` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The user’s unique ID.',
   `name` VARCHAR(40) NOT NULL COMMENT 'The user’s unique name.',
-  `access` DATETIME NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The user’s last access date and time.',
-  `created` DATETIME NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The user’s accout creation date and time.',
+  `access` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The user’s last access date and time.',
+  `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the user was last changed.',
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The user’s accout creation date and time.',
   `admin` TINYINT(1) NULL DEFAULT FALSE,
   `birthdate` DATE NULL COMMENT 'The user’s date of birth.',
   `country_code` CHAR(2) NULL COMMENT 'The user’s ISO alpha-2 country code.',
@@ -92,8 +93,9 @@ CREATE TABLE IF NOT EXISTS `movlib`.`users` (
   `dyn_about_me` BLOB NULL COMMENT 'The user’s about me text in various languages. Keys are ISO alpha-2 language codes.',
   `edits` BIGINT UNSIGNED NULL DEFAULT 0 COMMENT 'The user’s edit counter.',
   `email` VARCHAR(254) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL COMMENT 'The user’s unique email address.',
-  `image_changed` DATETIME NULL COMMENT 'The last changed timestamp of the user’s avatar.',
+  `image_cache_buster` BINARY(16) NULL COMMENT 'The user’s MD5 cache buster.',
   `image_extension` CHAR(3) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL COMMENT 'The file extension of the user’s avatar.',
+  `image_styles` BLOB NULL COMMENT 'The user’s serialized image styles.',
   `password` VARBINARY(255) NULL COMMENT 'The user’s password (hashed).',
   `private` TINYINT(1) NULL DEFAULT false COMMENT 'The flag that determines whether this user allows us to display private data on his profile page (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `profile_views` BIGINT UNSIGNED NULL DEFAULT 0 COMMENT 'The user’s profile view count.',
@@ -168,7 +170,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`persons` (
   `commit` CHAR(40) NULL COMMENT 'The person’s last history commit sha-1 hash.',
   `deathdate` DATE NULL COMMENT 'The person’s date of death.',
   `deathplace_id` BIGINT UNSIGNED NULL COMMENT 'The person’s death place.',
-  `image_changed` TIMESTAMP NULL COMMENT 'The last time this person\'s photo was updated as timestamp.',
+  `image_cache_buster` BINARY(16) NULL COMMENT 'The person photo’s MD5 cache buster.',
   `image_extension` CHAR(3) NULL COMMENT 'The person photo’s extension without leading dot.',
   `image_filesize` INT NULL COMMENT 'The person photo’s original size in Bytes.',
   `image_height` SMALLINT NULL COMMENT 'The person photo’s original height.',
@@ -1043,12 +1045,12 @@ SHOW WARNINGS;
 -- Table `movlib`.`sessions`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`sessions` (
-  `id` VARBINARY(86) NOT NULL COMMENT 'The session’s unique ID.',
+  `ssid` VARBINARY(86) NOT NULL COMMENT 'The session’s unique identifier.',
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique ID.',
   `authentication` DATETIME NOT NULL COMMENT 'Timestamp when this session was initialized.',
   `remote_address` VARBINARY(128) NOT NULL COMMENT 'The session’s IP address.',
   `user_agent` TINYBLOB NOT NULL COMMENT 'The session’s user agent string.',
-  PRIMARY KEY (`id`, `user_id`),
+  PRIMARY KEY (`ssid`),
   INDEX `fk_sessions_users` (`user_id` ASC),
   CONSTRAINT `fk_sessions_users`
     FOREIGN KEY (`user_id`)
@@ -1207,6 +1209,9 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`help_categories` (
   `id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The help category’s unique identifier.',
+  `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the help category was last changed.',
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the help category was created.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this help category is marked as deleted (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_titles` BLOB NOT NULL COMMENT 'The help category’s title in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The help category’s description in various languages. Keys are ISO alpha-2 language codes.',
   `icon` VARCHAR(255) NOT NULL,
@@ -1224,6 +1229,9 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`help_subcategories` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The help subcategory’s unique identifier.',
   `help_category_id` TINYINT UNSIGNED NOT NULL COMMENT 'The help category’s unique id.',
+  `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the help subcategory was last changed.',
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the help subcategory was created.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this help subcategory is marked as deleted (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_titles` BLOB NOT NULL COMMENT 'The help subcategory’s title in various languages. Keys are ISO alpha-2 language codes.',
   PRIMARY KEY (`id`),
   INDEX `fk_help_subcategories_help_category_id` (`help_category_id` ASC),
@@ -1277,11 +1285,10 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`system_pages` (
   `id` SMALLINT NOT NULL AUTO_INCREMENT COMMENT 'The page’s unique identifier.',
+  `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The creation date of the page as timestamp.',
   `dyn_titles` BLOB NOT NULL COMMENT 'Thepage’s text in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_texts` BLOB NOT NULL COMMENT 'The help’s title in various languages. Keys are ISO alpha-2 language codes.',
-  `commit` CHAR(40) NULL COMMENT 'The article’s last history commit sha-1 hash.',
-  `presenter` VARCHAR(255) NOT NULL DEFAULT 'Show',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 COMMENT = 'Contains all system pages, e.g. Imprint.'
@@ -1322,8 +1329,9 @@ CREATE TABLE IF NOT EXISTS `movlib`.`posters` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The poster’s unique movie’s identifier.',
   `uploader_id` BIGINT UNSIGNED NOT NULL COMMENT 'The poster’s unique uploader’s identifier.',
   `deletion_request_id` BIGINT UNSIGNED NULL COMMENT 'The poster’s deletion request identifier.',
-  `changed` TIMESTAMP NOT NULL COMMENT 'The poster’s changed timestamp.',
-  `created` TIMESTAMP NOT NULL COMMENT 'The poster’s creation timestamp.',
+  `cache_buster` BINARY(16) NOT NULL COMMENT 'The poster’s MD5 cache buster.',
+  `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the poster was last changed.',
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the poster was last created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The poster’s deletion flag.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The poster’s translated descriptions.',
   `extension` CHAR(3) CHARACTER SET 'ascii' NOT NULL DEFAULT 'jpg' COMMENT 'The poster’s image extension.',

@@ -26,8 +26,16 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractSet extends \MovLib\Core\AbstractDatabase implements \MovLib\Data\SetInterface {
-  use \MovLib\Data\RouteTrait;
+abstract class AbstractSet extends \MovLib\Data\AbstractConfig {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  public function __construct(\MovLib\Core\DIContainer $diContainer) {
+    parent::__construct($diContainer);
+    $this->init();
+  }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
@@ -50,10 +58,13 @@ abstract class AbstractSet extends \MovLib\Core\AbstractDatabase implements \Mov
 
 
   /**
-   * {@inheritdoc}
+   * Get the total count of available (not deleted) entities.
+   *
+   * @return integer
+   *   The total count of available (not deleted) entities.
    */
   public function getCount() {
-    $result = $this->getMySQLi()->query("SELECT COUNT(*) FROM `{$this->getPluralKey()}` WHERE `deleted` = false LIMIT 1");
+    $result = $this->getMySQLi()->query("SELECT COUNT(*) FROM `{$this->tableName}` WHERE `{$this->tableName}`.`deleted` = false LIMIT 1");
     $count  = $result->fetch_row()[0];
     $result->free();
     return $count;
@@ -81,7 +92,14 @@ abstract class AbstractSet extends \MovLib\Core\AbstractDatabase implements \Mov
   }
 
   /**
-   * {@inheritdoc}
+   * Get all entities for the given unique identifiers.
+   *
+   * @param array $ids
+   *   The unique identifiers to get the entities for.
+   * @param string $orderBy [optional]
+   *   Optional content for the <code>ORDER BY</code> SQL part, e.g. <code>"`created` DESC"</code>.
+   * @return null|array
+   *   All entities for the given unique identifiers, <code>NULL</code> if no entities were found.
    */
   public function getIdentifiers(array $ids, $orderBy = null) {
     $ids = implode(",", $ids);
@@ -92,18 +110,30 @@ abstract class AbstractSet extends \MovLib\Core\AbstractDatabase implements \Mov
   }
 
   /**
-   * {@inheritdoc}
+   * Get all entities ordered and partitioned by the given parameters.
+   *
+   * @param string $by
+   *   The SQL queries <code>ORDER BY</code> content, e.g. <code>"`created` DESC"</code>.
+   * @param integer $offset
+   *   The offset, usually provided by the {@see \MovLib\Presentation\PaginationTrait}.
+   * @param integer $limit
+   *   The limit (row count), usually provided by the {@see \MovLib\Presentation\PaginationTrait}.
+   * @return null|array
+   *   All entities ordered and partitioned by the given parameters, <code>NULL</code> if no entities were found.
    */
   public function getOrdered($by, $offset, $limit) {
-    return $this->getEntities("WHERE `deleted` = false", "ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}");
+    return $this->getEntities("WHERE `{$this->tableName}`.`deleted` = false", "ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}");
   }
 
   /**
-   * {@inheritdoc}
+   * Get a random, unique, existing entity's identifier from the set.
+   *
+   * @return mixed
+   *   A random, unique, existing entity's identifier from the set.
    */
   public function getRandom() {
     $id     = null;
-    $result = $this->getMySQLi()->query("SELECT `id` FROM `{$this->getPluralKey()}` WHERE `deleted` = false ORDER BY RAND() LIMIT 1");
+    $result = $this->getMySQLi()->query("SELECT `id` FROM `{$this->tableName}` WHERE `deleted` = false ORDER BY RAND() LIMIT 1");
     if ($result) {
       $id = $result->fetch_row()[0];
     }

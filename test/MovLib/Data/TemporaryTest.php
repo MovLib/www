@@ -17,7 +17,7 @@
  */
 namespace MovLib\Data;
 
-use \MovLib\Data\Temporary;
+use \MovLib\Data\TemporaryStorage;
 
 /**
  * @coversDefaultClass \MovLib\Data\Temporary
@@ -33,7 +33,7 @@ class TemporaryTest extends \MovLib\TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Data\Temporary */
+  /** @var \MovLib\Data\TemporaryStorage */
   protected $temporary;
 
 
@@ -44,7 +44,7 @@ class TemporaryTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->temporary = new Temporary();
+    $this->temporary = new TemporaryStorage();
   }
 
   /**

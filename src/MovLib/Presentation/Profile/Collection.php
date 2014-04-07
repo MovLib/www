@@ -17,42 +17,37 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Partial\Alert;
 
 /**
- * Allows a user to manage her or his collection.
+ * Defines the profile collection presentation.
  *
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Collection extends \MovLib\Presentation\Profile\Show {
+final class Collection extends \MovLib\Presentation\Profile\AbstractProfilePresenter {
 
   /**
-   * Instantiate new collection presentation.
-   *
-   * @throws \MovLib\Presentation\Error\Unauthorized
+   * {@inheritdoc}
    */
-  public function __construct() {
-    $session->checkAuthorization($this->intl->t("You must be signed in to view your collection."));
-    $this->init($this->intl->t("My Collection"), "/profile/collection", [[ $this->intl->r("/profile"), $this->intl->t("Profile") ]]);
+  public function init() {
+    return $this->initProfilePresentation(
+      $this->intl->t("You must be signed in to view your collection."),
+      $this->intl->t("My Collection"),
+      "/profile/collection"
+    );
   }
 
   /**
-   * @inhertidoc
+   * {@inheritdoc}
    */
-  protected function getBreadcrumbs() {
-    return [[ $this->intl->r("/profile"), $this->intl->t("Profile") ]];
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function getPageContent() {
+  public function getContent() {
     return new Alert(
-      $this->intl->t("The Collection system isn’t implemented yet."),
+      $this->intl->t("The collection system isn’t implemented yet."),
       $this->intl->t("Check back later"),
       Alert::SEVERITY_INFO
     );

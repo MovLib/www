@@ -19,6 +19,7 @@ namespace MovLib\Presentation\User;
 
 use \MovLib\Data\User\User;
 use \MovLib\Partial\Alert;
+use \MovLib\Partial\Date;
 
 /**
  * Public user profile presentation.
@@ -30,7 +31,6 @@ use \MovLib\Partial\Alert;
  * @since 0.0.1-dev
  */
 class Show extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Partial\DateTrait;
   use \MovLib\Partial\SidebarTrait;
 
 
@@ -52,19 +52,16 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
    * Instantiate new user presentation.
    */
   public function init() {
-    $this->user = new User($this->diContainerHTTP);
-    $this->user->init(User::FROM_NAME, $_SERVER["USER_NAME"]);
+    $this->user = new User($this->diContainerHTTP, $_SERVER["USER_NAME"]);
     $this->stylesheets[] = "user";
-    $this
-      ->initPage($this->user->name)
-      ->initLanguageLinks("/user/{0}", $this->user->name)
-      ->initBreadcrumb([[ $this->intl->rp("/users"), $this->intl->t("Users") ] ])
-      ->sidebarInit([
-        [ $this->intl->r("/user/{0}/uploads", $this->user->name), "{$this->intl->t("Uploads")} <span class='fr'>{$this->intl->format("{0,number}", 0)}</span>" ],
-        [ $this->intl->r("/user/{0}/collection", $this->user->name), "{$this->intl->t("Collection")} <span class='fr'>{$this->intl->format("{0,number}", 0)}</span>" ],
-        [ $this->intl->r("/user/{0}/contact", $this->user->name), $this->intl->t("Contact") ],
-      ])
-    ;
+    $this->initPage($this->user->name);
+    $this->initLanguageLinks("/user/{0}", $this->user->name);
+    $this->initBreadcrumb([[ $this->intl->rp("/users"), $this->intl->t("Users") ] ]);
+    $this->sidebarInit([
+      [ $this->intl->r("/user/{0}/uploads", $this->user->name), "{$this->intl->t("Uploads")} <span class='fr'>{$this->intl->format("{0,number}", 0)}</span>" ],
+      [ $this->intl->r("/user/{0}/collection", $this->user->name), "{$this->intl->t("Collection")} <span class='fr'>{$this->intl->format("{0,number}", 0)}</span>" ],
+      [ $this->intl->r("/user/{0}/contact", $this->user->name), $this->intl->t("Contact") ],
+    ]);
   }
 
 
@@ -88,8 +85,9 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
     $personalData = null;
 
     // Format the user's birthday if available.
-    if ($this->user->birthday) {
-      $personalData[] = "<time datetime='{$this->user->birthday}' property='birthDate'>{$this->dateGetAge($this->user->birthday)}</time>";
+    if ($this->user->birthdate) {
+      $age = (new Date($this->intl, $this))->getAge($this->user->birthdate);
+      $personalData[] = "<time datetime='{$this->user->birthdate}' property='birthDate'>{$age}</time>";
     }
     if ($this->user->sex > 0) {
       $gender     = $this->user->sex === 1 ? $this->intl->t("Male") : $this->intl->t("Female");
@@ -122,14 +120,16 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
       $personalData = "<p>{$personalData}</p>";
     }
 
-//    $avatar = $this->getImage($this->user->getStyle(), false, [ "itemprop" => "image" ]);
-    $avatar = "<img alt='' src='{$this->getExternalURL("asset://img/logo/vector.svg")}' width='120' height='120'>";
-
     // Display additional info about this user after the name and the avatar to the right of it.
-    $this->headingAfter = "{$personalData}<small>{$this->intl->t("Joined {date} and was last seen {time}.", [
-      "date" => ""/*(new Date($this->user->created))->intlFormat()*/,
-      "time" => ""/*(new Time($this->user->access))->formatRelative()*/,
-    ])}</small></div><div class='s s2'>{$avatar}</div></div>";
+    $this->headingAfter =
+        $personalData .
+        "<small>{$this->intl->t("Joined {date} and was last seen {time}.", [
+          "date" => ""/*(new Date($this->user->created))->intlFormat()*/,
+          "time" => ""/*(new Time($this->user->access))->formatRelative()*/,
+        ])}</small>" .
+      "</div>" .
+      $this->img($this->user->imageGetStyle(), [ "class" => "s s2", "property" => "image" ], false) .
+    "</div>";
 
     $publicProfile = $edit = null;
 
