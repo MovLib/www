@@ -252,42 +252,46 @@
 	content: "\e62b";
 }
 
-.ico-award:before {
+.ico-api:before {
 	content: "\e62c";
 }
 
-.ico-upload:before {
+.ico-award:before {
 	content: "\e62d";
 }
 
-.ico-languages:before {
+.ico-upload:before {
 	content: "\e62e";
 }
 
-.ico-link:before {
+.ico-languages:before {
 	content: "\e62f";
 }
 
-.ico-ul:before {
+.ico-link:before {
 	content: "\e630";
 }
 
-.ico-ol:before {
+.ico-ul:before {
 	content: "\e631";
 }
 
-.ico-category:before {
+.ico-ol:before {
 	content: "\e632";
 }
 
-.ico-quotation:before {
+.ico-category:before {
 	content: "\e633";
 }
 
-.ico-unlink:before {
+.ico-quotation:before {
 	content: "\e634";
 }
 
-.ico-like:before {
+.ico-unlink:before {
 	content: "\e635";
+}
+
+.ico-like:before {
+	content: "\e636";
 }
