@@ -51,14 +51,43 @@ abstract class AbstractImageEntity extends \MovLib\Data\Image\AbstractReadOnlyIm
 
 
   /**
+   * Delete the original image and all of its styles.
+   *
+   * @return this
+   */
+  final protected function imageDelete() {
+    unlink($this->imageGetURI());
+    $this->imageDeleteStyles();
+    $this->imageCacheBuster = $this->imageExtension = $this->imageFilename = $this->imageFilesize = $this->imageHeight = $this->imageWidth = null;
+    return $this;
+  }
+
+  /**
+   * Delete image style.
+   *
+   * @return this
+   */
+  final protected function imageDeleteStyle($style) {
+    if (isset($this->imageStyles[$style])) {
+      unset($this->imageStyles[$style]);
+    }
+    if (isset($this->imageStylesCache[$style])) {
+      unset($this->imageStylesCache[$style]);
+    }
+    unlink($this->imageGetStyleURI($style));
+    return $this;
+  }
+
+  /**
    * Delete image styles.
    *
    * @return this
    */
   final protected function imageDeleteStyles() {
-    foreach (static::$imageStylesMap as $style) {
+    foreach ($this->imageGetEffects() as $style => $imageEffect) {
       unlink($this->imageGetStyleURI($style));
     }
+    $this->imageStylesCache = $this->imageStyles = null;
     return $this;
   }
 

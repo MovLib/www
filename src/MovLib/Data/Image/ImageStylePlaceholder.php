@@ -33,10 +33,13 @@ class ImageStylePlaceholder extends \MovLib\Data\Image\ImageStyle {
    *
    * @param integer $width
    *   The width of the image style placeholder.
+   * @param string $url
+   *   The external URL of the placeholder image.
    */
-  public function __construct($width) {
+  public function __construct($width, $url) {
     parent::__construct(null, $width, $width);
     $this->placeholder = true;
+    $this->url         = $url;
   }
 
 }

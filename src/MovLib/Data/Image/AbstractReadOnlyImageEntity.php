@@ -76,6 +76,13 @@ class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
   public $imageCacheBuster;
 
   /**
+   * Whether this image exists or not.
+   *
+   * @var boolean
+   */
+  public $imageExists = false;
+
+  /**
    * The image's directory URI.
    *
    * @var string
@@ -252,8 +259,10 @@ class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
       $this->log->info("Couldn't find image, using placeholder.");
       // @codeCoverageIgnoreEnd
       // @devEnd
-      $this->imageStylesCache[$style]      = new ImageStylePlaceholder($this->imageGetEffects()[$style]->width);
-      $this->imageStylesCache[$style]->url = $this->fs->getExternalURL($this->imagePlaceholder);
+      $this->imageStylesCache[$style] = new ImageStylePlaceholder(
+        $this->imageGetEffects()[$style]->width,
+        $this->fs->getExternalURL($this->imagePlaceholder)
+      );
     }
 
     // Export dynamic properties to cached image style version and return.
@@ -310,6 +319,7 @@ class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
+    $this->imageExists = (boolean) $this->imageCacheBuster;
     $this->imageStyles && ($this->imageStyles = unserialize($this->imageStyles));
     return parent::init();
   }

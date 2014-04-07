@@ -118,9 +118,11 @@ final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
    *   The image that is to be uploaded.
    * @param array $attributes [optional]
    *   Additional attributes.
+   * @param string $inputFileAfter [optional]
+   *   Any content that should be included in the rendered input image form element, defaults to <code>NULL</code>.
    * @throws \MovLib\Presentation\Error\Unauthorized
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, \MovLib\Data\Image\AbstractImageEntity $image, array $attributes = null) {
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, \MovLib\Data\Image\AbstractImageEntity $image, array $attributes = null, $inputFileAfter = null) {
     // Only authenticated users are allowed to upload images.
     if ($diContainerHTTP->session->isAuthenticated === false) {
       throw new UnauthorizedException($this->intl->t(
@@ -133,10 +135,11 @@ final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
     $diContainerHTTP->presenter->javascripts[] = "InputImage";
 
     // Initialize attributes and properties.
-    $this->image       = $image;
-    $this->maxFilesize = ini_get("upload_max_filesize");
-    $this->minHeight   = $this->image->imageHeight ?: AbstractImageEntity::IMAGE_MIN_HEIGHT;
-    $this->minWidth    = $this->image->imageWidth  ?: AbstractImageEntity::IMAGE_MIN_WIDTH;
+    $this->image          = $image;
+    $this->inputFileAfter = $inputFileAfter;
+    $this->maxFilesize    = ini_get("upload_max_filesize");
+    $this->minHeight      = $this->image->imageHeight ?: AbstractImageEntity::IMAGE_MIN_HEIGHT;
+    $this->minWidth       = $this->image->imageWidth  ?: AbstractImageEntity::IMAGE_MIN_WIDTH;
 
     $this->maxFilesizeFormatted = $diContainerHTTP->intl->formatBytes($this->maxFilesize);
 

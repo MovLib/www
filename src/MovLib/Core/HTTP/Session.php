@@ -175,14 +175,14 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    *
    * @var null|string
    */
-  protected $userImageCacheBuster;
+  public $userImageCacheBuster;
 
   /**
    * The session user's image extension.
    *
    * @var null|string
    */
-  protected $userImageExtension;
+  public $userImageExtension;
 
   /**
    * The session user's unique name.
@@ -483,13 +483,13 @@ SQL
    *   The session user image style.
    */
   public function imageGetStyle() {
-    if (isset($this->userImageCacheBuster)) {
+    if ($this->userImageCacheBuster) {
       $filename        = mb_strtolower($this->userName);
       $imageStyle      = new ImageStyle("upload://user/{$filename}.{$this->userImageExtension}", 50, 50);
       $imageStyle->url = "//{$this->config->hostnameStatic}/uploads/user/{$filename}.nav.{$this->userImageExtension}?{$this->userImageCacheBuster}";
     }
     else {
-      $imageStyle = new ImageStylePlaceholder(50);
+      $imageStyle = new ImageStylePlaceholder(50, $this->fs->getExternalURL("asset://img/logo/vector.svg"));
     }
     $imageStyle->route = $this->intl->r("/profile");
     return $imageStyle;

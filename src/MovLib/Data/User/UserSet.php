@@ -27,7 +27,6 @@ namespace MovLib\Data\User;
  * @since 0.0.1-dev
  */
 final class UserSet extends \MovLib\Data\AbstractSet {
-  use \MovLib\Data\User\UserTrait;
 
   /**
    * {@inheritdoc}

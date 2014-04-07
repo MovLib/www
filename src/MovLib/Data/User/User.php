@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\User;
 
+use \MovLib\Core\HTTP\Session;
 use \MovLib\Data\Date;
 use \MovLib\Data\DateTime;
 use \MovLib\Data\Image\ImageEffect;
@@ -32,8 +33,6 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @since 0.0.1-dev
  */
 final class User extends \MovLib\Data\Image\AbstractImageEntity {
-  use \MovLib\Data\RouteTrait;
-  use \MovLib\Data\User\UserTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -330,6 +329,7 @@ SQL
    * Delete this user's account.
    *
    * @return this
+   * @throws \mysqli_sql_exception
    */
   public function deleteAccount() {
     $this->getMySQLi()->query("UPDATE `users` SET `" . implode("` = NULL, `", [
@@ -341,6 +341,24 @@ SQL
   }
 
   /**
+   * Delete the user's avatar image.
+   *
+   * @param \MovLib\Core\HTTP\Session $session
+   *   The user's active session.
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function deleteAvatar(\MovLib\Core\HTTP\Session $session) {
+    if ($this->imageExists === true) {
+      $this->imageDeleteStyles();
+      $this->imageDelete();
+      $this->getMySQLi()->query("UPDATE `users` SET `image_cache_buster` = NULL, `image_extension` = NULL, `image_styles` = NULL WHERE `id` = {$this->id}");
+      $session->userImageCacheBuster = $session->userImageExtension = $_SESSION[Session::USER_IMAGE_CACHE_BUSTER] = $_SESSION[Session::USER_IMAGE_EXTENSION] = null;
+    }
+    return $this;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function getCount($from, $what = "*") {
@@ -348,20 +366,6 @@ SQL
     $count  = $result->fetch_row()[0];
     $result->free();
     return $count;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getImageDirectory() {
-    return "upload://user";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getRoute() {
-    return $this->intl->r("/user/{0}", $this->id);
   }
 
   /**
@@ -399,6 +403,14 @@ SQL
     $stmt->bind_param("sd", $styles, $this->id);
     $stmt->execute();
     $stmt->close();
+    if ($this->kernel->http) {
+      $_SESSION[Session::USER_IMAGE_CACHE_BUSTER] = $this->imageCacheBuster;
+      $_SESSION[Session::USER_IMAGE_EXTENSION]    = $this->imageExtension;
+      if (isset($this->diContainer->session)) {
+        $this->diContainer->session->userImageCacheBuster = $this->imageCacheBuster;
+        $this->diContainer->session->userImageExtension   = $this->imageExtension;
+      }
+    }
     return $this;
   }
 
