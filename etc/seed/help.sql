@@ -33,13 +33,13 @@ TRUNCATE TABLE `help_articles`;
 INSERT INTO `help_categories` SET
   `dyn_titles`       = COLUMN_CREATE(
     'en', 'Database',
-    'de', 'Datanbank'
+    'de', 'Datenbank'
   ),
   `dyn_descriptions` = COLUMN_CREATE(
     'en', 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore.',
     'de', 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore.'
   ),
-  `icon`             = 'ico-movie'
+  `icon`             = 'ico-database'
 ;
 SET @help_category_database = LAST_INSERT_ID();
 
@@ -52,7 +52,7 @@ INSERT INTO `help_categories` SET
     'en', 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore.',
     'de', 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore.'
   ),
-  `icon`             = 'ico-company'
+  `icon`             = 'ico-marketplace'
 ;
 SET @help_category_marketplace = LAST_INSERT_ID();
 

@@ -15,12 +15,46 @@
  */
 
 /**
- * Styles exclusive to the help pages.
+ * Styles exclusive to the help page.
  *
  * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
+
+#banner {
+  background-color: #000;
+  height: 300px;
+  padding: 50px 20px;
+  margin-bottom: 40px;
+}
+
+#banner .c {
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+}
+
+#banner h2 {
+  font-size: 48px;
+  line-height: 75px;
+}
+
+#help-search input,
+#help-search button {
+  background-color: #fff;
+  border: none;
+  height: 45px;
+  margin: 0px;
+}
+
+#help-search input {
+  width: 415px;
+  padding: 0 10px;
+}
+#help-search button {
+  width: 45px;
+}

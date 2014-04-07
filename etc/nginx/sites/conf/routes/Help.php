@@ -16,9 +16,9 @@
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
 
-use \MovLib\Data\Help\HelpArticle;
-use \MovLib\Data\Help\HelpCategory;
-use \MovLib\Data\Help\HelpSubCategory;
+use \MovLib\Data\Help\Article\ArticleSet;
+use \MovLib\Data\Help\Category\CategorySet;
+use \MovLib\Data\Help\SubCategory\SubCategorySet;
 
 /**
  * Help routes
@@ -47,12 +47,11 @@ location = <?= $this->r("/help") ?> {
 
 
 <?php
-/* @var $result \mysqli_result */
-$categoryResult = HelpCategory::getHelpCategoryIds();
 $this->setRoutesNamespace("Help\\Category");
-while ($row = $categoryResult->fetch_object()):
-  /* @var $category \MovLib\Data\Help\HelpCategory */
-  $category = new HelpCategory($row->id);
+$categorySet = new CategorySet($this->diContainer);
+$getEntities = new \ReflectionMethod($categorySet, "getEntities");
+$getEntities->setAccessible(true);
+foreach ($getEntities->invoke($categorySet) as $category) :
 ?>
 
 location = <?= $category->route ?> {
@@ -60,19 +59,18 @@ location = <?= $category->route ?> {
   <?= $this->set($category->id, "help_category_id") ?>
   <?= $this->cache() ?>
 }
-<?php endwhile; ?>
+<?php endforeach; ?>
 
 
 # ---------------------------------------------------------------------------------------------------------------------- Help Sub-Categories
 
 
 <?php
-/* @var $result \mysqli_result */
-$subCategoryResult = HelpSubCategory::getHelpSubCategoryIds();
 $this->setRoutesNamespace("Help\\Category\\Subcategory");
-while ($row = $subCategoryResult->fetch_object()):
-  /* @var $subCategory \MovLib\Data\Help\HelpSubCategory */
-  $subCategory = new HelpSubCategory($row->id);
+$subCategorySet = new SubCategorySet($this->diContainer);
+$getEntities    = new \ReflectionMethod($subCategorySet, "getEntities");
+$getEntities->setAccessible(true);
+foreach ($getEntities->invoke($subCategorySet) as $subCategory) :
 ?>
 
 location = <?= $subCategory->route ?> {
@@ -81,19 +79,18 @@ location = <?= $subCategory->route ?> {
   <?= $this->set($subCategory->category->id, "help_category_id") ?>
   <?= $this->cache() ?>
 }
-<?php endwhile; ?>
+<?php endforeach; ?>
 
 
 # ---------------------------------------------------------------------------------------------------------------------- Help Articles
 
 
 <?php
-/* @var $result \mysqli_result */
-$articleResult = HelpArticle::getHelpArticleIds();
-while ($row = $articleResult->fetch_object()):
-  /* @var $article \MovLib\Data\Help\HelpArticle */
-  $article = new HelpArticle($row->id);
+$articleSet  = new ArticleSet($this->diContainer);
+$getEntities = new \ReflectionMethod($articleSet, "getEntities");
+$getEntities->setAccessible(true);
 
+foreach ($getEntities->invoke($articleSet) as $article) :
   if (isset($article->subCategory)) {
     $this->setRoutesNamespace("Help\\Category\\Subcategory");
   }
@@ -114,4 +111,4 @@ location = <?= "{$article->route}/edit" ?> {
   <?= $this->cache() ?>
 }
 
-<?php endwhile;
+<?php endforeach;

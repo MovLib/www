@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data\Help\Category;
 
-use \MovLib\Data\FileSystem;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -30,7 +29,6 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @since 0.0.1-dev
  */
 final class Category extends \MovLib\Data\AbstractEntity {
-  use \MovLib\Data\Help\Category\CategoryTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -117,11 +115,11 @@ SELECT
   `help_categories`.`icon`,
   IFNULL(
     COLUMN_GET(`help_categories`.`dyn_descriptions`, ? AS CHAR),
-    COLUMN_GET(`help_categories`.`dyn_descriptions`, '{$this->intl->defaultLanguageCode}' AS CHAR)'
+    COLUMN_GET(`help_categories`.`dyn_descriptions`, '{$this->intl->defaultLanguageCode}' AS CHAR)
   ) AS `description`,
   IFNULL(
     COLUMN_GET(`help_categories`.`dyn_titles`, ? AS CHAR),
-    COLUMN_GET(`help_categories`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)'
+    COLUMN_GET(`help_categories`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)
   ) AS `title`
 FROM `help_categories`
 WHERE `id` = ?
@@ -158,7 +156,9 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
-    $this->route = $this->intl->r("/help/{0}", [ FileSystem::sanitizeFilename($this->title) ]);
+    $this->pluralKey   = $this->tableName = "help_categories";
+    $this->route       = $this->intl->r("/help/{0}", [ $this->fs->sanitizeFilename($this->title) ]);
+    $this->singularKey = "help_category";
     return parent::init();
   }
 

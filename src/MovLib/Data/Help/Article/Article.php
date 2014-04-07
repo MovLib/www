@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data\Help\Article;
 
-use \MovLib\Data\FileSystem;
 use \MovLib\Data\Help\Category\Category;
 use \MovLib\Data\Help\SubCategory\SubCategory;
 use \MovLib\Exception\ClientException\NotFoundException;
@@ -32,18 +31,10 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @since 0.0.1-dev
  */
 final class Article extends \MovLib\Data\AbstractEntity {
-  use \MovLib\Data\Help\Article\ArticleTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   * The help article's deletion state.
-   *
-   * @var boolean
-   */
-  public $deleted;
 
   /**
    * The help article category.
@@ -192,22 +183,24 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
-    $this->category = new Category($this->category);
+    $this->category      = new Category($this->diContainer, $this->category);
+    $this->pluralKey     = $this->tableName = "help_articles";
 
     if (isset($this->subCategory)) {
-      $this->subCategory = new SubCategory($this->subCategory);
+      $this->subCategory = new SubCategory($this->diContainer, $this->subCategory);
       $this->route       = $this->intl->r("/help/{0}/{1}/{2}", [
-        FileSystem::sanitizeFilename($this->category->title),
-        FileSystem::sanitizeFilename($this->subCategory->title),
-        FileSystem::sanitizeFilename($this->title)
+        $this->fs->sanitizeFilename($this->category->title),
+        $this->fs->sanitizeFilename($this->subCategory->title),
+        $this->fs->sanitizeFilename($this->title)
       ]);
     }
     else {
       $this->route = $this->intl->r("/help/{0}/{1}", [
-        FileSystem::sanitizeFilename($this->category->title),
-        FileSystem::sanitizeFilename($this->title)
+        $this->fs->sanitizeFilename($this->category->title),
+        $this->fs->sanitizeFilename($this->title)
       ]);
     }
+    $this->singularKey = "help_article";
     return parent::init();
   }
 

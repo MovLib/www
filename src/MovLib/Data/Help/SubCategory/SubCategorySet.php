@@ -27,7 +27,6 @@ namespace MovLib\Data\Help\SubCategory;
  * @since 0.0.1-dev
  */
 final class SubCategorySet extends \MovLib\Data\AbstractSet {
-  use \MovLib\Data\Help\SubCategory\SubCategoryTrait;
 
   /**
    * {@inheritdoc}
@@ -35,18 +34,29 @@ final class SubCategorySet extends \MovLib\Data\AbstractSet {
   protected function getEntitiesQuery($where = null, $orderBy = null) {
     return <<<SQL
 SELECT
+  `help_subcategories`.`help_category_id` AS `category`,
   `help_subcategories`.`id` AS `id`,
   `help_subcategories`.`changed` AS `changed`,
   `help_subcategories`.`created` AS `created`,
   `help_subcategories`.`deleted` AS `deleted`,
   IFNULL(
-    COLUMN_GET(`help_subcategories`.`dyn_titles`, ? AS CHAR),
-    COLUMN_GET(`help_subcategories`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)'
+    COLUMN_GET(`help_subcategories`.`dyn_titles`, '{$this->intl->languageCode}' AS CHAR),
+    COLUMN_GET(`help_subcategories`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)
   ) AS `title`
 FROM `help_subcategories`
 {$where}
 {$orderBy}
 SQL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function init() {
+    $this->pluralKey   = $this->tableName = "help_subcategories";
+    $this->route       = $this->intl->rp("/help");
+    $this->singularKey = "help_subcategory";
+    return parent::init();
   }
 
 }

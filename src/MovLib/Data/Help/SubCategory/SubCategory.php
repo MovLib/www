@@ -17,8 +17,7 @@
  */
 namespace MovLib\Data\Help\SubCategory;
 
-use \MovLib\Data\FileSystem;
-use \MovLib\Data\Help\HelpCategory;
+use \MovLib\Data\Help\Category\Category;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -31,7 +30,6 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @since 0.0.1-dev
  */
 final class SubCategory extends \MovLib\Data\AbstractEntity {
-  use \MovLib\Data\Help\SubCategory\SubCategoryTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -104,13 +102,14 @@ final class SubCategory extends \MovLib\Data\AbstractEntity {
     if ($id) {
       $stmt = $this->getMySQLi()->prepare(<<<SQL
 SELECT
-  `help_categories`.`id` AS `id`,
-  `help_categories`.`changed` AS `changed`,
-  `help_categories`.`created` AS `created`,
-  `help_categories`.`deleted` AS `deleted`,
+  `help_subcategories`.`help_category_id` AS `category`,
+  `help_subcategories`.`id` AS `id`,
+  `help_subcategories`.`changed` AS `changed`,
+  `help_subcategories`.`created` AS `created`,
+  `help_subcategories`.`deleted` AS `deleted`,
   IFNULL(
-    COLUMN_GET(`help_categories`.`dyn_titles`, ? AS CHAR),
-    COLUMN_GET(`help_categories`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)'
+    COLUMN_GET(`help_subcategories`.`dyn_titles`, ? AS CHAR),
+    COLUMN_GET(`help_subcategories`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)
   ) AS `title`
 FROM `help_subcategories`
 WHERE `id` = ?
@@ -120,6 +119,7 @@ SQL
       $stmt->bind_param("sd", $this->intl->languageCode, $id);
       $stmt->execute();
       $stmt->bind_result(
+        $this->category,
         $this->id,
         $this->changed,
         $this->created,
@@ -145,11 +145,13 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
-    $this->category = new HelpCategory($this->category);
-    $this->route    = $this->intl->r("/help/{0}/{1}", [
-      FileSystem::sanitizeFilename($this->category->title),
-      FileSystem::sanitizeFilename($this->title)
+    $this->category    = new Category($this->diContainer, $this->category);
+    $this->pluralKey   = $this->tableName = "help_subcategories";
+    $this->route       = $this->intl->r("/help/{0}/{1}", [
+      $this->fs->sanitizeFilename($this->category->title),
+      $this->fs->sanitizeFilename($this->title)
     ]);
+    $this->singularKey = "help_subcategory";
     return parent::init();
   }
 

@@ -34,35 +34,70 @@ use \MovLib\Partial\Alert;
  * @since 0.0.1-dev
  */
 final class Index extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\PaginationTrait;
 
   /**
    * {@inheritdoc}
    */
   public function init() {
-    $this->initPage($this->intl->t("Help"));
-    $this->initLanguageLinks("/help");
+    $this->set = new CategorySet($this->diContainerHTTP);
+    $this->initPage("Help");
     $this->initBreadcrumb();
+    $this->initLanguageLinks("/help");
+    $this->stylesheets[] = "help";
+    return $this;
+  }
 
-    $kernel->stylesheets[] = "help";
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {
+    $items = null;
+    foreach ($this->set->getOrdered("`created` DESC", $this->paginationOffset, $this->paginationLimit) as $id => $entity) {
+      $items .= $this->formatListingItem($entity, $id);
+    }
+    return
+      "<div class='c'>" .
+        "<div class='r mb40'>" .
+          $items .
+        "</div>" .
+        "<div class='big mb40 well tac'>{$this->intl->t(
+          "Still can’t find what you’re looking for? {0}Visit the Forum{1}",
+          [ "<a href='{$this->intl->r("/forum")}'>", "</a>" ]
+        )}</div>" .
+        "<div class='r'>" .
+          "<div class='s s6 tac well'>" .
+            "<p class='big'>{$this->intl->t("Building something cool? Check out our API!")}</p>" .
+            "<a class='ico ico-api btn btn-primary btn-medium' href='{$this->intl->r("/api")}'> " .
+              $this->intl->t("API Documentation") .
+            "</a>" .
+          "</div>" .
+          "<div class='s s6 tac well'>" .
+            "<p class='big'>{$this->intl->t("Got a really tough question? Our staff can help!")}</p>" .
+            "<a class='ico ico-email btn btn-success btn-medium' href='{$this->intl->r("/contact")}'> " .
+              $this->intl->t("New Support Request") .
+            "</a>" .
+          "</div>" .
+        "</div>" .
+      "</div>"
+    ;
   }
 
   /**
    * {@inheritdoc}
    * @param \MovLib\Data\Help\Category\Category $category {@inheritdoc}
    */
-  protected function formatListingItem(\MovLib\Data\EntityInterface $category, $delta) {
+  protected function formatListingItem(\MovLib\Data\AbstractEntity $category, $delta) {
     return
-      "<li class='hover-item r'>" .
-//        "<article>" .
-//          "<div class='s s10'>" .
-//            "<div class='fr'>" .
-//              "<a class='ico ico-movie label' href='{$this->intl->rp("/help/{0}/movies", $helpCategory->id)}' title='{$this->intl->t("Movies")}'>{$helpCategory->movieCount}</a>" .
-//              "<a class='ico ico-series label' href='{$this->intl->rp("/help/{0}/series", $helpCategory->id)}' title='{$this->intl->t("Series")}'>{$helpCategory->seriesCount}</a>" .
-//            "</div>" .
-//            "<h2 class='para'><a href='{$helpCategory->route}' property='url'><span property='name'>{$helpCategory->name}</span></a></h2>" .
-//          "</div>" .
-//        "</article>" .
-      "</li>"
+      "<div class='s s4'>" .
+        "<h2 class='ico {$category->icon} tac'> {$category->title}</h2>" .
+        "<p>{$this->htmlDecode($category->description)}</p>" .
+        "<p class='tac'>" .
+          "<a class='btn btn-info btn-large' href='{$category->route}'>" .
+            $this->intl->t("{0} Help", [ $category->title ]) .
+          "</a>" .
+        "</p>" .
+      "</div>"
     ;
   }
 
@@ -76,4 +111,33 @@ final class Index extends \MovLib\Presentation\AbstractPresenter {
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getMainContent($content) {
+    $noscript = new Alert(
+      $this->intl->t("Please activate JavaScript in your browser to experience our website with all its features."),
+      $this->intl->t("JavaScript Disabled")
+    );
+
+    return
+      "<main id='m' role='main'>" .
+        "<div id='banner'>" .
+          "<h1 class='ico ico-help c'> {$this->intl->t("Help, Please!")}</h1>" .
+          "<p class='c mb20'>{$this->intl->t("Do you like movies? Great, so do we! All the info you need {0} for finding, buying, selling, and cataloging movies is right here.", [ "<br>" ])}</p>" .
+          "<form action='{$this->intl->r("/help/search")}' class='c' method='get'>" .
+            "<div class='s6' id='help-search'>" .
+              "<input name='q' class='s big' required tabindex='3' title='{$this->intl->t(
+                "Enter the search term you wish to search for in our help and hit enter."
+              )}' type='search' placeholder='{$this->intl->t("I need help with..")}'>" .
+              "<button class='big ico ico-search s' tabindex='4' type='submit'><span class='vh'>{$this->intl->t(
+                "Start searching in our help for the entered keyword."
+              )}</span></button>" .
+            "</div>" .
+          "</form>" .
+        "</div>" .
+        "<noscript>{$noscript}</noscript>{$this->alerts}{$content}" .
+      "</main>"
+    ;
+  }
 }

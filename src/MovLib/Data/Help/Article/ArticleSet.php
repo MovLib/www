@@ -27,7 +27,6 @@ namespace MovLib\Data\Help\Article;
  * @since 0.0.1-dev
  */
 final class ArticleSet extends \MovLib\Data\AbstractSet {
-  use \MovLib\Data\Help\Article\ArticleTrait;
 
   /**
    * {@inheritdoc}
@@ -42,14 +41,24 @@ SELECT
   `help_articles`.`created` AS `created`,
   `help_articles`.`deleted` AS `deleted`,
   IFNULL(
-    COLUMN_GET(`help_articles`.`dyn_titles`, ? AS CHAR),
-    COLUMN_GET(`help_articles`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)'
+    COLUMN_GET(`help_articles`.`dyn_titles`, '{$this->intl->languageCode}' AS CHAR),
+    COLUMN_GET(`help_articles`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)
   ) AS `title`,
   `help_articles`.`view_count` as `viewCount`
 FROM `help_articles`
 {$where}
 {$orderBy}
 SQL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function init() {
+    $this->pluralKey   = $this->tableName = "help_articles";
+    $this->route       = $this->intl->rp("/help");
+    $this->singularKey = "help_article";
+    return parent::init();
   }
 
 }

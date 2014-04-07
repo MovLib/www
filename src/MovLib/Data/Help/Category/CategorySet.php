@@ -27,7 +27,6 @@ namespace MovLib\Data\Help\Category;
  * @since 0.0.1-dev
  */
 final class CategorySet extends \MovLib\Data\AbstractSet {
-  use \MovLib\Data\Help\Category\CategoryTrait;
 
   /**
    * {@inheritdoc}
@@ -52,6 +51,16 @@ FROM `help_categories`
 {$where}
 {$orderBy}
 SQL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function init() {
+    $this->pluralKey   = $this->tableName = "help_categories";
+    $this->route       = $this->intl->r("/help");
+    $this->singularKey = "help_category";
+    return parent::init();
   }
 
 }
