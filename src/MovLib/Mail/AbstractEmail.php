@@ -176,7 +176,7 @@ abstract class AbstractEmail {
       array_walk($query, function (&$value, $key) {
         $value = rawurlencode($this->intl->r($key)) . "=" . rawurlencode($value);
       });
-      $query = "?" . implode("&", $query);
+      $query = "?" . implode("&amp;", $query);
     }
     return "{$this->request->scheme}://{$this->request->hostname}{$this->fs->urlEncodePath($route)}{$query}";
   }

@@ -68,10 +68,10 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
    */
   public function init() {
     // We need to know the translated version of the sign in route for comparison.
+    $query         = null;
     $routeKey      = "/profile/sign-in";
     $redirectToKey = $this->intl->r("redirect_to");
     $route         = $this->intl->r($routeKey);
-    $this->initLanguageLinks($routeKey);
 
     // Snatch the current requested URI if a redirect was requested and no redirect is already active. We have to build
     // the complete target URI to ensure that this presenter will receive the submitted form, but at the same time we
@@ -87,16 +87,16 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
     elseif ($this->request->methodGET && $this->session->isAuthenticated) {
       throw new SeeOtherException($this->intl->r("/my"));
     }
-
     // Append the URL to the action attribute of our form.
-    $this->redirectTo = $this->request->filterInput(INPUT_GET, $redirectToKey, FILTER_SANITIZE_STRING, FILTER_REQUIRE_SCALAR | FILTER_FLAG_STRIP_LOW);
-    if ($this->redirectTo && $this->redirectTo != $route) {
+    elseif (($this->redirectTo = $this->request->filterInputString(INPUT_GET, $redirectToKey)) && $this->redirectTo != $route) {
+      $query              = [ $redirectToKey => $this->redirectTo ];
       $this->request->uri = "{$route}?{$redirectToKey}={$this->redirectTo}";
     }
 
     // Start rendering the page.
     $this->initPage($this->intl->t("Sign In"));
     $this->initBreadcrumb([[ $this->intl->rp("/users"), $this->intl->t("Users") ]]);
+    $this->initLanguageLinks($routeKey, null, false, $query);
     $this->breadcrumb->ignoreQuery = true;
 
     return $this;

@@ -140,7 +140,7 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
    *
    * @var array
    */
-  private $languageLinks;
+  public $languageLinks;
 
   /**
    * Contains the namespace parts as array.
@@ -252,14 +252,10 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
       foreach ($locales as $code => $locale) {
         $route = $plural ? $this->intl->rp($routeKey, $args, $locale) : $this->intl->r($routeKey, $args, $locale);
         if ($queries) {
-          $query = null;
-          foreach ($queries as $key => $value) {
-            if ($query) {
-              $query .= "&amp;";
-            }
-            $query .= "{$this->intl->r($key)}={$value}";
-          }
-          $route .= "?{$query}";
+          array_walk($queries, function (&$value, $key) {
+            $value = rawurlencode($this->intl->r($key)) . "=" . rawurlencode($value);
+          });
+          $route .= "?" . implode("&amp;", $queries);
         }
         $languageLinks[$languages[$code]->name] =
           "<a href='//{$code}.{$this->config->hostname}{$route}' lang='{$code}'>{$this->intl->t(
