@@ -45,6 +45,10 @@
   color: #c7c7c7;
 }
 
+#header blockquote {
+  margin-left: 0;
+}
+
 #filter {
   padding: 8px 20px;
   margin-left: -20px;

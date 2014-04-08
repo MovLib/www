@@ -44,7 +44,7 @@ use \MovLib\Partial\Sex;
  * @since 0.0.1-dev
  */
 class Show extends \MovLib\Presentation\AbstractShowPresenter {
-  use \MovLib\Partial\ContentSectionTrait;
+  use \MovLib\Partial\SectionTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Initialization Methods.
@@ -117,7 +117,7 @@ class Show extends \MovLib\Presentation\AbstractShowPresenter {
 
     $this->headingAfter .= "{$infos}</div>{$this->img($this->entity->imageGetStyle(), [], true, [ "class" => "s s2" ])}</div>";
 
-    if (($content = $this->getContentSections())) {
+    if (($content = $this->sectionGet())) {
       return $content;
     }
 

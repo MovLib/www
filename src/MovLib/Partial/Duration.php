@@ -32,6 +32,7 @@ final class Duration extends \MovLib\Core\Presentation\DependencyInjectionBase {
    * Get the seconds formatted as RFC 5545 (respectively ISO 8601) duration string.
    *
    * @link http://wiki.whatwg.org/wiki/Time_element#duration
+   * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/common-microsyntaxes.html#valid-duration-string
    * @link http://tools.ietf.org/html/rfc5545
    * @link http://en.wikipedia.org/wiki/ISO_8601#Durations
    * @param integer $seconds
@@ -42,11 +43,15 @@ final class Duration extends \MovLib\Core\Presentation\DependencyInjectionBase {
   public function format($seconds) {
     $duration = null;
     // Format the seconds according to RFC 5545 respectively ISO 8601.
-    foreach ([ "DT" => 86400, "H" => 3600, "M" => 60 ] as $type => $divisor) {
+    foreach ([ "D" => 86400, "H" => 3600, "M" => 60 ] as $type => $divisor) {
       $value    = floor($seconds / $divisor);
       $seconds -= $value * $divisor;
       if ($value > 0) {
         $duration .= "{$value}{$type}";
+      }
+      // The T has to be present, it doesn't matter if we have any days or not.
+      if ($type == "D") {
+        $duration .= "T";
       }
     }
     return "P{$duration}{$seconds}S";

@@ -26,7 +26,7 @@ namespace MovLib\Partial;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-trait ContentSectionTrait {
+trait SectionTrait {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -71,7 +71,7 @@ trait ContentSectionTrait {
    *   Whether the content should be HTML decoded or not, defaults to <code>TRUE</code> (content will be decoded).
    * @return this
    */
-  final protected function addContentSection($title, $content, $decode = true) {
+  final protected function sectionAdd($title, $content, $decode = true) {
     $this->sections[$title] = $decode ? $this->htmlDecode($content) : $content;
     return $this;
   }
@@ -82,10 +82,13 @@ trait ContentSectionTrait {
    * @return string
    *   The content sections.
    */
-  final protected function getContentSections() {
+  final protected function sectionGet() {
     $formatted = null;
     foreach ($this->sections as $title => $content) {
-      $id = $this->htmlString2ID($title);
+      $id = mb_strtolower(preg_replace("/[^\d\w-_]+/", "-", $title));
+      if (is_numeric($title{0})) {
+        $id = "s{$id}"; // Numeric CSS ids arent' allowed!
+      }
       $this->sidebarNavigation->menuitems[] = [ "#{$id}", $title ];
       $formatted .= "<section id='{$id}'><h2 class='title'>{$title}</h2><div class='content'>{$content}</div></section>";
     }

@@ -40,7 +40,7 @@ use \MovLib\Partial\Place;
  */
 final class Show extends \MovLib\Presentation\AbstractShowPresenter {
   use \MovLib\Partial\CompanyTrait;
-  use \MovLib\Partial\ContentSectionTrait;
+  use \MovLib\Partial\SectionTrait;
   use \MovLib\Partial\InfoboxTrait;
 
   /**
@@ -67,9 +67,9 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
     $this->entity->place        && $this->infoboxAdd($this->intl->t("Based in"), new Place($this, $this->intl, $this->entity->place, [ "property" => "location" ]));
 
     // Build the movie's content and return if we have any.
-    $this->entity->description && $this->addContentSection($this->intl->t("Profile"), $this->entity->description);
-    $this->entity->aliases     && $this->addContentSection($this->intl->t("Also Known As"), $this->formatAliases($this->entity->aliases), false);
-    if (($content = $this->getContentSections())) {
+    $this->entity->description && $this->sectionAdd($this->intl->t("Profile"), $this->entity->description);
+    $this->entity->aliases     && $this->sectionAdd($this->intl->t("Also Known As"), $this->formatAliases($this->entity->aliases), false);
+    if (($content = $this->sectionGet())) {
       return $content;
     }
 

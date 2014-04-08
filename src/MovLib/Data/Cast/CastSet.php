@@ -29,7 +29,20 @@ namespace MovLib\Data\Cast;
 final class CastSet extends \MovLib\Data\AbstractSet {
 
   protected function getEntitiesQuery($where = null, $orderBy = null) {
+    return <<<SQL
+SELECT
 
+{$where} {$orderBy}
+SQL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+    return <<<SQL
+
+SQL;
   }
 
 }

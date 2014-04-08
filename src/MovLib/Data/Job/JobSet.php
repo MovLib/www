@@ -29,7 +29,6 @@ namespace MovLib\Data\Job;
  */
 final class JobSet extends \MovLib\Data\AbstractSet {
 
-
   /**
    * {@inheritdoc}
    */
@@ -48,6 +47,15 @@ FROM `jobs`
 {$where}
 GROUP BY `id`, `name`
 {$orderBy}
+SQL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+    return <<<SQL
+
 SQL;
   }
 

@@ -36,7 +36,7 @@ final class Genre extends \MovLib\Core\Presentation\DependencyInjectionBase {
    * @return string
    *   The genres formatted as comma separated list.
    */
-  public function formatArray(array $genres) {
+  public function getList(array $genres) {
     $list = null;
 
     /// The "," is used to separate list items, please note the space after the comma!
@@ -51,6 +51,39 @@ final class Genre extends \MovLib\Core\Presentation\DependencyInjectionBase {
     }
 
     return $list;
+  }
+
+  /**
+   * Get the movie's genres formatted as labels.
+   *
+   * @param \MovLib\Data\Genre\GenreSet $genreSet
+   *   The genres to format as labels, can be <code>NULL</code> in which case this method returns <code>NULL</code>.
+   * @param array $attributes [optional]
+   *   Additional attributes that should be applied to <var>$tag</var>, defaults to <code>NULL</code>.
+   * @param string $tag [optional]
+   *   The tag used to enclose the labels, defaults to <code>"small"</code>.
+   * @param string $labelTag [optional]
+   *   The HTML tag that should be used for the label, defaults to <code>"h3"</code>.
+   * @param boolean $hideLabel [optional]
+   *   Whether to hide the label or not, defaults to <code>TRUE</code> (hide the label).
+   * @return null|string
+   *   The movie's genres formatted as labels, or <code>NULL</code> if there were no genres to format.
+   */
+  public function getLabels(\MovLib\Data\Genre\GenreSet $genreSet = null, array $attributes = null, $tag = "section", $labelTag = "h3", $hideLabel = true) {
+    if ($genreSet) {
+      $formatted = null;
+      /* @var $genre \MovLib\Data\Genre\Genre */
+      foreach ($genreSet as $genre) {
+        if ($formatted) {
+          $formatted .= " ";
+        }
+        $formatted .= "<a class='label' href='{$genre->route}' property='genre'>{$genre->name}</a>";
+      }
+      if ($formatted) {
+        $hideLabel = $hideLabel ? " class='vh'" : null;
+        return "<{$tag}{$this->expandTagAttributes($attributes)}><{$labelTag}{$hideLabel}>{$this->intl->t("{0}:", $this->intl->t("Genres"))}</{$labelTag}> {$formatted}</{$tag}>";
+      }
+    }
   }
 
 }

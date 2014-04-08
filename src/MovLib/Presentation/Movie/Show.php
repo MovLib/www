@@ -18,10 +18,11 @@
 namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Movie\Movie;
-use \MovLib\Partial\Duration;
-use \MovLib\Partial\RatingForm;
+use \MovLib\Partial\Alert;
 use \MovLib\Partial\Country;
+use \MovLib\Partial\Duration;
 use \MovLib\Partial\Genre;
+use \MovLib\Partial\StarRatingForm;
 
 /**
  * Defines the movie presentation.
@@ -41,7 +42,7 @@ use \MovLib\Partial\Genre;
  * @since 0.0.1-dev
  */
 final class Show extends \MovLib\Presentation\AbstractShowPresenter {
-  use \MovLib\Partial\ContentSectionTrait;
+  use \MovLib\Partial\SectionTrait;
   use \MovLib\Partial\InfoboxTrait;
   use \MovLib\Presentation\Movie\MovieTrait;
 
@@ -66,11 +67,29 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    $this->infoboxInit($this->entity, $this->intl->r("/movie/{0}/posters", $this->entity->id), new RatingForm($this->diContainerHTTP, $this->entity));
-    $this->entity->runtime   && $this->infoboxAdd($this->intl->t("Runtime"), (new Duration($this->diContainerHTTP))->formatMinutes($this->entity->runtime, [ "property" => "runtime" ]));
-    $this->entity->genres    && $this->infoboxAdd($this->intl->t("Genres"), (new Genre($this->diContainerHTTP))->formatArray($this->entity->genres));
-    $this->entity->countries && $this->infoboxAdd($this->intl->t("Countries"), (new Country($this->diContainerHTTP))->formatArray($this->entity->countries, "contentLocation"));
+    $originalTitle = $this->getStructuredOriginalTitle($this->entity, "p");
+    $tagline       = $this->getStructuredTagline($this->entity);
+    $rating        = new StarRatingForm($this->diContainerHTTP, $this->entity);
 
+    $this->infoboxInit(
+      $this->entity,
+      $this->intl->r("/movie/{0}/posters", $this->entity->id),
+      "{$originalTitle}{$tagline}{$rating}"
+    );
+
+    $this->entity->runtime   && $this->infoboxAdd($this->intl->t("Runtime"), (new Duration($this->diContainerHTTP))->formatMinutes($this->entity->runtime, [ "property" => "runtime" ]));
+    $this->entity->genreSet  && $this->infoboxAdd($this->intl->t("Genres"), (new Genre($this->diContainerHTTP))->getList($this->entity->genreSet));
+    $this->entity->countries && $this->infoboxAdd($this->intl->t("Countries"), (new Country($this->diContainerHTTP))->getList($this->entity->countries, "contentLocation"));
+
+    $this->sectionAdd("Quote Test", "<blockquote>Quotes are rendered in the current locale…</blockquote><p>Meet the <q><code>&lt;q&gt;</code></q> tag.</p><blockquote lang='ja'>日本語はどうですか？</blockquote>", false);
+    $this->entity->synopsis && $this->sectionAdd($this->intl->t("Synopsis"), $this->entity->synopsis);
+    $this->sectionAdd($this->intl->t("Trailers"), new Alert("Not implemented yet!"), false);
+    $this->sectionAdd($this->intl->t("Weblinks"), new Alert("Not implemented yet!"), false);
+    $this->sectionAdd($this->intl->t("Alternative Titles"), new Alert("Not implemented yet!"), false);
+
+    if (($sections = $this->sectionGet())) {
+      return $sections;
+    }
 
     return "";
   }

@@ -29,7 +29,7 @@ use \MovLib\Partial\Form;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class RatingForm extends \MovLib\Core\Presentation\DependencyInjectionBase {
+final class StarRatingForm extends \MovLib\Core\Presentation\DependencyInjectionBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -99,10 +99,15 @@ final class RatingForm extends \MovLib\Core\Presentation\DependencyInjectionBase
       $this->userRating = (new User($this->diContainerHTTP))->getRating($entity, $this->session->userId);
     }
 
+    $this->entity = $entity;
+    $this->diContainerHTTP->presenter->addClass("star-rating", $attributes);
+    $this->form   = new Form($diContainerHTTP, $attributes, "stars-rating-{$entity->id}");
+    $this->form->init(null, [ $this, "validate" ]);
+
     // Build the buttons for the form.
     $this->starButtons = null;
     for ($i = 1; $i < 6; ++$i) {
-      $rated  = $i <= $this->userRating ? " class='rated'" : null;
+      $rated  = ($i <= $this->userRating) ? " class='rated'" : null;
       $title  = $this->intl->t("{0,plural,=1{Awful}=2{Bad}=3{Okay}=4{Fine}=5{Awesome}other{Unknown}}", $i);
       $this->starButtons .=
         "<button{$rated} name='rating' type='submit' value='{$i}' title='{$title}'>" .
@@ -131,11 +136,6 @@ final class RatingForm extends \MovLib\Core\Presentation\DependencyInjectionBase
         ]
       );
     }
-
-    $this->entity = $entity;
-    $this->diContainerHTTP->presenter->addClass("star-rating", $attributes);
-    $this->form   = new Form($diContainerHTTP, $attributes, "stars-rating-{$entity->id}");
-    $this->form->init(null, [ $this, "validate" ]);
   }
 
   /**
@@ -175,7 +175,8 @@ final class RatingForm extends \MovLib\Core\Presentation\DependencyInjectionBase
       );
     }
     elseif (($rating = $this->request->filterInput(INPUT_POST, "rating", FILTER_VALIDATE_INT, [ "options" => [ "min_range" => 1, "max_range" => 5 ]]))) {
-      $this->entity->rate($rating, $this->session->userId);
+      $this->entity->rate($rating, $this->session->userId, $this->userRating);
+      $this->userRating = $rating;
     }
     else {
       $errors[] = $this->intl->t(

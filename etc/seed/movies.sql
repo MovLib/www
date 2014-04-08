@@ -364,4 +364,76 @@ INSERT INTO `movies_display_titles` SET
   `title_id`      = @die_verurteilten_id
 ;
 
+INSERT INTO `movies_genres` SET `movie_id` = @the_shawshank_redemption_id, `genre_id` = (
+  SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Crime' LIMIT 1
+);
+
+INSERT INTO `movies_genres` SET `movie_id` = @the_shawshank_redemption_id, `genre_id` = (
+  SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Drama' LIMIT 1
+);
+
 -- END "The Shawshank Redemption"
+
+-- ---------------------------------------------------------------------------------------------------------------------
+
+-- START "Ichi the Killer"
+
+INSERT INTO `movies` SET
+  `runtime`       = 7740, -- 192 minutes
+  `year`          = 2001,
+  `dyn_synopses`  = '',
+  `dyn_wikipedia` = COLUMN_CREATE(
+    'en', 'https://en.wikipedia.org/wiki/Ichi_the_Killer_%28film%29',
+    'de', 'https://de.wikipedia.org/wiki/Ichi_the_Killer'
+  )
+;
+SET @ichi_the_killer_id = LAST_INSERT_ID();
+
+INSERT INTO `movies_titles` SET
+  `movie_id`      = @ichi_the_killer_id,
+  `dyn_comments`  = '',
+  `language_code` = 'ja',
+  `title`         = '殺し屋1'
+;
+SET @ichi_the_killer_ot = LAST_INSERT_ID();
+
+INSERT INTO `movies_original_titles` SET
+  `movie_id` = @ichi_the_killer_id,
+  `title_id` = @ichi_the_killer_ot
+;
+
+INSERT INTO `movies_taglines` SET
+  `dyn_comments`  = COLUMN_CREATE(
+    'en', 'Love is pretty painful.',
+    'de', 'Liebe ist ziemlich schmerzhaft.'
+  ),
+  `movie_id`      = @ichi_the_killer_id,
+  `language_code` = 'ja',
+  `tagline`       = '愛は、かなりイタイ。'
+;
+SET @ichi_the_killer_tagline = LAST_INSERT_ID();
+
+INSERT INTO `movies_display_taglines` SET
+  `movie_id`      = @ichi_the_killer_id,
+  `tagline_id`    = @ichi_the_killer_tagline,
+  `language_code` = 'en'
+;
+
+INSERT INTO `movies_display_taglines` SET
+  `movie_id`      = @ichi_the_killer_id,
+  `tagline_id`    = @ichi_the_killer_tagline,
+  `language_code` = 'de'
+;
+
+INSERT INTO `movies_genres` (`movie_id`, `genre_id`) VALUES
+(@ichi_the_killer_id, (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Action' LIMIT 1))
+,(@ichi_the_killer_id, (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Art House' LIMIT 1))
+,(@ichi_the_killer_id, (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Comedy' LIMIT 1))
+,(@ichi_the_killer_id, (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Crime' LIMIT 1))
+,(@ichi_the_killer_id, (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Drama' LIMIT 1))
+,(@ichi_the_killer_id, (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Fantasy' LIMIT 1))
+,(@ichi_the_killer_id, (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Horror' LIMIT 1))
+,(@ichi_the_killer_id, (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Splatter' LIMIT 1))
+;
+
+-- END "Ichi the Killer"

@@ -297,6 +297,22 @@ INSERT INTO `genres` (`dyn_names`, `dyn_descriptions`, `dyn_wikipedia`) VALUES
     'de', '&lt;p&gt;Als Erotikfilm oder Softporno werden Spiel- oder Fernsehfilme bezeichnet, die hauptsächlich erotische Inhalte zeigen. Üblicherweise in Spielfilm-Länge ist ihre Handlung von periodischen Darstellungen simulierten, nicht explizit gezeigten Geschlechtsverkehrs durchsetzt. Das Softcore-Genre wird oft als Middlebrow, also für den Ottonormalverbraucher zugängliche Kunst, bezeichnet.&lt;/p&gt;'
   ),
   ''
+),
+(
+  COLUMN_CREATE(
+    'en', 'Art House',
+    'de', 'Arthaus'
+  ),
+  '',
+  ''
+),
+(
+  COLUMN_CREATE(
+    'en', 'Splatter',
+    'de', 'Splatter'
+  ),
+  '',
+  ''
 )
 ;
 

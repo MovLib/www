@@ -56,6 +56,25 @@ SQL;
   /**
    * {@inheritdoc}
    */
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+    return <<<SQL
+SELECT
+  `{$set->tableName}_genres`.`{$set->singularKey}_id` AS `entityId`,
+  `genres`.`id`,
+  IFNULL(
+    COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->languageCode}' AS CHAR),
+    COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+  ) AS `name`
+FROM `{$set->tableName}_genres`
+  INNER JOIN `genres` ON `genres`.`id` = `{$set->tableName}_genres`.`genre_id`
+WHERE `{$set->tableName}_genres`.`{$set->singularKey}_id` IN ({$in})
+ORDER BY `name` {$this->collations[$this->intl->languageCode]} DESC
+SQL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function init() {
     $this->pluralKey   = "genres";
     $this->singularKey = "genre";

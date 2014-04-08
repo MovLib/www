@@ -81,41 +81,6 @@ final class Country extends \MovLib\Core\Presentation\DependencyInjectionBase {
   }
 
   /**
-   * Format an array containing country objects.
-   *
-   * @param array $countries
-   *   The country objects to format.
-   * @param string $property [optional]
-   *   The structured data property for each country.
-   * @return string
-   *   The formatted countries.
-   */
-  public function formatArray(array $countries, $property = null) {
-    if (!empty($countries)) {
-      if ($property) {
-        $property = " property='{$property}'";
-      }
-
-      $list  = null;
-      $comma = $this->intl->t(", ");
-
-      /* @var $country \MovLib\Stub\Data\Country */
-      foreach ($countries as $country) {
-        if ($list) {
-          $list .= $comma;
-        }
-        $list .=
-          "<a href='{$this->intl->rp("/country/{country_code}/movies", [ "country_code" => $country->code ])}'{$property} typeof='Country'>" .
-            "<span property='name'>{$country->name}</span>" .
-          "</a>"
-        ;
-      }
-
-      return $list;
-    }
-  }
-
-  /**
    * Format a country with flag icon.
    *
    * @param string $countryCode
@@ -146,6 +111,41 @@ final class Country extends \MovLib\Core\Presentation\DependencyInjectionBase {
         $this->countries[$countryCode]->name .
       "</{$tag}>"
     ;
+  }
+
+  /**
+   * Format an array containing country objects.
+   *
+   * @param array $countries
+   *   The country objects to format.
+   * @param string $property [optional]
+   *   The structured data property for each country.
+   * @return string
+   *   The formatted countries.
+   */
+  public function getList(array $countries, $property = null) {
+    if (!empty($countries)) {
+      if ($property) {
+        $property = " property='{$property}'";
+      }
+
+      $list  = null;
+      $comma = $this->intl->t(", ");
+
+      /* @var $country \MovLib\Stub\Data\Country */
+      foreach ($countries as $country) {
+        if ($list) {
+          $list .= $comma;
+        }
+        $list .=
+          "<a href='{$this->intl->rp("/country/{country_code}/movies", [ "country_code" => $country->code ])}'{$property} typeof='Country'>" .
+            "<span property='name'>{$country->name}</span>" .
+          "</a>"
+        ;
+      }
+
+      return $list;
+    }
   }
 
   /**

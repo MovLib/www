@@ -254,21 +254,6 @@ class Base {
   }
 
   /**
-   * Transform and kind of string to HTML safe ID.
-   *
-   * @param string $string
-   *   The string to convert.
-   * @return string
-   *   The HTML safe ID.
-   */
-  final public function htmlString2ID($string) {
-    if (is_numeric($string{0})) {
-      $string = "n{$string}";
-    }
-    return mb_strtolower(preg_replace("/[^\d\w-_]+/", "-", $string));
-  }
-
-  /**
    * Normalize all kinds of line feeds to *NIX style (real LF).
    *
    * @link http://stackoverflow.com/a/7836692/1251219 How to replace different newline styles in PHP the smartest way?

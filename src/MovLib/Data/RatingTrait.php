@@ -80,7 +80,7 @@ trait RatingTrait {
     $mysqli = $this->getMySQLi();
     // This user hasn't voted for this entity yet.
     if ($userRating === null) {
-      $mysqli->query("INSERT INTO `{$this->tableName}_ratings` SET `{$this->singularKey}_id` = {$this->id}, `user_id` = {$userId}, `rating` = {$rating}");
+      $mysqli->query("INSERT INTO `{$this->tableName}_ratings` SET `rating` = {$rating}, `{$this->singularKey}_id` = {$this->id}, `user_id` = {$userId}");
       ++$this->ratingVotes;
     }
     // This user already voted for this entity.
@@ -89,7 +89,7 @@ trait RatingTrait {
     }
 
     // Calculate the new mean rating for this entity.
-    $this->ratingMean = round(($this->ratingMean + $rating) / $this->ratingVotes, 2);
+    $this->ratingMean = round(($this->ratingMean - $userRating + $rating) / $this->ratingVotes, 2);
 
     // Update the entity's rating statistics.
     $mysqli->query("UPDATE `{$this->tableName}` SET `mean_rating` = {$this->ratingMean}, `votes` = {$this->ratingVotes} WHERE `id` = {$this->id}");

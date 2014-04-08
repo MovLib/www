@@ -82,9 +82,9 @@ final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity impleme
   /**
    * The movie's genres.
    *
-   * @var array
+   * @var \MovLib\Data\Genre\GenreSet
    */
-  public $genres;
+  public $genreSet;
 
   /**
    * The movie's original title.
@@ -172,6 +172,7 @@ SELECT
   COLUMN_GET(`movies`.`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR),
   `movies`.`mean_rating`,
   `movies_taglines`.`tagline`,
+  `movies_taglines`.`language_code`,
   `original_title`.`title`,
   `original_title`.`language_code`,
   IFNULL(`display_title`.`title`, `original_title`.`title`),
@@ -221,6 +222,7 @@ SQL
         $this->wikipedia,
         $this->ratingMean,
         $this->tagline,
+        $this->taglineLanguageCode,
         $this->originalTitle,
         $this->originalTitleLanguageCode,
         $this->displayTitle,
@@ -251,7 +253,7 @@ ORDER BY `name` {$this->collations[$this->intl->languageCode]} DESC
 SQL
       );
       while ($genre = $result->fetch_object("\\MovLib\\Data\\Genre\Genre", [ $this->diContainer ])) {
-        $this->genres[] = $genre;
+        $this->genreSet[] = $genre;
       }
       $result->free();
     }

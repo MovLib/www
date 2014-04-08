@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Movie\MovieSet;
+use \MovLib\Partial\Genre;
 
 /**
  * Defines the movie index presentation.
@@ -62,12 +63,25 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
           "<div class='s s8'>" .
             "<h2 class='para'>{$this->getStructuredDisplayTitle($movie)}</h2>" .
             $this->getStructuredOriginalTitle($movie, "small") .
-            $this->getGenreLabels($movie->genres, [ "class" => "small" ]) .
+            (new Genre($this->diContainerHTTP))->getLabels($movie->genreSet, [ "class" => "small" ]) .
           "</div>" .
           "<div class='s s1 rating-mean tac'>{$this->intl->format("{0,number}", $movie->meanRating)}</div>" .
         "</article>" .
       "</li>"
     ;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {
+    $items = null;
+    $this->set->loadOrdered("`created` DESC", $this->paginationOffset, $this->paginationLimit);
+    $this->set->loadGenres();
+    foreach ($this->set as $id => $entity) {
+      $items .= $this->formatListingItem($entity, $id);
+    }
+    return $this->getListing($items);
   }
 
   /**
