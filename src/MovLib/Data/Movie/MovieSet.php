@@ -126,8 +126,7 @@ SQL;
    * {@inheritdoc}
    */
   protected function init() {
-    $this->pluralKey   = $this->tableName = "movies";
-    $this->route       = $this->intl->rp("/movies");
+    $this->pluralKey   = "movies";
     $this->singularKey = "movie";
     return parent::init();
   }

@@ -15,46 +15,42 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Partial;
 
 /**
- * Configuration for database classes.
+ * Defines generic listings with structured data.
  *
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractConfig extends \MovLib\Core\AbstractDatabase {
-
-
-  /**
-   * The plural translation key.
-   *
-   * @var string
-   */
-  public $pluralKey;
+final class Genre extends \MovLib\Core\Presentation\DependencyInjectionBase {
 
   /**
-   * The route in the current locale.
+   * Format an array of genres as comma separated list.
    *
-   * @var string
+   * @param array $genres
+   *   Array containing the genres to format.
+   * @return string
+   *   The genres formatted as comma separated list.
    */
-  public $route;
+  public function formatArray(array $genres) {
+    $list = null;
 
-  /**
-   * The singular translation key.
-   *
-   * @var string
-   */
-  public $singularKey;
+    /// The "," is used to separate list items, please note the space after the comma!
+    $comma = $this->intl->t(", ");
 
-  /**
-   * The table name.
-   *
-   * @var string
-   */
-  public $tableName;
+    /* @var $genre \MovLib\Data\Genre\Genre */
+    foreach ($genres as $genre) {
+      if ($list) {
+        $list .= $comma;
+      }
+      $list .= "<a href='{$genre->route}' property='genre'>{$genre->name}</a>";
+    }
+
+    return $list;
+  }
 
 }

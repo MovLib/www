@@ -22,7 +22,7 @@ use \MovLib\Partial\Alert;
 use \MovLib\Partial\Date;
 use \MovLib\Partial\FormElement\InputSex;
 use \MovLib\Partial\Place;
-use \MovLib\Partial\QuickInfo;
+use \MovLib\Partial\InfoboxTrait;
 use \MovLib\Partial\Sex;
 
 /**
@@ -95,7 +95,7 @@ class Show extends \MovLib\Presentation\AbstractShowPresenter {
       $this->pageTitle .=  "<sup class='ico ico-sex{$this->entity->sex} sex sex-{$this->entity->sex}' content='{$sexTitle}' property='gender' title='{$sexTitle}'></sup>";
     }
 
-    $infos = new QuickInfo($this->intl);
+    $infos = new InfoboxTrait($this->intl);
     $this->entity->bornName && $infos->add($this->intl->t("Born as"), "<span property='additionalName'>{$this->entity->bornName}</span>");
 
     if ($this->entity->birthDate) {

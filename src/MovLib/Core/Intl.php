@@ -425,7 +425,7 @@ final class Intl {
       "format you strings, the right tool for the job! You may use sprintf() for fancy formatting."
     );
     assert(
-      preg_match("/\{[a-z0-9_]*[A-Z|\-| ]+[a-z0-9_]*\}/", $pattern) !== 1,
+      preg_match("/(plural|select)/", $pattern) === 1 || preg_match("/\{[a-z0-9_]*[A-Z|\-| ]+[a-z0-9_]*\}/", $pattern) !== 1,
       "Always use snake case for intl placeholder tokens."
     );
     assert(strip_tags($pattern) == $pattern, "HTML is not allowed in translation patterns.");

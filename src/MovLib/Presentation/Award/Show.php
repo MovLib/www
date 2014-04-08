@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Award;
 
 use \MovLib\Data\Award\Award;
 use \MovLib\Partial\Date;
-use \MovLib\Partial\QuickInfo;
+use \MovLib\Partial\InfoboxTrait;
 
 /**
  * Defines the award show presentation.
@@ -60,7 +60,7 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
   public function getContent() {
     $this->headingBefore = "<div class='r'><div class='s s10'>";
 
-    $infos = new QuickInfo($this->intl);
+    $infos = new InfoboxTrait($this->intl);
     $this->entity->links          && $infos->add($this->intl->t("Sites"), $this->formatWeblinks($this->entity->links));
     $this->entity->firstEventYear && $infos->add($this->intl->t("First Event"), (new Date($this->intl, $this))->format($this->entity->firstEventYear));
     $this->entity->lastEventYear  && $infos->add($this->intl->t("Last Event"), (new Date($this->intl, $this))->format($this->entity->lastEventYear));

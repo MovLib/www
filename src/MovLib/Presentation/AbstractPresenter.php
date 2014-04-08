@@ -138,6 +138,10 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
   /**
    * The page's translated routes.
    *
+   * <b>NOTE</b><br>
+   * Must be public because it's used in the {@see \MovLib\Exception\ClientException\UnauthorizedException} to set the
+   * language links.
+   *
    * @var array
    */
   public $languageLinks;
@@ -541,9 +545,6 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
    *   The presentation's content wrapped with the main tag and header.
    */
   public function getMainContent($content) {
-    // Allow the presentation to set a heading that includes HTML mark-up.
-    $title = $this->pageTitle ?: $this->title;
-
     // Add the current page to the breadcrumb.
     if ($this->breadcrumb) {
       $this->breadcrumb->menuitems[] = [ $this->request->path, $this->breadcrumbTitle ?: $this->title ];
@@ -553,12 +554,6 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
     $schema = null;
     if ($this->schemaType) {
       $schema = " typeof='{$this->schemaType}'";
-    }
-
-    // The schema property of the heading.
-    $headingprop = null;
-    if ($this->headingSchemaProperty) {
-      $headingprop = " property='{$this->headingSchemaProperty}'";
     }
 
     $noscript = new Alert(
@@ -571,12 +566,33 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
     return
       "<main id='m' role='main'{$schema}>" .
         "<header id='header'>" .
-          "<div class='c'>{$this->breadcrumb}{$this->headingBefore}<h1{$headingprop}>{$title}</h1>{$this->headingAfter}</div>" .
+          "<div class='c'>{$this->breadcrumb}{$this->getMainHeading()}</div>" .
           "<noscript>{$noscript}</noscript>{$this->alerts}" .
         "</header>" .
         "{$this->contentBefore}{$content}{$this->contentAfter}" .
       "</main>"
     ;
+  }
+
+  /**
+   * Get the presentation's main <code><header></code> content.
+   *
+   * @todo Concrete classes should overwrite this method and implement their own special heading instead of setting
+   *       some properties that have to be known upfront.
+   * @return string
+   *   The presentation's main <code><header></code> content.
+   */
+  protected function getMainHeading() {
+    // Allow presenter's to set a title with HTML.
+    $title = $this->pageTitle ?: $this->title;
+
+    // The schema property of the heading.
+    $headingprop = null;
+    if ($this->headingSchemaProperty) {
+      $headingprop = " property='{$this->headingSchemaProperty}'";
+    }
+
+    return "{$this->headingBefore}<h1{$headingprop}>{$title}</h1>{$this->headingAfter}";
   }
 
   /**

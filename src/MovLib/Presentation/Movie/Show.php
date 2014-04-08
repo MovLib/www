@@ -18,7 +18,10 @@
 namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Movie\Movie;
-use \MovLib\Partial\QuickInfo;
+use \MovLib\Partial\Duration;
+use \MovLib\Partial\RatingForm;
+use \MovLib\Partial\Country;
+use \MovLib\Partial\Genre;
 
 /**
  * Defines the movie presentation.
@@ -39,6 +42,7 @@ use \MovLib\Partial\QuickInfo;
  */
 final class Show extends \MovLib\Presentation\AbstractShowPresenter {
   use \MovLib\Presentation\Movie\MovieTrait;
+  use \MovLib\Partial\InfoboxTrait;
 
   /**
    * {@inheritdoc}
@@ -54,18 +58,20 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
     $this->stylesheets[] = "movie";
     $this->javascripts[] = "Movie";
     $this->pageTitle     = $this->getStructuredDisplayTitle($this->entity, false, true);
+    return $this;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    $this->headingBefore = "<div class='r'><div class='s s10'>";
+    $this->infoboxInit($this->entity, $this->intl->r("/movie/{0}/posters", $this->entity->id), new RatingForm($this->diContainerHTTP, $this->entity));
+    $this->entity->runtime   && $this->infoboxAdd($this->intl->t("Runtime"), (new Duration($this->diContainerHTTP))->formatMinutes($this->entity->runtime, [ "property" => "runtime" ]));
+    $this->entity->genres    && $this->infoboxAdd($this->intl->t("Genres"), (new Genre($this->diContainerHTTP))->formatArray($this->entity->genres));
+    $this->entity->countries && $this->infoboxAdd($this->intl->t("Countries"), (new Country($this->diContainerHTTP))->formatArray($this->entity->countries, "contentLocation"));
 
-    $infos = new QuickInfo($this->intl);
 
-
-    $this->headingAfter .= "{$infos}</div><div class='s s2'><img alt='' src='{$this->fs->getExternalURL("asset://img/logo/vector.svg")}' width='140' height='140'></div></div>";
+    return "";
   }
 
   /**

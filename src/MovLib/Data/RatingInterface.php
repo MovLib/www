@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -18,43 +18,28 @@
 namespace MovLib\Data;
 
 /**
- * Configuration for database classes.
+ * Defines the rating interface for type hinting.
  *
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @see \MovLib\Data\RatingTrait
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractConfig extends \MovLib\Core\AbstractDatabase {
-
-
-  /**
-   * The plural translation key.
-   *
-   * @var string
-   */
-  public $pluralKey;
+interface RatingInterface {
 
   /**
-   * The route in the current locale.
+   * Rate this entity.
    *
-   * @var string
+   * @param integer $rating
+   *   A valid rating between 1 and 5.
+   * @param integer $userId
+   *   The user to rate for.
+   * @param integer|null $userRating
+   *   The user's current rating for this entity.
+   * @return this
    */
-  public $route;
-
-  /**
-   * The singular translation key.
-   *
-   * @var string
-   */
-  public $singularKey;
-
-  /**
-   * The table name.
-   *
-   * @var string
-   */
-  public $tableName;
+  public function rate($rating, $userId, $userRating);
 
 }

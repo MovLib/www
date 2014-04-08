@@ -75,11 +75,11 @@ class DependencyInjectionBase extends \MovLib\Core\Presentation\Base {
   protected $log;
 
   /**
-   * Active HTTP session instance.
+   * The presenting presenter.
    *
-   * @var \MovLib\Core\HTTP\Session
+   * @var null|\MovLib\Presentation\AbstractPresenter
    */
-  protected $session;
+  protected $presenter;
 
   /**
    * Active HTTP request instance.
@@ -94,6 +94,13 @@ class DependencyInjectionBase extends \MovLib\Core\Presentation\Base {
    * @var \MovLib\Core\HTTP\Response
    */
   protected $response;
+
+  /**
+   * Active HTTP session instance.
+   *
+   * @var \MovLib\Core\HTTP\Session
+   */
+  protected $session;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -115,6 +122,9 @@ class DependencyInjectionBase extends \MovLib\Core\Presentation\Base {
     $this->request         = $diContainerHTTP->request;
     $this->response        = $diContainerHTTP->response;
     $this->session         = $diContainerHTTP->session;
+    if (isset($diContainerHTTP->presenter)) {
+      $this->presenter = $diContainerHTTP->presenter;
+    }
   }
 
 

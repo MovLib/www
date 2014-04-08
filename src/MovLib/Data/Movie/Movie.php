@@ -23,31 +23,27 @@ use \MovLib\Exception\ClientException\NotFoundException;
 /**
  * Defines the movie object.
  *
+ * @property-read array|null $countries The movie's countries.
+ *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity {
+final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity implements \MovLib\Data\RatingInterface {
+  use \MovLib\Data\RatingTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The movie's rating.
-   *
-   * @var null|float
-   */
-  public $bayesRating;
-
-  /**
    * The movie's countries.
    *
    * @var null|array
    */
-  public $countries;
+  private $countries;
 
   /**
    * The movie's display title <b>for</b> the current locale.
@@ -91,13 +87,6 @@ final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity {
   public $genres;
 
   /**
-   * The movie's mean rating.
-   *
-   * @var float
-   */
-  public $meanRating;
-
-  /**
    * The movie's original title.
    *
    * @var string
@@ -110,13 +99,6 @@ final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity {
    * @var string
    */
   public $originalTitleLanguageCode;
-
-  /**
-   * The movie's global rank.
-   *
-   * @var null|integer
-   */
-  public $rank;
 
   /**
    * The movie's runtime in seconds.
@@ -145,13 +127,6 @@ final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity {
    * @var string
    */
   public $taglineLanguageCode;
-
-  /**
-   * The movie's votes.
-   *
-   * @var null|integer
-   */
-  public $votes;
 
   /**
    * The movie's year.
@@ -230,7 +205,7 @@ SQL
         $this->year,
         $this->rank,
         $this->votes,
-        $this->rating,
+        $this->bayesRating,
         $this->runtime,
         $this->deleted,
         $this->changed,
@@ -276,9 +251,36 @@ SQL
     }
   }
 
+  /**
+   * @link http://php.net/language.oop5.overloading#object.get
+   */
+  public function __get($name) {
+    if (isset($this->$name)) {
+      return $this->$name;
+    }
+    return $this->{"get{$name}"}();
+  }
+
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  /**
+   * Get the movie's countries.
+   *
+   * @see Movie::__get()
+   * @return array
+   *   Array containing all countries of this movie.
+   */
+  private function getCountries() {
+    $countries = $this->intl->getTranslations("countries");
+    $result    = $this->getMySQLi()->query("SELECT `country_code` FROM `movies_countries` WHERE `movie_id` = {$this->id}");
+    while ($countryCode = $result->fetch_row()[0]) {
+      $this->countries[$countryCode] = $countries[$countryCode];
+    }
+    $result->free();
+    return $this->countries;
+  }
 
   /**
    * {@inheritdoc}
@@ -306,7 +308,6 @@ SQL
     $this->imageAlternativeText = $this->intl->t("{movie_title} poster.", [ "movie_title" => $this->displayTitleAndYear]);
     $this->imageDirectory       = "upload://movie/{$this->id}/poster";
     $this->pluralKey            = $this->tableName = "movies";
-    $this->route                = $this->intl->r("/movie/{0}", $this->id);
     $this->singularKey          = "movie";
     return parent::init();
   }

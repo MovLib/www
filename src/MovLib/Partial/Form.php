@@ -93,6 +93,13 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
    */
   public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, array $attributes = [], $id = null) {
     parent::__construct($diContainerHTTP);
+    // @devStart
+    // @codeCoverageIgnoreStart
+    foreach ([ "accept-charset", "method" ] as $attribute) {
+      assert(!isset($attributes[$attribute]), "You must not set the '{$attribute}' attribute of a form!");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     $this->presenter  = $diContainerHTTP->presenter;
     $this->attributes = $attributes;
     $this->id         = $id ? $id : $this->presenter->id;
@@ -239,24 +246,14 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
   /**
    * Initialize the form.
    *
-   * @param callable $validCallback
+   * @param callable $validCallback [optional]
    *   Callable to call if the form is valid. The callable will be invoked without any arguments.
    * @param callable $validationCallback [optional]
    *   Callable to call to continue form validation in the presenter. The callable will get the errors as first
    *   parameter and you have to return the same array.
    * @return this
    */
-  public function init(callable $validCallback, callable $validationCallback = null) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    foreach ([ "accept-charset", "method" ] as $attribute) {
-      if (isset($attributes[$attribute])) {
-        throw new \LogicException("You must not set the '{$attribute}' attribute of a form");
-      }
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
+  public function init(callable $validCallback = null, callable $validationCallback = null) {
     // Export attribute to class scope and add default attributes.
     $this->attributes["accept-charset"] = "utf-8";
     $this->attributes["method"]         = "post";
@@ -329,7 +326,7 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
         $this->presenter->alerts .= new Alert("<p>{$errors}</p>", $this->intl->t("Validation Error"), Alert::SEVERITY_ERROR);
       }
       // If no errors were found continue processing.
-      else {
+      elseif ($validCallback) {
         $validCallback();
       }
     }

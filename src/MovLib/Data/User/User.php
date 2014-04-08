@@ -359,13 +359,24 @@ SQL
   }
 
   /**
-   * {@inheritdoc}
+   * Get the rating for an entity.
+   *
+   * @param \MovLib\Data\AbstractEntity $entity
+   *   The entity to get the rating for.
+   * @param integer $userId [optional]
+   *   The user's unique identifier to get the rating for, defaults to <code>NULL</code> and the id from the current
+   *   instance will be used.
+   * @param return integer
+   *   The user's rating for this movie, or <code>NULL</code> if the user hasn't rated this movie.
    */
-  public function getCount($from, $what = "*") {
-    $result = $this->getMySQLi()->query("SELECT COUNT({$what}) FROM `{$from}` WHERE `user_id` = {$this->id} LIMIT 1");
-    $count  = $result->fetch_row()[0];
+  public function getRating(\MovLib\Data\AbstractEntity $entity, $userId = null) {
+    if (empty($userId)) {
+      $userId = $this->id;
+    }
+    $result = $this->getMySQLi()->query("SELECT `rating` FROM `{$entity->tableName}_ratings` WHERE `user_id` = {$userId} AND `{$entity->singularKey}_id` = {$entity->id} LIMIT 1");
+    $rating = $result->fetch_row()[0];
     $result->free();
-    return $count;
+    return $rating;
   }
 
   /**

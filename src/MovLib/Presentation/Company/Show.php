@@ -20,7 +20,6 @@ namespace MovLib\Presentation\Company;
 use \MovLib\Data\Company\Company;
 use \MovLib\Partial\Date;
 use \MovLib\Partial\Place;
-use \MovLib\Partial\QuickInfo;
 
 /**
  * Defines the company show presentation.
@@ -42,12 +41,13 @@ use \MovLib\Partial\QuickInfo;
 final class Show extends \MovLib\Presentation\AbstractShowPresenter {
   use \MovLib\Partial\CompanyTrait;
   use \MovLib\Partial\ContentSectionTrait;
+  use \MovLib\Partial\InfoboxTrait;
 
   /**
    * {@inheritdoc}
    */
   public function init() {
-    $this->initShow(
+    return $this->initShow(
       new Company($this->diContainerHTTP, $_SERVER["COMPANY_ID"]),
       $this->intl->t("Companies"),
       $this->intl->t("Company"),
@@ -59,23 +59,21 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    $this->headingBefore = "<div class='r'><div class='s s10'>";
+    // Build the movie's infobox.
+    $this->infoboxInit($this->entity);
+    $this->entity->links        && $this->infoboxAdd($this->intl->t("Sites"), $this->formatWeblinks($this->entity->links));
+    $this->entity->foundingDate && $this->infoboxAdd($this->intl->t("Founded"), (new Date($this->intl, $this))->format($this->entity->foundingDate, [ "property" => "foundingDate" ]));
+    $this->entity->defunctDate  && $this->infoboxAdd($this->intl->t("Defunct"), (new Date($this->intl, $this))->format($this->entity->defunctDate, [ "property" => "defunctDate" ]));
+    $this->entity->place        && $this->infoboxAdd($this->intl->t("Based in"), new Place($this, $this->intl, $this->entity->place, [ "property" => "location" ]));
 
-    $infos = new QuickInfo($this->intl);
-    $this->entity->links        && $infos->add($this->intl->t("Sites"), $this->formatWeblinks($this->entity->links));
-    $this->entity->foundingDate && $infos->add($this->intl->t("Founded"), (new Date($this->intl, $this))->format($this->entity->foundingDate, [ "property" => "foundingDate" ]));
-    $this->entity->defunctDate  && $infos->add($this->intl->t("Defunct"), (new Date($this->intl, $this))->format($this->entity->defunctDate, [ "property" => "defunctDate" ]));
-    $this->entity->place        && $infos->add($this->intl->t("Based in"), new Place($this, $this->intl, $this->entity->place, [ "property" => "location" ]));
-    $this->entity->wikipedia    && $infos->addWikipedia($this->entity->wikipedia);
-
-    $this->headingAfter .= "{$infos}</div><div class='s s2'><img alt='' src='{$this->fs->getExternalURL("asset://img/logo/vector.svg")}' width='140' height='140'></div></div>";
-
+    // Build the movie's content and return if we have any.
     $this->entity->description && $this->addContentSection($this->intl->t("Profile"), $this->entity->description);
     $this->entity->aliases     && $this->addContentSection($this->intl->t("Also Known As"), $this->formatAliases($this->entity->aliases), false);
     if (($content = $this->getContentSections())) {
       return $content;
     }
 
+    // Otherwise let the client know that we have no further information for this movie.
     return new Alert(
       "<p>{$this->intl->t("{sitename} doesn’t have further details about this company.", [ "sitename" => $this->config->sitename ])}</p>" .
       "<p>{$this->intl->t("Would you like to {0}add additional information{1}?", [ "<a href='{$this->intl->r("/company/{0}/edit", $this->entity->id)}'>", "</a>" ])}</p>",

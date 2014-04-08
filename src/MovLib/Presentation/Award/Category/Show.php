@@ -99,7 +99,7 @@ class Show extends \MovLib\Presentation\Award\Category\AbstractBase {
       if ($info) {
         $info .= "<br>";
       }
-      $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->award->wikipedia}' itemprop='sameAs' target='_blank'>{$this->intl->t("Wikipedia Article")}</a>";
+      $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->award->infoboxWikipedia}' itemprop='sameAs' target='_blank'>{$this->intl->t("Wikipedia Article")}</a>";
     }
 
     $this->headingBefore = "<div class='r'><div class='s s10'>";
