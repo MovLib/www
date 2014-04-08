@@ -41,7 +41,7 @@ class Person extends \MovLib\Data\Image\AbstractImageEntity {
    *
    * @var integer
    */
-  public $awardCount;
+  public $countAwards;
 
   /**
    * The person's translated biography.
@@ -104,21 +104,21 @@ class Person extends \MovLib\Data\Image\AbstractImageEntity {
    *
    * @var integer
    */
-  public $movieCount;
+  public $countMovies;
 
   /**
    * The person's total release count.
    *
    * @var integer
    */
-  public $releaseCount;
+  public $countReleases;
 
   /**
    * The person's total series count.
    *
    * @var integer
    */
-  public $seriesCount;
+  public $countSeries;
 
   /**
    * The person's sex.
@@ -163,10 +163,10 @@ SELECT
   `deathdate`,
   `deathplace_id`,
   COLUMN_GET(`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR),
-  `award_count`,
-  `movie_count`,
-  `series_count`,
-  `release_count`,
+  `count_awards`,
+  `count_movies`,
+  `count_series`,
+  `count_releases`,
   HEX(`image_cache_buster`),
   `image_extension`,
   `image_filesize`,
@@ -190,10 +190,10 @@ SQL
         $this->deathDate,
         $this->deathPlaceId,
         $this->wikipedia,
-        $this->awardCount,
-        $this->movieCount,
-        $this->seriesCount,
-        $this->releaseCount,
+        $this->countAwards,
+        $this->countMovies,
+        $this->countSeries,
+        $this->countReleases,
         $this->imageCacheBuster,
         $this->imageExtension,
         $this->imageFilesize,
