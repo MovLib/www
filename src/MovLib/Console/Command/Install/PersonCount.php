@@ -49,28 +49,7 @@ class PersonCount extends \MovLib\Console\Command\Install\AbstractEntityCountCom
    * {@inheritdoc}
    */
   protected function verifyCounts() {
-    $result = $this->mysqli->query(<<<SQL
-SELECT
-  `id`,
-  `award_count` AS `awardCount`,
-  `movie_count` AS `movieCount`,
-  `release_count` AS `releaseCount`,
-  `series_count` AS `seriesCount`
-FROM `persons`
-ORDER BY `id` ASC
-SQL
-    );
-
-    $personCountsActual = null;
-    while ($row = $result->fetch_object()) {
-      $personCountsActual[$row->id] = (object) [
-        "award"   => (integer) $row->awardCount,
-        "movie"   => (integer) $row->movieCount,
-        "release" => (integer) $row->releaseCount,
-        "series"  => (integer) $row->seriesCount,
-      ];
-    }
-    $result->free();
+    $personCountsActual = $this->getActualCounts([ "award", "movie", "release", "series" ], "persons");
     if (!$personCountsActual) {
       return;
     }
@@ -226,9 +205,9 @@ SQL
     $result = $this->mysqli->query(<<<SQL
 SELECT
   `persons`.`id`,
-  `movies_directors`.`movie_id` AS `directorSeriesId`,
-  `movies_cast`.`movie_id` AS `castSeriesId`,
-  `movies_crew`.`movie_id` AS `crewSeriesId`
+  `episodes_directors`.`series_id` AS `directorSeriesId`,
+  `episodes_cast`.`series_id` AS `castSeriesId`,
+  `episodes_crew`.`series_id` AS `crewSeriesId`
 FROM `persons`
 LEFT JOIN `episodes_directors`
   ON `episodes_directors`.`person_id` = `persons`.`id`

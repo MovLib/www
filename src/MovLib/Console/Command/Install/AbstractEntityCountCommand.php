@@ -72,6 +72,41 @@ abstract class AbstractEntityCountCommand extends \MovLib\Console\Command\Abstra
   }
 
   /**
+   * Get the actual counts stored for an entity.
+   *
+   * @param array $countColumns
+   *   The field names to retrieve (without '_count').
+   * @param string $tableName
+   *   The table to retrieve data from.
+   * @return array
+   *   Associative array with the entity's identifier as keys and an object containing the counts.
+   *   E.g. if you pass "award" as column name the object will contain the property of the same name.
+   */
+  protected function getActualCounts(array $countColumns, $tableName) {
+    $projection = null;
+    foreach ($countColumns as $column) {
+      $projection .= ", `{$column}_count` AS `{$column}`";
+    }
+    $result = $this->mysqli->query(<<<SQL
+SELECT
+  `id`{$projection}
+FROM `{$tableName}`
+ORDER BY `id` ASC
+SQL
+    );
+
+    $countsActual = null;
+    while ($row = $result->fetch_assoc()) {
+      $countsActual[$row["id"]] = new \stdClass();
+      foreach ($countColumns as $column) {
+        $countsActual[$row["id"]]->{$column} = (integer) $row[$column];
+      }
+    }
+    $result->free();
+    return $countsActual;
+  }
+
+  /**
    * Get the counts from a single table.
    *
    * @param array $groupColumns
