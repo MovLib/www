@@ -65,6 +65,7 @@
 #sidebar-nav a:focus .fr,
 #sidebar-nav a:hover .fr {
   color: #656565;
+  background-color: #fff;
 }
 
 #sidebar-nav a:after {
