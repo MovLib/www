@@ -12,12 +12,14 @@ USE `movlib` ;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The movie’s unique ID.',
+  `award_count` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s total number of awards.',
   `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the movie was last changed.',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the movie was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether the movie is marked as deleted (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_synopses` BLOB NOT NULL COMMENT 'The synopsis of the movie in various languages. Keys are ISO alpha-2 language codes.',
   `mean_rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s arithmetic mean rating.',
   `rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The Bayes\'theorem rating of this movie.\n\nrating = (s / (s + m)) * N + (m / (s + m)) * K\n\nN: arithmetic mean rating\ns: vote count\nm: minimum vote count\nK: arithmetic mean vote\n\nThe same formula is used by IMDb and OFDb.',
+  `release_count` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s total number of releases.',
   `votes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s vote count.',
   `commit` CHAR(40) NULL COMMENT 'The movie\'s last history commit sha-1 hash.',
   `rank` BIGINT UNSIGNED NULL COMMENT 'The movie’s global rank.',
