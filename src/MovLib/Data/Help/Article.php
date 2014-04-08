@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Help\Article;
+namespace MovLib\Data\Help;
 
-use \MovLib\Data\Help\Category\Category;
-use \MovLib\Data\Help\SubCategory\SubCategory;
+use \MovLib\Data\Help\Category;
+use \MovLib\Data\Help\SubCategory;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -139,11 +139,11 @@ SELECT
   `help_articles`.`deleted` AS `deleted`,
   IFNULL(
     COLUMN_GET(`help_articles`.`dyn_texts`, ? AS CHAR),
-    COLUMN_GET(`help_articles`.`dyn_texts`, '{$this->intl->defaultLanguageCode}' AS CHAR)'
+    COLUMN_GET(`help_articles`.`dyn_texts`, '{$this->intl->defaultLanguageCode}' AS CHAR)
   ) AS `text`,
   IFNULL(
     COLUMN_GET(`help_articles`.`dyn_titles`, ? AS CHAR),
-    COLUMN_GET(`help_articles`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)'
+    COLUMN_GET(`help_articles`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)
   ) AS `title`,
   `help_articles`.`view_count` as `viewCount`
 FROM `help_articles`
@@ -191,17 +191,17 @@ SQL
       $this->route       = $this->intl->r("/help/{0}/{1}/{2}", [
         $this->fs->sanitizeFilename($this->category->title),
         $this->fs->sanitizeFilename($this->subCategory->title),
-        $this->fs->sanitizeFilename($this->title)
+        $this->id
       ]);
+      $this->routeKey = "{$this->subCategory->routeKey}/{0}";
     }
     else {
-      $this->route = $this->intl->r("/help/{0}/{1}", [
+      $this->route    = $this->intl->r("/help/{0}/{1}", [
         $this->fs->sanitizeFilename($this->category->title),
-        $this->fs->sanitizeFilename($this->title)
+        $this->id
       ]);
+      $this->routeKey = "{$this->category->routeKey}/{0}";
     }
-    $this->singularKey = "help_article";
-    return parent::init();
   }
 
 }

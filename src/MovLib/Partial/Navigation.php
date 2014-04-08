@@ -183,7 +183,7 @@ final class Navigation {
     // @codeCoverageIgnoreStart
     }
     catch (\Exception $e) {
-      return (string) new \MovLib\Presentation\Partial\Alert("<pre>{$e}</pre>", "Error Rendering Element", \MovLib\Presentation\Partial\Alert::SEVERITY_ERROR);
+      return (string) new \MovLib\Partial\Alert("<pre>{$e}</pre>", "Error Rendering Element", \MovLib\Partial\Alert::SEVERITY_ERROR);
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

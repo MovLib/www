@@ -72,21 +72,26 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
    * <b>EXAMPLE</b><br>
    * <code><?php
    *
-   * public function getCount($from, $what = "*") {
-   *   return $this->getMySQLi()->query("SELECT COUNT({$what}) FROM `{$from}` WHERE `id` = 1 LIMIT 1")->fetch_row()[0];
+   * public function getCount($from, $where = null, $what = "*") {
+   *   return $this->getMySQLi()->query("SELECT COUNT({$what}) FROM `{$from}` WHERE {$where}")->fetch_row()[0];
    * }
    *
    * ?></code>
    *
    * @param string $from
    *   The table defining the relationship that is to be counted.
+   * @param string $where [Optional]
+   *   The WHERE clause of the SQL query (without WHERE).
    * @param string $what
    *   The content of the <code>COUNT()</code> function in the SQL query.
    * @return integer
    *   The count of the relationship.
    */
-  public function getCount($from, $what = "*") {
-    $result = $this->getMySQLi()->query("SELECT COUNT({$what}) FROM `{$from}` WHERE `{$this->getSingularKey()}_id` = {$this->id} LIMIT 1");
+  public function getCount($from, $where = null, $what = "*") {
+    if ($where) {
+      $where = " WHERE {$where}";
+    }
+    $result = $this->getMySQLi()->query("SELECT COUNT({$what}) FROM `{$from}`{$where} LIMIT 1");
     $count  = $result->fetch_row()[0];
     $result->free();
     return $count;

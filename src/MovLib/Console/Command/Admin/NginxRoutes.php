@@ -99,7 +99,8 @@ class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
    * Get nginx persistent disk cache instruction for location block.
    *
    * @param string $presenter [optional]
-   *   The name of the presenter if the route's URL is empty (only applies to home pages).
+   *   <code>false</code> to disable caching or the name of the presenter if the
+   *   route's URL is empty (only applies to home pages).
    * @return string
    *   The nginx instruction to check for cached presentation before delivery.
    */

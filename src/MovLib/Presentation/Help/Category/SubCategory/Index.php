@@ -15,20 +15,20 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Help\Category;
+namespace MovLib\Presentation\Help\Category\SubCategory;
 
-use \MovLib\Data\Help\Category;
 use \MovLib\Data\Help\ArticleSet;
+use \MovLib\Data\Help\SubCategory;
 use \MovLib\Data\Help\SubCategorySet;
 use \MovLib\Partial\Alert;
 
 /**
- * Defines the help category index presentation.
+ * Defines the help subcategory index presentation.
  *
- * @link http://www.google.com/webmasters/tools/richsnippets?q=https://en.alpha.movlib.org/help/database
- * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/help/database
- * @link http://validator.w3.org/check?uri=https://en.movlib.org/help/database
- * @link http://gsnedders.html5.org/outliner/process.py?url=https://en.movlib.org/help/database
+ * @link http://www.google.com/webmasters/tools/richsnippets?q=https://en.alpha.movlib.org/help/database/movie
+ * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/help/database/movie
+ * @link http://validator.w3.org/check?uri=https://en.movlib.org/help/database/movie
+ * @link http://gsnedders.html5.org/outliner/process.py?url=https://en.movlib.org/help/database/movie
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -49,11 +49,11 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
   protected $articleSet;
 
   /**
-   * The category to present.
+   * The subcategory to present.
    *
-   * @var \MovLib\Data\Help\Category\Category
+   * @var \MovLib\Data\Help\SubCategory\SubCategory
    */
-  protected $category;
+  protected $subCategory;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -63,18 +63,18 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->articleSet  = new ArticleSet($this->diContainerHTTP);
-    $this->category    = new Category($this->diContainerHTTP, (integer) $_SERVER["HELP_CATEGORY_ID"]);
-    $this->set         = new SubCategorySet($this->diContainerHTTP);
+    $this->set         = new ArticleSet($this->diContainerHTTP);
+    $this->subCategory = new SubCategory($this->diContainerHTTP, $_SERVER["HELP_SUBCATEGORY_ID"]);
 
-    $this->initPage($this->category->title);
+    $this->initPage($this->subCategory->title);
     $this->initBreadcrumb([
-      [ $this->intl->r("/help"), $this->intl->t("Help") ]
+      [ $this->intl->r("/help"), $this->intl->t("Help") ],
+      [ $this->intl->r($this->subCategory->category->routeKey), $this->subCategory->category->title ]
     ]);
-    $this->initLanguageLinks($this->category->routeKey);
+    $this->initLanguageLinks($this->subCategory->routeKey);
 
-    $sidebarItems = [ [ $this->category->route, "{$this->category->title} <span class='fr'>{$this->intl->format("{0,number}", [ $this->category->articleCount ])}</span>", [ "class" => "ico {$this->category->icon} separator" ] ] ];
-    foreach ((array) $this->set->getAllBelongingToCategory($this->category->id) as $id => $entity) {
+    $sidebarItems = [ [ $this->subCategory->category->route, "{$this->subCategory->category->title} <span class='fr'>{$this->intl->format("{0,number}", [ $this->subCategory->category->articleCount ])}</span>", [ "class" => "ico {$this->subCategory->category->icon} separator" ] ] ];
+    foreach ((array) (new SubCategorySet($this->diContainerHTTP))->getAllBelongingToCategory($this->subCategory->category->id) as $id => $entity) {
       $sidebarItems[] = [ $entity->route, "{$entity->title} <span class='fr'>{$this->intl->format("{0,number}", [ $entity->articleCount ])}</span>" ];
     }
     $this->sidebarInit($sidebarItems);
@@ -86,7 +86,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    */
   public function getContent() {
     $items = null;
-    foreach ((array) $this->articleSet->getAllBelongingToCategory($this->category->id) as $id => $entity) {
+    foreach ((array) $this->set->getAllBelongingToSubCategory($this->subCategory->id) as $id => $entity) {
       $items .= $this->formatListingItem($entity, $id);
     }
     return isset($items)? $this->getListing($items) : $this->getNoItemsContent();

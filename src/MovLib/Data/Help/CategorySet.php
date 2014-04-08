@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Help\Category;
+namespace MovLib\Data\Help;
 
 /**
  * Defines the help category set object.
@@ -46,7 +46,8 @@ SELECT
   IFNULL(
     COLUMN_GET(`help_categories`.`dyn_titles`, '{$this->intl->languageCode}' AS CHAR),
     COLUMN_GET(`help_categories`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)
-  ) AS `title`
+  ) AS `title`,
+  COLUMN_GET(`help_categories`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR) AS `routeKey`
 FROM `help_categories`
 {$where}
 {$orderBy}

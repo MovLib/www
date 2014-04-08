@@ -15,13 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Help\SubCategory;
+namespace MovLib\Data\Help;
 
-use \MovLib\Data\Help\Category\Category;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
- * Defines the help subcategory entity object.
+ * Defines the help category entity object.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -29,56 +28,77 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class SubCategory extends \MovLib\Data\AbstractEntity {
+final class Category extends \MovLib\Data\AbstractEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The help subcategory this sub subcategory belongs to.
+   * The amount of articles in this subcategory.
    *
-   * @var mixed
+   * @var integer
    */
-  public $category;
+  public $articleCount;
 
   /**
-   * The timestamp on which this help subcategory was changed.
+   * The timestamp on which this help category was changed.
    *
    * @var integer
    */
   public $changed;
 
   /**
-   * The timestamp on which this help subcategory was created.
+   * The timestamp on which this help category was created.
    *
    * @var integer
    */
   public $created;
 
   /**
-   * The help subcategory's deletion state.
+   * The help category's deletion state.
    *
    * @var boolean
    */
   public $deleted;
 
   /**
-   * The help subcategory's unique identifier.
+   * The help category's description in the current display language.
+   *
+   * @var string
+   */
+  public $description;
+
+  /**
+   * The help category title's icon (e.g. ico-person).
+   *
+   * @var string
+   */
+  public $icon;
+
+  /**
+   * The help category's unique identifier.
    *
    * @var integer
    */
   public $id;
 
   /**
-   * The translated route of this help subcategory.
+   * The translated route of this help category.
    *
    * @var string
    */
   public $route;
 
   /**
-   * The help subcategory's title in the current display language.
+   * The route key in default language.
+   *
+   * @var string
+   */
+  public $routeKey;
+
+  /**
+   * The help category's title in the current display language.
    *
    * @var string
    */
@@ -89,12 +109,12 @@ final class SubCategory extends \MovLib\Data\AbstractEntity {
 
 
   /**
-   * Instantiate new help subcategory object.
+   * Instantiate new help category object.
    *
    * @param \MovLib\Core\DIContainer $diContainer
    *   {@inheritdoc}
    * @param integer $id [optional]
-   *   The help subcategory's unique identifier to instantiate, defaults to <code>NULL</code> (no help subcategory will be loaded).
+   *   The helb category's unique identifier to instantiate, defaults to <code>NULL</code> (no helb category will be loaded).
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
   public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null) {
@@ -102,34 +122,41 @@ final class SubCategory extends \MovLib\Data\AbstractEntity {
     if ($id) {
       $stmt = $this->getMySQLi()->prepare(<<<SQL
 SELECT
-  `help_subcategories`.`help_category_id` AS `category`,
-  `help_subcategories`.`id` AS `id`,
-  `help_subcategories`.`changed` AS `changed`,
-  `help_subcategories`.`created` AS `created`,
-  `help_subcategories`.`deleted` AS `deleted`,
+  `help_categories`.`id` AS `id`,
+  `help_categories`.`changed` AS `changed`,
+  `help_categories`.`created` AS `created`,
+  `help_categories`.`deleted` AS `deleted`,
+  `help_categories`.`icon`,
   IFNULL(
-    COLUMN_GET(`help_subcategories`.`dyn_titles`, ? AS CHAR),
-    COLUMN_GET(`help_subcategories`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)
-  ) AS `title`
-FROM `help_subcategories`
+    COLUMN_GET(`help_categories`.`dyn_descriptions`, ? AS CHAR),
+    COLUMN_GET(`help_categories`.`dyn_descriptions`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+  ) AS `description`,
+  IFNULL(
+    COLUMN_GET(`help_categories`.`dyn_titles`, ? AS CHAR),
+    COLUMN_GET(`help_categories`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+  ) AS `title`,
+  COLUMN_GET(`help_categories`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR) AS `routeKey`
+FROM `help_categories`
 WHERE `id` = ?
 LIMIT 1
 SQL
       );
-      $stmt->bind_param("sd", $this->intl->languageCode, $id);
+      $stmt->bind_param("ssd", $this->intl->languageCode, $this->intl->languageCode, $id);
       $stmt->execute();
       $stmt->bind_result(
-        $this->category,
         $this->id,
         $this->changed,
         $this->created,
         $this->deleted,
-        $this->title
+        $this->icon,
+        $this->description,
+        $this->title,
+        $this->routeKey
       );
       $found = $stmt->fetch();
       $stmt->close();
       if (!$found) {
-        throw new NotFoundException("Couldn't find help subcategory {$id}");
+        throw new NotFoundException("Couldn't find help category {$id}");
       }
     }
     if ($this->id) {
@@ -145,13 +172,11 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
-    $this->category    = new Category($this->diContainer, $this->category);
-    $this->pluralKey   = $this->tableName = "help_subcategories";
-    $this->route       = $this->intl->r("/help/{0}/{1}", [
-      $this->fs->sanitizeFilename($this->category->title),
-      $this->fs->sanitizeFilename($this->title)
-    ]);
-    $this->singularKey = "help_subcategory";
+    $this->articleCount = $this->getCount("help_articles", "`deleted` = false AND `help_category_id` = {$this->id} AND `help_subcategory_id` IS NULL");
+    $this->pluralKey    = $this->tableName = "help_categories";
+    $this->route        = $this->intl->r("/help/{0}", [ $this->fs->sanitizeFilename($this->title) ]);
+    $this->routeKey     = "/help/{$this->fs->sanitizeFilename($this->routeKey)}";
+    $this->singularKey  = "help_category";
     return parent::init();
   }
 

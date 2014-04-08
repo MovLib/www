@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Help;
 
-use \MovLib\Data\Help\Category\CategorySet;
+use \MovLib\Data\Help\CategorySet;
 use \MovLib\Partial\Alert;
 
 /**

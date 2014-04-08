@@ -114,7 +114,7 @@ SET @help_subcategory_persons = LAST_INSERT_ID();
 INSERT INTO `help_subcategories` SET
   `dyn_titles`       = COLUMN_CREATE(
     'en', 'Companies',
-    'de', 'Unternemen'
+    'de', 'Unternehmen'
   ),
   `help_category_id` = @help_category_database
 ;

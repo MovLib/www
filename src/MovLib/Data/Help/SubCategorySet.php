@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Help\Article;
+namespace MovLib\Data\Help;
 
 /**
- * Defines the help article set object.
+ * Defines the help subcategory set object.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -26,7 +26,7 @@ namespace MovLib\Data\Help\Article;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class ArticleSet extends \MovLib\Data\AbstractSet {
+final class SubCategorySet extends \MovLib\Data\AbstractSet {
 
   /**
    * {@inheritdoc}
@@ -34,30 +34,41 @@ final class ArticleSet extends \MovLib\Data\AbstractSet {
   protected function getEntitiesQuery($where = null, $orderBy = null) {
     return <<<SQL
 SELECT
-  `help_articles`.`id` AS `id`,
-  `help_articles`.`help_category_id` AS `category`,
-  `help_articles`.`help_subcategory_id` AS `subCategory`,
-  `help_articles`.`changed` AS `changed`,
-  `help_articles`.`created` AS `created`,
-  `help_articles`.`deleted` AS `deleted`,
+  `help_subcategories`.`help_category_id` AS `category`,
+  `help_subcategories`.`id` AS `id`,
+  `help_subcategories`.`changed` AS `changed`,
+  `help_subcategories`.`created` AS `created`,
+  `help_subcategories`.`deleted` AS `deleted`,
   IFNULL(
-    COLUMN_GET(`help_articles`.`dyn_titles`, '{$this->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`help_articles`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+    COLUMN_GET(`help_subcategories`.`dyn_titles`, '{$this->intl->languageCode}' AS CHAR),
+    COLUMN_GET(`help_subcategories`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)
   ) AS `title`,
-  `help_articles`.`view_count` as `viewCount`
-FROM `help_articles`
+  COLUMN_GET(`help_subcategories`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR) AS `routeKey`
+FROM `help_subcategories`
 {$where}
 {$orderBy}
 SQL;
   }
 
   /**
+   * Get all subcategories belonging to a certain category.
+   *
+   * @param integer $id
+   *   The unique category identifier.
+   * @return null|array
+   *   All sub categories, <code>NULL</code> if no entities were found.
+   */
+  public function getAllBelongingToCategory($id) {
+    return $this->getEntities("WHERE `{$this->tableName}`.`deleted` = false AND `help_category_id` = {$id}");
+  }
+
+  /**
    * {@inheritdoc}
    */
   protected function init() {
-    $this->pluralKey   = $this->tableName = "help_articles";
+    $this->pluralKey   = $this->tableName = "help_subcategories";
     $this->route       = $this->intl->rp("/help");
-    $this->singularKey = "help_article";
+    $this->singularKey = "help_subcategory";
     return parent::init();
   }
 

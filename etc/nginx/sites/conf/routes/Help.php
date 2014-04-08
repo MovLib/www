@@ -16,7 +16,6 @@
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
 
-use \MovLib\Data\Help\Article\ArticleSet;
 use \MovLib\Data\Help\Category\CategorySet;
 use \MovLib\Data\Help\SubCategory\SubCategorySet;
 
@@ -31,6 +30,9 @@ use \MovLib\Data\Help\SubCategory\SubCategorySet;
  */
 
 /* @var $this \MovLib\Tool\Console\Command\Production\NginxRoutes */
+$diContainer = $this->diContainer;
+$diContainer->intl = new \MovLib\Core\Intl($diContainer->config);
+
 ?>
 
 
@@ -42,73 +44,67 @@ location = <?= $this->r("/help") ?> {
   <?= $this->cache() ?>
 }
 
+location = <?= $this->r("/help/search") ?> {
+  <?= $this->set("Search") ?>
+  <?= $this->cache(false) ?>
+}
+
 
 # ---------------------------------------------------------------------------------------------------------------------- Help Categories
 
 
 <?php
-$this->setRoutesNamespace("Help\\Category");
-$categorySet = new CategorySet($this->diContainer);
+$categorySet = new CategorySet($diContainer);
 $getEntities = new \ReflectionMethod($categorySet, "getEntities");
 $getEntities->setAccessible(true);
-foreach ($getEntities->invoke($categorySet) as $category) :
+foreach ((array) $getEntities->invoke($categorySet) as $category):
+  $routeKey = "/help/{$this->fs->sanitizeFilename($category->title)}";
+  $this->setRoutesNamespace("Help\\Category");
 ?>
 
-location = <?= $category->route ?> {
+location = <?= $this->r($routeKey) ?> {
   <?= $this->set("Index") ?>
   <?= $this->set($category->id, "help_category_id") ?>
   <?= $this->cache() ?>
 }
-<?php endforeach; ?>
 
+location ^~ <?= $this->r($routeKey) ?> {
 
-# ---------------------------------------------------------------------------------------------------------------------- Help Sub-Categories
+  <?php
+  $subCategorySet = new subCategorySet($diContainer);
+  $subGetEntities = new \ReflectionMethod($subCategorySet, "getEntities");
+  $subGetEntities->setAccessible(true);
+  foreach ((array) $subGetEntities->invoke($subCategorySet, "WHERE `help_category_id` = {$category->id}") as $subCategory):
+    $subRouteKey = "{$routeKey}/{$this->fs->sanitizeFilename($subCategory->title)}";
+    $this->setRoutesNamespace("Help\\Category\\SubCategory");
+  ?>
 
-
-<?php
-$this->setRoutesNamespace("Help\\Category\\Subcategory");
-$subCategorySet = new SubCategorySet($this->diContainer);
-$getEntities    = new \ReflectionMethod($subCategorySet, "getEntities");
-$getEntities->setAccessible(true);
-foreach ($getEntities->invoke($subCategorySet) as $subCategory) :
-?>
-
-location = <?= $subCategory->route ?> {
-  <?= $this->set("Index") ?>
-  <?= $this->set($subCategory->id, "help_subcategory_id") ?>
-  <?= $this->set($subCategory->category->id, "help_category_id") ?>
-  <?= $this->cache() ?>
-}
-<?php endforeach; ?>
-
-
-# ---------------------------------------------------------------------------------------------------------------------- Help Articles
-
-
-<?php
-$articleSet  = new ArticleSet($this->diContainer);
-$getEntities = new \ReflectionMethod($articleSet, "getEntities");
-$getEntities->setAccessible(true);
-
-foreach ($getEntities->invoke($articleSet) as $article) :
-  if (isset($article->subCategory)) {
-    $this->setRoutesNamespace("Help\\Category\\Subcategory");
+  location = <?= $this->r($subRouteKey) ?> {
+    <?= $this->set("Index") ?>
+    <?= $this->set($category->id, "help_category_id") ?>
+    <?= $this->set($subCategory->id, "help_subcategory_id") ?>
+    <?= $this->cache() ?>
   }
-  else {
-    $this->setRoutesNamespace("Help\\Category");
+
+  location ^~ <?= $this->r($subRouteKey) ?> {
+<?php $this->setRoutesNamespace("Help\\Category\\SubCategory") ?>
+    location ~* '^<?= $this->r("{$subRouteKey}/{0}") ?>$' {
+      <?= $this->set("Show") ?>
+      <?= $this->set('$1', "help_article_id") ?>
+      <?= $this->cache() ?>
+    }
+
+    <?= $this->notFound() ?>
   }
-?>
 
-location = <?= $article->route ?> {
-  <?= $this->set("Show") ?>
-  <?= $this->set($article->id, "help_article_id") ?>
-  <?= $this->cache() ?>
+<?php endforeach; ?>
+<?php $this->setRoutesNamespace("Help\\Category") ?>
+  location ~* '^<?= $this->r("{$routeKey}/{0}") ?>$' {
+    <?= $this->set("Show") ?>
+    <?= $this->set('$1', "help_article_id") ?>
+    <?= $this->cache() ?>
+  }
+
+  <?= $this->notFound() ?>
 }
-
-location = <?= "{$article->route}/edit" ?> {
-  <?= $this->set("Edit") ?>
-  <?= $this->set($article->id, "help_article_id") ?>
-  <?= $this->cache() ?>
-}
-
-<?php endforeach;
+<?php endforeach; ?>
