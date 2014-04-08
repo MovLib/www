@@ -57,7 +57,7 @@ final class RatingForm extends \MovLib\Core\Presentation\DependencyInjectionBase
   protected $starButtons;
 
   /**
-   * The summary of the current votes.
+   * The summary of the current ratingVotes.
    *
    * @var string
    */
@@ -89,8 +89,8 @@ final class RatingForm extends \MovLib\Core\Presentation\DependencyInjectionBase
     // @devStart
     // @codeCoverageIgnoreStart
     // Yes, we could create an interface with getters, but you know, we don't like those slow getters...
-    assert(property_exists($entity, "meanRating"), "Your entity needs to contain a \$meanRating property (use the RatingTrait)!");
-    assert(property_exists($entity, "votes"), "Your entity needs to contain a \$votes property (use the RatingTrait)!");
+    assert(property_exists($entity, "ratingMean"), "Your entity needs to contain a \$ratingMean property (use the RatingTrait)!");
+    assert(property_exists($entity, "ratingVotes"), "Your entity needs to contain a \$ratingVotes property (use the RatingTrait)!");
     // @codeCoverageIgnoreEnd
     // @devEnd
 
@@ -113,21 +113,21 @@ final class RatingForm extends \MovLib\Core\Presentation\DependencyInjectionBase
 
     // Build an explanation based on available rating data. We can't use Intl ICU plural forms here because we have to
     // enclose the various numeric values in structured data and want the correctly formatted too.
-    if ($entity->votes === 0) {
+    if ($entity->ratingVotes === 0) {
       $this->summary = $this->intl->t("No one has rated so far, be the first.");
     }
-    elseif ($entity->votes === 1 && $this->userRating !== null) {
+    elseif ($entity->ratingVotes === 1 && $this->userRating !== null) {
       $this->summary = $this->intl->t("You’re the only one who rated yet.");
     }
     else {
       $this->summary = $this->intl->t(
-        "Rated by {0,plural,=1{{votes} user} other{{votes} users}} with {0,plural,=1{{rating}} other{a {1}mean rating{2} of {rating}}}.",
+        "Rated by {0,plural,=1{{ratingVotes} user} other{{ratingVotes} users}} with {0,plural,=1{{rating}} other{a {1}mean rating{2} of {rating}}}.",
         [
-          $entity->votes,
+          $entity->ratingVotes,
           "<a href='{$entity->rp("/ratings")}' title='{$this->intl->t("View the rating demographics.")}'>",
           "</a>",
-          "votes"  => "<span property='ratingCount'>{$this->intl->format("{0,number}", $entity->votes)}</span>",
-          "rating" => "<span property='ratingValue'>{$this->intl->format("{0,number}", $entity->meanRating)}</span>",
+          "ratingVotes"  => "<span property='ratingCount'>{$this->intl->format("{0,number}", $entity->ratingVotes)}</span>",
+          "rating" => "<span property='ratingValue'>{$this->intl->format("{0,number}", $entity->ratingMean)}</span>",
         ]
       );
     }

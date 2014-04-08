@@ -65,7 +65,7 @@ trait InfoboxTrait {
    */
   final protected function getMainHeading() {
     if (!empty($this->infoboxImage->wikipedia)) {
-      $this->infoboxInfos .= "<p><span class='ico ico-wikipedia'></span> <a href='{$this->infoboxImage->wikipedia}' property='sameAs' target='_blank'>{$this->intl->t("Wikipedia Article")}</a></p>";
+      $this->infoboxInfos .= "<small><span class='ico ico-wikipedia'></span> <a href='{$this->infoboxImage->wikipedia}' property='sameAs' target='_blank'>{$this->intl->t("Wikipedia Article")}</a></small>";
     }
 
     if ($this->infoboxInfos) {

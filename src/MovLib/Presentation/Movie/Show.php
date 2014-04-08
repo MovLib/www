@@ -41,8 +41,9 @@ use \MovLib\Partial\Genre;
  * @since 0.0.1-dev
  */
 final class Show extends \MovLib\Presentation\AbstractShowPresenter {
-  use \MovLib\Presentation\Movie\MovieTrait;
+  use \MovLib\Partial\ContentSectionTrait;
   use \MovLib\Partial\InfoboxTrait;
+  use \MovLib\Presentation\Movie\MovieTrait;
 
   /**
    * {@inheritdoc}

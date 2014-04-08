@@ -129,6 +129,13 @@ final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity impleme
   public $taglineLanguageCode;
 
   /**
+   * The movie's Wikipedia article link in the current locale.
+   *
+   * @var null|string
+   */
+  public $wikipedia;
+
+  /**
    * The movie's year.
    *
    * @var \MovLib\Data\Date
@@ -162,6 +169,7 @@ SELECT
   `movies`.`deleted`,
   `movies`.`changed`,
   `movies`.`created`,
+  COLUMN_GET(`movies`.`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR),
   `movies`.`mean_rating`,
   `movies_taglines`.`tagline`,
   `original_title`.`title`,
@@ -203,14 +211,15 @@ SQL
       $stmt->bind_result(
         $this->id,
         $this->year,
-        $this->rank,
-        $this->votes,
-        $this->bayesRating,
+        $this->ratingRank,
+        $this->ratingVotes,
+        $this->ratingBayes,
         $this->runtime,
         $this->deleted,
         $this->changed,
         $this->created,
-        $this->meanRating,
+        $this->wikipedia,
+        $this->ratingMean,
         $this->tagline,
         $this->originalTitle,
         $this->originalTitleLanguageCode,

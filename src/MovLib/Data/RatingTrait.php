@@ -38,28 +38,28 @@ trait RatingTrait {
    *
    * @var null|float
    */
-  public $bayesRating;
+  public $ratingBayes;
 
   /**
    * The entity's mean rating.
    *
    * @var float
    */
-  public $meanRating;
+  public $ratingMean;
 
   /**
    * The entity's global rank.
    *
    * @var null|integer
    */
-  public $rank;
+  public $ratingRank;
 
   /**
    * The entity's votes.
    *
    * @var null|integer
    */
-  public $votes;
+  public $ratingVotes;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -81,7 +81,7 @@ trait RatingTrait {
     // This user hasn't voted for this entity yet.
     if ($userRating === null) {
       $mysqli->query("INSERT INTO `{$this->tableName}_ratings` SET `{$this->singularKey}_id` = {$this->id}, `user_id` = {$userId}, `rating` = {$rating}");
-      ++$this->votes;
+      ++$this->ratingVotes;
     }
     // This user already voted for this entity.
     else {
@@ -89,10 +89,10 @@ trait RatingTrait {
     }
 
     // Calculate the new mean rating for this entity.
-    $this->meanRating = round(($this->meanRating + $rating) / $this->votes, 2);
+    $this->ratingMean = round(($this->ratingMean + $rating) / $this->ratingVotes, 2);
 
     // Update the entity's rating statistics.
-    $mysqli->query("UPDATE `{$this->tableName}` SET `mean_rating` = {$this->meanRating}, `votes` = {$this->votes} WHERE `id` = {$this->id}");
+    $mysqli->query("UPDATE `{$this->tableName}` SET `mean_rating` = {$this->ratingMean}, `votes` = {$this->ratingVotes} WHERE `id` = {$this->id}");
 
     // @todo Update Bayes rating and global rank!
 

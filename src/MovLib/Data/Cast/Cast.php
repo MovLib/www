@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Genre;
+namespace MovLib\Data\Cast;
 
 /**
- * Defines the genre set object.
+ * @todo Description of Cast
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,40 +26,46 @@ namespace MovLib\Data\Genre;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class GenreSet extends \MovLib\Data\AbstractSet {
+final class Cast extends \MovLib\Data\AbstractEntity {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
-   * {@inheritdoc}
+   * The entity this cast member belongs to.
+   *
+   * @var \MovLib\Data\AbstractEntity
    */
-  protected function getEntitiesQuery($where = null, $orderBy = null) {
-    return <<<SQL
-SELECT
-  `genres`.`id` AS `id`,
-  `genres`.`changed` AS `changed`,
-  `genres`.`created` AS `created`,
-  `genres`.`deleted` AS `deleted`,
-  IFNULL(
-    COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR)
-  ) AS `name`,
-  COUNT(DISTINCT `movies_genres`.`movie_id`) AS `movieCount`,
-  COUNT(DISTINCT `series_genres`.`series_id`) AS `seriesCount`
-FROM `genres`
-  LEFT JOIN `movies_genres` ON `movies_genres`.`genre_id` = `genres`.`id`
-  LEFT JOIN `series_genres` ON `series_genres`.`genre_id` = `genres`.`id`
-{$where}
-GROUP BY `id`, `deleted`, `created`, `changed`, `name`
-{$orderBy}
-SQL;
+  protected $entity;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * Instantiate new single cast member.
+   *
+   * @param \MovLib\Core\DIContainer $diContainer
+   *   {@inheritdoc}
+   * @param \MovLib\Data\AbstractEntity $entity
+   *   The entity this cast member belongs to.
+   */
+  public function __construct(\MovLib\Core\DIContainer $diContainer, \MovLib\Data\AbstractEntity $entity) {
+    parent::__construct($diContainer);
+    $this->entity = $entity;
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
    * {@inheritdoc}
    */
-  protected function init() {
-    $this->pluralKey   = "genres";
-    $this->singularKey = "genre";
+  public function init() {
     return parent::init();
   }
+
 
 }
