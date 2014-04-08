@@ -175,8 +175,7 @@ SQL
     $this->links          && ($this->links          = unserialize($this->links));
     $this->firstEventYear && ($this->firstEventYear = new Date($this->firstEventYear));
     $this->lastEventYear  && ($this->lastEventYear  = new Date($this->lastEventYear));
-    $this->pluralKey      = $this->tableName = "awards";
-    $this->route          = $this->intl->r("/award/{0}", [ $this->id]);
+    $this->pluralKey      = "awards";
     $this->singularKey    = "award";
     return parent::init();
   }

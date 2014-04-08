@@ -204,8 +204,7 @@ SQL
     $this->foundingDate && ($this->foundingDate = new Date($this->foundingDate));
     $this->defunctDate  && ($this->defunctDate  = new Date($this->defunctDate));
     $this->placeId      && ($this->place        = new Place($this->diContainer, $this->placeId));
-    $this->pluralKey    = $this->tableName    = "companies";
-    $this->route        = $this->intl->r("/company/{0}", [ $this->id]);
+    $this->pluralKey    = "companies";
     $this->singularKey  = "company";
     return parent::init();
   }

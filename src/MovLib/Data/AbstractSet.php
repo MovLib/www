@@ -141,4 +141,28 @@ abstract class AbstractSet extends \MovLib\Data\AbstractConfig {
     return $id;
   }
 
+  /**
+   * Initialize the set.
+   *
+   * Further initialization work after an entity was initialized via PHP's built-in {@see \mysqli_result::fetch_object}
+   * method or continued initialization after the own constructor was called.
+   *
+   * @return this
+   */
+  protected function init() {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert(!empty($this->singularKey), "You must set the \$singularKey property in your class " . static::class . ".");
+    assert(!empty($this->pluralKey), "You must set the \$pluralKey property in your class " . static::class . ".");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    if (empty($this->route)) {
+      $this->route = $this->intl->rp("/{$this->pluralKey}");
+    }
+    if (empty($this->tableName)) {
+      $this->tableName = $this->pluralKey;
+    }
+    return $this;
+  }
+
 }

@@ -75,7 +75,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
   public function getNoItemsContent() {
     return new Alert(
       "<p>{$this->intl->t("We couldn’t find any releases matching your filter criteria, or there simply aren’t any releases available.")}</p>" .
-      "<p>{$this->intl->t("Would you like to {0}create an release{1}?", [ "<a href='{$this->intl->r("/release/create")}'>", "</a>" ])}</p>",
+      "<p>{$this->intl->t("Would you like to {0}create a release{1}?", [ "<a href='{$this->intl->r("/release/create")}'>", "</a>" ])}</p>",
       $this->intl->t("No Releases")
     );
   }

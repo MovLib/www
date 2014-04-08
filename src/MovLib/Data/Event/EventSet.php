@@ -58,8 +58,7 @@ SQL;
    * {@inheritdoc}
    */
   protected function init() {
-    $this->pluralKey   = $this->tableName = "events";
-    $this->route       = $this->intl->rp("/events");
+    $this->pluralKey   = "events";
     $this->singularKey = "event";
     return parent::init();
   }

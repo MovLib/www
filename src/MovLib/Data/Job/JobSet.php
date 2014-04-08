@@ -55,8 +55,7 @@ SQL;
    * {@inheritdoc}
    */
   protected function init() {
-    $this->pluralKey   = $this->tableName = "jobs";
-    $this->route       = $this->intl->rp("/jobs");
+    $this->pluralKey   = "jobs";
     $this->singularKey = "job";
     return parent::init();
   }

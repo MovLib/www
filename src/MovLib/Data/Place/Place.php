@@ -123,8 +123,7 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
-    $this->pluralKey   = $this->tableName = "places";
-    $this->route       = $this->intl->r("/place/{0}", [ $this->id]);
+    $this->pluralKey   = "places";
     $this->singularKey = "place";
     return parent::init();
   }

@@ -62,6 +62,13 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
    */
   public $deleted = false;
 
+  /**
+   * The entity's index route in the current locale.
+   *
+   * @var string
+   */
+  public $routeIndex;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
@@ -101,10 +108,25 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
    * @return this
    */
   protected function init() {
-    $this->changed = new DateTime($this->changed);
-    $this->created = new DateTime($this->created);
-    $this->deleted = (boolean) $this->deleted;
-    return parent::init();
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert(!empty($this->singularKey), "You must set the \$singularKey property in your class " . static::class . ".");
+    assert(!empty($this->pluralKey), "You must set the \$pluralKey property in your class " . static::class . ".");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    if (empty($this->route) && $this->id) {
+      $this->route = $this->intl->r("/{$this->singularKey}/{0}", $this->id);
+    }
+    if (empty($this->routeIndex)) {
+      $this->routeIndex = $this->intl->rp("/{$this->pluralKey}");
+    }
+    if (empty($this->tableName)) {
+      $this->tableName = $this->pluralKey;
+    }
+    $this->changed    = new DateTime($this->changed);
+    $this->created    = new DateTime($this->created);
+    $this->deleted    = (boolean) $this->deleted;
+    return $this;
   }
 
   /**
@@ -115,6 +137,36 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
    */
   public function isGone() {
     return $this->deleted;
+  }
+
+  /**
+   * Translate and format singular entity sub-route.
+   *
+   * @param string $route
+   *   The route key of the subpage.
+   * @param array $args [optional]
+   *   Additional route arguments, defaults to an empty array.
+   * @return string
+   *   The translated and formatted singular route.
+   * @throws \IntlException
+   */
+  public function r($route, array $args = []) {
+    return $this->intl->r("/{$this->singularKey}/{0}{$route}", [ $this->id ] + $args);
+  }
+
+  /**
+   * Translate and format plural entity sub-route.
+   *
+   * @param string $route
+   *   The route key of the subpage.
+   * @param array $args [optional]
+   *   Additional route arguments, defaults to an empty array.
+   * @return string
+   *   The translated and formatted plural route.
+   * @throws \IntlException
+   */
+  public function rp($route, array $args = []) {
+    return $this->intl->rp("/{$this->singularKey}/{0}{$route}", [ $this->id ] + $args);
   }
 
 }

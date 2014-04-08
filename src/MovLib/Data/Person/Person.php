@@ -221,8 +221,7 @@ SQL
     $this->imageAlternativeText = $this->intl->t("Photo of {name}", [ "name" => $this->name]);
     $this->imageDirectory       = "upload://person";
     $this->imageFilename        = $this->id;
-    $this->pluralKey            = $this->tableName = "persons";
-    $this->route                = $this->intl->r("/person/{0}", [ $this->id]);
+    $this->pluralKey            = "persons";
     $this->singularKey          = "person";
     return parent::init();
   }

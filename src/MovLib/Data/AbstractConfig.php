@@ -57,20 +57,4 @@ abstract class AbstractConfig extends \MovLib\Core\AbstractDatabase {
    */
   public $tableName;
 
-  /**
-   * Initialize the configurable object.
-   *
-   * @return this
-   */
-  protected function init() {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    foreach ([ "pluralKey", "route", "singularKey", "tableName" ] as $property) {
-      assert(!empty($this->{$property}), "You must initialize the \${$property} in your class " . static::class . ".");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    return $this;
-  }
-
 }
