@@ -208,6 +208,19 @@ INSERT INTO `movies_original_titles` SET
   `title_id` = @big_buck_bunny_ot
 ;
 
+INSERT INTO `movies_taglines` SET
+  `dyn_comments`  = '',
+  `movie_id`      = @big_buck_bunny_id,
+  `language_code` = 'en',
+  `tagline`       = 'Don’t mess with the bunny'
+;
+SET @big_buck_bunny_tagline = LAST_INSERT_ID();
+
+INSERT INTO `movies_display_taglines` (`movie_id`, `tagline_id`, `language_code`) VALUES
+(@big_buck_bunny_id, @big_buck_bunny_tagline, 'en')
+,(@big_buck_bunny_id, @big_buck_bunny_tagline, 'de')
+;
+
 INSERT INTO `persons` SET
   `name`                   = 'Sacha Goedegebure',
   `dyn_biographies`        = '',
