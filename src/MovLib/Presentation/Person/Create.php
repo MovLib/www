@@ -194,7 +194,7 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
     $person->links     = $this->inputLinks->value;
     $person->name      = $this->inputName->value;
     $person->sex       = $this->inputSex->value;
-    $person->wikipedia = $this->inputWikipedia->value;
+    $person->infoboxWikipedia = $this->inputWikipedia->value;
 
     $person->create();
 

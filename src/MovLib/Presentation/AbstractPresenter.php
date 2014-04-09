@@ -19,7 +19,7 @@ namespace MovLib\Presentation;
 
 use \MovLib\Data\Collator;
 use \MovLib\Partial\Alert;
-use \MovLib\Partial\Navigation;
+use \MovLib\Partial\Navigation\Breadcrumb;
 
 /**
  * Default page class with no content.
@@ -53,13 +53,14 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
   /**
    * The presentation's breadcrumb navigation.
    *
-   * @var \MovLib\Presentation\Partial\Navigation
+   * @var \MovLib\Partial\Navigation\Breadcrumb
    */
   protected $breadcrumb;
 
   /**
    * The title used for the current page in the breadcrumb, defaults to the current title if not given.
    *
+   * @deprecated
    * @var string
    */
   protected $breadcrumbTitle;
@@ -138,9 +139,13 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
   /**
    * The page's translated routes.
    *
+   * <b>NOTE</b><br>
+   * Must be public because it's used in the {@see \MovLib\Exception\ClientException\UnauthorizedException} to set the
+   * language links.
+   *
    * @var array
    */
-  private $languageLinks;
+  public $languageLinks;
 
   /**
    * Contains the namespace parts as array.
@@ -176,7 +181,7 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
    *
    * @var string
    */
-  protected $title;
+  public $title;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -223,7 +228,7 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
    */
   public function getFooter() {
     $languageLinks = null;
-    $teamOffset = " o4";
+    $teamOffset    = " o4";
 
     if ($this->languageLinks) {
       $teamOffset = null;
@@ -252,14 +257,10 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
       foreach ($locales as $code => $locale) {
         $route = $plural ? $this->intl->rp($routeKey, $args, $locale) : $this->intl->r($routeKey, $args, $locale);
         if ($queries) {
-          $query = null;
-          foreach ($queries as $key => $value) {
-            if ($query) {
-              $query .= "&amp;";
-            }
-            $query .= "{$this->intl->r($key)}={$value}";
-          }
-          $route .= "?{$query}";
+          array_walk($queries, function (&$value, $key) {
+            $value = rawurlencode($this->intl->r($key)) . "=" . rawurlencode($value);
+          });
+          $route .= "?" . implode("&amp;", $queries);
         }
         $languageLinks[$languages[$code]->name] =
           "<a href='//{$code}.{$this->config->hostname}{$route}' lang='{$code}'>{$this->intl->t(
@@ -523,7 +524,7 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
         "<meta property='og:type' content='website'>" .
         "<meta property='og:url' content='{$this->request->scheme}://{$this->config->hostname}{$this->request->uri}'>" .
         "<meta name='application-name' content='{$this->config->sitename}'>" .
-        "<meta name='msapplication-tooltip' content='{$this->config->slogan}'>" .
+        "<meta name='msapplication-tooltip' content='{$this->intl->t("The free movie library.")}'>" .
         "<meta name='msapplication-starturl' content='{$this->request->scheme}://{$this->config->hostname}/'>" .
         "<meta name='msapplication-navbutton-color' content='#ffffff'>" .
         // @todo Add opensearch tag (rel="search").
@@ -545,24 +546,10 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
    *   The presentation's content wrapped with the main tag and header.
    */
   public function getMainContent($content) {
-    // Allow the presentation to set a heading that includes HTML mark-up.
-    $title = $this->pageTitle ?: $this->title;
-
-    // Add the current page to the breadcrumb.
-    if ($this->breadcrumb) {
-      $this->breadcrumb->menuitems[] = [ $this->request->path, $this->breadcrumbTitle ?: $this->title ];
-    }
-
     // The schema for the complete page content.
     $schema = null;
     if ($this->schemaType) {
       $schema = " typeof='{$this->schemaType}'";
-    }
-
-    // The schema property of the heading.
-    $headingprop = null;
-    if ($this->headingSchemaProperty) {
-      $headingprop = " property='{$this->headingSchemaProperty}'";
     }
 
     $noscript = new Alert(
@@ -575,7 +562,7 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
     return
       "<main id='m' role='main'{$schema}>" .
         "<header id='header'>" .
-          "<div class='c'>{$this->breadcrumb}{$this->headingBefore}<h1{$headingprop}>{$title}</h1>{$this->headingAfter}</div>" .
+          "<div class='c'>{$this->breadcrumb}{$this->getMainHeading()}</div>" .
           "<noscript>{$noscript}</noscript>{$this->alerts}" .
         "</header>" .
         "{$this->contentBefore}{$content}{$this->contentAfter}" .
@@ -584,33 +571,36 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
   }
 
   /**
+   * Get the presentation's main <code><header></code> content.
+   *
+   * @todo Concrete classes should overwrite this method and implement their own special heading instead of setting
+   *       some properties that have to be known upfront.
+   * @return string
+   *   The presentation's main <code><header></code> content.
+   */
+  protected function getMainHeading() {
+    // Allow presenter's to set a title with HTML.
+    $title = $this->pageTitle ?: $this->title;
+
+    // The schema property of the heading.
+    $headingprop = null;
+    if ($this->headingSchemaProperty) {
+      $headingprop = " property='{$this->headingSchemaProperty}'";
+    }
+
+    return "{$this->headingBefore}<h1{$headingprop}>{$title}</h1>{$this->headingAfter}";
+  }
+
+  /**
    * Initialize the page's breadcrumb.
    *
+   * @deprecated
    * @param array $breadcrumbs [optional]
    *   Numeric array containing additional breadcrumbs to put between home and the current page.
    * @return this
    */
   protected function initBreadcrumb(array $breadcrumbs = []) {
-    // Initialize the breadcrumb navigation and always include the home page's link and the currently displayed page.
-    $trail = [[ "/", $this->intl->t("Home"), [ "title" => $this->intl->t("Go back to the home page.") ] ]];
-
-    // Put the breadcrumb's trails together for the navigation.
-    $c = count($breadcrumbs);
-    for ($i = 0; $i < $c; ++$i) {
-      // 0 => route
-      // 1 => linktext
-      // 2 => attributes
-      if (mb_strlen($breadcrumbs[$i][1]) > 25) {
-        $breadcrumbs[$i][2]["title"] = $breadcrumbs[$i][1];
-        $breadcrumbs[$i][1]          = mb_strimwidth($breadcrumbs[$i][1], 0, 25, $this->intl->t("…"));
-      }
-      $trail[] = $breadcrumbs[$i];
-    }
-
-    // Create the actual navigation with the trail we just built.
-    $this->breadcrumb = new Navigation($this, $this->intl->t("You are here: "), $trail, [ "class" => "c", "id" => "b" ]);
-    $this->breadcrumb->glue = " › ";
-
+    $this->breadcrumb->addCrumbs($breadcrumbs);
     return $this;
   }
 
@@ -636,18 +626,24 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
   /**
    * Initialize the page.
    *
-   * @param string $title
-   *   The already translated title of this page.
+   * @param string $headTitle
+   *   The presenter's <code><title></code> title.
+   * @param string $pageTitle [optional]
+   *   The presenter's <code><h1></code> title.
+   * @param string $breadcrumbTitle [optional]
+   *   The presenter's title for the breadcrumb's entry of the current presentation.
    * @return this
    */
-  final protected function initPage($title) {
+  final protected function initPage($headTitle, $pageTitle = null, $breadcrumbTitle = null) {
     // The substr() removes the \MovLib\Presentation\ part!
     $className         = strtolower(substr(get_class($this), 20));
     $this->namespace   = explode("\\", $className);
     array_pop($this->namespace); // The last element is the name of the class and not part of the namespace.
     $this->bodyClasses = strtr($className, "\\", " ");
     $this->id          = strtr($className, "\\", "-");
-    $this->title       = $title;
+    $this->title       = $headTitle;
+    $this->pageTitle   = $pageTitle ?: $headTitle;
+    $this->breadcrumb  = new Breadcrumb($this->diContainerHTTP, $breadcrumbTitle ?: $headTitle);
     return $this;
   }
 

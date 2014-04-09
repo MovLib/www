@@ -54,11 +54,13 @@ final class Application extends \Symfony\Component\Console\Application {
     }
 
     /* @var $fileinfo \SplFileInfo */
-    foreach (new \RegexIterator(new \DirectoryIterator("dr://src/MovLib/Console/Command/{$commandDirectory}"), "/\.php/") as $fileinfo) {
-      $command   = "\\MovLib\\Console\\Command\\{$commandDirectory}\\{$fileinfo->getBasename(".php")}";
-      $reflector = new \ReflectionClass($command);
-      if ($reflector->isInstantiable() && $reflector->isSubclassOf("\\Symfony\\Component\\Console\\Command\\Command")) {
-        $this->add(new $command($diContainer));
+    foreach ($diContainer->fs->getRecursiveIterator("dr://src/MovLib/Console/Command/{$commandDirectory}", \RecursiveIteratorIterator::SELF_FIRST) as $fileinfo) {
+      if ($fileinfo->isFile() && $fileinfo->getExtension() == "php") {
+        $command   = strtr(str_replace([ "dr://src/", ".php" ], "", $fileinfo->getPathname()), "/", "\\");
+        $reflector = new \ReflectionClass($command);
+        if ($reflector->isInstantiable() && $reflector->isSubclassOf("\\Symfony\\Component\\Console\\Command\\Command")) {
+          $this->add(new $command($diContainer));
+        }
       }
     }
   }

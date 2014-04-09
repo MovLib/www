@@ -80,12 +80,16 @@ SET @job_actor = LAST_INSERT_ID();
 -- START "Roundhay Garden Scene"
 
 INSERT INTO `movies` SET
-  `created`      = '2013-11-28 15:13:42',
-  `year`         = 1888,
-  `runtime`      = 60, -- 1 minute
-  `dyn_synopses` = COLUMN_CREATE(
+  `created`       = '2013-11-28 15:13:42',
+  `year`          = 1888,
+  `runtime`       = 60, -- 1 minute
+  `dyn_synopses`  = COLUMN_CREATE(
     'en', '&lt;p&gt;The scene features Adolphe Le Prince, Sarah Whitley, Joseph Whitley and Harriet Whitley in the Roundhay Garden.&lt;/p&gt;',
     'de', '&lt;p&gt;Die Szene zeigt Adolphe Le Prince, Sarah Whitley, Joseph Whitley und Harriet Whitley im Roundhay Garden.&lt;/p&gt;'
+  ),
+  `dyn_wikipedia` = COLUMN_CREATE(
+    'en', 'https://en.wikipedia.org/wiki/Roundhay_Garden_Scene',
+    'de', 'https://de.wikipedia.org/wiki/Roundhay_Garden_Scene'
   )
 ;
 SET @roundhay_garden_scene_id = LAST_INSERT_ID();
@@ -130,7 +134,6 @@ INSERT INTO `persons` SET
 SET @louis_le_prince_id = LAST_INSERT_ID();
 
 INSERT INTO `movies_directors` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @louis_le_prince_id, `job_id` = @job_director;
-UPDATE `persons` SET `movie_count` = `movie_count` + 1 WHERE `id` = @louis_le_prince_id;
 
 INSERT INTO `persons` SET
   `name`                   = 'Harriet Hartley',
@@ -140,7 +143,6 @@ INSERT INTO `persons` SET
 ;
 SET @harriet_hartley_id = LAST_INSERT_ID();
 INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @harriet_hartley_id, `job_id` = @job_actor, `dyn_role` = '';
-UPDATE `persons` SET `movie_count` = `movie_count` + 1 WHERE `id` = @harriet_hartley_id;
 
 INSERT INTO `persons` SET
   `name`                   = 'Adolphe Le Prince',
@@ -150,7 +152,6 @@ INSERT INTO `persons` SET
 ;
 SET @adolphe_le_prince_id = LAST_INSERT_ID();
 INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @adolphe_le_prince_id, `job_id` = @job_actor, `dyn_role` = '', `role_id` = @adolphe_le_prince_id;
-UPDATE `persons` SET `movie_count` = `movie_count` + 1 WHERE `id` = @adolphe_le_prince_id;
 
 INSERT INTO `persons` SET
   `name`                   = 'Joseph Whitley',
@@ -160,7 +161,6 @@ INSERT INTO `persons` SET
 ;
 SET @joseph_whitley_id = LAST_INSERT_ID();
 INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @joseph_whitley_id, `job_id` = @job_actor, `dyn_role` = '', `role_id` = @joseph_whitley_id;
-UPDATE `persons` SET `movie_count` = `movie_count` + 1 WHERE `id` = @joseph_whitley_id;
 
 INSERT INTO `persons` SET
   `name`                   = 'Sarah Whitley',
@@ -173,7 +173,6 @@ INSERT INTO `persons` SET
 ;
 SET @sarah_whitley_id = LAST_INSERT_ID();
 INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @sarah_whitley_id, `job_id` = @job_actor, `dyn_role` = '', `role_id` = @sarah_whitley_id;
-UPDATE `persons` SET `movie_count` = `movie_count` + 1 WHERE `id` = @sarah_whitley_id;
 
 -- END "Roundhay Garden Scene"
 
@@ -182,12 +181,16 @@ UPDATE `persons` SET `movie_count` = `movie_count` + 1 WHERE `id` = @sarah_whitl
 -- START "Big Buck Bunny"
 
 INSERT INTO `movies` SET
-  `created`      = '2013-11-29 14:01:56',
-  `year`         = 2008,
-  `runtime`      = 600, -- 10 minutes
-  `dyn_synopses` = COLUMN_CREATE(
+  `created`       = '2013-11-29 14:01:56',
+  `year`          = 2008,
+  `runtime`       = 600, -- 10 minutes
+  `dyn_synopses`  = COLUMN_CREATE(
     'en', '&lt;p&gt;“Big” Buck is a chubby bunny who enjoys the beauty of nature. But he decides to shed his gentleness when the flying squirrel Frank, the squirrel Rinky and the chinchilla Gamera kill two butterflies and throw fruits and nuts at him. Buck prepares a well-deserved revenge for the three rodents.&lt;/p&gt;',
     'de', '&lt;p&gt;„Big” Buck is ein fülliges Kaninchen, dass sich an der schönen Natur erfreut. Als jedoch das Flughörnchen Frank, das Eichhörnchen Rinky und das Chinchilla Gamera auftauchen, zwei Schmetterlinge töten und das Kaninchen mit Früchten und Nüssen bewerfen, beschließt es, seine Sanftmütigkeit abzulegen und an den Nagetieren Rache zu nehmen.&lt;/p&gt;'
+  ),
+  `dyn_wikipedia` = COLUMN_CREATE(
+    'en', 'https://en.wikipedia.org/wiki/Big_Buck_Bunny',
+    'de', 'https://de.wikipedia.org/wiki/Big_Buck_Bunny'
   )
 ;
 SET @big_buck_bunny_id = LAST_INSERT_ID();
@@ -203,6 +206,19 @@ SET @big_buck_bunny_ot = LAST_INSERT_ID();
 INSERT INTO `movies_original_titles` SET
   `movie_id` = @big_buck_bunny_id,
   `title_id` = @big_buck_bunny_ot
+;
+
+INSERT INTO `movies_taglines` SET
+  `dyn_comments`  = '',
+  `movie_id`      = @big_buck_bunny_id,
+  `language_code` = 'en',
+  `tagline`       = 'Don’t mess with the bunny'
+;
+SET @big_buck_bunny_tagline = LAST_INSERT_ID();
+
+INSERT INTO `movies_display_taglines` (`movie_id`, `tagline_id`, `language_code`) VALUES
+(@big_buck_bunny_id, @big_buck_bunny_tagline, 'en')
+,(@big_buck_bunny_id, @big_buck_bunny_tagline, 'de')
 ;
 
 INSERT INTO `persons` SET
@@ -222,7 +238,6 @@ INSERT INTO `persons` SET
 SET @sacha_goedegebure_id = LAST_INSERT_ID();
 
 INSERT INTO `movies_directors` SET `movie_id` = @big_buck_bunny_id, `person_id` = @sacha_goedegebure_id, `job_id` = @job_director;
-UPDATE `persons` SET `movie_count` = `movie_count` + 1 WHERE `id` = @sacha_goedegebure_id;
 
 INSERT INTO `movies_countries` SET `movie_id` = @big_buck_bunny_id, `country_code` = 'US';
 INSERT INTO `movies_languages` SET `movie_id` = @big_buck_bunny_id, `language_code` = 'xx';
@@ -261,10 +276,13 @@ INSERT INTO `movies_genres` SET `movie_id` = @big_buck_bunny_id, `genre_id` = (S
 -- START "The Shawshank Redemption"
 
 INSERT INTO `movies` SET
-  `created`                      = CURRENT_TIMESTAMP,
-  `runtime`                      = 8520, -- 142 minutes
-  `year`                         = 1994,
-  `dyn_synopses`                 = ''
+  `runtime`       = 8520, -- 142 minutes
+  `year`          = 1994,
+  `dyn_synopses`  = '',
+  `dyn_wikipedia` = COLUMN_CREATE(
+    'en', 'https://en.wikipedia.org/wiki/The_Shawshank_Redemption',
+    'de', 'https://de.wikipedia.org/wiki/Die_Verurteilten'
+  )
 ;
 SET @the_shawshank_redemption_id = LAST_INSERT_ID();
 
@@ -325,7 +343,6 @@ INSERT INTO `movies_directors` SET
   `person_id` = @frank_darabont_id,
   `job_id` = @job_director
 ;
-UPDATE `persons` SET `movie_count` = `movie_count` + 1 WHERE `id` = @frank_darabont_id;
 
 INSERT INTO `persons` SET
   `name`                   = 'Morgan Freeman',
@@ -342,7 +359,6 @@ INSERT INTO `movies_crew` SET
   `person_id` = @morgan_freeman_id,
   `job_id` = @job_actor
 ;
-UPDATE `persons` SET `movie_count` = `movie_count` + 1 WHERE `id` = @morgan_freeman_id;
 
 INSERT INTO `movies_titles` SET
   `movie_id`      = @the_shawshank_redemption_id,
@@ -361,4 +377,76 @@ INSERT INTO `movies_display_titles` SET
   `title_id`      = @die_verurteilten_id
 ;
 
+INSERT INTO `movies_genres` SET `movie_id` = @the_shawshank_redemption_id, `genre_id` = (
+  SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Crime' LIMIT 1
+);
+
+INSERT INTO `movies_genres` SET `movie_id` = @the_shawshank_redemption_id, `genre_id` = (
+  SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Drama' LIMIT 1
+);
+
 -- END "The Shawshank Redemption"
+
+-- ---------------------------------------------------------------------------------------------------------------------
+
+-- START "Ichi the Killer"
+
+INSERT INTO `movies` SET
+  `runtime`       = 7740, -- 192 minutes
+  `year`          = 2001,
+  `dyn_synopses`  = '',
+  `dyn_wikipedia` = COLUMN_CREATE(
+    'en', 'https://en.wikipedia.org/wiki/Ichi_the_Killer_%28film%29',
+    'de', 'https://de.wikipedia.org/wiki/Ichi_the_Killer'
+  )
+;
+SET @ichi_the_killer_id = LAST_INSERT_ID();
+
+INSERT INTO `movies_titles` SET
+  `movie_id`      = @ichi_the_killer_id,
+  `dyn_comments`  = '',
+  `language_code` = 'ja',
+  `title`         = '殺し屋1'
+;
+SET @ichi_the_killer_ot = LAST_INSERT_ID();
+
+INSERT INTO `movies_original_titles` SET
+  `movie_id` = @ichi_the_killer_id,
+  `title_id` = @ichi_the_killer_ot
+;
+
+INSERT INTO `movies_taglines` SET
+  `dyn_comments`  = COLUMN_CREATE(
+    'en', 'Love is pretty painful.',
+    'de', 'Liebe ist ziemlich schmerzhaft.'
+  ),
+  `movie_id`      = @ichi_the_killer_id,
+  `language_code` = 'ja',
+  `tagline`       = '愛は、かなりイタイ。'
+;
+SET @ichi_the_killer_tagline = LAST_INSERT_ID();
+
+INSERT INTO `movies_display_taglines` SET
+  `movie_id`      = @ichi_the_killer_id,
+  `tagline_id`    = @ichi_the_killer_tagline,
+  `language_code` = 'en'
+;
+
+INSERT INTO `movies_display_taglines` SET
+  `movie_id`      = @ichi_the_killer_id,
+  `tagline_id`    = @ichi_the_killer_tagline,
+  `language_code` = 'de'
+;
+
+INSERT INTO `movies_genres` (`movie_id`, `genre_id`) VALUES
+(@ichi_the_killer_id, (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Action' LIMIT 1))
+,(@ichi_the_killer_id, (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Art House' LIMIT 1))
+,(@ichi_the_killer_id, (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Comedy' LIMIT 1))
+,(@ichi_the_killer_id, (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Crime' LIMIT 1))
+,(@ichi_the_killer_id, (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Drama' LIMIT 1))
+,(@ichi_the_killer_id, (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Fantasy' LIMIT 1))
+,(@ichi_the_killer_id, (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Horror' LIMIT 1))
+,(@ichi_the_killer_id, (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Splatter' LIMIT 1))
+;
+
+-- END "Ichi the Killer"

@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \MovLib\Exception\SeeOtherException;
+use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Partial\FormElement\InputEmail;
@@ -53,13 +53,6 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
    * @var string
    */
   protected $email;
-
-  /**
-   * The presentation's form.
-   *
-   * @var \MovLib\Partial\Form
-   */
-  protected $form;
 
   /**
    * The user's raw password.
@@ -102,45 +95,6 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
     $this->breadcrumb->ignoreQuery = true;
     $this->initLanguageLinks("/profile/join");
 
-    $this->headingBefore = "<a class='btn btn-large btn-primary fr' href='{$this->intl->r("/profile/sign-in")}'>{$this->intl->t("Sign In")}</a>";
-
-    $this->form = new Form($this->diContainerHTTP);
-
-    $this->form->addElement(new InputText($this->diContainerHTTP, "username", $this->intl->t("Username"), $this->username, [
-      "autofocus"   => true,
-      "maxlength"   => User::NAME_MAXIMUM_LENGTH,
-      "pattern"     => "^(?!^[ ]+)(?![ ]+$)(?!^.*[ ]{2,}.*$)(?!^.*[" . preg_quote(User::NAME_ILLEGAL_CHARACTERS, "/") . "].*$).*$",
-      "placeholder" => $this->intl->t("Enter your desired username"),
-      "required"    => true,
-      "title"       => $this->intl->t(
-        "A username must be valid UTF-8, cannot contain spaces at the beginning and end or more than one space in a row, " .
-        "it cannot contain any of the following characters {0} and it cannot be longer than {1,number,integer} characters.",
-        [ User::NAME_ILLEGAL_CHARACTERS, User::NAME_MAXIMUM_LENGTH ]
-      ),
-    ]));
-
-    $this->form->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email Address"), $this->email, [
-      "placeholder" => $this->intl->t("Enter your email address"),
-      "required"    => true,
-    ]));
-
-    $this->form->addElement(new InputPassword($this->diContainerHTTP, "password", $this->intl->t("Password"), $this->rawPassword, [
-      "placeholder" => $this->intl->t("Enter your desired password"),
-      "required"    => true,
-    ]));
-
-    $terms = false; // We don't care about the value, the checkbox is required!
-    $this->form->addElement(new InputCheckbox($this->diContainerHTTP, "terms", $this->intl->t(
-      "I accept the {a1}privacy policy{a} and the {a2}terms of use{a}.",
-      [ "a" => "</a>", "a1" => "<a href='{$this->intl->t("/privacy-policy")}'>", "a2" => "<a href='{$this->intl->r("/terms-of-use")}'>" ]
-    ), $terms, [
-      "required" => true,
-    ]));
-
-    $this->form->addAction($this->intl->t("Sign Up"), [ "class" => "btn  btn-large btn-success" ]);
-
-    $this->form->init([ $this, "valid" ], [ "autocomplete" => "off", "class" => "s s6 o3" ], [ $this, "invalid" ]);
-
     if ($this->request->methodGET && isset($this->request->query["token"])) {
       $this->validateToken();
     }
@@ -154,6 +108,40 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
+    $this->headingBefore = "<a class='btn btn-large btn-primary fr' href='{$this->intl->r("/profile/sign-in")}'>{$this->intl->t("Sign In")}</a>";
+
+    $terms = false; // We don't care about the value, the checkbox is required!
+    $form  = (new Form($this->diContainerHTTP, [ "autocomplete" => "off", "class" => "s s6 o3" ]))
+      ->addElement(new InputText($this->diContainerHTTP, "username", $this->intl->t("Username"), $this->username, [
+        "autofocus"   => true,
+        "maxlength"   => User::NAME_MAXIMUM_LENGTH,
+        "pattern"     => "^(?!^[ ]+)(?![ ]+$)(?!^.*[ ]{2,}.*$)(?!^.*[" . preg_quote(User::NAME_ILLEGAL_CHARACTERS, "/") . "].*$).*$",
+        "placeholder" => $this->intl->t("Enter your desired username"),
+        "required"    => true,
+        "title"       => $this->intl->t(
+          "A username must be valid UTF-8, cannot contain spaces at the beginning and end or more than one space in a row, " .
+          "it cannot contain any of the following characters {0} and it cannot be longer than {1,number,integer} characters.",
+          [ User::NAME_ILLEGAL_CHARACTERS, User::NAME_MAXIMUM_LENGTH ]
+        ),
+      ]))
+      ->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email Address"), $this->email, [
+        "placeholder" => $this->intl->t("Enter your email address"),
+        "required"    => true,
+      ]))
+      ->addElement(new InputPassword($this->diContainerHTTP, "password", $this->intl->t("Password"), $this->rawPassword, [
+        "placeholder" => $this->intl->t("Enter your desired password"),
+        "required"    => true,
+      ]))
+      ->addElement(new InputCheckbox($this->diContainerHTTP, "terms", $this->intl->t(
+        "I accept the {a1}privacy policy{a} and the {a2}terms of use{a}.",
+        [ "a" => "</a>", "a1" => "<a href='{$this->intl->r("/privacy-policy")}'>", "a2" => "<a href='{$this->intl->r("/terms-of-use")}'>" ]
+      ), $terms, [
+        "required" => true,
+      ]))
+      ->addAction($this->intl->t("Sign Up"), [ "class" => "btn  btn-large btn-success" ])
+      ->init([ $this, "valid" ], [ $this, "invalid" ])
+    ;
+
     if ($this->accepted === true) {
       return "<div class='c'><small>{$this->intl->t(
         "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
@@ -161,7 +149,7 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
       )}</small></div>";
     }
 
-    return "<div class='c'><div class='r'>{$this->form}</div></div>";
+    return "<div class='c'><div class='r'>{$form}</div></div>";
   }
 
 

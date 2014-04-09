@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Route;
+namespace MovLib\Data\Cast;
 
 /**
- * Defines the set route object.
+ * @todo Description of Cast
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,61 +26,45 @@ namespace MovLib\Data\Route;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class SetRoute {
+final class Cast extends \MovLib\Data\AbstractEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The route arguments.
+   * The entity this cast member belongs to.
    *
-   * @var array
+   * @var \MovLib\Data\AbstractEntity
    */
-  public $args;
-
-  /**
-   * The route key.
-   *
-   * @var string
-   */
-  public $key;
-
-  /**
-   * The route in the current locale.
-   *
-   * @var string
-   */
-  public $url;
+  protected $entity;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+  // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * Instantiate new route object.
+   * Instantiate new single cast member.
    *
-   * @param \MovLib\Core\Intl $intl
-   *   The active intl instance.
-   * @param string $key
-   *   The route's key.
-   * @param array|string $args [optional]
-   *   The route's arguments, defaults to <code>NULL</code>.
+   * @param \MovLib\Core\DIContainer $diContainer
+   *   {@inheritdoc}
+   * @param \MovLib\Data\AbstractEntity $entity
+   *   The entity this cast member belongs to.
    */
-  public function __construct(\MovLib\Core\Intl $intl, $key, $args = null) {
-    $this->args = $args;
-    $this->key  = $key;
-    $this->url  = $intl->rp($key, $args);
+  public function __construct(\MovLib\Core\DIContainer $diContainer, \MovLib\Data\AbstractEntity $entity) {
+    parent::__construct($diContainer);
+    $this->entity = $entity;
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
-   * Get the route in the current locale.
-   *
-   * @return string
-   *   The route in the current locale.
+   * {@inheritdoc}
    */
-  public function __toString() {
-    return $this->url;
+  public function init() {
+    return parent::init();
   }
 
 

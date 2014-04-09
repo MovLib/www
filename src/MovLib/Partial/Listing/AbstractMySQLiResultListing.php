@@ -100,7 +100,7 @@ abstract class AbstractMySQLiResultListing implements \MovLib\Partial\Listing\Li
     // @devEnd
 
       $items = null;
-      $result = $this->set->getOrdered($this->orderBy, $this->diContainerHTTP->presenter->paginationOffset, $this->diContainerHTTP->presenter->paginationLimit);
+      $result = $this->set->loadOrdered($this->orderBy, $this->diContainerHTTP->presenter->paginationOffset, $this->diContainerHTTP->presenter->paginationLimit);
       while ($item = $result->fetch_object($this->set->getEntityClassName(), [ $this->diContainerHTTP ])) {
         $items .= $this->formatItem($item);
       }

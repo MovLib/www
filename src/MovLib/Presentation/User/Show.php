@@ -55,8 +55,8 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
     $this->user = new User($this->diContainerHTTP, $_SERVER["USER_NAME"]);
     $this->stylesheets[] = "user";
     $this->initPage($this->user->name);
+    $this->breadcrumb->addCrumb($this->intl->rp("/users"), $this->intl->t("Users"));
     $this->initLanguageLinks("/user/{0}", $this->user->name);
-    $this->initBreadcrumb([[ $this->intl->rp("/users"), $this->intl->t("Users") ] ]);
     $this->sidebarInit([
       [ $this->intl->r("/user/{0}/uploads", $this->user->name), "{$this->intl->t("Uploads")} <span class='fr'>{$this->intl->format("{0,number}", 0)}</span>" ],
       [ $this->intl->r("/user/{0}/collection", $this->user->name), "{$this->intl->t("Collection")} <span class='fr'>{$this->intl->format("{0,number}", 0)}</span>" ],

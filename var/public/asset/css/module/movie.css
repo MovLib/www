@@ -38,59 +38,6 @@
   opacity: 1;
 }
 
-#movie-rating {
-  margin-bottom: 5px;
-  width: 138px;
-  height: 20px;
-  position: relative;
-}
-
-#movie-show form + small {
-  margin-bottom: 20px;
-}
-
-#movie-rating > div {
-  position: absolute;
-  top: 0;
-  right: 18px;
-  bottom: 0;
-  left: 0;
-}
-
-#movie-rating .back span,
-#movie-rating button {
-  width: 24px;
-  height: 20px;
-  padding: 0;
-  margin: 0;
-  background: left 0 url("/asset/img/star.svg#i") no-repeat transparent;
-  background-size: 20px 20px; /* Important for older WebKit browsers! */
-  border: 0;
-  float: left;
-  overflow: visible; /* Important for Internet Explorer, otherwise the popup's aren't visible! */
-}
-
-@media (-webkit-min-device-pixel-ratio:0) {
-  #movie-rating .back span,
-  #movie-rating button {
-    background-image: url("/asset/img/star-gray.svg");
-  }
-}
-
-#movie-rating.focus button,
-#movie-rating:hover button,
-#movie-rating .rated {
-  background-image: url("/asset/img/star.svg");
-  opacity: 1;
-}
-
-#movie-rating button:focus ~ button,
-#movie-rating button:hover ~ button,
-#movie-rating button {
-  opacity: 0;
-  transition: opacity 0.4s ease-in-out;
-}
-
 #movie-poster {
   position: relative;
 }

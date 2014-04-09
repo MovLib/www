@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Award;
 
 use \MovLib\Data\Award\Award;
 use \MovLib\Partial\Date;
-use \MovLib\Partial\QuickInfo;
+use \MovLib\Partial\InfoboxTrait;
 
 /**
  * Defines the award show presentation.
@@ -40,7 +40,7 @@ use \MovLib\Partial\QuickInfo;
  */
 final class Show extends \MovLib\Presentation\AbstractShowPresenter {
   use \MovLib\Presentation\Award\AwardTrait;
-  use \MovLib\Partial\ContentSectionTrait;
+  use \MovLib\Partial\SectionTrait;
 
   /**
    * {@inheritdoc}
@@ -60,7 +60,7 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
   public function getContent() {
     $this->headingBefore = "<div class='r'><div class='s s10'>";
 
-    $infos = new QuickInfo($this->intl);
+    $infos = new InfoboxTrait($this->intl);
     $this->entity->links          && $infos->add($this->intl->t("Sites"), $this->formatWeblinks($this->entity->links));
     $this->entity->firstEventYear && $infos->add($this->intl->t("First Event"), (new Date($this->intl, $this))->format($this->entity->firstEventYear));
     $this->entity->lastEventYear  && $infos->add($this->intl->t("Last Event"), (new Date($this->intl, $this))->format($this->entity->lastEventYear));
@@ -68,9 +68,9 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
 
     $this->headingAfter .= "{$infos}</div><div class='s s2'><img alt='' src='{$this->fs->getExternalURL("asset://img/logo/vector.svg")}' width='140' height='140'></div></div>";
 
-    $this->entity->description && $this->addContentSection($this->intl->t("Description"), $this->entity->description);
-    $this->entity->aliases     && $this->addContentSection($this->intl->t("Also Known As"), $this->formatAliases($this->entity->aliases), false);
-    if (($content = $this->getContentSections())) {
+    $this->entity->description && $this->sectionAdd($this->intl->t("Description"), $this->entity->description);
+    $this->entity->aliases     && $this->sectionAdd($this->intl->t("Also Known As"), $this->formatAliases($this->entity->aliases), false);
+    if (($content = $this->sectionGet())) {
       return $content;
     }
 

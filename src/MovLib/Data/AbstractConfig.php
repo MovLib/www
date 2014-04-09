@@ -37,7 +37,7 @@ abstract class AbstractConfig extends \MovLib\Core\AbstractDatabase {
   public $pluralKey;
 
   /**
-   * The route in the current locale;
+   * The route in the current locale.
    *
    * @var string
    */
@@ -56,21 +56,5 @@ abstract class AbstractConfig extends \MovLib\Core\AbstractDatabase {
    * @var string
    */
   public $tableName;
-
-  /**
-   * Initialize the configurable object.
-   *
-   * @return this
-   */
-  protected function init() {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    foreach ([ "pluralKey", "route", "singularKey", "tableName" ] as $property) {
-      assert(!empty($this->{$property}), "You must initialize the \${$property} in your class " . static::class . ".");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    return $this;
-  }
 
 }

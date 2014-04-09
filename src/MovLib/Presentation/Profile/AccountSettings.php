@@ -86,7 +86,7 @@ final class AccountSettings extends \MovLib\Presentation\Profile\AbstractProfile
     $birthdateMin = (new Date())->sub(new \DateInterval("P120Y"));
 
     $languageOptions = [];
-    foreach ($this->config->locales as $code => $locale) {
+    foreach ($this->intl->systemLocales as $code => $locale) {
       $languageOptions[$code] = \Locale::getDisplayLanguage($locale, $this->intl->locale);
     }
     (new \Collator($this->intl->locale))->asort($languageOptions);
@@ -152,9 +152,6 @@ final class AccountSettings extends \MovLib\Presentation\Profile\AbstractProfile
    * @return this
    */
   public function valid() {
-//    if ($this->avatar->path) {
-//      $this->user->upload($this->avatar->path, $this->avatar->extension, $this->avatar->height, $this->avatar->width);
-//    }
     $this->user->updateAccount();
     $this->alerts .= new Alert(
       $this->intl->t("Your account settings were updated successfully."),

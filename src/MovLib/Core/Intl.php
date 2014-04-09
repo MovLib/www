@@ -277,11 +277,9 @@ final class Intl {
    * @throws \IntlException
    */
   public function r($route, $args = null, $locale = null) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert($route != "/", "Translating the root route '/' doesn't make sense.");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
+    if ($route == "/") {
+      return "/";
+    }
     return $this->translate($route, $args, "routes/singular", $locale);
   }
 
@@ -300,11 +298,9 @@ final class Intl {
    * @throws \IntlException
    */
   public function rp($route, $args = null, $locale = null) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert($route != "/", "Translating the root route '/' doesn't make sense.");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
+    if ($route == "/") {
+      return "/";
+    }
     return $this->translate($route, $args, "routes/plural", $locale);
   }
 
@@ -429,7 +425,7 @@ final class Intl {
       "format you strings, the right tool for the job! You may use sprintf() for fancy formatting."
     );
     assert(
-      preg_match("/\{[a-z0-9_]*[A-Z|\-| ]+[a-z0-9_]*\}/", $pattern) !== 1,
+      preg_match("/(plural|select)/", $pattern) === 1 || preg_match("/\{[a-z0-9_]*[A-Z|\-| ]+[a-z0-9_]*\}/", $pattern) !== 1,
       "Always use snake case for intl placeholder tokens."
     );
     assert(strip_tags($pattern) == $pattern, "HTML is not allowed in translation patterns.");
@@ -463,6 +459,33 @@ final class Intl {
     }
     catch (\Exception $e) {
       throw new \IntlException("Couldn't translate '{$pattern}'.", null, $e);
+    }
+  }
+
+  /**
+   * Transliterate from any script to the current locale.
+   *
+   * @staticvar array $transliterators
+   *   Used to cache transliterator instances.
+   * @param string $text
+   *   The text to transliterate.
+   * @param null|string $locale [optional]
+   *   Use a different locale for this translation.
+   * @return null|string
+   *   <code>NULL</code> if the transliterated string is an exact match of the given <var>$text</var>, otherwise the
+   *   transliterated text is returned.
+   * @throws \IntlException
+   */
+  public function transliterate($text, $locale = null) {
+    static $transliterators = [];
+    if (!$locale) {
+      $locale = $this->locale;
+    }
+    if (empty($transliterators[$locale])) {
+      $transliterators[$locale] = \Transliterator::create("Any-{$locale}");
+    }
+    if (($transliterated = $transliterators[$locale]->transliterate($text)) != $text) {
+      return $transliterated;
     }
   }
 

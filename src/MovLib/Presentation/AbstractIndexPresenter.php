@@ -76,7 +76,6 @@ abstract class AbstractIndexPresenter extends \MovLib\Presentation\AbstractPrese
     $this->set           = $set;
     $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/{$set->singularKey}/create")}'>{$createText}</a>";
     $this->initPage($title);
-    $this->initBreadcrumb();
     $this->initLanguageLinks("/{$set->pluralKey}", null, true);
     $this->sidebarInit([
       [ $set->route, $title, [ "class" => "ico ico-{$set->singularKey}" ] ],
@@ -91,7 +90,7 @@ abstract class AbstractIndexPresenter extends \MovLib\Presentation\AbstractPrese
    */
   public function getContent() {
     $items = null;
-    foreach ($this->set->getOrdered("`created` DESC", $this->paginationOffset, $this->paginationLimit) as $id => $entity) {
+    foreach ($this->set->loadOrdered("`created` DESC", $this->paginationOffset, $this->paginationLimit) as $id => $entity) {
       $items .= $this->formatListingItem($entity, $id);
     }
     return $this->getListing($items);

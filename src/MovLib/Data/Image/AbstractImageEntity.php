@@ -47,6 +47,22 @@ abstract class AbstractImageEntity extends \MovLib\Data\Image\AbstractReadOnlyIm
   const IMAGE_MIN_WIDTH = \MovLib\Data\Image\S02;
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * Whether this image was just newly uploaded.
+   *
+   * <b>NOTE</b><br>
+   * This flag only tells if the current instance was newly uploaded, it doesn't say anything about previous versions
+   * of this image. If this flag is <code>TRUE</code> and {@see AbstractImageEntity::$imageExists} is <code>FALSE</code>
+   * then it's a totally new upload.
+   *
+   * @var boolean
+   */
+  protected $imageUploaded = false;
+
+
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
@@ -88,6 +104,67 @@ abstract class AbstractImageEntity extends \MovLib\Data\Image\AbstractReadOnlyIm
       unlink($this->imageGetStyleURI($style));
     }
     $this->imageStylesCache = $this->imageStyles = null;
+    return $this;
+  }
+
+  /**
+   * Rename the generated image styles.
+   *
+   * @param string $oldFilename
+   *   The current filename of the images.
+   * @param string $newFilename
+   *   The new filename of the images.
+   * @return this
+   */
+  final protected function imageRename($oldFilename, $newFilename) {
+    if ($oldFilename != $newFilename) {
+      // Rename the original.
+      $uri = $this->imageGetURI();
+      rename($uri, str_replace($oldFilename, $newFilename, $uri));
+
+      // Rename all generated styles.
+      foreach ($this->imageGetEffects() as $style => $imageEffect) {
+        $uri = $this->imageGetStyleURI($style);
+        rename($uri, str_replace($oldFilename, $newFilename, $uri));
+      }
+    }
+    $this->imageFilename = $newFilename;
+    return $this;
+  }
+
+  /**
+   * Save the uploaded file as original and update/generate all image styles.
+   *
+   * @param \MovLib\Data\UploadedFile $uploadedFile
+   *   The file that was uploaded.
+   * @param integer $width
+   *   The uploaded image's width in Pixel.
+   * @param integer $height
+   *   The uploaded image's height in Pixel.
+   * @param string $extension
+   *   The uploaded image's extension.
+   * @return this
+   */
+  final public function imageSaveTemporary(\MovLib\Data\UploadedFile $uploadedFile, $width, $height, $extension) {
+    $this->imageCacheBuster = md5_file($uploadedFile->path);
+    $this->imageExtension   = $extension;
+    $this->imageFilename    = basename($uploadedFile->path);
+    $this->imageHeight      = $height;
+    $this->imageWidth       = $width;
+
+    // Move the original file from the temporary upload directory to the persistent storage within the correct directory
+    // without altering the image in any way. We want to keep the original for future changes.
+    $uri      = $this->imageGetURI();
+    $realpath = $this->fs->realpath($uri);
+    rename($uploadedFile->path, $realpath);
+
+    // Now we can generate all styles based on the original.
+    $this->imageGenerateStyles();
+
+    // We're done at this point, the presenter that contains the form has to decide if this image should be stored to
+    // the persistent storage or not.
+    $this->imageUploaded = true;
+
     return $this;
   }
 

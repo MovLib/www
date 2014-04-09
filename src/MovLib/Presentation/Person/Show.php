@@ -22,7 +22,7 @@ use \MovLib\Partial\Alert;
 use \MovLib\Partial\Date;
 use \MovLib\Partial\FormElement\InputSex;
 use \MovLib\Partial\Place;
-use \MovLib\Partial\QuickInfo;
+use \MovLib\Partial\InfoboxTrait;
 use \MovLib\Partial\Sex;
 
 /**
@@ -44,7 +44,7 @@ use \MovLib\Partial\Sex;
  * @since 0.0.1-dev
  */
 class Show extends \MovLib\Presentation\AbstractShowPresenter {
-  use \MovLib\Partial\ContentSectionTrait;
+  use \MovLib\Partial\SectionTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Initialization Methods.
@@ -95,7 +95,7 @@ class Show extends \MovLib\Presentation\AbstractShowPresenter {
       $this->pageTitle .=  "<sup class='ico ico-sex{$this->entity->sex} sex sex-{$this->entity->sex}' content='{$sexTitle}' property='gender' title='{$sexTitle}'></sup>";
     }
 
-    $infos = new QuickInfo($this->intl);
+    $infos = new InfoboxTrait($this->intl);
     $this->entity->bornName && $infos->add($this->intl->t("Born as"), "<span property='additionalName'>{$this->entity->bornName}</span>");
 
     if ($this->entity->birthDate) {
@@ -117,7 +117,7 @@ class Show extends \MovLib\Presentation\AbstractShowPresenter {
 
     $this->headingAfter .= "{$infos}</div>{$this->img($this->entity->imageGetStyle(), [], true, [ "class" => "s s2" ])}</div>";
 
-    if (($content = $this->getContentSections())) {
+    if (($content = $this->sectionGet())) {
       return $content;
     }
 

@@ -57,9 +57,17 @@ SQL;
   /**
    * {@inheritdoc}
    */
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+    return <<<SQL
+
+SQL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function init() {
-    $this->pluralKey   = $this->tableName = "events";
-    $this->route       = $this->intl->rp("/events");
+    $this->pluralKey   = "events";
     $this->singularKey = "event";
     return parent::init();
   }

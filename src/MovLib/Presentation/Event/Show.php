@@ -93,11 +93,11 @@ class Show extends \MovLib\Presentation\Event\AbstractBase {
     $info   .= "<br>{$this->intl->t("Award")}: <a href='{$this->award->route}'>{$this->award->name}</a>";
 
     // Construct the wikipedia link.
-    if ($this->event->wikipedia) {
+    if ($this->event->infoboxWikipedia) {
       if ($info) {
         $info .= "<br>";
       }
-      $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->event->wikipedia}' itemprop='sameAs' target='_blank'>{$this->intl->t("Wikipedia Article")}</a>";
+      $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->event->infoboxWikipedia}' itemprop='sameAs' target='_blank'>{$this->intl->t("Wikipedia Article")}</a>";
     }
 
     $headerImage = $this->getImage($this->award->getStyle(Award::STYLE_SPAN_02), $this->award->route, [ "itemprop" => "image" ]);

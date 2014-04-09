@@ -23,7 +23,7 @@ use \MovLib\Exception\ClientException\UnauthorizedException;
 /**
  * HTML input type file form element specialized for image uploads.
  *
- * @property \MovLib\Data\Image\AbstractImage $value
+ * @property \MovLib\Data\Image\AbstractImageEntity $value
  *
  * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#attr-input-type
  * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
@@ -49,13 +49,6 @@ final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
     IMAGETYPE_JPEG => "jpg",
     IMAGETYPE_PNG  => "png",
   ];
-
-  /**
-   * The image that is to be uploaded.
-   *
-   * @var \MovLib\Data\Image\AbstractImageEntity
-   */
-  protected $image;
 
   /**
    * Insert HTML after input file HTML element.
@@ -122,7 +115,7 @@ final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
    *   Any content that should be included in the rendered input image form element, defaults to <code>NULL</code>.
    * @throws \MovLib\Presentation\Error\Unauthorized
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, \MovLib\Data\Image\AbstractImageEntity $image, array $attributes = null, $inputFileAfter = null) {
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, \MovLib\Data\Image\AbstractImageEntity &$image, array $attributes = null, $inputFileAfter = null) {
     // Only authenticated users are allowed to upload images.
     if ($diContainerHTTP->session->isAuthenticated === false) {
       throw new UnauthorizedException($this->intl->t(
@@ -135,12 +128,10 @@ final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
     $diContainerHTTP->presenter->javascripts[] = "InputImage";
 
     // Initialize attributes and properties.
-    $this->image          = $image;
-    $this->inputFileAfter = $inputFileAfter;
-    $this->maxFilesize    = ini_get("upload_max_filesize");
-    $this->minHeight      = $this->image->imageHeight ?: AbstractImageEntity::IMAGE_MIN_HEIGHT;
-    $this->minWidth       = $this->image->imageWidth  ?: AbstractImageEntity::IMAGE_MIN_WIDTH;
-
+    $this->inputFileAfter       = $inputFileAfter;
+    $this->maxFilesize          = ini_get("upload_max_filesize");
+    $this->minHeight            = $image->imageHeight ?: AbstractImageEntity::IMAGE_MIN_HEIGHT;
+    $this->minWidth             = $image->imageWidth  ?: AbstractImageEntity::IMAGE_MIN_WIDTH;
     $this->maxFilesizeFormatted = $diContainerHTTP->intl->formatBytes($this->maxFilesize);
 
     $attributes["#help-popup"] = $diContainerHTTP->intl->t("Image must be larger than {width} × {height} pixels and less than {size}. Allowed image types: JPG and PNG", [
@@ -149,7 +140,7 @@ final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
       "size"   => $this->maxFilesizeFormatted,
     ]);
 
-    parent::__construct($diContainerHTTP, $id, $label, $attributes);
+    parent::__construct($diContainerHTTP, $id, $label, $image, $attributes);
 
     // Translate some error messages right away, we need them in render() and in validate()
     $this->errorMessages = [
@@ -161,7 +152,7 @@ final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
         "New images should have a better quality than already existing images, this includes the resolution. The " .
         "current image’s resolution is {width} × {height} and your new image’s is {width_new} × {height_new} pixels. " .
         "Please confirm that your upload has a better quality than the existing one despite the fact of smaller dimensions.",
-        [ "width" => $this->image->imageWidth, "height" => $this->image->imageHeight ]
+        [ "width" => $this->value->imageWidth, "height" => $this->value->imageHeight ]
       ),
       "small"   => $this->intl->t("The image is too small, it must be larger than {width} × {height} pixels.", [
         "height" => $this->minHeight,
@@ -181,13 +172,13 @@ final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
     // @codeCoverageIgnoreEnd
     // @devEnd
       $JSON     = json_encode($this->errorMessages);
-      $height   = $this->image->imageHeight ? " data-height='{$this->image->imageHeight}'" : null;
-      $width    = $this->image->imageWidth  ? " data-width='{$this->image->imageWidth}'"   : null;
+      $height   = $this->value->imageHeight ? " data-height='{$this->value->imageHeight}'" : null;
+      $width    = $this->value->imageWidth  ? " data-width='{$this->value->imageWidth}'"   : null;
 
       return
         "<div class='inputimage r' data-max-filesize='{$this->maxFilesize}' data-min-height='{$this->minHeight}' data-min-width='{$this->minWidth}'{$height}{$width}>" .
           "<script type='application/json'>{$JSON}</script>" .
-          "<div class='s s2 preview'>{$this->presenter->img($this->image->imageGetStyle("s2"), [ "class" => "preview" ], false)}</div>" .
+          "<div class='s s2 preview'>{$this->presenter->img($this->value->imageGetStyle("s2"), [ "class" => "preview" ], false)}</div>" .
           "<div class='s s8'>{$this->required}{$this->helpPopup}<label for='{$this->id}'>{$this->label}</label>" .
             "<span class='btn input-file'><span aria-hidden='true'>{$this->intl->t("Choose Image …")}</span>" .
               "<input id='{$this->id}' name='{$this->id}' type='file' accept='image/jpeg,image/png'{$this->expandTagAttributes($this->attributes)}>" .
@@ -226,15 +217,11 @@ final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
     // Check if this is really an image of type JPEG or PNG.
     if ($width <= 0 || $height <= 0 || ($type !== IMAGETYPE_JPEG && $type !== IMAGETYPE_PNG)) {
       $errors[self::ERROR_TYPE] = $this->errorMessages[self::ERROR_TYPE];
-      return $this;
     }
-
     // Check dimension constrains.
-    if ($height < $this->minHeight || $width < $this->minWidth) {
+    elseif ($height < $this->minHeight || $width < $this->minWidth) {
       $errors[self::ERROR_SMALL] = $this->errorMessages[self::ERROR_SMALL];
-      return $this;
     }
-
     // An image should only be replaced with another image if the resolution is greater than the previous resolution.
     // Of course there are situations where this is not the case, we still have to tell the user.
     //
@@ -244,12 +231,15 @@ final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
     // @todo @Richard
     //   Think about a way to solve this kind of problem once and for all. Maybe with a ConfirmationException which is
     //   catched in main.php?
-    if ($this->height < $this->image->height || $this->width < $this->image->width) {
-      $errors[self::ERROR_QUALITY] = str_replace([ "{width_new}", "{height_new}" ], [ $this->width, $this->height ], $this->errorMessages[self::ERROR_QUALITY]);
-      return $this;
+    elseif ($height < $this->value->imageHeight || $width < $this->value->imageWidth) {
+      $errors[self::ERROR_QUALITY] = str_replace([ "{width_new}", "{height_new}" ], [ $width, $height ], $this->errorMessages[self::ERROR_QUALITY]);
+    }
+    // Everything is valid, export new image properties to the concrete image class.
+    else {
+      $this->value->imageSaveTemporary($uploadedImage, $width, $height, $this->extensions[$type]);
     }
 
-    return $this;
+    return $this->value;
   }
 
 }

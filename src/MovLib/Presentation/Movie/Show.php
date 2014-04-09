@@ -18,7 +18,10 @@
 namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Movie\Movie;
-use \MovLib\Partial\QuickInfo;
+use \MovLib\Partial\Country;
+use \MovLib\Partial\Duration;
+use \MovLib\Partial\Genre;
+use \MovLib\Partial\StarRatingForm;
 
 /**
  * Defines the movie presentation.
@@ -44,28 +47,58 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->initShow(
-      new Movie($this->diContainerHTTP, $_SERVER["MOVIE_ID"]),
-      $this->intl->t("Movies"),
-      $this->intl->t("Movie"),
-      "Movie",
-      null
-    );
+    $movie = new Movie($this->diContainerHTTP, $_SERVER["MOVIE_ID"]);
+    $this
+      ->initPage($movie->displayTitleAndYear, $this->getStructuredDisplayTitle($movie, false, true))
+      ->initShow($movie, $this->intl->t("Movies"), "Movie", null);
+    ;
     $this->stylesheets[] = "movie";
     $this->javascripts[] = "Movie";
-    $this->pageTitle     = $this->getStructuredDisplayTitle($this->entity, false, true);
+    return $this;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    $this->headingBefore = "<div class='r'><div class='s s10'>";
+    $originalTitle = $this->getStructuredOriginalTitle($this->entity, "p");
+    $tagline       = $this->getStructuredTagline($this->entity);
+    $rating        = new StarRatingForm($this->diContainerHTTP, $this->entity);
 
-    $infos = new QuickInfo($this->intl);
+    $this->infoboxInit(
+      $this->entity,
+      $this->intl->r("/movie/{0}/posters", $this->entity->id),
+      "{$originalTitle}{$tagline}{$rating}"
+    );
 
+    $this->entity->runtime   && $this->infoboxAdd($this->intl->t("Runtime"), (new Duration($this->diContainerHTTP))->formatMinutes($this->entity->runtime, [ "property" => "runtime" ]));
+    $this->entity->genreSet  && $this->infoboxAdd($this->intl->t("Genres"), (new Genre($this->diContainerHTTP))->getList($this->entity->genreSet));
+    $this->entity->countries && $this->infoboxAdd($this->intl->t("Countries"), (new Country($this->diContainerHTTP))->getList($this->entity->countries, "contentLocation"));
 
-    $this->headingAfter .= "{$infos}</div><div class='s s2'><img alt='' src='{$this->fs->getExternalURL("asset://img/logo/vector.svg")}' width='140' height='140'></div></div>";
+    $this->entity->synopsis && $this->sectionAdd($this->intl->t("Synopsis"), $this->entity->synopsis);
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($this->entity->synopsis)) {
+      $this->sectionAdd($this->intl->t("Synopsis"), "<div class='quotes'>{$this->blindtext()}</div>");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    $this->sectionAdd(
+      "Quote Test",
+      "<blockquote>Quotes are rendered in the current locale…</blockquote><p>Meet the <q><code>&lt;q&gt;</code></q> tag.</p><blockquote lang='ja'>日本語はどうですか？</blockquote>" .
+      "<blockquote lang='fr'>Nous avons également quelques citations de français. <q lang='en'>This even includes a nested quote in a different language!</q></blockquote>",
+      false,
+      "callout"
+    );
+    $this->sectionAdd($this->intl->t("Alternative Titles"), "Not implemented yet!", false, "callout callout-info");
+    $this->sectionAdd($this->intl->t("Trailers"), "Not implemented yet!", false, "callout callout-warning");
+    $this->sectionAdd($this->intl->t("Weblinks"), "Not implemented yet!", false, "callout callout-danger");
+
+    if ($this->sections) {
+      return $this->sections;
+    }
+
+    return "";
   }
 
   /**

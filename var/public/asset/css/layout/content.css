@@ -35,6 +35,11 @@
   background-color: #fff;
 }
 
+#m > :first-child,
+#m .page-content > :first-child {
+  margin-top: 0;
+}
+
 #header {
   margin-bottom: 40px;
   background-color: #252525;
@@ -43,6 +48,10 @@
 #header > .c {
   padding-bottom: 20px;
   color: #c7c7c7;
+}
+
+#header blockquote {
+  margin-left: 0;
 }
 
 #filter {

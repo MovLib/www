@@ -29,7 +29,6 @@ namespace MovLib\Data\Job;
  */
 final class JobSet extends \MovLib\Data\AbstractSet {
 
-
   /**
    * {@inheritdoc}
    */
@@ -54,9 +53,17 @@ SQL;
   /**
    * {@inheritdoc}
    */
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+    return <<<SQL
+
+SQL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function init() {
-    $this->pluralKey   = $this->tableName = "jobs";
-    $this->route       = $this->intl->rp("/jobs");
+    $this->pluralKey   = "jobs";
     $this->singularKey = "job";
     return parent::init();
   }

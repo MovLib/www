@@ -61,8 +61,8 @@ SQL;
   /**
    * {@inheritdoc}
    */
-  public function getOrdered($by, $offset, $limit) {
-    return $this->getEntities("WHERE `email` IS NOT NULL", "ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}");
+  public function loadOrdered($by, $offset, $limit) {
+    return $this->loadEntities("WHERE `email` IS NOT NULL", "ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}");
   }
 
   /**
@@ -88,6 +88,15 @@ SQL;
     $this->route       = $this->intl->rp("/users");
     $this->singularKey = "user";
     return parent::init();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+    return <<<SQL
+
+SQL;
   }
 
 }

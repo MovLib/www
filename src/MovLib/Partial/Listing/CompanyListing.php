@@ -178,7 +178,7 @@ class CompanyListing {
         ]);
       }
       else {
-        $companyDates .= $this->intl->t("{0}unknown{1}", [ "<em title='{$this->intl->t("Founding Date")}'>", "</em>" ]);
+        $companyDates .= "<em title='{$this->intl->t("Founding Date")}'>{$this->intl->t("unknown")}</em>";
       }
       if ($company->defunctDate) {
         $companyDates .= " – " . (new Date($this->presenter, $company->defunctDate))->format($this->intl, [ "title" => $this->intl->t("Defunct Date") ]);

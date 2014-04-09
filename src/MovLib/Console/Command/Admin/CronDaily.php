@@ -20,6 +20,7 @@ namespace MovLib\Console\Command\Admin;
 use \MovLib\Console\MySQLi;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
+use \Symfony\Component\Console\Input\StringInput;
 
 /**
  * Cron jobs that should run on a daily basis.
@@ -50,6 +51,7 @@ class CronDaily extends \MovLib\Console\Command\AbstractCommand {
     try {
       $this->purgeTemporaryTable();
       $this->purgeTemporaryUploads();
+      $this->verifyCounts();
     }
     catch (\Exception $e) {
       $this->log->error($e);
@@ -67,7 +69,7 @@ class CronDaily extends \MovLib\Console\Command\AbstractCommand {
     $query = "DELETE FROM `tmp` WHERE DATEDIFF(CURRENT_TIMESTAMP, `created`) > 0 AND `ttl` = '{$ttl}'";
     $this->writeDebug("Purging temporary table for <comment>{$ttl}</comment> entries...");
     $this->writeDebug("mysql> <comment>{$query};</comment>");
-    (new MySQLi($this->diContainer))->query($query);
+    (new MySQLi("movlib"))->query($query);
     return $this;
   }
 
@@ -81,6 +83,20 @@ class CronDaily extends \MovLib\Console\Command\AbstractCommand {
       ->writeVerbose("Purging temporary uploads directory...")
       ->exec("find '" . ini_get("upload_tmp_dir") . "' -type f -mtime +1 -exec rm -f {} \\;")
     ;
+  }
+
+  /**
+   * Verify the various count columns for entities in the database.
+   *
+   * @return this
+   */
+  public function verifyCounts() {
+    // Execute all available count verifications.
+    $this->writeVerbose("Verifying and updating entity counts...");
+    $input = new StringInput([]);
+    $input->setOption("no-interaction");
+    $input->setOption("quiet");
+    // @todo: call all count commands.
   }
 
 }

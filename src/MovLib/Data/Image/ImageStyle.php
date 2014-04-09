@@ -56,7 +56,7 @@ class ImageStyle {
   /**
    * The image style's effect that was applied on it.
    *
-   * @var null|\MovLib\Data\Image\ImageEffect
+   * @var null|\MovLib\Data\Image\ImageResizeEffect
    */
   public $effect;
 

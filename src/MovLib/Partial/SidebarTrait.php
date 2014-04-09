@@ -121,4 +121,38 @@ trait SidebarTrait {
     return $this;
   }
 
+  /**
+   * Initialize the sidebar, including the default toolbox (view, edit, discussion, ...) items.
+   *
+   * @param \MovLib\Data\AbstractEntity $entity
+   *   The entity for which the toolbox items will be generated.
+   * @param array $menuitems [optional]
+   *   Additional items for the sidebar.
+   * @param boolean $small [optional]
+   *   Whether to create a small sidebar or not, defaults to <code>FALSE</code>.
+   * @return this
+   */
+  final protected function sidebarInitToolbox(\MovLib\Data\AbstractEntity $entity, array $menuitems = null, $small = false) {
+    if ($entity->deleted) {
+      $toolboxItems = [
+        [ $this->entity->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
+        [ $this->intl->r("/{$this->entity->singularKey}/{0}/discussion", $this->entity->id), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
+        [ $this->intl->r("/{$this->entity->singularKey}/{0}/history", $this->entity->id), $this->intl->t("History"), [ "class" => "ico ico-history" ] ]
+      ];
+    }
+    else {
+      $toolboxItems = [
+      [ $this->entity->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
+      [ $this->intl->r("/{$this->entity->singularKey}/{0}/edit", $this->entity->id), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
+      [ $this->intl->r("/{$this->entity->singularKey}/{0}/discussion", $this->entity->id), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
+      [ $this->intl->r("/{$this->entity->singularKey}/{0}/history", $this->entity->id), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
+      [ $this->intl->r("/{$this->entity->singularKey}/{0}/delete", $this->entity->id), $this->intl->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
+    ];
+    }
+    if ($menuitems) {
+      $toolboxItems += $menuitems;
+    }
+    return $this->sidebarInit($toolboxItems, $small);
+  }
+
 }

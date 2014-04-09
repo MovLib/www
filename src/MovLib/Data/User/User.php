@@ -20,7 +20,7 @@ namespace MovLib\Data\User;
 use \MovLib\Core\HTTP\Session;
 use \MovLib\Data\Date;
 use \MovLib\Data\DateTime;
-use \MovLib\Data\Image\ImageEffect;
+use \MovLib\Data\Image\ImageResizeEffect;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -359,13 +359,24 @@ SQL
   }
 
   /**
-   * {@inheritdoc}
+   * Get the rating for an entity.
+   *
+   * @param \MovLib\Data\AbstractEntity $entity
+   *   The entity to get the rating for.
+   * @param integer $userId [optional]
+   *   The user's unique identifier to get the rating for, defaults to <code>NULL</code> and the id from the current
+   *   instance will be used.
+   * @param return integer
+   *   The user's rating for this movie, or <code>NULL</code> if the user hasn't rated this movie.
    */
-  public function getCount($from, $what = "*") {
-    $result = $this->getMySQLi()->query("SELECT COUNT({$what}) FROM `{$from}` WHERE `user_id` = {$this->id} LIMIT 1");
-    $count  = $result->fetch_row()[0];
+  public function getRating(\MovLib\Data\AbstractEntity $entity, $userId = null) {
+    if (empty($userId)) {
+      $userId = $this->id;
+    }
+    $result = $this->getMySQLi()->query("SELECT `rating` FROM `{$entity->tableName}_ratings` WHERE `user_id` = {$userId} AND `{$entity->singularKey}_id` = {$entity->id} LIMIT 1");
+    $rating = $result->fetch_row()[0];
     $result->free();
-    return $count;
+    return $rating;
   }
 
   /**
@@ -389,7 +400,11 @@ SQL
    * {@inheritdoc}
    */
   protected function imageGetEffects() {
-    return parent::imageGetEffects() + [ "nav" => new ImageEffect(50, 50, true) ];
+    return [
+      "nav" => new ImageResizeEffect(50, 50, true),
+      "s1"  => new ImageResizeEffect(\MovLib\Data\Image\S01, \MovLib\Data\Image\S01, true),
+      "s2"  => new ImageResizeEffect(\MovLib\Data\Image\S02, \MovLib\Data\Image\S02, true),
+    ];
   }
 
   /**
@@ -403,6 +418,15 @@ SQL
     $stmt->bind_param("sd", $styles, $this->id);
     $stmt->execute();
     $stmt->close();
+    return $this->imageUpdateSession();
+  }
+
+  /**
+   * Update the session after the user image has changed.
+   *
+   * @return this
+   */
+  protected function imageUpdateSession() {
     if ($this->kernel->http) {
       $_SESSION[Session::USER_IMAGE_CACHE_BUSTER] = $this->imageCacheBuster;
       $_SESSION[Session::USER_IMAGE_EXTENSION]    = $this->imageExtension;
@@ -443,7 +467,12 @@ SQL
    * @throws \mysqli_sql_exception
    */
   public function updateAccount() {
-    $styles    = serialize($this->imageStyles);
+    // If a new image was uploaded rename the images with the temporary name to the actual name.
+    if ($this->imageUploaded) {
+      $this->imageRename($this->imageFilename, mb_strtolower($this->name))->imageUpdateSession();
+    }
+
+    $styles = serialize($this->imageStyles);
     $stmt = $this->getMySQLi()->prepare(<<<SQL
 UPDATE `users` SET
   `dyn_about_me`       = COLUMN_ADD(`dyn_about_me`, '{$this->intl->languageCode}', ?),

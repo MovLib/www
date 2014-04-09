@@ -18,7 +18,10 @@
 namespace MovLib\Partial;
 
 /**
- * Defines methods to format dates.
+ * Defines the date partial object.
+ *
+ * The date partial works with {@see \MovLib\Data\Date} objects and has methods that allow automated formatting with the
+ * appropriate structured data attributes and HTML tags.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>

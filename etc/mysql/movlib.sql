@@ -13,9 +13,12 @@ USE `movlib` ;
 CREATE TABLE IF NOT EXISTS `movlib`.`movies` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The movie’s unique ID.',
   `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the movie was last changed.',
+  `count_awards` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s total number of awards.',
+  `count_releases` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s total number of releases.',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the movie was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether the movie is marked as deleted (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_synopses` BLOB NOT NULL COMMENT 'The synopsis of the movie in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_wikipedia` BLOB NOT NULL COMMENT 'The movie’s translated Wikipedia links.',
   `mean_rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s arithmetic mean rating.',
   `rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The Bayes\'theorem rating of this movie.\n\nrating = (s / (s + m)) * N + (m / (s + m)) * K\n\nN: arithmetic mean rating\ns: vote count\nm: minimum vote count\nK: arithmetic mean vote\n\nThe same formula is used by IMDb and OFDb.',
   `votes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s vote count.',
@@ -40,6 +43,8 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`genres` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The genre’s unique identifier.',
   `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the genre was last changed.',
+  `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The genre’s total number of movie occurrences.',
+  `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The genre’s total number of series occurences.',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the genre was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the genre was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The genre’s description in various languages. Keys are ISO alpha-2 language codes.',
@@ -151,17 +156,17 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`persons` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The person’s unique ID.',
-  `award_count` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The person’s total number of awards.',
   `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the person was last changed.',
+  `count_awards` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The person’s total number of awards.',
+  `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The person’s total number of movie participations.',
+  `count_releases` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The person’s total number of release participations.',
+  `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The person’s total number of series participations.',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the person was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this person is marked as deleted (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_biographies` BLOB NOT NULL COMMENT 'The person’s biography in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_wikipedia` BLOB NOT NULL COMMENT 'The person\'s Wikipedia link in various languages. The language code serves as key.',
   `dyn_image_descriptions` BLOB NOT NULL COMMENT 'The person’s translated photo description.',
-  `movie_count` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The person’s total number of movie participations.',
   `name` VARCHAR(255) NOT NULL COMMENT 'The person’s full name.',
-  `release_count` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The person’s total number of release participations.',
-  `series_count` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The person’s total number of series participations.',
   `sex` TINYINT NOT NULL DEFAULT 0 COMMENT 'The person\'s sex according to ISO 5218.\n\n0 = not known\n1 = male\n2 = female\n9 = not applicable',
   `birthdate` DATE NULL COMMENT 'The person’s date of birth.',
   `birthplace_id` BIGINT UNSIGNED NULL COMMENT 'The person’s birthplace.',
@@ -217,6 +222,9 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`jobs` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The job’s unique ID.',
   `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the job was last changed.',
+  `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The jobs’s total number of movies.',
+  `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The job’s total number of series.',
+  `count_releases` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The job’s total number of releases.',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the job was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the job was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The job’s description in various languages. Keys are ISO alpha-2 language codes.',
@@ -238,6 +246,10 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`companies` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The company’s unique ID.',
   `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the company was last changed.',
+  `count_awards` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The company’s total number of awards.',
+  `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The company’s total number of movie participations.',
+  `count_releases` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The company’s total number of release participations.',
+  `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The company’s total number of series participations.',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the company was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the company was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The company’s translated descriptions.',
@@ -503,6 +515,9 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`awards` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The award’s unique ID.',
   `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the award was last changed.',
+  `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of movie participations.',
+  `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of series participations.',
+  `count_events` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of events.',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the award was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the award was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The award’s description in various languages. Keys are ISO alpha-2 language codes.',
@@ -731,8 +746,10 @@ SHOW WARNINGS;
 -- Table `movlib`.`series`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`series` (
-  `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique ID of the series.',
+  `series_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The unique ID of the series.',
   `created` TIMESTAMP NOT NULL COMMENT 'The creation date of the series as timestamp.',
+  `count_awards` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The series’ total number of awards.',
+  `count_releases` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The series’ total number of releases.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this series is marked as deleted (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_synopses` BLOB NOT NULL COMMENT 'The synopsis of the series in various languages. Keys are ISO alpha-2 language codes.',
   `original_title` BLOB NOT NULL COMMENT 'The original title of the series.',
@@ -759,6 +776,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`series_seasons` (
   `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique ID of the series.',
   `seasons_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season’s  number within the series.',
+  `count_releases` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The season’s total number of releases.',
   `created` TIMESTAMP NOT NULL COMMENT 'The creation date of the season as timestamp.',
   `end_year` SMALLINT(4) UNSIGNED ZEROFILL NULL COMMENT 'The year the season ended.',
   `start_year` SMALLINT(4) UNSIGNED ZEROFILL NULL COMMENT 'The year the season started airing.',
@@ -805,6 +823,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`seasons_episodes` (
   `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique ID of he series.',
   `seasons_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season’s number this episode belongs to.',
   `position` SMALLINT UNSIGNED NOT NULL COMMENT 'The episode’s chronological position within the season.',
+  `count_releases` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The episode’s total number of releases.',
   `created` TIMESTAMP NOT NULL COMMENT 'The creation date of the episode as timestamp.',
   `original_title` BLOB NOT NULL COMMENT 'The episode’s original title.',
   `original_title_language_code` CHAR(2) NOT NULL COMMENT 'The episode’s original title ISO alpha-2 language code.',
@@ -1602,7 +1621,7 @@ SHOW WARNINGS;
 -- Table `movlib`.`episodes_crew`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`episodes_crew` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The crew ID within the episode.',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The episode crew’s unique identifier.',
   `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique series ID.',
   `seasons_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season number within a series.',
   `position` SMALLINT UNSIGNED NOT NULL COMMENT 'The episode number within a season.',
@@ -1635,7 +1654,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`episodes_crew` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-COMMENT = 'Contains the crew of a episode.';
+COMMENT = 'Contains the crew of an episode.';
 
 SHOW WARNINGS;
 
@@ -1813,6 +1832,98 @@ CREATE TABLE IF NOT EXISTS `movlib`.`releases_crew` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Contains the crew of a release.';
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`episodes_cast`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`episodes_cast` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The episode cast’s unique identifier.',
+  `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique series ID.',
+  `seasons_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season number within a series.',
+  `position` SMALLINT UNSIGNED NOT NULL COMMENT 'The episode number within a season.',
+  `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique identifier.',
+  `job_id` BIGINT UNSIGNED NOT NULL COMMENT 'The episode cast’s job identifier.',
+  `dyn_role` BLOB NOT NULL COMMENT 'The cast’s translated role names (if role_id is null).',
+  `weight` SMALLINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The weight (display order) of the series’ cast. Default is 0.',
+  `alias_id` BIGINT NULL COMMENT 'The episode cast’s alias identifier.',
+  `role_id` BIGINT UNSIGNED NULL COMMENT 'The episode cast’s role identifier (for persons who play other real persons).',
+  PRIMARY KEY (`id`, `series_id`, `seasons_number`, `position`),
+  INDEX `fk_episodes_cast_seasons_episodes` (`series_id` ASC, `seasons_number` ASC, `position` ASC),
+  INDEX `fk_episodes_cast_persons` (`person_id` ASC),
+  INDEX `fk_episodes_cast_jobs` (`job_id` ASC),
+  INDEX `fk_episodes_cast_persons_role` (`role_id` ASC),
+  INDEX `fk_episodes_cast_persons_aliases` (`alias_id` ASC),
+  CONSTRAINT `fk_episodes_cast_seasons_episodes`
+    FOREIGN KEY (`series_id` , `seasons_number` , `position`)
+    REFERENCES `movlib`.`seasons_episodes` (`series_id` , `seasons_number` , `position`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_episodes_cast_persons`
+    FOREIGN KEY (`person_id`)
+    REFERENCES `movlib`.`persons` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_episodes_cast_jobs`
+    FOREIGN KEY (`job_id`)
+    REFERENCES `movlib`.`jobs` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_episodes_cast_persons_role`
+    FOREIGN KEY (`role_id`)
+    REFERENCES `movlib`.`persons` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_episodes_cast_persons_aliases`
+    FOREIGN KEY (`alias_id`)
+    REFERENCES `movlib`.`persons_aliases` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains the cast of an episode.'
+ROW_FORMAT = COMPRESSED;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`episodes_directors`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`episodes_directors` (
+  `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique series ID.',
+  `seasons_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season number within a series.',
+  `position` SMALLINT UNSIGNED NOT NULL COMMENT 'The episode number within a season.',
+  `person_id` BIGINT UNSIGNED NOT NULL,
+  `job_id` BIGINT UNSIGNED NOT NULL COMMENT 'The episode director’s job identifier.',
+  `weight` SMALLINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The weight (display order) of the series’ director. Default is 0.',
+  `alias_id` BIGINT NULL COMMENT 'The episode director’s alias identifier.',
+  PRIMARY KEY (`series_id`, `seasons_number`, `position`, `person_id`),
+  INDEX `fk_episodes_directors_seasons_episodes` (`series_id` ASC, `seasons_number` ASC, `position` ASC),
+  INDEX `fk_episodes_directors_persons` (`person_id` ASC),
+  INDEX `fk_episodes_directors_jobs` (`job_id` ASC),
+  INDEX `fk_episodes_directors_persons_aliases` (`alias_id` ASC),
+  CONSTRAINT `fk_episodes_directors_seasons_episodes`
+    FOREIGN KEY (`series_id` , `seasons_number` , `position`)
+    REFERENCES `movlib`.`seasons_episodes` (`series_id` , `seasons_number` , `position`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_episodes_directors_persons`
+    FOREIGN KEY (`person_id`)
+    REFERENCES `movlib`.`persons` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_episodes_directors_jobs`
+    FOREIGN KEY (`job_id`)
+    REFERENCES `movlib`.`jobs` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_episodes_directors_persons_aliases`
+    FOREIGN KEY (`alias_id`)
+    REFERENCES `movlib`.`persons_aliases` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains the directors of an episode.';
 
 SHOW WARNINGS;
 

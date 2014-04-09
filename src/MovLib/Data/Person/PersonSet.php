@@ -41,10 +41,10 @@ SELECT
   `persons`.`birthdate` AS `birthDate`,
   `persons`.`born_name` AS `bornName`,
   `persons`.`deathdate` AS `deathDate`,
-  `persons`.`award_count` AS `awardCount`,
-  `persons`.`movie_count` AS `movieCount`,
-  `persons`.`release_count` AS `releaseCount`,
-  `persons`.`series_count` AS `seriesCount`,
+  `persons`.`count_awards` AS `countAwards`,
+  `persons`.`count_movies` AS `countMovies`,
+  `persons`.`count_releases` AS `countReleases`,
+  `persons`.`count_series` AS `countSeries`,
   `persons`.`deleted`,
   `persons`.`changed`,
   `persons`.`created`,
@@ -60,9 +60,17 @@ SQL;
   /**
    * {@inheritdoc}
    */
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+    return <<<SQL
+
+SQL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function init() {
-    $this->pluralKey   = $this->tableName = "persons";
-    $this->route       = $this->intl->rp("/persons");
+    $this->pluralKey   = "persons";
     $this->singularKey = "person";
     return parent::init();
   }

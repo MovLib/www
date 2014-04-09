@@ -103,7 +103,7 @@ final class PasswordSettings extends \MovLib\Presentation\Profile\AbstractProfil
     }
 
     // First field to enter the new password.
-    $form = (new Form($this->diContainerHTTP))
+    $form = (new Form($this->diContainerHTTP, [ "autocomplete" => "off" ]))
       ->addElement(new InputPassword($this->diContainerHTTP, "password_new", $this->intl->t("New Password"), $this->newPassword, [
         "autofocus"   => true,
         "placeholder" => $this->intl->t("Enter your new password"),
@@ -114,7 +114,7 @@ final class PasswordSettings extends \MovLib\Presentation\Profile\AbstractProfil
         "required"    => true,
       ]))
       ->addAction($this->intl->t("Change Password Settings"), [ "class" => "btn btn-large btn-success" ])
-      ->init([ $this, "valid" ], [ "autocomplete" => "off" ], [ $this, "validate" ])
+      ->init([ $this, "valid" ], [ $this, "validate" ])
     ;
 
     return "{$passwordInfo}{$form}";

@@ -38,9 +38,18 @@ final class LanguageSelection extends \MovLib\Presentation\AbstractPresenter {
   /**
    * {@inheritdoc}
    */
+  public function init() {
+    $this->initPage($this->intl->t("Language Selection"));
+    $this->next("//{$this->intl->languageCode}.{$this->config->hostname}/");
+    $this->stylesheets[] = "language-selection";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getContent() {
     $prerender = $menuitems = null;
-    foreach ($this->config->locales as $code => $locale) {
+    foreach ($this->intl->systemLocales as $code => $locale) {
       $href = "//{$code}.{$this->config->hostname}/";
       // Doesn't validate, but the browsers like it. Please note that Chrome doesn't prerender more than one URL and
       // no HTTPS pages; there's nothing we can do about that. But it works great in Gecko and IE.
@@ -87,15 +96,6 @@ final class LanguageSelection extends \MovLib\Presentation\AbstractPresenter {
         "</h1>{$this->alerts}{$content}" .
       "</div></main>"
     ;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-    $this->initPage($this->intl->t("Language Selection"));
-    $this->next("//{$this->intl->languageCode}.{$this->config->hostname}/");
-    $this->stylesheets[] = "language-selection";
   }
 
 }

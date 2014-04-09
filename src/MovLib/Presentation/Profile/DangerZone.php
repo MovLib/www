@@ -63,7 +63,7 @@ final class DangerZone extends \MovLib\Presentation\Profile\AbstractProfilePrese
 
     // We must initialize the form before we create the sessions table, otherwise deletions would happen after the table
     // containing the sessions listing was built. Deleted sessions would still be displayed!
-    $sessions       = (new Form($this->diContainerHTTP, "sessions"))->init([ $this, "deleteSession" ]);
+    $sessions       = (new Form($this->diContainerHTTP, [], "sessions"))->init([ $this, "deleteSession" ]);
     $sessionsTable  = "";
     $buttonText     = $this->intl->t("Terminate");
     $buttonTitle    = $this->intl->t("Terminate this session, the associated user agent will be signed out immediately.");

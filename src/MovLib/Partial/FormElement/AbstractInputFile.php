@@ -81,9 +81,6 @@ abstract class AbstractInputFile extends \MovLib\Partial\FormElement\AbstractFor
 
     // Fail if the key is missing within the files array or if no file was uploaded at all.
     if ($uploadedFile->error === UPLOAD_ERR_NO_FILE) {
-      // Make sure that the value is really NULL.
-      $this->value = null;
-
       // The missing file is an error if this field is required.
       $this->required && ($errors[self::ERROR_REQUIRED] = $this->intl->t("The “{0}” file is required.", [ $this->label ]));
     }

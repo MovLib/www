@@ -18,116 +18,79 @@
 namespace MovLib\Partial;
 
 /**
- * Duration presentation.
+ * Defines the duration object.
  *
- * @link http://wiki.whatwg.org/wiki/Time_element#duration
- * @link http://tools.ietf.org/html/rfc5545
- * @link http://en.wikipedia.org/wiki/ISO_8601#Durations
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Duration extends \MovLib\Presentation\AbstractBase {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
+final class Duration extends \MovLib\Core\Presentation\DependencyInjectionBase {
 
   /**
-   * Format the time exactly, e.g.: 1:00:00
+   * Get the seconds formatted as RFC 5545 (respectively ISO 8601) duration string.
    *
-   * @var integer
-   */
-  const EXACT = 0;
-
-  /**
-   * Format the time in minutes, e.g.: 96 min.
-   *
-   * @var integer
-   */
-  const MINUTES = 1;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The attributes array.
-   *
-   * @var array
-   */
-  protected $attributes;
-
-  /**
-   * The parsed duration as associative array.
-   *
-   * @see getdate()
-   * @var array
-   */
-  protected $duration;
-
-  /**
-   * The text that is displayed to the user.
-   *
-   * @var string
-   */
-  protected $text;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new duration partial.
-   *
-   * @internal
-   *   Keep calculations in constructor, the {@see __toString()} method cannot throw exceptions!
+   * @link http://wiki.whatwg.org/wiki/Time_element#duration
+   * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/common-microsyntaxes.html#valid-duration-string
+   * @link http://tools.ietf.org/html/rfc5545
+   * @link http://en.wikipedia.org/wiki/ISO_8601#Durations
    * @param integer $seconds
-   *   The duration in seconds.
-   * @param array $attributes [optional]
-   *   Additional attributes that should be applied to the element.
-   * @param integer $format [optional]
-   *   How to format the text, use the class constants.
+   *   The seconds to format.
+   * @return string
+   *   The formatted seconds.
    */
-  public function __construct($seconds, array $attributes = null, $format = self::EXACT) {
-    $this->attributes = $attributes;
-    $this->duration   = $seconds;
-
-    // Format the parsed date accoring to RFC 5545 respectively ISO 8601.
-    $this->attributes["datetime"] = "P";
+  public function format($seconds) {
+    $duration = null;
+    // Format the seconds according to RFC 5545 respectively ISO 8601.
     foreach ([ "D" => 86400, "H" => 3600, "M" => 60 ] as $type => $divisor) {
       $value    = floor($seconds / $divisor);
       $seconds -= $value * $divisor;
       if ($value > 0) {
-        $this->attributes["datetime"] .= "{$value}{$type}";
+        $duration .= "{$value}{$type}";
       }
+      // The T has to be present, it doesn't matter if we have any days or not.
       if ($type == "D") {
-        $this->attributes["datetime"] .= "T";
+        $duration .= "T";
       }
     }
-
-    // Format text depending on precision.
-    if ($format === self::EXACT) {
-      $this->attributes["datetime"] .= "{$seconds}S";
-      // @todo Right now the number formatter only supports English for durations!
-      $this->text = (new \NumberFormatter("en_US", \NumberFormatter::DURATION))->format($this->duration);
-    }
-    // @todo Can't we translate the unit with Intl ICU? Couldn't find anything.
-    else {
-      $this->text = $this->intl->t("{0, number, integer} min.", [ ceil($this->duration / 60) ]);
-    }
+    return "P{$duration}{$seconds}S";
   }
 
   /**
-   * Get the string representation of the duration.
+   * Get the seconds formatted as exact duration wrapped in a <code><time></code> element.
    *
+   * @param integer $seconds
+   *   The seconds to format.
+   * @param array $attributes [optional]
+   *   Additional attributes that should be applied to the <code><time></code> element, note that <code>"datetime"</code>
+   *   is always overwritten.
    * @return string
-   *   The string representation of the duration.
+   *   The formatted seconds.
    */
-  public function __toString() {
-    return "<time{$this->expandTagAttributes($this->attributes)}>{$this->text}</time>";
+  public function formatExact($seconds, array $attributes = null) {
+    $attributes["datetime"] = $this->format($seconds);
+    // @todo Number formatter only supports english durations right now, this isn't a problem for German but for other
+    //       languages.
+    $text = (new \NumberFormatter($this->intl->defaultLocale, \NumberFormatter::DURATION))->format($seconds);
+    return "<time{$this->presenter->expandTagAttributes($attributes)}>{$text}</time>";
+  }
+
+  /**
+   * Get the seconds rounded to minutes and wrapped in a <code><time></code> element.
+   *
+   * @param integer $seconds
+   *   The seconds to format.
+   * @param array $attributes [optional]
+   *   Additional attributes that should be applied to the <code><time></code> element, note that <code>"datetime"</code>
+   *   is always overwritten.
+   * @return string
+   *   The formatted seconds.
+   */
+  public function formatMinutes($seconds, array $attributes = null) {
+    $attributes["datetime"] = $this->format($seconds);
+    /// The "min." is short for "minutes"
+    return "<time{$this->presenter->expandTagAttributes($attributes)}>{$this->intl->format("{0,number,integer} min.", ceil($seconds / 60))}</time>";
   }
 
 }

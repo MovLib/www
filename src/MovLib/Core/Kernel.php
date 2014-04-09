@@ -105,12 +105,11 @@ final class Kernel {
   protected function boot($documentRoot, $logName, $language = null) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (empty($documentRoot) || !is_string($documentRoot) || is_link($documentRoot) || realpath($documentRoot) === false) {
-      throw new \InvalidArgumentException("\$documentRoot cannot be empty, must be of type string and point to an existing directory.");
-    }
-    if ($this->booted) {
-      throw new \LogicException("Kernel already booted!");
-    }
+    assert(
+      !empty($documentRoot) && is_string($documentRoot) && !is_link($documentRoot) && is_dir($documentRoot) && realpath($documentRoot) !== false,
+      "\$documentRoot cannot be empty, must be of type string and point to an existing directory."
+    );
+    assert($this->booted === false, "Kernel already booted!");
     $this->booted = true;
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -149,6 +148,11 @@ final class Kernel {
    * @return this
    */
   public function bootCLI($documentRoot, $basename) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert_options(ASSERT_BAIL, true);
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     $this->cli         = true;
     $this->diContainer = new DIContainer();
     $this->boot($documentRoot, "{$basename}-cli");

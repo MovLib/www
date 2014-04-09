@@ -35,12 +35,7 @@ final class Home extends \MovLib\Presentation\AbstractPresenter {
    */
   public function init() {
     $this->initPage($this->config->sitename);
-    foreach ($this->intl->systemLocales as $code => $locale) {
-      $this->languageLinks[$code] = "/";
-    }
-    $this->initBreadcrumb();
-    // A link to the current page would be redundant!
-    unset($this->breadcrumb->menuitems[1]);
+    $this->initLanguageLinks("/");
     $this->stylesheets[] = "home";
   }
 

@@ -45,6 +45,29 @@ class Base {
     return $this;
   }
 
+  // @devStart
+  // @codeCoverageIgnoreStart
+  /**
+   * Generate random "Lorem Ipsum" text.
+   *
+   * <b>NOTE</b><br>
+   * Using this method will make your page slow!
+   *
+   * @param integer $amount [optional]
+   *   How much of <var>$what</var>.
+   * @param string $what [optional]
+   *   One of <code>"paras"</code> (default), <code>"words"</code>, <code>"bytes"</code>, or <code>"lists"</code>.
+   * @param start $start [optional]
+   *   Start offset in the returned text.
+   * @return string
+   *   Random "Lorem Ipsum" text.
+   */
+  final public function blindtext($amount = 1, $what = "paras", $start = 0) {
+    return simplexml_load_file("http://www.lipsum.com/feed/xml?amount={$amount}&what={$what}&start={$start}")->lipsum;
+  }
+  // @codeCoverageIgnoreEnd
+  // @devEnd
+
   /**
    * Collapse all kinds of whitespace characters to a single space.
    *
@@ -58,69 +81,23 @@ class Base {
   }
 
   /**
-   * Expand the given attributes array to string.
+   * Get a callout.
    *
-   * Many page elements aren't easily created by directly typing the string in the source code. Instead the have to go
-   * through many staged of processing. We use associative arrays to allow all stages of processing to alter the
-   * elemtns attributes before the element is finally printed. This method will expand these associative arrays to a
-   * string that can be used to finally print the element.
-   *
-   * <b>Usage Example:</b>
-   * <pre>$attributes = [ "class" => "css-class", "id" => "css-id" ];
-   * echo "<div{$this->expandAttributes($attributes)}></div>";</pre>
-   *
-   * @param null|array $attributes
-   *   Associative array containing the elements attributes. If no attributes are present (e.g. you're handling an
-   *   object which sometimes has attributes but not always) an empty string will be returned.
+   * @param string $title
+   *   The callout's title.
+   * @param string $message
+   *   The callout's message.
+   * @param string $type [optional]
+   *   The callout's type, one of <code>NULL</code> (default), <code>"danger"</code>, <code>"info"</code>, or
+   *   <code>"warning"</code>.
+   * @param integer $level [optional]
+   *   The callout's heading level, defaults to <code>3</code>.
    * @return string
-   *   String representation of the attributes array, or empty string if no attributes are present.
+   *   The callout.
    */
-  final public function expandTagAttributes($attributes) {
-    // Only expand if we have something to expand.
-    if ($attributes) {
-      // Local variables used to collect the expanded tag attributes.
-      $expanded = null;
-
-      // Go through all attributes and expand them.
-      foreach ($attributes as $name => $value) {
-        // Special handling of boolean attributes, only include them if they are true and do not include the value.
-        if ($value === (boolean) $value) {
-          $value && ($expanded .= " {$name}");
-        }
-        // Special handling of empty attributes (added to the attributes array without any key).
-        elseif ($name === (integer) $name) {
-          // @devStart
-          // @codeCoverageIgnoreStart
-          if (empty($value)) {
-            throw new \LogicException("The value of an empty attribute (numeric key) cannot be empty");
-          }
-          // @codeCoverageIgnoreEnd
-          // @devEnd
-          $expanded .= " {$value}";
-        }
-        // All other attributes are treated equally, but only if they have a value. But beware that the alt attribute
-        // is an exception to this rule.
-        elseif ($name == "alt" || !empty($value)) {
-          // @devStart
-          // @codeCoverageIgnoreStart
-          if (empty($name)) {
-            throw new \LogicException("An attribute's name cannot be empty");
-          }
-          // @codeCoverageIgnoreEnd
-          // @devEnd
-
-          // Only output the language attribute if it differs from the current document language.
-          if ($name == "lang") {
-            $expanded .= $this->lang($value);
-          }
-          else {
-            $expanded .= " {$name}='{$this->htmlEncode($value)}'";
-          }
-        }
-      }
-
-      return $expanded;
-    }
+  public function callout($title, $message, $type = null, $level = 3) {
+    $type && ($type = " callout-{$type}");
+    return "<div class='callout{$type}'><h{$level} class='title'>{$title}</h{$level}>{$message}</div>";
   }
 
   /**
@@ -251,21 +228,6 @@ class Base {
       return $text;
     }
     return htmlspecialchars($text, ENT_QUOTES | ENT_HTML5);
-  }
-
-  /**
-   * Transform and kind of string to HTML safe ID.
-   *
-   * @param string $string
-   *   The string to convert.
-   * @return string
-   *   The HTML safe ID.
-   */
-  final public function htmlString2ID($string) {
-    if (is_numeric($string{0})) {
-      $string = "n{$string}";
-    }
-    return mb_strtolower(preg_replace("/[^\d\w-_]+/", "-", $string));
   }
 
   /**

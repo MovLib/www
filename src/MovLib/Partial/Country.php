@@ -28,13 +28,38 @@ use \MovLib\Partial\FormElement\Select;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Country extends \MovLib\Core\Presentation\Base {
+final class Country extends \MovLib\Core\Presentation\DependencyInjectionBase {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * All available countries in the current locale.
+   *
+   * @var array
+   */
+  public $countries;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+    parent::__construct($diContainerHTTP);
+    $this->countries = $this->intl->getTranslations("countries");
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * Format a country.
    *
-   * @param \MovLib\Core\Intl $intl
-   *   The active intl instance.
    * @param \MovLib\Presentation\AbstractPresenter $presenter
    *   The presenting presenter.
    * @param string $countryCode
@@ -46,9 +71,11 @@ final class Country extends \MovLib\Core\Presentation\Base {
    *   The tag that should be used to wrap the country, defaults to <code>"span"</code>.
    * @return string
    *   The formatted country.
+   * @throws \ErrorException
+   *   If the country code is invalid.
    */
-  public function format(\MovLib\Core\Intl $intl, $countryCode, array $attributes = [], $tag = "span") {
-    $country = $intl->getTranslations("countries")[$countryCode];
+  public function format($countryCode, array $attributes = [], $tag = "span") {
+    $country = $this->countries[$countryCode];
     $attributes["typeof"] = "Country";
     return "<{$tag}{$this->expandTagAttributes($attributes)}><span property='name'>{$country->name}</span></{$tag}>";
   }
@@ -56,12 +83,6 @@ final class Country extends \MovLib\Core\Presentation\Base {
   /**
    * Format a country with flag icon.
    *
-   * @param \MovLib\Core\FileSystem $fs
-   *   The active file system instance.
-   * @param \MovLib\Core\Intl $intl
-   *   The active intl instance.
-   * @param \MovLib\Presentation\AbstractPresenter $presenter
-   *   The presenting presenter.
    * @param string $countryCode
    *   The country's ISO 3166-1 alpha-2 code.
    * @param boolean $nameVisible [optional]
@@ -73,29 +94,63 @@ final class Country extends \MovLib\Core\Presentation\Base {
    *   The tag that should be used to wrap the country, defaults to <code>"span"</code>.
    * @return string
    *   The formatted country with flag icon.
+   * @throws \ErrorException
+   *   If the country code is invalid.
    */
-  public function formatWithFlag(\MovLib\Core\FileSystem $fs, \MovLib\Core\Intl $intl, $countryCode, $nameVisible = false, array $attributes = [], $tag = "span") {
-    $country = $intl->getTranslations("countries")[$countryCode];
+  public function formatWithFlag($countryCode, $nameVisible = false, array $attributes = [], $tag = "span") {
     if ($nameVisible) {
-      $name = "<span property='name'>{$country->name}</span>";
+      $name = "<span property='name'>{$this->countries[$countryCode]->name}</span>";
     }
     else {
-      $name = "<meta property='name' content='{$this->htmlEncode($country->name)}'>";
+      $name = "<meta property='name' content='{$this->htmlEncode($this->countries[$countryCode]->name)}'>";
     }
     $attributes["typeof"] = "Country";
     return
       "<{$tag}{$this->expandTagAttributes($attributes)}>" .
-        "<img alt='{$this->htmlEncode($country->name)}' class='inline' height='11' property='image' src='{$fs->getExternalURL("asset://img/flag/{$countryCode}.png")}' width='16'>" .
-        $name .
+        "<img alt='{$this->htmlEncode($this->countries[$countryCode]->name)}' class='inline' height='11' property='image' src='{$this->fs->getExternalURL("asset://img/flag/{$countryCode}.png")}' width='16'>" .
+        $this->countries[$countryCode]->name .
       "</{$tag}>"
     ;
   }
 
   /**
+   * Format an array containing country objects.
+   *
+   * @param array $countries
+   *   The country objects to format.
+   * @param string $property [optional]
+   *   The structured data property for each country.
+   * @return string
+   *   The formatted countries.
+   */
+  public function getList(array $countries, $property = null) {
+    if (!empty($countries)) {
+      if ($property) {
+        $property = " property='{$property}'";
+      }
+
+      $list  = null;
+      $comma = $this->intl->t(", ");
+
+      /* @var $country \MovLib\Stub\Data\Country */
+      foreach ($countries as $country) {
+        if ($list) {
+          $list .= $comma;
+        }
+        $list .=
+          "<a href='{$this->intl->rp("/country/{country_code}/movies", [ "country_code" => $country->code ])}'{$property} typeof='Country'>" .
+            "<span property='name'>{$country->name}</span>" .
+          "</a>"
+        ;
+      }
+
+      return $list;
+    }
+  }
+
+  /**
    * Get select form element to select a country.
    *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
-   *   The HTTP dependency injection container.
    * @param string $value
    *   The form element's value.
    * @param array $attributes [optional]
@@ -107,13 +162,13 @@ final class Country extends \MovLib\Core\Presentation\Base {
    * @return \MovLib\Presentation\Partial\FormElement\Select
    *   The select form element to select a country.
    */
-  public function getSelectFormElement(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, &$value, array $attributes = null, $id = "country", $label = null) {
+  public function getSelectFormElement(&$value, array $attributes = null, $id = "country", $label = null) {
     $options = [];
     /* @var $country \MovLib\Stub\Data\Country */
-    foreach ($diContainerHTTP->intl->getTranslations("countries") as $country) {
+    foreach ($this->countries as $country) {
       $options[$country->code] = $country->name;
     }
-    return new Select($diContainerHTTP, $id, $label ?: $diContainerHTTP->intl->t("Country"), $options, $value, $attributes);
+    return new Select($this->diContainerHTTP, $id, $label ?: $this->intl->t("Country"), $options, $value, $attributes);
   }
 
 }

@@ -40,12 +40,14 @@
 
 /* Specific styling */
 @import "layout/alert.css";
+@import "layout/callout.css";
 @import "layout/form.css";
 @import "layout/button.css";
 @import "layout/label.css";
 @import "layout/list.css";
 @import "layout/list-group.css";
 @import "layout/popup.css";
+@import "layout/star-rating.css";
 @import "layout/table.css";
 @import "layout/well.css";
 
@@ -63,7 +65,6 @@
  *   #l - page header logo
  *   #s - page header search
  * #m - page main content
- *   #b - breadcrumb
  * #f - page footer
  *
  * .c - grid container

@@ -1,0 +1,79 @@
+/*!
+ * This file is part of {@link https://github.com/MovLib MovLib}.
+ *
+ * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
+ *
+ * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with MovLib.
+ * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
+ */
+
+/**
+ * Defines the styles for the star rating form.
+ *
+ * @author Richard Fussenegger <richard@fussenegger.info>
+ * @copyright © 2014 MovLib
+ * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
+ * @link https://movlib.org/
+ * @since 0.0.1-dev
+ */
+
+.star-rating {
+  margin-top: 20px;
+  margin-bottom: 5px;
+  width: 138px;
+  height: 20px;
+  position: relative;
+}
+
+.star-rating + small {
+  margin-bottom: 20px;
+}
+
+.star-rating fieldset > div {
+  position: absolute;
+  top: 0;
+  right: 18px;
+  bottom: 0;
+  left: 0;
+}
+
+.star-rating .back span,
+.star-rating button {
+  width: 24px;
+  height: 20px;
+  padding: 0;
+  margin: 0;
+  background: left 0 url("/asset/img/star.svg#i") no-repeat transparent;
+  background-size: 20px 20px; /* Important for older WebKit browsers! */
+  border: 0;
+  float: left;
+  overflow: visible; /* Important for Internet Explorer, otherwise the popup's aren't visible! */
+}
+
+@media (-webkit-min-device-pixel-ratio:0) {
+  .star-rating .back span,
+  .star-rating .front button {
+    background-image: url("/asset/img/star-gray.svg");
+  }
+}
+
+.star-rating.focus button,
+.star-rating:hover button,
+.star-rating .rated {
+  background-image: url("/asset/img/star.svg");
+  opacity: 1;
+}
+
+.star-rating button:focus ~ button,
+.star-rating button:hover ~ button,
+.star-rating button {
+  opacity: 0;
+  transition: opacity 0.4s ease-in-out;
+}

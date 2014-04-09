@@ -208,13 +208,6 @@ class Config {
   public $sitename = "MovLib";
 
   /**
-   * The site's slogan.
-   *
-   * @var string
-   */
-  public $slogan = "the free movie library";
-
-  /**
    * The default time zone.
    *
    * @var string

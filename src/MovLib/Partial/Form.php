@@ -81,13 +81,28 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
    *
    * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
    *   HTTP dependency injection container.
+   * @param array $attributes [optional]
+   *   The form's additional attributes, the following attributes are always set:
+   *   <ul>
+   *     <li><code>"accept-charset"</code> is always set to <code>"utf-8"</code></li>
+   *     <li><code>"action"</code> is set to <var>$kernel->requestURI</var> if not set</li>
+   *     <li><code>"method"</code> is always set to <code>"post"</code></li>
+   *   </ul>
    * @param string $id [optional]
    *   Set the form's global unique identifier, defaults to the presenting presenter's identifier.
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id = null) {
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, array $attributes = [], $id = null) {
     parent::__construct($diContainerHTTP);
-    $this->presenter = $diContainerHTTP->presenter;
-    $this->id        = $id ? $id : $this->presenter->id;
+    // @devStart
+    // @codeCoverageIgnoreStart
+    foreach ([ "accept-charset", "method" ] as $attribute) {
+      assert(!isset($attributes[$attribute]), "You must not set the '{$attribute}' attribute of a form!");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    $this->presenter  = $diContainerHTTP->presenter;
+    $this->attributes = $attributes;
+    $this->id         = $id ? $id : $this->presenter->id;
   }
 
   /**
@@ -231,33 +246,15 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
   /**
    * Initialize the form.
    *
-   * @param callable $validCallback
+   * @param callable $validCallback [optional]
    *   Callable to call if the form is valid. The callable will be invoked without any arguments.
-   * @param array $attributes [optional]
-   *   The form's additional attributes, the following attributes are always set:
-   *   <ul>
-   *     <li><code>"accept-charset"</code> is always set to <code>"utf-8"</code></li>
-   *     <li><code>"action"</code> is set to <var>$kernel->requestURI</var> if not set</li>
-   *     <li><code>"method"</code> is always set to <code>"post"</code></li>
-   *   </ul>
    * @param callable $validationCallback [optional]
    *   Callable to call to continue form validation in the presenter. The callable will get the errors as first
    *   parameter and you have to return the same array.
    * @return this
    */
-  public function init(callable $validCallback, array $attributes = null, callable $validationCallback = null) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    foreach ([ "accept-charset", "method" ] as $attribute) {
-      if (isset($attributes[$attribute])) {
-        throw new \LogicException("You must not set the '{$attribute}' attribute of a form");
-      }
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
+  public function init(callable $validCallback = null, callable $validationCallback = null) {
     // Export attribute to class scope and add default attributes.
-    $this->attributes                   = $attributes;
     $this->attributes["accept-charset"] = "utf-8";
     $this->attributes["method"]         = "post";
     if (empty($this->attributes["action"])) {
@@ -329,7 +326,7 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
         $this->presenter->alerts .= new Alert("<p>{$errors}</p>", $this->intl->t("Validation Error"), Alert::SEVERITY_ERROR);
       }
       // If no errors were found continue processing.
-      else {
+      elseif ($validCallback) {
         $validCallback();
       }
     }

@@ -173,8 +173,7 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
-    $this->pluralKey   = $this->tableName = "genres";
-    $this->route       = $this->intl->r("/genre/{0}", $this->id);
+    $this->pluralKey   = "genres";
     $this->singularKey = "genre";
     return parent::init();
   }

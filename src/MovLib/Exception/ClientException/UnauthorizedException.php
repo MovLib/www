@@ -72,9 +72,10 @@ final class UnauthorizedException extends \RuntimeException implements \MovLib\E
       );
     }
 
-    // Put the unauthorized exception together.
-    $diContainerHTTP->presenter = (new SignIn($diContainerHTTP))->init();
-    $diContainerHTTP->presenter->alerts .= $this->message;
+    $languageLinks                             = $diContainerHTTP->presenter->languageLinks;
+    $diContainerHTTP->presenter                = (new SignIn($diContainerHTTP))->init();
+    $diContainerHTTP->presenter->alerts       .= $this->message;
+    $diContainerHTTP->presenter->languageLinks = $languageLinks;
     return $diContainerHTTP->presenter->getPresentation($diContainerHTTP->presenter->getContent());
   }
 
