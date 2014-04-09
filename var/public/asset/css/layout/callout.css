@@ -43,29 +43,29 @@
   background-color: #fff;
 }
 
-.callout.danger {
+.callout-danger {
   background-color: #fff5f5;
   border-color: #c00;
 }
 
-.callout.danger .title {
+.callout-danger .title {
   color: #c00;
 }
 
-.callout.info {
+.callout-info {
   background-color: #edf6fa;
   border-color: #09c;
 }
 
-.callout.info .title {
+.callout-info .title {
   color: #09c;
 }
 
-.callout.warning {
+.callout-warning {
   background-color: #fff9eb;
   border-color: #f80;
 }
 
-.callout.warning .title {
+.callout-warning .title {
   color: #f80;
 }

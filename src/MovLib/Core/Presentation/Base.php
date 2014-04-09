@@ -139,8 +139,8 @@ class Base {
    *   The callout.
    */
   public function callout($title, $message, $type = null, $level = 3) {
-    $type && ($type = " {$type}");
-    return "<div class='callout'><h{$level} class='title'>{$title}</h{$level}>{$message}</div>";
+    $type && ($type = " callout-{$type}");
+    return "<div class='callout{$type}'><h{$level} class='title'>{$title}</h{$level}>{$message}</div>";
   }
 
   /**

@@ -89,9 +89,9 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
       false,
       "callout"
     );
-    $this->sectionAdd($this->intl->t("Alternative Titles"), "Not implemented yet!", false, "callout info");
-    $this->sectionAdd($this->intl->t("Trailers"), "Not implemented yet!", false, "callout warning");
-    $this->sectionAdd($this->intl->t("Weblinks"), "Not implemented yet!", false, "callout danger");
+    $this->sectionAdd($this->intl->t("Alternative Titles"), "Not implemented yet!", false, "callout callout-info");
+    $this->sectionAdd($this->intl->t("Trailers"), "Not implemented yet!", false, "callout callout-warning");
+    $this->sectionAdd($this->intl->t("Weblinks"), "Not implemented yet!", false, "callout callout-danger");
 
     if ($this->sections) {
       return $this->sections;
