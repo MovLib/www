@@ -462,4 +462,31 @@ final class Intl {
     }
   }
 
+  /**
+   * Transliterate from any script to the current locale.
+   *
+   * @staticvar array $transliterators
+   *   Used to cache transliterator instances.
+   * @param string $text
+   *   The text to transliterate.
+   * @param null|string $locale [optional]
+   *   Use a different locale for this translation.
+   * @return null|string
+   *   <code>NULL</code> if the transliterated string is an exact match of the given <var>$text</var>, otherwise the
+   *   transliterated text is returned.
+   * @throws \IntlException
+   */
+  public function transliterate($text, $locale = null) {
+    static $transliterators = [];
+    if (!$locale) {
+      $locale = $this->locale;
+    }
+    if (empty($transliterators[$locale])) {
+      $transliterators[$locale] = \Transliterator::create("Any-{$locale}");
+    }
+    if (($transliterated = $transliterators[$locale]->transliterate($text)) != $text) {
+      return $transliterated;
+    }
+  }
+
 }
