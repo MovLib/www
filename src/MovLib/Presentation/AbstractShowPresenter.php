@@ -30,6 +30,8 @@ use \MovLib\Exception\ClientException\GoneException;
  */
 abstract class AbstractShowPresenter extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Partial\SectionTrait;
+  use \MovLib\Partial\InfoboxTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -61,33 +63,28 @@ abstract class AbstractShowPresenter extends \MovLib\Presentation\AbstractPresen
    *   The structure data property of the title, defaults to <code>"name"</code>.
    * @return this
    */
-  protected function initShow(\MovLib\Data\AbstractEntity $entity, $pluralName, $singularName, $typeOf, $titleProperty = "name") {
+  final protected function initShow(\MovLib\Data\AbstractEntity $entity, $breadcrumbIndexTitle, $typeOf, $pageTitleProperty = "name") {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert(!empty($this->title), "You have to call initPage() before you call initShow()!");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     $this->entity                = $entity;
     $this->schemaType            = $typeOf;
-    $this->headingSchemaProperty = $titleProperty;
-    $this->initPage($this->getPageTitle());
-    $this->breadcrumb->addCrumb($entity->routeIndex, $pluralName);
+    $this->headingSchemaProperty = $pageTitleProperty;
+    $this->breadcrumb->addCrumb($entity->routeIndex, $breadcrumbIndexTitle);
     $this->initLanguageLinks("/{$entity->singularKey}/{0}", $entity->id);
-    $this->sidebarInit($this->getSidebarItems());
-    if ($entity->isGone()) {
-      throw new GoneException("The {$singularName} '{$entity->id}' is no longer available.");
+    $this->sidebarInitToolbox($entity);
+    if ($entity->deleted) {
+      throw new GoneException("The {$this->entity->singularKey} {$this->entity->id} is no longer available.");
     }
     return $this;
   }
 
   /**
-   * Get the entity's title.
-   *
-   * @return string
-   *   The entity's title.
-   */
-  protected function getPageTitle() {
-    return $this->entity->name;
-  }
-
-  /**
    * Get the presenter's sidebar items.
    *
+   * @deprecated
    * @return array
    *   The presenter's sidebar items.
    */

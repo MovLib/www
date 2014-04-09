@@ -72,7 +72,7 @@ trait InfoboxTrait {
       $this->infoboxInfos = "<section id='infobox'><h2 class='vh'>{$this->intl->t("Infobox")}</h2>{$this->infoboxInfos}</section>";
     }
 
-    $property = $this->headingSchemaProperty ? "property='{$this->headingSchemaProperty}'" : null;
+    $property = $this->headingSchemaProperty ? " property='{$this->headingSchemaProperty}'" : null;
     return
       "<div class='r'>" .
         "<div class='s s10'>" .

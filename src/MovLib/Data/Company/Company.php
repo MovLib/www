@@ -31,7 +31,7 @@ use \MovLib\Data\Place\Place;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Company extends \MovLib\Data\AbstractEntity {
+final class Company extends \MovLib\Data\Image\AbstractImageEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -204,9 +204,18 @@ SQL
     $this->foundingDate && ($this->foundingDate = new Date($this->foundingDate));
     $this->defunctDate  && ($this->defunctDate  = new Date($this->defunctDate));
     $this->placeId      && ($this->place        = new Place($this->diContainer, $this->placeId));
-    $this->pluralKey    = "companies";
-    $this->singularKey  = "company";
+    $this->pluralKey            = "companies";
+    $this->singularKey          = "company";
+    $this->imageAlternativeText = $this->intl->t("{company_name} logo.", $this->name);
+    $this->imageDirectory       = "upload://company";
     return parent::init();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function imageSaveStyles() {
+
   }
 
 }

@@ -40,37 +40,30 @@ use \MovLib\Partial\Place;
  */
 final class Show extends \MovLib\Presentation\AbstractShowPresenter {
   use \MovLib\Partial\CompanyTrait;
-  use \MovLib\Partial\SectionTrait;
-  use \MovLib\Partial\InfoboxTrait;
 
   /**
    * {@inheritdoc}
    */
   public function init() {
-    return $this->initShow(
-      new Company($this->diContainerHTTP, $_SERVER["COMPANY_ID"]),
-      $this->intl->t("Companies"),
-      $this->intl->t("Company"),
-      "Corporation"
-    );
+    $company = new Company($this->diContainerHTTP, $_SERVER["COMPANY_ID"]);
+    return $this->initPage($company->name)->initShow($company, $this->intl->t("Companies"), "Corporation");
   }
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    // Build the movie's infobox.
     $this->infoboxInit($this->entity);
     $this->entity->links        && $this->infoboxAdd($this->intl->t("Sites"), $this->formatWeblinks($this->entity->links));
     $this->entity->foundingDate && $this->infoboxAdd($this->intl->t("Founded"), (new Date($this->intl, $this))->format($this->entity->foundingDate, [ "property" => "foundingDate" ]));
     $this->entity->defunctDate  && $this->infoboxAdd($this->intl->t("Defunct"), (new Date($this->intl, $this))->format($this->entity->defunctDate, [ "property" => "defunctDate" ]));
-    $this->entity->place        && $this->infoboxAdd($this->intl->t("Based in"), new Place($this, $this->intl, $this->entity->place, [ "property" => "location" ]));
+    //$this->entity->place        && $this->infoboxAdd($this->intl->t("Based in"), new Place($this, $this->intl, $this->entity->place, [ "property" => "location" ]));
 
     // Build the movie's content and return if we have any.
     $this->entity->description && $this->sectionAdd($this->intl->t("Profile"), $this->entity->description);
     $this->entity->aliases     && $this->sectionAdd($this->intl->t("Also Known As"), $this->formatAliases($this->entity->aliases), false);
-    if (($content = $this->sectionGet())) {
-      return $content;
+    if ($this->sections) {
+      return $this->sections;
     }
 
     // Otherwise let the client know that we have no further information for this movie.

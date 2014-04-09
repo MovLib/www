@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Movie\Movie;
-use \MovLib\Partial\Alert;
 use \MovLib\Partial\Country;
 use \MovLib\Partial\Duration;
 use \MovLib\Partial\Genre;
@@ -42,24 +41,19 @@ use \MovLib\Partial\StarRatingForm;
  * @since 0.0.1-dev
  */
 final class Show extends \MovLib\Presentation\AbstractShowPresenter {
-  use \MovLib\Partial\SectionTrait;
-  use \MovLib\Partial\InfoboxTrait;
   use \MovLib\Presentation\Movie\MovieTrait;
 
   /**
    * {@inheritdoc}
    */
   public function init() {
-    $this->initShow(
-      new Movie($this->diContainerHTTP, $_SERVER["MOVIE_ID"]),
-      $this->intl->t("Movies"),
-      $this->intl->t("Movie"),
-      "Movie",
-      null
-    );
+    $movie = new Movie($this->diContainerHTTP, $_SERVER["MOVIE_ID"]);
+    $this
+      ->initPage($movie->displayTitleAndYear, $this->getStructuredDisplayTitle($movie, false, true))
+      ->initShow($movie, $this->intl->t("Movies"), "Movie", null);
+    ;
     $this->stylesheets[] = "movie";
     $this->javascripts[] = "Movie";
-    $this->pageTitle     = $this->getStructuredDisplayTitle($this->entity, false, true);
     return $this;
   }
 
