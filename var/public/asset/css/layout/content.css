@@ -35,8 +35,8 @@
   background-color: #fff;
 }
 
-#m :first-child,
-#m .page-content :first-child {
+#m > :first-child,
+#m .page-content > :first-child {
   margin-top: 0;
 }
 
