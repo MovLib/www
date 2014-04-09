@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Console\Command\Install;
+namespace MovLib\Console\Command\Install\Count;
 
 use \MovLib\Exception\CountVerificationException;
 
@@ -28,68 +28,20 @@ use \MovLib\Exception\CountVerificationException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class PersonCount extends \MovLib\Console\Command\Install\AbstractEntityCountCommand {
+class PersonCount extends \MovLib\Console\Command\Install\Count\AbstractEntityCountCommand {
 
   /**
    * {@inheritdoc}
    */
   protected function configure() {
     $this->setName("entity-count-person");
+    $this->entityName = "Person";
+    $this->tableName = "persons";
+    $this->addCountColumn("awards", "getAwardCounts");
+    $this->addCountColumn("movies", "getMovieCounts");
+    $this->addCountColumn("releases", "getCounts", [ [ "person_id" ], [ "release_id" ], "releases_crew" ]);
+    $this->addCountColumn("series", "getSeriesCounts");
     return parent::configure();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntityName() {
-    return "Person";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function verifyCounts() {
-    $personCountsActual = $this->getActualCounts([ "award", "movie", "release", "series" ], "persons");
-    if (!$personCountsActual) {
-      return;
-    }
-
-    $awardCountsExpected = $this->getAwardCounts();
-    $movieCountsExpected = $this->getMovieCounts();
-    $releaseCountsExpected = $this->getCounts([ "person_id" ], "release_id", "releases_crew");
-    $seriesCountsExpected = $this->getSeriesCounts();
-    $errors = null;
-    $queries = null;
-
-    // Verify the counts and schedule actions.
-    foreach ($personCountsActual as $id => $counts) {
-      $awardCountExpected = isset($awardCountsExpected[$id]) ? $awardCountsExpected[$id] : 0;
-      $movieCountExpected = isset($movieCountsExpected[$id]) ? $movieCountsExpected[$id] : 0;
-      $releaseCountExpected = isset($releaseCountsExpected[$id]) ? $releaseCountsExpected[$id] : 0;
-      $seriesCountExpected = isset($seriesCountsExpected[$id]) ? $seriesCountsExpected[$id] : 0;
-
-      if ($counts->award !== $awardCountExpected) {
-        $errors[$id][] = "award: expected {$awardCountExpected} -> actual {$counts->award}";
-      }
-      if ($counts->movie !== $movieCountExpected) {
-        $errors[$id][] = "movie: expected {$movieCountExpected} -> actual {$counts->movie}";
-      }
-      if ($counts->release !== $releaseCountExpected) {
-        $errors[$id][] = "release: expected {$releaseCountExpected} -> actual {$counts->release}";
-      }
-      if ($counts->series !== $seriesCountExpected) {
-        $errors[$id][] = "series: expected {$seriesCountExpected} -> actual {$counts->series}";
-      }
-
-      if (isset($errors[$id])) {
-        $queries .= "UPDATE `persons` SET `award_count` = {$awardCountExpected}, `movie_count` = {$movieCountExpected}, `release_count` = {$releaseCountExpected}, `series_count` = {$seriesCountExpected} WHERE `id` = {$id};";
-      }
-    }
-
-    if ($errors) {
-      $this->mysqli->multi_query(rtrim($queries, ";"));
-      throw new CountVerificationException($errors);
-    }
   }
 
   /**
@@ -98,7 +50,7 @@ class PersonCount extends \MovLib\Console\Command\Install\AbstractEntityCountCom
    * @return array
    *   Associative array with the person identifiers as keys and the award counts as values.
    */
-  private function getAwardCounts() {
+  protected function getAwardCounts() {
     $awardKeys   = [];
     $awardCounts = [];
 
@@ -155,7 +107,7 @@ SQL
    * @return array
    *   Associative array with the person identifiers as keys and the movie counts as values.
    */
-  private function getMovieCounts() {
+  protected function getMovieCounts() {
     $movieKeys   = [];
     $movieCounts = [];
 
@@ -198,7 +150,7 @@ SQL
    * @return array
    *   Associative array with the person identifiers as keys and the series counts as values.
    */
-  private function getSeriesCounts() {
+  protected function getSeriesCounts() {
     $seriesKeys   = [];
     $seriesCounts = [];
 

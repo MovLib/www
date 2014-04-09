@@ -26,17 +26,29 @@ namespace MovLib\Exception;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class CountVerificationException extends \RuntimeException {
+class CountVerificationException extends \OutOfBoundsException {
 
-  protected $counts;
+  /**
+   * The count verification errors.
+   *
+   * Format: <code>[ entity_id => [ errors ] ]</code>
+   *
+   * @var array
+   */
+  protected $errors;
 
   public function __construct(array $counts, $message = null, $code = null, $previous = null) {
     parent::__construct($message, $code, $previous);
-    $this->counts = $counts;
+    $this->errors = $counts;
   }
 
-  public function getCounts() {
-    return $this->counts;
+  /**
+   * Get the count verification errors.
+   *
+   * @return array
+   */
+  public function getErrors() {
+    return $this->errors;
   }
 
 }
