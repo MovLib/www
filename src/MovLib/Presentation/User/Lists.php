@@ -1,3 +1,5 @@
+<?php
+
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
@@ -13,72 +15,31 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\Presentation\User;
 
 /**
- * Alert module/component.
+ * Defines the user lists presentation object.
  *
- * @link https://github.com/twbs/bootstrap/blob/master/less/alerts.less
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
+final class Lists extends \MovLib\Presentation\User\AbstractUserPresenter {
 
-.alert {
-  padding: 8px 35px 8px 14px;
-  background-color: #fcf8e3;
-}
+  /**
+   * {@inheritdoc}
+   */
+  public function init(){
+    return $this->initPage($this->intl->t("{username}’s Lists"), null, $this->intl->t("Lists"));
+  }
 
-#m > .c .alert {
-  margin-bottom: 20px;
-}
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent(){
+    return $this->checkBackLater("Lists");
+  }
 
-#alerts .alert {
-  padding: 20px 0;
-}
-
-.alert p:first-of-type {
-  margin-top: 0;
-}
-
-.alert p:last-of-type {
-  margin-bottom: 0;
-}
-
-.alert,
-.alert .title {
-  color: #c09853;
-}
-
-.alert .title {
-  margin: 0;
-  font-weight: bold;
-}
-
-.alert-info {
-  background-color: #d9edf7;
-}
-
-.alert-info,
-.alert-info .title {
-  color: #3a87ad;
-}
-
-.alert-success {
-  background-color: #dff0d8;
-}
-
-.alert-success,
-.alert-success .title {
-  color: #468847;
-}
-
-.alert-error {
-  background-color: #f2dede;
-}
-
-.alert-error,
-.alert-error .title {
-  color: #b94a48;
 }

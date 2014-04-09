@@ -49,20 +49,32 @@ location ^~ <?= $this->r("/user") ?> {
     <?= $this->cache() ?>
   }
 
+  location ~* '^<?= $this->r("/user/{0}/wantlist", $userNameRegExp) ?>$' {
+    <?= $this->set("Wantlist") ?>
+    <?= $this->set('$1', "user_name") ?>
+    <?= $this->cache() ?>
+  }
+
+  location ~* '^<?= $this->rp("/user/{0}/lists", $userNameRegExp) ?>$' {
+    <?= $this->set("Lists") ?>
+    <?= $this->set('$1', "user_name") ?>
+    <?= $this->cache() ?>
+  }
+
+  location ~* '^<?= $this->rp("/user/{0}/contributions", $userNameRegExp) ?>$' {
+    <?= $this->set("Contributions") ?>
+    <?= $this->set('$1', "user_name") ?>
+    <?= $this->cache() ?>
+  }
+
+  location ~* '^<?= $this->rp("/user/{0}/uploads", $userNameRegExp) ?>$' {
+    <?= $this->set("Uploads") ?>
+    <?= $this->set('$1', "user_name") ?>
+    <?= $this->cache() ?>
+  }
+
   location ~* '^<?= $this->r("/user/{0}/contact", $userNameRegExp) ?>$' {
     <?= $this->set("Contact") ?>
-    <?= $this->set('$1', "user_name") ?>
-    <?= $this->cache() ?>
-  }
-
-  location ~* '^<?= $this->r("/user/{0}/edits", $userNameRegExp) ?>$' {
-    <?= $this->set("Edits") ?>
-    <?= $this->set('$1', "user_name") ?>
-    <?= $this->cache() ?>
-  }
-
-  location ~* '^<?= $this->r("/user/{0}/uploads", $userNameRegExp) ?>$' {
-    <?= $this->set("Uploads") ?>
     <?= $this->set('$1', "user_name") ?>
     <?= $this->cache() ?>
   }

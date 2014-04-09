@@ -85,6 +85,7 @@ final class LanguageSelection extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getMainContent($content) {
+    $this->response->setAlerts($this);
     return
       "<main class='{$this->id}-content' id='m' role='main'><div class='c'>" .
         "<h1 class='cf'>" .
@@ -93,7 +94,7 @@ final class LanguageSelection extends \MovLib\Presentation\AbstractPresenter {
             "{0}The {1}free{2} movie library.{3}",
             [ "<small>", "<em>", "</em>", "</small>" ]
           )}</span>" .
-        "</h1>{$this->alerts}{$content}" .
+        "</h1>{$this->getAlertNoScript()}{$this->alerts}{$content}" .
       "</div></main>"
     ;
   }

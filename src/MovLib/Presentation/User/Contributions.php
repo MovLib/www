@@ -1,3 +1,5 @@
+<?php
+
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
@@ -13,9 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\Presentation\User;
 
 /**
- * Defines the callout design.
+ * Defines the user contribution presentation object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -23,49 +26,20 @@
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
+final class Contributions extends \MovLib\Presentation\User\AbstractUserPresenter {
 
-.callout {
-  padding: 20px;
-  margin: 20px 0;
-  background-color: #fcfcfc;
-  border-left: 5px solid #e5e5e5;
-}
+  /**
+   * {@inheritdoc}
+   */
+  public function init(){
+    return $this->initPage($this->intl->t("{username}’s Contributions"), null, $this->intl->t("Contributions"));
+  }
 
-.callout .title {
-  margin: 0 0 5px;
-}
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent(){
+    return $this->checkBackLater("Contributions");
+  }
 
-.callout p:last-child {
-  margin-bottom: 0;
-}
-
-.callout code {
-  background-color: #fff;
-}
-
-.callout-danger {
-  background-color: #fff5f5;
-  border-color: #c00;
-}
-
-.callout-danger .title {
-  color: #c00;
-}
-
-.callout-info {
-  background-color: #edf6fa;
-  border-color: #09c;
-}
-
-.callout-info .title {
-  color: #09c;
-}
-
-.callout-warning {
-  background-color: #fff9eb;
-  border-color: #f80;
-}
-
-.callout-warning .title {
-  color: #f80;
 }

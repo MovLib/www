@@ -17,11 +17,10 @@
  */
 namespace MovLib\Presentation\Series;
 
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Redirect\SeeOther;
+use \MovLib\Data\Series\SeriesSet;
 
 /**
- * Random series presentation.
+ * Random Series
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -29,15 +28,13 @@ use \MovLib\Presentation\Redirect\SeeOther;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Random {
+final class Random extends \MovLib\Presentation\AbstractRandomPresenter {
 
-  public function __construct() {
-    $kernel->alerts .= new Alert(
-      $this->intl->t("There is currently no series in our database"),
-      $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    );
-    throw new SeeOther("/");
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+    parent::__construct($diContainerHTTP, new SeriesSet($diContainerHTTP));
   }
 
 }

@@ -47,51 +47,16 @@ blockquote {
   margin: 10px 20px;
 }
 
-.quotes,
-blockquote,
-q {
-  /*
-    Please note the space after opening and before closing quotes, usually the quotes in English have a gab of 1 to 2 pt
-    and we fake it with the space.
-  */
-  quotes: "“ " " ”" "‘ " " ’";
-}
-
+.placeholder:before,
 .quotes:before,
 blockquote:before {
   content: open-quote;
 }
 
+.placeholder:after,
 .quotes:after,
 blockquote:after {
   content: close-quote;
-}
-
-[lang="de"] .quotes,
-.quotes[lang="de"],
-[lang="de"] blockquote,
-blockquote[lang="de"],
-[lang="de"] q,
-q[lang="de"] {
-  quotes: "„" "“" "‚" "‘";
-}
-
-[lang="fr"] .quotes,
-.quotes[lang="fr"],
-[lang="fr"] blockquote,
-blockquote[lang="fr"],
-[lang="fr"] q,
-q[lang="fr"] {
-  quotes: "«" "»" "‹" "›";
-}
-
-[lang="ja"] .quotes,
-.quotes[lang="ja"],
-[lang="ja"] blockquote,
-blockquote[lang="ja"],
-[lang="ja"] q,
-q[lang="ja"] {
-  quotes: "「" "」" "『" "』";
 }
 
 code,

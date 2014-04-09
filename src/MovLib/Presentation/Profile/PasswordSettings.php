@@ -79,27 +79,24 @@ final class PasswordSettings extends \MovLib\Presentation\Profile\AbstractProfil
    * {@inheritdoc}
    */
   public function getContent() {
+    $passwordInfo =
+      "<p>{$this->intl->t("Choose a strong password to secure your account.")}</p>" .
+      "<p>{$this->intl->t(
+        "A password must contain lowercase and uppercase letters, numbers, and must be at least " .
+        "{0,number,integer} characters long.",
+        InputPassword::MIN_LENGTH
+      )}</p>"
+    ;
     // Generate a KeePass like random password for the user.
     $randomPassword = `pwgen -cnBv 20 1`;
     if (empty($randomPassword)) {
-      $passwordInfo = null;
       $this->log->error("Couldn't execute pwgen command, please ensure that pwgen is installed on the server.");
     }
     else {
-      $passwordInfo = new Alert(
-        "<p>{$this->intl->t("Choose a strong password to secure your account.")}</p>" .
-        "<p>{$this->intl->t(
-          "A password must contain lowercase and uppercase letters, numbers, and must be at least " .
-          "{0,number,integer} characters long.",
-          InputPassword::MIN_LENGTH
-        )}</p>" .
-        "<p>{$this->intl->t(
-          "As little help we generated the following password for you: {random_password}",
-          [ "random_password" => "<code>{$randomPassword}</code>" ]
-        )}</p>",
-        $this->intl->t("Tip"),
-        Alert::SEVERITY_INFO
-      );
+      $passwordInfo .= "<p>{$this->intl->t(
+        "As little help we generated the following password for you: {random_password}",
+        [ "random_password" => "<code>{$randomPassword}</code>" ]
+      )}</p>";
     }
 
     // First field to enter the new password.
@@ -117,7 +114,7 @@ final class PasswordSettings extends \MovLib\Presentation\Profile\AbstractProfil
       ->init([ $this, "valid" ], [ $this, "validate" ])
     ;
 
-    return "{$passwordInfo}{$form}";
+    return "{$this->callout($passwordInfo, $this->intl->t("Tip"), "info")}{$form}";
   }
 
   /**
@@ -132,7 +129,7 @@ final class PasswordSettings extends \MovLib\Presentation\Profile\AbstractProfil
 
     // Explain to the user where to find this further action to complete the request.
     $this->alerts .= new Alert(
-      $this->intl->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->user->email) ]),
+      $this->intl->t("An email with further instructions has been sent to {0}.", $this->placeholder($this->user->email)),
       $this->intl->t("Successfully Requested Password Change"),
       Alert::SEVERITY_SUCCESS
     );

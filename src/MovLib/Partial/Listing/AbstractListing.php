@@ -98,7 +98,7 @@ abstract class AbstractListing {
     // @codeCoverageIgnoreStart
     }
     catch (\Exception $e) {
-      return (string) new \MovLib\Partial\Alert("<pre>{$e}</pre>", "Error Rendering Abstract Listing", \MovLib\Partial\Alert::SEVERITY_ERROR);
+      return $this->callout("<pre>{$e}</pre>", "Stacktrace", "error");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

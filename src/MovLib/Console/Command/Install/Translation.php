@@ -59,24 +59,33 @@ class Translation extends \MovLib\Console\Command\AbstractCommand {
             if (substr($line, 0, 7) == "msgstr ") {
               $msgstr = substr($line, 8, strlen($line) - 9);
 
-              if (strpos($msgstr, "'") !== false) {
-                throw new \LogicException("\"'\" not alowed in {$poPath} on line {$lineNumber}");
-              }
-              if (strpos($msgstr, '"') !== false) {
-                throw new \LogicException("'\"' not alowed in {$poPath} on line {$lineNumber}");
-              }
-              if (strpos($msgstr, '$') !== false && isset($msgstr[strpos($msgstr, '$') + 1]) && $msgstr[strpos($msgstr, '$') + 1]!== " ") {
-                throw new \LogicException("No PHP variable allowed in {$poPath} on line {$lineNumber}");
+              foreach ([
+                $msgstr => "HTML isn't allowed in {$poPath} on line {$lineNumber}",
+                $msgid  => "HTML isn't allowed in:\n{$comments}",
+              ] as $v => $m) {
+                if (strip_tags($v) != $v) {
+                  throw new \LogicException($m);
+                }
               }
 
-              if (strpos($msgid, "'") !== false) {
-                throw new \LogicException("\"'\" not alowed in: \n{$comments}");
+              foreach ([
+                [ $msgstr, "'", " isn't allowed in {$poPath} on line {$lineNumber}" ],
+                [ $msgid, "'", " isn't allowed in:\n{$comments}" ],
+                [ $msgstr, '"', " isn't allowed in {$poPath} on line {$lineNumber}" ],
+                [ $msgid, '"', " isn't allowed in:\n{$comments}" ],
+              ] as list($v, $c, $m)) {
+                if (strpos($v, $c) !== false) {
+                  throw new \LogicException("{$c}{$m}");
+                }
               }
-              if (strpos($msgid, '"') !== false) {
-                throw new \LogicException("'\"' not alowed not alowed in: \n{$comments}");
-              }
-              if (strpos($msgid, '$') !== false && isset($msgid[strpos($msgid, '$') + 1]) && $msgid[strpos($msgid, '$') + 1]!== " ") {
-                throw new \LogicException("No PHP variable allowed in: \n{$comments}");
+
+              foreach ([
+                $msgstr => "No PHP variable allowed in {$poPath} on line {$lineNumber}",
+                $msgid  => "No PHP variable allowed in: \n{$comments}",
+              ] as $v => $m) {
+                if (strpos($v, '$') !== false && isset($v[strpos($v, '$') + 1]) && $v[strpos($v, '$') + 1] !== " ") {
+                  throw new \LogicException($m);
+                }
               }
 
               $comments = "";

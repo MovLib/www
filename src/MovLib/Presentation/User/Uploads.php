@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,48 +15,31 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation;
-
-use \MovLib\Presentation\Partial\Alert;
+namespace MovLib\Presentation\User;
 
 /**
- * @todo Description of TraitGone
+ * Defines the user uploads presentation object.
  *
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @author Richard Fussenegger <richard@fussenegger.info>
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-trait TraitGone {
+final class Uploads extends \MovLib\Presentation\User\AbstractUserPresenter {
 
   /**
-   * The translated gone alert message.
-   *
-   * @var string
+   * {@inheritdoc}
    */
-  protected $goneAlertMessage;
+  public function init(){
+    return $this->initPage($this->intl->t("{username}’s Uploads"), null, $this->intl->t("Uploads"));
+  }
 
   /**
-   * Get the content for gone pages.
-   *
-   * @return \MovLib\Presentation\Partial\Alert
-   *   The gone alert message.
+   * {@inheritdoc}
    */
-  protected function goneGetContent() {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (empty($this->goneAlertMessage)) {
-      throw new \LogicException($this->intl->t("You have to provide a message for the gone page!"));
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
-    return new Alert(
-      "<p>{$this->intl->t("The deletion message is provided below for reference.")}</p><p>{$this->goneAlertMessage}</p>",
-      $this->intl->t("This page has been deleted."),
-      Alert::SEVERITY_ERROR
-    );
+  public function getContent(){
+    return $this->checkBackLater("Uploads");
   }
 
 }

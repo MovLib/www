@@ -58,9 +58,6 @@ final class DangerZone extends \MovLib\Presentation\Profile\AbstractProfilePrese
    * {@inheritdoc}
    */
   public function getContent() {
-    // Make sure that really all sessions are present in the database.
-    $this->session->insert();
-
     // We must initialize the form before we create the sessions table, otherwise deletions would happen after the table
     // containing the sessions listing was built. Deleted sessions would still be displayed!
     $sessions       = (new Form($this->diContainerHTTP, [], "sessions"))->init([ $this, "deleteSession" ]);
@@ -112,16 +109,20 @@ final class DangerZone extends \MovLib\Presentation\Profile\AbstractProfilePrese
       ->init([ $this, "deleteAccount" ])
     ;
     return
-      "{$sessionsTable}<h2>{$this->intl->t("Delete Account")}</h2><p>{$this->intl->t(
-        "If you want to delete your account—for whatever reason—click the button below. All your personal data is " .
-        "purged from our system and this action is final. Please note that all your contributions and your username " .
-        "will stay in our system. You agreed to release all your contributions to the {sitename} database along with " .
-        "an open and free license, therefor each of your contributions don’t belong to you anymore. Attribution to " .
-        "you stays with the username you’ve initially chosen. This doesn’t include any reviews of yours which have no " .
-        "open license, they are deleted as well and lost forever. Again, this action is final and there’s no way for " .
-        "you to reclaim your account after deletion!",
-        [ "sitename" => $this->config->sitename ]
-      )}</p>{$deletion}"
+      "{$sessionsTable}{$this->callout(
+        "<p>{$this->intl->t(
+          "If you want to delete your account—for whatever reason—click the button below. All your personal data is " .
+          "purged from our system and this action is final. Please note that all your contributions and your username " .
+          "will stay in our system. You agreed to release all your contributions to the {sitename} database along with " .
+          "an open and free license, therefor each of your contributions don’t belong to you anymore. Attribution to " .
+          "you stays with the username you’ve initially chosen. This doesn’t include any reviews of yours which have no " .
+          "open license, they are deleted as well and lost forever. Again, this action is final and there’s no way for " .
+          "you to reclaim your account after deletion!",
+          [ "sitename" => $this->config->sitename ]
+        )}</p>{$deletion}",
+        $this->intl->t("Delete Account"),
+        "danger"
+      )}"
     ;
   }
 
@@ -137,7 +138,7 @@ final class DangerZone extends \MovLib\Presentation\Profile\AbstractProfilePrese
 
     // Let the user know where to find the instructions to complete the request.
     $this->alerts .= new Alert(
-      $this->intl->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->user->email) ]),
+      $this->intl->t("An email with further instructions has been sent to {0}.", $this->placeholder($this->user->email)),
       $this->intl->t("Successfully Requested Deletion"),
       Alert::SEVERITY_SUCCESS
     );

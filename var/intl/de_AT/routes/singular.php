@@ -148,8 +148,7 @@ return [
   "/user/{0}"                                  => "/benutzer/{0}",
   "/user/{0}/collection"                       => "/benutzer/{0}/sammlung",
   "/user/{0}/contact"                          => "/benutzer/{0}/kontakt",
-  "/user/{0}/uploads"                          => "/benutzer/{0}/hochgeladen",
-  "/user/{0}/edits"                            => "/benutzer/{0}/bearbeitungen",
+  "/user/{0}/wantlist"                         => "/benutzer/{0}/wunschliste",
   // ------------------------------------------------------------------------------------------------------------------- Help
   "/help"                                      => "/hilfe",
   "/help/movies"                               => "/hilfe/filme",

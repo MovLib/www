@@ -280,7 +280,18 @@ final class Intl {
     if ($route == "/") {
       return "/";
     }
-    return $this->translate($route, $args, "routes/singular", $locale);
+    if ($route === (array) $route) {
+      $routeArray = $route;
+      $route = "";
+      $c = count($routeArray);
+      for ($i = 0; $i < $c; ++$i) {
+        $route .= $this->translate($routeArray[$i], $args, "routes/singular", $locale);
+      }
+      return $route;
+    }
+    else {
+      return $this->translate($route, $args, "routes/singular", $locale);
+    }
   }
 
   /**
@@ -346,6 +357,36 @@ final class Intl {
    */
   public function t($message, $args = null, $locale = null) {
     return $this->translate($message, $args, "messages", $locale);
+  }
+
+  /**
+   * Attempt to create an automated titlecase converter.
+   *
+   * We use a very simplified rule of thumb for all languages:
+   * <ul>
+   *   <li>All uppercase words are <b>never</b> touched at all</li>
+   *   <li>First and last words are always title cased</li>
+   *   <li>Words with more thant four characters are title cased</li>
+   * </ul>
+   *
+   * @link http://grammar.about.com/od/grammarfaq/f/capitalstitle.htm
+   * @param string $title
+   *   The title to convert.
+   * @return string
+   *   The title in titlecase.
+   */
+  public function titleCase($title) {
+    if (empty($title)) {
+      return $title;
+    }
+    $titleCase = explode(" ", $title);
+    $c = count($titleCase) - 1;
+    for ($i = 0; $i <= $c; ++$i) {
+      if (($i === 0 || $i === $c || mb_strlen($titleCase[$i]) > 4) && mb_strtoupper($titleCase[$i]) != $titleCase[$i]) {
+        $titleCase[$i] = mb_convert_case($titleCase[$i], MB_CASE_TITLE);
+      }
+    }
+    return implode(" ", $titleCase);
   }
 
   /**

@@ -18,11 +18,9 @@
 namespace MovLib\Presentation\Award;
 
 use \MovLib\Data\Award\AwardSet;
-use \MovLib\Exception\RedirectException\SeeOtherException;
-use \MovLib\Partial\Alert;
 
 /**
- * Random user presentation.
+ * Random Award
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -30,25 +28,13 @@ use \MovLib\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Random {
+final class Random extends \MovLib\Presentation\AbstractRandomPresenter {
 
   /**
-   * Redirect client to random user profile.
-   *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP
-   *   The dependency injection container.
-   * @throws \MovLib\Exception\SeeOtherException
+   * {@inheritdoc}
    */
   public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    if (($id = (new AwardSet($diContainerHTTP))->getRandom())) {
-      throw new SeeOtherException($diContainerHTTP->intl->r("/award/{0}", $id));
-    }
-    $diContainerHTTP->response->createCookie("alert", (string) new Alert(
-      $diContainerHTTP->intl->t("There is currently no award in our database."),
-      $diContainerHTTP->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    ));
-    throw new SeeOtherException($diContainerHTTP->intl->rp("/awards"));
+    parent::__construct($diContainerHTTP, new AwardSet($diContainerHTTP));
   }
 
 }

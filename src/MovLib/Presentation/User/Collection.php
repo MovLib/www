@@ -17,41 +17,29 @@
  */
 namespace MovLib\Presentation\User;
 
-use \MovLib\Presentation\Partial\Alert;
-
 /**
- * The user's movie collection page.
+ * Defines the user collection presentation object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Collection extends \MovLib\Presentation\User\AbstractUserPage {
+final class Collection extends \MovLib\Presentation\User\AbstractUserPresenter {
 
   /**
-   * Instantiate new user collection presentation.
-   *
+   * {@inheritdoc}
    */
-  public function __construct(){
-    $this->init();
-    $this->initPage($this->intl->t("Collection {0}", [ $this->user->name ]));
-    $this->initLanguageLinks("/user/{0}/collection", [ $this->user->name ]);
-    $this->pageTitle       = $this->intl->t("Collection of {username}", [ "username" => "<a href='{$this->user->route}'>{$this->user->name}</a>" ]);
-    $this->breadcrumbTitle = $this->intl->t("Collection");
+  public function init(){
+    return $this->initPage($this->intl->t("{username}’s Collection"), null, $this->intl->t("Collection"));
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  protected function getPageContent(){
-    $this->alerts .= new Alert(
-      $this->intl->t("The user collection feature isn’t implemented yet."),
-      $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    );
+  public function getContent(){
+    return $this->checkBackLater("Collection");
   }
 
 }

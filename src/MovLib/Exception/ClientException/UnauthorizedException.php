@@ -65,11 +65,7 @@ final class UnauthorizedException extends \RuntimeException implements \MovLib\E
 
     // Allow classes to define custom alert messages.
     if (!($this->message instanceof Alert)) {
-      $this->message = new Alert(
-        $this->message,
-        $diContainerHTTP->intl->t("Unauthorized"),
-        Alert::SEVERITY_ERROR
-      );
+      $this->message = new Alert($this->message, $diContainerHTTP->intl->t("Unauthorized"), "error");
     }
 
     $languageLinks                             = $diContainerHTTP->presenter->languageLinks;

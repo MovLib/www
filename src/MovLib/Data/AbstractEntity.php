@@ -130,15 +130,11 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
     assert(!empty($this->pluralKey), "You must set the \$pluralKey property in your class " . static::class . ".");
     // @codeCoverageIgnoreEnd
     // @devEnd
-    if (empty($this->route) && $this->id) {
-      $this->route = $this->intl->r("/{$this->singularKey}/{0}", $this->id);
-    }
-    if (empty($this->routeIndex)) {
-      $this->routeIndex = $this->intl->rp("/{$this->pluralKey}");
-    }
-    if (empty($this->tableName)) {
-      $this->tableName = $this->pluralKey;
-    }
+    $this->routeKey   || ($this->routeKey   = "/{$this->singularKey}/{0}");
+    $this->routeArgs  || ($this->routeArgs  = $this->id);
+    $this->route      || ($this->route      = $this->intl->r($this->routeKey, $this->routeArgs));
+    $this->routeIndex || ($this->routeIndex = $this->intl->rp("/{$this->pluralKey}"));
+    $this->tableName  || ($this->tableName  = $this->pluralKey);
     $this->changed    = new DateTime($this->changed);
     $this->created    = new DateTime($this->created);
     $this->deleted    = (boolean) $this->deleted;
@@ -161,13 +157,13 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
    * @param string $route
    *   The route key of the subpage.
    * @param array $args [optional]
-   *   Additional route arguments, defaults to an empty array.
+   *   Additional route arguments, defaults to <code>NULL</code>.
    * @return string
    *   The translated and formatted singular route.
    * @throws \IntlException
    */
-  public function r($route, array $args = []) {
-    return $this->intl->r("/{$this->singularKey}/{0}{$route}", [ $this->id ] + $args);
+  public function r($route, array $args = null) {
+    return $this->intl->r("{$this->routeKey}{$route}", (array) $this->routeArgs + (array) $args);
   }
 
   /**
@@ -176,13 +172,13 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
    * @param string $route
    *   The route key of the subpage.
    * @param array $args [optional]
-   *   Additional route arguments, defaults to an empty array.
+   *   Additional route arguments, defaults to <code>NULL</code>.
    * @return string
    *   The translated and formatted plural route.
    * @throws \IntlException
    */
-  public function rp($route, array $args = []) {
-    return $this->intl->rp("/{$this->singularKey}/{0}{$route}", [ $this->id ] + $args);
+  public function rp($route, array $args = null) {
+    return $this->intl->rp("{$this->routeKey}{$route}", (array) $this->routeArgs + (array) $args);
   }
 
 }

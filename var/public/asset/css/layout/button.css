@@ -30,13 +30,13 @@
   display: inline-block;
   padding: 4px 12px;
   margin-bottom: 0;
-  color: #555;
+  color: #fff !important;/* Overwrite link default color once, prevent color changes upon state changes. */
   text-align: center;
   vertical-align: middle;
-  background-color: #efefef;
+  background-color: #656565;
   border: 0;
-  transition: 0.4s ease-out;
-  transition-property: background-color, color, box-shadow;
+  transition: 0.3s ease-out;
+  transition-property: background-color, box-shadow, color;
   -webkit-appearance: none;
 }
 
@@ -44,12 +44,12 @@
 .btn:hover,
 .btn:focus,
 .btn.active {
-  background-color: #cfcfcf;
+  background-color: #3d3d3d; /* #656565 + Photoshop Hue/Saturation Lightness -40 */
 }
 
 .btn.focus,
 .btn:focus {
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px #cfcfcf;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 5px transparent;
 }
 
 .btn-large {
@@ -66,117 +66,54 @@
   font-size: 10.5px;
 }
 
-.btn-primary.active,
-.btn-warning.active,
-.btn-danger.active,
-.btn-success.active,
-.btn-info.active,
-.btn-inverse.active {
-  color: rgba(255, 255, 255, 0.75);
+/* ------------------------------------------------------------------------------------------------------------ error */
+
+.btn-error {
+  background-color: #c00;
 }
 
-.btn-primary,
-.btn-info,
-.btn-success,
-.btn-warning,
-.btn-danger,
-.btn-inverse {
-  /* Overwrite link default color once, prevent color changes upon state changes. */
-  color: #fff !important;
+.btn-error.active,
+.btn-error.focus,
+.btn-error:focus,
+.btn-error:hover {
+  background-color: #a30000; /* #c00 + Photoshop Hue/Saturation Lightness -20 */
 }
 
-.btn-primary {
-  background-color: #3498db;
-}
-
-.btn-primary.active,
-.btn-primary.focus,
-.btn-primary:focus,
-.btn-primary:hover {
-  background-color: #256c9b;
-}
-
-.btn-primary.focus,
-.btn-primary:focus {
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(52, 152, 219, 0.6);
-}
+/* ------------------------------------------------------------------------------------------------------------- info */
 
 .btn-info {
-  background-color: #49afcd;
+  background-color: #09c;
 }
 
 .btn-info.active,
 .btn-info.focus,
 .btn-info:focus,
 .btn-info:hover {
-  background-color: #32788d;
+  background-color: #007aa3; /* #09c + Photoshop Hue/Saturation Lightness -20 */
 }
 
-.btn-info.focus,
-.btn-info:focus {
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(73, 175, 205, 0.6);
-}
+/* ---------------------------------------------------------------------------------------------------------- success */
 
 .btn-success {
-  background-color: #5bb75b;
+  background-color: #393;
 }
 
 .btn-success.active,
 .btn-success.focus,
 .btn-success:focus,
 .btn-success:hover {
-  background-color: #3b773b;
+  background-color: #297a29; /* #393 + Photoshop Hue/Saturation Lightness -20 */
 }
 
-.btn-success.focus,
-.btn-success:focus {
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(91, 183, 91, 0.6);
-}
+/* ---------------------------------------------------------------------------------------------------------- warning */
 
 .btn-warning {
-  background-color: #faa732;
+  background-color: #fa0;
 }
 
 .btn-warning.active,
 .btn-warning.focus,
 .btn-warning:focus,
 .btn-warning:hover {
-  background-color: #cc8829;
-}
-
-.btn-warning.focus,
-.btn-warning:focus {
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(250, 167, 50, 0.6);
-}
-
-.btn-danger {
-  background-color: #da4f49;
-}
-
-.btn-danger.active,
-.btn-danger.focus,
-.btn-danger:focus,
-.btn-danger:hover {
-  background-color: #9a3834;
-}
-
-.btn-danger.focus,
-.btn-danger:focus {
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(218, 79, 73, 0.6);
-}
-
-.btn-inverse {
-  background-color: #555;
-}
-
-.btn-inverse.active,
-.btn-inverse.focus,
-.btn-inverse:focus,
-.btn-inverse:hover {
-  background-color: #000;
-}
-
-.btn-inverse.focus,
-.btn-inverse:focus {
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(85, 85, 85, 0.6);
+  background-color: #e68900; /* #fa0 + Photoshop Hue/Saturation Lightness -10 */
 }

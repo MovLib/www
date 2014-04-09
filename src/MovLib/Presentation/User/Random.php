@@ -17,12 +17,10 @@
  */
 namespace MovLib\Presentation\User;
 
-use \MovLib\Data\UserSet;
-use \MovLib\Exception\RedirectException\SeeOtherException;
-use \MovLib\Partial\Alert;
+use \MovLib\Data\User\UserSet;
 
 /**
- * Random user presentation.
+ * Random User
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -30,25 +28,13 @@ use \MovLib\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Random {
+final class Random extends \MovLib\Presentation\AbstractRandomPresenter {
 
   /**
-   * Redirect client to random user profile.
-   *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP
-   *   The dependency injection container.
-   * @throws \MovLib\Exception\SeeOtherException
+   * {@inheritdoc}
    */
   public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    if (($username = (new UserSet($diContainerHTTP))->getRandom())) {
-      throw new SeeOtherException($diContainerHTTP->intl->r("/user/{0}", $username));
-    }
-    $diContainerHTTP->response->createCookie("alert", (string) new Alert(
-      $this->intl->t("There is currently no user in our database"),
-      $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    ));
-    throw new SeeOtherException($this->intl->rp("/users"));
+    parent::__construct($diContainerHTTP, new UserSet($diContainerHTTP));
   }
 
 }

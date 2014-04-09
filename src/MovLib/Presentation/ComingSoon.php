@@ -19,7 +19,6 @@ namespace MovLib\Presentation;
 
 use \MovLib\Mail\Mailer;
 use \MovLib\Mail\Webmaster;
-use \MovLib\Partial\Alert;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputEmail;
 
@@ -39,13 +38,6 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
 
 
   /**
-   * The presenter's form.
-   *
-   * @var \MovLib\Partial\Form
-   */
-  protected $form;
-
-  /**
    * The user submitted email address.
    *
    * @var string
@@ -63,16 +55,6 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
     $this->initPage($this->config->sitename);
     $this->prefetch("//{$this->config->hostname}/");
     $this->next("//{$this->config->hostname}/");
-
-    $this->form = new Form($this->diContainerHTTP);
-    $this->form->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email Address"), $this->email, [
-      "autofocus"   => true,
-      "placeholder" => $this->intl->t("Sign up for the {sitename} beta!", [ "sitename" => $this->config->sitename ]),
-      "required"    => true,
-    ]));
-    $this->form->addAction($this->intl->t("Sign Up"), [ "class" => "btn btn-large btn-success" ]);
-    $this->form->init([ $this, "valid" ]);
-
     $this->stylesheets[] = "coming-soon";
   }
 
@@ -84,6 +66,16 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
+
+    $form = new Form($this->diContainerHTTP);
+    $form->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email Address"), $this->email, [
+      "autofocus"   => true,
+      "placeholder" => $this->intl->t("Sign up for the {sitename} beta!", [ "sitename" => $this->config->sitename ]),
+      "required"    => true,
+    ]));
+    $form->addAction($this->intl->t("Sign Up"), [ "class" => "btn btn-large btn-success" ]);
+    $form->init([ $this, "valid" ]);
+
     return
       "<p class='tac'>{$this->intl->t(
         "Imagine {1}Wikipedia{0}, {2}Discogs{0}, {3}Last.fm{0}, {4}IMDb{0}, and {5}TheMovieDB{0} combined in a " .
@@ -97,7 +89,7 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
           "<a href='http://www.themoviedb.org/' target='_blank'>",
         ]
       )}</p>" .
-      "<div class='r'><div class='s s8 o2'>{$this->form}</div></div>"
+      "<div class='r'><div class='s s8 o2'>{$form}</div></div>"
     ;
   }
 
@@ -146,6 +138,7 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getMainContent($content) {
+    $this->response->setAlerts($this);
     return
       "<main class='{$this->id}-content' id='m' role='main'><div class='c'>" .
         "<h1 class='cf'>" .
@@ -154,7 +147,7 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
             "{0}The {1}free{2} movie library.{3}",
             [ "<small>", "<em>", "</em>", "</small>" ]
           )}</span>" .
-        "</h1>{$this->alerts}{$content}" .
+        "</h1>{$this->getAlertNoScript()}{$this->alerts}{$content}" .
       "</div></main>"
     ;
   }
@@ -171,7 +164,6 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
   public function valid() {
     // Send an email with the new subscriber to the webmaster.
     (new Mailer())->send($this->diContainerHTTP, new Webmaster(
-      $this->diContainerHTTP,
       "New beta subscription",
       "<a href='mailto:{$this->email}'>{$this->email}</a> would like to be part of the MovLib beta."
     ));
@@ -180,14 +172,10 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
     file_put_contents("{$_SERVER["HOME"]}/subscriptions.txt", "\n{$this->email}", FILE_APPEND);
 
     // Let the user know that the subscription was successful.
-    $this->alerts .= new Alert(
-      $this->intl->t("Thanks for signing up for the {sitename} beta {email}.", [
-        "sitename" => $this->config->sitename,
-        "email"    => $this->placeholder($this->email),
-      ]),
-      $this->intl->t("Successfully Signed Up"),
-      Alert::SEVERITY_SUCCESS
-    );
+    $this->alertSuccess($this->intl->t("Successfully Signed Up"), $this->intl->t(
+      "Thanks for signing up for the {sitename} beta {email}.",
+      [ "sitename" => $this->config->sitename, "email" => $this->placeholder($this->email) ]
+    ));
 
     return $this;
   }

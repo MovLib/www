@@ -45,11 +45,7 @@ final class NotificationSettings  extends \MovLib\Presentation\Profile\AbstractP
    * {@inheritdoc}
    */
   public function getContent() {
-    return new Alert(
-      $this->intl->t("The notification system isn’t implemented yet."),
-      $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    );
+    return $this->checkBackLater($this->intl->t("Notification Settings"));
   }
 
 }

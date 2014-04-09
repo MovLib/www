@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation\User;
 
-use \MovLib\Data\User\User;
-use \MovLib\Partial\Alert;
 use \MovLib\Partial\Date;
 
 /**
@@ -30,38 +28,13 @@ use \MovLib\Partial\Date;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Partial\SidebarTrait;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The user to present.
-   *
-   * @var \MovLib\Data\User\User
-   */
-  protected $user;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+class Show extends \MovLib\Presentation\User\AbstractUserPresenter {
 
   /**
    * Instantiate new user presentation.
    */
   public function init() {
-    $this->user = new User($this->diContainerHTTP, $_SERVER["USER_NAME"]);
-    $this->stylesheets[] = "user";
-    $this->initPage($this->user->name);
-    $this->breadcrumb->addCrumb($this->intl->rp("/users"), $this->intl->t("Users"));
-    $this->initLanguageLinks("/user/{0}", $this->user->name);
-    $this->sidebarInit([
-      [ $this->intl->r("/user/{0}/uploads", $this->user->name), "{$this->intl->t("Uploads")} <span class='fr'>{$this->intl->format("{0,number}", 0)}</span>" ],
-      [ $this->intl->r("/user/{0}/collection", $this->user->name), "{$this->intl->t("Collection")} <span class='fr'>{$this->intl->format("{0,number}", 0)}</span>" ],
-      [ $this->intl->r("/user/{0}/contact", $this->user->name), $this->intl->t("Contact") ],
-    ]);
+    return $this->initPage(null);
   }
 
 
@@ -155,14 +128,16 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
 
     $publicProfile .= "<h2>{$this->intl->t("Recently Rated Movies")}</h2>";
     if ($this->session->userId === $this->user->id) {
-      $noRatingsText = new Alert($this->intl->t("You haven’t rated a single movie yet, use the {0}search{1} to explore movies you already know.", [
-          "<a href='{$this->intl->r("/search")}'>", "</a>"
-      ]), $this->intl->t("No rated Movies"), Alert::SEVERITY_INFO);
+      $noRatingsText = $this->intl->t(
+        "You haven’t rated a single movie yet, use the {0}search{1} to explore movies you already know.",
+        [ "<a href='{$this->intl->r("/search")}'>", "</a>" ]
+      );
     }
     else {
-      $noRatingsText = new Alert($this->intl->t("{username} hasn’t rated a single movie yet, that makes us a sad panda.", [
-          "username" => $this->user->name
-      ]), $this->intl->t("No rated Movies"), Alert::SEVERITY_INFO);
+      $noRatingsText = $this->intl->t(
+        "{username} hasn’t rated a single movie yet, that makes us a sad panda.",
+        [ "username" => $this->user->name ]
+      );
     }
 
 //    $ratings = Movie::getUserRatings($this->user->id);
@@ -230,7 +205,7 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
       $publicProfile .= "<ol class='hover-list no-list'>{$ratingStream}</ol>";
     }
     else {
-      $publicProfile .= $noRatingsText;
+      $publicProfile .= $this->callout($noRatingsText, $this->intl->t("Nothing Rated"), "info");
     }
 
     return $publicProfile;

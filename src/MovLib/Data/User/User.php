@@ -113,13 +113,6 @@ final class User extends \MovLib\Data\Image\AbstractImageEntity {
   public $countryCode;
 
   /**
-   * The user's creation time (UNIX timestamp).
-   *
-   * @var \DateTime
-   */
-  public $created;
-
-  /**
    * The user's currency code.
    *
    * @var string
@@ -139,13 +132,6 @@ final class User extends \MovLib\Data\Image\AbstractImageEntity {
    * @var null|string
    */
   public $email;
-
-  /**
-   * The user's unique identifier.
-   *
-   * @var null|integer
-   */
-  public $id;
 
   /**
    * The user's unique name.
@@ -385,13 +371,13 @@ SQL
   public function init() {
     $this->access               = new DateTime($this->access);
     $this->birthdate            && ($this->birthdate = new Date($this->birthdate));
-    $this->deleted              = (boolean) $this->email;
+    $this->deleted              = !(boolean) $this->email;
     $this->imageAlternativeText = $this->intl->t("{username}’s avatar image.", [ "username" => $this->name ]);
     $this->imageDirectory       = "upload://user";
     $this->imageFilename        = mb_strtolower($this->name);
-    $this->pluralKey            = $this->tableName = "users";
+    $this->pluralKey            = "users";
     $this->private              = (boolean) $this->private;
-    $this->route                = $this->intl->r("/user/{0}", $this->imageFilename);
+    $this->routeArgs            = $this->imageFilename;
     $this->singularKey          = "user";
     return parent::init();
   }

@@ -1,0 +1,117 @@
+/*!
+ * This file is part of {@link https://github.com/MovLib MovLib}.
+ *
+ * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
+ *
+ * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with MovLib.
+ * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
+ */
+
+/**
+ * Alert module/component.
+ *
+ * @link https://github.com/twbs/bootstrap/blob/master/less/alerts.less
+ * @author Richard Fussenegger <richard@fussenegger.info>
+ * @copyright © 2013 MovLib
+ * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
+ * @link https://movlib.org/
+ * @since 0.0.1-dev
+ */
+
+.alert {
+  padding: 20px 0;
+  background-color: #efefef; /* #656565 + Photoshop Hue/Saturation Lightness +90 */
+}
+
+.callout {
+  padding: 20px;
+  margin: 20px 0;
+  background-color: #f8f8f8; /* #e5e5e5 + Photoshop Hue/Saturation Saturation +100 Lightness +96 */
+  border-left: 5px solid #656565;
+}
+
+.alert p:last-of-type,
+.callout p:last-of-type {
+  margin-bottom: 0;
+}
+
+.alert code,
+.callout code {
+  background-color: #fff;
+}
+
+.alert h2,
+.callout .title {
+  margin: 0 0 5px;
+}
+
+/* ------------------------------------------------------------------------------------------------------------ error */
+
+.alert-error {
+  background-color: #fae5e5; /* #c00 + Photoshop Hue/Saturation Lightness +90 */
+}
+
+.callout-error {
+  background-color: #fff2f2; /* #c00 + Photoshop Hue/Saturation Saturation +100 Lightness +96 */
+  border-color: #c00;
+}
+
+.alert-error h2,
+.callout-error .title {
+  color: #c00;
+}
+
+/* ------------------------------------------------------------------------------------------------------------- info */
+
+.alert-info {
+  background-color: #e5f5fa; /* #09c + Photoshop Hue/Saturation Lightness +90 */
+}
+
+.callout-info {
+  background-color: #f2fcff; /* #09c + Photoshop Hue/Saturation Saturation +100 Lightness +96 */
+  border-color: #09c;
+}
+
+.alert-info h2,
+.callout-info .title {
+  color: #09c;
+}
+
+/* ---------------------------------------------------------------------------------------------------------- success */
+
+.alert-success {
+  background-color: #eaf5ea; /* #393 + Photoshop Hue/Saturation Lightness +90 */
+}
+
+.callout-success {
+  background-color: #f2fff2; /* #393 + Photoshop Hue/Saturation Saturation +100 Lightness +96 */
+  border-color: #393;
+}
+
+.alert-success h2,
+.callout-success .title {
+  color: #393;
+}
+
+/* ---------------------------------------------------------------------------------------------------------- warning */
+
+.alert-warning {
+  background-color: #fff5e5; /* #fa0 + Photoshop Hue/Saturation Lightness +90 */
+}
+
+.callout-warning {
+  background-color: #fffbf4; /* #fa0 + Photoshop Hue/Saturation Saturation +100 Lightness +96 */
+  border-color: #fa0;
+}
+
+.alert-warning h2,
+.callout-warning .title {
+  color: #fa0;
+}

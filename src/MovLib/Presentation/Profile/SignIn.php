@@ -111,7 +111,7 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
    */
   public function getContent() {
     $this->headingBefore =
-      "<a class='btn btn-large btn-primary fr' href='{$this->intl->r("/profile/join")}'>{$this->intl->t(
+      "<a class='btn btn-large btn-info fr' href='{$this->intl->r("/profile/join")}'>{$this->intl->t(
         "Join {sitename}",
         [ "sitename" => $this->config->sitename ]
       )}</a>"

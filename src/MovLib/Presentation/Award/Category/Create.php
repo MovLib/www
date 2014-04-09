@@ -42,7 +42,7 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
    * @var \MovLib\Data\Award
    */
   protected $award;
-  
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -74,11 +74,7 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
    * @inheritdoc
    */
   protected function getContent() {
-    return new Alert(
-      $this->intl->t("The create award category feature isn’t implemented yet."),
-      $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    );
+    return $this->checkBackLater("Create Category");
   }
 
   /**

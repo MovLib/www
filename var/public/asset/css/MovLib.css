@@ -39,8 +39,7 @@
 @import "layout/icon.css";
 
 /* Specific styling */
-@import "layout/alert.css";
-@import "layout/callout.css";
+@import "layout/alert-callout.css";
 @import "layout/form.css";
 @import "layout/button.css";
 @import "layout/label.css";

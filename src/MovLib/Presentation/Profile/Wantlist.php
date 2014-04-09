@@ -46,11 +46,7 @@ final class Wantlist extends \MovLib\Presentation\Profile\AbstractProfilePresent
    * {@inheritdoc}
    */
   public function getContent() {
-    return new Alert(
-      $this->intl->t("The wantlist system isn’t implemented yet."),
-      $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    );
+    return $this->checkBackLater($this->intl->t("Wantlist"));
   }
 
 }

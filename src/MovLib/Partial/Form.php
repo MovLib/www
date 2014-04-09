@@ -17,7 +17,6 @@
  */
 namespace MovLib\Partial;
 
-use \MovLib\Partial\Alert;
 use \MovLib\Partial\FormElement\AbstractInputFile;
 
 /**
@@ -123,7 +122,7 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
     // @codeCoverageIgnoreStart
     }
     catch (\Exception $e) {
-      return (string) new Alert("<pre>{$e}</pre>", "Error Rendering Form", Alert::SEVERITY_ERROR);
+      return $this->callout("<pre>{$e}</pre>", "Stacktrace", "error");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -271,12 +270,12 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
         // Check if we have a token for this form in session and submitted via HTTP plus compare both tokens.
         if ($formToken === false || empty($this->request->post["form_token"]) || $this->request->post["form_token"] != $formToken) {
           // Give the user the chance to re-submit this form.
-          $this->presenter->alerts .= new Alert(
-            "<p>{$this->intl->t("The form has become outdated. Copy any unsaved work in the form below and then {0}reload this page{1}.", [
-              "<a href='{$this->request->uri}'>", "</a>",
-            ])}</p>",
+          $this->presenter->alertError(
             $this->intl->t("Form Outdated"),
-            Alert::SEVERITY_ERROR
+            "<p>{$this->intl->t(
+              "The form has become outdated. Copy any unsaved work in the form below and then {0}reload this page{1}.",
+              [ "<a href='{$this->request->uri}'>", "</a>" ]
+            )}</p>"
           );
           return $this;
         }
@@ -323,7 +322,7 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
         $errors = implode("</p><p>", $errors);
 
         // Finally export all error messages combined in a single alert message.
-        $this->presenter->alerts .= new Alert("<p>{$errors}</p>", $this->intl->t("Validation Error"), Alert::SEVERITY_ERROR);
+        $this->presenter->alertError($this->intl->t("Validation Error"), "<p>{$errors}</p>");
       }
       // If no errors were found continue processing.
       elseif ($validCallback) {

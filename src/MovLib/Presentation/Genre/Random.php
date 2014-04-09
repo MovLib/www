@@ -18,39 +18,23 @@
 namespace MovLib\Presentation\Genre;
 
 use \MovLib\Data\Genre\GenreSet;
-use \MovLib\Exception\RedirectException\SeeOtherException;
-use \MovLib\Partial\Alert;
 
 /**
- * Random genre presentation.
+ * Random Genre
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Random {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+final class Random extends \MovLib\Presentation\AbstractRandomPresenter {
 
   /**
-   * Redirect to random genre presentation.
-   *
-   * @throws \MovLib\Presentation\Redirect\SeeOther
+   * {@inheritdoc}
    */
   public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    if (($id = (new GenreSet($diContainerHTTP))->getRandom())) {
-      throw new SeeOtherException($diContainerHTTP->intl->r("/genre/{0}", $id));
-    }
-    $diContainerHTTP->response->createCookie("alert", (string) new Alert(
-      $diContainerHTTP->intl->t("There is currently no genre in our database."),
-      $diContainerHTTP->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    ));
-    throw new SeeOtherException($diContainerHTTP->intl->rp("/genres"));
+    parent::__construct($diContainerHTTP, new GenreSet($diContainerHTTP));
   }
 
 }

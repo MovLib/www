@@ -95,6 +95,55 @@ var {
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------
+ * Quotes
+ * ------------------------------------------------------------------------------------------------------------------ */
+
+
+[lang="en"] {
+  /*
+    Please note the space after opening and before closing quotes, usually the quotes in English have a gab of 1 to 2 pt
+    and we fake it with a hair space.
+  */
+  quotes: "“\200A" "\200A”" "‘\200A" "\200A’";
+}
+
+[lang="de"] {
+  quotes: "„" "“" "‚" "‘";
+}
+
+[lang="fr"] {
+  quotes: "«" "»" "‹" "›";
+}
+
+[lang="ja"] {
+  quotes: "「" "」" "『" "』";
+}
+
+blockquote,
+q {
+  font-style: italic;
+}
+
+blockquote {
+  margin: 10px 20px;
+}
+
+.placeholder:before,
+blockquote:before {
+  content: open-quote;
+}
+
+.placeholder:after,
+.quotes:after,
+blockquote:after {
+  content: close-quote;
+}
+
+.placeholder {
+  font-style: normal;
+}
+
+/* ---------------------------------------------------------------------------------------------------------------------
  * `hr`, `p`, and `small` are considered paragraph elements and should be used as such. For more information have a look
  * at {@link http://html5doctor.com/small-hr-element/}.
  * ------------------------------------------------------------------------------------------------------------------ */
@@ -210,6 +259,7 @@ h3 .edit {
   text-align: left;
 }
 
+[dir="rtl"],
 .tar {
   text-align: right;
 }

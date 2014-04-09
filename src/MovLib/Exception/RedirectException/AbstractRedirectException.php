@@ -52,6 +52,11 @@ abstract class AbstractRedirectException extends \RuntimeException implements \M
       }
     }
 
+    // Send any alert messages as a cookie to the client, this allows us to display them on the next page view.
+    if (!empty($diContainerHTTP->presenter->alerts)) {
+      $diContainerHTTP->response->createCookie("alerts", $diContainerHTTP->presenter->alerts);
+    }
+
     // The body is a direct copy of what nginx would serve the client, note that payload is required per RFC.
     header("Location: {$route}", true, $code);
     return <<<HTML
