@@ -515,9 +515,11 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`awards` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The award’s unique ID.',
   `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the award was last changed.',
-  `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of movie participations.',
-  `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of series participations.',
+  `count_companies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of companies.',
   `count_events` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of events.',
+  `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of movie participations.',
+  `count_persons` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of persons.',
+  `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of series participations.',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the award was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the award was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The award’s description in various languages. Keys are ISO alpha-2 language codes.',
