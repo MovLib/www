@@ -119,7 +119,7 @@ final class StarRatingForm extends \MovLib\Core\Presentation\DependencyInjection
     // Build an explanation based on available rating data. We can't use Intl ICU plural forms here because we have to
     // enclose the various numeric values in structured data and want the correctly formatted too.
     if ($entity->ratingVotes === 0) {
-      $this->summary = $this->intl->t("No one has rated so far, be the first.");
+      $this->summary = $this->intl->t("No one has rated so far, be the first!");
     }
     elseif ($entity->ratingVotes === 1 && $this->userRating !== null) {
       $this->summary = $this->intl->t("You’re the only one who rated yet.");
