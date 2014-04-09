@@ -82,6 +82,13 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
     $this->entity->countries && $this->infoboxAdd($this->intl->t("Countries"), (new Country($this->diContainerHTTP))->getList($this->entity->countries, "contentLocation"));
 
     $this->entity->synopsis && $this->sectionAdd($this->intl->t("Synopsis"), $this->entity->synopsis);
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($this->entity->synopsis)) {
+      $this->sectionAdd($this->intl->t("Synopsis"), "<div class='quotes'>{$this->blindtext()}</div>");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     $this->sectionAdd(
       "Quote Test",
       "<blockquote>Quotes are rendered in the current locale…</blockquote><p>Meet the <q><code>&lt;q&gt;</code></q> tag.</p><blockquote lang='ja'>日本語はどうですか？</blockquote>" .

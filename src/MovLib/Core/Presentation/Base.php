@@ -45,6 +45,29 @@ class Base {
     return $this;
   }
 
+  // @devStart
+  // @codeCoverageIgnoreStart
+  /**
+   * Generate random "Lorem Ipsum" text.
+   *
+   * <b>NOTE</b><br>
+   * Using this method will make your page slow!
+   *
+   * @param integer $amount [optional]
+   *   How much of <var>$what</var>.
+   * @param string $what [optional]
+   *   One of <code>"paras"</code> (default), <code>"words"</code>, <code>"bytes"</code>, or <code>"lists"</code>.
+   * @param start $start [optional]
+   *   Start offset in the returned text.
+   * @return string
+   *   Random "Lorem Ipsum" text.
+   */
+  final public function blindtext($amount = 1, $what = "paras", $start = 0) {
+    return simplexml_load_file("http://www.lipsum.com/feed/xml?amount={$amount}&what={$what}&start={$start}")->lipsum;
+  }
+  // @codeCoverageIgnoreEnd
+  // @devEnd
+
   /**
    * Collapse all kinds of whitespace characters to a single space.
    *
