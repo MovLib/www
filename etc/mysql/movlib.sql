@@ -43,6 +43,8 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`genres` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The genre’s unique identifier.',
   `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the genre was last changed.',
+  `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The genre’s total number of movie occurrences.',
+  `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The genre’s total number of series occurences.',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the genre was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the genre was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The genre’s description in various languages. Keys are ISO alpha-2 language codes.',
@@ -220,6 +222,8 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`jobs` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The job’s unique ID.',
   `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the job was last changed.',
+  `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The jobs’s total number of movies.',
+  `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The job’s total number of series.',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the job was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the job was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The job’s description in various languages. Keys are ISO alpha-2 language codes.',
@@ -241,6 +245,10 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`companies` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The company’s unique ID.',
   `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the company was last changed.',
+  `count_awards` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The company’s total number of awards.',
+  `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The company’s total number of movie participations.',
+  `count_releases` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The company’s total number of release participations.',
+  `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The company’s total number of series participations.',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the company was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the company was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The company’s translated descriptions.',
@@ -506,6 +514,9 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`awards` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The award’s unique ID.',
   `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the award was last changed.',
+  `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of movie participations.',
+  `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of series participations.',
+  `count_events` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of events.',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the award was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the award was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The award’s description in various languages. Keys are ISO alpha-2 language codes.',
@@ -736,6 +747,8 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`series` (
   `series_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The unique ID of the series.',
   `created` TIMESTAMP NOT NULL COMMENT 'The creation date of the series as timestamp.',
+  `count_awards` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The series’ total number of awards.',
+  `count_releases` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The series’ total number of releases.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this series is marked as deleted (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_synopses` BLOB NOT NULL COMMENT 'The synopsis of the series in various languages. Keys are ISO alpha-2 language codes.',
   `original_title` BLOB NOT NULL COMMENT 'The original title of the series.',
@@ -762,6 +775,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`series_seasons` (
   `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique ID of the series.',
   `seasons_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season’s  number within the series.',
+  `count_releases` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The season’s total number of releases.',
   `created` TIMESTAMP NOT NULL COMMENT 'The creation date of the season as timestamp.',
   `end_year` SMALLINT(4) UNSIGNED ZEROFILL NULL COMMENT 'The year the season ended.',
   `start_year` SMALLINT(4) UNSIGNED ZEROFILL NULL COMMENT 'The year the season started airing.',
@@ -808,6 +822,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`seasons_episodes` (
   `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique ID of he series.',
   `seasons_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season’s number this episode belongs to.',
   `position` SMALLINT UNSIGNED NOT NULL COMMENT 'The episode’s chronological position within the season.',
+  `count_releases` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The episode’s total number of releases.',
   `created` TIMESTAMP NOT NULL COMMENT 'The creation date of the episode as timestamp.',
   `original_title` BLOB NOT NULL COMMENT 'The episode’s original title.',
   `original_title_language_code` CHAR(2) NOT NULL COMMENT 'The episode’s original title ISO alpha-2 language code.',
