@@ -81,14 +81,20 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
     $this->entity->genreSet  && $this->infoboxAdd($this->intl->t("Genres"), (new Genre($this->diContainerHTTP))->getList($this->entity->genreSet));
     $this->entity->countries && $this->infoboxAdd($this->intl->t("Countries"), (new Country($this->diContainerHTTP))->getList($this->entity->countries, "contentLocation"));
 
-    $this->sectionAdd("Quote Test", "<blockquote>Quotes are rendered in the current locale…</blockquote><p>Meet the <q><code>&lt;q&gt;</code></q> tag.</p><blockquote lang='ja'>日本語はどうですか？</blockquote>", false);
     $this->entity->synopsis && $this->sectionAdd($this->intl->t("Synopsis"), $this->entity->synopsis);
-    $this->sectionAdd($this->intl->t("Trailers"), new Alert("Not implemented yet!"), false);
-    $this->sectionAdd($this->intl->t("Weblinks"), new Alert("Not implemented yet!"), false);
-    $this->sectionAdd($this->intl->t("Alternative Titles"), new Alert("Not implemented yet!"), false);
+    $this->sectionAdd(
+      "Quote Test",
+      "<blockquote>Quotes are rendered in the current locale…</blockquote><p>Meet the <q><code>&lt;q&gt;</code></q> tag.</p><blockquote lang='ja'>日本語はどうですか？</blockquote>" .
+      "<blockquote lang='fr'>Nous avons également quelques citations de français. <q lang='en'>This even includes a nested quote in a different language!</q></blockquote>",
+      false,
+      "callout"
+    );
+    $this->sectionAdd($this->intl->t("Alternative Titles"), "Not implemented yet!", false, "callout info");
+    $this->sectionAdd($this->intl->t("Trailers"), "Not implemented yet!", false, "callout warning");
+    $this->sectionAdd($this->intl->t("Weblinks"), "Not implemented yet!", false, "callout danger");
 
-    if (($sections = $this->sectionGet())) {
-      return $sections;
+    if ($this->sections) {
+      return $this->sections;
     }
 
     return "";

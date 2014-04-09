@@ -423,34 +423,39 @@
  * Breadcrumb
  * ------------------------------------------------------------------------------------------------------------------ */
 
-#b {
+#breadcrumb {
   margin-bottom: 20px;
 }
 
-#b h2 {
-  font: inherit;
+#breadcrumb li {
+  display: inline-block;
 }
 
-#b h2,
-#b div {
-  display: inline;
+#breadcrumb li:after {
+  content: "›";
+  padding: 0 5px;
 }
 
-#b a {
+#breadcrumb li:last-child:after {
+  content: "";
+  margin: 0;
+}
+
+#breadcrumb a {
   color: #999;
 }
 
-#b a.active,
-#b a:hover,
-#b a:focus {
+#breadcrumb a.active,
+#breadcrumb a:hover,
+#breadcrumb a:focus {
   color: #fff;
 }
 
-#b a:hover,
-#b a:focus {
+#breadcrumb a:hover,
+#breadcrumb a:focus {
   border-bottom-color: #fff;
 }
 
-#b a.active {
+#breadcrumb a.active {
   border-bottom: none;
 }

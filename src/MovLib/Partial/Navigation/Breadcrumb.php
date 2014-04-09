@@ -91,14 +91,14 @@ final class Breadcrumb extends \MovLib\Core\Presentation\DependencyInjectionBase
     for ($i = 0; $i < $c; ++$i) {
       $crumbs .= "<li typeof='Breadcrumb'>{$this->a(
         $this->trail[$i][0],
-        "<span property='title'>{$this->trail[$i][1]}</span>",
+        "<span class='small' property='title'>{$this->trail[$i][1]}</span>",
         $this->trail[$i][2]
       )}</li>";
     }
 
     return
-      "<nav id='b' class='c' role='navigation' vocab='http://data-vocabulary.org/'>" .
-        "<h2>{$this->intl->t("Breadcrumb")}</h2>" .
+      "<nav id='breadcrumb' role='navigation' vocab='http://data-vocabulary.org/'>" .
+        "<h2 class='vh'>{$this->intl->t("Breadcrumb")}</h2>" .
         "<ol class='no-list'>{$crumbs}</ol>" .
       "</nav>"
     ;

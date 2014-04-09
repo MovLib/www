@@ -33,11 +33,11 @@ trait SectionTrait {
 
 
   /**
-   * The content sections.
+   * The sections.
    *
-   * @var array
+   * @var string
    */
-  private $sections = [];
+  protected $sections;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -67,32 +67,28 @@ trait SectionTrait {
    *   The section's title.
    * @param string $content
    *   The section's content.
-   * @param boolean $decode
+   * @param boolean $decode [optional]
    *   Whether the content should be HTML decoded or not, defaults to <code>TRUE</code> (content will be decoded).
+   * @param array|string $attributes [optional]
+   *   Additional attributes that should be applied to the <code><section></code>, note that the <code>"id"</code> is
+   *   always overwritten. If you pass a string it's assumed that you want to add CSS classes.
    * @return this
    */
-  final protected function sectionAdd($title, $content, $decode = true) {
-    $this->sections[$title] = $decode ? $this->htmlDecode($content) : $content;
-    return $this;
-  }
+  final protected function sectionAdd($title, $content, $decode = true, $attributes = null) {
+    $decode && ($content = $this->htmlDecode($content));
 
-  /**
-   * Get the content sections.
-   *
-   * @return string
-   *   The content sections.
-   */
-  final protected function sectionGet() {
-    $formatted = null;
-    foreach ($this->sections as $title => $content) {
-      $id = mb_strtolower(preg_replace("/[^\d\w-_]+/", "-", $title));
-      if (is_numeric($title{0})) {
-        $id = "s{$id}"; // Numeric CSS ids arent' allowed!
-      }
-      $this->sidebarNavigation->menuitems[] = [ "#{$id}", $title ];
-      $formatted .= "<section id='{$id}'><h2 class='title'>{$title}</h2><div class='content'>{$content}</div></section>";
+    if ($attributes !== (array) $attributes) {
+      $attributes = [ "class" => $attributes ];
     }
-    return $formatted;
+    $attributes["id"] = mb_strtolower(preg_replace("/[^\d\w-_]+/", "-", $title));
+    if (is_numeric($title{0})) {
+      $attributes["id"] = "s{$attributes["id"]}"; // Numeric CSS ids arent' allowed!
+    }
+
+    $this->sidebarNavigation->menuitems[] = [ "#{$attributes["id"]}", $title ];
+    $this->sections .= "<section{$this->expandTagAttributes($attributes)}><h2 class='title'>{$title}</h2><div class='content'>{$content}</div></section>";
+
+    return $this;
   }
 
 }

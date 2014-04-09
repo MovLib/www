@@ -124,6 +124,26 @@ class Base {
   }
 
   /**
+   * Get a callout.
+   *
+   * @param string $title
+   *   The callout's title.
+   * @param string $message
+   *   The callout's message.
+   * @param string $type [optional]
+   *   The callout's type, one of <code>NULL</code> (default), <code>"danger"</code>, <code>"info"</code>, or
+   *   <code>"warning"</code>.
+   * @param integer $level [optional]
+   *   The callout's heading level, defaults to <code>3</code>.
+   * @return string
+   *   The callout.
+   */
+  public function callout($title, $message, $type = null, $level = 3) {
+    $type && ($type = " {$type}");
+    return "<div class='callout'><h{$level} class='title'>{$title}</h{$level}>{$message}</div>";
+  }
+
+  /**
    * Get an image.
    *
    * @param \MovLib\Data\Image\ImageStyle $imageStyle
