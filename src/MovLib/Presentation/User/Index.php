@@ -47,7 +47,6 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
     }
     $this
       ->initPage($this->intl->t("Users"))
-      ->initBreadcrumb()
       ->initLanguageLinks("/users", null, true)
       ->sidebarInit([
         [ $this->request->path, $this->title, [ "class" => "ico ico-user" ] ],

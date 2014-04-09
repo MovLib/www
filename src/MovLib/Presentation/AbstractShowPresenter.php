@@ -66,7 +66,7 @@ abstract class AbstractShowPresenter extends \MovLib\Presentation\AbstractPresen
     $this->schemaType            = $typeOf;
     $this->headingSchemaProperty = $titleProperty;
     $this->initPage($this->getPageTitle());
-    $this->initBreadcrumb([[ $this->intl->rp("/{$entity->pluralKey}"), $pluralName ]]);
+    $this->breadcrumb->addCrumb($entity->routeIndex, $pluralName);
     $this->initLanguageLinks("/{$entity->singularKey}/{0}", $entity->id);
     $this->sidebarInit($this->getSidebarItems());
     if ($entity->isGone()) {

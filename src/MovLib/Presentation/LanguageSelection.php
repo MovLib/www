@@ -38,6 +38,15 @@ final class LanguageSelection extends \MovLib\Presentation\AbstractPresenter {
   /**
    * {@inheritdoc}
    */
+  public function init() {
+    $this->initPage($this->intl->t("Language Selection"));
+    $this->next("//{$this->intl->languageCode}.{$this->config->hostname}/");
+    $this->stylesheets[] = "language-selection";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getContent() {
     $prerender = $menuitems = null;
     foreach ($this->intl->systemLocales as $code => $locale) {
@@ -87,15 +96,6 @@ final class LanguageSelection extends \MovLib\Presentation\AbstractPresenter {
         "</h1>{$this->alerts}{$content}" .
       "</div></main>"
     ;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-    $this->initPage($this->intl->t("Language Selection"));
-    $this->next("//{$this->intl->languageCode}.{$this->config->hostname}/");
-    $this->stylesheets[] = "language-selection";
   }
 
 }
