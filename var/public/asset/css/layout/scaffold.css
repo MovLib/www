@@ -36,10 +36,18 @@ body {
   hyphens: auto;
 }
 
+blockquote,
+em,
+i,
+q {
+  font-style: italic;
+}
+
 blockquote {
   margin: 10px 20px;
 }
 
+.quotes,
 blockquote,
 q {
   /*
@@ -47,17 +55,20 @@ q {
     and we fake it with the space.
   */
   quotes: "“ " " ”" "‘ " " ’";
-  font-style: italic;
 }
 
+.quotes:before,
 blockquote:before {
   content: open-quote;
 }
 
+.quotes:after,
 blockquote:after {
   content: close-quote;
 }
 
+[lang="de"] .quotes,
+.quotes[lang="de"],
 [lang="de"] blockquote,
 blockquote[lang="de"],
 [lang="de"] q,
@@ -65,6 +76,8 @@ q[lang="de"] {
   quotes: "„" "“" "‚" "‘";
 }
 
+[lang="fr"] .quotes,
+.quotes[lang="fr"],
 [lang="fr"] blockquote,
 blockquote[lang="fr"],
 [lang="fr"] q,
@@ -72,6 +85,8 @@ q[lang="fr"] {
   quotes: "«" "»" "‹" "›";
 }
 
+[lang="ja"] .quotes,
+.quotes[lang="ja"],
 [lang="ja"] blockquote,
 blockquote[lang="ja"],
 [lang="ja"] q,
