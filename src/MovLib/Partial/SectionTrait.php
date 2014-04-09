@@ -86,7 +86,7 @@ trait SectionTrait {
     }
 
     $this->sidebarNavigation->menuitems[] = [ "#{$attributes["id"]}", $title ];
-    $this->sections .= "<section{$this->expandTagAttributes($attributes)}><h2 class='title'>{$title}</h2><div class='content'>{$content}</div></section>";
+    $this->sections .= "<section{$this->expandTagAttributes($attributes)}><h2 class='title'>{$title}</h2>{$content}</section>";
 
     return $this;
   }
