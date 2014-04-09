@@ -117,9 +117,41 @@ abstract class AbstractEntityCountCommand extends \MovLib\Console\Command\Abstra
   }
 
   /**
+   * Aggregate the results of a simple count query.
+   *
+   * The projection may only contain an identifier and a count field.
+   *
+   * @param string $query
+   *   The query to execute.
+   * @param string $idColumn
+   *   The name of the identifier column in the projection, defaults to <code>"id"</code>.
+   * @param string $countColumn
+   *   The name of the count column in the projection, defaults to <code>"count"</code>
+   * @return array
+   *   Associative array with the identifiers as keys and the counts as values.
+   */
+  final protected function aggregateSimpleQuery($query, $idColumn = "id", $countColumn = "count"){
+    $counts = [];
+    $result = $this->mysqli->query($query);
+    while ($row = $result->fetch_object()) {
+      $counts[$row->$idColumn] = (integer) $row->$countColumn;
+    }
+    $result->free();
+    return $counts;
+  }
+
+  /**
    * {@inheritdoc}
    */
   protected function configure() {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert(!empty($this->entityName), "You must initialize the \$entityName property in your class " . static::class . ".");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    if (empty($this->getName())) {
+      $this->setName("entity-count-" . mb_strtolower($this->entityName));
+    }
     $this->addOption("seed", null, InputOption::VALUE_NONE);
     $this->mysqli = new MySQLi("movlib");
     return parent::configure();
@@ -242,22 +274,27 @@ SQL
    * NOTE: If you need special count methods, make sure they return associative arrays in the format:
    * <code>[ entity_id1 => count1, entity_id2 => count2, ... ]</code>.
    *
-   * @param array $groupColumns
-   *   The columns to group, the first has to be the entity's identifier.
-   * @param string $countColumns
-   *   The column to derive the counts from.
+   * @param string|array $groupColumns
+   *   The column(s) to group, the first has to be the entity's identifier.
+   * @param string|array $countColumns
+   *   The column(s) to derive the counts from.
    * @param string $tableName
    *   The table to count on.
    * @param string $where [optional]
-   *   Optional <code>WHERE</code> clause.
+   *   Optional <code>WHERE</code> clause without the WHERE keyword.
    * @return array
    *   Associative array with the entity's identifiers as keys and the counts as values.
    */
-  final protected function getCounts(array $groupColumns, array $countColumns, $tableName, $where = null) {
-    $counts = [];
-    $idColumn = $groupColumns[0];
+  final protected function getCounts($groupColumns, $countColumns, $tableName, $where = null) {
+    $counts       = [];
+    $groupColumns = (array) $groupColumns;
+    $countColumns = (array) $countColumns;
+    $idColumn     = $groupColumns[0];
     $groupColumns = implode("`, `", $groupColumns);
     $countColumns = implode("`, `", $countColumns);
+    if ($where) {
+      $where = "WHERE {$where}";
+    }
     $result = $this->mysqli->query(<<<SQL
 SELECT
   `{$idColumn}` AS `id`,

@@ -18,7 +18,7 @@
 namespace MovLib\Console\Command\Install\Count;
 
 /**
- * Count verification for movies.
+ * Count verification for genres.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -26,46 +26,17 @@ namespace MovLib\Console\Command\Install\Count;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieCount extends \MovLib\Console\Command\Install\Count\AbstractEntityCountCommand {
+class GenreCount extends \MovLib\Console\Command\Install\Count\AbstractEntityCountCommand {
 
   /**
    * {@inheritdoc}
    */
   protected function configure() {
-    $this->entityName = "Movie";
-    $this->tableName  = "movies";
-    $this->addCountColumn(
-      "awards",
-      "getCounts",
-      [ "movie_id", [ "award_id", "award_category_id", "event_id" ], "movies_awards", "`won` = true"  ]
-    );
-    $this->addCountColumn("releases", "getReleasesCount");
+    $this->entityName = "Genre";
+    $this->tableName = "genres";
+    $this->addCountColumn("movies", "getCounts", [ "genre_id", "movie_id", "movies_genres" ]);
+    $this->addCountColumn("series", "getCounts", [ "genre_id", "series_id", "series_genres" ]);
     return parent::configure();
-  }
-
-  /**
-   * Get the release counts of movies.
-   *
-   * @return array
-   *   Associative array with the movie identifiers as keys and the release counts as values.
-   */
-  protected function getReleasesCount() {
-    return $this->aggregateSimpleQuery(<<<SQL
-SELECT
-  `media_movies`.`movie_id` AS `id`,
-  COUNT(DISTINCT `releases`.`id`) AS `count`
-FROM `media_movies`
-INNER JOIN `media`
-  ON `media`.`id` = `media_movies`.`medium_id`
-INNER JOIN `releases_media`
-  ON `releases_media`.`medium_id` = `media`.`id`
-INNER JOIN `releases`
-  ON `releases`.`id` = `releases_media`.`release_id`
-WHERE `releases`.`deleted` = false
-GROUP BY `media_movies`.`movie_id`
-ORDER BY `media_movies`.`movie_id` ASC
-SQL
-    );
   }
 
 }
