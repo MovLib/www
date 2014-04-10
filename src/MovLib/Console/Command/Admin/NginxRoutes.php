@@ -226,15 +226,10 @@ class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
 
     // @devStart
     // @codeCoverageIgnoreStart
-    if (empty($pattern) || !is_string($pattern)) {
-      throw new \InvalidArgumentException("\$route cannot be empty and must be of type string");
-    }
-    if ($context != "singular" && $context != "plural") {
-      throw new \InvalidArgumentException("\$context has to be either 'singular' or 'plural'");
-    }
-    if (isset($args) && (empty($args) || !is_array($args))) {
-      throw new \InvalidArgumentException("\$args cannot be empty and must be of type array");
-    }
+    assert(!empty($pattern), "A route pattern cannot be empty");
+    assert(is_string($pattern) || is_array($pattern), "A route pattern must be of type string or array");
+    assert($context == "singular" || $context == "plural", "\$context has to be either 'singular' or 'plural'");
+    assert(!isset($args) || !empty($args) || is_array($args), "\$args cannot be empty and must be of type array");
     // @codeCoverageIgnoreEnd
     // @devEnd
 
