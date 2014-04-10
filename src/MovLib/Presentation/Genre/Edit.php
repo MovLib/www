@@ -17,7 +17,11 @@
  */
 namespace MovLib\Presentation\Genre;
 
-use \MovLib\Data\Genre;
+use \MovLib\Data\Genre\Genre;
+use \MovLib\Partial\Form;
+use \MovLib\Partial\FormElement\InputText;
+use \MovLib\Partial\FormElement\InputWikipedia;
+use \MovLib\Partial\FormElement\TextareaHTML;
 
 /**
  * Allows editing of a genre's information.
@@ -28,37 +32,81 @@ use \MovLib\Data\Genre;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Edit extends \MovLib\Presentation\Genre\AbstractBase {
+class Edit extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+  // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * Instantiate new genre edit presentation.
+   * The entity to present.
    *
+   * @var \MovLib\Data\AbstractEntity
    */
-  public function __construct() {
-    $this->genre = new Genre((integer) $_SERVER["GENRE_ID"]);
-    $this->initPage($this->intl->t("Edit"));
-    $this->pageTitle = $this->intl->t("Edit {0}", [ "<a href='{$this->genre->route}'>{$this->genre->name}</a>" ]);
-    $this->initLanguageLinks("/genre/{0}/edit", [ $this->genre->id ]);
-    $this->initGenreBreadcrumb();
-    $this->sidebarInit();
-
-    $kernel->stylesheets[] = "genre";
-  }
+  protected $entity;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * @inheritdoc
-   * @return \MovLib\Presentation\Partial\Alert
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    return new \MovLib\Presentation\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("edit genre") ]), $this->intl->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+  public function init() {
+    $this->entity = new Genre($this->diContainerHTTP, $_SERVER["GENRE_ID"]);
+    $pageTitle = $this->intl->t("Edit {0}", [ $this->entity->name ]);
+    return
+      $this
+        ->initPage($pageTitle, $pageTitle, $this->intl->t("Edit"))
+        ->sidebarInitToolbox($this->entity)
+        ->initLanguageLinks("/{$this->entity->singularKey}/{0}/edit", $this->entity->id)
+        ->breadcrumb->addCrumbs([
+          [ $this->intl->rp("/genres"), $this->intl->t("Genres") ],
+          [ $this->entity->route, $this->entity->name ]
+        ])
+    ;
+
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {
+    return (new Form($this->diContainerHTTP))
+      ->addElement(new InputText($this->diContainerHTTP, "name", $this->intl->t("Name"), $this->entity->name, [
+        "#help-popup" => $this->intl->t("The name of the genre."),
+        "placeholder" => $this->intl->t("Enter the genre’s name."),
+        "autofocus"   => true,
+        "required"    => true,
+      ]))
+      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
+        "#help-popup"         => $this->intl->t("Link to a corresponding Wikipedia Page."),
+        "placeholder"         => $this->intl->t("Enter the genre’s corresponding Wikipedia link."),
+        "data-allow-external" => "true",
+      ]))
+      ->addElement(new TextareaHTML($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
+        "#help-popup"         => $this->intl->t("Description of the genre."),
+        "placeholder" => $this->intl->t("Describe the genre."),
+      ], [ "blockquote", "external", "headings", "lists", ]))
+      ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
+      ->init([ $this, "valid" ])
+    ;
+  }
+
+  /**
+   * Auto-validation of the form succeeded.
+   *
+   * @return this
+   */
+  public function valid() {
+    //$this->user->updateAccount();
+    $this->alertInfo(
+      $this->intl->t("The genre was updated successfully."),
+      $this->intl->t("All data was saved.")
+    );
+    return $this;
+  }
+
 
 }
