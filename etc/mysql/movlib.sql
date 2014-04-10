@@ -222,9 +222,11 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`jobs` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The job’s unique ID.',
   `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the job was last changed.',
+  `count_companies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The job’s total number of companies.',
   `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The jobs’s total number of movies.',
-  `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The job’s total number of series.',
+  `count_persons` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The job’s total number of persons.',
   `count_releases` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The job’s total number of releases.',
+  `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The job’s total number of series.',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the job was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the job was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The job’s description in various languages. Keys are ISO alpha-2 language codes.',
@@ -752,13 +754,14 @@ CREATE TABLE IF NOT EXISTS `movlib`.`series` (
   `created` TIMESTAMP NOT NULL COMMENT 'The creation date of the series as timestamp.',
   `count_awards` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The series’ total number of awards.',
   `count_releases` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The series’ total number of releases.',
+  `count_seasons` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The series’ total number of seasons.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this series is marked as deleted (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_synopses` BLOB NOT NULL COMMENT 'The synopsis of the series in various languages. Keys are ISO alpha-2 language codes.',
   `original_title` BLOB NOT NULL COMMENT 'The original title of the series.',
   `original_title_language_code` CHAR(2) NOT NULL COMMENT 'The original title’s ISO alpha-2 language code of the series.',
   `mean_rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The arithmetic mean rating of the series.',
   `rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The Bayes\'theorem rating of the series.\n\nrating = (s / (s + m)) * N + (m / (s + m)) * K\n\nN: arithmetic mean rating\ns: vote count\nm: minimum vote count\nK: arithmetic mean vote\n\nThe same formula is used by IMDb and OFDb.',
-  `status` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'One of the \\\\MovLib\\\\Data\\\\Series\\\\Series::STATUS_ constants.\n0 => unknown,\n1 => new,\n2 => returning,\n3 => ended,\n4 => cancelled.',
+  `status` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'One of the \\\\MovLib\\\\Data\\\\Series\\\\Series::STATUS_ constants.\n0 => unknown,\n1 => new,\n2 => returning,\n3 => final season,\n4 => ended,\n5 => cancelled.',
   `votes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The vote count of the series.',
   `bin_relationships` BLOB NULL COMMENT 'The relations of the series to other series, e.g. sequel.\nStored in igbinary serialized format.',
   `commit` CHAR(40) NULL COMMENT 'The last history commit sha-1 hash of the series.',
@@ -948,10 +951,12 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`releases_labels` (
   `company_id` BIGINT UNSIGNED NOT NULL COMMENT 'The company’s unique ID.',
   `release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The release’s unique ID.',
+  `job_id` BIGINT UNSIGNED NOT NULL COMMENT 'The job’s identifier for the label job.',
   `catalog_number` TINYTEXT NULL COMMENT 'The catalog number associated with the release.',
   PRIMARY KEY (`company_id`, `release_id`),
   INDEX `fk_releases_labels_companies` (`company_id` ASC),
   INDEX `fk_releases_labels_master_releases` (`release_id` ASC),
+  INDEX `fk_releases_labels_jobs1_idx` (`job_id` ASC),
   CONSTRAINT `fk_master_releases_labels_releases`
     FOREIGN KEY (`release_id`)
     REFERENCES `movlib`.`releases` (`id`)
@@ -960,6 +965,11 @@ CREATE TABLE IF NOT EXISTS `movlib`.`releases_labels` (
   CONSTRAINT `fk_master_releases_labels_companies`
     FOREIGN KEY (`company_id`)
     REFERENCES `movlib`.`companies` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_releases_labels_jobs1`
+    FOREIGN KEY (`job_id`)
+    REFERENCES `movlib`.`jobs` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
