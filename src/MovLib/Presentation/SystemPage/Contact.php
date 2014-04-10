@@ -85,18 +85,38 @@ class Contact extends \MovLib\Presentation\SystemPage\Show {
   public function init() {
     parent::init();
     $this->form = new Form($this->diContainerHTTP);
+    $subjectAttributes = [
+      "placeholder" => $this->intl->t("This will appear as subject of your message"),
+      "required" => "required",
+    ];
     // Add email input for non-authenticated users.
     if ($this->session->isAuthenticated === false) {
-      $this->form->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email address"), $this->sender));
+      $this->form->addElement(new InputEmail(
+        $this->diContainerHTTP,
+        "email",
+        $this->intl->t("Email address"),
+        $this->sender,
+        [ "autofocus", "placeholder" => $this->intl->t("Your email address"), "required" => "required" ]
+      ));
     }
     else {
       $this->sender = "{$this->session->userName}@movlib.org";
+      $subjectAttributes[] = "autofocus";
     }
-    $this->form->addElement(new InputText($this->diContainerHTTP, "subject", $this->intl->t("Subject"), $this->subject), [
-      "placeholder" => $this->intl->t("This will appear as subject of your message"),
-      "required" => "required",
-    ]);
-    $this->form->addElement(new TextareaHTML($this->diContainerHTTP, "message", $this->intl->t("Message"), $this->message, [ "required" => "required"]));
+    $this->form->addElement(new InputText(
+      $this->diContainerHTTP,
+      "subject",
+      $this->intl->t("Subject"),
+      $this->subject,
+      $subjectAttributes
+    ));
+    $this->form->addElement(new TextareaHTML(
+      $this->diContainerHTTP,
+      "message",
+      $this->intl->t("Message"),
+      $this->message,
+      [ "placeholder" => $this->intl->t("Type your message here..."), "required" => "required" ]
+    ));
     $this->form->addAction($this->intl->t("Send"), [ "class" => "btn btn-large btn-success" ]);
   }
 

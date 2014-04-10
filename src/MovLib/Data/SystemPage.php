@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data;
 
-use \MovLib\Data\FileSystem;
 use \MovLib\Presentation\Error\NotFound;
 
 /**
@@ -83,7 +82,7 @@ SELECT
   `id`,
   COLUMN_GET(`dyn_titles`, ? AS CHAR(255)) AS `title`,
   COLUMN_GET(`dyn_texts`, ? AS BINARY) AS `text`,
-  COLUMN_GET(`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR(255)) AS `route`
+  COLUMN_GET(`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR(255)) AS `routeKey`
 FROM `system_pages`
 WHERE `id` = ?
 LIMIT 1
@@ -91,7 +90,7 @@ SQL
     );
     $stmt->bind_param("ssd", $this->intl->languageCode, $this->intl->languageCode, $id);
     $stmt->execute();
-    $stmt->bind_result($this->id, $this->title, $this->text, $this->route);
+    $stmt->bind_result($this->id, $this->title, $this->text, $this->routeKey);
     $found = $stmt->fetch();
     $stmt->close();
     if (!$found) {
@@ -101,9 +100,16 @@ SQL
     $this->init();
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function init() {
-    $this->route = $this->fs->sanitizeFilename($this->route);
-    $this->route = "/{$this->route}";
+    // The plural key isn't used anywhere.
+    $this->pluralKey   = "system_pages";
+    $this->singularKey = $this->fs->sanitizeFilename($this->routeKey);
+    $this->routeKey    = "/{$this->singularKey}";
+    $this->routeArgs   = [];
+    $this->routeIndex  = "/";
     return parent::init();
   }
 
@@ -135,38 +141,6 @@ SQL
     )->close();
 
     return $this;
-  }
-
-  public function getPluralKey() {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    throw new \LogicException("Do not use this method for system pages!");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-  }
-
-  public function getPluralName() {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    throw new \LogicException("Do not use this method for system pages!");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-  }
-
-  public function getSingularKey() {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    throw new \LogicException("Do not use this method for system pages!");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-  }
-
-  public function getSingularName() {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    throw new \LogicException("Do not use this method for system pages!");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
   }
 
 }
