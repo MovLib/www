@@ -31,14 +31,14 @@
   },
   "require": {
     "php": ">=5.5.0",
-    "elasticsearch/elasticsearch": "dev-master",
-    "symfony/console": "dev-master",
-    "monolog/monolog": "dev-master"
+    "elasticsearch/elasticsearch": "~1",
+    "symfony/console": "~2",
+    "monolog/monolog": "~1"
   },
   "require-dev": {
-    "apigen/apigen": "dev-master",
-    "firephp/firephp-core": "dev-master",
-    "phpunit/phpunit": "~3"
+    "apigen/apigen": "~2",
+    "phpunit/phpunit": "~4",
+    "jan-swiecki/simple-annotations": "~0"
   },
   "scripts": {
     "post-install-cmd": "MovLib\\Tool\\Composer::postInstall",
