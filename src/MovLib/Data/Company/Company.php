@@ -114,13 +114,6 @@ final class Company extends \MovLib\Data\Image\AbstractImageEntity {
    */
   public $seriesCount;
 
-  /**
-   * The company's translated Wikipedia link.
-   *
-   * @var null|string
-   */
-  public $wikipedia;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 

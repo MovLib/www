@@ -129,13 +129,6 @@ final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity impleme
   public $taglineLanguageCode;
 
   /**
-   * The movie's Wikipedia article link in the current locale.
-   *
-   * @var null|string
-   */
-  public $wikipedia;
-
-  /**
    * The movie's year.
    *
    * @var \MovLib\Data\Date
