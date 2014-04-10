@@ -28,8 +28,8 @@
 
 ol,
 ul {
-  padding-left: 0;
-  list-style-position: inside;
+  padding-left: 1em;
+  list-style-position: outside;
 }
 
 ol ol {
