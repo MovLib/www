@@ -17,8 +17,12 @@
  */
 namespace MovLib\Partial;
 
+use \MovLib\Data\Image\AbstractReadOnlyImageEntity;
+
 /**
  * Defines the quick info partial.
+ *
+ * @property-read \MovLib\Data\AbstractEntity $entity
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -33,18 +37,18 @@ trait InfoboxTrait {
 
 
   /**
+   * The infobox's arbitrary content that should be displayed before itself but after the heading.
+   *
+   * @var string
+   */
+  protected $infoboxBefore;
+
+  /**
    * The infobox's formatted infos.
    *
    * @var string
    */
-  protected $infoboxInfos;
-
-  /**
-   * The infobox's image.
-   *
-   * @var \MovLib\Data\Image\AbstractReadOnlyImageEntity
-   */
-  protected $infoboxImage;
+  private $infoboxInfos;
 
   /**
    * The infobox's image route.
@@ -64,24 +68,41 @@ trait InfoboxTrait {
    *   The infobox main heading.
    */
   final protected function getMainHeading() {
-    if (!empty($this->infoboxImage->wikipedia)) {
-      $this->infoboxInfos .= "<small><span class='ico ico-wikipedia'></span> <a href='{$this->infoboxImage->wikipedia}' property='sameAs' target='_blank'>{$this->intl->t("Wikipedia Article")}</a></small>";
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert($this->entity instanceof \MovLib\Data\AbstractEntity, "You need to have an entity property in order to use the InfoboxTrait");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    // Set alert messages that might be stored in cookies.
+    $this->response->setAlerts($this);
+
+    // Build Wikipedia link if current entity has one.
+    if (!empty($this->entity->wikipedia)) {
+      $this->infoboxInfos .= "<small><span class='ico ico-wikipedia'></span> <a href='{$this->entity->wikipedia}' property='sameAs' target='_blank'>{$this->intl->t("Wikipedia Article")}</a></small>";
     }
 
+    // Build the infobox section, note that we're concatenating at this point because the concrete class might have
+    // inserted some content before the infobox.
     if ($this->infoboxInfos) {
       $this->infoboxInfos = "<section id='infobox'><h2 class='vh'>{$this->intl->t("Infobox")}</h2>{$this->infoboxInfos}</section>";
     }
 
-    $property = $this->headingSchemaProperty ? " property='{$this->headingSchemaProperty}'" : null;
-    return
-      "<div class='r'>" .
-        "<div class='s s10'>" .
-          "<h1{$property}>{$this->pageTitle}</h1>" .
-          "{$this->headingBefore}{$this->infoboxInfos}{$this->headingAfter}" .
-        "</div>" .
-        "<div class='s s2'>{$this->img($this->infoboxImage->imageGetStyle("s2"), [], $this->infoboxImageRoute)}</div>" .
-      "</div>"
-    ;
+    // Build the default main heading.
+    $property    = $this->headingSchemaProperty ? " property='{$this->headingSchemaProperty}'" : null;
+    $mainHeading = "{$this->headingBefore}<h1{$property}>{$this->pageTitle}</h1>{$this->infoboxBefore}{$this->infoboxInfos}{$this->headingAfter}";
+
+    // Add grid with image if we have an image to present.
+    if ($this->entity instanceof AbstractReadOnlyImageEntity) {
+      return
+        "<div class='r'>" .
+          "<div class='s s10'>{$mainHeading}</div>" .
+          "<div class='s s2'>{$this->img($this->entity->imageGetStyle("s2"), [], $this->infoboxImageRoute)}</div>" .
+        "</div>"
+      ;
+    }
+
+    return $mainHeading;
   }
 
   /**
@@ -103,27 +124,6 @@ trait InfoboxTrait {
       }
       $this->infoboxInfos .= "<{$tag} class='dtr'><span class='dtc'>{$this->intl->t("{0}:", $label)}</span> <span class='dtc'>{$info}</span></{$tag}>";
     }
-    return $this;
-  }
-
-  /**
-   * Initialize the infobox trait.
-   *
-   * @param \MovLib\Data\Image\AbstractReadOnlyImageEntity $image
-   *   The infobox's image entity.
-   * @param mixed $imageRoute [optional]
-   *   The infobox's image route, defaults to <code>FALSE</code> ({@see \MovLib\Core\Presentation\Base::img()}).
-   * @param mixed $before [optional]
-   *   Arbitrary data that should be included before the infobox.
-   * @param mixed $after [optional]
-   *   Arbitrary data that should be included after the infobox.
-   * @return this
-   */
-  final protected function infoboxInit(\MovLib\Data\Image\AbstractReadOnlyImageEntity $image, $imageRoute = false, $before = null, $after = null) {
-    $this->headingAfter      = $after;
-    $this->headingBefore     = $before;
-    $this->infoboxImage      = $image;
-    $this->infoboxImageRoute = $imageRoute;
     return $this;
   }
 
