@@ -60,7 +60,7 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
     $this->systemPage = new SystemPage($this->diContainerHTTP, (integer) $_SERVER["SYSTEM_PAGE_ID"]);
     $this->initPage($this->systemPage->title);
     $this->initBreadcrumb();
-    $this->initLanguageLinks($this->systemPage->route);
+    $this->initLanguageLinks($this->systemPage->routeKey);
     $this->sidebarInit([
       [ $this->intl->r("/about-movlib"), $this->intl->t("About {sitename}", [ "sitename" => $this->config->sitename ]) ],
       [ $this->intl->r("/team"), $this->intl->t("Team") ],

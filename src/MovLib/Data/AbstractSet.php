@@ -144,8 +144,8 @@ abstract class AbstractSet extends \MovLib\Data\AbstractConfig implements \Itera
   protected function init() {
     // @devStart
     // @codeCoverageIgnoreStart
-    assert(!empty($this->singularKey), "You must set the \$singularKey property in your class " . static::class . ".");
-    assert(!empty($this->pluralKey), "You must set the \$pluralKey property in your class " . static::class . ".");
+    assert(!empty($this->singularKey), "You must set the \$singularKey property in your class " . static::class);
+    assert(!empty($this->pluralKey), "You must set the \$pluralKey property in your class " . static::class);
     // @codeCoverageIgnoreEnd
     // @devEnd
     if (empty($this->route)) {
