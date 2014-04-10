@@ -53,7 +53,6 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    $this->infoboxInit($this->entity);
     $this->entity->links        && $this->infoboxAdd($this->intl->t("Sites"), $this->formatWeblinks($this->entity->links));
     $this->entity->foundingDate && $this->infoboxAdd($this->intl->t("Founded"), (new Date($this->intl, $this))->format($this->entity->foundingDate, [ "property" => "foundingDate" ]));
     $this->entity->defunctDate  && $this->infoboxAdd($this->intl->t("Defunct"), (new Date($this->intl, $this))->format($this->entity->defunctDate, [ "property" => "defunctDate" ]));

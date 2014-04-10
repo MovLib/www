@@ -61,15 +61,11 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    $originalTitle = $this->getStructuredOriginalTitle($this->entity, "p");
-    $tagline       = $this->getStructuredTagline($this->entity);
-    $rating        = new StarRatingForm($this->diContainerHTTP, $this->entity);
-
-    $this->infoboxInit(
-      $this->entity,
-      $this->intl->r("/movie/{0}/posters", $this->entity->id),
-      "{$originalTitle}{$tagline}{$rating}"
-    );
+    $starRating = new StarRatingForm($this->diContainerHTTP, $this->entity);
+    $this->infoboxBefore =
+      "{$this->getStructuredOriginalTitle($this->entity, "p")}{$this->getStructuredTagline($this->entity)}{$starRating}"
+    ;
+    $this->infoboxImageRoute = $this->intl->r("/movie/{0}/posters", $this->entity->id);
 
     $this->entity->runtime   && $this->infoboxAdd($this->intl->t("Runtime"), (new Duration($this->diContainerHTTP))->formatMinutes($this->entity->runtime, [ "property" => "runtime" ]));
     $this->entity->genreSet  && $this->infoboxAdd($this->intl->t("Genres"), (new Genre($this->diContainerHTTP))->getList($this->entity->genreSet));
