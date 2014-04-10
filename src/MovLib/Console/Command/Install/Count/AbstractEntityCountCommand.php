@@ -67,11 +67,17 @@ abstract class AbstractEntityCountCommand extends \MovLib\Console\Command\Abstra
   protected $entityName;
 
   /**
-   * The name of the identifier column, defaults to "id".
+   * The name(s) of the identifier column(s), defaults to "id".
    *
-   * @var string
+   * Compound identifiers will be imploded with the glue "-".
+   * Example: <code>[ "id1", "id2" ]</code> will be "id1-id2".
+   * Please make sure to comply with this format in your queries. You can use the database function
+   * {@link http://dev.mysql.com/doc/refman/5.7/en/string-functions.html#function_concat-ws CONCAT_WS}
+   * to accomplish this in most cases.
+   *
+   * @var string|array
    */
-  protected $idColumn = "id";
+  protected $idColumns = "id";
 
   /**
    * The command's mysqli object.
@@ -153,6 +159,8 @@ abstract class AbstractEntityCountCommand extends \MovLib\Console\Command\Abstra
       $this->setName("entity-count-" . mb_strtolower($this->entityName));
     }
     $this->addOption("seed", null, InputOption::VALUE_NONE);
+    // Make sure the id columns form an array, since a simple string is also possible for convenience.
+    $this->idColumns = (array) $this->idColumns;
     $this->mysqli = new MySQLi("movlib");
     return parent::configure();
   }
@@ -173,18 +181,20 @@ abstract class AbstractEntityCountCommand extends \MovLib\Console\Command\Abstra
     $this->writeVerbose("Starting count verification for entity <comment>{$this->entityName}</comment>...");
 
     $countColumns = array_keys($this->countConfiguration);
-    $this->writeVeryVerbose("Following count columns will be verified: " . implode(", ", $countColumns) . ".");
+    $this->writeVeryVerbose("Following count columns will be verified: <comment>" . implode("</comment>, <comment>", $countColumns) . "</comment>.");
     // Retrieve actual counts under test.
     $countsActual = $this->getActualCounts($countColumns, $this->tableName);
 
     // No entities in the database, abort.
     if (empty($countsActual)) {
+      $this->writeVerbose("No counts to verify, aborting.", self::MESSAGE_TYPE_INFO);
       return $this;
     }
 
     // Retrieve all expected counts and build update query.
-    $countsExpected = [];
-    $updateQuery = null;
+    $countsExpected    = [];
+    $updateQuery       = null;
+    $queryPlaceholders = [];
     foreach ($this->countConfiguration as $countColumn => $config) {
       $countsExpected[$countColumn] = call_user_func_array([ $this, $config->method ], $config->args);
       if ($updateQuery) {
@@ -192,7 +202,16 @@ abstract class AbstractEntityCountCommand extends \MovLib\Console\Command\Abstra
       }
       $updateQuery .= "`count_{$countColumn}` = {{ {$countColumn}_value }}";
     }
-    $updateQuery = "UPDATE `{$this->tableName}` SET {$updateQuery} WHERE `{$this->idColumn}` = {{ id_value }};";
+    $where = null;
+    foreach ($this->idColumns as $idColumn) {
+      if ($where) {
+        $where .= " AND ";
+      }
+      $placeholder         = "{{ {$idColumn} }}";
+      $queryPlaceholders[] = $placeholder;
+      $where              .= "`{$idColumn}` = {$placeholder}";
+    }
+    $updateQuery = "UPDATE `{$this->tableName}` SET {$updateQuery} WHERE {$where};";
 
     // Verify the counts.
     $errors = null;
@@ -210,7 +229,7 @@ abstract class AbstractEntityCountCommand extends \MovLib\Console\Command\Abstra
       }
       // If there were errors, stack an update query to fix them.
       if (isset($errors[$id])) {
-        $updateQueryReplaced = str_replace("{{ id_value }}", $id, $updateQueryReplaced);
+        $updateQueryReplaced = str_replace($queryPlaceholders, explode("-", $id), $updateQueryReplaced);
         $queriesToRun .= $updateQueryReplaced;
       }
     }
@@ -245,23 +264,24 @@ abstract class AbstractEntityCountCommand extends \MovLib\Console\Command\Abstra
    *   E.g. if you pass "award" as column name the object will contain the property of the same name.
    */
   final protected function getActualCounts(array $countColumns, $tableName) {
+    $idColumns = implode("`, `", $this->idColumns);
     $projection = null;
     foreach ($countColumns as $column) {
       $projection .= ", `count_{$column}` AS `{$column}`";
     }
     $result = $this->mysqli->query(<<<SQL
 SELECT
-  `{$this->idColumn}`{$projection}
+  CONCAT_WS('-', `{$idColumns}`) AS `id`{$projection}
 FROM `{$tableName}`
-ORDER BY `{$this->idColumn}` ASC
+ORDER BY `{$idColumns}`
 SQL
     );
 
     $countsActual = null;
     while ($row = $result->fetch_object()) {
-    $countsActual[$row->{$this->idColumn}] = [];
+    $countsActual[$row->id] = [];
       foreach ($countColumns as $column) {
-        $countsActual[$row->{$this->idColumn}][$column] = (integer) $row->$column;
+        $countsActual[$row->id][$column] = (integer) $row->$column;
       }
     }
     $result->free();
@@ -274,8 +294,10 @@ SQL
    * NOTE: If you need special count methods, make sure they return associative arrays in the format:
    * <code>[ entity_id1 => count1, entity_id2 => count2, ... ]</code>.
    *
+   * @param string|array $idColumns
+   *   The entity's identifier column(s).
    * @param string|array $groupColumns
-   *   The column(s) to group, the first has to be the entity's identifier.
+   *   The column(s) to group, the identifier columns will be included automatically.
    * @param string|array $countColumns
    *   The column(s) to derive the counts from.
    * @param string $tableName
@@ -285,24 +307,24 @@ SQL
    * @return array
    *   Associative array with the entity's identifiers as keys and the counts as values.
    */
-  final protected function getCounts($groupColumns, $countColumns, $tableName, $where = null) {
+  final protected function getCounts($idColumns, $groupColumns, $countColumns, $tableName, $where = null) {
     $counts       = [];
-    $groupColumns = (array) $groupColumns;
-    $countColumns = (array) $countColumns;
-    $idColumn     = $groupColumns[0];
+    $idColumns    = (array) $idColumns;
+    $groupColumns = array_merge($idColumns, (array) $groupColumns);
+    $idColumns    = implode("`, `", $idColumns);
     $groupColumns = implode("`, `", $groupColumns);
-    $countColumns = implode("`, `", $countColumns);
+    $countColumns = implode("`, `", (array) $countColumns);
     if ($where) {
       $where = "WHERE {$where}";
     }
     $result = $this->mysqli->query(<<<SQL
 SELECT
-  `{$idColumn}` AS `id`,
+  CONCAT_WS('-',`{$idColumns}`) AS `id`,
   COUNT(DISTINCT `{$countColumns}`) AS `count`
 FROM `{$tableName}`
 {$where}
 GROUP BY `{$groupColumns}`
-ORDER BY `id` ASC
+ORDER BY `{$idColumns}`
 SQL
     );
 
@@ -310,6 +332,42 @@ SQL
       $counts[$row->id] = (integer) $row->count;
     }
     return $counts;
+  }
+
+  /**
+   * Get the release counts of entities.
+   *
+   * @param string|array $idColumns
+   *   The identifier column name(s) in the intermediate table.
+   * @param string $intermediateTable
+   *   The name of the intermediate table to start with (e.g. media_movies).
+   * @return array
+   *   Associative array with the entity identifiers as keys and the release counts as values.
+   */
+  protected function getReleaseCounts($idColumns, $intermediateTable) {
+    $idColumnsQuery = null;
+    foreach ((array) $idColumns as $idColumn) {
+      if ($idColumnsQuery) {
+        $idColumnsQuery .= ", ";
+      }
+      $idColumnsQuery = "`{$intermediateTable}`.`{$idColumn}`";
+    }
+    return $this->aggregateSimpleQuery(<<<SQL
+SELECT
+  CONCAT_WS('-', {$idColumnsQuery}) AS `id`,
+  COUNT(DISTINCT `releases`.`id`) AS `count`
+FROM `{$intermediateTable}`
+INNER JOIN `media`
+  ON `media`.`id` = `{$intermediateTable}`.`medium_id`
+INNER JOIN `releases_media`
+  ON `releases_media`.`medium_id` = `media`.`id`
+INNER JOIN `releases`
+  ON `releases`.`id` = `releases_media`.`release_id`
+WHERE `releases`.`deleted` = false
+GROUP BY {$idColumnsQuery}
+ORDER BY {$idColumnsQuery}
+SQL
+    );
   }
 
 }

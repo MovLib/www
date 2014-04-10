@@ -35,9 +35,9 @@ class CompanyCount extends \MovLib\Console\Command\Install\Count\AbstractEntityC
     $this->entityName = "Company";
     $this->tableName  = "companies";
     $this->addCountColumn("awards", "getAwardCounts");
-    $this->addCountColumn("movies", "getCounts", [ "company_id", "movie_id", "movies_crew", "company_id IS NOT NULL" ]);
-    $this->addCountColumn("releases", "getReleaseCounts");
-    $this->addCountColumn("series", "getCounts", [ "company_id", "series_id", "episodes_crew", "company_id IS NOT NULL" ]);
+    $this->addCountColumn("movies", "getCounts", [ "company_id", null, "movie_id", "movies_crew", "company_id IS NOT NULL" ]);
+    $this->addCountColumn("releases", "getCompanyReleaseCounts");
+    $this->addCountColumn("series", "getCounts", [ "company_id", null, "series_id", "episodes_crew", "company_id IS NOT NULL" ]);
     return parent::configure();
   }
 
@@ -96,7 +96,7 @@ SQL
    * @return array
    *   Associative array with the company identifiers as keys and the release counts as values.
    */
-  protected function getReleaseCounts() {
+  protected function getCompanyReleaseCounts() {
     return $this->aggregateSimpleQuery(<<<SQL
 SELECT
   `companies`.`id`,

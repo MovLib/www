@@ -36,7 +36,7 @@ class PersonCount extends \MovLib\Console\Command\Install\Count\AbstractEntityCo
     $this->tableName = "persons";
     $this->addCountColumn("awards", "getAwardCounts");
     $this->addCountColumn("movies", "getMovieCounts");
-    $this->addCountColumn("releases", "getCounts", [ "person_id", "release_id", "releases_crew" ]);
+    $this->addCountColumn("releases", "getCounts", [ "person_id", null, "release_id", "releases_crew" ]);
     $this->addCountColumn("series", "getSeriesCounts");
     return parent::configure();
   }

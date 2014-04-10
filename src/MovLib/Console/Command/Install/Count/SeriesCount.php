@@ -18,7 +18,7 @@
 namespace MovLib\Console\Command\Install\Count;
 
 /**
- * Count verification for genres.
+ * Count verification for series.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -26,16 +26,23 @@ namespace MovLib\Console\Command\Install\Count;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class GenreCount extends \MovLib\Console\Command\Install\Count\AbstractEntityCountCommand {
+class SeriesCount extends \MovLib\Console\Command\Install\Count\AbstractEntityCountCommand {
 
   /**
    * {@inheritdoc}
    */
   protected function configure() {
-    $this->entityName = "Genre";
-    $this->tableName = "genres";
-    $this->addCountColumn("movies", "getCounts", [ "genre_id", null, "movie_id", "movies_genres" ]);
-    $this->addCountColumn("series", "getCounts", [ "genre_id", null, "series_id", "series_genres" ]);
+    $this->entityName = "Series";
+    $this->tableName  = "series";
+    $this->addCountColumn("awards", "getCounts", [
+      "series_id",
+      null,
+      [ "award_id", "award_category_id", "event_id" ],
+      "series_awards",
+      "`won` = true"
+    ]);
+    $this->addCountColumn("releases", "getReleaseCounts", [ "series_id", "media_episodes" ]);
+    $this->addCountColumn("seasons", "getCounts", [ "series_id", null, "season_number", "series_episodes" ]);
     return parent::configure();
   }
 

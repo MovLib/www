@@ -37,35 +37,10 @@ class MovieCount extends \MovLib\Console\Command\Install\Count\AbstractEntityCou
     $this->addCountColumn(
       "awards",
       "getCounts",
-      [ "movie_id", [ "award_id", "award_category_id", "event_id" ], "movies_awards", "`won` = true"  ]
+      [ "movie_id", null, [ "award_id", "award_category_id", "event_id" ], "movies_awards", "`won` = true"  ]
     );
-    $this->addCountColumn("releases", "getReleasesCount");
+    $this->addCountColumn("releases", "getReleaseCounts", [ "movie_id", "media_movies" ]);
     return parent::configure();
-  }
-
-  /**
-   * Get the release counts of movies.
-   *
-   * @return array
-   *   Associative array with the movie identifiers as keys and the release counts as values.
-   */
-  protected function getReleasesCount() {
-    return $this->aggregateSimpleQuery(<<<SQL
-SELECT
-  `media_movies`.`movie_id` AS `id`,
-  COUNT(DISTINCT `releases`.`id`) AS `count`
-FROM `media_movies`
-INNER JOIN `media`
-  ON `media`.`id` = `media_movies`.`medium_id`
-INNER JOIN `releases_media`
-  ON `releases_media`.`medium_id` = `media`.`id`
-INNER JOIN `releases`
-  ON `releases`.`id` = `releases_media`.`release_id`
-WHERE `releases`.`deleted` = false
-GROUP BY `media_movies`.`movie_id`
-ORDER BY `media_movies`.`movie_id` ASC
-SQL
-    );
   }
 
 }

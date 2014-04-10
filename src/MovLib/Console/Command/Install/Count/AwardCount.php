@@ -35,10 +35,10 @@ class AwardCount extends \MovLib\Console\Command\Install\Count\AbstractEntityCou
     $this->entityName = "Award";
     $this->tableName  = "awards";
     $this->addCountColumn("companies", "getAwardeeCounts", [ "company_id", "companies" ]);
-    $this->addCountColumn("events", "getCounts", [ "award_id", "id", "events" ]);
-    $this->addCountColumn("movies", "getCounts", [ "award_id", "movie_id", "movies_awards", "`won` = true" ]);
+    $this->addCountColumn("events", "getCounts", [ "award_id", null, "id", "events" ]);
+    $this->addCountColumn("movies", "getCounts", [ "award_id", null, "movie_id", "movies_awards", "`won` = true" ]);
     $this->addCountColumn("persons", "getAwardeeCounts", [ "person_id", "persons" ]);
-    $this->addCountColumn("series", "getCounts", [ "award_id", "series_id", "series_awards", "`won` = true" ]);
+    $this->addCountColumn("series", "getCounts", [ "award_id", null, "series_id", "series_awards", "`won` = true" ]);
     return parent::configure();
   }
 
