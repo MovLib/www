@@ -75,9 +75,6 @@ final class Alert {
   /**
    * The alert's severity level.
    *
-   * Please use the provided class contants to set the severity level. The <var>Alert::SEVERITY_WARNING</var> style is
-   * applied if no severity level is set.
-   *
    * @var string
    */
   protected $severity;
