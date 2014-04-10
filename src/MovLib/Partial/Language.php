@@ -17,7 +17,6 @@
  */
 namespace MovLib\Partial;
 
-use \MovLib\Presentation\Partial\FormElement\RadioGroup;
 use \MovLib\Presentation\Partial\FormElement\Select;
 
 /**
@@ -45,7 +44,7 @@ final class Language extends \MovLib\Presentation\AbstractBase {
   /**
    * The language to present.
    *
-   * @var \MovLib\Data\Language
+   * @var \MovLib\Stub\Data\Language
    */
   protected $language;
 
