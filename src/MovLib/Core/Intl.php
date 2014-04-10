@@ -289,9 +289,96 @@ final class Intl {
       }
       return $route;
     }
-    else {
-      return $this->translate($route, $args, "routes/singular", $locale);
+    return $this->translate($route, $args, "routes/singular", $locale);
+  }
+
+  /**
+   * Translate and format route or query key.
+   *
+   * This is the new routing method that combines handling of plural and singular routes and allows totally automated
+   * building of routes based on their parts. This allows us to minimize the translation effort that it takes to
+   * translate routes. There is a simply rule that applies to any route, it's unique an can only present a single page,
+   * not only for SEO reasons, but also for class hierarchy reasons. We use this fact and the fact that singular route
+   * parts always have some kind of message formatter placeholder appended to combine singular and plural forms of
+   * routes into a single file. This minimizes IO and we can combine as many translations as possible, thus only have
+   * to translte keys a single time.
+   *
+   * @todo Most route parts match translations that we already have in the messages, we should utilize this fact to
+   *       auto-translate as many route parts as possible. Passing a translation through
+   *       {@see \MovLib\Core\FileSystem::sanitizeFilename()} will always give us a correct translation.
+   *
+   * @staticvar array $routes
+   *   Used to cache translated route patterns.
+   * @param string $route
+   *   The route or query key pattern to translate.
+   * @param mixed $args [optional]
+   *   The arguments that should be passed to the message formatter, defaults to <code>NULL</code> and the message
+   *   formatter isn't used at all. You can pass either a single scalar value or an array.
+   * @param string $locale [optional]
+   *   Use a different locale for this translation.
+   * @return string
+   *   The translated and formatted route or query key.
+   * @throws \ErrorException
+   *   If the given route is empty or a part of the route is empty.
+   */
+  public function route($route, $args = null, $locale = null) {
+    static $routes = [];
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert(!empty($route), "A route cannot be empty!");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    // Nothing to do if this is the index route.
+    if ($route == "/") {
+      return $route;
     }
+
+    // The route is a query key if it isn't starting with a slash.
+    if ($route{0} != "/") {
+      return $this->translate($route, $args, "routes", $locale);
+    }
+
+    // We need another level of caching above the translate method because we don't want to repeat the building of the
+    // route parts on each request.
+    $locale || ($locale = $this->locale);
+    if (empty($routes[$locale][$route])) {
+      // Ensure that the array for the offset is actually present and directly create the entry.
+      empty($routes) && ($routes[$locale] = []);
+      $routes[$locale][$route] = "";
+
+      // Split the given route at the only character that we can be certain of that it exists and initialize the
+      // variables that we need to build the translated version of this route.
+      $parts = explode("/", $route);
+      $c     = count($parts);
+      $token = null;
+
+      // The first element is always empty because a route always starts with a slash, also see above condition that
+      // checks if the first character is actually a slash. Therefore we directly decrease the counter variable before
+      // we enter the first loop and jump right over that index.
+      while (--$c) {
+        // If this part of the route starts with a curly brace it's an Intl placeholder token that we want to append to
+        // the upcoming part of the route.
+        if ($parts[$c]{0} == "{") {
+          $token = "/{$parts[$c]}";
+        }
+        // If it isn't starting with a curly brace it's an actual translateable string that we have to pass to our
+        // translate method. Note that we're going backwards here, therefore we have to append the already translated
+        // route parts to the untranslated route parts to re-generate the original order.
+        else {
+          $routes[$locale][$route] = "{$this->translate("/{$parts[$c]}{$token}", null, "routes", $locale)}{$routes[$locale][$route]}";
+          // Reset the token!
+          $token = null;
+        }
+      }
+    }
+
+    // We have to replace the arguments ourself, because we're caching already translated routes. Pretty much the same
+    // as is happening in our translate method.
+    if ($args) {
+      return \MessageFormatter::formatMessage($locale, $routes[$locale][$route], (array) $args);
+    }
+    return $routes[$locale][$route];
   }
 
   /**
