@@ -29,34 +29,26 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractRandomPresenter {
+abstract class AbstractRandomPresenter extends \MovLib\Presentation\AbstractPresenter {
 
   /**
-   * Used to collect alerts if no random entity could be found, these alerts are automatically exported to cookies by
-   * the thrown exception.
-   *
-   * @var null|string
+   * {@inheritdoc}
    */
-  public $alerts;
+  public function init() {
+    // Nothing to do!
+  }
 
   /**
-   * Instantiate new random presentation.
-   *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP
-   *   The dependency injection container.
-   * @param \MovLib\Data\AbstractSet $set
-   *   The set that will give us the random identifier.
-   * @throws \MovLib\Exception\SeeOtherException
+   * {@inheritdoc}
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, \MovLib\Data\AbstractSet $set) {
+  public function getContent() {
+    $set = basename(dirname(strtr(static::class, "\\", "/")));
+    $set = "\\MovLib\\Data\\{$set}\\{$set}Set";
+    $set = new $set($this->diContainerHTTP);
     if (($id = $set->getRandom())) {
-      throw new SeeOtherException($diContainerHTTP->intl->r("/{$set->singularKey}/{0}", $id));
+      throw new SeeOtherException($this->intl->r("/{$set->singularKey}/{0}", $id));
     }
-    $this->alerts = new Alert(
-      $diContainerHTTP->intl->t("We couldn’t find a single random page for you…"),
-      $diContainerHTTP->intl->t("Check back later"),
-      "info"
-    );
+    $this->alertInfo($this->intl->t("Check back later"), $this->intl->t("We couldn’t find a single random page for you…"));
     throw new SeeOtherException($set->route);
   }
 

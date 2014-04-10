@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation\Company;
 
-use \MovLib\Data\Company\CompanySet;
-
 /**
  * Random Company
  *
@@ -28,13 +26,4 @@ use \MovLib\Data\Company\CompanySet;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Random extends \MovLib\Presentation\AbstractRandomPresenter {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    parent::__construct($diContainerHTTP, new CompanySet($diContainerHTTP));
-  }
-
-}
+final class Random extends \MovLib\Presentation\AbstractRandomPresenter {}

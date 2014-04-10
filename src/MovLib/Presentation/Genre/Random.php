@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation\Genre;
 
-use \MovLib\Data\Genre\GenreSet;
-
 /**
  * Random Genre
  *
@@ -28,13 +26,4 @@ use \MovLib\Data\Genre\GenreSet;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Random extends \MovLib\Presentation\AbstractRandomPresenter {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    parent::__construct($diContainerHTTP, new GenreSet($diContainerHTTP));
-  }
-
-}
+final class Random extends \MovLib\Presentation\AbstractRandomPresenter {}
