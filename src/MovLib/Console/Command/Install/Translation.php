@@ -173,6 +173,7 @@ class Translation extends \MovLib\Console\Command\AbstractCommand {
       "from-code"          => "UTF-8",
       "keyword"            => "t",
       "no-wrap"            => null,
+      "add-comments"       => "/",
       "package-name"       => "{$this->config->sitename} Messages",
       "package-version"    => $this->config->version,
       "msgid-bugs-address" => "https://github.com/MovLib/www/issues?labels=translation",
