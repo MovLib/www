@@ -37,7 +37,7 @@ abstract class AbstractSet extends \MovLib\Data\AbstractConfig implements \Itera
    *
    * @var array
    */
-  public $entities;
+  public $entities = [];
 
   /**
    * The canonical absolute class name of the entity this set controls.
