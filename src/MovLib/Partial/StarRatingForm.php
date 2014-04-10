@@ -147,7 +147,7 @@ final class StarRatingForm extends \MovLib\Core\Presentation\DependencyInjection
   public function __toString() {
     return
       "{$this->form->open()}<fieldset>" .
-        "<legend class='vh'>{$this->intl->t("Rate this show")}</legend>" .
+        "<legend class='vh'>{$this->intl->t("Rate")}</legend>" .
         "<div aria-hidden='true' class='back'><span></span><span></span><span></span><span></span><span></span></div>" .
         "<div class='front'>{$this->starButtons}</div>" .
       "</fieldset>{$this->form->close()}" .

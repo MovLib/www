@@ -44,6 +44,20 @@ abstract class AbstractConfig extends \MovLib\Core\AbstractDatabase {
   public $route;
 
   /**
+   * The route's arguments, if any.
+   *
+   * @var mixed
+   */
+  public $routeArgs;
+
+  /**
+   * The route's untranslated key.
+   *
+   * @var string
+   */
+  public $routeKey;
+
+  /**
    * The singular translation key.
    *
    * @var string

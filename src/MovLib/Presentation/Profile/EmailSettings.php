@@ -76,23 +76,21 @@ final class EmailSettings extends \MovLib\Presentation\Profile\AbstractProfilePr
    * {@inheritdoc}
    */
   public function getContent() {
-    $currentEmail = new Alert(
-      "<p>{$this->intl->t(
-        "{sitename} takes your privacy seriously. That’s why your email address will never show up in public. In fact, " .
-        "it stays top secret like your password.",
-        [ "sitename" => $this->config->sitename ]
-      )}</p>",
-      null,
-      Alert::SEVERITY_INFO
-    );
-
     $form = (new Form($this->diContainerHTTP))
       ->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email Address"), $this->email, [ "autofocus" => true, "required" => true ]))
       ->addAction($this->intl->t("Change Email Settings"), [ "class" => "btn btn-large btn-success" ])
       ->init([ $this, "valid" ], null, [ $this, "validate" ])
     ;
 
-    return "{$currentEmail}{$form}";
+    return "{$this->callout(
+      $this->intl->t(
+        "{sitename} takes your privacy seriously. That’s why your email address will never show up in public. In fact, " .
+        "it stays top secret like your password.",
+        [ "sitename" => $this->config->sitename ]
+      ),
+      null,
+      "info"
+    )}{$form}";
   }
 
   /**
@@ -107,7 +105,7 @@ final class EmailSettings extends \MovLib\Presentation\Profile\AbstractProfilePr
 
     // Explain to the user where to find this further action to complete the request.
     $this->alerts .= new Alert(
-      $this->intl->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email) ]),
+      $this->intl->t("An email with further instructions has been sent to {0}.", $this->placeholder($this->email)),
       $this->intl->t("Successfully Requested Email Change"),
       Alert::SEVERITY_SUCCESS
     );

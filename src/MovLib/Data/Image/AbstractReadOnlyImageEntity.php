@@ -19,7 +19,6 @@ namespace MovLib\Data\Image;
 
 use \MovLib\Data\Image\ImageFullsizeEffect;
 use \MovLib\Data\Image\ImageResizeEffect;
-use \MovLib\Data\Image\ImageStyle;
 use \MovLib\Data\Image\ImageStylePlaceholder;
 
 /**

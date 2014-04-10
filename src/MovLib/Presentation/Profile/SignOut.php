@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \MovLib\Partial\Alert;
 use \MovLib\Exception\RedirectException\SeeOtherException;
 
 /**
@@ -29,25 +28,29 @@ use \MovLib\Exception\RedirectException\SeeOtherException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class SignOut {
+final class SignOut extends \MovLib\Presentation\AbstractPresenter {
 
   /**
-   * Instantiate new sign out presenter.
-   *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
-   *   The HTTP dependency injection container.
-   * @throws \MovLib\Exception\RedirectException\SeeOtherException
+   * {@inheritdoc}
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    if ($diContainerHTTP->session->isAuthenticated) {
-      $diContainerHTTP->session->destroy(true);
-      $diContainerHTTP->response->createCookie("alerts", (string) new Alert(
-        $diContainerHTTP->intl->t("We hope to see you again soon."),
-        $diContainerHTTP->intl->t("Sign Out Successfull"),
-        Alert::SEVERITY_SUCCESS
-      ));
+  public function init() {
+    if ($this->session->isAuthenticated) {
+      $this->alertSuccess(
+        $this->intl->t("Successfully signed out"),
+        $this->intl->t(
+          "We hope to see you again soon {username}.",
+          [ "username" => $this->placeholder($this->session->userName) ]
+        )
+      );
+      $this->session->destroy(true);
     }
-    throw new SeeOtherException($diContainerHTTP->intl->r("/profile/sign-in"));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {
+    throw new SeeOtherException($this->intl->r("/profile/sign-in"));
   }
 
 }

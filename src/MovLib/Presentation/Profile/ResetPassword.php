@@ -87,7 +87,7 @@ final class ResetPassword extends \MovLib\Presentation\AbstractPresenter {
     $this->breadcrumb->ignoreQuery = true;
     $this->initLanguageLinks("/profile/reset-password");
 
-    $this->headingBefore = "<a class='btn btn-large btn-primary fr' href='{$this->intl->r("/profile/sign-in")}'>{$this->intl->t("Sign In")}</a>";
+    $this->headingBefore = "<a class='btn btn-large btn-info fr' href='{$this->intl->r("/profile/sign-in")}'>{$this->intl->t("Sign In")}</a>";
 
     $this->form = new Form($this->diContainerHTTP);
     if (isset($this->request->query["token"]) && $this->validateToken()) {
@@ -130,7 +130,7 @@ final class ResetPassword extends \MovLib\Presentation\AbstractPresenter {
     (new Mailer())->send(new ResetPasswordEmail($this->email));
     http_response_code(202);
     $this->alerts .= new Alert(
-      $this->intl->t("An email with further instructions has been sent to {email}.", [ "email" => $this->placeholder($this->email) ]),
+      $this->intl->t("An email with further instructions has been sent to {0}.", $this->placeholder($this->email)),
       $this->intl->t("Successfully Requested Password Reset"),
       Alert::SEVERITY_SUCCESS
     );

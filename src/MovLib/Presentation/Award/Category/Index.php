@@ -71,8 +71,6 @@ class Index extends \MovLib\Presentation\Award\AbstractBase {
         "We couldn’t find any categories matching your filter criteria, or there simply aren’t any categories available."
       ), $this->intl->t("No Category"), Alert::SEVERITY_INFO
     );
-    $noItemText .=
-      $this->intl->t("<p>Would you like to {0}create a new entry{1}?</p>", [ "<a href='{$this->intl->r("/award/{0}/category/creat", [ $this->award->id ])}'>", "</a>" ]);
 
     $moviesRoute = $this->intl->rp("/award/{0}/category/{1}/movies", [ $this->award->id, "{{ id }}" ]);
     $seriesRoute = $this->intl->rp("/award/{0}/category/{1}/series", [ $this->award->id, "{{ id }}" ]);

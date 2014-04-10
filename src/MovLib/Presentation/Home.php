@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation;
 
-use \MovLib\Partial\Alert;
-
 /**
  * The global home page for anonymous visitors.
  *
@@ -77,7 +75,7 @@ final class Home extends \MovLib\Presentation\AbstractPresenter {
       "developers out there. We want to keep the barrier as low as possible and ensure that everybody can use the " .
       "data we all collect here at {sitename}.",
       [ "sitename" => $this->config->sitename ]
-    )}</p><p><a class='btn btn-primary btn-large' href='{$this->intl->r("/help/api")}'>{$this->intl->t(
+    )}</p><p><a class='btn btn-info btn-large' href='{$this->intl->r("/help/api")}'>{$this->intl->t(
       "Read the API documentation"
     )}</a></p>";
 
@@ -100,17 +98,13 @@ final class Home extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getMainContent($content) {
-    $noscript = new Alert(
-      $this->intl->t("Please activate JavaScript in your browser to experience our website with all its features."),
-      $this->intl->t("JavaScript Disabled")
-    );
-
+    $this->response->setAlerts($this);
     return
       "<main id='m' role='main'>" .
         "<div id='banner'>" .
           "<h2 class='c'>{$this->intl->t("Do you like movies?{0}Great, so do we!", [ "<br>" ])}</h2>" .
         "</div>" .
-        "<noscript>{$noscript}</noscript>{$this->alerts}{$content}" .
+        "{$this->getAlertNoScript()}{$this->alerts}{$content}" .
       "</main>"
     ;
   }

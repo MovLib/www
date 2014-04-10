@@ -595,16 +595,6 @@ SQL
    * @throws \MovLib\Exception\DatabaseException
    */
   public function resume() {
-
-    // Add all alerts that are stored in a cookie to the current presentation. The page is automatically not cacheable
-    // anymore because we're displaying alert messages, we also remove the cookie directly after displaying the alerts
-    // to ensure that subsequent requests can be cached.
-//    if (isset($_COOKIE["alerts"])) {
-//      $cache->cacheable = false;
-//      $this->alerts    .= $_COOKIE["alerts"];
-//      $this->kernel->cookieDelete("alerts");
-//    }
-
     // Only attempt to load the session if a non-empty session ID is present. Anonymous user's don't get any session to
     // ensure that HTTP proxies are able to cache anonymous pageviews.
     if (empty($this->request->cookies[$this->config->sessionName])) {

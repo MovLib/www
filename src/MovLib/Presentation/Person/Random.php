@@ -17,54 +17,13 @@
  */
 namespace MovLib\Presentation\Person;
 
-use \MovLib\Data\Person\Person;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Exception\SeeOtherException;
-
 /**
- * Random person presentation.
+ * Random Person
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Random {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * A random person ID.
-   *
-   * @var integer
-   */
-  private $personId;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Redirect to random person presentation.
-   *
-   * @throws \MovLib\Presentation\Redirect\SeeOther
-   */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    $this->personId = (new Person($diContainerHTTP))->getRandomPersonId();
-    if (isset($this->personId)) {
-      throw new SeeOtherException($diContainerHTTP->intl->r("/person/{0}", [ $this->personId ]));
-    }
-    else {
-      $kernel->alerts .= new Alert(
-        $diContainerHTTP->intl->t("There is currently no person in our database"),
-        $diContainerHTTP->intl->t("Check back later"),
-        Alert::SEVERITY_INFO
-      );
-      throw new SeeOtherRedirect("/");
-    }
-  }
-
-}
+final class Random extends \MovLib\Presentation\AbstractRandomPresenter {}

@@ -17,9 +17,6 @@
  */
 namespace MovLib\Core\HTTP;
 
-use \MovLib\Exception\ClientExceptionInterface;
-use \MovLib\Presentation\Stacktrace;
-
 /**
  * Represents the response that will be sent to the client.
  *
@@ -108,6 +105,24 @@ final class Response {
   public function deleteCookie($identifiers) {
     foreach ((array) $identifiers as $id) {
       $this->createCookie($id, "", 1);
+    }
+    return $this;
+  }
+
+  /**
+   * Add all alerts that are stored in a cookie to the current presentation. The page is automatically not cacheable
+   * anymore because we're displaying alert messages, we also remove the cookie directly after displaying the alerts
+   * to ensure that subsequent requests can be cached.
+   *
+   * @param \MovLib\Presentation\AbstractPresenter $presenter
+   *   The presenting presenter.
+   * @return this
+   */
+  public function setAlerts(\MovLib\Presentation\AbstractPresenter $presenter) {
+    if (isset($this->request->cookies["alerts"])) {
+      $presenter->alerts .= $this->request->cookies["alerts"];
+      $this->cacheable = false;
+      $this->deleteCookie("alerts");
     }
     return $this;
   }

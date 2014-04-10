@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \MovLib\Partial\Alert;
-
 /**
  * Defines the profile collection presentation.
  *
@@ -46,11 +44,7 @@ final class Collection extends \MovLib\Presentation\Profile\AbstractProfilePrese
    * {@inheritdoc}
    */
   public function getContent() {
-    return new Alert(
-      $this->intl->t("The collection system isn’t implemented yet."),
-      $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    );
+    return $this->checkBackLater($this->intl->t("Collection"));
   }
 
 }

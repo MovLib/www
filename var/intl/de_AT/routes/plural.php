@@ -56,6 +56,9 @@ return [
   "/person/{0}/releases"          => "/person/{0}/veröffentlichungen",
   // ------------------------------------------------------------------------------------------------------------------- Users
   "/users"                        => "/benutzer",
+  "/user/{0}/lists"               => "/benutzer/{0}/listen",
+  "/user/{0}/contributions"       => "/benutzer/{0}/beträge",
+  "/user/{0}/uploads"             => "/benutzer/{0}/hochgeladen",
   // ------------------------------------------------------------------------------------------------------------------- Countries
   // Countries are created with Intl ICU data and aren"t editable.
   "/countries"                    => "/länder",

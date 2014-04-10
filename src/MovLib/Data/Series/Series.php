@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,48 +15,52 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation;
-
-use \MovLib\Presentation\Partial\Alert;
+namespace MovLib\Data\Series;
 
 /**
- * @todo Description of TraitGone
+ * Represents a single series.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-trait TraitGone {
+class Series extends \MovLib\Data\AbstractEntity {
 
   /**
-   * The translated gone alert message.
+   * Unknown status.
    *
-   * @var string
+   * @var integer
    */
-  protected $goneAlertMessage;
+  const STATUS_UNKNOWN = 0;
 
   /**
-   * Get the content for gone pages.
+   * New status.
    *
-   * @return \MovLib\Presentation\Partial\Alert
-   *   The gone alert message.
+   * @var integer
    */
-  protected function goneGetContent() {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (empty($this->goneAlertMessage)) {
-      throw new \LogicException($this->intl->t("You have to provide a message for the gone page!"));
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
+  const STATUS_NEW = 1;
 
-    return new Alert(
-      "<p>{$this->intl->t("The deletion message is provided below for reference.")}</p><p>{$this->goneAlertMessage}</p>",
-      $this->intl->t("This page has been deleted."),
-      Alert::SEVERITY_ERROR
-    );
-  }
+  /**
+   * Returning status.
+   *
+   * @var integer
+   */
+  const STATUS_RETURNING = 2;
+
+  /**
+   * Ended status.
+   *
+   * @var integer
+   */
+  const STATUS_ENDED = 3;
+
+  /**
+   * Cancelled status.
+   *
+   * @var integer
+   */
+  const STATUS_CANCELLED = 4;
 
 }

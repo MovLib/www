@@ -83,10 +83,10 @@ class Base {
   /**
    * Get a callout.
    *
-   * @param string $title
-   *   The callout's title.
    * @param string $message
    *   The callout's message.
+   * @param string $title [optional]
+   *   The callout's title, defaults to <code>NULL</code>.
    * @param string $type [optional]
    *   The callout's type, one of <code>NULL</code> (default), <code>"danger"</code>, <code>"info"</code>, or
    *   <code>"warning"</code>.
@@ -95,9 +95,10 @@ class Base {
    * @return string
    *   The callout.
    */
-  public function callout($title, $message, $type = null, $level = 3) {
-    $type && ($type = " callout-{$type}");
-    return "<div class='callout{$type}'><h{$level} class='title'>{$title}</h{$level}>{$message}</div>";
+  final public function callout($message, $title = null, $type = null, $level = 3) {
+    $title && ($title = "<h{$level} class='title'>{$title}</h{$level}>");
+    $type  && ($type = " callout-{$type}");
+    return "<div class='callout{$type}'>{$title}{$message}</div>";
   }
 
   /**
@@ -267,6 +268,16 @@ class Base {
     // @codeCoverageIgnoreEnd
     // @devEnd
     return "<em class='placeholder'>{$this->htmlEncode($text)}</em>";
+  }
+
+  /**
+   * Get the short name of this instance.
+   *
+   * @return string
+   *   The short name of this instance.
+   */
+  final public function shortName() {
+    return basename(strtr(static::class, "\\", "/"));
   }
 
 }

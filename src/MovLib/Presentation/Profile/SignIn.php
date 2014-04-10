@@ -95,7 +95,7 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
 
     // Start rendering the page.
     $this->initPage($this->intl->t("Sign In"));
-    $this->initBreadcrumb([[ $this->intl->rp("/users"), $this->intl->t("Users") ]]);
+    $this->breadcrumb->addCrumb($this->intl->rp("/users"), $this->intl->t("Users"));
     $this->initLanguageLinks($routeKey, null, false, $query);
     $this->breadcrumb->ignoreQuery = true;
 
@@ -111,7 +111,7 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
    */
   public function getContent() {
     $this->headingBefore =
-      "<a class='btn btn-large btn-primary fr' href='{$this->intl->r("/profile/join")}'>{$this->intl->t(
+      "<a class='btn btn-large btn-info fr' href='{$this->intl->r("/profile/join")}'>{$this->intl->t(
         "Join {sitename}",
         [ "sitename" => $this->config->sitename ]
       )}</a>"
@@ -150,19 +150,17 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
     // @devEnd
 
     if ($this->session->authenticate($this->email, $this->rawPassword)) {
-      $this->alerts .= new Alert(
-        $this->intl->t("Successfully Signed In"),
-        $this->intl->t("Welcome back {username}!", [ "username" => $this->session->userName ]),
-        Alert::SEVERITY_SUCCESS
+      $this->alertSuccess(
+        $this->intl->t("Successfully signed in"),
+        $this->intl->t("Welcome back {username}!", [ "username" => $this->placeholder($this->session->userName) ])
       );
 
       throw new SeeOtherException($this->redirectTo ?: $this->intl->r("/my"));
     }
 
-    $this->alerts .= new Alert(
-      $this->intl->t("We either don’t know the email address, or the password was wrong."),
-      $this->intl->t("Sign In Failed"),
-      Alert::SEVERITY_ERROR
+    $this->alertError(
+      $this->intl->t("Sign in failed"),
+      $this->intl->t("We either don’t know the email address, or the password was wrong.")
     );
 
     return $this;

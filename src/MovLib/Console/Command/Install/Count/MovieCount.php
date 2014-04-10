@@ -32,13 +32,12 @@ class MovieCount extends \MovLib\Console\Command\Install\Count\AbstractEntityCou
    * {@inheritdoc}
    */
   protected function configure() {
-    $this->setName("entity-count-movie");
     $this->entityName = "Movie";
     $this->tableName  = "movies";
     $this->addCountColumn(
       "awards",
       "getCounts",
-      [ [ "movie_id" ], [ "award_id", "award_category_id", "event_id" ], "movies_awards", "WHERE `won` = true"  ]
+      [ "movie_id", [ "award_id", "award_category_id", "event_id" ], "movies_awards", "`won` = true"  ]
     );
     $this->addCountColumn("releases", "getReleasesCount");
     return parent::configure();
@@ -51,10 +50,9 @@ class MovieCount extends \MovLib\Console\Command\Install\Count\AbstractEntityCou
    *   Associative array with the movie identifiers as keys and the release counts as values.
    */
   protected function getReleasesCount() {
-    $releaseCounts = [];
-    $result = $this->mysqli->query(<<<SQL
+    return $this->aggregateSimpleQuery(<<<SQL
 SELECT
-  `media_movies`.`movie_id` AS `movieId`,
+  `media_movies`.`movie_id` AS `id`,
   COUNT(DISTINCT `releases`.`id`) AS `count`
 FROM `media_movies`
 INNER JOIN `media`
@@ -68,12 +66,6 @@ GROUP BY `media_movies`.`movie_id`
 ORDER BY `media_movies`.`movie_id` ASC
 SQL
     );
-
-    while ($row = $result->fetch_object()) {
-      $releaseCounts[$row->movieId] = $row->count;
-    }
-
-    return $releaseCounts;
   }
 
 }

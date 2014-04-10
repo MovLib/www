@@ -88,10 +88,11 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function getNoItemsContent() {
-    return new Alert(
+    return $this->callout(
       "<p>{$this->intl->t("We couldn’t find any movies matching your filter criteria, or there simply aren’t any movies available.")}</p>" .
       "<p>{$this->intl->t("Would you like to {0}create a movie{1}?", [ "<a href='{$this->intl->r("/movie/create")}'>", "</a>" ])}</p>",
-      $this->intl->t("No Movies")
+      $this->intl->t("No Movies"),
+      "info"
     );
   }
 

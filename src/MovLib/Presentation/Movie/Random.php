@@ -17,38 +17,13 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\Movie\Movie;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Redirect\SeeOther;
-
 /**
- * Random movie presentation.
+ * Random Movie
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Random {
-
-  /**
-   * Redirect to random movie presentation.
-   *
-   * @throws \MovLib\Presentation\Redirect\SeeOther
-   */
-  public function __construct() {
-    $id = Movie::getRandomMovieId();
-    if (isset($id)) {
-      throw new SeeOther($this->intl->r("/movie/{0}", [ $id ]));
-    }
-    $kernel->alerts .= new Alert(
-      $this->intl->t("There is currently no movie in our database"),
-      $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    );
-    throw new SeeOther($this->intl->rp("/movies"));
-  }
-
-}
+final class Random extends \MovLib\Presentation\AbstractRandomPresenter {}

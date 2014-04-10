@@ -222,9 +222,11 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`jobs` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The job’s unique ID.',
   `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the job was last changed.',
+  `count_companies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The job’s total number of companies.',
   `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The jobs’s total number of movies.',
-  `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The job’s total number of series.',
+  `count_persons` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The job’s total number of persons.',
   `count_releases` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The job’s total number of releases.',
+  `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The job’s total number of series.',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the job was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the job was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The job’s description in various languages. Keys are ISO alpha-2 language codes.',
@@ -515,9 +517,11 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`awards` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The award’s unique ID.',
   `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the award was last changed.',
-  `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of movie participations.',
-  `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of series participations.',
+  `count_companies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of companies.',
   `count_events` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of events.',
+  `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of movie participations.',
+  `count_persons` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of persons.',
+  `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of series participations.',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the award was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the award was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The award’s description in various languages. Keys are ISO alpha-2 language codes.',
@@ -746,49 +750,29 @@ SHOW WARNINGS;
 -- Table `movlib`.`series`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`series` (
-  `series_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The unique ID of the series.',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The unique ID of the series.',
   `created` TIMESTAMP NOT NULL COMMENT 'The creation date of the series as timestamp.',
   `count_awards` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The series’ total number of awards.',
   `count_releases` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The series’ total number of releases.',
+  `count_seasons` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The series’ total number of seasons.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this series is marked as deleted (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_synopses` BLOB NOT NULL COMMENT 'The synopsis of the series in various languages. Keys are ISO alpha-2 language codes.',
   `original_title` BLOB NOT NULL COMMENT 'The original title of the series.',
   `original_title_language_code` CHAR(2) NOT NULL COMMENT 'The original title’s ISO alpha-2 language code of the series.',
   `mean_rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The arithmetic mean rating of the series.',
   `rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The Bayes\'theorem rating of the series.\n\nrating = (s / (s + m)) * N + (m / (s + m)) * K\n\nN: arithmetic mean rating\ns: vote count\nm: minimum vote count\nK: arithmetic mean vote\n\nThe same formula is used by IMDb and OFDb.',
+  `status` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'One of the \\\\MovLib\\\\Data\\\\Series\\\\Series::STATUS_ constants.\n0 => unknown,\n1 => new,\n2 => returning,\n3 => final season,\n4 => ended,\n5 => cancelled.',
   `votes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The vote count of the series.',
   `bin_relationships` BLOB NULL COMMENT 'The relations of the series to other series, e.g. sequel.\nStored in igbinary serialized format.',
   `commit` CHAR(40) NULL COMMENT 'The last history commit sha-1 hash of the series.',
   `end_year` SMALLINT(4) UNSIGNED ZEROFILL NULL COMMENT 'The year the series was cancelled.',
   `rank` BIGINT UNSIGNED NULL COMMENT 'The global rank of the series.',
   `start_year` SMALLINT(4) UNSIGNED ZEROFILL NULL COMMENT 'The year the series was aired for the first time.',
-  PRIMARY KEY (`series_id`))
+  PRIMARY KEY (`id`))
 ENGINE = InnoDB
 COMMENT = 'Contains all series.'
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`series_seasons`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`series_seasons` (
-  `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique ID of the series.',
-  `seasons_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season’s  number within the series.',
-  `count_releases` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The season’s total number of releases.',
-  `created` TIMESTAMP NOT NULL COMMENT 'The creation date of the season as timestamp.',
-  `end_year` SMALLINT(4) UNSIGNED ZEROFILL NULL COMMENT 'The year the season ended.',
-  `start_year` SMALLINT(4) UNSIGNED ZEROFILL NULL COMMENT 'The year the season started airing.',
-  PRIMARY KEY (`series_id`, `seasons_number`),
-  INDEX `fk_series_seasons_series` (`series_id` ASC),
-  CONSTRAINT `fk_series_seasons_series`
-    FOREIGN KEY (`series_id`)
-    REFERENCES `movlib`.`series` (`series_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-COMMENT = 'Contains seasons data for a series.';
 
 SHOW WARNINGS;
 
@@ -806,7 +790,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`series_titles` (
   PRIMARY KEY (`id`, `series_id`),
   CONSTRAINT `fk_series_titles_series`
     FOREIGN KEY (`series_id`)
-    REFERENCES `movlib`.`series` (`series_id`)
+    REFERENCES `movlib`.`series` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -817,11 +801,11 @@ KEY_BLOCK_SIZE = 8;
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`seasons_episodes`
+-- Table `movlib`.`series_episodes`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`seasons_episodes` (
-  `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique ID of he series.',
-  `seasons_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season’s number this episode belongs to.',
+CREATE TABLE IF NOT EXISTS `movlib`.`series_episodes` (
+  `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The series’ identifier.',
+  `season_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season’s number this episode belongs to.',
   `position` SMALLINT UNSIGNED NOT NULL COMMENT 'The episode’s chronological position within the season.',
   `count_releases` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The episode’s total number of releases.',
   `created` TIMESTAMP NOT NULL COMMENT 'The creation date of the episode as timestamp.',
@@ -829,11 +813,11 @@ CREATE TABLE IF NOT EXISTS `movlib`.`seasons_episodes` (
   `original_title_language_code` CHAR(2) NOT NULL COMMENT 'The episode’s original title ISO alpha-2 language code.',
   `episode_number` TINYTEXT NULL COMMENT 'The episodes number within the season (e.g. 01, but also 0102 if it contains two episodes).',
   `original_air_date` DATE NULL COMMENT 'The date the episode was originally aired.',
-  PRIMARY KEY (`series_id`, `seasons_number`, `position`),
-  INDEX `fk_seasons_episodes_series_seasons` (`series_id` ASC, `seasons_number` ASC),
-  CONSTRAINT `fk_seasons_episodes_series_seasons`
-    FOREIGN KEY (`series_id` , `seasons_number`)
-    REFERENCES `movlib`.`series_seasons` (`series_id` , `seasons_number`)
+  PRIMARY KEY (`series_id`, `season_number`, `position`),
+  INDEX `fk_series_episodes_series` (`series_id` ASC),
+  CONSTRAINT `fk_series_episodes_series`
+    FOREIGN KEY (`series_id`)
+    REFERENCES `movlib`.`series` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -847,6 +831,7 @@ SHOW WARNINGS;
 -- Table `movlib`.`episodes_titles`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`episodes_titles` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The episode title’s unique identifier.',
   `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique ID of the series.',
   `seasons_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season number within the series.',
   `position` SMALLINT UNSIGNED NOT NULL COMMENT 'The episode’s chronological position within the season.',
@@ -854,10 +839,11 @@ CREATE TABLE IF NOT EXISTS `movlib`.`episodes_titles` (
   `dyn_comments` BLOB NOT NULL COMMENT 'The episode title’s comment in various languages. Keys are ISO alpha-2 language codes.',
   `language_code` CHAR(2) NOT NULL COMMENT 'The episode title’s ISO aplha-2 language code.',
   `title` BLOB NOT NULL COMMENT 'The episode’s title.',
-  INDEX `fk_episodes_titles_seasons_episodes` (`series_id` ASC, `seasons_number` ASC, `position` ASC),
-  CONSTRAINT `fk_episodes_titles_seasons_episodes`
+  PRIMARY KEY (`id`),
+  INDEX `fk_episodes_titles_series_episodes` (`series_id` ASC, `seasons_number` ASC, `position` ASC),
+  CONSTRAINT `fk_episodes_titles_series_episodes`
     FOREIGN KEY (`series_id` , `seasons_number` , `position`)
-    REFERENCES `movlib`.`seasons_episodes` (`series_id` , `seasons_number` , `position`)
+    REFERENCES `movlib`.`series_episodes` (`series_id` , `season_number` , `position`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -878,7 +864,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`series_genres` (
   INDEX `fk_series_genres_series` (`series_id` ASC),
   CONSTRAINT `fk_series_genres_series`
     FOREIGN KEY (`series_id`)
-    REFERENCES `movlib`.`series` (`series_id`)
+    REFERENCES `movlib`.`series` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_series_genres_genres`
@@ -965,10 +951,12 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`releases_labels` (
   `company_id` BIGINT UNSIGNED NOT NULL COMMENT 'The company’s unique ID.',
   `release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The release’s unique ID.',
+  `job_id` BIGINT UNSIGNED NOT NULL COMMENT 'The job’s identifier for the label job.',
   `catalog_number` TINYTEXT NULL COMMENT 'The catalog number associated with the release.',
   PRIMARY KEY (`company_id`, `release_id`),
   INDEX `fk_releases_labels_companies` (`company_id` ASC),
   INDEX `fk_releases_labels_master_releases` (`release_id` ASC),
+  INDEX `fk_releases_labels_jobs1_idx` (`job_id` ASC),
   CONSTRAINT `fk_master_releases_labels_releases`
     FOREIGN KEY (`release_id`)
     REFERENCES `movlib`.`releases` (`id`)
@@ -977,6 +965,11 @@ CREATE TABLE IF NOT EXISTS `movlib`.`releases_labels` (
   CONSTRAINT `fk_master_releases_labels_companies`
     FOREIGN KEY (`company_id`)
     REFERENCES `movlib`.`companies` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_releases_labels_jobs1`
+    FOREIGN KEY (`job_id`)
+    REFERENCES `movlib`.`jobs` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -1205,12 +1198,12 @@ CREATE TABLE IF NOT EXISTS `movlib`.`series_relationships` (
   INDEX `fk_series_relationships_first_series_idx` (`first_series_id` ASC),
   CONSTRAINT `fk_series_relationships_first_series`
     FOREIGN KEY (`first_series_id`)
-    REFERENCES `movlib`.`series` (`series_id`)
+    REFERENCES `movlib`.`series` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_series_relationships_second_series`
     FOREIGN KEY (`second_series_id`)
-    REFERENCES `movlib`.`series` (`series_id`)
+    REFERENCES `movlib`.`series` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_series_relationships_relationship_types`
@@ -1623,19 +1616,19 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`episodes_crew` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The episode crew’s unique identifier.',
   `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique series ID.',
-  `seasons_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season number within a series.',
+  `season_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season number within a series.',
   `position` SMALLINT UNSIGNED NOT NULL COMMENT 'The episode number within a season.',
   `job_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique job ID.',
   `company_id` BIGINT UNSIGNED NULL COMMENT 'The unique company ID.',
   `person_id` BIGINT UNSIGNED NULL COMMENT 'The unique person ID.',
-  INDEX `fk_episodes_crew_seasons_episodes.idx` (`series_id` ASC, `seasons_number` ASC, `position` ASC),
-  PRIMARY KEY (`id`, `series_id`, `seasons_number`, `position`),
-  INDEX `fk_episodes_crew_jobs_idx` (`job_id` ASC),
-  INDEX `fk_episodes_crew_companies_idx` (`company_id` ASC),
-  INDEX `fk_episodes_crew_persons_idx` (`person_id` ASC),
-  CONSTRAINT `fk_episodes_crew_seasons_episodes`
-    FOREIGN KEY (`series_id` , `seasons_number` , `position`)
-    REFERENCES `movlib`.`seasons_episodes` (`series_id` , `seasons_number` , `position`)
+  PRIMARY KEY (`id`, `series_id`, `season_number`, `position`),
+  INDEX `fk_episodes_crew_jobs` (`job_id` ASC),
+  INDEX `fk_episodes_crew_companies` (`company_id` ASC),
+  INDEX `fk_episodes_crew_persons` (`person_id` ASC),
+  INDEX `fk_episodes_crew_series_episodes` (`series_id` ASC, `season_number` ASC, `position` ASC),
+  CONSTRAINT `fk_episodes_crew_series_episodes`
+    FOREIGN KEY (`series_id` , `season_number` , `position`)
+    REFERENCES `movlib`.`series_episodes` (`series_id` , `season_number` , `position`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_episodes_crew_jobs`
@@ -1788,7 +1781,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`series_awards` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_series_awards_series`
     FOREIGN KEY (`series_id`)
-    REFERENCES `movlib`.`series` (`series_id`)
+    REFERENCES `movlib`.`series` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -1841,7 +1834,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`episodes_cast` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The episode cast’s unique identifier.',
   `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique series ID.',
-  `seasons_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season number within a series.',
+  `season_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season number within a series.',
   `position` SMALLINT UNSIGNED NOT NULL COMMENT 'The episode number within a season.',
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique identifier.',
   `job_id` BIGINT UNSIGNED NOT NULL COMMENT 'The episode cast’s job identifier.',
@@ -1849,15 +1842,15 @@ CREATE TABLE IF NOT EXISTS `movlib`.`episodes_cast` (
   `weight` SMALLINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The weight (display order) of the series’ cast. Default is 0.',
   `alias_id` BIGINT NULL COMMENT 'The episode cast’s alias identifier.',
   `role_id` BIGINT UNSIGNED NULL COMMENT 'The episode cast’s role identifier (for persons who play other real persons).',
-  PRIMARY KEY (`id`, `series_id`, `seasons_number`, `position`),
-  INDEX `fk_episodes_cast_seasons_episodes` (`series_id` ASC, `seasons_number` ASC, `position` ASC),
+  PRIMARY KEY (`id`, `series_id`, `season_number`, `position`),
   INDEX `fk_episodes_cast_persons` (`person_id` ASC),
   INDEX `fk_episodes_cast_jobs` (`job_id` ASC),
   INDEX `fk_episodes_cast_persons_role` (`role_id` ASC),
   INDEX `fk_episodes_cast_persons_aliases` (`alias_id` ASC),
-  CONSTRAINT `fk_episodes_cast_seasons_episodes`
-    FOREIGN KEY (`series_id` , `seasons_number` , `position`)
-    REFERENCES `movlib`.`seasons_episodes` (`series_id` , `seasons_number` , `position`)
+  INDEX `fk_episodes_cast_series_episodes` (`series_id` ASC, `season_number` ASC, `position` ASC),
+  CONSTRAINT `fk_episodes_cast_series_episodes`
+    FOREIGN KEY (`series_id` , `season_number` , `position`)
+    REFERENCES `movlib`.`series_episodes` (`series_id` , `season_number` , `position`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_episodes_cast_persons`
@@ -1890,21 +1883,22 @@ SHOW WARNINGS;
 -- Table `movlib`.`episodes_directors`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`episodes_directors` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique series ID.',
-  `seasons_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season number within a series.',
+  `season_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season number within a series.',
   `position` SMALLINT UNSIGNED NOT NULL COMMENT 'The episode number within a season.',
   `person_id` BIGINT UNSIGNED NOT NULL,
   `job_id` BIGINT UNSIGNED NOT NULL COMMENT 'The episode director’s job identifier.',
   `weight` SMALLINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The weight (display order) of the series’ director. Default is 0.',
   `alias_id` BIGINT NULL COMMENT 'The episode director’s alias identifier.',
-  PRIMARY KEY (`series_id`, `seasons_number`, `position`, `person_id`),
-  INDEX `fk_episodes_directors_seasons_episodes` (`series_id` ASC, `seasons_number` ASC, `position` ASC),
+  PRIMARY KEY (`id`, `series_id`, `season_number`, `position`, `person_id`),
   INDEX `fk_episodes_directors_persons` (`person_id` ASC),
   INDEX `fk_episodes_directors_jobs` (`job_id` ASC),
   INDEX `fk_episodes_directors_persons_aliases` (`alias_id` ASC),
-  CONSTRAINT `fk_episodes_directors_seasons_episodes`
-    FOREIGN KEY (`series_id` , `seasons_number` , `position`)
-    REFERENCES `movlib`.`seasons_episodes` (`series_id` , `seasons_number` , `position`)
+  INDEX `fk_episodes_directors_series_episodes` (`series_id` ASC, `season_number` ASC, `position` ASC),
+  CONSTRAINT `fk_episodes_directors_series_episodes`
+    FOREIGN KEY (`series_id` , `season_number` , `position`)
+    REFERENCES `movlib`.`series_episodes` (`series_id` , `season_number` , `position`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_episodes_directors_persons`
@@ -1924,6 +1918,32 @@ CREATE TABLE IF NOT EXISTS `movlib`.`episodes_directors` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Contains the directors of an episode.';
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`media_episodes`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`media_episodes` (
+  `medium_id` BIGINT UNSIGNED NOT NULL COMMENT 'The medium’s identifier.',
+  `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The series’ identifier.',
+  `season_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season’s number.',
+  `position` SMALLINT UNSIGNED NOT NULL COMMENT 'The episode’s position in the season.',
+  `bin_medium_episode` BLOB NOT NULL COMMENT 'The episode’s medium specific data as serialized PHP object.',
+  PRIMARY KEY (`medium_id`, `series_id`, `season_number`, `position`),
+  INDEX `fk_media_episodes_series_episodes` (`series_id` ASC, `season_number` ASC, `position` ASC),
+  CONSTRAINT `fk_media_episodes_media`
+    FOREIGN KEY (`medium_id`)
+    REFERENCES `movlib`.`media` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_media_episodes_series_episodes`
+    FOREIGN KEY (`series_id` , `season_number` , `position`)
+    REFERENCES `movlib`.`series_episodes` (`series_id` , `season_number` , `position`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+ROW_FORMAT = COMPRESSED;
 
 SHOW WARNINGS;
 

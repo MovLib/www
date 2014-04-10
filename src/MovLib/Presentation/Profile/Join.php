@@ -108,7 +108,7 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    $this->headingBefore = "<a class='btn btn-large btn-primary fr' href='{$this->intl->r("/profile/sign-in")}'>{$this->intl->t("Sign In")}</a>";
+    $this->headingBefore = "<a class='btn btn-large btn-info fr' href='{$this->intl->r("/profile/sign-in")}'>{$this->intl->t("Sign In")}</a>";
 
     $terms = false; // We don't care about the value, the checkbox is required!
     $form  = (new Form($this->diContainerHTTP, [ "autocomplete" => "off", "class" => "s s6 o3" ]))
@@ -251,7 +251,7 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
     // Accepted but further action is required!
     http_response_code(202);
     $this->alerts .= new Alert(
-      $this->intl->t("An email with further instructions has been sent to {email}.", [ "email" => $this->placeholder($this->email->value) ]),
+      $this->intl->t("An email with further instructions has been sent to {0}.", $this->placeholder($this->email->value)),
       $this->intl->t("Successfully Joined"),
       Alert::SEVERITY_SUCCESS
     );

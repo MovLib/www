@@ -46,11 +46,7 @@ final class Lists extends \MovLib\Presentation\Profile\AbstractProfilePresenter 
    * {@inheritdoc}
    */
   public function getContent() {
-    return new Alert(
-      $this->intl->t("The lists system isn’t implemented yet."),
-      $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    );
+    return $this->checkBackLater($this->intl->t("Lists"));
   }
 
 }

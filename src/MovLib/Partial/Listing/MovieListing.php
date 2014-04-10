@@ -169,7 +169,7 @@ class MovieListing {
       $genres .= "<a class='label' href='{$route}'>{$row["name"]}</a>";
     }
     if ($genres) {
-      $genres = "<small><span class='vh'>{$this->intl->t("Genres: ")}</span>{$genres}</small>";
+      $genres = "<small><span class='vh'>{$this->intl->t("Genres")}</span>{$genres}</small>";
     }
 
     // Put the movie list entry together.

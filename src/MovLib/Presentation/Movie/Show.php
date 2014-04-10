@@ -50,7 +50,7 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
     $movie = new Movie($this->diContainerHTTP, $_SERVER["MOVIE_ID"]);
     $this
       ->initPage($movie->displayTitleAndYear, $this->getStructuredDisplayTitle($movie, false, true))
-      ->initShow($movie, $this->intl->t("Movies"), "Movie", null);
+      ->initShow($movie, $this->intl->t("Movies"), "Movie", null)
     ;
     $this->stylesheets[] = "movie";
     $this->javascripts[] = "Movie";
@@ -86,7 +86,20 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
     $this->sectionAdd(
       "Quote Test",
       "<blockquote>Quotes are rendered in the current locale…</blockquote><p>Meet the <q><code>&lt;q&gt;</code></q> tag.</p><blockquote lang='ja'>日本語はどうですか？</blockquote>" .
-      "<blockquote lang='fr'>Nous avons également quelques citations de français. <q lang='en'>This even includes a nested quote in a different language!</q></blockquote>",
+      "<blockquote lang='fr'>Nous avons également quelques citations de français. <q lang='en'>This even includes a nested quote in a different language!</q></blockquote>" .
+
+      "<blockquote>Document language <q lang='de'>nested de</q></blockquote>" .
+      "<blockquote>Document language <q lang='fr'>nested fr</q></blockquote>" .
+      "<blockquote>Document language <q lang='ja'>nested ja</q></blockquote>" .
+      "<blockquote>Document language <q lang='en'>nested en</q></blockquote>" .
+
+      "<blockquote lang='de'>Language de <q lang='fr'>nested fr</q></blockquote>" .
+      "<blockquote lang='de'>Language de <q lang='ja'>nested ja</q></blockquote>" .
+      "<blockquote lang='de'>Language de <q lang='en'>nested en</q></blockquote>" .
+
+      "<blockquote lang='fr'>Language fr <q lang='de'>nested de</q></blockquote>" .
+      "<blockquote lang='fr'>Language fr <q lang='ja'>nested ja</q></blockquote>" .
+      "<blockquote lang='fr'>Language fr <q lang='en'>nested en</q></blockquote>",
       false,
       "callout"
     );

@@ -15,15 +15,28 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Series;
+namespace MovLib\Console\Command\Install\Count;
 
 /**
- * Random Series
+ * Count verification for genres.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Random extends \MovLib\Presentation\AbstractRandomPresenter {}
+class GenreCount extends \MovLib\Console\Command\Install\Count\AbstractEntityCountCommand {
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function configure() {
+    $this->entityName = "Genre";
+    $this->tableName = "genres";
+    $this->addCountColumn("movies", "getCounts", [ "genre_id", "movie_id", "movies_genres" ]);
+    $this->addCountColumn("series", "getCounts", [ "genre_id", "series_id", "series_genres" ]);
+    return parent::configure();
+  }
+
+}

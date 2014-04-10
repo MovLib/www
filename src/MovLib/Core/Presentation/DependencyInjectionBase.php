@@ -187,6 +187,25 @@ class DependencyInjectionBase extends \MovLib\Core\Presentation\Base {
   }
 
   /**
+   * Output a "check back later" callout for a feature that isn't implemented yet.
+   *
+   * @param string $what
+   *   The translated feature title.
+   * @param integer $level [optional]
+   *   The callout's heading level, defaults to <code>2</code>.
+   * @return string
+   *   The "check back later" callout.
+   */
+  final public function checkBackLater($what, $level = 2) {
+    return $this->callout(
+      $this->intl->t("The {0} feature isn’t implemented yet.", "<span class='quotes'>{$what}</span>"),
+      $this->intl->t("Check back later"),
+      "info",
+      $level
+    );
+  }
+
+  /**
    * Expand the given attributes array to string.
    *
    * Many page elements aren't easily created by directly typing the string in the source code. Instead the have to go

@@ -64,7 +64,7 @@ class AwardMovieListing extends \MovLib\Partial\Listing\MovieListing {
     // @devStart
     // @codeCoverageIgnoreStart
     } catch (\Exception $e) {
-      return (string) new Alert("<pre>{$e}</pre>", "Error Rendering Movie List", Alert::SEVERITY_ERROR);
+      return $this->callout("<pre>{$e}</pre>", "Stacktrace", "error");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

@@ -111,7 +111,7 @@ abstract class AbstractMySQLiResultListing implements \MovLib\Partial\Listing\Li
     // @codeCoverageIgnoreStart
     }
     catch (\Exception $e) {
-      return (string) new \MovLib\Partial\Alert("<pre>{$e}</pre>", "Error Rendering MySQLi Result Listing", \MovLib\Partial\Alert::SEVERITY_ERROR);
+      return $this->callout("<pre>{$e}</pre>", "Stacktrace", "error");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

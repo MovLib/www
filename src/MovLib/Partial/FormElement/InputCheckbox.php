@@ -79,7 +79,7 @@ final class InputCheckbox extends \MovLib\Partial\FormElement\AbstractFormElemen
     // @codeCoverageIgnoreStart
     }
     catch (\Exception $e) {
-      return (string) new \MovLib\Partial\Alert("<pre>{$e}</pre>", "Error Rendering Element", \MovLib\Partial\Alert::SEVERITY_ERROR);
+      return $this->callout("<pre>{$e}</pre>", "Stacktrace", "error");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

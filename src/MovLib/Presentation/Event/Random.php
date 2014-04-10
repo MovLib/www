@@ -17,38 +17,13 @@
  */
 namespace MovLib\Presentation\Event;
 
-use \MovLib\Data\Event\EventSet;
-use \MovLib\Exception\RedirectException\SeeOtherException;
-use \MovLib\Partial\Alert;
-
 /**
- * Random event presentation.
+ * Random Event
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Random {
-
-  /**
-   * Redirect client to random event presentation.
-   *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP
-   *   The dependency injection container.
-   * @throws \MovLib\Exception\SeeOtherException
-   */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    if (($id = (new EventSet($diContainerHTTP))->getRandom())) {
-      throw new SeeOtherException($diContainerHTTP->intl->r("/event/{0}", $id));
-    }
-    $diContainerHTTP->response->createCookie("alert", (string) new Alert(
-      $diContainerHTTP->intl->t("There is currently no event in our database."),
-      $diContainerHTTP->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    ));
-    throw new SeeOtherException($diContainerHTTP->intl->rp("/events"));
-  }
-
-}
+final class Random extends \MovLib\Presentation\AbstractRandomPresenter {}

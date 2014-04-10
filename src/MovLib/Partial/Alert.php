@@ -20,6 +20,7 @@ namespace MovLib\Partial;
 /**
  * Represents an HTML alert message which can be used inline or attached to a pages heading.
  *
+ * @see \MovLib\Presentation\AbstractPresenter::getAlert()
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -37,28 +38,28 @@ final class Alert {
    *
    * @var string
    */
-  const SEVERITY_ERROR = " alert-error";
+  const SEVERITY_ERROR = "error";
 
   /**
    * Severity level <i>info</i> for alert message (color <i>blue</i>).
    *
    * @var string
    */
-  const SEVERITY_INFO = " alert-info";
+  const SEVERITY_INFO = "info";
 
   /**
    * Severity level <i>success</i> for alert message (color <i>green</i>).
    *
    * @var string
    */
-  const SEVERITY_SUCCESS = " alert-success";
+  const SEVERITY_SUCCESS = "success";
 
   /**
    * Severity level <i>warning</i> (default) for alert message (color <i>yellow</i>).
    *
    * @var string
    */
-  const SEVERITY_WARNING = "";
+  const SEVERITY_WARNING = "warning";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -73,9 +74,6 @@ final class Alert {
 
   /**
    * The alert's severity level.
-   *
-   * Please use the provided class contants to set the severity level. The <var>Alert::SEVERITY_WARNING</var> style is
-   * applied if no severity level is set.
    *
    * @var string
    */
@@ -103,23 +101,38 @@ final class Alert {
    *   The alert's severity level, default to no severity which is the CSS default. Use the class constants.
    */
   public function __construct($message, $title = null, $severity = null) {
-    $this->message   = $message;
-    $this->severity  = $severity;
-    if ($title) {
-      $this->title = "<h4 class='title'>{$title}</h4>";
-    }
+    $this->message  = $message;
+    $this->title    = $title;
+    $this->severity = $severity;
   }
 
   /**
    * Get HTML representation of this alert message.
    *
-   * @link http://www.w3.org/TR/wai-aria/roles#alert
-   * @link http://www.w3.org/TR/wai-aria/states_and_properties#aria-live
    * @return string
    *   HTML representation of this alert message.
    */
   public function __toString() {
-    return "<div class='alert{$this->severity}' role='alert'><div class='c'>{$this->title}{$this->message}</div></div>";
+    $title    = $this->title    ? "<h2>{$this->title}</h2>" : null;
+    $severity = $this->severity ? " alert-{$severity}"      : null;
+    switch ($severity) {
+      case self::SEVERITY_INFO:
+      case self::SEVERITY_SUCCESS:
+        $live = "polite";
+        $role = "status";
+        break;
+
+      case self::SEVERITY_WARNING:
+      case self::SEVERITY_ERROR:
+        $live = "assertive";
+        $role = "alert";
+        break;
+
+      default:
+        $live = "polite";
+        $role = "log";
+    }
+    return "<div aria-live='{$live}' class='alert{$severity}' role='{$role}'><div class='c'>{$title}{$this->message}</div></div>";
   }
 
 }

@@ -18,37 +18,23 @@
 namespace MovLib\Presentation\Job;
 
 use \MovLib\Data\Job\JobSet;
-use \MovLib\Exception\RedirectException\SeeOtherException;
-use \MovLib\Partial\Alert;
 
 /**
- * Random job presentation.
+ * Random Job
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Random {
+final class Random extends \MovLib\Presentation\AbstractRandomPresenter {
 
   /**
-   * Redirect client to random job presentation.
-   *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP
-   *   The dependency injection container.
-   * @throws \MovLib\Exception\SeeOtherException
+   * {@inheritdoc}
    */
   public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    if (($id = (new JobSet($diContainerHTTP))->getRandom())) {
-      throw new SeeOtherException($diContainerHTTP->intl->r("/job/{0}", $id));
-    }
-    $diContainerHTTP->response->createCookie("alert", (string) new Alert(
-      $diContainerHTTP->intl->t("There is currently no job in our database."),
-      $diContainerHTTP->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    ));
-    throw new SeeOtherException($diContainerHTTP->intl->rp("/jobs"));
+    parent::__construct($diContainerHTTP, new JobSet($diContainerHTTP));
   }
 
 }

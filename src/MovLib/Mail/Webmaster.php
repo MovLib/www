@@ -26,7 +26,7 @@ namespace MovLib\Mail;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Webmaster extends \MovLib\Mail\AbstractEmail {
+final class Webmaster extends \MovLib\Mail\AbstractEmail {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -48,20 +48,29 @@ class Webmaster extends \MovLib\Mail\AbstractEmail {
    *
    * @param string $subject
    *   The email's subject.
-   * @param string $$message
+   * @param string $message
    *   The message that should be sent to the webmaster.
    * @param integer $priority [optional]
    *   The priority of the email, defaults to <i>normal</i>.
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $subject, $message, $priority = self::PRIORITY_NORMAL) {
-    parent::__construct($diContainer, $diContainer->config->emailWebmaster, $subject);
+  public function __construct($subject, $message, $priority = self::PRIORITY_NORMAL) {
     $this->message  = $message;
+    $this->subject  = $subject;
     $this->priority = $priority;
   }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  /**
+   * {@inheritdoc}
+   */
+  public function init(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+    parent::init($diContainerHTTP);
+    $this->recipient = $this->config->emailWebmaster;
+    return $this;
+  }
 
   /**
    * {@inheritdoc}

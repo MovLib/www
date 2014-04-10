@@ -18,7 +18,6 @@
 namespace MovLib\Presentation;
 
 use \MovLib\Data\Collator;
-use \MovLib\Partial\Alert;
 use \MovLib\Partial\Navigation\Breadcrumb;
 
 /**
@@ -217,7 +216,193 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
   abstract public function init();
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Methods
+  // ------------------------------------------------------------------------------------------------------------------- Init Methods
+
+
+  /**
+   * Initialize the page's breadcrumb.
+   *
+   * @deprecated
+   * @param array $breadcrumbs [optional]
+   *   Numeric array containing additional breadcrumbs to put between home and the current page.
+   * @return this
+   */
+  protected function initBreadcrumb(array $breadcrumbs = []) {
+    $this->breadcrumb->addCrumbs($breadcrumbs);
+    return $this;
+  }
+
+  /**
+   * Initialize the language links for the current page.
+   *
+   * @param string $route
+   *   The key of this route.
+   * @param mixed $args [optional]
+   *   The route arguments, defaults to no arguments.
+   * @param boolean $plural [optional]
+   *   Set to <code>TRUE</code> if the current page has a plural route, defaults to <code>FALSE</code>.
+   * @param array $queries [optional]
+   *   Array of key value pairs that should be appended as query string to the route. Note that the keys have to be in
+   *   the default locale because they are translated like everything else.
+   * @return this
+   */
+  final protected function initLanguageLinks($route, $args = null, $plural = false, array $queries = null) {
+    $this->languageLinks = [ $route, $args, $plural, $queries ];
+    return $this;
+  }
+
+  /**
+   * Initialize the page.
+   *
+   * @param string $headTitle
+   *   The presenter's <code><title></code> title.
+   * @param string $pageTitle [optional]
+   *   The presenter's <code><h1></code> title.
+   * @param string $breadcrumbTitle [optional]
+   *   The presenter's title for the breadcrumb's entry of the current presentation.
+   * @return this
+   */
+  protected function initPage($headTitle, $pageTitle = null, $breadcrumbTitle = null) {
+    // The substr() removes the \MovLib\Presentation\ part!
+    $className         = strtolower(substr(get_class($this), 20));
+    $this->namespace   = explode("\\", $className);
+    array_pop($this->namespace); // The last element is the name of the class and not part of the namespace.
+    $this->bodyClasses = strtr($className, "\\", " ");
+    $this->id          = strtr($className, "\\", "-");
+    $this->title       = $headTitle;
+    $this->pageTitle   = $pageTitle ?: $headTitle;
+    $this->breadcrumb  = new Breadcrumb($this->diContainerHTTP, $breadcrumbTitle ?: $headTitle);
+    return $this;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Alert Methods
+
+
+  /**
+   * Add alert message to the current presenter.
+   *
+   * @link http://www.w3.org/TR/wai-aria/roles#alert
+   * @link http://www.w3.org/TR/wai-aria/states_and_properties#aria-live
+   * @link https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Live_Regions
+   * @param string $title
+   *   The alert's translated title.
+   * @param string $message
+   *   The alert's translated message.
+   * @param string $live
+   *   The alert's ARIA-Live value, one of <code>"off"</code> (default and equals <code>NULL</code>),
+   *   <code>"polite"</code>, or <code>"assertive"</code>.
+   * @param string $type
+   *   The alert's type, one of <code>NULL</code> (default), <code>"error"</code>, <code>"info"</code>,
+   *   <code>"success"</code>, or <code>"warning"</code>.
+   * @param string $role
+   *   The alert's role, one of <code>"alert"</code>, <code>"log"</code>, or <code>"status"</code>.
+   * @return this
+   */
+  final protected function getAlert($title, $message, $live, $type, $role) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    $aria = [ null, "off", "polite", "assertive" ];
+    assert(in_array($live, $aria), "The ARIA Live value must be one of '" . implode("', '", $aria) . "' if given.");
+    $types = [ null, "error", "info", "success", "warning" ];
+    assert(in_array($type, $types), "The type value must be one of '" . implode("', '", $types) . "' if given!");
+    $roles = [ "alert", "log", "status" ];
+    assert(in_array($role, $roles), "The role valut must be one of '" . implode("', '", $roles) . "' if given!");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    $live && ($live = " aria-live='{$live}'");
+    $type && ($type = " alert-{$type}");
+    return "<div{$live} class='alert{$type}' role='{$role}'><div class='c'><h2>{$title}</h2>{$message}</div></div>";
+  }
+
+  /**
+   * Get the no script warning alert.
+   *
+   * @return string
+   *   The no script warning alert.
+   */
+  final protected function getAlertNoScript() {
+    return "<noscript>{$this->getAlert(
+      $this->intl->t("JavaScript Disabled"),
+      $this->intl->t("Please activate JavaScript in your browser to experience our website with all its features."),
+      "polite",
+      "warning",
+      "log"
+    )}</noscript>";
+  }
+
+  /**
+   * Add alert to presentation.
+   *
+   * @param string $title
+   *   The alert's translated title.
+   * @param string $message
+   *   The alert's translated message.
+   * @return this
+   */
+  final public function alert($title, $message) {
+    $this->alerts .= $this->getAlert($title, $message, "polite", null, "log");
+    return $this;
+  }
+
+  /**
+   * Add error alert to presentation.
+   *
+   * @param string $title
+   *   The alert's translated title.
+   * @param string $message
+   *   The alert's translated message.
+   * @return this
+   */
+  final public function alertError($title, $message) {
+    $this->alerts .= $this->getAlert($title, $message, "assertive", "error", "alert");
+    return $this;
+  }
+
+  /**
+   * Add info alert to presentation.
+   *
+   * @param string $title
+   *   The alert's translated title.
+   * @param string $message
+   *   The alert's translated message.
+   * @return this
+   */
+  final public function alertInfo($title, $message) {
+    $this->alerts .= $this->getAlert($title, $message, "polite", "info", "status");
+    return $this;
+  }
+
+  /**
+   * Add success alert to presentation.
+   *
+   * @param string $title
+   *   The alert's translated title.
+   * @param string $message
+   *   The alert's translated message.
+   * @return this
+   */
+  final public function alertSuccess($title, $message) {
+    $this->alerts .= $this->getAlert($title, $message, "polite", "success", "status");
+    return $this;
+  }
+
+  /**
+   * Add warning alert to presentation.
+   *
+   * @param string $title
+   *   The alert's translated title.
+   * @param string $message
+   *   The alert's translated message.
+   * @return this
+   */
+  final public function alertWarning($title, $message) {
+    $this->alerts .= $this->getAlert($title, $message, "assertive", "warning", "alert");
+    return $this;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Layout Methods
 
 
   /**
@@ -350,16 +535,15 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
       "</ul>"
     ;
 
-    $notImplemented = new Alert("coming soon!");
     $marketplaceNavigation =
       "<ul class='o1 sm2 no-list'>" .
-        "<li>{$notImplemented}</li>" .
+        "<li>{$this->checkBackLater("Marketplace")}</li>" .
       "</ul>"
     ;
 
     $communityNavigation =
       "<ul class='o1 sm2 no-list'>" .
-        "<li>{$this->a($this->intl->rp("/users"), $this->intl->t("Explore Users"), [ "class" => "ico ico-person" ])}</li>" .
+        "<li>{$this->a($this->intl->rp("/users"), $this->intl->t("Users"), [ "class" => "ico ico-person" ])}</li>" .
         "<li class='separator'>{$this->a($this->intl->rp("/deletion-requests"), $this->intl->t("Deletion Requests"), [ "class" => "ico ico-delete" ])}</li>" .
       "</ul>"
     ;
@@ -552,10 +736,7 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
       $schema = " typeof='{$this->schemaType}'";
     }
 
-    $noscript = new Alert(
-      $this->intl->t("Please activate JavaScript in your browser to experience our website with all its features."),
-      $this->intl->t("JavaScript Disabled")
-    );
+    $this->response->setAlerts($this);
 
     // Render the page's main element (note that we still include the ARIA role "main" at this point because not all
     // user agents support the new HTML5 element yet).
@@ -563,7 +744,7 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
       "<main id='m' role='main'{$schema}>" .
         "<header id='header'>" .
           "<div class='c'>{$this->breadcrumb}{$this->getMainHeading()}</div>" .
-          "<noscript>{$noscript}</noscript>{$this->alerts}" .
+          "{$this->getAlertNoScript()}{$this->alerts}" .
         "</header>" .
         "{$this->contentBefore}{$content}{$this->contentAfter}" .
       "</main>"
@@ -589,62 +770,6 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
     }
 
     return "{$this->headingBefore}<h1{$headingprop}>{$title}</h1>{$this->headingAfter}";
-  }
-
-  /**
-   * Initialize the page's breadcrumb.
-   *
-   * @deprecated
-   * @param array $breadcrumbs [optional]
-   *   Numeric array containing additional breadcrumbs to put between home and the current page.
-   * @return this
-   */
-  protected function initBreadcrumb(array $breadcrumbs = []) {
-    $this->breadcrumb->addCrumbs($breadcrumbs);
-    return $this;
-  }
-
-  /**
-   * Initialize the language links for the current page.
-   *
-   * @param string $route
-   *   The key of this route.
-   * @param mixed $args [optional]
-   *   The route arguments, defaults to no arguments.
-   * @param boolean $plural [optional]
-   *   Set to <code>TRUE</code> if the current page has a plural route, defaults to <code>FALSE</code>.
-   * @param array $queries [optional]
-   *   Array of key value pairs that should be appended as query string to the route. Note that the keys have to be in
-   *   the default locale because they are translated like everything else.
-   * @return this
-   */
-  final protected function initLanguageLinks($route, $args = null, $plural = false, array $queries = null) {
-    $this->languageLinks = [ $route, $args, $plural, $queries ];
-    return $this;
-  }
-
-  /**
-   * Initialize the page.
-   *
-   * @param string $headTitle
-   *   The presenter's <code><title></code> title.
-   * @param string $pageTitle [optional]
-   *   The presenter's <code><h1></code> title.
-   * @param string $breadcrumbTitle [optional]
-   *   The presenter's title for the breadcrumb's entry of the current presentation.
-   * @return this
-   */
-  final protected function initPage($headTitle, $pageTitle = null, $breadcrumbTitle = null) {
-    // The substr() removes the \MovLib\Presentation\ part!
-    $className         = strtolower(substr(get_class($this), 20));
-    $this->namespace   = explode("\\", $className);
-    array_pop($this->namespace); // The last element is the name of the class and not part of the namespace.
-    $this->bodyClasses = strtr($className, "\\", " ");
-    $this->id          = strtr($className, "\\", "-");
-    $this->title       = $headTitle;
-    $this->pageTitle   = $pageTitle ?: $headTitle;
-    $this->breadcrumb  = new Breadcrumb($this->diContainerHTTP, $breadcrumbTitle ?: $headTitle);
-    return $this;
   }
 
   /**

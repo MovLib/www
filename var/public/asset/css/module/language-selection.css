@@ -71,10 +71,4 @@
 
 #languageselection nav a {
   margin: 0 25px;
-  color: #353535;
-}
-
-#languageselection nav a:hover,
-#languageselection nav a:focus {
-  border-bottom-color: #353535;
 }

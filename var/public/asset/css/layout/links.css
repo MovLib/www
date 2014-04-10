@@ -82,10 +82,10 @@ a.link-color {
 }
 
 a.danger {
-  color: #da4f49;
+  color: #c00;
 }
 
 a.danger:hover,
 a.danger:focus {
-  border-bottom-color: #da4f49;
+  border-bottom-color: #c00;
 }

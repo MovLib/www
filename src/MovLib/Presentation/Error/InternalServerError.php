@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation\Error;
 
-use \MovLib\Partial\Alert;
-
 /**
  * The stacktrace presentation is used if everything else fails.
  *
@@ -60,11 +58,6 @@ final class InternalServerError extends \MovLib\Presentation\AbstractPresenter {
     $this->initPage($this->intl->t("Internal Server Error"));
     $this->initBreadcrumb();
     $this->stylesheets[] = "stacktrace";
-    $this->alerts .= new Alert(
-      $this->intl->t("This error was reported to the system administrators, it should be fixed in no time. Please try again in a few minutes."),
-      $this->intl->t("An unexpected condition which prevented us from fulfilling the request was encountered."),
-      Alert::SEVERITY_ERROR
-    );
     return $this;
   }
 
@@ -72,19 +65,30 @@ final class InternalServerError extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
+    $this->alertError(
+      $this->intl->t("Uh oh… that shouldn’t have happened."),
+      "<p>{$this->intl->t("It appears you’ve found a glitch in the system.")}</p><p>{$this->intl->t(
+        "This incident has been reported to the developers and should be fixed in no time. Please try again in a few " .
+        "minutes. More technical details about this error can be found below. Don’t worry if you don’t understand what " .
+        "it says down there, it will help us to solve the issue."
+      )}</p>"
+    );
+
     if (!($this->exception instanceof \Exception)) {
       $this->exception = new \RuntimeException("No exception was set for the internal server error.");
     }
-    $message = $this->formatExceptionMessage($this->exception);
+    $tableHeader = $this->formatExceptionMessage($this->exception);
     if (($previous = $this->exception->getPrevious())) {
-      $message .= "<br>{$this->formatExceptionMessage($previous)}";
+      $tableHeader .= "<br>{$this->formatExceptionMessage($previous)}";
     }
-    $alert = new Alert(
-      "<div id='stacktrace-details'><div class='title'>{$message}</div><table>{$this->formatStacktrace($this->exception->getTrace())}</table></div>",
-      $this->intl->t("Stacktrace for {0}", [ $this->placeholder(get_class($this->exception)) ]),
-      Alert::SEVERITY_INFO
-    );
-    return "<div class='c'>{$alert}</div>";
+    return "<div class='c'>{$this->callout(
+      "<table id='stacktrace-details'>" .
+        "<thead>{$tableHeader}</thead>" .
+        "<tbody>{$this->formatStacktrace($this->exception->getTrace())}</tbody>" .
+      "</table>",
+      $this->intl->t("Stacktrace for {0}", $this->placeholder("\\" . get_class($this->exception))),
+      "info"
+    )}</div>";
   }
 
 
@@ -100,13 +104,13 @@ final class InternalServerError extends \MovLib\Presentation\AbstractPresenter {
    *   The exception's message formatted for the stacktrace title.
    */
   protected function formatExceptionMessage(\Exception $e) {
-    return "<i class='ico ico-info'></i> {$this->intl->t(
-      "{exception_message} in {class} on line {line, number}", [
+    return "<tr><th class='tar'><span class='ico ico-info'></span></th><th class='tal'>{$this->intl->t(
+      "{exception_message}{class} on line {line,number}", [
         "exception_message" => nl2br($e->getMessage(), false),
-        "class"             => str_replace([ $this->fs->documentRoot, $this->config->documentRoot, "/src/", "/lib/" ], "", $e->getFile()),
+        "class"             => "<br>" . str_replace([ $this->fs->documentRoot, $this->config->documentRoot ], "dr:/", $e->getFile()),
         "line"              => $e->getLine(),
       ]
-    )}";
+    )}</th></tr>";
   }
 
   /**
@@ -180,8 +184,8 @@ final class InternalServerError extends \MovLib\Presentation\AbstractPresenter {
    *   The stacktrace entry's formatted line number.
    */
   protected function formatLineNumber(array &$stacktrace) {
-    if (empty($stacktrace["line"])) {
-      return "0";
+    if (empty($stacktrace["line"]) || $stacktrace["line"] == 0) {
+      return "<i>?</i>";
     }
     return (string) $stacktrace["line"];
   }

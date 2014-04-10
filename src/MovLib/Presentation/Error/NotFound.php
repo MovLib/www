@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation\Error;
 
-use \MovLib\Partial\Alert;
-
 /**
  * Defines the not found error page.
  *
@@ -36,17 +34,15 @@ final class NotFound extends \MovLib\Presentation\AbstractPresenter {
   public function init() {
     http_response_code(404);
     $this->response->cacheable = false;
-    $this->initPage($this->intl->t("Not Found"));
-    $this->initBreadcrumb();
-    $this->alerts .= new Alert(
-      $this->intl->t(
-          "There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.",
-          [ "<a href='{$this->intl->r("/contact")}'>", "</a>" ]
-        ),
+    return $this
+      ->initPage($this->intl->t("Not Found"))
+      ->alertError(
       $this->intl->t("The requested page could not be found."),
-      Alert::SEVERITY_ERROR
+      $this->intl->t(
+        "There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.",
+        [ "<a href='{$this->intl->r("/contact")}'>", "</a>" ]
+      )
     );
-    return $this;
   }
 
   /**

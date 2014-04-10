@@ -26,27 +26,27 @@
  */
 
 #stacktrace-details {
-  margin-top: 10px;
+  margin: 20px 0 0;
   font: 12px/18px Consolas, monospace;
-}
-
-#stacktrace-details .title {
-  background-color: #333;
-  color: #fff;
-  font-family: Consolas, monospace;
-  line-height: 25px;
-  min-height: 33px;
-  padding: 5px 10px;
-}
-
-#stacktrace-details table {
-  margin: 0;
   padding: 0;
   width: 100%;
   background-color: #fff;
   border-collapse: collapse;
   font: 12px/24px Consolas, monospace;
-  color: #000;
+  color: #252525;
+}
+
+#stacktrace-details th {
+  background-color: #252525;
+  color: #fff;
+  font: 14px/25px Consolas, monospace;
+  min-height: 33px;
+  padding: 10px;
+  vertical-align: middle;
+}
+
+#stacktrace-details .ico-info {
+  font-size: 18px;
 }
 
 #stacktrace-details td {
@@ -59,7 +59,7 @@
 
 #stacktrace-details .line-number,
 #stacktrace-details .file {
-  color: rgba(0, 0, 0, 0.3);
+  color: #999;
   text-align: right;
 }
 

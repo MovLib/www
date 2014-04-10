@@ -15,15 +15,31 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Series;
+namespace MovLib\Presentation\User;
 
 /**
- * Random Series
+ * Defines the user contribution presentation object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Random extends \MovLib\Presentation\AbstractRandomPresenter {}
+final class Contributions extends \MovLib\Presentation\User\AbstractUserPresenter {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function init(){
+    return $this->initPage($this->intl->t("{username}’s Contributions"), null, $this->intl->t("Contributions"));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent(){
+    return $this->checkBackLater("Contributions");
+  }
+
+}

@@ -89,7 +89,7 @@ trait RatingTrait {
     }
 
     // Calculate the new mean rating for this entity.
-    $this->ratingMean = round(($this->ratingMean - $userRating + $rating) / $this->ratingVotes, 2);
+    $this->ratingMean = round(($this->ratingMean - $userRating + $rating) / $this->ratingVotes, 1);
 
     // Update the entity's rating statistics.
     $mysqli->query("UPDATE `{$this->tableName}` SET `mean_rating` = {$this->ratingMean}, `votes` = {$this->ratingVotes} WHERE `id` = {$this->id}");
