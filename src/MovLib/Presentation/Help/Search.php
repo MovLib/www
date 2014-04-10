@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation\Help;
 
-use \MovLib\Partial\Alert;
-
 /**
  * Present search results to the user.
  *
@@ -72,19 +70,19 @@ class Search extends \MovLib\Presentation\AbstractPresenter {
   public function getContent() {
     // We're done if we have no search query.
     if (empty($this->query)) {
-      $this->alerts .= new Alert(
+      $this->alertError(
         $this->intl->t("No search query submitted."),
-        $this->intl->t("Nothing to Search for…"),
-        Alert::SEVERITY_ERROR
+        $this->intl->t("Nothing to Search for…")
       );
       return;
     }
 
-    $this->alerts .= new Alert(
-      $this->intl->t("You searched for: {0}", [ $this->query ]),
-      $this->intl->t("This feature is not implemented yet."),
-      Alert::SEVERITY_ERROR
-    );
+    return
+      "<div class='c'>" .
+        $this->checkBackLater($this->intl->t("Search in Help")) .
+        $this->intl->t("You searched for: {0}", [ $this->query ]) .
+      "</div>"
+    ;
   }
 
 }

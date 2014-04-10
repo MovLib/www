@@ -53,7 +53,7 @@ final class Index extends \MovLib\Presentation\AbstractPresenter {
    */
   public function getContent() {
     $items = null;
-    foreach ($this->set->getOrdered("`created` DESC", $this->paginationOffset, $this->paginationLimit) as $id => $entity) {
+    foreach ($this->set->loadOrdered("`created` DESC", $this->paginationOffset, $this->paginationLimit) as $id => $entity) {
       $items .= $this->formatListingItem($entity, $id);
     }
     return
@@ -123,14 +123,14 @@ final class Index extends \MovLib\Presentation\AbstractPresenter {
     return
       "<main id='m' role='main'>" .
         "<div id='banner'>" .
-          "<h1 class='ico ico-help c'> {$this->intl->t("Help, Please!")}</h1>" .
+          "<h1 class='ico ico-help c mb20'> {$this->intl->t("Help, Please!")}</h1>" .
           "<p class='c mb20'>{$this->intl->t("Do you like movies? Great, so do we! All the info you need {0} for finding, buying, selling, and cataloging movies is right here.", [ "<br>" ])}</p>" .
           "<form action='{$this->intl->r("/help/search")}' class='c' method='get'>" .
             "<div class='s6' id='help-search'>" .
               "<input name='q' class='s big' required tabindex='3' title='{$this->intl->t(
                 "Enter the search term you wish to search for in our help and hit enter."
               )}' type='search' placeholder='{$this->intl->t("I need help with..")}'>" .
-              "<button class='big ico ico-search s' tabindex='4' type='submit'><span class='vh'>{$this->intl->t(
+              "<button class='ico ico-search s' tabindex='4' type='submit'><span class='vh'>{$this->intl->t(
                 "Start searching in our help for the entered keyword."
               )}</span></button>" .
             "</div>" .

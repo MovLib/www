@@ -59,7 +59,14 @@ SQL;
    *   All sub categories, <code>NULL</code> if no entities were found.
    */
   public function getAllBelongingToCategory($id) {
-    return $this->getEntities("WHERE `{$this->tableName}`.`deleted` = false AND `help_category_id` = {$id}");
+    return $this->loadEntities("WHERE `{$this->tableName}`.`deleted` = false AND `help_category_id` = {$id}");
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+    return "";
   }
 
   /**

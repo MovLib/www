@@ -16,8 +16,8 @@
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
 
-use \MovLib\Data\Help\Category\CategorySet;
-use \MovLib\Data\Help\SubCategory\SubCategorySet;
+use \MovLib\Data\Help\CategorySet;
+use \MovLib\Data\Help\SubCategorySet;
 
 /**
  * Help routes
@@ -55,9 +55,9 @@ location = <?= $this->r("/help/search") ?> {
 
 <?php
 $categorySet = new CategorySet($diContainer);
-$getEntities = new \ReflectionMethod($categorySet, "getEntities");
-$getEntities->setAccessible(true);
-foreach ((array) $getEntities->invoke($categorySet) as $category):
+$loadEntities = new \ReflectionMethod($categorySet, "loadEntities");
+$loadEntities->setAccessible(true);
+foreach ($loadEntities->invoke($categorySet) as $category):
   $routeKey = "/help/{$this->fs->sanitizeFilename($category->title)}";
   $this->setRoutesNamespace("Help\\Category");
 ?>
@@ -72,9 +72,9 @@ location ^~ <?= $this->r($routeKey) ?> {
 
   <?php
   $subCategorySet = new subCategorySet($diContainer);
-  $subGetEntities = new \ReflectionMethod($subCategorySet, "getEntities");
-  $subGetEntities->setAccessible(true);
-  foreach ((array) $subGetEntities->invoke($subCategorySet, "WHERE `help_category_id` = {$category->id}") as $subCategory):
+  $subLoadEntities = new \ReflectionMethod($subCategorySet, "loadEntities");
+  $subLoadEntities->setAccessible(true);
+  foreach ($subLoadEntities->invoke($subCategorySet, "WHERE `help_category_id` = {$category->id}") as $subCategory):
     $subRouteKey = "{$routeKey}/{$this->fs->sanitizeFilename($subCategory->title)}";
     $this->setRoutesNamespace("Help\\Category\\SubCategory");
   ?>

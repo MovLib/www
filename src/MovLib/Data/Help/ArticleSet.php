@@ -60,7 +60,7 @@ SQL;
    *   All sub categories, <code>NULL</code> if no entities were found.
    */
   public function getAllBelongingToCategory($id) {
-    return $this->getEntities("WHERE `{$this->tableName}`.`deleted` = false AND `help_category_id` = {$id} AND `help_subcategory_id` IS NULL");
+    return $this->loadEntities("WHERE `{$this->tableName}`.`deleted` = false AND `help_category_id` = {$id} AND `help_subcategory_id` IS NULL");
   }
 
   /**
@@ -72,7 +72,14 @@ SQL;
    *   All sub categories, <code>NULL</code> if no entities were found.
    */
   public function getAllBelongingToSubCategory($id) {
-    return $this->getEntities("WHERE `{$this->tableName}`.`deleted` = false AND `help_subcategory_id` = {$id}");
+    return $this->loadEntities("WHERE `{$this->tableName}`.`deleted` = false AND `help_subcategory_id` = {$id}");
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+    return "";
   }
 
   /**

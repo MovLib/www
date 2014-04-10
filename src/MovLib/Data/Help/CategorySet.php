@@ -57,6 +57,13 @@ SQL;
   /**
    * {@inheritdoc}
    */
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+    return "";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function init() {
     $this->pluralKey   = $this->tableName = "help_categories";
     $this->route       = $this->intl->r("/help");

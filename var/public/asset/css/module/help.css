@@ -47,14 +47,16 @@
 #help-search button {
   background-color: #fff;
   border: none;
-  height: 45px;
+  height: 50px;
+  line-height: 50px;
+  font-size: 24px;
   margin: 0px;
 }
 
 #help-search input {
-  width: 415px;
+  width: 410px;
   padding: 0 10px;
 }
 #help-search button {
-  width: 45px;
+  width: 50px;
 }

@@ -20,7 +20,6 @@ namespace MovLib\Presentation\Help\Category\SubCategory;
 use \MovLib\Data\Help\ArticleSet;
 use \MovLib\Data\Help\SubCategory;
 use \MovLib\Data\Help\SubCategorySet;
-use \MovLib\Partial\Alert;
 
 /**
  * Defines the help subcategory index presentation.
@@ -74,7 +73,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
     $this->initLanguageLinks($this->subCategory->routeKey);
 
     $sidebarItems = [ [ $this->subCategory->category->route, "{$this->subCategory->category->title} <span class='fr'>{$this->intl->format("{0,number}", [ $this->subCategory->category->articleCount ])}</span>", [ "class" => "ico {$this->subCategory->category->icon} separator" ] ] ];
-    foreach ((array) (new SubCategorySet($this->diContainerHTTP))->getAllBelongingToCategory($this->subCategory->category->id) as $id => $entity) {
+    foreach ((new SubCategorySet($this->diContainerHTTP))->getAllBelongingToCategory($this->subCategory->category->id) as $id => $entity) {
       $sidebarItems[] = [ $entity->route, "{$entity->title} <span class='fr'>{$this->intl->format("{0,number}", [ $entity->articleCount ])}</span>" ];
     }
     $this->sidebarInit($sidebarItems);
@@ -86,7 +85,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    */
   public function getContent() {
     $items = null;
-    foreach ((array) $this->set->getAllBelongingToSubCategory($this->subCategory->id) as $id => $entity) {
+    foreach ($this->set->getAllBelongingToSubCategory($this->subCategory->id) as $id => $entity) {
       $items .= $this->formatListingItem($entity, $id);
     }
     return isset($items)? $this->getListing($items) : $this->getNoItemsContent();
@@ -111,9 +110,10 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function getNoItemsContent() {
-    return new Alert(
-      "<p>{$this->intl->t("We couldn’t find any sub categories or articles in this category.")}</p>",
-      $this->intl->t("No Help In This Category")
+    return $this->callout(
+      $this->intl->t("We couldn’t find any articles in this category."),
+      $this->intl->t("No Help In This Category"),
+      "info"
     );
   }
 

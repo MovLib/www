@@ -20,7 +20,7 @@ namespace MovLib\Presentation\Help\Category\SubCategory;
 use \MovLib\Data\Help\Article;
 
 /**
- * Presentation of a single article.
+ * Presentation of a single entity.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -31,34 +31,20 @@ use \MovLib\Data\Help\Article;
 final class Show extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Partial\SidebarTrait;
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The article to present.
-   *
-   * @var \MovLib\Data\Help\Article
-   */
-  protected $article;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
   /**
    * {@inheritdoc}
    */
   public function init() {
-    $this->article     = new Article($this->diContainerHTTP, $_SERVER["HELP_ARTICLE_ID"]);
+    $this->entity     = new Article($this->diContainerHTTP, $_SERVER["HELP_ARTICLE_ID"]);
 
-    $this->initPage($this->article->title);
+    $this->initPage($this->entity->title);
     $this->initBreadcrumb([
       [ $this->intl->r("/help"), $this->intl->t("Help") ],
-      [ $this->intl->r($this->article->category->routeKey), $this->article->category->title ],
-      [ $this->intl->r($this->article->subCategory->routeKey), $this->article->subCategory->title ]
+      [ $this->intl->r($this->entity->category->routeKey), $this->entity->category->title ],
+      [ $this->intl->r($this->entity->subCategory->routeKey), $this->entity->subCategory->title ]
     ]);
-    $this->sidebarInit([]);
-    $this->initLanguageLinks($this->article->routeKey, [ $this->article->id ]);
+    $this->sidebarInitToolbox($this->entity);
+    $this->initLanguageLinks($this->entity->routeKey, [ $this->entity->id ]);
     return $this;
   }
 
@@ -66,7 +52,7 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->htmlDecode($this->article->text);
+    return $this->htmlDecode($this->entity->text);
   }
 
 }
