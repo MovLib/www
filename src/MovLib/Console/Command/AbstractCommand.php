@@ -166,7 +166,6 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   The dependency injection container.
    */
   public function __construct(DIContainer $diContainer) {
-    parent::__construct();
     $this->diContainer = $diContainer;
     $this->config      = $diContainer->config;
     $this->fs          = $diContainer->fs;
@@ -174,6 +173,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
     $this->kernel      = $diContainer->kernel;
     $this->log         = $diContainer->log;
     $this->privileged  = posix_getuid() === 0;
+    parent::__construct();
   }
 
 
