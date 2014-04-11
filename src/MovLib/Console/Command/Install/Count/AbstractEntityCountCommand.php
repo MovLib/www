@@ -64,7 +64,7 @@ abstract class AbstractEntityCountCommand extends \MovLib\Console\Command\Abstra
    *
    * @var string
    */
-  protected $entityName;
+  public $entityName;
 
   /**
    * The name(s) of the identifier column(s), defaults to "id".
@@ -235,11 +235,9 @@ abstract class AbstractEntityCountCommand extends \MovLib\Console\Command\Abstra
     // There were count discrepancies, correct and report them according to parameters.
     if ($errors) {
       $this->mysqli->multi_query(rtrim($queriesToRun, ";"));
-      $this->write("Count verification failed for entity '{$this->entityName}'!", self::MESSAGE_TYPE_ERROR);
+      $this->write("Count verification failed for entity '{$this->entityName}', updating...");
       if (!$seed) {
-        $this->log->critical("Count verification failed for entity '{$this->entityName}'!", $errors);
-        $this->write("This incident has been reported.");
-        throw new CountVerificationException($errors);
+        throw new CountVerificationException($errors, "Count verification failed for entity '{$this->entityName}'");
       }
     }
 
@@ -247,7 +245,8 @@ abstract class AbstractEntityCountCommand extends \MovLib\Console\Command\Abstra
       "Count verification for entity <comment>{$this->entityName}</comment> completed successfully!",
       self::MESSAGE_TYPE_INFO
     );
-    return $this;
+
+    return $seed ? 0 : isset($errors);
   }
 
   /**

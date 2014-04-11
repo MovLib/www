@@ -35,20 +35,11 @@ class CountVerificationException extends \OutOfBoundsException {
    *
    * @var array
    */
-  protected $errors;
+  public $errors;
 
   public function __construct(array $counts, $message = null, $code = null, $previous = null) {
     parent::__construct($message, $code, $previous);
     $this->errors = $counts;
-  }
-
-  /**
-   * Get the count verification errors.
-   *
-   * @return array
-   */
-  public function getErrors() {
-    return $this->errors;
   }
 
 }
