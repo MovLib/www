@@ -17,65 +17,101 @@
  */
 namespace MovLib\Presentation\Award\Category;
 
-use \MovLib\Data\Award;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Listing\EntityIndexListing;
+use \MovLib\Data\Award\Award;
+use \MovLib\Data\Award\CategorySet;
+use \MovLib\Partial\Date;
 
 /**
- * A category of a certain award.
+ * Defines the award category index presentation.
+ *
+ * @property \MovLib\Data\Award\CategorySet $set
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\Award\AbstractBase {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
+  use \MovLib\Presentation\Award\AwardTrait;
 
   /**
-   * Instantiate new award categories presentation.
-   *
+   * {@inheritdoc}
    */
-  public function __construct() {
-    $this->award = new Award((integer) $_SERVER["AWARD_ID"]);
-    $this->initPage($this->intl->t("Categories of {0}", [ $this->award->name ]));
-    $this->pageTitle       = $this->intl->t("Categories of {0}", [ "<a href='{$this->award->route}'>{$this->award->name}</a>" ]);
-    $this->breadcrumbTitle = $this->intl->t("Categories");
-    $this->initLanguageLinks("/award/{0}/categories", [ $this->award->id ], true);
-    $this->initAwardBreadcrumb();
-    $this->sidebarInit();
-
-    $kernel->stylesheets[] = "award";
+  public function init() {
+    $this->entity        = new Award($this->diContainerHTTP, $_SERVER["AWARD_ID"]);
+    $this->set           = new CategorySet($this->diContainerHTTP);
+    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/award/{0}/category/create", [ $this->entity->id ])}'>{$this->intl->t("Create Category")}</a>";
+    $pageTitle    = $this->intl->t("Categories of {0}", [ $this->entity->name ]);
+    return $this
+      ->initPage($pageTitle, $pageTitle, $this->intl->t("Categories"))
+      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
+      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/categories", $this->entity->id, true)
+      ->breadcrumb->addCrumbs([
+        [ $this->intl->rp("/awards"), $this->intl->t("Awards") ],
+        [ $this->entity->route, $this->entity->name ]
+      ])
+    ;
   }
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
+  /**
+   * {@inheritdoc}
+   * @param \MovLib\Data\Award\Category $category {@inheritdoc}
+   */
+  public function formatListingItem(\MovLib\Data\AbstractEntity $category, $delta) {
+    $categoryDates = (new Date($this->intl, $this))->formatFromTo(
+      $category->firstYear,
+      $category->lastYear,
+      [ "title" => $this->intl->t("From") ],
+      [ "title" => $this->intl->t("To") ],
+      true
+    );
+    if ($categoryDates) {
+      $categoryDates = "<small>{$categoryDates}</small>";
+    }
+    $route = $category->route;
+    return
+      "<li class='hover-item r'>" .
+        "<article typeof='Organization'>" .
+          "<a class='no-link s s1' href='{$route}'>" .
+            "<img alt='{$category->name}' src='{$this->fs->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
+          "</a>" .
+          "<div class='s s9'>" .
+            "<div class='fr'>" .
+              "<a class='ico ico-movie label' href='{$this->intl->rp("/award/{0}/category/{1}/movies", [ $category->award->id, $category->id ])}' title='{$this->intl->t("Movies")}'>{$category->movieCount}</a>" .
+              "<a class='ico ico-series label' href='{$this->intl->rp("/award/{0}/category/{1}/series", [ $category->award->id, $category->id ])}' title='{$this->intl->t("Series")}'>{$category->seriesCount}</a>" .
+              "<a class='ico ico-person label' href='{$this->intl->rp("/award/{0}/category/{1}/persons", [ $category->award->id, $category->id ])}' title='{$this->intl->t("Persons")}'>{$category->seriesCount}</a>" .
+              "<a class='ico ico-company label' href='{$this->intl->rp("/award/{0}/category/{1}/companies", [ $category->award->id, $category->id ])}' title='{$this->intl->t("Companies")}'>{$category->seriesCount}</a>" .
+            "</div>" .
+            "<h2 class='para'><a href='{$route}' property='url'><span property='name'>{$category->name}</span></a></h2>" .
+            $categoryDates .
+          "</div>" .
+        "</article>" .
+      "</li>"
+    ;
+  }
 
   /**
-   * @inheritdoc
-   * @return \MovLib\Presentation\Partial\Listing\Movies
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    $this->headingBefore =
-      "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/award/{0}/category/create", [ $this->award->id ])}'>{$this->intl->t("Create New Category")}</a>"
-    ;
+  public function getContent() {
+    $items = null;
+    foreach ($this->set->loadOrdered("`created` DESC", $this->paginationOffset, $this->paginationLimit, "`award_id` = {$this->entity->id}") as $id => $entity) {
+      $items .= $this->formatListingItem($entity, $id);
+    }
+    return $this->getListing($items);
+  }
 
-    $result      = $this->award->getCategoriesResult();
-    $noItemText  = new Alert(
-      $this->intl->t(
-        "We couldn’t find any categories matching your filter criteria, or there simply aren’t any categories available."
-      ), $this->intl->t("No Category"), Alert::SEVERITY_INFO
+  /**
+   * {@inheritdoc}
+   */
+  public function getNoItemsContent() {
+    return $this->callout(
+      $this->intl->t("No Awards"),
+      "<p>{$this->intl->t("We couldn’t find any award categories matching your filter criteria, or there simply aren’t any awards categories available.")}</p>" .
+      "<p>{$this->intl->t("Would you like to {0}create an award category{1}?", [ "<a href='{$this->intl->r("/award/{0}/category/create", [ $this->entity->id ])}'>", "</a>" ])}</p>",
+      "info"
     );
-
-    $moviesRoute = $this->intl->rp("/award/{0}/category/{1}/movies", [ $this->award->id, "{{ id }}" ]);
-    $seriesRoute = $this->intl->rp("/award/{0}/category/{1}/series", [ $this->award->id, "{{ id }}" ]);
-
-    return new EntityIndexListing($result, $noItemText, "AwardCategory", $moviesRoute, $seriesRoute);
   }
 
 }

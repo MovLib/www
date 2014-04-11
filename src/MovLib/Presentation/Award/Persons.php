@@ -66,8 +66,7 @@ class Persons extends \MovLib\Presentation\AbstractPresenter {
   }
 
   /**
-   * @inheritdoc
-   * @return \MovLib\Presentation\Partial\Alert
+   * {@inheritdoc}
    */
   public function getContent() {
     return $this->checkBackLater($this->intl->t("award persons"));

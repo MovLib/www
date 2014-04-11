@@ -19,7 +19,6 @@ namespace MovLib\Presentation\Award;
 
 use \MovLib\Data\Award\Award;
 
-
 /**
  * Series with a certain award associated.
  *
@@ -67,8 +66,7 @@ class Series extends \MovLib\Presentation\AbstractPresenter {
   }
 
   /**
-   * @inheritdoc
-   * @return \MovLib\Presentation\Partial\Alert
+   * {@inheritdoc}
    */
   public function getContent() {
     return $this->checkBackLater($this->intl->t("award series"));

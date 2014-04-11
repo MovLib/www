@@ -17,10 +17,7 @@
  */
 namespace MovLib\Presentation\Award\Category;
 
-use \MovLib\Data\Award;
-use \MovLib\Data\AwardCategory;
-use \MovLib\Presentation\Partial\Listing\AwardCategoryMovieListing;
-use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
+use \MovLib\Data\Award\Category;
 
 /**
  * Movies with a certain award category associated.
@@ -31,47 +28,44 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Movies extends \MovLib\Presentation\Award\Category\AbstractBase {
+class Movies extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Presentation\Award\Category\CategoryTrait;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+  // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * Instantiate new award category movie presentation.
+   * The entity to present.
    *
+   * @var \MovLib\Data\AbstractEntity
    */
-  public function __construct() {
-    $this->award         = new Award((integer) $_SERVER["AWARD_ID"]);
-    $this->awardCategory = new AwardCategory((integer) $_SERVER["AWARD_CATEGORY_ID"]);
-    $routeArgs           = [ $this->awardCategory->awardId, $this->awardCategory->id ];
-
-    if ($this->award->id != $this->awardCategory->awardId) {
-      throw new SeeOtherRedirect($this->intl->rp("/award/{0}/category/{1}/movies", $routeArgs));
-    }
-
-    $this->initPage($this->intl->t("Movies with {0}", [ $this->awardCategory->name ]));
-    $this->pageTitle     =
-      $this->intl->t("Movies with {0}", [ "<a href='{$this->awardCategory->route}'>{$this->awardCategory->name}</a>" ])
-    ;
-    $this->breadcrumbTitle = $this->intl->t("Movies");
-    $this->initLanguageLinks("/award/{0}/category/{1}/movies", [ $this->award->id, $this->awardCategory->id ], true);
-    $this->initAwardCategoryBreadcrumb();
-    $this->sidebarInit();
-
-    $kernel->stylesheets[] = "award";
-  }
+  protected $entity;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * @inheritdoc
-   * @return \MovLib\Presentation\Partial\Listing\Movies
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    return new AwardCategoryMovieListing($this->awardCategory->getMoviesResult());
+  public function init() {
+    $this->entity = new Category($this->diContainerHTTP, $_SERVER["AWARD_CATEGORY_ID"]);
+    $pageTitle    = $this->intl->t("Movies related to {0}", [ $this->entity->name ]);
+    return $this
+      ->initPage($pageTitle, $pageTitle, $this->intl->t("Movies"))
+      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
+      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/movies", $this->entity->id)
+      ->breadcrumb->addCrumbs($this->getBreadCrumbs())
+    ;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {
+    return $this->checkBackLater($this->intl->t("award category movies"));
   }
 
 }

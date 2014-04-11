@@ -250,11 +250,16 @@ abstract class AbstractSet extends \MovLib\Data\AbstractConfig implements \Itera
    *   The offset, usually provided by the {@see \MovLib\Presentation\PaginationTrait}.
    * @param integer $limit
    *   The limit (row count), usually provided by the {@see \MovLib\Presentation\PaginationTrait}.
+   * @param string $where [Optional]
+   *   The WHERE clause of the SQL query (without WHERE).
    * @return this
    * @throws \mysqli_sql_exception
    */
-  public function loadOrdered($by, $offset, $limit) {
-    $this->loadEntities("WHERE `{$this->tableName}`.`deleted` = false", "ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}");
+  public function loadOrdered($by, $offset, $limit, $where = null) {
+    if ($where) {
+     $where = " AND {$where}";
+    }
+    $this->loadEntities("WHERE `{$this->tableName}`.`deleted` = false{$where}", "ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}");
     return $this->entities;
   }
 

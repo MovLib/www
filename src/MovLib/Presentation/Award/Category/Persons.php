@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Award;
+namespace MovLib\Presentation\Award\Category;
 
-use \MovLib\Data\Award\Award;
+use \MovLib\Data\Award\Category;
 
 /**
- * Movies with a certain award associated.
+ * Persons with a certain award category associated.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -28,9 +28,9 @@ use \MovLib\Data\Award\Award;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Movies extends \MovLib\Presentation\AbstractPresenter {
- use \MovLib\Partial\SidebarTrait;
-  use \MovLib\Presentation\Award\AwardTrait;
+class Persons extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Presentation\Award\Category\CategoryTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -51,25 +51,21 @@ class Movies extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Award($this->diContainerHTTP, $_SERVER["AWARD_ID"]);
-    $pageTitle    = $this->intl->t("Movies related to {0}", [ $this->entity->name ]);
+    $this->entity = new Category($this->diContainerHTTP, $_SERVER["AWARD_CATEGORY_ID"]);
+    $pageTitle    = $this->intl->t("Persons related to {0}", [ $this->entity->name ]);
     return $this
-      ->initPage($pageTitle, $pageTitle, $this->intl->t("Movies"))
+      ->initPage($pageTitle, $pageTitle, $this->intl->t("Persons"))
       ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/movies", $this->entity->id, true)
-      ->breadcrumb->addCrumbs([
-        [ $this->intl->rp("/awards"), $this->intl->t("Awards") ],
-        [ $this->entity->route, $this->entity->name ]
-      ])
+      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/persons", $this->entity->id)
+      ->breadcrumb->addCrumbs($this->getBreadCrumbs())
     ;
-
   }
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("award movies"));
+    return $this->checkBackLater($this->intl->t("award category persons"));
   }
 
 }

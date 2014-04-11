@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Award;
 
 use \MovLib\Data\Award\AwardSet;
-use \MovLib\Partial\Alert;
 use \MovLib\Partial\Date;
 
 /**

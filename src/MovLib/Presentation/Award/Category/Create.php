@@ -17,8 +17,7 @@
  */
 namespace MovLib\Presentation\Award\Category;
 
-use \MovLib\Data\Award;
-use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Data\Award\Award;
 
 /**
  * Allows the creation of a new award category.
@@ -30,18 +29,6 @@ use \MovLib\Presentation\Partial\Alert;
  * @since 0.0.1-dev
  */
 class Create extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\TraitForm;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The award the category belongs to.
-   *
-   * @var \MovLib\Data\Award
-   */
-  protected $award;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -51,19 +38,16 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
    * Instantiate new award category create presentation.
    *
    */
-  public function __construct() {
-    $this->award = new Award((integer) $_SERVER["AWARD_ID"]);
-
-    $this->initPage($this->intl->t("Create Category"));
+  public function init() {
+    $award = new Award($this->diContainerHTTP, $_SERVER["AWARD_ID"]);
+    $this->initPage($this->intl->t("Create"));
     $this->initBreadcrumb([
       [ $this->intl->rp("/awards"), $this->intl->t("Awards") ],
-      [ $this->award->route, $this->award->name ],
-      [ $this->intl->rp("/award/{0}/categories", [ $this->award->id ]), $this->intl->t("Categories") ],
+      [ $this->intl->r("/award/{0}/", [ $award->id ]), $award->name ],
+      [ $this->intl->rp("/award/{0}/categories", [ $award->id ]), $this->intl->t("Categories") ],
     ]);
     $this->breadcrumbTitle = $this->intl->t("Create");
-    $this->initLanguageLinks("/award/{0}/category/create", [ (integer) $_SERVER["AWARD_ID"] ]);
-
-    $kernel->stylesheets[] = "award";
+    $this->initLanguageLinks("/award/{0}/category/create", $award->id);
   }
 
 
@@ -71,17 +55,10 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
 
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  protected function getContent() {
-    return $this->checkBackLater("Create Category");
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function formValid() {
-    return $this;
+  public function getContent() {
+    return "<div class='c'>{$this->checkBackLater($this->intl->t("create award category"))}</div>";
   }
 
 }

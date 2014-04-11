@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation\Award;
 
-use \MovLib\Partial\Alert;
-
 /**
  * Allows the creation of a new award.
  *
@@ -30,13 +28,8 @@ use \MovLib\Partial\Alert;
  */
 class Create extends \MovLib\Presentation\AbstractPresenter {
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
   /**
    * Instantiate new award create presentation.
-   *
    */
   public function init() {
     $this->initPage($this->intl->t("Create Award"));
@@ -45,12 +38,8 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
     $this->initLanguageLinks("/award/create");
   }
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getContent() {
     return "<div class='c'>{$this->checkBackLater($this->intl->t("create award"))}</div>";

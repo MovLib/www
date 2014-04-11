@@ -133,21 +133,27 @@ trait SidebarTrait {
    * @return this
    */
   final protected function sidebarInitToolbox(\MovLib\Data\AbstractEntity $entity, array $menuitems = null, $small = false) {
+    if (isset($this->entity) && !isset($this->entity->route)) {
+      $route = "/{$this->entity->singularKey}/{0}";
+    }
+    else {
+      $route = $this->entity->route;
+    }
     if ($entity->deleted) {
       $toolboxItems = [
         [ $this->entity->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
-        [ $this->intl->r([ "/{$this->entity->singularKey}/{0}", "/discussion" ], $this->entity->id), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
-        [ $this->intl->r([ "/{$this->entity->singularKey}/{0}", "/history" ], $this->entity->id), $this->intl->t("History"), [ "class" => "ico ico-history" ] ]
+        [ $this->intl->r([ $route, "/discussion" ], $this->entity->id), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
+        [ $this->intl->r([ $route, "/history" ], $this->entity->id), $this->intl->t("History"), [ "class" => "ico ico-history" ] ]
       ];
     }
     else {
       $toolboxItems = [
-      [ $this->entity->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
-      [ $this->intl->r([ "/{$this->entity->singularKey}/{0}", "/edit" ], $this->entity->id), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
-      [ $this->intl->r([ "/{$this->entity->singularKey}/{0}", "/discussion" ], $this->entity->id), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
-      [ $this->intl->r([ "/{$this->entity->singularKey}/{0}", "/history" ], $this->entity->id), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
-      [ $this->intl->r([ "/{$this->entity->singularKey}/{0}", "/delete" ], $this->entity->id), $this->intl->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
-    ];
+        [ $this->entity->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
+        [ $this->intl->r([ $route, "/edit" ], $this->entity->id), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
+        [ $this->intl->r([ $route, "/discussion" ], $this->entity->id), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
+        [ $this->intl->r([ $route, "/history" ], $this->entity->id), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
+        [ $this->intl->r([ $route, "/delete" ], $this->entity->id), $this->intl->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
+      ];
     }
     if ($menuitems) {
       $toolboxItems = array_merge($toolboxItems, $menuitems);

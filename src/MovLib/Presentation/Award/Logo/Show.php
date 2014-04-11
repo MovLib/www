@@ -3,7 +3,7 @@
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
- * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
+ * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
  *
  * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
  * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Award;
+namespace MovLib\Presentation\Award\Logo;
 
 use \MovLib\Data\Award\Award;
 
 /**
- * Movies with a certain award associated.
+ * Image details presentation for a award's logo.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -28,8 +28,8 @@ use \MovLib\Data\Award\Award;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Movies extends \MovLib\Presentation\AbstractPresenter {
- use \MovLib\Partial\SidebarTrait;
+class Show extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
   use \MovLib\Presentation\Award\AwardTrait;
 
 
@@ -52,11 +52,11 @@ class Movies extends \MovLib\Presentation\AbstractPresenter {
    */
   public function init() {
     $this->entity = new Award($this->diContainerHTTP, $_SERVER["AWARD_ID"]);
-    $pageTitle    = $this->intl->t("Movies related to {0}", [ $this->entity->name ]);
+    $pageTitle    = $this->intl->t("Logo of {0}", [ $this->entity->name ]);
     return $this
-      ->initPage($pageTitle, $pageTitle, $this->intl->t("Movies"))
+      ->initPage($pageTitle, $pageTitle, $this->intl->t("Logo"))
       ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/movies", $this->entity->id, true)
+      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/logo", $this->entity->id)
       ->breadcrumb->addCrumbs([
         [ $this->intl->rp("/awards"), $this->intl->t("Awards") ],
         [ $this->entity->route, $this->entity->name ]
@@ -66,10 +66,11 @@ class Movies extends \MovLib\Presentation\AbstractPresenter {
   }
 
   /**
-   * {@inheritdoc}
+   * @inheritdoc
+   * @return \MovLib\Presentation\Partial\Alert
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("award movies"));
+    return $this->checkBackLater($this->intl->t("award logo"));
   }
 
 }

@@ -66,8 +66,7 @@ class Edit extends \MovLib\Presentation\AbstractPresenter {
   }
 
   /**
-   * @inheritdoc
-   * @return \MovLib\Presentation\Partial\Alert
+   * {@inheritdoc}
    */
   public function getContent() {
     return $this->checkBackLater($this->intl->t("edit award"));

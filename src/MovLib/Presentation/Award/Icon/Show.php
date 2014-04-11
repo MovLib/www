@@ -20,7 +20,7 @@ namespace MovLib\Presentation\Award\Icon;
 use \MovLib\Data\Award\Award;
 
 /**
- * Image details presentation for a award's logo.
+ * Image details presentation for a award's icon.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -28,7 +28,7 @@ use \MovLib\Data\Award\Award;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\AbstractPresenter {
+class Show extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Partial\SidebarTrait;
   use \MovLib\Presentation\Award\AwardTrait;
 

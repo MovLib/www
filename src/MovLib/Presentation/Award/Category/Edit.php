@@ -17,9 +17,7 @@
  */
 namespace MovLib\Presentation\Award\Category;
 
-use \MovLib\Data\Award;
-use \MovLib\Data\AwardCategory;
-use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
+use \MovLib\Data\Award\Category;
 
 /**
  * Allows editing of a award category's information.
@@ -30,46 +28,44 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Edit extends \MovLib\Presentation\Award\Category\AbstractBase {
+class Edit extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Presentation\Award\Category\CategoryTrait;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+  // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * Instantiate new award category edit presentation.
+   * The entity to present.
    *
+   * @var \MovLib\Data\AbstractEntity
    */
-  public function __construct() {
-    $this->award         = new Award((integer) $_SERVER["AWARD_ID"]);
-    $this->awardCategory = new AwardCategory((integer) $_SERVER["AWARD_CATEGORY_ID"]);
-    $routeArgs           = [ $this->awardCategory->awardId, $this->awardCategory->id ];
-
-    if ($this->award->id != $this->awardCategory->awardId) {
-      throw new SeeOtherRedirect($this->intl->r("/award/{0}/category/{1}/edit", $routeArgs));
-    }
-
-    $this->initPage($this->intl->t("Edit"));
-    $this->pageTitle     =
-      $this->intl->t("Edit {0}", [ "<a href='{$this->awardCategory->route}'>{$this->awardCategory->name}</a>" ])
-    ;
-    $this->initLanguageLinks("/award/{0}/category/{1}/edit", [ $this->award->id, $this->awardCategory->id ]);
-    $this->initAwardCategoryBreadcrumb();
-    $this->sidebarInit();
-
-    $kernel->stylesheets[] = "award";
-  }
+  protected $entity;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * @inheritdoc
-   * @return \MovLib\Presentation\Partial\Alert
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    return new \MovLib\Presentation\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("edit award category") ]), $this->intl->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+  public function init() {
+    $this->entity = new Category($this->diContainerHTTP, $_SERVER["AWARD_CATEGORY_ID"]);
+    $pageTitle    = $this->intl->t("Edit {0}", [ $this->entity->name ]);
+    return $this
+      ->initPage($pageTitle, $pageTitle, $this->intl->t("Edit"))
+      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
+      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/edit", $this->entity->id)
+      ->breadcrumb->addCrumbs($this->getBreadCrumbs())
+    ;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {
+    return $this->checkBackLater($this->intl->t("edit award category"));
   }
 
 }

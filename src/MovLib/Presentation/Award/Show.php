@@ -19,7 +19,6 @@ namespace MovLib\Presentation\Award;
 
 use \MovLib\Data\Award\Award;
 use \MovLib\Partial\Date;
-use \MovLib\Partial\InfoboxTrait;
 
 /**
  * Defines the award show presentation.
