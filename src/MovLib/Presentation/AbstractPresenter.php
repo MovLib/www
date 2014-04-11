@@ -336,11 +336,11 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
    *
    * @param string $title
    *   The alert's translated title.
-   * @param string $message
+   * @param string $message [optional]
    *   The alert's translated message.
    * @return this
    */
-  final public function alert($title, $message) {
+  final public function alert($title, $message = null) {
     $this->alerts .= $this->getAlert($title, $message, "polite", null, "log");
     return $this;
   }
@@ -350,11 +350,11 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
    *
    * @param string $title
    *   The alert's translated title.
-   * @param string $message
+   * @param string $message [optional]
    *   The alert's translated message.
    * @return this
    */
-  final public function alertError($title, $message) {
+  final public function alertError($title, $message = null) {
     $this->alerts .= $this->getAlert($title, $message, "assertive", "error", "alert");
     return $this;
   }
@@ -364,11 +364,11 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
    *
    * @param string $title
    *   The alert's translated title.
-   * @param string $message
+   * @param string $message [optional]
    *   The alert's translated message.
    * @return this
    */
-  final public function alertInfo($title, $message) {
+  final public function alertInfo($title, $message = null) {
     $this->alerts .= $this->getAlert($title, $message, "polite", "info", "status");
     return $this;
   }
@@ -378,11 +378,11 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
    *
    * @param string $title
    *   The alert's translated title.
-   * @param string $message
+   * @param string $message [optional]
    *   The alert's translated message.
    * @return this
    */
-  final public function alertSuccess($title, $message) {
+  final public function alertSuccess($title, $message = null) {
     $this->alerts .= $this->getAlert($title, $message, "polite", "success", "status");
     return $this;
   }
@@ -392,11 +392,11 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
    *
    * @param string $title
    *   The alert's translated title.
-   * @param string $message
+   * @param string $message [optional]
    *   The alert's translated message.
    * @return this
    */
-  final public function alertWarning($title, $message) {
+  final public function alertWarning($title, $message = null) {
     $this->alerts .= $this->getAlert($title, $message, "assertive", "warning", "alert");
     return $this;
   }

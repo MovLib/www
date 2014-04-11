@@ -163,6 +163,32 @@ SQL
 
 
   /**
+   * Update the genre.
+   *
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function commit() {
+    $stmt = $this->getMySQLi()->prepare(<<<SQL
+UPDATE `genres` SET
+  `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, '{$this->intl->languageCode}', ?),
+  `dyn_names`        = COLUMN_ADD(`dyn_names`, '{$this->intl->languageCode}', ?),
+  `dyn_wikipedia`    = COLUMN_ADD(`dyn_wikipedia`, '{$this->intl->languageCode}', ?)
+WHERE `id` = {$this->id}
+SQL
+    );
+    $stmt->bind_param(
+      "sss",
+      $this->description,
+      $this->name,
+      $this->wikipedia
+    );
+    $stmt->execute();
+    $stmt->close();
+    return $this;
+  }
+
+  /**
    * {@inheritdoc}
    */
   protected function init() {
