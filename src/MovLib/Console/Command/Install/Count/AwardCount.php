@@ -34,43 +34,13 @@ class AwardCount extends \MovLib\Console\Command\Install\Count\AbstractEntityCou
   protected function configure() {
     $this->entityName = "Award";
     $this->tableName  = "awards";
-    $this->addCountColumn("companies", [ $this, "getAwardeeCounts" ], [ "company_id", "companies" ]);
+    $this->addCountColumn("companies", [ $this, "getAwardeeCounts" ], [ "award_id", "awards", "company_id", "companies" ]);
+    $this->addCountColumn("categories", [ $this, "getCounts" ], [ "award_id", null, "id", "awards_categories" ]);
     $this->addCountColumn("events", [ $this, "getCounts" ], [ "award_id", null, "id", "events" ]);
-    $this->addCountColumn("movies", [ $this, "getCounts" ], [ "award_id", null, "movie_id", "movies_awards", "`won` = true" ]);
-    $this->addCountColumn("persons", [ $this, "getAwardeeCounts" ], [ "person_id", "persons" ]);
-    $this->addCountColumn("series", [ $this, "getCounts" ], [ "award_id", null, "series_id", "series_awards", "`won` = true" ]);
+    $this->addCountColumn("movies", [ $this, "getCounts" ], [ "award_id", null, "movie_id", "movies_awards", "`won` > 0" ]);
+    $this->addCountColumn("persons", [ $this, "getAwardeeCounts" ], [ "award_id", "awards", "person_id", "persons" ]);
+    $this->addCountColumn("series", [ $this, "getCounts" ], [ "award_id", null, "series_id", "series_awards", "`won` > 0" ]);
     return parent::configure();
-  }
-
-  /**
-   * Get the awardee counts of awards (of a single type, e.g. person).
-   *
-   * @param string $awardeeIdColumn
-   *   The name of the awardee identifier column in the intermediate tables.
-   * @param string $awardeeTable
-   *   The name of the awardee table
-   * @return array
-   *   Associative array with the award identifiers as keys and the awardee counts as values.
-   */
-  protected function getAwardeeCounts($awardeeIdColumn, $awardeeTable) {
-    return $this->aggregateSimpleQuery(<<<SQL
-SELECT
-  `awards`.`id`,
-  COUNT(DISTINCT `{$awardeeTable}`.`id`) AS `count`
-FROM `awards`
-LEFT JOIN `movies_awards`
-  ON `movies_awards`.`award_id` = `awards`.`id`
-LEFT JOIN `series_awards`
-  ON `series_awards`.`award_id` = `awards`.`id`
-INNER JOIN `{$awardeeTable}`
-  ON `movies_awards`.`{$awardeeIdColumn}` = `{$awardeeTable}`.`id`
-  OR `series_awards`.`{$awardeeIdColumn}` = `{$awardeeTable}`.`id`
-WHERE (`movies_awards`.`award_id` IS NOT NULL AND `movies_awards`.`won` = true)
-  OR (`series_awards`.`award_id` IS NOT NULL AND `series_awards`.`won` = true)
-GROUP BY `awards`.`id`
-ORDER BY `awards`.`id` ASC
-SQL
-    );
   }
 
 }

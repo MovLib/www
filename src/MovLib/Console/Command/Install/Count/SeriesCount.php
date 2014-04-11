@@ -39,7 +39,7 @@ class SeriesCount extends \MovLib\Console\Command\Install\Count\AbstractEntityCo
       null,
       [ "award_id", "award_category_id", "event_id" ],
       "series_awards",
-      "`won` = true"
+      "`won` > 0"
     ]);
     $this->addCountColumn("releases", [ $this, "getReleaseCounts" ], [ "series_id", "media_episodes" ]);
     $this->addCountColumn("seasons", [ $this, "getCounts" ], [ "series_id", null, "season_number", "series_episodes" ]);

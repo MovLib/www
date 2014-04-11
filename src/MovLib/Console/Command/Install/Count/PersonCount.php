@@ -67,13 +67,13 @@ SELECT
 FROM `persons`
 LEFT JOIN `movies_awards`
   ON `persons`.`id` = `movies_awards`.`person_id`
-  AND `movies_awards`.`won` = true
+  AND `movies_awards`.`won` > 0
 LEFT JOIN `series_awards`
   ON `persons`.`id` = `series_awards`.`person_id`
-  AND `series_awards`.`won` = true
+  AND `series_awards`.`won` > 0
 LEFT JOIN `persons_awards`
   ON `persons`.`id` = `persons_awards`.`person_id`
-  AND `persons_awards`.`won` = true
+  AND `persons_awards`.`won` > 0
 WHERE `movies_awards`.`person_id` IS NOT NULL
   OR `series_awards`.`person_id` IS NOT NULL
   OR `persons_awards`.`person_id` IS NOT NULL

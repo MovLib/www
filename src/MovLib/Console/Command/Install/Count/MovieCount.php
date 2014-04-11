@@ -37,7 +37,7 @@ class MovieCount extends \MovLib\Console\Command\Install\Count\AbstractEntityCou
     $this->addCountColumn(
       "awards",
       [ $this, "getCounts" ],
-      [ "movie_id", null, [ "award_id", "award_category_id", "event_id" ], "movies_awards", "`won` = true"  ]
+      [ "movie_id", null, [ "award_id", "award_category_id", "event_id" ], "movies_awards", "`won` > 0"  ]
     );
     $this->addCountColumn("releases", [ $this, "getReleaseCounts" ], [ "movie_id", "media_movies" ]);
     return parent::configure();

@@ -154,7 +154,7 @@ abstract class AbstractEntityCountCommand extends \MovLib\Console\Command\Abstra
     // @codeCoverageIgnoreEnd
     // @devEnd
     if (empty($this->getName())) {
-      $this->setName("entity-count-" . mb_strtolower($this->entityName));
+      $this->setName("entity-count-" . $this->fs->sanitizeFilename($this->entityName));
     }
     $this->addOption("seed", null, InputOption::VALUE_NONE);
     // Make sure the id columns form an array, since a simple string is also possible for convenience.
@@ -283,6 +283,41 @@ SQL
     }
     $result->free();
     return $countsActual;
+  }
+
+  /**
+   * Get the awardee counts of an award entity (of a single type, e.g. person).
+   *
+   * @param string $entityIdColumn
+   *   The name of the entity identifier column in the intermediate tables (e.g. award_id).
+   * @param string $entityTable
+   *   The name of the entity table (e.g. awards).
+   * @param string $awardeeIdColumn
+   *   The name of the awardee identifier column in the intermediate tables (e.g. person_id).
+   * @param string $awardeeTable
+   *   The name of the awardee table (e.g. persons).
+   * @return array
+   *   Associative array with the award identifiers as keys and the awardee counts as values.
+   */
+  protected function getAwardeeCounts($entityIdColumn, $entityTable, $awardeeIdColumn, $awardeeTable) {
+    return $this->aggregateSimpleQuery(<<<SQL
+SELECT
+  `{$entityTable}`.`id`,
+  COUNT(DISTINCT `{$awardeeTable}`.`id`) AS `count`
+FROM `{$entityTable}`
+LEFT JOIN `movies_awards`
+  ON `movies_awards`.`{$entityIdColumn}` = `{$entityTable}`.`id`
+LEFT JOIN `series_awards`
+  ON `series_awards`.`{$entityIdColumn}` = `{$entityTable}`.`id`
+INNER JOIN `{$awardeeTable}`
+  ON `movies_awards`.`{$awardeeIdColumn}` = `{$awardeeTable}`.`id`
+  OR `series_awards`.`{$awardeeIdColumn}` = `{$awardeeTable}`.`id`
+WHERE (`movies_awards`.`{$entityIdColumn}` IS NOT NULL AND `movies_awards`.`won` > 0)
+  OR (`series_awards`.`{$entityIdColumn}` IS NOT NULL AND `series_awards`.`won` > 0)
+GROUP BY `{$entityTable}`.`id`
+ORDER BY `{$entityTable}`.`id` ASC
+SQL
+    );
   }
 
   /**

@@ -64,10 +64,10 @@ SELECT
 FROM `companies`
 LEFT JOIN `movies_awards`
   ON `companies`.`id` = `movies_awards`.`company_id`
-  AND `movies_awards`.`won` = true
+  AND `movies_awards`.`won` > 0
 LEFT JOIN `series_awards`
   ON `companies`.`id` = `series_awards`.`company_id`
-  AND `series_awards`.`won` = true
+  AND `series_awards`.`won` > 0
 WHERE `movies_awards`.`company_id` IS NOT NULL
   OR `series_awards`.`company_id` IS NOT NULL
 ORDER BY `companies`.`id` ASC
