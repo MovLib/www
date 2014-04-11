@@ -18,9 +18,11 @@
 namespace MovLib\Console\Command\Admin;
 
 use \MovLib\Console\MySQLi;
+use \MovLib\Exception\CountVerificationException;
 use \Symfony\Component\Console\Input\InputInterface;
-use \Symfony\Component\Console\Output\OutputInterface;
 use \Symfony\Component\Console\Input\StringInput;
+use \Symfony\Component\Console\Output\NullOutput;
+use \Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Cron jobs that should run on a daily basis.
@@ -49,8 +51,8 @@ class CronDaily extends \MovLib\Console\Command\AbstractCommand {
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     try {
-      $this->purgeTemporaryTable();
-      $this->purgeTemporaryUploads();
+//      $this->purgeTemporaryTable();
+//      $this->purgeTemporaryUploads();
       $this->verifyCounts();
     }
     catch (\Exception $e) {
@@ -93,10 +95,28 @@ class CronDaily extends \MovLib\Console\Command\AbstractCommand {
   public function verifyCounts() {
     // Execute all available count verifications.
     $this->writeVerbose("Verifying and updating entity counts...");
-    $input = new StringInput([]);
-    $input->setOption("no-interaction");
-    $input->setOption("quiet");
-    // @todo: call all count commands.
+    $input = new StringInput("");
+    $output = new NullOutput();
+
+    /* @var $fileinfo \SplFileInfo */
+    foreach (new \RegexIterator(new \DirectoryIterator("dr://src/MovLib/Console/Command/Install/Count"), "/\.php/") as $fileinfo) {
+      $command = "\\MovLib\\Console\\Command\\Install\\Count\\{$fileinfo->getBasename(".php")}";
+      $reflector = new \ReflectionClass($command);
+      if ($reflector->isInstantiable() && $reflector->isSubclassOf("\\MovLib\\Console\\Command\\Install\\Count\\AbstractEntityCountCommand")) {
+        /* @var $countCommand \MovLib\Console\Command\Install\Count\AbstractEntityCountCommand */
+        $countCommand = new $command($this->diContainer);
+        $this->writeDebug("Verifying <comment>{$countCommand->entityName}</comment> counts...");
+        try {
+          $countCommand->run($input, $output);
+          $this->writeDebug(
+            "<comment>{$countCommand->entityName}</comment> counts verified successfully.",
+            self::MESSAGE_TYPE_INFO
+          );
+        } catch (CountVerificationException $e) {
+          $this->log->critical($e, $e->errors);
+        }
+      }
+    }
   }
 
 }

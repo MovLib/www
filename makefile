@@ -29,9 +29,19 @@
 # Relative path to console commands.
 CP:=src/MovLib/Console/Command
 
-all: ngins-routes seed-aspect-ratios seed-countries seed-currencies seed-languages seed-subtitles translation
+all: nginx-routes seed-aspect-ratios seed-countries seed-currencies seed-languages seed-subtitles translation entity-counts
 
-ngins-routes: $(CP)/Admin/NginxRoutes.php
+entity-counts: $(CP)/Install/Count/AwardCount.php $(CP)/Install/Count/CompanyCount.php $(CP)/Install/Count/EpisodeCount.php $(CP)/Install/Count/GenreCount.php $(CP)/Install/Count/JobCount.php $(CP)/Install/Count/MovieCount.php $(CP)/Install/Count/PersonCount.php $(CP)/Install/Count/SeriesCount.php
+	movinstall entity-count-award -v --seed
+	movinstall entity-count-company -v --seed
+	movinstall entity-count-episode -v --seed
+	movinstall entity-count-genre -v --seed
+	movinstall entity-count-job -v --seed
+	movinstall entity-count-movie -v --seed
+	movinstall entity-count-person -v --seed
+	movinstall entity-count-series -v --seed
+
+nginx-routes: $(CP)/Admin/NginxRoutes.php
 	movadmin nginx-routes -v
 
 seed-aspect-ratios: $(CP)/Install/SeedAspectRatios.php
