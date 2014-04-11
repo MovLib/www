@@ -246,7 +246,7 @@ abstract class AbstractEntityCountCommand extends \MovLib\Console\Command\Abstra
       self::MESSAGE_TYPE_INFO
     );
 
-    return $seed ? 0 : isset($errors);
+    return 0;
   }
 
   /**
