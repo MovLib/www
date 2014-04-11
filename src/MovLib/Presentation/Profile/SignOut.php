@@ -22,7 +22,6 @@ use \MovLib\Exception\RedirectException\SeeOtherException;
 /**
  * Defines the sign out presenter.
  *
- * @route /profile/sign-out
  * @routeCache false
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -38,7 +37,7 @@ final class SignOut extends \MovLib\Presentation\AbstractPresenter {
   public function init() {
     if ($this->session->isAuthenticated) {
       $this->alertSuccess(
-        $this->intl->t("Successfully signed out"),
+        $this->intl->t("Sign out successful"),
         $this->intl->t(
           "We hope to see you again soon {username}.",
           [ "username" => $this->placeholder($this->session->userName) ]

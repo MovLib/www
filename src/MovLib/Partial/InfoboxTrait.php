@@ -74,9 +74,6 @@ trait InfoboxTrait {
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-    // Set alert messages that might be stored in cookies.
-    $this->response->setAlerts($this);
-
     // Build Wikipedia link if current entity has one.
     if (!empty($this->entity->wikipedia)) {
       $this->infoboxInfos .= "<small><span class='ico ico-wikipedia'></span> <a href='{$this->entity->wikipedia}' property='sameAs' target='_blank'>{$this->intl->t("Wikipedia Article")}</a></small>";

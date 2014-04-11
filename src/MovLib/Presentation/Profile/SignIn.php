@@ -25,7 +25,6 @@ use \MovLib\Partial\FormElement\InputPassword;
 /**
  * User sign in presentation.
  *
- * @route /profile/sign-in
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -151,7 +150,7 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
 
     if ($this->session->authenticate($this->email, $this->rawPassword)) {
       $this->alertSuccess(
-        $this->intl->t("Successfully signed in"),
+        $this->intl->t("Sign in successful"),
         $this->intl->t("Welcome back {username}!", [ "username" => $this->placeholder($this->session->userName) ])
       );
 

@@ -15,31 +15,24 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\User;
+namespace MovLib\Presentation\SystemPage\ArticlesOfAssociation;
 
 /**
- * Defines the user collection presentation object.
+ * Defines the articles of association presenter object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Collection extends \MovLib\Presentation\User\AbstractUserPresenter {
+final class Show extends \MovLib\Presentation\SystemPage\AbstractShow {
 
   /**
    * {@inheritdoc}
    */
-  public function init(){
-    return $this->initPage($this->intl->t("{username}’s Collection"), null, $this->intl->t("Collection"));
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getContent(){
-    return $this->checkBackLater("Collection");
+  public function init() {
+    return $this->initSystemPage(7, $this->intl->t("Articles of Association"));
   }
 
 }

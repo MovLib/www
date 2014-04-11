@@ -36,7 +36,6 @@ use \MovLib\Partial\FormElement\TextareaHTML;
 /**
  * Defines the profile account settings presentation.
  *
- * @route /profile/account-settings
  * @routeCache false
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib

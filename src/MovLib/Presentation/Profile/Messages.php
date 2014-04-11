@@ -20,7 +20,6 @@ namespace MovLib\Presentation\Profile;
 /**
  * Defines the profile messages presentation.
  *
- * @route /profile/messages
  * @routeCache false
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib

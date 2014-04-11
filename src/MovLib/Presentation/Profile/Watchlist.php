@@ -20,7 +20,6 @@ namespace MovLib\Presentation\Profile;
 /**
  * Defines the profile watchlist presentation.
  *
- * @route /profile/watchlist
  * @routeCache false
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>

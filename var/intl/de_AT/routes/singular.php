@@ -30,6 +30,13 @@
 // @codeCoverageIgnoreStart
 return [
   // ------------------------------------------------------------------------------------------------------------------- Movie
+  "/愛は" => "/foo",
+  "/、か" => "/bar",
+  "/なり" => "/baz",
+  "/イタ" => "/goo",
+  "/イ。" => "/gar",
+  "/movies" => "/filme",
+  "/edit" => "/bearbeiten",
   "/movie"                                     => "/film",
   "/movie/create"                              => "/film/erstellen",
   "/movie/random"                              => "/film/zufällig",

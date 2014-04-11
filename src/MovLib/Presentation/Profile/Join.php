@@ -28,7 +28,6 @@ use \MovLib\Partial\FormElement\InputCheckbox;
 /**
  * User join presentation.
  *
- * @route /profile/join
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0

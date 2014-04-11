@@ -557,6 +557,10 @@ final class Intl {
       preg_match("/(plural|select)/", $pattern) === 1 || preg_match("/\{[a-z0-9_]*[A-Z|\-| ]+[a-z0-9_]*\}/", $pattern) !== 1,
       "Always use snake case for intl placeholder tokens."
     );
+    assert(
+      strpos($pattern, "...") === false,
+      "Don't simply use three dots in a row, use the actual Unicode character with proper semantic: …"
+    );
     assert(strip_tags($pattern) == $pattern, "HTML is not allowed in translation patterns.");
     assert(!isset($args) || !empty($args));
     assert(!empty($context));

@@ -20,7 +20,6 @@ namespace MovLib\Presentation\User;
 /**
  * Defines the user uploads presentation object.
  *
- * @route /user/{un}/uploads
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0

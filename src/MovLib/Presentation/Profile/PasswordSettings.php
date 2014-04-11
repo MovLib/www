@@ -28,7 +28,6 @@ use \MovLib\Partial\FormElement\InputPassword;
 /**
  * Defines the profile password settings presenter.
  *
- * @route /profile/password-settings
  * @routeCache false
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib

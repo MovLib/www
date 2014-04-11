@@ -20,7 +20,6 @@ namespace MovLib\Presentation\Profile;
 /**
  * Defines the profile wantlist presentation.
  *
- * @route /profile/wantlist
  * @routeCache false
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib

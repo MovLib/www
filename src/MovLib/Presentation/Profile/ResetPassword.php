@@ -27,7 +27,6 @@ use \MovLib\Partial\FormElement\InputPassword;
 /**
  * User reset password presentation.
  *
- * @route /profile/reset-password
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0

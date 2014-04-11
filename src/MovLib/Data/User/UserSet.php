@@ -61,7 +61,7 @@ SQL;
   /**
    * {@inheritdoc}
    */
-  public function loadOrdered($by, $offset, $limit) {
+  public function loadOrdered($by, $offset, $limit, $where = null) {
     return $this->loadEntities("WHERE `email` IS NOT NULL", "ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}");
   }
 
