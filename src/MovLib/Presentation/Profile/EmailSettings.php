@@ -31,6 +31,8 @@ use \MovLib\Partial\FormElement\InputEmail;
  * <b>NOTE</b><br>
  * A confirmation field is {@link http://ux.stackexchange.com/a/4769 senseless}.
  *
+ * @route /profile/email-settings
+ * @routeCache false
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0

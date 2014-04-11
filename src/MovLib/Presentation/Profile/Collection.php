@@ -20,6 +20,8 @@ namespace MovLib\Presentation\Profile;
 /**
  * Defines the profile collection presentation.
  *
+ * @route /profile/collection
+ * @routeCache false
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib

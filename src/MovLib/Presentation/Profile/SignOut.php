@@ -22,6 +22,8 @@ use \MovLib\Exception\RedirectException\SeeOtherException;
 /**
  * Defines the sign out presenter.
  *
+ * @route /profile/sign-out
+ * @routeCache false
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0

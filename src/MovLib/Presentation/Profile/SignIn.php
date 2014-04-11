@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Profile;
 
 use \MovLib\Exception\RedirectException\SeeOtherException;
-use \MovLib\Partial\Alert;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputEmail;
 use \MovLib\Partial\FormElement\InputPassword;
@@ -26,6 +25,7 @@ use \MovLib\Partial\FormElement\InputPassword;
 /**
  * User sign in presentation.
  *
+ * @route /profile/sign-in
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0

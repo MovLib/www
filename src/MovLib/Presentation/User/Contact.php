@@ -20,6 +20,7 @@ namespace MovLib\Presentation\User;
 /**
  * Defines the user contact presentation object.
  *
+ * @route /user/{un}/contact
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0

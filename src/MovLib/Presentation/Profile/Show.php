@@ -22,6 +22,8 @@ use \MovLib\Partial\DateTime;
 /**
  * Defines the profile show presenter.
  *
+ * @route /profile
+ * @routeCache false
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
