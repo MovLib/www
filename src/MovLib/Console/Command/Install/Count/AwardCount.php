@@ -34,11 +34,11 @@ class AwardCount extends \MovLib\Console\Command\Install\Count\AbstractEntityCou
   protected function configure() {
     $this->entityName = "Award";
     $this->tableName  = "awards";
-    $this->addCountColumn("companies", "getAwardeeCounts", [ "company_id", "companies" ]);
-    $this->addCountColumn("events", "getCounts", [ "award_id", null, "id", "events" ]);
-    $this->addCountColumn("movies", "getCounts", [ "award_id", null, "movie_id", "movies_awards", "`won` = true" ]);
-    $this->addCountColumn("persons", "getAwardeeCounts", [ "person_id", "persons" ]);
-    $this->addCountColumn("series", "getCounts", [ "award_id", null, "series_id", "series_awards", "`won` = true" ]);
+    $this->addCountColumn("companies", [ $this, "getAwardeeCounts" ], [ "company_id", "companies" ]);
+    $this->addCountColumn("events", [ $this, "getCounts" ], [ "award_id", null, "id", "events" ]);
+    $this->addCountColumn("movies", [ $this, "getCounts" ], [ "award_id", null, "movie_id", "movies_awards", "`won` = true" ]);
+    $this->addCountColumn("persons", [ $this, "getAwardeeCounts" ], [ "person_id", "persons" ]);
+    $this->addCountColumn("series", [ $this, "getCounts" ], [ "award_id", null, "series_id", "series_awards", "`won` = true" ]);
     return parent::configure();
   }
 

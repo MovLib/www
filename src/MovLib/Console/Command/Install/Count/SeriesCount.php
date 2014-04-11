@@ -34,15 +34,15 @@ class SeriesCount extends \MovLib\Console\Command\Install\Count\AbstractEntityCo
   protected function configure() {
     $this->entityName = "Series";
     $this->tableName  = "series";
-    $this->addCountColumn("awards", "getCounts", [
+    $this->addCountColumn("awards", [ $this, "getCounts" ], [
       "series_id",
       null,
       [ "award_id", "award_category_id", "event_id" ],
       "series_awards",
       "`won` = true"
     ]);
-    $this->addCountColumn("releases", "getReleaseCounts", [ "series_id", "media_episodes" ]);
-    $this->addCountColumn("seasons", "getCounts", [ "series_id", null, "season_number", "series_episodes" ]);
+    $this->addCountColumn("releases", [ $this, "getReleaseCounts" ], [ "series_id", "media_episodes" ]);
+    $this->addCountColumn("seasons", [ $this, "getCounts" ], [ "series_id", null, "season_number", "series_episodes" ]);
     return parent::configure();
   }
 

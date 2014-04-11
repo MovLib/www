@@ -34,8 +34,8 @@ class GenreCount extends \MovLib\Console\Command\Install\Count\AbstractEntityCou
   protected function configure() {
     $this->entityName = "Genre";
     $this->tableName = "genres";
-    $this->addCountColumn("movies", "getCounts", [ "genre_id", null, "movie_id", "movies_genres" ]);
-    $this->addCountColumn("series", "getCounts", [ "genre_id", null, "series_id", "series_genres" ]);
+    $this->addCountColumn("movies", [ $this, "getCounts" ], [ "genre_id", null, "movie_id", "movies_genres" ]);
+    $this->addCountColumn("series", [ $this, "getCounts" ], [ "genre_id", null, "series_id", "series_genres" ]);
     return parent::configure();
   }
 

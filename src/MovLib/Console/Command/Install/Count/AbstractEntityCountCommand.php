@@ -102,22 +102,20 @@ abstract class AbstractEntityCountCommand extends \MovLib\Console\Command\Abstra
    *
    * @param string $name
    *   The name of the column without the "count_" prefix.
-   * @param string $method
-   *   The name of the method to verify the count of the column with.
+   * @param callable $countCallback
+   *   The callback to verify the count of the column with.
    * @param array $args [optional]
    *   The method's arguments.
    * @return this
    */
-  final protected function addCountColumn($name, $method, array $args = null) {
+  final protected function addCountColumn($name, callable $countCallback, array $args = null) {
     // @devStart
     // @codeCoverageIgnoreStart
-    assert(!empty($name) && is_string($name), "\$name must be a non-empty string.");
-    assert(!empty($method) && is_string($method), "\$method must be a non-empty string.");
-    assert(is_callable([ $this, $method ]), "\$method ('{$method}') must be callable.");
+    assert(!empty($name) && is_string($name), "\$name must be a non-empty string");
     // @codeCoverageIgnoreEnd
     // @devEnd
     $this->countConfiguration[$name] = (object) [
-      "method" => $method,
+      "callback" => $countCallback,
       "args" => (array) $args,
     ];
   }
@@ -152,7 +150,7 @@ abstract class AbstractEntityCountCommand extends \MovLib\Console\Command\Abstra
   protected function configure() {
     // @devStart
     // @codeCoverageIgnoreStart
-    assert(!empty($this->entityName), "You must initialize the \$entityName property in your class " . static::class . ".");
+    assert(!empty($this->entityName), "You must initialize the \$entityName property in your class " . static::class);
     // @codeCoverageIgnoreEnd
     // @devEnd
     if (empty($this->getName())) {
@@ -172,9 +170,9 @@ abstract class AbstractEntityCountCommand extends \MovLib\Console\Command\Abstra
     // @devStart
     // @codeCoverageIgnoreStart
     foreach ([ "entityName", "tableName" ] as $property) {
-      assert(!empty($this->{$property}), "You must initialize the \${$property} property in your class " . static::class . ".");
+      assert(!empty($this->{$property}), "You must initialize the \${$property} property in your class " . static::class);
     }
-    assert(!empty($this->countConfiguration), "You haven't added any count columns in your class " . static::class . ".");
+    assert(!empty($this->countConfiguration), "You haven't added any count columns in your class " . static::class);
     // @codeCoverageIgnoreEnd
     // @devEnd
     $seed = (boolean) $input->getOption("seed");
@@ -196,7 +194,7 @@ abstract class AbstractEntityCountCommand extends \MovLib\Console\Command\Abstra
     $updateQuery       = null;
     $queryPlaceholders = [];
     foreach ($this->countConfiguration as $countColumn => $config) {
-      $countsExpected[$countColumn] = call_user_func_array([ $this, $config->method ], $config->args);
+      $countsExpected[$countColumn] = call_user_func_array($config->callback, $config->args);
       if ($updateQuery) {
         $updateQuery .= ", ";
       }

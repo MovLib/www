@@ -35,7 +35,7 @@ class EpisodeCount extends \MovLib\Console\Command\Install\Count\AbstractEntityC
     $this->idColumns  = [ "series_id", "season_number", "position" ];
     $this->entityName = "Episodes";
     $this->tableName  = "series_episodes";
-    $this->addCountColumn("releases", "getReleaseCounts", [ $this->idColumns, "media_episodes" ]);
+    $this->addCountColumn("releases", [ $this, "getReleaseCounts" ], [ $this->idColumns, "media_episodes" ]);
     return parent::configure();
   }
 

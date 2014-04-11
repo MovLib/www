@@ -34,10 +34,10 @@ class CompanyCount extends \MovLib\Console\Command\Install\Count\AbstractEntityC
   protected function configure() {
     $this->entityName = "Company";
     $this->tableName  = "companies";
-    $this->addCountColumn("awards", "getAwardCounts");
-    $this->addCountColumn("movies", "getCounts", [ "company_id", null, "movie_id", "movies_crew", "company_id IS NOT NULL" ]);
-    $this->addCountColumn("releases", "getCompanyReleaseCounts");
-    $this->addCountColumn("series", "getCounts", [ "company_id", null, "series_id", "episodes_crew", "company_id IS NOT NULL" ]);
+    $this->addCountColumn("awards", [ $this, "getAwardCounts" ]);
+    $this->addCountColumn("movies", [ $this, "getCounts" ], [ "company_id", null, "movie_id", "movies_crew", "company_id IS NOT NULL" ]);
+    $this->addCountColumn("releases", [ $this, "getCompanyReleaseCounts" ]);
+    $this->addCountColumn("series", [ $this, "getCounts" ], [ "company_id", null, "series_id", "episodes_crew", "company_id IS NOT NULL" ]);
     return parent::configure();
   }
 
