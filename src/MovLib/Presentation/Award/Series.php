@@ -71,7 +71,7 @@ class Series extends \MovLib\Presentation\AbstractPresenter {
    * @return \MovLib\Presentation\Partial\Alert
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("deleate award"));
+    return $this->checkBackLater($this->intl->t("award series"));
   }
 
 }

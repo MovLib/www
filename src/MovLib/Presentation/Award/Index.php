@@ -78,6 +78,10 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
             "<div class='fr'>" .
               "<a class='ico ico-movie label' href='{$this->intl->rp("/award/{0}/movies", $award->id)}' title='{$this->intl->t("Movies")}'>{$award->movieCount}</a>" .
               "<a class='ico ico-series label' href='{$this->intl->rp("/award/{0}/series", $award->id)}' title='{$this->intl->t("Series")}'>{$award->seriesCount}</a>" .
+              "<a class='ico ico-person label' href='{$this->intl->rp("/award/{0}/persons", $award->id)}' title='{$this->intl->t("Persons")}'>{$award->personCount}</a>" .
+              "<a class='ico ico-company label' href='{$this->intl->rp("/award/{0}/companies", $award->id)}' title='{$this->intl->t("Companies")}'>{$award->companyCount}</a>" .
+              "<a class='ico ico-category label' href='{$this->intl->rp("/award/{0}/categories", $award->id)}' title='{$this->intl->t("Categories")}'>{$award->categoryCount}</a>" .
+              "<a class='ico ico-event label' href='{$this->intl->rp("/award/{0}/events", $award->id)}' title='{$this->intl->t("Events")}'>{$award->eventCount}</a>" .
             "</div>" .
             "<h2 class='para'><a href='{$route}' property='url'><span property='name'>{$award->name}</span></a></h2>" .
             $awardDates .

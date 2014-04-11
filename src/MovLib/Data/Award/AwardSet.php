@@ -42,15 +42,20 @@ SELECT
   `awards`.`deleted` AS `deleted`,
   `awards`.`changed` AS `changed`,
   `awards`.`created` AS `created`,
-  COUNT(DISTINCT `movie_id`) AS `movieCount`,
   `awards`.`last_event_year` AS `lastEventYear`,
   `awards`.`first_event_year` AS `firstEventYear`,
   COLUMN_GET(`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR) AS `wikipedia`,
-  COLUMN_GET(`dyn_descriptions`, '{$this->intl->languageCode}' AS CHAR) AS `description`
+  COLUMN_GET(`dyn_descriptions`, '{$this->intl->languageCode}' AS CHAR) AS `description`,
+  `awards`.`aliases` AS `aliases`,
+  `awards`.`count_movies` AS `movieCount`,
+  `awards`.`count_series` AS `seriesCount`,
+  `awards`.`count_persons` AS `personCount`,
+  `awards`.`count_companies` AS `companyCount`,
+  `awards`.`count_categories` AS `categoryCount`,
+  `awards`.`count_events` AS `eventCount`
 FROM `awards`
   LEFT JOIN `movies_awards` ON `movies_awards`.`award_id` = `awards`.`id`
 {$where}
-GROUP BY `id`, `name`, `links`, `aliases`, `deleted`, `changed`, `created`, `lastEventYear`, `firstEventYear`, `wikipedia`, `description`
 {$orderBy}
 SQL;
   }

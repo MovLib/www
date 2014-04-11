@@ -40,7 +40,9 @@ trait AwardTrait {
       [ "category", "categories", $this->intl->t("Categories"), $this->entity->categoryCount ],
       [ "event separator", "events", $this->intl->t("Events"), $this->entity->eventCount ],
       [ "movie", "movies", $this->intl->t("Movies"), $this->entity->movieCount ],
-      [ "series separator", "series", $this->intl->t("Series"), $this->entity->seriesCount ],
+      [ "series", "series", $this->intl->t("Series"), $this->entity->seriesCount ],
+      [ "person", "persons", $this->intl->t("Persons"), $this->entity->personCount ],
+      [ "company separator", "companies", $this->intl->t("Companies"), $this->entity->companyCount ],
     ] as list($icon, $plural, $title, $count)) {
       $items[] = [
         $this->intl->rp("/award/{0}/{$plural}", $this->entity->id),

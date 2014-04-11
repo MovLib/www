@@ -48,7 +48,14 @@ final class Award extends \MovLib\Data\AbstractEntity {
    *
    * @var null|integer
    */
-  public $categoryCount = 0;
+  public $categoryCount;
+
+  /**
+   * The award's company count.
+   *
+   * @var null|integer
+   */
+  public $companyCount;
 
   /**
    * The award's description in the current locale.
@@ -62,7 +69,7 @@ final class Award extends \MovLib\Data\AbstractEntity {
    *
    * @var null|integer
    */
-  public $eventCount = 0;
+  public $eventCount;
 
   /**
    * The award's first event year.
@@ -77,6 +84,13 @@ final class Award extends \MovLib\Data\AbstractEntity {
    * @var null|\MovLib\Data\Date
    */
   public $lastEventYear;
+
+  /**
+   * The award's person count.
+   *
+   * @var null|integer
+   */
+  public $personCount;
 
   /**
    * The award's weblinks.
@@ -104,7 +118,7 @@ final class Award extends \MovLib\Data\AbstractEntity {
    *
    * @var null|integer
    */
-  public $seriesCount = 0;
+  public $seriesCount;
 
   /**
    * The award's translated Wikipedia link.
@@ -142,11 +156,15 @@ SELECT
   `awards`.`links` AS `links`,
   COLUMN_GET(`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR) AS `wikipedia`,
   `awards`.`aliases` AS `aliases`,
-  COUNT(DISTINCT `movie_id`) AS `movieCount`
+  `awards`.`count_movies` AS `movieCount`,
+  `awards`.`count_series` AS `seriesCount`,
+  `awards`.`count_persons` AS `personCount`,
+  `awards`.`count_companies` AS `companyCount`,
+  `awards`.`count_categories` AS `categoryCount`,
+  `awards`.`count_events` AS `eventCount`
 FROM `awards`
   LEFT JOIN `movies_awards` ON `movies_awards`.`award_id` = `awards`.`id`
 WHERE `awards`.`id` = ?
-GROUP BY `id`,`name`,`links`,`aliases`,`deleted`,`changed`,`created`,`lastEventYear`,`firstEventYear`,`wikipedia`,`description`
 LIMIT 1
 SQL
       );
@@ -164,7 +182,12 @@ SQL
         $this->links,
         $this->wikipedia,
         $this->aliases,
-        $this->movieCount
+        $this->movieCount,
+        $this->seriesCount,
+        $this->personCount,
+        $this->companyCount,
+        $this->categoryCount,
+        $this->eventCount
       );
       $found = $stmt->fetch();
       $stmt->close();
