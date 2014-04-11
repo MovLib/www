@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Award;
 
-use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Partial\Alert;
 
 /**
  * Allows the creation of a new award.
@@ -29,7 +29,6 @@ use \MovLib\Presentation\Partial\Alert;
  * @since 0.0.1-dev
  */
 class Create extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\TraitForm;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -39,13 +38,11 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
    * Instantiate new award create presentation.
    *
    */
-  public function __construct() {
+  public function init() {
     $this->initPage($this->intl->t("Create Award"));
     $this->initBreadcrumb([ [ $this->intl->rp("/awards"), $this->intl->t("Awards") ] ]);
     $this->breadcrumbTitle = $this->intl->t("Create");
     $this->initLanguageLinks("/award/create");
-
-    $kernel->stylesheets[] = "award";
   }
 
 
@@ -55,19 +52,8 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
   /**
    * @inheritdoc
    */
-  protected function getContent() {
-    return new Alert(
-      $this->intl->t("The create award feature isn’t implemented yet."),
-      $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    );
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function formValid() {
-    return $this;
+  public function getContent() {
+    return "<div class='c'>{$this->checkBackLater($this->intl->t("create award"))}</div>";
   }
 
 }

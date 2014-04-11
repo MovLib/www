@@ -46,7 +46,15 @@ class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->htmlDecode($this->entity->description);
+    if(!empty($this->entity->description)) {
+      return $this->htmlDecode($this->entity->description);
+    }
+    else {
+      return $this->callout(
+        $this->intl->t("Would you like to {0}add additional information{1}?", [ "<a href='{$this->intl->r("/genre/{0}/edit", $this->entity->id)}'>", "</a>" ]),
+        $this->intl->t("{sitename} doesn’t have further details about this genre.", [ "sitename" => $this->config->sitename ])
+      );
+    }
   }
 
 }

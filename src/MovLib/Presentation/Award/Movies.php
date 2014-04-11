@@ -17,8 +17,7 @@
  */
 namespace MovLib\Presentation\Award;
 
-use \MovLib\Data\Award;
-use \MovLib\Presentation\Partial\Listing\AwardMovieListing;
+use \MovLib\Data\Award\Award;
 
 /**
  * Movies with a certain award associated.
@@ -29,38 +28,49 @@ use \MovLib\Presentation\Partial\Listing\AwardMovieListing;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Movies extends \MovLib\Presentation\Award\AbstractBase {
+class Movies extends \MovLib\Presentation\AbstractPresenter {
+ use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Presentation\Award\AwardTrait;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+  // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * Instantiate new award movie presentation.
+   * The entity to present.
    *
+   * @var \MovLib\Data\AbstractEntity
    */
-  public function __construct() {
-    $this->award = new Award((integer) $_SERVER["AWARD_ID"]);
-    $this->initPage($this->intl->t("Movies with {0}", [ $this->award->name ]));
-    $this->pageTitle       = $this->intl->t("Movies with {0}", [ "<a href='{$this->award->route}'>{$this->award->name}</a>" ]);
-    $this->breadcrumbTitle = $this->intl->t("Movies");
-    $this->initLanguageLinks("/award/{0}/movies", [ $this->award->id ], true);
-    $this->initAwardBreadcrumb();
-    $this->sidebarInit();
-
-    $kernel->stylesheets[] = "award";
-  }
+  protected $entity;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * @inheritdoc
-   * @return \MovLib\Presentation\Partial\Listing\Movies
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    return new AwardMovieListing($this->award->getMoviesResult());
+  public function init() {
+    $this->entity = new Award($this->diContainerHTTP, $_SERVER["AWARD_ID"]);
+    $pageTitle    = $this->intl->t("Movies related to {0}", [ $this->entity->name ]);
+    return $this
+      ->initPage($pageTitle, $pageTitle, $this->intl->t("Movies"))
+      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
+      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/movies", $this->entity->id, true)
+      ->breadcrumb->addCrumbs([
+        [ $this->intl->rp("/awards"), $this->intl->t("Awards") ],
+        [ $this->entity->route, $this->entity->name ]
+      ])
+    ;
+
+  }
+
+  /**
+   * @inheritdoc
+   * @return \MovLib\Presentation\Partial\Alert
+   */
+  public function getContent() {
+    return $this->checkBackLater($this->intl->t("award icon"));
   }
 
 }

@@ -150,7 +150,7 @@ trait SidebarTrait {
     ];
     }
     if ($menuitems) {
-      $toolboxItems += $menuitems;
+      $toolboxItems = array_merge($toolboxItems, $menuitems);
     }
     return $this->sidebarInit($toolboxItems, $small);
   }

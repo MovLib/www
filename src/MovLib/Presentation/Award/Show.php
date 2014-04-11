@@ -40,18 +40,17 @@ use \MovLib\Partial\InfoboxTrait;
  */
 final class Show extends \MovLib\Presentation\AbstractShowPresenter {
   use \MovLib\Presentation\Award\AwardTrait;
-  use \MovLib\Partial\SectionTrait;
 
   /**
    * {@inheritdoc}
    */
   public function init() {
-    return $this->initShow(
-      new Award($this->diContainerHTTP, $_SERVER["AWARD_ID"]),
-      $this->intl->t("Awards"),
-      $this->intl->t("Award"),
-      "Organization"
-    );
+    $this->entity = new Award($this->diContainerHTTP, $_SERVER["AWARD_ID"]);
+    $this
+      ->initPage($this->entity->name)
+      ->initShow($this->entity, $this->intl->t("Awards"), "Award", null, $this->getSidebarItems())
+    ;
+    return $this;
   }
 
   /**
@@ -60,24 +59,21 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
   public function getContent() {
     $this->headingBefore = "<div class='r'><div class='s s10'>";
 
-    $infos = new InfoboxTrait($this->intl);
-    $this->entity->links          && $infos->add($this->intl->t("Sites"), $this->formatWeblinks($this->entity->links));
-    $this->entity->firstEventYear && $infos->add($this->intl->t("First Event"), (new Date($this->intl, $this))->format($this->entity->firstEventYear));
-    $this->entity->lastEventYear  && $infos->add($this->intl->t("Last Event"), (new Date($this->intl, $this))->format($this->entity->lastEventYear));
-    $this->entity->wikipedia      && $infos->addWikipedia($this->entity->wikipedia);
+    $this->entity->links          && $this->infoboxAdd($this->intl->t("Sites"), $this->formatWeblinks($this->entity->links));
+    $this->entity->firstEventYear && $this->infoboxAdd($this->intl->t("First Event"), (new Date($this->intl, $this))->format($this->entity->firstEventYear));
+    $this->entity->lastEventYear  && $this->infoboxAdd($this->intl->t("Last Event"), (new Date($this->intl, $this))->format($this->entity->lastEventYear));
 
-    $this->headingAfter .= "{$infos}</div><div class='s s2'><img alt='' src='{$this->fs->getExternalURL("asset://img/logo/vector.svg")}' width='140' height='140'></div></div>";
+    $this->infoboxImageRoute = $this->intl->r("/award/{0}/icon", $this->entity->id);
 
     $this->entity->description && $this->sectionAdd($this->intl->t("Description"), $this->entity->description);
     $this->entity->aliases     && $this->sectionAdd($this->intl->t("Also Known As"), $this->formatAliases($this->entity->aliases), false);
-    if (($content = $this->sectionGet())) {
-      return $content;
+    if ($this->sections) {
+      return $this->sections;
     }
 
-    return new Alert(
-      "<p>{$this->intl->t("{sitename} doesn’t have further details about this award.", [ "sitename" => $this->config->sitename ])}</p>" .
-      "<p>{$this->intl->t("Would you like to {0}add additional information{1}?", [ "<a href='{$this->intl->r("/award/{0}/edit", $this->entity->id)}'>", "</a>" ])}</p>",
-      $this->intl->t("No Info")
+    return $this->callout(
+      $this->intl->t("Would you like to {0}add additional information{1}?", [ "<a href='{$this->intl->r("/award/{0}/edit", $this->entity->id)}'>", "</a>" ]),
+      $this->intl->t("{sitename} doesn’t have further details about this award.", [ "sitename" => $this->config->sitename ])
     );
   }
 

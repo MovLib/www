@@ -32,11 +32,13 @@ trait AwardTrait {
    * {@inheritdoc}
    */
   protected function getSidebarItems() {
-    $items = parent::getSidebarItems();
+    $items = [];
     if ($this->entity->deleted) {
       return $items;
     }
     foreach ([
+      [ "category", "categories", $this->intl->t("Categories"), $this->entity->categoryCount ],
+      [ "event separator", "events", $this->intl->t("Events"), $this->entity->eventCount ],
       [ "movie", "movies", $this->intl->t("Movies"), $this->entity->movieCount ],
       [ "series separator", "series", $this->intl->t("Series"), $this->entity->seriesCount ],
     ] as list($icon, $plural, $title, $count)) {

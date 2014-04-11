@@ -61,9 +61,11 @@ abstract class AbstractShowPresenter extends \MovLib\Presentation\AbstractPresen
    *   The structured data type of the entity.
    * @param string $titleProperty [optional]
    *   The structure data property of the title, defaults to <code>"name"</code>.
+   * @param string $additionalSidebarItems [optional]
+   *   Additional items for the sidebar.
    * @return this
    */
-  final protected function initShow(\MovLib\Data\AbstractEntity $entity, $breadcrumbIndexTitle, $typeOf, $pageTitleProperty = "name") {
+  final protected function initShow(\MovLib\Data\AbstractEntity $entity, $breadcrumbIndexTitle, $typeOf, $pageTitleProperty = "name", $additionalSidebarItems = []) {
     // @devStart
     // @codeCoverageIgnoreStart
     assert(!empty($this->title), "You have to call initPage() before you call initShow()!");
@@ -74,7 +76,7 @@ abstract class AbstractShowPresenter extends \MovLib\Presentation\AbstractPresen
     $this->headingSchemaProperty = $pageTitleProperty;
     $this->breadcrumb->addCrumb($entity->routeIndex, $breadcrumbIndexTitle);
     $this->initLanguageLinks("/{$entity->singularKey}/{0}", $entity->id);
-    $this->sidebarInitToolbox($entity);
+    $this->sidebarInitToolbox($entity, $additionalSidebarItems);
     if ($entity->deleted) {
       throw new GoneException("The {$this->entity->singularKey} {$this->entity->id} is no longer available.");
     }

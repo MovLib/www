@@ -44,11 +44,25 @@ final class Award extends \MovLib\Data\AbstractEntity {
   public $aliases;
 
   /**
+   * The award's category count.
+   *
+   * @var null|integer
+   */
+  public $categoryCount = 0;
+
+  /**
    * The award's description in the current locale.
    *
    * @var null|string
    */
   public $description;
+
+  /**
+   * The award's event count.
+   *
+   * @var null|integer
+   */
+  public $eventCount = 0;
 
   /**
    * The award's first event year.
