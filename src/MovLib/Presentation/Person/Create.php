@@ -18,17 +18,17 @@
 namespace MovLib\Presentation\Person;
 
 use \MovLib\Data\Person\FullPerson;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Form;
-use \MovLib\Presentation\Partial\FormElement\InputCheckbox;
-use \MovLib\Presentation\Partial\FormElement\InputDateSeparate;
-use \MovLib\Presentation\Partial\FormElement\InputHTML;
-use \MovLib\Presentation\Partial\FormElement\InputLinesText;
-use \MovLib\Presentation\Partial\FormElement\InputLinesURL;
-use \MovLib\Presentation\Partial\FormElement\InputSubmit;
-use \MovLib\Presentation\Partial\FormElement\InputText;
-use \MovLib\Presentation\Partial\FormElement\InputURL;
-use \MovLib\Presentation\Partial\FormElement\RadioGroup;
+use \MovLib\Partial\Alert;
+use \MovLib\Partial\Form;
+use \MovLib\Partial\FormElement\InputCheckbox;
+use \MovLib\Partial\FormElement\InputDateSeparate;
+use \MovLib\Partial\FormElement\InputHTML;
+use \MovLib\Partial\FormElement\InputLinesText;
+use \MovLib\Partial\FormElement\InputLinesURL;
+use \MovLib\Partial\FormElement\InputSubmit;
+use \MovLib\Partial\FormElement\InputText;
+use \MovLib\Partial\FormElement\InputURL;
+use \MovLib\Partial\FormElement\RadioGroup;
 use \MovLib\Presentation\Redirect\SeeOther;
 
 /**
@@ -41,7 +41,6 @@ use \MovLib\Presentation\Redirect\SeeOther;
  * @since 0.0.1-dev
  */
 class Create extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\TraitForm;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -50,70 +49,70 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
   /**
    * The person's aliases textarea input element.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputLinesText
+   * @var \MovLib\Partial\FormElement\InputLinesText
    */
   protected $inputAliases;
 
   /**
    * The person's biography html input element.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputHTML
+   * @var \MovLib\Partial\FormElement\InputHTML
    */
   protected $inputBiography;
 
   /**
    * The person's birthdate input date element.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputDate
+   * @var \MovLib\Partial\FormElement\InputDate
    */
   protected $inputBirthDate;
 
   /**
    * The person's born name input text element.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputText
+   * @var \MovLib\Partial\FormElement\InputText
    */
   protected $inputBornName;
 
   /**
    * Checkbox to confirm that this person is new, in case of similar existing persons.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputCheckbox
+   * @var \MovLib\Partial\FormElement\InputCheckbox
    */
   protected $inputConfirmation;
 
   /**
    * The person's deathdate input date element.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputDate
+   * @var \MovLib\Partial\FormElement\InputDate
    */
   protected $inputDeathDate;
 
   /**
    * The person's external links textarea input element.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputLinesURL
+   * @var \MovLib\Partial\FormElement\InputLinesURL
    */
   protected $inputLinks;
 
   /**
    * The person's name input text element.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputText
+   * @var \MovLib\Partial\FormElement\InputText
    */
   protected $inputName;
 
   /**
    * The person's sex radio group element.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\RadioGroup
+   * @var \MovLib\Partial\FormElement\RadioGroup
    */
   protected $inputSex;
 
   /**
    * The person's localized Wikipedia URL input element.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputURL
+   * @var \MovLib\Partial\FormElement\InputURL
    */
   protected $inputWikipedia;
 
@@ -163,20 +162,21 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
   /**
    * @inheritdoc
    */
-  protected function getContent() {
+  public function getContent() {
     // @todo: Continue with form building and date styling.
-    return
-      "<div class='c'>{$this->form->open()}" .
-        $this->inputName .
-        $this->inputBiography .
-        $this->inputBornName .
-        "<div class='r'>{$this->inputBirthDate}{$this->inputDeathDate}</div>" .
-        $this->inputSex .
-        $this->inputAliases .
-        $this->inputWikipedia .
-        $this->inputLinks .
-      "{$this->form->close()}</div>"
-    ;
+//    return
+//      "<div class='c'>{$this->form->open()}" .
+//        $this->inputName .
+//        $this->inputBiography .
+//        $this->inputBornName .
+//        "<div class='r'>{$this->inputBirthDate}{$this->inputDeathDate}</div>" .
+//        $this->inputSex .
+//        $this->inputAliases .
+//        $this->inputWikipedia .
+//        $this->inputLinks .
+//      "{$this->form->close()}</div>"
+//    ;
+    return $this->callout($this->intl->t("Fix me!"), null, "warning");
   }
 
   /**

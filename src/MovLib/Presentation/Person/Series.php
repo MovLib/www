@@ -28,7 +28,7 @@ use \MovLib\Data\Person\FullPerson;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Series extends \MovLib\Presentation\Person\AbstractBase {
+class Series extends \MovLib\Presentation\AbstractIndexPresenter {
 
   /**
    * Initialize person series presentation.
@@ -36,21 +36,34 @@ class Series extends \MovLib\Presentation\Person\AbstractBase {
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function init() {
-    $this->person = new FullPerson($this->diContainerHTTP);
-    $this->person->init((integer) $_SERVER["PERSON_ID"]);
-    $this->initPage($this->intl->t("Series with {0}", [ $this->person->name ]));
-    $this->pageTitle        = $this->intl->t("Series with {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
-    $this->breadcrumbTitle  = $this->intl->t("Series");
-    $this->initLanguageLinks("/person/{0}/series", [ $this->person->id ], true);
-    $this->initPersonBreadcrumb();
-    $this->sidebarInit();
+//    $this->person = new FullPerson($this->diContainerHTTP);
+//    $this->person->init((integer) $_SERVER["PERSON_ID"]);
+//    $this->initPage($this->intl->t("Series with {0}", [ $this->person->name ]));
+//    $this->pageTitle        = $this->intl->t("Series with {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
+//    $this->breadcrumbTitle  = $this->intl->t("Series");
+//    $this->initLanguageLinks("/person/{0}/series", [ $this->person->id ], true);
+//    $this->initPersonBreadcrumb();
+//    $this->sidebarInit();
+    // @todo: Replace with the real set!
+    $this->initIndex(new \MovLib\Data\Series\SeriesSet($this->diContainerHTTP), "Fix me!", "Fix me!");
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    return new \MovLib\Partial\Alert($this->intl->t("Not implemented yet."), null, \MovLib\Partial\Alert::SEVERITY_INFO);
+  protected function formatListingItem(\MovLib\Data\AbstractEntity $item, $delta) {
+
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getNoItemsContent() {
+    return $this->callout(
+      "<p>{$this->intl->t("We couldn’t find any series this person has worked on.")}</p>",
+      $this->intl->t("No Series"),
+      "info"
+    );
   }
 
 }

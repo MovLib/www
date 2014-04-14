@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Person;
 
-use \MovLib\Data\Person\FullPerson;
+use \MovLib\Data\Person\Person;
 use \MovLib\Partial\Listing\PersonMovieListing;
 
 /**
@@ -29,7 +29,7 @@ use \MovLib\Partial\Listing\PersonMovieListing;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Movies extends \MovLib\Presentation\Person\AbstractBase {
+class Movies extends \MovLib\Presentation\AbstractIndexPresenter {
 
   /**
    * Initialize person movies presentation.
@@ -37,26 +37,37 @@ class Movies extends \MovLib\Presentation\Person\AbstractBase {
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function init() {
-    $this->person = new FullPerson($this->diContainerHTTP);
-    $this->person->init((integer) $_SERVER["PERSON_ID"]);
-    $this->initPage($this->intl->t("Movies with {0}", [ $this->person->name ]));
-    $this->pageTitle        = $this->intl->t(
-      "Movies with {0}",
-      [ "<a href='{$this->person->route}' property='url'><span property='name'>{$this->person->name}</span></a>" ]
-    );
-    $this->breadcrumbTitle  = $this->intl->t("Movies");
-    $this->initLanguageLinks("/person/{0}/movies", [ $this->person->id ], true);
-    $this->initPersonBreadcrumb();
-    $this->sidebarInit();
-    $this->schemaType = "Person";
+//    $this->person = new Person($this->diContainerHTTP, (integer) $_SERVER["PERSON_ID"]);
+//    $this->initPage($this->intl->t("Movies with {0}", [ $this->person->name ]));
+//    $this->pageTitle        = $this->intl->t(
+//      "Movies with {0}",
+//      [ "<a href='{$this->person->route}' property='url'><span property='name'>{$this->person->name}</span></a>" ]
+//    );
+//    $this->breadcrumbTitle  = $this->intl->t("Movies");
+//    $this->initLanguageLinks("/person/{0}/movies", [ $this->person->id ], true);
+//    $this->initPersonBreadcrumb();
+//    $this->sidebarInit();
+//    $this->schemaType = "Person";
+    // @todo: Replace with the real set!
+    $this->initIndex(new \MovLib\Data\Movie\MovieSet($this->diContainerHTTP), "Fix me!", "Fix me!");
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    return new PersonMovieListing($this->diContainerHTTP, $this->person->getMovies());
+  protected function formatListingItem(\MovLib\Data\AbstractEntity $item, $delta) {
+
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getNoItemsContent() {
+    return $this->callout(
+      "<p>{$this->intl->t("We couldn’t find any movies this person has worked on.")}</p>",
+      $this->intl->t("No Movies"),
+      "info"
+    );
+  }
 
 }

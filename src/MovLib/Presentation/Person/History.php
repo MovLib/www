@@ -20,26 +20,34 @@ namespace MovLib\Presentation\Person;
 use \MovLib\Data\Person\Person;
 
 /**
- * A person's history
+ * A person's history.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @copyright © 2013 MovLib
+ * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
+ * @link https://movlib.org/
+ * @since 0.0.1-dev
  */
 class History extends \MovLib\Presentation\Person\AbstractBase {
 
   /**
-   * Initialize person history presentation.
+   * Initialize person discussion presentation.
    */
   public function init() {
-    $this->person = new Person($this->diContainerHTTP);
-    $this->person->init((integer) $_SERVER["PERSON_ID"]);
+    $this->person = new Person($this->diContainerHTTP, (integer) $_SERVER["PERSON_ID"]);
     $this->initPage($this->intl->t("History"));
     $this->pageTitle        = $this->intl->t("History of {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
     $this->initLanguageLinks("/person/{0}/history", [ $this->person->id ]);
-    $this->initPersonBreadcrumb();
-    $this->sidebarInit();
+    $this->breadcrumb
+      ->addCrumb($this->person->routeIndex, $this->intl->t("Persons"))
+      ->addCrumb($this->person->route, $this->person->name)
+    ;
+    $this->contentBefore = "<div class='c'>";
+    $this->contentAfter  = "</div>";
   }
 
-  protected function getPageContent() {
-    return new \MovLib\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("person history") ]), $this->intl->t("Check back later"), \MovLib\Partial\Alert::SEVERITY_INFO);
+  public function getContent() {
+    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("history") ]), $this->intl->t("Check back later"), "info");
   }
+
 }

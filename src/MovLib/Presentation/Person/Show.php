@@ -44,7 +44,6 @@ use \MovLib\Partial\Sex;
  * @since 0.0.1-dev
  */
 class Show extends \MovLib\Presentation\AbstractShowPresenter {
-  use \MovLib\Partial\SectionTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Initialization Methods.
