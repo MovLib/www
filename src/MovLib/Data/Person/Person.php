@@ -233,24 +233,24 @@ SQL
   /**
    * Get the person's place of birth.
    *
-   * @return null|\MovLib\Data\Place
+   * @return null|\MovLib\Data\Place\Place
    *   The person's place of birth or <code>NULL</code> if none was found.
    */
   public function getBirthPlace() {
     if ($this->birthPlaceId) {
-      return new \MovLib\Data\Place($this->diContainer, $this->birthPlaceId);
+      return new \MovLib\Data\Place\Place($this->diContainer, $this->birthPlaceId);
     }
   }
 
   /**
    * Get the person's place of death.
    *
-   * @return null|\MovLib\Data\Place
+   * @return null|\MovLib\Data\Place\Place
    *   The person's place of death or <code>NULL</code> if none was found.
    */
   public function getDeathPlace() {
     if ($this->deathPlaceId) {
-      return new \MovLib\Data\Place($this->diContainer, $this->deathPlaceId);
+      return new \MovLib\Data\Place\Place($this->diContainer, $this->deathPlaceId);
     }
   }
 

@@ -49,6 +49,13 @@ final class Place {
   protected $country;
 
   /**
+   * The place's country code.
+   *
+   * @var string
+   */
+  protected $countryCode;
+
+  /**
    * The active intl instance.
    *
    * @var \MovLib\Core\Intl
@@ -83,7 +90,7 @@ final class Place {
   /**
    * Instantiate new place partial.
    *
-   * @param \MovLib\Presentation\AbstractPresenter $presenter
+   * @param \MovLib\Presentation\AbstractPresenter $diContainer
    *   The presenting presenter.
    * @param \MovLib\Core\Intl $intl
    *   The active intl instance.
@@ -94,13 +101,14 @@ final class Place {
    * @param string $tag [optional]
    *   The HTML tag to wrap the place.
    */
-  public function __construct(\MovLib\Presentation\AbstractPresenter $presenter, \MovLib\Core\Intl $intl, \MovLib\Data\Place\Place $place, array $attributes = [], $tag = "span") {
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainer, \MovLib\Data\Place\Place $place, array $attributes = [], $tag = "span") {
     $attributes["typeof"] = "Place";
     $this->attributes     = $attributes;
-    $this->country        = new Country($presenter, $intl, $place->countryCode, [ "property" => "containedIn" ]);
-    $this->intl           = $intl;
+    $this->country        = new Country($diContainer);
+    $this->countryCode    = $place->countryCode;
+    $this->intl           = $diContainer->intl;
     $this->place          = $place;
-    $this->presenter      = $presenter;
+    $this->presenter      = $diContainer->presenter;
     $this->tag            = $tag;
   }
 
@@ -122,7 +130,7 @@ final class Place {
           "<meta property='latitude' content='{$this->place->latitude}'>" .
           "<meta property='longitude' content='{$this->place->longitude}'>" .
         "</span>" .
-        $this->intl->t("{0}, {1}", [ "<span property='name'>{$this->place->name}</span>", $this->country ]) .
+        $this->intl->t("{0}, {1}", [ "<span property='name'>{$this->place->name}</span>", $this->country->format($this->countryCode, [ "property" => "containedIn" ]) ]) .
       "</{$this->tag}>"
     ;
     // @devStart
