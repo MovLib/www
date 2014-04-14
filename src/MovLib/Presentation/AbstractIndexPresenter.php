@@ -81,6 +81,7 @@ abstract class AbstractIndexPresenter extends \MovLib\Presentation\AbstractPrese
       [ $set->route, $title, [ "class" => "ico ico-{$set->singularKey}" ] ],
       [ $this->intl->r("/{$set->singularKey}/random"), $this->intl->t("Random") ],
       [ $this->intl->rp("/{$set->singularKey}/charts"), $this->intl->t("Charts") ],
+      [ $this->intl->r("/help/database/{$set->pluralKey}"), $this->intl->t("Help") ],
     ]);
     $this->paginationInit();
     return $this;
