@@ -43,7 +43,9 @@ use \MovLib\Partial\Sex;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\AbstractShowPresenter {
+class Show extends \MovLib\Presentation\Person\AbstractPersonPresenter {
+  use \MovLib\Partial\InfoboxTrait;
+  use \MovLib\Partial\SectionTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Initialization Methods.
@@ -55,35 +57,19 @@ class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function init() {
-    $this->initShow(new Person($this->diContainerHTTP, (integer) $_SERVER["PERSON_ID"]), $this->intl->t("Persons"), $this->intl->t("Person"), "Person", null);
+    $this->entity = new Person($this->diContainerHTTP, (integer) $_SERVER["PERSON_ID"]);
+    $this->initPersonPresentation($this->entity->routeKey, $this->entity->name);
+    $this->stylesheets[] = "person";
   }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getPlural() {
-    return "persons";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getSingular() {
-    return "person";
-  }
-
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    $this->headingBefore = "<div class='r'><div class='s s10'>";
-
-    $this->pageTitle = "<span property='name'>{$this->entity->name}</span>";
-
+    // Enhance the name with the sex specific symbol.
     if ($this->entity->sex !== Sex::UNKNOWN) {
       if ($this->entity->sex === Sex::MALE) {
         $sexTitle = $this->intl->t("Male");
@@ -94,36 +80,65 @@ class Show extends \MovLib\Presentation\AbstractShowPresenter {
       $this->pageTitle .=  "<sup class='ico ico-sex{$this->entity->sex} sex sex-{$this->entity->sex}' content='{$sexTitle}' property='gender' title='{$sexTitle}'></sup>";
     }
 
-    $infos = new InfoboxTrait($this->intl);
-    $this->entity->bornName && $infos->add($this->intl->t("Born as"), "<span property='additionalName'>{$this->entity->bornName}</span>");
+    $this->infoboxBefore     = "<span class='vh'>{$this->intl->t("Born as: ")}</span>{$this->getStructuredBornName($this->entity, "p")}";
+    $this->infoboxImageRoute = $this->intl->r("/person/{0}/photo", $this->entity->id);
 
+    $date = new Date($this->intl, $this);
+
+    $age       = null;
+    $birthInfo = null;
     if ($this->entity->birthDate) {
-    $birthDateFormatted = "<a href='{$this->intl->rp("/year/{0}/persons", $this->entity->birthDate->year)}'>{$this->dateFormat($this->entity->birthDate, [ "property" => "birthDate" ])}</a>";
+      $birthInfo = $date->format($this->entity->birthDate, [ "property" => "birthDate" ]);
+      $age       = $date->getAge($this->entity->birthDate);
       if ($this->entity->deathDate) {
-
+        $age = $this->intl->t("would be {age}", [ "age" => $age ]);
       }
       else {
-
+        $age = $this->intl->t("aged {age}", [ "age" => $age ]);
       }
-
-      $infos->add($this->intl->t("Date of Birth"), $birthinfo);
+    }
+    if (($birthPlace = $this->entity->getBirthPlace())) {
+      $birthInfo = $this->intl->t("{date} in {place}", [ "date" => $birthInfo, "place" => new Place($this->diContainerHTTP, $birthPlace) ]);
+    }
+    if ($birthInfo && $age) {
+      $birthInfo = $this->intl->t("{0} ({1})", [ $birthInfo, $age ]);
     }
 
-//    ($birthplace = $this->entity->getBirthPlace()) && $infos->add($this->intl->t("Place of Birth"), $birthplace);
-
-//    ($deathplace = $this->entity->getDeathPlace()) && $infos->add($this->intl->t("Place of Death"), $deathplace);
-    $this->entity->wikipedia && $infos->addWikipedia($this->entity->wikipedia);
-
-    $this->headingAfter .= "{$infos}</div>{$this->img($this->entity->imageGetStyle(), [], true, [ "class" => "s s2" ])}</div>";
-
-    if (($content = $this->sectionGet())) {
-      return $content;
+    $deathInfo = null;
+    $deathAge = null;
+    if ($this->entity->deathDate) {
+      if ($this->entity->birthDate) {
+        $deathAge = $date->getAge($this->entity->birthDate, $this->entity->deathDate);
+      }
+      $deathInfo = $date->format($this->entity->deathDate, [ "property" => "deathDate" ]);
+    }
+    if (($deathPlace = $this->entity->getDeathPlace())) {
+      $deathInfo = $this->intl->t("{date} in {place}", [ "date" => $deathInfo, "place" => new Place($this->diContainerHTTP, $deathPlace) ]);
+    }
+    if ($deathAge) {
+      $deathInfo = $this->intl->t("{0} ({1})", [ $deathInfo, $this->intl->t("aged {0}", [ $deathAge ]) ]);
     }
 
-    return new Alert(
-      "<p>{$this->intl->t("{sitename} doesn’t have further details about this person.", [ "sitename" => $this->config->sitename ])}</p>" .
-      "<p>{$this->intl->t("Would you like to {0}add additional information{1}?", [ "<a href='{$this->intl->r("/person/{0}/edit", $this->entity->id)}'>", "</a>" ])}</p>",
-      $this->intl->t("No Info")
+    $birthInfo && $this->infoboxAdd($this->intl->t("Born"), $birthInfo);
+    $deathInfo && $this->infoboxAdd($this->intl->t("Died"), $deathInfo);
+
+    $this->entity->biography && $this->sectionAdd($this->intl->t("Biography"), $this->entity->biography);
+
+    // @todo: add aliases and links.
+
+    if ($this->sections) {
+      return $this->sections;
+    }
+    return $this->callout(
+      $this->intl->t(
+        "Movlib has no further information about {0}. Would you like to {1}help out{2}?",
+        [
+          $this->entity->name,
+          "<a href='{$this->intl->r("{$this->entity->routeKey}/edit", $this->entity->id)}'>", "</a>"
+        ]
+      ),
+      $this->intl->t("No Information"),
+      "info"
     );
   }
 
