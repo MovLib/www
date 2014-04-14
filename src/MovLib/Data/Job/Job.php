@@ -50,6 +50,13 @@ final class Job extends \MovLib\Data\AbstractEntity {
   public $created;
 
   /**
+   * The job's company count.
+   *
+   * @var integer
+   */
+  public $companyCount;
+
+  /**
    * The job's deletion state.
    *
    * @var boolean
@@ -85,13 +92,6 @@ final class Job extends \MovLib\Data\AbstractEntity {
   public $maleName;
 
   /**
-   * The job's movie count.
-   *
-   * @var integer
-   */
-  public $movieCount = 0;
-
-  /**
    * The job's translated unisex name.
    *
    * @var string
@@ -99,25 +99,18 @@ final class Job extends \MovLib\Data\AbstractEntity {
   public $name;
 
   /**
+   * The job's person count.
+   *
+   * @var integer
+   */
+  public $personCount;
+
+  /**
    * The translated route of this job.
    *
    * @var string
    */
   public $route;
-
-  /**
-   * The job's series count.
-   *
-   * @var integer
-   */
-  public $seriesCount = 0;
-
-  /**
-   * The job’s translated Wikipedia link.
-   *
-   * @var string
-   */
-  public $wikipedia;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Initialize
@@ -137,24 +130,20 @@ final class Job extends \MovLib\Data\AbstractEntity {
     if ($id) {
       $stmt = $this->getMySQLi()->prepare(<<<SQL
 SELECT
-  `changed`,
-  `created`,
-  `deleted`,
-  COLUMN_GET(`dyn_descriptions`, ? AS CHAR) AS `description`,
-  IFNULL(COLUMN_GET(`dyn_names_sex2`, ? AS CHAR), COLUMN_GET(`dyn_names_sex2`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `femaleName`,
-  `id`,
-  IFNULL(COLUMN_GET(`dyn_names_sex1`, ? AS CHAR), COLUMN_GET(`dyn_names_sex1`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `maleName`,
-  IFNULL(COLUMN_GET(`dyn_names_sex0`, ? AS CHAR), COLUMN_GET(`dyn_names_sex0`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `name`,
-  IFNULL(COLUMN_GET(`dyn_wikipedia`, ? AS CHAR), COLUMN_GET(`dyn_wikipedia`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `wikipedia`,
-  COUNT(DISTINCT `movies_crew`.`movie_id`) AS `movieCount`,
-  COUNT(DISTINCT `episodes_crew`.`series_id`) AS `seriesCount`
+  `jobs`.`changed` AS `changed`,
+  `jobs`.`created` AS `created`,
+  `jobs`.`deleted` AS `deleted`,
+  COLUMN_GET(`jobs`.`dyn_descriptions`, ? AS CHAR) AS `description`,
+  IFNULL(COLUMN_GET(`jobs`.`dyn_names_sex2`, ? AS CHAR), COLUMN_GET(`dyn_names_sex2`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `femaleName`,
+  `jobs`.`id` AS `id`,
+  IFNULL(COLUMN_GET(`jobs`.`dyn_names_sex1`, ? AS CHAR), COLUMN_GET(`dyn_names_sex1`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `maleName`,
+  IFNULL(COLUMN_GET(`jobs`.`dyn_names_sex0`, ? AS CHAR), COLUMN_GET(`dyn_names_sex0`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `name`,
+  IFNULL(COLUMN_GET(`jobs`.`dyn_wikipedia`, ? AS CHAR), COLUMN_GET(`dyn_wikipedia`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `wikipedia`,
+  `jobs`.`count_companies` AS `companyCount`,
+  `jobs`.`count_persons` AS `personCount`
 FROM `jobs`
-  LEFT JOIN `movies_crew`
-    ON `movies_crew`.`job_id` = `jobs`.`id`
-  LEFT JOIN `episodes_crew`
-    ON `episodes_crew`.`job_id` = `jobs`.`id`
 WHERE `id` = ?
-LIMIT 1"
+LIMIT 1
 SQL
       );
       $stmt->bind_param(
@@ -177,8 +166,8 @@ SQL
         $this->maleName,
         $this->name,
         $this->wikipedia,
-        $this->movieCount,
-        $this->seriesCount
+        $this->companyCount,
+        $this->personCount
       );
       $found = $stmt->fetch();
       $stmt->close();

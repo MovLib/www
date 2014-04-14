@@ -17,8 +17,7 @@
  */
 namespace MovLib\Presentation\Job;
 
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Data\Job;
+use \MovLib\Data\Job\Job;
 
 /**
  * Presentation of a single job.
@@ -29,92 +28,40 @@ use \MovLib\Data\Job;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\Job\AbstractBase {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+class Show extends \MovLib\Presentation\AbstractShowPresenter {
+  use \MovLib\Presentation\Job\JobTrait;
 
   /**
-   * Instantiate new job presentation.
-   *
-   * @throws \MovLib\Presentation\Error\NotFound
+   * {@inheritdoc}
    */
-  public function __construct() {
-    $this->job = new Job((integer) $_SERVER["JOB_ID"]);
-    $this->initPage($this->job->name);
-    $this->initLanguageLinks("/job/{0}", [ $this->job->id]);
-    $this->initBreadcrumb([[ $this->intl->rp("/jobs"), $this->intl->t("Jobs") ]]);
-    $this->sidebarInit();
-
-    $kernel->stylesheets[] = "job";
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * @inheritdoc
-   */
-  protected function getPageContent() {
-    // Enhance the page title with microdata.
-    $this->schemaType = "Intangible";
-    $this->pageTitle  = "<span property='name'>{$this->job->name}</span>";
-
-    if ($this->job->deleted === true) {
-      return $this->goneGetContent();
-    }
-
-    $this->pageTitle .=
-      " <span class='small'>(" .
-        "<span property='alternateName' class='ico ico-sex1 sex sex-1' title='{$this->intl->t("male")}'>{$this->job->maleName}</span>, " .
-        "<span property='alternateName' class='ico ico-sex2 sex sex-2' title='{$this->intl->t("female")}'>{$this->job->femaleName}</span>" .
-      ")</span>"
+  public function init() {
+    $this->entity = new Job($this->diContainerHTTP, $_SERVER["JOB_ID"]);
+    $this
+      ->initPage($this->entity->name)
+      ->initShow($this->entity, $this->intl->t("Jobs"), "Job", null, $this->getSidebarItems())
     ;
-
-
-    // ----------------------------------------------------------------------------------------------------------------- Build page sections.
-
-
-    $content = null;
-
-    // Biography section.
-    if ($this->job->description) {
-      $content .= $this->getSection("description", $this->intl->t("Description"), $this->htmlDecode($this->job->description));
-    }
-
-    if ($content) {
-      return $content;
-    }
-
-    return new Alert(
-      $this->intl->t(
-        "{sitename} has no further details about this job.",
-        [ "sitename"    => $this->config->sitename ]
-      ),
-      $this->intl->t("No Data Available"),
-      Alert::SEVERITY_INFO
-    );
+    $this->pageTitle .=
+      "<span class='small'>" .
+        " (<span property='alternateName' class='ico ico-sex1 sex sex-1' title='{$this->intl->t("male")}'>{$this->entity->maleName}</span>, " .
+        "<span property='alternateName' class='ico ico-sex2 sex sex-2' title='{$this->intl->t("female")}'>{$this->entity->femaleName}</span>)" .
+      "</span>"
+    ;
+    return $this;
   }
 
   /**
-   * Construct a section in the main content and add it to the sidebar.
-   *
-   * @param string $id
-   *   The section's unique identifier.
-   * @param string $title
-   *   The section's translated title.
-   * @param string $content
-   *   The section's content.
-   * @return string
-   *   The section ready for display.
+   * {@inheritdoc}
    */
-  protected function getSection($id, $title, $content) {
-    // Add the section to the sidebar as anchor.
-    $this->sidebarNavigation->menuitems[] = [ "#{$id}", $title ];
-
-    return "<div id='{$id}'><h2>{$title}</h2>{$content}</div>";
+  public function getContent() {
+    if(!empty($this->entity->description)) {
+      return $this->htmlDecode($this->entity->description);
+    }
+    else {
+      return $this->callout(
+        $this->intl->t("Would you like to {0}add additional information{1}?", [ "<a href='{$this->intl->r("/job/{0}/edit", $this->entity->id)}'>", "</a>" ]),
+        $this->intl->t("{sitename} doesn’t have further details about this job.", [ "sitename" => $this->config->sitename ])
+      );
+    }
   }
 
 }

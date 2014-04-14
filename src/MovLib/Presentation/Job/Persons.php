@@ -17,11 +17,10 @@
  */
 namespace MovLib\Presentation\Job;
 
-use \MovLib\Data\Job;
-
+use \MovLib\Data\Job\Job;
 
 /**
- * Series with a certain job associated.
+ * Persons with a certain job associated.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -29,38 +28,48 @@ use \MovLib\Data\Job;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Series extends \MovLib\Presentation\Job\AbstractBase {
+class Persons extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Presentation\Job\JobTrait;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+  // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * Instantiate new job series presentation.
+   * The entity to present.
    *
+   * @var \MovLib\Data\AbstractEntity
    */
-  public function __construct() {
-    $this->job = new Job((integer) $_SERVER["JOB_ID"]);
-    $this->initPage($this->intl->t("Series with {0}", [ $this->job->name ]));
-    $this->pageTitle = $this->intl->t("Series with {0}", [ "<a href='{$this->job->route}'>{$this->job->name}</a>" ]);
-    $this->breadcrumbTitle = $this->intl->t("Series");
-    $this->initLanguageLinks("/job/{0}/series", [ $this->job->id ], true);
-    $this->initJobBreadcrumb();
-    $this->sidebarInit();
-
-    $kernel->stylesheets[] = "job";
-  }
+  protected $entity;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
- /**
-   * @inheritdoc
-   * @return \MovLib\Presentation\Partial\Alert
+  /**
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    return new \MovLib\Presentation\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("series with job") ]), $this->intl->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+  public function init() {
+    $this->entity = new Job($this->diContainerHTTP, $_SERVER["JOB_ID"]);
+    $pageTitle    = $this->intl->t("Persons related to {0}", [ $this->entity->name ]);
+    return $this
+      ->initPage($pageTitle, $pageTitle, $this->intl->t("Persons"))
+      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
+      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/persons", $this->entity->id)
+      ->breadcrumb->addCrumbs([
+        [ $this->intl->rp("/jobs"), $this->intl->t("Jobs") ],
+        [ $this->entity->route, $this->entity->name ]
+      ])
+    ;
+
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {
+    return $this->checkBackLater($this->intl->t("job persons"));
   }
 
 }

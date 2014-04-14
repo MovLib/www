@@ -36,16 +36,11 @@ final class JobSet extends \MovLib\Data\AbstractSet {
     return <<<SQL
 SELECT
   `jobs`.`id` AS `id`,
-  COLUMN_GET(`dyn_names_sex0`, '{$this->intl->languageCode}' AS CHAR) AS `name`,
-  COUNT(DISTINCT `movies_crew`.`movie_id`) AS `movieCount`,
-  COUNT(DISTINCT `episodes_crew`.`series_id`) AS `seriesCount`
+  COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$this->intl->languageCode}' AS CHAR) AS `name`,
+  `jobs`.`count_companies` AS `companyCount`,
+  `jobs`.`count_persons` AS `personCount`
 FROM `jobs`
-  LEFT JOIN `movies_crew`
-    ON `movies_crew`.`job_id` = `jobs`.`id`
-  LEFT JOIN `episodes_crew`
-    ON `episodes_crew`.`job_id` = `jobs`.`id`
 {$where}
-GROUP BY `id`, `name`
 {$orderBy}
 SQL;
   }

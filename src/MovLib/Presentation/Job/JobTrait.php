@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Job;
 
 /**
- * Allows the creation of a new job.
+ * Provides properties and methods that are used by several job presenters.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -26,23 +26,27 @@ namespace MovLib\Presentation\Job;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Create extends \MovLib\Presentation\AbstractPresenter {
-
-  /**
-   * Instantiate new job create presentation.
-   */
-  public function init() {
-    $this->initPage($this->intl->t("Create Job"));
-    $this->initBreadcrumb([ [ $this->intl->rp("/jobs"), $this->intl->t("Jobs") ] ]);
-    $this->breadcrumbTitle = $this->intl->t("Create");
-    $this->initLanguageLinks("/job/create");
-  }
+trait JobTrait {
 
   /**
    * {@inheritdoc}
    */
-  public function getContent() {
-    return "<div class='c'>{$this->checkBackLater($this->intl->t("create job"))}</div>";
+  protected function getSidebarItems() {
+    $items = [];
+    if ($this->entity->deleted) {
+      return $items;
+    }
+    foreach ([
+      [ "person", "persons", $this->intl->t("Persons"), $this->entity->personCount ],
+      [ "company separator", "companies", $this->intl->t("Companies"), $this->entity->companyCount ],
+    ] as list($icon, $plural, $title, $count)) {
+      $items[] = [
+        $this->intl->rp("/job/{0}/{$plural}", $this->entity->id),
+        "{$title} <span class='fr'>{$this->intl->format("{0,number}", $count)}</span>",
+        [ "class" => "ico ico-{$icon}" ]
+      ];
+    }
+    return $items;
   }
 
 }

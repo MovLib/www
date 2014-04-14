@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Job;
 
 use \MovLib\Data\Job\JobSet;
-use \MovLib\Partial\Alert;
 
 /**
  * Defines the job index presentation.
@@ -56,8 +55,8 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
         "<article>" .
           "<div class='s s10'>" .
             "<div class='fr'>" .
-              "<a class='ico ico-movie label' href='{$this->intl->rp("/job/{0}/movies", $job->id)}' title='{$this->intl->t("Movies")}'>{$job->movieCount}</a>" .
-              "<a class='ico ico-series label' href='{$this->intl->rp("/job/{0}/series", $job->id)}' title='{$this->intl->t("Series")}'>{$job->seriesCount}</a>" .
+              "<a class='ico ico-person label' href='{$this->intl->rp("/job/{0}/persons", $job->id)}' title='{$this->intl->t("Persons")}'>{$job->personCount}</a>" .
+              "<a class='ico ico-company label' href='{$this->intl->rp("/job/{0}/companies", $job->id)}' title='{$this->intl->t("Companies")}'>{$job->companyCount}</a>" .
             "</div>" .
             "<h2 class='para'><a href='{$job->route}' property='url'><span property='name'>{$job->name}</span></a></h2>" .
           "</div>" .
@@ -70,10 +69,11 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function getNoItemsContent() {
-    return new Alert(
+    return $this->callout(
+      $this->intl->t("No Jobs"),
       "<p>{$this->intl->t("We couldn’t find any jobs matching your filter criteria, or there simply aren’t any jobs available.")}</p>" .
       "<p>{$this->intl->t("Would you like to {0}create an job{1}?", [ "<a href='{$this->intl->r("/job/create")}'>", "</a>" ])}</p>",
-      $this->intl->t("No Jobs")
+      "info"
     );
   }
 
