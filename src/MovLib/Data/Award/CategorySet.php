@@ -68,8 +68,9 @@ SQL;
    * {@inheritdoc}
    */
   protected function init() {
-    $this->pluralKey   = "awards_categories";
+    $this->pluralKey   = "categories";
     $this->singularKey = "category";
+    $this->tableName   = "awards_categories";
     return parent::init();
   }
 
