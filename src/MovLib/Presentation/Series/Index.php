@@ -34,6 +34,7 @@ use \MovLib\Data\Series\SeriesSet;
  * @since 0.0.1-dev
  */
 final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
+  use \MovLib\Presentation\Series\SeriesTrait;
 
   /**
    * {@inheritdoc}
@@ -60,7 +61,8 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
               "<a class='ico ico-season label' href='{$this->intl->rp("/series/{0}/seasons", $series->id)}' title='{$this->intl->t("Seasons")}'>{$series->seasonCount}</a>" .
               "<a class='ico ico-release label' href='{$this->intl->rp("/series/{0}/releases", $series->id)}' title='{$this->intl->t("Releases")}'>{$series->releaseCount}</a>" .
             "</div>" .
-            "<h2 class='para'><a href='{$series->route}' property='url'><span property='name'>{$series->name}</span></a></h2>" .
+            "<h2 class='para'>{$this->getStructuredDisplayTitle($series)}</h2>" .
+            $this->getStructuredOriginalTitle($series, "small") .
           "</div>" .
         "</article>" .
       "</li>"

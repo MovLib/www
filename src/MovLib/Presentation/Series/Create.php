@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation\Series;
 
-use \MovLib\Presentation\Partial\Alert;
-
 /**
  * Allows the creation of a new series.
  *
@@ -29,45 +27,22 @@ use \MovLib\Presentation\Partial\Alert;
  * @since 0.0.1-dev
  */
 class Create extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\TraitForm;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
 
   /**
    * Instantiate new series create presentation.
-   *
    */
-  public function __construct() {
+  public function init() {
     $this->initPage($this->intl->t("Create Series"));
     $this->initBreadcrumb([ [ $this->intl->rp("/series"), $this->intl->t("Series") ] ]);
     $this->breadcrumbTitle = $this->intl->t("Create");
     $this->initLanguageLinks("/series/create");
-
-    $kernel->stylesheets[] = "series";
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * @inheritdoc
-   */
-  protected function getContent() {
-    return new Alert(
-      $this->intl->t("The create series feature isn’t implemented yet."),
-      $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    );
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  protected function formValid() {
-    return $this;
+  public function getContent() {
+    return "<div class='c'>{$this->checkBackLater($this->intl->t("create series"))}</div>";
   }
 
 }

@@ -30,7 +30,8 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Series extends \MovLib\Data\AbstractEntity {
+class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Data\RatingInterface {
+  use \MovLib\Data\RatingTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -83,18 +84,25 @@ class Series extends \MovLib\Data\AbstractEntity {
   public $awardCount;
 
   /**
+   *  The series's display title in the current locale.
+   *
+   * @var string
+   */
+  public $displayTitle;
+
+  /**
+   * The display title's ISO 639-1 language code.
+   *
+   * @var string
+   */
+  public $displayTitleLanguageCode;
+
+  /**
    * The year the series was cancelled.
    *
    * @var integer
    */
   public $endYear;
-
-  /**
-   * The series's mean rating.
-   *
-   * @var float
-   */
-  public $meanRating;
 
   /**
    * The series's original title.
@@ -109,20 +117,6 @@ class Series extends \MovLib\Data\AbstractEntity {
    * @var string
    */
   public $originalTitleLanguageCode;
-
-  /**
-   * The global rank of the series.
-   *
-   * @var integer
-   */
-  public $rank;
-
-  /**
-   * The Bayes'theorem rating of the series.
-   *
-   * @var float
-   */
-  public $rating;
 
   /**
    * The series's release count.
@@ -161,20 +155,6 @@ class Series extends \MovLib\Data\AbstractEntity {
    */
   public $synopsis;
 
-  /**
-   *  The series's display title in the current locale.
-   *
-   * @var string
-   */
-  public $title;
-
-  /**
-   * The series's vote count.
-   *
-   * @var integer
-   */
-  public $votes;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -198,16 +178,16 @@ SELECT
   `series`.`created` AS `created`,
   `series`.`deleted` AS `deleted`,
   `series`.`end_year` AS `endYear`,
-  `series`.`mean_rating` AS `meanRating`,
-  `series`.`original_title` AS `originlTitle`,
+  `series`.`mean_rating` AS `ratingMean`,
+  `series`.`original_title` AS `originalTitle`,
   `series`.`original_title_language_code` AS `originalTitleLanguageCode`,
-  `series`.`rank` AS `rank`,
-  `series`.`rating` AS `rating`,
+  `series`.`rank` AS `ratingRank`,
+  `series`.`rating` AS `ratingBayes`,
   `series`.`start_year` AS `startYear`,
   `series`.`status` AS `status`,
   COLUMN_GET(`series`.`dyn_synopses`, '{$this->intl->languageCode}' AS CHAR) AS `synopsis`,
-  `series_titles`.`title` AS `title`,
-  `series`.`votes` AS `votes`,
+  `series_titles`.`title` AS `displayTitle`,
+  `series`.`votes` AS `ratingVotes`,
   `series`.`count_awards` AS `awardCount`,
   `series`.`count_seasons` AS `seasonCount`,
   `series`.`count_releases` AS `releaseCount`
@@ -227,16 +207,16 @@ SQL
         $this->created,
         $this->deleted,
         $this->endYear,
-        $this->meanRating,
+        $this->ratingMean,
         $this->originalTitle,
         $this->originalTitleLanguageCode,
-        $this->rank,
-        $this->rank,
+        $this->ratingRank,
+        $this->ratingBayes,
         $this->startYear,
         $this->status,
         $this->synopsis,
-        $this->title,
-        $this->votes,
+        $this->displayTitle,
+        $this->ratingVotes,
         $this->awardCount,
         $this->seasonCount,
         $this->releaseCount
@@ -260,10 +240,18 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
+    if (isset($this->displayTitle)) {
+      $this->displayTitleLanguageCode = $this->intl->languageCode;
+    }
+    else {
+      $this->displayTitle = $this->originalTitle;
+      $this->displayTitleLanguageCode = $this->originalTitleLanguageCode;
+    }
     $this->startYear     && ($this->startYear = new Date($this->startYear));
     $this->endYear       && ($this->endYear = new Date($this->endYear));
     $this->pluralKey   = "series";
     $this->singularKey = "series";
     return parent::init();
   }
+
 }

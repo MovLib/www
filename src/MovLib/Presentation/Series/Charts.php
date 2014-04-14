@@ -17,52 +17,41 @@
  */
 namespace MovLib\Presentation\Series;
 
-use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Data\Series\SeriesSet;
 
 /**
- * Series charts presentation.
+ * The series charts presentation.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
 class Charts extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\TraitSidebar;
+  use \MovLib\Partial\SidebarTrait;
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  public function __construct() {
+  /**
+   * Instantiate new series charts presentation.
+   */
+  public function init() {
+    $this->set = new SeriesSet($this->diContainerHTTP);
     $this->initPage($this->intl->t("Series Charts"));
     $this->initBreadcrumb([ [ $this->intl->rp("/series"), $this->intl->t("Series") ] ]);
     $this->breadcrumbTitle = $this->intl->t("Charts");
-    $this->initLanguageLinks("/series/charts", null, true);
+    $this->initLanguageLinks("/series/charts");
     $this->sidebarInit([
-      [ $this->intl->rp("/series"), $this->intl->t("Series"), [ "class" => "ico ico-series" ] ],
-      [ $this->intl->rp("/series/charts"), $this->intl->t("Charts") ],
-      [ $this->intl->r("/series/random"), $this->intl->t("Random") ],
+      [ $this->set->route, $this->title, [ "class" => "ico ico-{$this->set->singularKey}" ] ],
+      [ $this->intl->r("/{$this->set->singularKey}/random"), $this->intl->t("Random") ],
+      [ $this->intl->rp("/{$this->set->singularKey}/charts"), $this->intl->t("Charts") ],
     ]);
   }
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
   /**
-   * Get the presentation's page content.
-   *
-   * @return string
-   *   The presentation's page content.
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    return new Alert(
-      $this->intl->t("The series charts feature isn’t implemented yet."),
-      $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    );
+  public function getContent() {
+    return $this->checkBackLater($this->intl->t("series charts"));
   }
 
 }

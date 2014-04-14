@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Genre;
+namespace MovLib\Presentation\Series;
 
-use \MovLib\Data\Genre\Genre;
+use \MovLib\Data\Series\Series;
 
 /**
- * A genre's discussion.
+ * A series's discussion.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -28,9 +28,9 @@ use \MovLib\Data\Genre\Genre;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\AbstractPresenter {
+class Discussion extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Partial\SidebarTrait;
-  use \MovLib\Presentation\Genre\GenreTrait;
+  use \MovLib\Presentation\Series\SeriesTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -51,15 +51,15 @@ class History extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Genre($this->diContainerHTTP, $_SERVER["GENRE_ID"]);
-    $pageTitle    = $this->intl->t("History of {0}", [ $this->entity->name ]);
+    $this->entity = new Series($this->diContainerHTTP, $_SERVER["SERIES_ID"]);
+    $pageTitle    = $this->intl->t("Discuss {0}", [ $this->entity->displayTitle ]);
     return $this
-      ->initPage($pageTitle, $pageTitle, $this->intl->t("History"))
+      ->initPage($pageTitle, $pageTitle, $this->intl->t("Discussion"))
       ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/history", $this->entity->id)
+      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/discussion", $this->entity->id)
       ->breadcrumb->addCrumbs([
-        [ $this->intl->rp("/genres"), $this->intl->t("Genres") ],
-        [ $this->entity->route, $this->entity->name ]
+        [ $this->intl->rp("/series"), $this->intl->t("Series") ],
+        [ $this->entity->route, $this->entity->displayTitle ]
       ])
     ;
 
@@ -69,7 +69,7 @@ class History extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("genre history"));
+    return $this->checkBackLater($this->intl->t("discuss series"));
   }
 
 }
