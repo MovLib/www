@@ -18,7 +18,7 @@
 namespace MovLib\Console\Command\Install\Count;
 
 /**
- * @todo Description of EventCount
+ * Count verification for events.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
