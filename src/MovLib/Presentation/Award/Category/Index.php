@@ -107,9 +107,9 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    */
   public function getNoItemsContent() {
     return $this->callout(
-      $this->intl->t("No Awards"),
       "<p>{$this->intl->t("We couldn’t find any award categories matching your filter criteria, or there simply aren’t any awards categories available.")}</p>" .
       "<p>{$this->intl->t("Would you like to {0}create an award category{1}?", [ "<a href='{$this->intl->r("/award/{0}/category/create", [ $this->entity->id ])}'>", "</a>" ])}</p>",
+      $this->intl->t("No Award Categories"),
       "info"
     );
   }

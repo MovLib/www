@@ -77,9 +77,9 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    */
   public function getNoItemsContent() {
     return $this->callout(
-      $this->intl->t("No Events"),
       "<p>{$this->intl->t("We couldn’t find any events matching your filter criteria, or there simply aren’t any events available.")}</p>" .
       "<p>{$this->intl->t("Would you like to {0}create an event{1}?", [ "<a href='{$this->intl->r("/event/create")}'>", "</a>" ])}</p>",
+      $this->intl->t("No Events"),
       "info"
     );
   }

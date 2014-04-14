@@ -120,13 +120,6 @@ final class Award extends \MovLib\Data\AbstractEntity {
    */
   public $seriesCount;
 
-  /**
-   * The award's translated Wikipedia link.
-   *
-   * @var null|string
-   */
-  public $wikipedia;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 

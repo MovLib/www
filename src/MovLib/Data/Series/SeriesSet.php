@@ -20,26 +20,54 @@ namespace MovLib\Data\Series;
 /**
  * Defines the series set object.
  *
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class SeriesSet extends \MovLib\Data\AbstractSet {
+final class SeriesSet extends \MovLib\Data\AbstractSet {
 
   /**
    * {@inheritdoc}
    */
   protected function getEntitiesQuery($where = null, $orderBy = null) {
-    return "";
+    return <<<SQL
+SELECT
+  `series`.`id` AS `id`,
+  `series`.`changed` AS `changed`,
+  `series`.`created` AS `created`,
+  `series`.`deleted` AS `deleted`,
+  `series`.`end_year` AS `endYear`,
+  `series`.`mean_rating` AS `meanRating`,
+  `series`.`original_title` AS `originlTitle`,
+  `series`.`original_title_language_code` AS `originalTitleLanguageCode`,
+  `series`.`rank` AS `rank`,
+  `series`.`rating` AS `rating`,
+  `series`.`start_year` AS `startYear`,
+  `series`.`status` AS `status`,
+  `series_titles`.`title` AS `title`,
+  `series`.`count_awards` AS `awardCount`,
+  `series`.`count_seasons` AS `seasonCount`,
+  `series`.`count_releases` AS `releaseCount`
+FROM `series`
+  LEFT JOIN `series_titles`
+    ON `series_titles`.`series_id` = `series`.`id`
+    AND `series_titles`.`language_code` = '{$this->intl->languageCode}'
+    AND `series_titles`.`display` = true
+{$where}
+{$orderBy}
+SQL;
   }
 
   /**
    * {@inheritdoc}
    */
   protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
-    return "";
+    return <<<SQL
+
+SQL;
   }
 
   /**
@@ -47,7 +75,7 @@ class SeriesSet extends \MovLib\Data\AbstractSet {
    */
   protected function init() {
     $this->pluralKey   = "series";
-    $this->singularKey = $this->pluralKey;
+    $this->singularKey = "series";
     return parent::init();
   }
 

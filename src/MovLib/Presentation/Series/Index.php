@@ -17,32 +17,65 @@
  */
 namespace MovLib\Presentation\Series;
 
-use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Data\Series\SeriesSet;
 
 /**
- * The latest series.
+ * Defines the series index presentation.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2014 MovLib
+ * @link http://www.google.com/webmasters/tools/richsnippets?q=https://en.movlib.org/series
+ * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/series
+ * @link http://validator.w3.org/check?uri=https://en.movlib.org/series
+ * @link http://gsnedders.html5.org/outliner/process.py?url=https://en.movlib.org/series
+ *
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\AbstractIndexPresenter {
+final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
 
+  /**
+   * {@inheritdoc}
+   */
   public function init() {
-    // @todo: implement.
+    return $this->initIndex(
+      new SeriesSet($this->diContainerHTTP),
+      $this->intl->t("Series"),
+      $this->intl->t("Create New Series")
+    );
   }
 
-  protected function formatListingItem(\MovLib\Data\AbstractEntity $item, $delta) {
-    return "";
+  /**
+   * {@inheritdoc}
+   * @param \MovLib\Data\Series\Series $series {@inheritdoc}
+   */
+  public function formatListingItem(\MovLib\Data\AbstractEntity $series, $delta) {
+    return
+      "<li class='hover-item r'>" .
+        "<article>" .
+          "<div class='s s10'>" .
+            "<div class='fr'>" .
+              "<a class='ico ico-award label' href='{$this->intl->rp("/series/{0}/awards", $series->id)}' title='{$this->intl->t("Awards")}'>{$series->awardCount}</a>" .
+              "<a class='ico ico-season label' href='{$this->intl->rp("/series/{0}/seasons", $series->id)}' title='{$this->intl->t("Seasons")}'>{$series->seasonCount}</a>" .
+              "<a class='ico ico-release label' href='{$this->intl->rp("/series/{0}/releases", $series->id)}' title='{$this->intl->t("Releases")}'>{$series->releaseCount}</a>" .
+            "</div>" .
+            "<h2 class='para'><a href='{$series->route}' property='url'><span property='name'>{$series->name}</span></a></h2>" .
+          "</div>" .
+        "</article>" .
+      "</li>"
+    ;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getNoItemsContent() {
-    return new Alert(
-      $this->intl->t("The series feature isn’t implemented yet."),
-      $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
+    return $this->callout(
+      "<p>{$this->intl->t("We couldn’t find any series matching your filter criteria, or there simply aren’t any series available.")}</p>" .
+      "<p>{$this->intl->t("Would you like to {0}create a series{1}?", [ "<a href='{$this->intl->r("/series/create")}'>", "</a>" ])}</p>",
+      $this->intl->t("No Series"),
+      "info"
     );
   }
 

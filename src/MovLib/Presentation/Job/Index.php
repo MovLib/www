@@ -70,9 +70,9 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    */
   public function getNoItemsContent() {
     return $this->callout(
-      $this->intl->t("No Jobs"),
       "<p>{$this->intl->t("We couldn’t find any jobs matching your filter criteria, or there simply aren’t any jobs available.")}</p>" .
       "<p>{$this->intl->t("Would you like to {0}create an job{1}?", [ "<a href='{$this->intl->r("/job/create")}'>", "</a>" ])}</p>",
+      $this->intl->t("No Jobs"),
       "info"
     );
   }

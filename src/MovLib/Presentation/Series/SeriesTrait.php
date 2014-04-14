@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Series;
+namespace MovLib\Presentation\Series;
 
 /**
- * Provides properties and methods that are needed by several series objects.
+ * Provides properties and methods that are used by several series presenters.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -31,37 +31,23 @@ trait SeriesTrait {
   /**
    * {@inheritdoc}
    */
-  final public function getPluralKey() {
-    return "series";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  final public function getPluralName() {
-    static $plural;
-    if (!$plural) {
-      $plural = $this->intl->tp("Series");
+  protected function getSidebarItems() {
+    $items = [];
+    if ($this->entity->deleted) {
+      return $items;
     }
-    return $plural;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  final public function getSingularKey() {
-    return "series";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  final public function getSingularName() {
-    static $singular;
-    if (!$singular) {
-      $singular = $this->intl->t("Series");
+    foreach ([
+      [ "award", "awards", $this->intl->t("Awards"), $this->entity->awardCount ],
+      [ "season", "seasons", $this->intl->t("Seasons"), $this->entity->seasonCount ],
+      [ "release separator", "releases", $this->intl->t("Releases"), $this->entity->releaseCount ],
+    ] as list($icon, $plural, $title, $count)) {
+      $items[] = [
+        $this->intl->rp("/series/{0}/{$plural}", $this->entity->id),
+        "{$title} <span class='fr'>{$this->intl->format("{0,number}", $count)}</span>",
+        [ "class" => "ico ico-{$icon}" ]
+      ];
     }
-    return $singular;
+    return $items;
   }
 
 }
