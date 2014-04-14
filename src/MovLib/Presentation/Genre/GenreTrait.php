@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -17,45 +17,36 @@
  */
 namespace MovLib\Presentation\Genre;
 
-use \MovLib\Data\Genre\Genre;
-
 /**
- * Presentation of a single genre.
+ * Provides properties and methods that are used by several genre presenters.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\AbstractShowPresenter {
-  use \MovLib\Presentation\Genre\GenreTrait;
+trait GenreTrait {
 
   /**
    * {@inheritdoc}
    */
-  public function init() {
-    $this->entity = new Genre($this->diContainerHTTP, $_SERVER["GENRE_ID"]);
-    $this
-      ->initPage($this->entity->name)
-      ->initShow($this->entity, $this->intl->t("Genres"), "Genre", null, $this->getSidebarItems())
-    ;
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getContent() {
-    if(!empty($this->entity->description)) {
-      return $this->htmlDecode($this->entity->description);
+  protected function getSidebarItems() {
+    $items = [];
+    if ($this->entity->deleted) {
+      return $items;
     }
-    else {
-      return $this->callout(
-        $this->intl->t("Would you like to {0}add additional information{1}?", [ "<a href='{$this->intl->r("/genre/{0}/edit", $this->entity->id)}'>", "</a>" ]),
-        $this->intl->t("{sitename} doesn’t have further details about this genre.", [ "sitename" => $this->config->sitename ])
-      );
+    foreach ([
+      [ "movie", "movies", $this->intl->t("Movies"), $this->entity->movieCount ],
+      [ "series separator", "series", $this->intl->t("Series"), $this->entity->seriesCount ],
+    ] as list($icon, $plural, $title, $count)) {
+      $items[] = [
+        $this->intl->rp("/genre/{0}/{$plural}", $this->entity->id),
+        "{$title} <span class='fr'>{$this->intl->format("{0,number}", $count)}</span>",
+        [ "class" => "ico ico-{$icon}" ]
+      ];
     }
+    return $items;
   }
 
 }

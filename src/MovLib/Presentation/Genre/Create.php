@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation\Genre;
 
-use \MovLib\Presentation\Partial\Alert;
-
 /**
  * Allows the creation of a new genre.
  *
@@ -29,45 +27,22 @@ use \MovLib\Presentation\Partial\Alert;
  * @since 0.0.1-dev
  */
 class Create extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\TraitForm;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
 
   /**
    * Instantiate new genre create presentation.
-   *
    */
-  public function __construct() {
+  public function init() {
     $this->initPage($this->intl->t("Create Genre"));
     $this->initBreadcrumb([ [ $this->intl->rp("/genres"), $this->intl->t("Genres") ] ]);
     $this->breadcrumbTitle = $this->intl->t("Create");
     $this->initLanguageLinks("/genre/create");
-
-    $kernel->stylesheets[] = "genre";
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * @inheritdoc
-   */
-  protected function getContent() {
-    return new Alert(
-      $this->intl->t("The create genre feature isn’t implemented yet."),
-      $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    );
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  protected function formValid() {
-    return $this;
+  public function getContent() {
+    return "<div class='c'>{$this->checkBackLater($this->intl->t("create genre"))}</div>";
   }
 
 }

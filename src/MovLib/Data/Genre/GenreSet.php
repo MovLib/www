@@ -42,13 +42,10 @@ SELECT
     COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->languageCode}' AS CHAR),
     COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR)
   ) AS `name`,
-  COUNT(DISTINCT `movies_genres`.`movie_id`) AS `movieCount`,
-  COUNT(DISTINCT `series_genres`.`series_id`) AS `seriesCount`
+  `genres`.`count_movies` AS `movieCount`,
+  `genres`.`count_series` AS `seriesCount`
 FROM `genres`
-  LEFT JOIN `movies_genres` ON `movies_genres`.`genre_id` = `genres`.`id`
-  LEFT JOIN `series_genres` ON `series_genres`.`genre_id` = `genres`.`id`
 {$where}
-GROUP BY `id`, `deleted`, `created`, `changed`, `name`
 {$orderBy}
 SQL;
   }

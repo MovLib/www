@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Genre;
 
-use \MovLib\Data\Genre;
+use \MovLib\Data\Genre\Genre;
 
 /**
  * A genre's discussion.
@@ -28,37 +28,48 @@ use \MovLib\Data\Genre;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Discussion extends \MovLib\Presentation\Genre\AbstractBase {
+class Discussion extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Presentation\Genre\GenreTrait;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+  // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * Instantiate new genre discussion presentation.
+   * The entity to present.
    *
+   * @var \MovLib\Data\AbstractEntity
    */
-  public function __construct() {
-    $this->genre = new Genre((integer) $_SERVER["GENRE_ID"]);
-    $this->initPage($this->intl->t("Discussion"));
-    $this->pageTitle = $this->intl->t("Discussion of {0}", [ "<a href='{$this->genre->route}'>{$this->genre->name}</a>" ]);
-    $this->initLanguageLinks("/genre/{0}/discussion", [ $this->genre->id ]);
-    $this->initGenreBreadcrumb();
-    $this->sidebarInit();
-
-    $kernel->stylesheets[] = "genre";
-  }
+  protected $entity;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * @inheritdoc
-   * @return \MovLib\Presentation\Partial\Alert
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    return new \MovLib\Presentation\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("discuss genre") ]), $this->intl->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+  public function init() {
+    $this->entity = new Genre($this->diContainerHTTP, $_SERVER["GENRE_ID"]);
+    $pageTitle    = $this->intl->t("Discuss {0}", [ $this->entity->name ]);
+    return $this
+      ->initPage($pageTitle, $pageTitle, $this->intl->t("Discussion"))
+      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
+      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/discussion", $this->entity->id)
+      ->breadcrumb->addCrumbs([
+        [ $this->intl->rp("/genres"), $this->intl->t("Genres") ],
+        [ $this->entity->route, $this->entity->name ]
+      ])
+    ;
+
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {
+    return $this->checkBackLater($this->intl->t("discuss genre"));
   }
 
 }

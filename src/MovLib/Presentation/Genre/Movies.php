@@ -17,9 +17,7 @@
  */
 namespace MovLib\Presentation\Genre;
 
-use \MovLib\Data\Genre;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Listing\MovieListing as MoviesPartial;
+use \MovLib\Data\Genre\Genre;
 
 /**
  * Movies with a certain genre associated.
@@ -30,41 +28,48 @@ use \MovLib\Presentation\Partial\Listing\MovieListing as MoviesPartial;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Movies extends \MovLib\Presentation\Genre\AbstractBase {
+class Movies extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Presentation\Genre\GenreTrait;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+  // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * Instantiate new genre movie presentation.
+   * The entity to present.
    *
+   * @var \MovLib\Data\AbstractEntity
    */
-  public function __construct() {
-    $this->genre = new Genre((integer) $_SERVER["GENRE_ID"]);
-    $this->initPage($this->intl->t("Movies with {0}", [ $this->genre->name ]));
-    $this->pageTitle = $this->intl->t("Movies with {0}", [ "<a href='{$this->genre->route}'>{$this->genre->name}</a>" ]);
-    $this->breadcrumbTitle = $this->intl->t("Movies");
-    $this->initLanguageLinks("/genre/{0}/movies", [ $this->genre->id ], true);
-    $this->initGenreBreadcrumb();
-    $this->sidebarInit();
-
-    $kernel->stylesheets[] = "genre";
-  }
+  protected $entity;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * @inheritdoc
-   * @return \MovLib\Presentation\Partial\Listing\MovieListing
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    return new MoviesPartial(
-      $this->genre->getMoviesResult(),
-      new Alert($this->intl->t("Check back later"), $this->intl->t("No movies found."), Alert::SEVERITY_INFO)
-    );
+  public function init() {
+    $this->entity = new Genre($this->diContainerHTTP, $_SERVER["GENRE_ID"]);
+    $pageTitle    = $this->intl->t("Movies related to {0}", [ $this->entity->name ]);
+    return $this
+      ->initPage($pageTitle, $pageTitle, $this->intl->t("Movies"))
+      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
+      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/movies", $this->entity->id, true)
+      ->breadcrumb->addCrumbs([
+        [ $this->intl->rp("/genres"), $this->intl->t("Genres") ],
+        [ $this->entity->route, $this->entity->name ]
+      ])
+    ;
+
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {
+    return $this->checkBackLater($this->intl->t("genre movies"));
   }
 
 }

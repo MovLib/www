@@ -40,6 +40,7 @@ use \MovLib\Partial\FormElement\TextareaHTML;
  */
 class Edit extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Presentation\Genre\GenreTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -64,7 +65,7 @@ class Edit extends \MovLib\Presentation\AbstractPresenter {
     $pageTitle    = $this->intl->t("Edit {0}", [ $this->entity->name ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Edit"))
-      ->sidebarInitToolbox($this->entity)
+      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
       ->initLanguageLinks("/{$this->entity->singularKey}/{0}/edit", $this->entity->id)
       ->breadcrumb->addCrumbs([
         [ $this->intl->rp("/genres"), $this->intl->t("Genres") ],

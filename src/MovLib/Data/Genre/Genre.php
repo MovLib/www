@@ -125,13 +125,10 @@ SELECT
   ) AS `name`,
   COLUMN_GET(`genres`.`dyn_descriptions`, '{$this->intl->languageCode}' AS CHAR) AS `description`,
   COLUMN_GET(`genres`.`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR) AS `wikipedia`,
-  COUNT(DISTINCT `movies_genres`.`movie_id`) AS `movieCount`,
-  COUNT(DISTINCT `series_genres`.`series_id`) AS `seriesCount`
+  `genres`.`count_movies` AS `movieCount`,
+  `genres`.`count_series` AS `seriesCount`
 FROM `genres`
-  LEFT JOIN `movies_genres` ON `movies_genres`.`genre_id` = `genres`.`id`
-  LEFT JOIN `series_genres` ON `series_genres`.`genre_id` = `genres`.`id`
 WHERE `genres`.`id` = ?
-GROUP BY `id`,`created`,`changed`,`deleted`,`name`,`description`,`wikipedia`
 SQL
       );
       $stmt->bind_param("d", $id);
