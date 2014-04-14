@@ -18,97 +18,36 @@
 
 namespace MovLib\Presentation\Person\Photo;
 
-use \MovLib\Data\Image\PersonImage;
-
 /**
  * Image details presentation for a person's photo.
  *
+ * @route /person/{id}/photo
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Photo extends \MovLib\Presentation\Person\Photo\AbstractBase {
+class Photo extends \MovLib\Presentation\AbstractPresenter {
 
   /**
-   * Instantiate new Person Photo presentation.
-   *
-   * @throws \MovLib\Exception\DatabaseException
-   * @throws \MovLib\Presentation\Redirect\SeeOther
+   * Initialize person photo presentation.
    */
-  public function __construct() {
-    // Try to load person data.
-    $this->person = new Person($_SERVER["PERSON_ID"]);
-
-    $routeArgs = [ $this->person->id ];
-
-    // Redirect to upload page, if there is no photo.
-    if ($this->person->displayPhoto->imageExists === false) {
-      throw new SeeOther($this->person->displayPhoto->route);
-    }
-
-    // Initialize breadcrumbs.
-    $this->initBreadcrumb([
-      [ $this->intl->rp("/persons"), $this->intl->t("Persons") ],
-      [ $this->person->route, $this->person->name ],
-    ]);
-
-    // Initialize sidebar navigation.
-    $this->sidebarInit([
-        [ $this->intl->r("/person/{0}/photo", $routeArgs), $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
-        [ $this->intl->r("/person/{0}/photo/edit", $routeArgs), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
-        [ $this->intl->r("/person/{0}/photo/history", $routeArgs), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
-        [ $this->intl->r("/person/{0}/photo/delete", $routeArgs), $this->intl->t("Delete"), [ "class" => "ico ico-delete" ] ],
-    ]);
-
-    // Initialize language links.
-    $this->initLanguageLinks("/person/{0}/photo", $routeArgs);
-
-    // Initialize page titles.
-    $title = $this->intl->t("Photo of {person_name}");
-    $search = "{person_name}";
-    $this->initPage(str_replace($search, $this->person->name, $title));
-    $this->pageTitle = str_replace(
-      $search,
-      "<span itemscope itemtype='http://schema.org/Person'><a href='{$this->person->route}' itemprop='url'><span itemprop='name'>{$this->person->name}</span></a></span>",
-      $title
-    );
-
-    // Initialize CSS class, schema and stylesheet.
-    $this->bodyClasses    .= " imagedetails";
-    $this->schemaType      = "ImageObject";
-    $kernel->stylesheets[] = "imagedetails";
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function getPageContent() {
-    // @todo: No photo -> display upload link and no sidebar.
-    return
-    "<meta itemprop='representativeOfPage' content='true'>" .
-        TraitDeletionRequest::getDeletionRequestedAlert($this->image->deletionId) .
-        "<div class='r wrapper'>" .
-          "<div class='s s8 tac image'>{$this->getImage(
-            $$this->person->displayPhoto->getStyle(PersonImage::STYLE_SPAN_02),
-            $this->image->getURL(),
-            [ "itemprop" => "thumbnailUrl" ],
-            [ "itemprop" => "contentUrl", "target" => "_blank" ]
-          )}</div>" .
-          "<dl class='s s4 description'>" .
-            $dl .
-            "<dt>{$this->intl->t("Provided by")}</dt><dd><a href='{$uploader->route}' itemprop='creator provider'>{$uploader->name}</a></dd>" .
-            "<dt>{$this->intl->t("Dimensions")}</dt><dd>{$this->intl->t("{width} × {height}", [
-              "width"  => "<span itemprop='width'>{$this->image->width}&nbsp;<abbr title='{$this->intl->t("Pixel")}'>px</abbr></span>",
-              "height" => "<span itemprop='height'>{$this->image->height}&nbsp;<abbr title='{$this->intl->t("Pixel")}'>px</abbr></span>",
-            ])}</dd>" .
-            "<dt>{$this->intl->t("File size")}</dt><dd itemprop='contentSize'>{$this->intl->t("{0,number} {1}", $this->formatBytes($this->image->filesize))}</dd>" .
-            "<dt>{$this->intl->t("Upload on")}</dt><dd>{$dateTime}</dd>" .
-            "<dt>{$this->intl->t("Buy this {image_name}", [ "image_name" => $this->image->name ])}</dt>{$offers}" .
-          "</dl>" .
-        "</div>" .
-      "</div>"
+  public function init() {
+    $this->person = new Person($this->diContainerHTTP, (integer) $_SERVER["PERSON_ID"]);
+    $this->initPage($this->intl->t("Photo of {0}", $this->person->name));
+    $this->pageTitle        = $this->intl->t("Photo of {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
+    $this->initLanguageLinks("/person/{0}/photo", [ $this->person->id ]);
+    $this->breadcrumb
+      ->addCrumb($this->person->routeIndex, $this->intl->t("Persons"))
+      ->addCrumb($this->person->route, $this->person->name)
     ;
+    $this->contentBefore = "<div class='c'>";
+    $this->contentAfter  = "</div>";
   }
+
+  public function getContent() {
+    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("person photo") ]), $this->intl->t("Check back later"), "info");
+  }
+
 }

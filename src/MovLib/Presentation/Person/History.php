@@ -31,7 +31,7 @@ use \MovLib\Data\Person\Person;
 class History extends \MovLib\Presentation\Person\AbstractBase {
 
   /**
-   * Initialize person discussion presentation.
+   * Initialize person history presentation.
    */
   public function init() {
     $this->person = new Person($this->diContainerHTTP, (integer) $_SERVER["PERSON_ID"]);

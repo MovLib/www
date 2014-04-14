@@ -46,6 +46,9 @@ class Delete extends \MovLib\Presentation\AbstractPresenter {
     $this->contentAfter  = "</div>";
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getContent() {
     return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("delete person") ]), $this->intl->t("Check back later"), "info");
   }
