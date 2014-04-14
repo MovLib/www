@@ -20,7 +20,6 @@ namespace MovLib\Presentation\Help\Category;
 use \MovLib\Data\Help\Category;
 use \MovLib\Data\Help\ArticleSet;
 use \MovLib\Data\Help\SubCategorySet;
-use \MovLib\Partial\Alert;
 
 /**
  * Defines the help category index presentation.
@@ -75,7 +74,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
 
     $sidebarItems = [ [ $this->category->route, "{$this->category->title} <span class='fr'>{$this->intl->format("{0,number}", [ $this->category->articleCount ])}</span>", [ "class" => "ico {$this->category->icon} separator" ] ] ];
     foreach ($this->set->getAllBelongingToCategory($this->category->id) as $id => $entity) {
-      $sidebarItems[] = [ $entity->route, "{$entity->title} <span class='fr'>{$this->intl->format("{0,number}", [ $entity->articleCount ])}</span>" ];
+      $sidebarItems[] = [ $entity->route, "{$entity->title} <span class='fr'>{$this->intl->format("{0,number}", [ $entity->articleCount ])}</span>", [ "class" => "ico {$entity->icon}" ] ];
     }
     $this->sidebarInit($sidebarItems);
     return $this;

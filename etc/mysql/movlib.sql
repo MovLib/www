@@ -1234,7 +1234,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`help_categories` (
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this help category is marked as deleted (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_titles` BLOB NOT NULL COMMENT 'The help category’s title in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The help category’s description in various languages. Keys are ISO alpha-2 language codes.',
-  `icon` VARCHAR(255) NOT NULL,
+  `icon` VARCHAR(255) NOT NULL COMMENT 'The icon of a category.',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 COMMENT = 'Contains all help categories.'
@@ -1253,6 +1253,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`help_subcategories` (
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the help subcategory was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this help subcategory is marked as deleted (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_titles` BLOB NOT NULL COMMENT 'The help subcategory’s title in various languages. Keys are ISO alpha-2 language codes.',
+  `icon` VARCHAR(255) NOT NULL COMMENT 'The icon of a subcategory.',
   PRIMARY KEY (`id`),
   INDEX `fk_help_subcategories_help_category_id` (`help_category_id` ASC),
   CONSTRAINT `fk_help_subcategories_help_categories`

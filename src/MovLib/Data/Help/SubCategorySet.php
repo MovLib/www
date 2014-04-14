@@ -39,6 +39,7 @@ SELECT
   `help_subcategories`.`changed` AS `changed`,
   `help_subcategories`.`created` AS `created`,
   `help_subcategories`.`deleted` AS `deleted`,
+  `help_subcategories`.`icon` AS `icon`,
   IFNULL(
     COLUMN_GET(`help_subcategories`.`dyn_titles`, '{$this->intl->languageCode}' AS CHAR),
     COLUMN_GET(`help_subcategories`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)

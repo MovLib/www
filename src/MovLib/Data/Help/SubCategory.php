@@ -71,6 +71,13 @@ final class SubCategory extends \MovLib\Data\AbstractEntity {
   public $deleted;
 
   /**
+   * The help subcategory title's icon (e.g. ico-person).
+   *
+   * @var string
+   */
+  public $icon;
+
+  /**
    * The help subcategory's unique identifier.
    *
    * @var integer
@@ -121,6 +128,7 @@ SELECT
   `help_subcategories`.`changed` AS `changed`,
   `help_subcategories`.`created` AS `created`,
   `help_subcategories`.`deleted` AS `deleted`,
+  `help_subcategories`.`icon` AS `icon`,
   IFNULL(
     COLUMN_GET(`help_subcategories`.`dyn_titles`, ? AS CHAR),
     COLUMN_GET(`help_subcategories`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)
@@ -139,6 +147,7 @@ SQL
         $this->changed,
         $this->created,
         $this->deleted,
+        $this->icon,
         $this->title,
         $this->routeKey
       );

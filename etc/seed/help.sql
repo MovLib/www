@@ -80,7 +80,8 @@ INSERT INTO `help_subcategories` SET
     'en', 'Movies',
     'de', 'Filme'
   ),
-  `help_category_id` = @help_category_database
+  `help_category_id` = @help_category_database,
+  `icon`             = 'ico-movie'
 ;
 SET @help_subcategory_movies = LAST_INSERT_ID();
 
@@ -89,7 +90,8 @@ INSERT INTO `help_subcategories` SET
     'en', 'Series',
     'de', 'Serien'
   ),
-  `help_category_id` = @help_category_database
+  `help_category_id` = @help_category_database,
+  `icon`             = 'ico-series'
 ;
 SET @help_subcategory_series = LAST_INSERT_ID();
 
@@ -98,7 +100,8 @@ INSERT INTO `help_subcategories` SET
     'en', 'Releases',
     'de', 'Veröffentlichungen'
   ),
-  `help_category_id` = @help_category_database
+  `help_category_id` = @help_category_database,
+  `icon`             = 'ico-release'
 ;
 SET @help_subcategory_releases = LAST_INSERT_ID();
 
@@ -107,7 +110,8 @@ INSERT INTO `help_subcategories` SET
     'en', 'Persons',
     'de', 'Personen'
   ),
-  `help_category_id` = @help_category_database
+  `help_category_id` = @help_category_database,
+  `icon`             = 'ico-person'
 ;
 SET @help_subcategory_persons = LAST_INSERT_ID();
 
@@ -116,7 +120,8 @@ INSERT INTO `help_subcategories` SET
     'en', 'Companies',
     'de', 'Unternehmen'
   ),
-  `help_category_id` = @help_category_database
+  `help_category_id` = @help_category_database,
+  `icon`             = 'ico-company'
 ;
 SET @help_subcategory_companies = LAST_INSERT_ID();
 
@@ -125,7 +130,8 @@ INSERT INTO `help_subcategories` SET
     'en', 'Awards',
     'de', 'Auszeichnungen'
   ),
-  `help_category_id` = @help_category_database
+  `help_category_id` = @help_category_database,
+  `icon`             = 'ico-award'
 ;
 SET @help_subcategory_awards = LAST_INSERT_ID();
 
@@ -134,7 +140,8 @@ INSERT INTO `help_subcategories` SET
     'en', 'Events',
     'de', 'Events'
   ),
-  `help_category_id` = @help_category_database
+  `help_category_id` = @help_category_database,
+  `icon`             = 'ico-event'
 ;
 SET @help_subcategory_events = LAST_INSERT_ID();
 
@@ -143,7 +150,8 @@ INSERT INTO `help_subcategories` SET
     'en', 'Genres',
     'de', 'Genres'
   ),
-  `help_category_id` = @help_category_database
+  `help_category_id` = @help_category_database,
+  `icon`             = 'ico-genre'
 ;
 SET @help_subcategory_genres = LAST_INSERT_ID();
 
@@ -152,7 +160,8 @@ INSERT INTO `help_subcategories` SET
     'en', 'Jobs',
     'de', 'Tätigkeiten'
   ),
-  `help_category_id` = @help_category_database
+  `help_category_id` = @help_category_database,
+  `icon`             = 'ico-job'
 ;
 SET @help_subcategory_jobs = LAST_INSERT_ID();
 
@@ -161,7 +170,8 @@ INSERT INTO `help_subcategories` SET
     'en', 'Deletion Requests',
     'de', 'Löschanträge'
   ),
-  `help_category_id` = @help_category_community
+  `help_category_id` = @help_category_community,
+  `icon`             = 'ico-delete'
 ;
 SET @help_subcategory_deletion_requests = LAST_INSERT_ID();
 
