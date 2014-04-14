@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Language;
-use \MovLib\Data\Movie\MovieTitles as MovieTitlesModel;
 use \MovLib\Presentation\Partial\Lists\Unordered;
 
 /**
@@ -30,7 +29,7 @@ use \MovLib\Presentation\Partial\Lists\Unordered;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieTitles extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
+class MovieTitles extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Presentation\Movie\TraitMoviePage;
 
   /**
@@ -43,10 +42,11 @@ class MovieTitles extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   /**
    * Instatiate new movie titles presentation.
    */
-  public function __construct() {
+  public function init() {
     $this->initMovie();
     $this->init($this->intl->t("Titles of {0}", [ $this->title ]));
-    $this->movieTitles = new MovieTitlesModel($_SERVER["MOVIE_ID"]);
+    $this->contentBefore = "<div class='c'>";
+    $this->contentAfter  = "</div>";
   }
 
   /**
@@ -80,13 +80,10 @@ class MovieTitles extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    $list = new Unordered($this->movieTitles->orderById(), $this->intl->t("There are no titles."));
-    $list->closure = [ $this, "formatTitles" ];
-
-    return "<h3>{$this->title}</h3>{$list}";
+  public function getContent() {
+    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("history") ]), $this->intl->t("Check back later"), "info");
   }
 
 }

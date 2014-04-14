@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Presentation\Partial\Alert;
-
 /**
  * Abstract base class for all movie presentations.
  *
@@ -29,9 +27,6 @@ use \MovLib\Presentation\Partial\Alert;
  * @since 0.0.1-dev
  */
 abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\TraitSidebar {
-    sidebarInit as traitSidebarInit;
-  }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -56,7 +51,7 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
    * @return this
    */
   protected function initBreadcrumb(array $breadcrumbs = []) {
-    array_unshift($breadcrumbs, [ $this->movie->route, $this->movie->displayTitleWithYear ]);
+    array_unshift($breadcrumbs, [ $this->movie->route, $this->movie->displayTitle ]);
     array_unshift($breadcrumbs, [ $this->intl->rp("/movies"), $this->intl->t("Movies") ]);
     return parent::initBreadcrumb($breadcrumbs);
   }

@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\Movie\FullMovie;
+use \MovLib\Data\Movie\Movie;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
@@ -30,7 +30,6 @@ use \MovLib\Presentation\Partial\Alert;
  * @since 0.0.1-dev
  */
 class Edit extends \MovLib\Presentation\Movie\AbstractBase {
-  use \MovLib\Presentation\TraitForm;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -42,15 +41,17 @@ class Edit extends \MovLib\Presentation\Movie\AbstractBase {
 
 
   /**
-   * Instantiate new delete movie presentation.
+   * Instantiate new edit movie presentation.
    *
    */
-  public function __construct() {
-    $this->movie = new FullMovie($_SERVER["MOVIE_ID"]);
-    $this->initPage($this->intl->t("Edit {title}", [ "title" => $this->movie->displayTitleWithYear ]));
+  public function init() {
+    $this->movie = new Movie($this->diContainerHTTP, $_SERVER["MOVIE_ID"]);
+    $this->initPage($this->intl->t("Edit {title}", [ "title" => $this->movie->displayTitle ]));
     $this->initLanguageLinks("/movie/{0}/edit", [ $this->movie->id ]);
     $this->initBreadcrumb();
     $this->breadcrumbTitle = $this->intl->t("Edit");
+    $this->contentBefore = "<div class='c'>";
+    $this->contentAfter  = "</div>";
   }
 
 
@@ -58,21 +59,10 @@ class Edit extends \MovLib\Presentation\Movie\AbstractBase {
 
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  protected function getContent() {
-    $this->alerts .= new Alert(
-      $this->intl->t("The edit movie feature isn’t implemented yet."),
-      $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    );
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function valid() {
-    return $this;
+  public function getContent() {
+    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("edit movie") ]), $this->intl->t("Check back later"), "info");
   }
 
 }

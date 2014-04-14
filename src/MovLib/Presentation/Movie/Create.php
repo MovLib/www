@@ -17,8 +17,7 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\Movie\FullMovie;
-use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Data\Movie\Movie;
 
 /**
  * Movie deletion presentation.
@@ -29,8 +28,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Create extends \MovLib\Presentation\Movie\AbstractBase {
-  use \MovLib\Presentation\TraitForm;
+class Create extends \MovLib\Presentation\AbstractPresenter {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -45,12 +43,14 @@ class Create extends \MovLib\Presentation\Movie\AbstractBase {
    * Instantiate new delete movie presentation.
    *
    */
-  public function __construct() {
-    $this->movie = new FullMovie();
+  public function init() {
+    $this->movie = new Movie();
     $this->initPage($this->intl->t("Create New Movie"));
     $this->initLanguageLinks("/movie/create");
     $this->breadcrumbTitle = $this->intl->t("Create");
     $this->initBreadcrumb();
+    $this->contentBefore = "<div class='c'>";
+    $this->contentAfter  = "</div>";
   }
 
 
@@ -60,12 +60,13 @@ class Create extends \MovLib\Presentation\Movie\AbstractBase {
   /**
    * @inheritdoc
    */
-  protected function getContent() {
-    $this->alerts .= new Alert(
-      $this->intl->t("The create movie feature isn’t implemented yet."),
-      $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    );
+  public function getContent() {
+//    $this->alerts .= new Alert(
+//      $this->intl->t("The create movie feature isn’t implemented yet."),
+//      $this->intl->t("Check back later"),
+//      Alert::SEVERITY_INFO
+//    );
+    return $this->callout($this->intl->t("Fix me!"), null, "warning");
   }
 
   /**

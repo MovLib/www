@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\Movie\FullMovie;
+use \MovLib\Data\Movie\Movie;
 use \MovLib\Presentation\Partial\Listing\PersonCastListing;
 
 /**
@@ -29,33 +29,40 @@ use \MovLib\Presentation\Partial\Listing\PersonCastListing;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Cast extends \MovLib\Presentation\Movie\AbstractBase {
+class Cast extends \MovLib\Presentation\AbstractIndexPresenter {
 
   /**
-   * Instantiate new movie cast presentation.
+   * Initialize new movie cast presentation.
    *
    */
-  public function __construct() {
-    $this->movie = new FullMovie($_SERVER["MOVIE_ID"]);
+  public function init() {
+    $this->movie = new Movie($_SERVER["MOVIE_ID"]);
     $this->initPage($this->intl->t("Cast"));
-    $this->initBreadcrumb();
     $this->pageTitle = $this->intl->t(
       "Cast of {0}",
       [ "<a href='{$this->movie->route}' property='url'><span property='name'>{$this->movie->displayTitleWithYear}</span></a>" ]
     );
     $this->initLanguageLinks("/movie/{0}/cast", [ $this->movie->id ]);
-    $this->initSidebar();
+    // @todo: Replace with the real set!
+    $this->initIndex(new \MovLib\Data\Person\PersonSet($this->diContainerHTTP), "Fix me!", "Fix me!");
   }
 
   /**
-   * @inheritdoc
-   *
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    $this->schemaType = "Movie";
+  protected function formatListingItem(\MovLib\Data\AbstractEntity $item, $delta) {
 
-    $cast = new PersonCastListing($this->movie->getCast(), "actor");
-    return "<div id='cast'><h2>{$this->intl->t("Cast")}</h2>{$cast}</div>";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getNoItemsContent() {
+    return $this->callout(
+      "<p>{$this->intl->t("We couldn’t find the cast for this movie.")}</p>",
+      $this->intl->t("No Cast"),
+      "info"
+    );
   }
 
 }

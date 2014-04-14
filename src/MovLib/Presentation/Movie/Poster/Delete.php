@@ -15,45 +15,33 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie;
-
-use \MovLib\Presentation\Partial\Alert;
+namespace MovLib\Presentation\Movie\Poster;
 
 /**
- * Movie deletion presentation.
+ * Defines the movie poster delete presentation.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
 class Delete extends \MovLib\Presentation\AbstractPresenter {
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new delete movie presentation.
-   */
-  public function init() {
-//    $this->initMoviePage();
-    $this->initPage("Delete Movie");
-    $this->initLanguageLinks("/movie/{0}/delete", [ $this->movie->id ]);
-    $this->contentBefore = "<div class='c'>";
-    $this->contentAfter  = "</div>";
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("delete person") ]), $this->intl->t("Check back later"), "info");
+    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("movie poster delete") ]), $this->intl->t("Check back later"), "info");
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function init() {
+    $this->initPage($this->intl->t("Poster Delete"));
+    $this->contentBefore = "<div class='c'>";
+    $this->contentAfter  = "</div>";
   }
 
 }

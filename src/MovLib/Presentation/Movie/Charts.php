@@ -29,22 +29,18 @@ use \MovLib\Presentation\Partial\Alert;
  * @since 0.0.1-dev
  */
 class Charts extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\TraitSidebar;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
-  public function __construct() {
+  public function init() {
     $this->initPage($this->intl->t("Movie Charts"));
     $this->initBreadcrumb([ [ $this->intl->rp("/movies"), $this->intl->t("Movies") ] ]);
     $this->breadcrumbTitle = $this->intl->t("Charts");
     $this->initLanguageLinks("/movies/charts", null, true);
-    $this->sidebarInit([
-      [ $this->intl->rp("/movies"), $this->intl->t("Movies"), [ "class" => "ico ico-movie" ] ],
-      [ $this->intl->rp("/movies/charts"), $this->intl->t("Charts") ],
-      [ $this->intl->r("/movie/random"), $this->intl->t("Random") ],
-    ]);
+    $this->contentBefore = "<div class='c'>";
+    $this->contentAfter  = "</div>";
   }
 
 
@@ -57,11 +53,11 @@ class Charts extends \MovLib\Presentation\AbstractPresenter {
    * @return string
    *   The presentation's page content.
    */
-  protected function getPageContent() {
-    return new Alert(
+  public function getContent() {
+    return $this->callout(
       $this->intl->t("The movies charts feature isn’t implemented yet."),
       $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
+      "info"
     );
   }
 

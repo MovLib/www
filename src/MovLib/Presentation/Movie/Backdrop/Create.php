@@ -15,35 +15,33 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie;
-
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Data\Movie\Movie;
+namespace MovLib\Presentation\Movie\Backdrop;
 
 /**
- * Delete given image.
+ * Defines the movie backdrop upload presentation.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ImageDelete extends \MovLib\Presentation\Movie\AbstractBase {
+class Create extends \MovLib\Presentation\AbstractPresenter {
 
-  public function __construct() {
-    $this->movie = new Movie($_SERVER["MOVIE_ID"]);
-    $this->initPage("Delete Image");
-    $this->initBreadcrumb();
-    $this->alerts .= new Alert(
-      $this->intl->t("The delete image feature isn’t implemented yet."),
-      $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    );
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {
+    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("movie backdrop upload") ]), $this->intl->t("Check back later"), "info");
   }
 
-  protected function getPageContent() {
-
+  /**
+   * {@inheritdoc}
+   */
+  public function init() {
+    $this->initPage($this->intl->t("Backdrop Upload"));
+    $this->contentBefore = "<div class='c'>";
+    $this->contentAfter  = "</div>";
   }
 
 }

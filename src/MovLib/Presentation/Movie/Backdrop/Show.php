@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,36 +15,32 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie;
-
-use \MovLib\Data\Movie\Movie;
+namespace MovLib\Presentation\Movie\Backdrop;
 
 /**
+ * Defines the movie backdrop presentation.
  *
- *
- * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\Movie\AbstractBase {
-
-  public function init() {
-    $this->movie = new Movie($this->diContainerHTTP, $_SERVER["MOVIE_ID"]);
-    $this->initPage($this->intl->t("History of {title}", [ "title" => $this->movie->displayTitle ]));
-    $this->initLanguageLinks("/movie/{0}/history", [ $this->movie->id ]);
-    $this->initBreadcrumb();
-    $this->breadcrumbTitle = $this->intl->t("History");
-    $this->contentBefore = "<div class='c'>";
-    $this->contentAfter  = "</div>";
-  }
+class Show extends \MovLib\Presentation\AbstractShowPresenter {
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("history") ]), $this->intl->t("Check back later"), "info");
+    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("movie backdrop") ]), $this->intl->t("Check back later"), "info");
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function init() {
+    $this->initPage($this->intl->t("Backdrop"));
+    $this->initShow(new \MovLib\Stub\Data\Dummy\Dummy($this->diContainerHTTP, $_SERVER["IMAGE_ID"], "poster", "posters"), $this->intl->t("Backdrops"), "ImageObject");
   }
 
 }

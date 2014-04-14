@@ -21,7 +21,7 @@ use \MovLib\Data\Movie\Movie;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
- * 
+ * A movie's discussion
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -31,21 +31,28 @@ use \MovLib\Presentation\Partial\Alert;
  */
 class Discussion extends \MovLib\Presentation\Movie\AbstractBase {
 
-  public function __construct() {
-    $this->movie = new Movie($_SERVER["MOVIE_ID"]);
-    $this->initPage($this->intl->t("Discuss {title}", [ "title" => $this->movie->displayTitleWithYear ]));
-    $this->initLanguageLinks("/movie/{0}/discussion", [ $this->movie->id ]);
-    $this->initBreadcrumb();
-    $this->breadcrumbTitle = $this->intl->t("Discuss");
-    $this->alerts .= new Alert(
-      $this->intl->t("The discuss movie feature isn’t implemented yet."),
-      $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    );
+  /**
+   * Initialize person discussion presentation.
+   */
+  public function init() {
+    $this->movie = new Movie($this->diContainerHTTP, (integer) $_SERVER["MOVIE_ID"]);
+//    $this->initPage($this->intl->t("Discuss"));
+//    $this->initPage($this->intl->t("Discuss {title}", [ "title" => $this->movie->displayTitleWithYear ]));
+//    $this->initLanguageLinks("/movie/{0}/discussion", [ $this->movie->id ]);
+//    $this->breadcrumb
+//      ->addCrumb($this->movie->routeIndex, $this->intl->t("Movies"))
+//      ->addCrumb($this->movie->route, $this->movie->displayTitleWithYear)
+//    ;
+    $this->initPage($this->intl->t("Discuss {title}", [ "title" => $this->movie->displayTitle ]));
+    $this->contentBefore = "<div class='c'>";
+    $this->contentAfter  = "</div>";
   }
 
-  protected function getPageContent() {
-
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {
+    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("discuss movie") ]), $this->intl->t("Check back later"), "info");
   }
 
 }

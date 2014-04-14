@@ -15,36 +15,33 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie;
-
-use \MovLib\Data\Movie\Movie;
+namespace MovLib\Presentation\Movie\LobbyCard;
 
 /**
+ * Defines the movie lobby card upload presentation.
  *
- *
- * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\Movie\AbstractBase {
-
-  public function init() {
-    $this->movie = new Movie($this->diContainerHTTP, $_SERVER["MOVIE_ID"]);
-    $this->initPage($this->intl->t("History of {title}", [ "title" => $this->movie->displayTitle ]));
-    $this->initLanguageLinks("/movie/{0}/history", [ $this->movie->id ]);
-    $this->initBreadcrumb();
-    $this->breadcrumbTitle = $this->intl->t("History");
-    $this->contentBefore = "<div class='c'>";
-    $this->contentAfter  = "</div>";
-  }
+class Create extends \MovLib\Presentation\AbstractPresenter {
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("history") ]), $this->intl->t("Check back later"), "info");
+    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("movie lobby card upload") ]), $this->intl->t("Check back later"), "info");
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function init() {
+    $this->initPage($this->intl->t("Lobby Card Upload"));
+    $this->contentBefore = "<div class='c'>";
+    $this->contentAfter  = "</div>";
   }
 
 }

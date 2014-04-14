@@ -15,27 +15,42 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie\Images;
+namespace MovLib\Presentation\Movie\LobbyCard;
 
 /**
- * Movie lobby cards gallery presentation.
+ * Defines the movie lobby card index presentation.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class LobbyCards extends \MovLib\Presentation\Movie\Images\AbstractBase {
+class Index extends \MovLib\Presentation\AbstractIndexPresenter {
 
   /**
-   * Instantiate new lobby cards presentation.
-   *
-   * @throws \MovLib\Exception\DatabaseException
-   * @throws \MovLib\Presentation\Error\NotFound
+   * {@inheritdoc}
    */
-  public function __construct() {
-    parent::__construct("LobbyCard", $this->intl->t("Lobby Card"), $this->intl->t("Lobby Cards"), "lobby-card", "lobby-cards");
+  protected function formatListingItem(\MovLib\Data\AbstractEntity $item, $delta) {
+
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getNoItemsContent() {
+    return $this->callout(
+      "<p>{$this->intl->t("We couldn’t find any posters for this movie.")}</p>",
+      $this->intl->t("No Lobby Cards"),
+      "info"
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function init() {
+    $this->initIndex(new \MovLib\Stub\Data\Dummy\DummySet($this->diContainerHTTP), $this->intl->t("Lobby Cards"), null);
   }
 
 }

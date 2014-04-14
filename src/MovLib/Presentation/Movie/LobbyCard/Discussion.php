@@ -15,27 +15,33 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie\Images;
+namespace MovLib\Presentation\Movie\LobbyCard;
 
 /**
- * Movie images gallery presentation.
+ * Defines the movie lobby card discussion presentation.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Backdrops extends \MovLib\Presentation\Movie\Images\AbstractBase {
+class Discussion extends \MovLib\Presentation\AbstractPresenter {
 
   /**
-   * Instantiate new movie images presentation.
-   *
-   * @throws \MovLib\Exception\DatabaseException
-   * @throws \MovLib\Presentation\Error\NotFound
+   * {@inheritdoc}
    */
-  public function __construct() {
-    parent::__construct("Backdrop", $this->intl->t("Backdrop"), $this->intl->t("Backdrops"), "backdrop", "backdrops");
+  public function getContent() {
+    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("movie lobby card discussion") ]), $this->intl->t("Check back later"), "info");
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function init() {
+    $this->initPage($this->intl->t("Lobby Card Discussion"));
+    $this->contentBefore = "<div class='c'>";
+    $this->contentAfter  = "</div>";
   }
 
 }

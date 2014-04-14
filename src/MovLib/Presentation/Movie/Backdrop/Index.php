@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,41 +15,18 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie;
-
-use \MovLib\Data\Movie\Movie;
-use \MovLib\Presentation\Partial\Alert;
+namespace MovLib\Presentation\Movie\Backdrop;
 
 /**
- * Presentation of a single movie's crew.
+ * Defines the movie backdrop index presentation.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Crew extends \MovLib\Presentation\AbstractIndexPresenter {
-
-  /**
-   * Initialize new movie crew presentation.
-   *
-   * @throws \MovLib\Presentation\Error\NotFound
-   */
-  public function init() {
-    $cache->cacheable = false;
-    $cache->delete();
-    $this->movie = new Movie($_SERVER["MOVIE_ID"]);
-    $this->initPage($this->intl->t("Crew"));
-    $this->initBreadcrumb();
-    $this->pageTitle = $this->intl->t(
-      "Crew of {0}",
-      [ "<a href='{$this->movie->route}' property='url'><span property='name'>{$this->movie->displayTitleWithYear}</span></a>" ]
-    );
-    $this->initLanguageLinks("/movie/{0}/crew", [ $this->movie->id ]);
-    // @todo: Replace with the real set!
-    $this->initIndex(new \MovLib\Data\Person\PersonSet($this->diContainerHTTP), "Fix me!", "Fix me!");
-  }
+class Index extends \MovLib\Presentation\AbstractIndexPresenter {
 
   /**
    * {@inheritdoc}
@@ -63,10 +40,17 @@ class Crew extends \MovLib\Presentation\AbstractIndexPresenter {
    */
   public function getNoItemsContent() {
     return $this->callout(
-      "<p>{$this->intl->t("We couldn’t find the crew for this movie.")}</p>",
-      $this->intl->t("No Crew"),
+      "<p>{$this->intl->t("We couldn’t find any posters for this movie.")}</p>",
+      $this->intl->t("No Backdrops"),
       "info"
     );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function init() {
+    $this->initIndex(new \MovLib\Stub\Data\Dummy\DummySet($this->diContainerHTTP), $this->intl->t("Backdrops"), null);
   }
 
 }
