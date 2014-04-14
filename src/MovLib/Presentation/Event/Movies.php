@@ -17,9 +17,7 @@
  */
 namespace MovLib\Presentation\Event;
 
-use \MovLib\Data\Award;
-use \MovLib\Data\Event;
-use \MovLib\Presentation\Partial\Listing\AwardEventMovieListing;
+use \MovLib\Data\Event\Event;
 
 /**
  * Movies with a certain event associated.
@@ -30,42 +28,48 @@ use \MovLib\Presentation\Partial\Listing\AwardEventMovieListing;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Movies extends \MovLib\Presentation\Event\AbstractBase {
+class Movies extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Presentation\Event\EventTrait;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+  // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * Instantiate new event movie presentation.
+   * The entity to present.
    *
+   * @var \MovLib\Data\AbstractEntity
    */
-  public function __construct() {
-    $this->event   = new Event((integer) $_SERVER["EVENT_ID"]);
-    $this->award = new Award($this->event->awardId);
-
-    $this->initPage($this->intl->t("Movies with {0}", [ $this->event->name ]));
-    $this->pageTitle    =
-      $this->intl->t("Movies with {0}", [ "<a href='{$this->event->route}'>{$this->event->name}</a>" ])
-    ;
-    $this->breadcrumbTitle = $this->intl->t("Movies");
-    $this->initLanguageLinks("/event/{0}/movies", [ $this->event->id ], true);
-    $this->initEventBreadcrumb();
-    $this->sidebarInit();
-
-    $kernel->stylesheets[] = "event";
-  }
+  protected $entity;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * @inheritdoc
-   * @return \MovLib\Presentation\Partial\Listing\AwardEventMovieListing
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    return new AwardEventMovieListing($this->event->getMoviesResult());
+  public function init() {
+    $this->entity = new Event($this->diContainerHTTP, $_SERVER["EVENT_ID"]);
+    $pageTitle    = $this->intl->t("Movies related to {0}", [ $this->entity->name ]);
+    return $this
+      ->initPage($pageTitle, $pageTitle, $this->intl->t("Movies"))
+      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
+      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/movies", $this->entity->id, true)
+      ->breadcrumb->addCrumbs([
+        [ $this->intl->rp("/events"), $this->intl->t("Events") ],
+        [ $this->entity->route, $this->entity->name ]
+      ])
+    ;
+
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {
+    return $this->checkBackLater($this->intl->t("event movies"));
   }
 
 }

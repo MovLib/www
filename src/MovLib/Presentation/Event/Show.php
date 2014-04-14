@@ -17,14 +17,19 @@
  */
 namespace MovLib\Presentation\Event;
 
-use \MovLib\Data\Award;
-use \MovLib\Data\Event;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Date;
-use \MovLib\Presentation\Partial\Place;
+use \MovLib\Data\Event\Event;
+use \MovLib\Partial\Date;
 
 /**
- * Presentation of a single event.
+ * Defines the event show presentation.
+ *
+ * @link http://schema.org/Event
+ * @link http://www.google.com/webmasters/tools/richsnippets?q=https://en.movlib.org/event/{id}
+ * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/event/{id}
+ * @link http://validator.w3.org/check?uri=https://en.movlib.org/event/{id}
+ * @link http://gsnedders.html5.org/outliner/process.py?url=https://en.movlib.org/event/{id}
+ *
+ * @property \MovLib\Data\Event\Event $entity
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -32,130 +37,42 @@ use \MovLib\Presentation\Partial\Place;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\Event\AbstractBase {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+final class Show extends \MovLib\Presentation\AbstractShowPresenter {
+  use \MovLib\Presentation\Event\EventTrait;
 
   /**
-   * Instantiate new event presentation.
-   *
-   * @throws \MovLib\Presentation\Error\NotFound
-   * @throws \MovLib\Presentation\Redirect\SeeOther
+   * {@inheritdoc}
    */
-  public function __construct() {
-    $this->event = new Event((integer) $_SERVER["EVENT_ID"]);
-    $this->award = new Award($this->event->awardId);
-
-    $this->initPage($this->event->name);
-    $this->initLanguageLinks("/event/{0}", [ $this->event->id ]);
-    $this->initBreadcrumb([
-      [ $this->intl->rp("/events"), $this->intl->t("Events") ],
-    ]);
-    $this->sidebarInit();
-
-    $kernel->stylesheets[] = "event";
+  public function init() {
+    $this->entity = new Event($this->diContainerHTTP, $_SERVER["EVENT_ID"]);
+    $this
+      ->initPage($this->entity->name)
+      ->initShow($this->entity, $this->intl->t("Events"), "Event", null, $this->getSidebarItems())
+    ;
+    return $this;
   }
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    // Enhance the page title with microdata.
-    $this->schemaType = "Intangible";
-    $this->pageTitle  = "<span property='name'>{$this->event->name}</span>";
-
-    if ($this->event->deleted === true) {
-      return $this->goneGetContent();
-    }
-
-    // Put the event information together.
-    $info = null;
-    if (($this->event->startDate && $this->event->endDate) && ($this->event->startDate != $this->event->endDate)) {
-      $info .= "{$this->intl->t("from {0} to {1}", [
-        (new Date($this->event->startDate))->format(),
-        (new Date($this->event->endDate))->format()
-      ])} ";
-    }
-    else if ($this->event->startDate) {
-      $info .= "{$this->intl->t("on {0}", [ (new Date($this->event->startDate))->format() ])} ";
-    }
-    if ($this->event->place) {
-      if ($info) {
-        $info .= "<br>";
-      }
-      $info .= $this->intl->t("in {0}", [ new Place($this->event->place) ]);
-    }
-    $info   .= "<br>{$this->intl->t("Award")}: <a href='{$this->award->route}'>{$this->award->name}</a>";
-
-    // Construct the wikipedia link.
-    if ($this->event->infoboxWikipedia) {
-      if ($info) {
-        $info .= "<br>";
-      }
-      $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->event->infoboxWikipedia}' itemprop='sameAs' target='_blank'>{$this->intl->t("Wikipedia Article")}</a>";
-    }
-
-    $headerImage = $this->getImage($this->award->getStyle(Award::STYLE_SPAN_02), $this->award->route, [ "itemprop" => "image" ]);
+  public function getContent() {
     $this->headingBefore = "<div class='r'><div class='s s10'>";
-    $this->headingAfter = "<p>{$info}</p></div><div id='award-logo' class='s s2'>{$headerImage}</div></div>";
 
+    $this->entity->links     && $this->infoboxAdd($this->intl->t("Sites"), $this->formatWeblinks($this->entity->links));
+    $this->entity->award     && $this->infoboxAdd($this->intl->t("Award"), "<a href='{$this->intl->r("/award/{0}", $this->entity->award->id)}'>{$this->entity->award->name}</a>");
+    $this->entity->startDate && $this->infoboxAdd($this->intl->t("Start Date"), (new Date($this->intl, $this))->format($this->entity->startDate));
+    $this->entity->endDate   && $this->infoboxAdd($this->intl->t("End Date"), (new Date($this->intl, $this))->format($this->entity->endDate));
 
-    // ----------------------------------------------------------------------------------------------------------------- Build Content
-
-
-    $content = null;
-    // Description section
-    if ($this->event->description) {
-      $content .=
-        $this->getSection("description", $this->intl->t("Description"), $this->htmlDecode($this->event->description))
-      ;
+    $this->entity->description && $this->sectionAdd($this->intl->t("Description"), $this->entity->description);
+    $this->entity->aliases     && $this->sectionAdd($this->intl->t("Also Known As"), $this->formatAliases($this->entity->aliases), false);
+    if ($this->sections) {
+      return $this->sections;
     }
 
-    // External links section.
-    $awardLinks = $this->event->links;
-    if ($awardLinks) {
-      $links = null;
-      $c     = count($awardLinks);
-      for ($i = 0; $i < $c; ++$i) {
-        $hostname = str_replace("www.", "", parse_url($awardLinks[$i], PHP_URL_HOST));
-        $links .= "<li class='mb10 s s10'><a href='{$awardLinks[$i]}' property='url' rel='nofollow' target='_blank'>{$hostname}</a></li>";
-      }
-      $content .= $this->getSection("links", $this->intl->t("External Links"), "<ul class='grid-list r'>{$links}</ul>");
-    }
-
-    if ($content) {
-      return $content;
-    }
-
-    return new Alert(
-      $this->intl->t("{sitename} has no further details about this award event.", [ "sitename"    => $this->config->sitename ]),
-      $this->intl->t("No Data Available"),
-      Alert::SEVERITY_INFO
+    return $this->callout(
+      $this->intl->t("Would you like to {0}add additional information{1}?", [ "<a href='{$this->intl->r("/event/{0}/edit", $this->entity->id)}'>", "</a>" ]),
+      $this->intl->t("{sitename} doesn’t have further details about this event.", [ "sitename" => $this->config->sitename ])
     );
-  }
-
-  /**
-   * Construct a section in the main content and add it to the sidebar.
-   *
-   * @param string $id
-   *   The section's unique identifier.
-   * @param string $title
-   *   The section's translated title.
-   * @param string $content
-   *   The section's content.
-   * @return string
-   *   The section ready for display.
-   */
-  protected function getSection($id, $title, $content) {
-    // Add the section to the sidebar as anchor.
-    $this->sidebarNavigation->menuitems[] = [ "#{$id}", $title ];
-
-    return "<div id='{$id}'><h2>{$title}</h2>{$content}</div>";
   }
 
 }

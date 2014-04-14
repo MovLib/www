@@ -17,8 +17,7 @@
  */
 namespace MovLib\Presentation\Event;
 
-use \MovLib\Data\Award;
-use \MovLib\Data\Event;
+use \MovLib\Data\Event\Event;
 
 /**
  * A event's history.
@@ -29,41 +28,48 @@ use \MovLib\Data\Event;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\Event\AbstractBase {
+class History extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Presentation\Event\EventTrait;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+  // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * Instantiate new event history presentation.
+   * The entity to present.
    *
+   * @var \MovLib\Data\AbstractEntity
    */
-  public function __construct() {
-    $this->event = new Event((integer) $_SERVER["EVENT_ID"]);
-    $this->award = new Award($this->event->awardId);
-
-    $this->initPage($this->intl->t("History"));
-    $this->pageTitle     =
-      $this->intl->t("History of {0}", [ "<a href='{$this->event->route}'>{$this->event->name}</a>" ])
-    ;
-    $this->initLanguageLinks("/event/{0}/history", [ $this->event->id ]);
-    $this->initEventBreadcrumb();
-    $this->sidebarInit();
-
-    $kernel->stylesheets[] = "event";
-  }
+  protected $entity;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * @inheritdoc
-   * @return \MovLib\Presentation\Partial\Alert
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    return new \MovLib\Presentation\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("event history") ]), $this->intl->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+  public function init() {
+    $this->entity = new Event($this->diContainerHTTP, $_SERVER["EVENT_ID"]);
+    $pageTitle    = $this->intl->t("Delete {0}", [ $this->entity->name ]);
+    return $this
+      ->initPage($pageTitle, $pageTitle, $this->intl->t("History"))
+      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
+      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/history", $this->entity->id)
+      ->breadcrumb->addCrumbs([
+        [ $this->intl->rp("/events"), $this->intl->t("Events") ],
+        [ $this->entity->route, $this->entity->name ]
+      ])
+    ;
+
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {
+    return $this->checkBackLater($this->intl->t("event history"));
   }
 
 }

@@ -20,7 +20,7 @@ namespace MovLib\Presentation\Event;
 use \MovLib\Data\Event\Event;
 
 /**
- * A event's discussion.
+ * Companies with a certain event associated.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -28,7 +28,7 @@ use \MovLib\Data\Event\Event;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Discussion extends \MovLib\Presentation\AbstractPresenter {
+class Companies extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Partial\SidebarTrait;
   use \MovLib\Presentation\Event\EventTrait;
 
@@ -52,11 +52,11 @@ class Discussion extends \MovLib\Presentation\AbstractPresenter {
    */
   public function init() {
     $this->entity = new Event($this->diContainerHTTP, $_SERVER["EVENT_ID"]);
-    $pageTitle    = $this->intl->t("Discuss {0}", [ $this->entity->name ]);
+    $pageTitle    = $this->intl->t("Companies related to {0}", [ $this->entity->name ]);
     return $this
-      ->initPage($pageTitle, $pageTitle, $this->intl->t("Discussion"))
+      ->initPage($pageTitle, $pageTitle, $this->intl->t("Companies"))
       ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/discussion", $this->entity->id)
+      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/companies", $this->entity->id)
       ->breadcrumb->addCrumbs([
         [ $this->intl->rp("/events"), $this->intl->t("Events") ],
         [ $this->entity->route, $this->entity->name ]
@@ -69,7 +69,7 @@ class Discussion extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("discuss event"));
+    return $this->checkBackLater($this->intl->t("event companies"));
   }
 
 }

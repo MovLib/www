@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data\Event;
 
+use \MovLib\Data\Award\Award;
+use \MovLib\Data\Date;
 use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Data\Place\Place;
 use \MovLib\Exception\ClientException\NotFoundException;
@@ -44,11 +46,11 @@ class Event extends \MovLib\Data\AbstractEntity {
   public $aliases = [];
 
   /**
-   * The award's unique identifier this event belongs to.
+   * The award this event belongs to.
    *
-   * @var integer
+   * @var mixed
    */
-  public $awardId;
+  public $award;
 
   /**
    * The timestamp on which this event was changed.
@@ -56,6 +58,13 @@ class Event extends \MovLib\Data\AbstractEntity {
    * @var integer
    */
   public $changed;
+
+  /**
+   * The count of companies connected to this event.
+   *
+   * @var integer
+   */
+  public $companyCount;
 
   /**
    * The timestamp on which this event was created.
@@ -114,6 +123,13 @@ class Event extends \MovLib\Data\AbstractEntity {
   public $movieCount;
 
   /**
+   * The count of persons connected to this event.
+   *
+   * @var integer
+   */
+  public $personCount;
+
+  /**
    * The event’s place.
    *
    * @var integer|object
@@ -166,33 +182,33 @@ class Event extends \MovLib\Data\AbstractEntity {
     if ($id) {
       $stmt = $this->getMySQLi()->prepare(<<<SQL
 SELECT
-  `awards`.`aliases` AS `aliases`,
-  `events`.`award_id` AS `awardId`,
+  `events`.`aliases` AS `aliases`,
+  `events`.`award_id` AS `award`,
   `events`.`changed` AS `changed`,
   `events`.`created` AS `created`,
   `events`.`deleted` AS `deleted`,
-   COLUMN_GET(`dyn_descriptions`, '{$this->intl->languageCode}' AS CHAR) AS `description`,
+   COLUMN_GET(`events`.`dyn_descriptions`, '{$this->intl->languageCode}' AS CHAR) AS `description`,
   `events`.`end_date` AS `endDate`,
   `events`.`id` AS `id`,
-  `awards`.`links` AS `links`,
+  `events`.`links` AS `links`,
   `events`.`name` AS `name`,
   `events`.`place_id` AS `place`,
   `events`.`start_date` AS `startDate`,
-  COLUMN_GET(`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR) AS `wikipedia`,
-  '0' AS `seriesCount`,
-  COUNT(DISTINCT `movies_awards`.`movie_id`) AS `movieCount`
+  COLUMN_GET(`events`.`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR) AS `wikipedia`,
+  `events`.`count_movies` AS `movieCount`,
+  `events`.`count_series` AS `seriesCount`,
+  `events`.`count_persons` AS `personCount`,
+  `events`.`count_companies` AS `companyCount`
 FROM `events`
-  LEFT JOIN `movies_awards` ON `events`.`id` = `movies_awards`.`event_id`
 WHERE `id` = ?
-GROUP BY `id`, `deleted`, `changed`, `created`, `name`, `place`, `startDate`, `endDate`, `description`, `links`, `wikipedia`, aliases`, `seriesCount`
 LIMIT 1
 SQL
       );
-      $stmt->bind_param("ssd", $this->intl->languageCode, $this->intl->languageCode, $id);
+      $stmt->bind_param("d", $id);
       $stmt->execute();
       $stmt->bind_result(
         $this->aliases,
-        $this->awardId,
+        $this->award,
         $this->changed,
         $this->created,
         $this->deleted,
@@ -204,8 +220,10 @@ SQL
         $this->place,
         $this->startDate,
         $this->wikipedia,
+        $this->movieCount,
         $this->seriesCount,
-        $this->movieCount
+        $this->personCount,
+        $this->companyCount
       );
       $found = $stmt->fetch();
       $stmt->close();
@@ -226,11 +244,12 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
-    if ($this->place) {
-      $this->place = new Place($this->diContainer, $this->place);
-    }
-    $this->aliases = $this->aliases ? unserialize($this->aliases) : [];
-    $this->links   = $this->links ? unserialize($this->links) : [];
+    $this->place     && $this->place = new Place($this->diContainer, $this->place);
+    $this->award     && $this->award = new Award($this->diContainer, $this->award);
+    $this->aliases   && ($this->aliases        = unserialize(($this->aliases)));
+    $this->links     && ($this->links          = unserialize($this->links));
+    $this->startDate && ($this->startDate = new Date($this->startDate));
+    $this->endDate   && ($this->endDate = new Date($this->endDate));
     $this->pluralKey   = "events";
     $this->singularKey = "event";
     return parent::init();
