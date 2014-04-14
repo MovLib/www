@@ -17,12 +17,10 @@
  */
 namespace MovLib\Presentation\Event;
 
-use \MovLib\Data\Award;
-use \MovLib\Data\Event;
-use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Data\Event\Event;
 
 /**
- * Allows the creation of a new award event.
+ * Allows the creation of a new event event.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -31,63 +29,22 @@ use \MovLib\Presentation\Partial\Alert;
  * @since 0.0.1-dev
  */
 class Create extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\TraitForm;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
 
   /**
-   * The award the event belongs to.
-   *
-   * @var \MovLib\Data\Award
+   * Instantiate new event create presentation.
    */
-  protected $award;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new award event create presentation.
-   *
-   */
-  public function __construct() {
+  public function init() {
     $this->initPage($this->intl->t("Create Event"));
-    $this->initBreadcrumb([
-      [ $this->intl->rp("/events"), $this->intl->t("Events") ],
-    ]);
-    $this->initLanguageLinks("/event/create");
+    $this->initBreadcrumb([ [ $this->intl->rp("/events"), $this->intl->t("Events") ] ]);
     $this->breadcrumbTitle = $this->intl->t("Create");
-
-    $kernel->stylesheets[] = "award";
-
-    // instantiate award if award id (a) is set.
-    if ($kernel->requestMethod == "GET" && !empty($_GET["a"])) {
-      $this->award = new Award((integer) $_GET["a"]);
-    }
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * @inheritdoc
-   */
-  protected function getContent() {
-    return new Alert(
-      $this->intl->t("The create event feature isn’t implemented yet."),
-      $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    );
+    $this->initLanguageLinks("/event/create");
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  protected function formValid() {
-    return $this;
+  public function getContent() {
+    return "<div class='c'>{$this->checkBackLater($this->intl->t("create event"))}</div>";
   }
 
 }
