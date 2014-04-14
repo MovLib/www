@@ -1954,6 +1954,31 @@ ROW_FORMAT = COMPRESSED;
 
 SHOW WARNINGS;
 
+-- -----------------------------------------------------
+-- Table `movlib`.`series_ratings`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`series_ratings` (
+  `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique ID of the series.',
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique ID of the user.',
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The creation date and time of the series rating as timestamp.',
+  `rating` TINYINT(1) UNSIGNED NOT NULL COMMENT 'The user’s rating for a certain series (1-5).',
+  PRIMARY KEY (`series_id`, `user_id`),
+  INDEX `fk_series_ratings_users1_idx` (`user_id` ASC),
+  CONSTRAINT `fk_series_ratings_series1`
+    FOREIGN KEY (`series_id`)
+    REFERENCES `movlib`.`series` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_series_ratings_users1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `movlib`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains all series ratings by users.';
+
+SHOW WARNINGS;
+
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
