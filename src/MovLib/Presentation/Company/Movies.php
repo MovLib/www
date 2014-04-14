@@ -17,8 +17,7 @@
  */
 namespace MovLib\Presentation\Company;
 
-use \MovLib\Data\Company;
-use \MovLib\Partial\Listing\CompanyMovieListing;
+use \MovLib\Data\Company\Company;
 
 /**
  * Movies with a certain company associated.
@@ -29,31 +28,48 @@ use \MovLib\Partial\Listing\CompanyMovieListing;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Movies extends \MovLib\Presentation\Company\AbstractBase {
+class Movies extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Presentation\Company\CompanyTrait;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * The entity to present.
+   *
+   * @var \MovLib\Data\AbstractEntity
+   */
+  protected $entity;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * @inheritdoc
-   * @return \MovLib\Presentation\Partial\Listing\CompanyMovieListing
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    return new CompanyMovieListing($this->diContainerHTTP, $this->company->getMovieResult());
+  public function init() {
+    $this->entity = new Company($this->diContainerHTTP, $_SERVER["COMPANY_ID"]);
+    $pageTitle    = $this->intl->t("Movies related to {0}", [ $this->entity->name ]);
+    return $this
+      ->initPage($pageTitle, $pageTitle, $this->intl->t("Movies"))
+      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
+      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/movies", $this->entity->id, true)
+      ->breadcrumb->addCrumbs([
+        [ $this->intl->rp("/companies"), $this->intl->t("Companies") ],
+        [ $this->entity->route, $this->entity->name ]
+      ])
+    ;
+
   }
 
   /**
-   * Instantiate new company movie presentation.
+   * {@inheritdoc}
    */
-  public function init() {
-    $this->company = (new Company($this->diContainerHTTP))->init((integer) $_SERVER["COMPANY_ID"]);
-    $this->initPage($this->intl->t("Movies from {0}", [ $this->company->name ]));
-    $this->pageTitle       = $this->intl->t("Movies from {0}", [ "<a href='{$this->company->route}'>{$this->company->name}</a>" ]);
-    $this->breadcrumbTitle = $this->intl->t("Movies");
-    $this->initLanguageLinks("/company/{0}/movies", [ $this->company->id ], true);
-    $this->initCompanyBreadcrumb();
-    $this->sidebarInit();
+  public function getContent() {
+    return $this->checkBackLater($this->intl->t("company movies"));
   }
 
 }

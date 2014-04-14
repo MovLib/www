@@ -39,14 +39,18 @@ use \MovLib\Partial\Place;
  * @since 0.0.1-dev
  */
 final class Show extends \MovLib\Presentation\AbstractShowPresenter {
-  use \MovLib\Partial\CompanyTrait;
+  use \MovLib\Presentation\Company\CompanyTrait;
 
   /**
    * {@inheritdoc}
    */
   public function init() {
-    $company = new Company($this->diContainerHTTP, $_SERVER["COMPANY_ID"]);
-    return $this->initPage($company->name)->initShow($company, $this->intl->t("Companies"), "Corporation");
+    $this->entity = new Company($this->diContainerHTTP, $_SERVER["COMPANY_ID"]);
+    $this
+      ->initPage($this->entity->name)
+      ->initShow($this->entity, $this->intl->t("Companies"), "Company", null, $this->getSidebarItems())
+    ;
+    return $this;
   }
 
   /**

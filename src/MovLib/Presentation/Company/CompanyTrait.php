@@ -15,9 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Partial;
-
-use \MovLib\Data\Date;
+namespace MovLib\Presentation\Company;
 
 /**
  * Contains utility methods for companies.
@@ -48,7 +46,7 @@ trait CompanyTrait {
    * {@inheritdoc}
    */
   protected function getSidebarItems() {
-    $items = parent::getSidebarItems();
+    $items = [];
     if ($this->entity->deleted) {
       return $items;
     }

@@ -29,7 +29,7 @@ use \MovLib\Data\Award\Award;
  * @since 0.0.1-dev
  */
 class Discussion extends \MovLib\Presentation\AbstractPresenter {
-use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Partial\SidebarTrait;
   use \MovLib\Presentation\Award\AwardTrait;
 
 

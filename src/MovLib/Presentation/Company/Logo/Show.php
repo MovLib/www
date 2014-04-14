@@ -3,7 +3,7 @@
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
- * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
+ * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
  *
  * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
  * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Company;
+namespace MovLib\Presentation\Company\Logo;
 
 use \MovLib\Data\Company\Company;
 
 /**
- * A company's discussion.
+ * Image details presentation for a company's logo.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -28,9 +28,8 @@ use \MovLib\Data\Company\Company;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\AbstractPresenter {
+class Show extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Partial\SidebarTrait;
-  use \MovLib\Presentation\Company\CompanyTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -52,11 +51,11 @@ class History extends \MovLib\Presentation\AbstractPresenter {
    */
   public function init() {
     $this->entity = new Company($this->diContainerHTTP, $_SERVER["COMPANY_ID"]);
-    $pageTitle    = $this->intl->t("Delete {0}", [ $this->entity->name ]);
+    $pageTitle    = $this->intl->t("Logo of {0}", [ $this->entity->name ]);
     return $this
-      ->initPage($pageTitle, $pageTitle, $this->intl->t("History"))
-      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/history", $this->entity->id)
+      ->initPage($pageTitle, $pageTitle, $this->intl->t("Logo"))
+      ->sidebarInitToolbox($this->entity)
+      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/logo", $this->entity->id)
       ->breadcrumb->addCrumbs([
         [ $this->intl->rp("/companies"), $this->intl->t("Companies") ],
         [ $this->entity->route, $this->entity->name ]
@@ -66,10 +65,11 @@ class History extends \MovLib\Presentation\AbstractPresenter {
   }
 
   /**
-   * {@inheritdoc}
+   * @inheritdoc
+   * @return \MovLib\Presentation\Partial\Alert
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("company history"));
+    return $this->checkBackLater($this->intl->t("company logo"));
   }
 
 }

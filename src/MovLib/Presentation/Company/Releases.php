@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Company;
 
-use \MovLib\Data\Company;
+use \MovLib\Data\Company\Company;
 
 /**
  * Releases with a certain company associated.
@@ -28,31 +28,48 @@ use \MovLib\Data\Company;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Releases extends \MovLib\Presentation\Company\AbstractBase {
+class Releases extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Presentation\Company\CompanyTrait;
 
 
- // ------------------------------------------------------------------------------------------------------------------- Methods
+  // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
- /**
-   * @inheritdoc
-   * @return \MovLib\Presentation\Partial\Alert
+  /**
+   * The entity to present.
+   *
+   * @var \MovLib\Data\AbstractEntity
    */
-  protected function getPageContent() {
-    return new \MovLib\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("releases with company") ]), $this->intl->t("Check back later"), \MovLib\Partial\Alert::SEVERITY_INFO);
+  protected $entity;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function init() {
+    $this->entity = new Company($this->diContainerHTTP, $_SERVER["COMPANY_ID"]);
+    $pageTitle    = $this->intl->t("Releases related to {0}", [ $this->entity->name ]);
+    return $this
+      ->initPage($pageTitle, $pageTitle, $this->intl->t("Releases"))
+      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
+      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/releases", $this->entity->id)
+      ->breadcrumb->addCrumbs([
+        [ $this->intl->rp("/companies"), $this->intl->t("Companies") ],
+        [ $this->entity->route, $this->entity->name ]
+      ])
+    ;
+
   }
 
   /**
-   * Instantiate new company releases presentation.
+   * {@inheritdoc}
    */
-  public function init() {
-    $this->company = (new Company($this->diContainerHTTP))->init((integer) $_SERVER["COMPANY_ID"]);
-    $this->initPage($this->intl->t("Releases from {0}", [ $this->company->name ]));
-    $this->pageTitle       = $this->intl->t("Releases from {0}", [ "<a href='{$this->company->route}'>{$this->company->name}</a>" ]);
-    $this->breadcrumbTitle = $this->intl->t("Releases");
-    $this->initLanguageLinks("/company/{0}/releases", [ $this->company->id ], true);
-    $this->initCompanyBreadcrumb();
-    $this->sidebarInit();
+  public function getContent() {
+    return $this->checkBackLater($this->intl->t("company releases"));
   }
 
 }

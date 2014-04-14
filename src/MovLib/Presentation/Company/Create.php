@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation\Company;
 
-use \MovLib\Partial\Alert;
-
 /**
  * Allows the creation of a new company.
  *
@@ -30,21 +28,6 @@ use \MovLib\Partial\Alert;
  */
 class Create extends \MovLib\Presentation\AbstractPresenter {
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * @inheritdoc
-   */
-  protected function getContent() {
-    return new Alert(
-      $this->intl->t("The create company feature isn’t implemented yet."),
-      $this->intl->t("Check back later"),
-      Alert::SEVERITY_INFO
-    );
-  }
-
   /**
    * Instantiate new company create presentation.
    */
@@ -53,6 +36,13 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
     $this->initBreadcrumb([ [ $this->intl->rp("/companies"), $this->intl->t("Companies") ] ]);
     $this->breadcrumbTitle = $this->intl->t("Create");
     $this->initLanguageLinks("/company/create");
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {
+    return "<div class='c'>{$this->checkBackLater($this->intl->t("create company"))}</div>";
   }
 
 }

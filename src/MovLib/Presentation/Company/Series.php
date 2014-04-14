@@ -17,8 +17,7 @@
  */
 namespace MovLib\Presentation\Company;
 
-use \MovLib\Data\Company;
-
+use \MovLib\Data\Company\Company;
 
 /**
  * Series with a certain company associated.
@@ -29,31 +28,48 @@ use \MovLib\Data\Company;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Series extends \MovLib\Presentation\Company\AbstractBase {
+class Series extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Presentation\Company\CompanyTrait;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * The entity to present.
+   *
+   * @var \MovLib\Data\AbstractEntity
+   */
+  protected $entity;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
- /**
-   * @inheritdoc
-   * @return \MovLib\Presentation\Partial\Alert
+  /**
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    return new \MovLib\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("series with company") ]), $this->intl->t("Check back later"), \MovLib\Partial\Alert::SEVERITY_INFO);
+  public function init() {
+    $this->entity = new Company($this->diContainerHTTP, $_SERVER["COMPANY_ID"]);
+    $pageTitle    = $this->intl->t("Series related to {0}", [ $this->entity->name ]);
+    return $this
+      ->initPage($pageTitle, $pageTitle, $this->intl->t("Series"))
+      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
+      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/series", $this->entity->id)
+      ->breadcrumb->addCrumbs([
+        [ $this->intl->rp("/companies"), $this->intl->t("Companies") ],
+        [ $this->entity->route, $this->entity->name ]
+      ])
+    ;
+
   }
 
   /**
-   * Instantiate new company series presentation.
+   * {@inheritdoc}
    */
-  public function init() {
-    $this->company = (new Company($this->diContainerHTTP))->init((integer) $_SERVER["COMPANY_ID"]);
-    $this->initPage($this->intl->t("Series from {0}", [ $this->company->name ]));
-    $this->pageTitle       = $this->intl->t("Series from {0}", [ "<a href='{$this->company->route}'>{$this->company->name}</a>" ]);
-    $this->breadcrumbTitle = $this->intl->t("Series");
-    $this->initLanguageLinks("/company/{0}/series", [ $this->company->id ], true);
-    $this->initCompanyBreadcrumb();
-    $this->sidebarInit();
+  public function getContent() {
+    return $this->checkBackLater($this->intl->t("company series"));
   }
 
 }

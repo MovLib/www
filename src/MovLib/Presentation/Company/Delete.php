@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Company;
 
-use \MovLib\Data\Company;
+use \MovLib\Data\Company\Company;
 
 /**
  * Allows deleting a company.
@@ -28,30 +28,48 @@ use \MovLib\Data\Company;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Delete extends \MovLib\Presentation\Company\AbstractBase {
+class Delete extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Presentation\Company\CompanyTrait;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * The entity to present.
+   *
+   * @var \MovLib\Data\AbstractEntity
+   */
+  protected $entity;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * @inheritdoc
-   * @return \MovLib\Presentation\Partial\Alert
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
-    return new \MovLib\Partial\Alert($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("delete company") ]), $this->intl->t("Check back later"), \MovLib\Partial\Alert::SEVERITY_INFO);
+  public function init() {
+    $this->entity = new Company($this->diContainerHTTP, $_SERVER["COMPANY_ID"]);
+    $pageTitle    = $this->intl->t("Delete {0}", [ $this->entity->name ]);
+    return $this
+      ->initPage($pageTitle, $pageTitle, $this->intl->t("Delete"))
+      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
+      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/delete", $this->entity->id)
+      ->breadcrumb->addCrumbs([
+        [ $this->intl->rp("/companies"), $this->intl->t("Companies") ],
+        [ $this->entity->route, $this->entity->name ]
+      ])
+    ;
+
   }
 
   /**
-   * Instantiate new company delete presentation.
+   * {@inheritdoc}
    */
-  public function init() {
-    $this->company = (new Company($this->diContainerHTTP))->init((integer) $_SERVER["COMPANY_ID"]);
-    $this->initPage($this->intl->t("Delete"));
-    $this->pageTitle = $this->intl->t("Delete {0}", [ "<a href='{$this->company->route}'>{$this->company->name}</a>" ]);
-    $this->initLanguageLinks("/company/{0}/delete", [ $this->company->id ]);
-    $this->initCompanyBreadcrumb();
-    $this->sidebarInit();
+  public function getContent() {
+    return $this->checkBackLater($this->intl->t("delete company"));
   }
 
 }
