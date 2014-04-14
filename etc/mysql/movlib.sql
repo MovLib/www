@@ -765,6 +765,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`series` (
   `count_seasons` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The series’ total number of seasons.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this series is marked as deleted (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_synopses` BLOB NOT NULL COMMENT 'The synopsis of the series in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_wikipedia` BLOB NOT NULL COMMENT 'The movie’s translated Wikipedia links.',
   `original_title` BLOB NOT NULL COMMENT 'The original title of the series.',
   `original_title_language_code` CHAR(2) NOT NULL COMMENT 'The original title’s ISO alpha-2 language code of the series.',
   `mean_rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The arithmetic mean rating of the series.',
