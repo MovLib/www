@@ -66,7 +66,7 @@
 
 .star-rating.focus button,
 .star-rating:hover button,
-.star-rating .rated {
+.star-rating button.rated {
   background-image: url("/asset/img/star.svg");
   opacity: 1;
 }
