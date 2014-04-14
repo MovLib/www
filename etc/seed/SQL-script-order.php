@@ -37,6 +37,7 @@ return [
   "licenses",
   "movies",
   "movies_posters",
+  "series",
   "system_pages",
   "users",
 ];

@@ -758,7 +758,8 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`series` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The unique ID of the series.',
-  `created` TIMESTAMP NOT NULL COMMENT 'The creation date of the series as timestamp.',
+  `changed` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The timestamp on which this series was changed.',
+  `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The timestamp on which this series was created.',
   `count_awards` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The series’ total number of awards.',
   `count_releases` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The series’ total number of releases.',
   `count_seasons` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The series’ total number of seasons.',
@@ -770,7 +771,6 @@ CREATE TABLE IF NOT EXISTS `movlib`.`series` (
   `rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The Bayes\'theorem rating of the series.\n\nrating = (s / (s + m)) * N + (m / (s + m)) * K\n\nN: arithmetic mean rating\ns: vote count\nm: minimum vote count\nK: arithmetic mean vote\n\nThe same formula is used by IMDb and OFDb.',
   `status` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'One of the \\\\MovLib\\\\Data\\\\Series\\\\Series::STATUS_ constants.\n0 => unknown,\n1 => new,\n2 => returning,\n3 => final season,\n4 => ended,\n5 => cancelled.',
   `votes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The vote count of the series.',
-  `bin_relationships` BLOB NULL COMMENT 'The relations of the series to other series, e.g. sequel.\nStored in igbinary serialized format.',
   `commit` CHAR(40) NULL COMMENT 'The last history commit sha-1 hash of the series.',
   `end_year` SMALLINT(4) UNSIGNED ZEROFILL NULL COMMENT 'The year the series was cancelled.',
   `rank` BIGINT UNSIGNED NULL COMMENT 'The global rank of the series.',
@@ -787,7 +787,7 @@ SHOW WARNINGS;
 -- Table `movlib`.`series_titles`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`series_titles` (
-  `id` BIGINT UNSIGNED NOT NULL COMMENT 'The series title’s ID within the series.',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The series title’s ID within the series.',
   `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique ID of the series.',
   `display` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this series title is the display title for its language (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_comments` BLOB NOT NULL COMMENT 'The series title’s comment in various languages. Keys are ISO alpha-2 language codes.',
