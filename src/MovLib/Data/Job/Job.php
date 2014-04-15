@@ -180,8 +180,39 @@ SQL
     }
   }
 
+
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  /**
+   * Update the job.
+   *
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function commit() {
+    $stmt = $this->getMySQLi()->prepare(<<<SQL
+UPDATE `jobs` SET
+  `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, '{$this->intl->languageCode}', ?),
+  `dyn_names_sex0`   = COLUMN_ADD(`dyn_names_sex0`, '{$this->intl->languageCode}', ?),
+  `dyn_names_sex1`   = COLUMN_ADD(`dyn_names_sex1`, '{$this->intl->languageCode}', ?),
+  `dyn_names_sex2`   = COLUMN_ADD(`dyn_names_sex2`, '{$this->intl->languageCode}', ?),
+  `dyn_wikipedia`    = COLUMN_ADD(`dyn_wikipedia`, '{$this->intl->languageCode}', ?)
+WHERE `id` = {$this->id}
+SQL
+    );
+    $stmt->bind_param(
+      "sssss",
+      $this->description,
+      $this->name,
+      $this->maleName,
+      $this->femaleName,
+      $this->wikipedia
+    );
+    $stmt->execute();
+    $stmt->close();
+    return $this;
+  }
 
   /**
    * {@inheritdoc}
