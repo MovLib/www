@@ -215,6 +215,43 @@ SQL
   }
 
   /**
+   * Update the job.
+   *
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function create() {
+    $stmt = $this->getMySQLi()->prepare(<<<SQL
+INSERT INTO `jobs` (
+  `dyn_descriptions`,
+  `dyn_names_sex0`,
+  `dyn_names_sex1`,
+  `dyn_names_sex2`,
+  `dyn_wikipedia`
+) VALUES (
+  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
+  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
+  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
+  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
+  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?)
+);
+SQL
+    );
+    $stmt->bind_param(
+      "sssss",
+      $this->description,
+      $this->name,
+      $this->maleName,
+      $this->femaleName,
+      $this->wikipedia
+    );
+    $stmt->execute();
+    $this->id = $stmt->insert_id;
+    $stmt->close();
+    return $this->init();
+  }
+
+  /**
    * {@inheritdoc}
    */
   protected function init() {
