@@ -24,6 +24,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * Defines the award entity object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -107,7 +108,7 @@ final class Award extends \MovLib\Data\AbstractEntity {
   public $movieCount;
 
   /**
-   * The award's name in the current display language.
+   * The award's name.
    *
    * @var string
    */
@@ -196,6 +197,32 @@ SQL
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  /**
+   * Update the award.
+   *
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function commit() {
+//    $stmt = $this->getMySQLi()->prepare(<<<SQL
+//UPDATE `genres` SET
+//  `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, '{$this->intl->languageCode}', ?),
+//  `dyn_names`        = COLUMN_ADD(`dyn_names`, '{$this->intl->languageCode}', ?),
+//  `dyn_wikipedia`    = COLUMN_ADD(`dyn_wikipedia`, '{$this->intl->languageCode}', ?)
+//WHERE `id` = {$this->id}
+//SQL
+//    );
+//    $stmt->bind_param(
+//      "sss",
+//      $this->description,
+//      $this->name,
+//      $this->wikipedia
+//    );
+//    $stmt->execute();
+//    $stmt->close();
+    return $this;
+  }
 
   /**
    * {@inheritdoc}
