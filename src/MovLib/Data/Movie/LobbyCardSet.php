@@ -15,36 +15,40 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Tool;
+namespace MovLib\Data\Movie;
 
 /**
- * Page displaying the phpinfo() output.
+ * Defines the lobby card set object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class PHPInfo extends \MovLib\Presentation\Tool\AbstractPage {
+final class LobbyCardSet extends \MovLib\Data\AbstractSet {
 
   /**
    * {@inheritdoc}
    */
-  public function init() {
-    $this->stylesheets[] = "tool";
-    $this->initPage("PHPInfo");
-    $this->initBreadcrumb();
+  protected function getEntitiesQuery($where = null, $orderBy = null) {
+
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getContent() {
-    ob_start();
-    phpinfo();
-    $phpinfo = ob_get_clean();
-    return "<div class='c'>{$phpinfo}</div>";
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function init() {
+    $this->pluralKey   = "lobby-cards";
+    $this->singularKey = "lobby-card";
+    return parent::init();
   }
 
 }

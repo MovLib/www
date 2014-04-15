@@ -28,7 +28,7 @@ use \MovLib\Presentation\Partial\Navigation;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Home extends \MovLib\Presentation\Tool\Page {
+final class Home extends \MovLib\Presentation\Tool\AbstractPage {
 
   /**
    * Whether the client has verified via PKCS #12 certificate or not.
@@ -38,11 +38,10 @@ class Home extends \MovLib\Presentation\Tool\Page {
   protected $sslClientVerified = false;
 
   /**
-   * Instantiate new tools homepage.
-   *
+   * {@inheritdoc}
    */
-  public function __construct() {
-    $kernel->stylesheets[] = "tool";
+  public function init() {
+    $this->stylesheets[] = "tool";
     $this->initPage("Tools");
     $this->initBreadcrumb();
     unset($this->breadcrumb->menuitems[1]);
@@ -52,9 +51,9 @@ class Home extends \MovLib\Presentation\Tool\Page {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  protected function getContent() {
+  public function getContent() {
     $tools = new Navigation("Tools", [
       [ "ApiGen", "public/doc/", "{$this->intl->t("Have a look at the source code documentation.")} {$this->intl->t("Generated once a day.")}", false ],
       [ "PHPInfo", "phpinfo", $this->intl->t("Have a look at the current PHP configuration, extensions, etc."), false ],

@@ -23,6 +23,7 @@ use \MovLib\Partial\Alert;
 /**
  * Defines the help category index presentation.
  *
+ * @route /help
  * @link http://www.google.com/webmasters/tools/richsnippets?q=https://en.movlib.org/help
  * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/help
  * @link http://validator.w3.org/check?uri=https://en.movlib.org/help

@@ -32,8 +32,8 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Presentation\TraitSidebar;
+final class Show extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -51,10 +51,9 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
 
 
   /**
-   * Instantiate new search results presentation.
-   *
+   * {@inheritdoc}
    */
-  public function __construct() {
+  public function init() {
     $this->initPage($this->intl->t("Search"));
     $this->initBreadcrumb();
     $this->sidebarInit([]);
@@ -74,12 +73,9 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
 
 
   /**
-   * Get the page's content.
-   *
-   * @return mixed
-   *   The page's content.
+   * {@inheritdoc}
    */
-  protected function getPageContent() {
+  public function getContent() {
     // We're done if we have no search query.
     if (empty($this->query)) {
       $this->alerts .= new Alert(

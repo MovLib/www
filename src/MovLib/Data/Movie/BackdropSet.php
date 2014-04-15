@@ -15,32 +15,40 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation;
+namespace MovLib\Data\Movie;
 
 /**
- * Special page for error presentations.
+ * Defines the backdrop set object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ErrorPage extends \MovLib\Presentation\AbstractPresenter {
+final class BackdropSet extends \MovLib\Data\AbstractSet {
 
   /**
-   * Instantiate new empty page.
-   *
-   * @param string $title
-   *   The translated page's title.
-   * @param mixed $content
-   *   The translated page's content.
+   * {@inheritdoc}
    */
-  public function __construct($title, $content) {
-    $cache->cacheable = false;
-    $this->initPage($title);
-    $this->initBreadcrumb();
-    $this->alerts .= $content;
+  protected function getEntitiesQuery($where = null, $orderBy = null) {
+
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function init() {
+    $this->pluralKey   = "backdrops";
+    $this->singularKey = "backdrop";
+    return parent::init();
   }
 
 }

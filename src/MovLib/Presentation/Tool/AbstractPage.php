@@ -26,12 +26,12 @@ namespace MovLib\Presentation\Tool;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Page extends \MovLib\Presentation\AbstractPresenter {
+abstract class AbstractPage extends \MovLib\Presentation\AbstractPresenter {
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  protected function getFooter() {
+  public function getFooter() {
     $year = date("Y");
     return
       "<footer id='f' role='contentinfo'><div class='c'><p>" .
@@ -44,9 +44,9 @@ class Page extends \MovLib\Presentation\AbstractPresenter {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
-  protected function getHeader() {
+  public function getHeader() {
     $l = $this->getURL("asset://img/logo/tools-vector.svg");
     return
       "<header id='header' role='banner'><div class='c'><div class='r'>" .

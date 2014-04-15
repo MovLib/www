@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Tool;
 
-use \MovLib\Presentation\Tool\Page;
+use \MovLib\Presentation\Tool\AbstractPage;
 
 /**
  * @coversDefaultClass \MovLib\Presentation\Tool\Page
@@ -33,7 +33,7 @@ class PageTest extends \MovLib\TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Presentation\Tool\Page */
+  /** @var \MovLib\Presentation\Tool\AbstractPage */
   protected $page;
 
 
@@ -44,7 +44,7 @@ class PageTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->page = new Page();
+    $this->page = new AbstractPage();
   }
 
   /**
