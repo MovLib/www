@@ -18,11 +18,8 @@
 namespace MovLib\Presentation\Person;
 
 use \MovLib\Data\Person\Person;
-use \MovLib\Partial\Alert;
 use \MovLib\Partial\Date;
-use \MovLib\Partial\FormElement\InputSex;
 use \MovLib\Partial\Place;
-use \MovLib\Partial\InfoboxTrait;
 use \MovLib\Partial\Sex;
 
 /**
@@ -57,9 +54,7 @@ class Show extends \MovLib\Presentation\Person\AbstractPersonPresenter {
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function init() {
-    $this->entity = new Person($this->diContainerHTTP, (integer) $_SERVER["PERSON_ID"]);
-    $this->initPersonPresentation($this->entity->routeKey, $this->entity->name);
-    $this->stylesheets[] = "person";
+    $this->initPersonPresentation();
   }
 
 
@@ -124,19 +119,30 @@ class Show extends \MovLib\Presentation\Person\AbstractPersonPresenter {
 
     $this->entity->biography && $this->sectionAdd($this->intl->t("Biography"), $this->entity->biography);
 
-    // @todo: add aliases and links.
+    if (($aliases = $this->entity->getAliases())) {
+      $c            = count($aliases);
+      $aliasContent = null;
+      for ($i = 0; $i < $c; ++$i) {
+        $aliasContent .= "<li class='mb s s3' property='additionalName'>{$aliases[$i]}</li>";
+      }
+      $this->sectionAdd($this->intl->t("Also Known As"), "<ol class='no-list r'>{$aliasContent}</ol>");
+    }
+
+    if (($links = $this->entity->getLinks())) {
+      $c           = count($links);
+      $linkContent = null;
+      for ($i = 0; $i < $c; ++$i) {
+        $hostname     = str_replace("www.", "", parse_url($links[$i], PHP_URL_HOST));
+        $linkContent .= "<li class='mb10 s s3'><a href='{$links[$i]}' rel='nofollow' target='_blank'>{$hostname}</a></li>";
+      }
+    }
 
     if ($this->sections) {
       return $this->sections;
     }
     return $this->callout(
-      $this->intl->t(
-        "Movlib has no further information about {0}. Would you like to {1}help out{2}?",
-        [
-          $this->entity->name,
-          "<a href='{$this->intl->r("{$this->entity->routeKey}/edit", $this->entity->id)}'>", "</a>"
-        ]
-      ),
+      "<p>{$this->intl->t("{sitename} doesnâ€™t have further details about this person.", [ "sitename" => $this->config->sitename ])}</p>" .
+      "<p>{$this->intl->t("Would you like to {0}add additional information{1}?", [ "<a href='{$this->intl->r("/person/{0}/edit", $this->entity->id)}'>", "</a>" ])}</p>",
       $this->intl->t("No Information"),
       "info"
     );

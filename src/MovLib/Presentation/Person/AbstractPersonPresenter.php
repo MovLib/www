@@ -41,28 +41,41 @@ abstract class AbstractPersonPresenter extends \MovLib\Presentation\AbstractPres
   /**
    * Initialize the person presentation.
    *
-   * @param string $routeKey
-   *   The presentations' untranslated route key for the language links.
-   * @param string $title
-   *   The presentation's translated title.
+   * @param string $title [optional]
+   *   The presentation's translated title with the placeholder for the person's name "{name}",
+   *   default to the person's name.
    * @param string $pageTitle [optional]
-   *   The presentation's translated page title (only has to be supplied if different from the title).
+   *   The presentation's translated page title with the placeholder (only has to be supplied if different from the title).
    * @param string $breadcrumbTitle
-   *   The presentation's translated breadcrumb title (only has to be supplied if different from the title).
+   *   The presentation's translated breadcrumb title with the placeholder (only has to be supplied if different from the title).
    */
-  final protected function initPersonPresentation($routeKey, $title, $pageTitle = null, $breadcrumbTitle = null) {
+  final protected function initPersonPresentation($title = null, $pageTitle = null, $breadcrumbTitle = null) {
     if (!$this->entity) {
       $this->entity = new Person($this->diContainerHTTP, (integer) $_SERVER["PERSON_ID"]);
     }
-    $this->schemaType = "Person";
+    $this->schemaType            = "Person";
+    $this->headingSchemaProperty = "name";
+
+    $this->entity = new Person($this->diContainerHTTP, (integer) $_SERVER["PERSON_ID"]);
+
+    $title = $title ? str_replace("{name}", $this->entity->name, $title) : $this->entity->name;
+    $pageTitle       && $pageTitle = str_replace("{name}", $this->entity->name, $pageTitle);
+    $breadcrumbTitle && $breadcrumbTitle = str_replace("{name}", $this->entity->name, $breadcrumbTitle);
+
     $this->initPage($title, $pageTitle, $breadcrumbTitle);
-    // There's no single subpage requiring another placeholder, construct language links immediately.
-    $this->initLanguageLinks($routeKey, [ $this->id ]);
+
+    // Construct the breadcrumbs and route key.
     $this->breadcrumb->addCrumb($this->intl->t("/persons"), $this->intl->t("Persons"));
-    // We're on a subpage, add person breadcrumb.
-    if ($routeKey != $this->entity->routeKey) {
+    $routeKey = $this->entity->routeKey;
+    if (($shortName = strtolower($this->shortName())) != "show") {
+      $routeKey .= "{$shortName}";
       $this->breadcrumb->addCrumb($this->entity->route, $this->entity->name);
     }
+
+    // There's no single subpage requiring another placeholder, construct language links immediately.
+    $this->initLanguageLinks($routeKey, [ $this->entity->id ]);
+
+    // Initialize the sidebar.
     $additionalSidebarItems = null;
     if (!$this->entity->deleted) {
       foreach ([
@@ -79,6 +92,8 @@ abstract class AbstractPersonPresenter extends \MovLib\Presentation\AbstractPres
       }
     }
     $this->sidebarInitToolbox($this->entity, $additionalSidebarItems);
+
+    $this->stylesheets[] = "person";
   }
 
   /**

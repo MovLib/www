@@ -231,6 +231,24 @@ SQL
 
 
   /**
+   * Get the person's aliases.
+   *
+   * @return array
+   *   Numeric array containing the person's aliases.
+   */
+  public function getAliases() {
+    $result = $this->getMySQLi()->query(<<<SQL
+SELECT
+  `alias`
+FROM `persons_aliases`
+WHERE `person_id` = {$this->id}
+ORDER BY `alias`{$this->collations[$this->intl->languageCode]} ASC
+SQL
+    );
+    return array_column($result->fetch_all(), 0);
+  }
+
+  /**
    * Get the person's place of birth.
    *
    * @return null|\MovLib\Data\Place\Place
@@ -252,6 +270,24 @@ SQL
     if ($this->deathPlaceId) {
       return new \MovLib\Data\Place\Place($this->diContainer, $this->deathPlaceId);
     }
+  }
+
+  /**
+   * Get the person's aliases.
+   *
+   * @return array
+   *   Numeric array containing the person's aliases.
+   */
+  public function getLinks() {
+    $result = $this->getMySQLi()->query(<<<SQL
+SELECT
+  `url`
+FROM `persons_links`
+WHERE `person_id` = {$this->id}
+  AND `language_code` = '{$this->intl->languageCode}'
+SQL
+    );
+    return array_column($result->fetch_all(), 0);
   }
 
   /**
