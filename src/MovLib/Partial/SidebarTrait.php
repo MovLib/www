@@ -139,16 +139,20 @@ trait SidebarTrait {
     else {
       $route = $this->entity->route;
     }
+    $viewAttributes = [ "class" => "ico ico-view" ];
+    if ($this->schemaType && $this->request->path != $this->entity->route) {
+      $viewAttributes["property"] = "url";
+    }
     if ($entity->deleted) {
       $toolboxItems = [
-        [ $this->entity->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
+        [ $this->entity->route, $this->intl->t("View"), $viewAttributes ],
         [ $this->intl->r([ $route, "/discussion" ], $this->entity->id), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
         [ $this->intl->r([ $route, "/history" ], $this->entity->id), $this->intl->t("History"), [ "class" => "ico ico-history" ] ]
       ];
     }
     else {
       $toolboxItems = [
-        [ $this->entity->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
+        [ $this->entity->route, $this->intl->t("View"), $viewAttributes ],
         [ $this->intl->r([ $route, "/edit" ], $this->entity->id), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
         [ $this->intl->r([ $route, "/discussion" ], $this->entity->id), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
         [ $this->intl->r([ $route, "/history" ], $this->entity->id), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
