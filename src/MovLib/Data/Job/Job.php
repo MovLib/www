@@ -29,25 +29,10 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Job extends \MovLib\Data\AbstractEntity {
+class Job extends \MovLib\Data\AbstractEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The timestamp on which this job was changed.
-   *
-   * @var integer
-   */
-  public $changed;
-
-  /**
-   * The timestamp on which this job was created.
-   *
-   * @var integer
-   */
-  public $created;
 
   /**
    * The job's company count.
@@ -55,13 +40,6 @@ final class Job extends \MovLib\Data\AbstractEntity {
    * @var integer
    */
   public $companyCount;
-
-  /**
-   * The job's deletion state.
-   *
-   * @var boolean
-   */
-  public $deleted;
 
   /**
    * The job's description in the current display language.
@@ -76,13 +54,6 @@ final class Job extends \MovLib\Data\AbstractEntity {
    * @var string
    */
   public $femaleName;
-
-  /**
-   * The job's unique identifier.
-   *
-   * @var integer
-   */
-  public $id;
 
   /**
    * The job's translated male name.
@@ -104,13 +75,6 @@ final class Job extends \MovLib\Data\AbstractEntity {
    * @var integer
    */
   public $personCount;
-
-  /**
-   * The translated route of this job.
-   *
-   * @var string
-   */
-  public $route;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Initialize
@@ -251,6 +215,13 @@ SQL
     return $this->init();
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function construct(\stdClass $properties) {
+    $this->setProperties([ "companyCount", "description", "femaleName", "maleName", "name", "personCount" ], $properties);
+    return parent::construct($properties);
+  }
   /**
    * {@inheritdoc}
    */
