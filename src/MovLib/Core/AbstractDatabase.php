@@ -45,7 +45,7 @@ abstract class AbstractDatabase {
    * The key is the system language code and the value contains the collate string that can be used within queries. This
    * is most useful for <code>ORDER BY</code> statements, e.g.:
    *
-   * <pre>SELECT * FROM `table` ORDER BY `field`{$db->collations[$i18n->languageCode]}</pre>
+   * <pre>SELECT * FROM `table` ORDER BY `field`{$this->collations[$this->intl->languageCode]}</pre>
    *
    * @var array
    */
