@@ -28,7 +28,7 @@ namespace MovLib\Presentation\Person\Photo;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Photo extends \MovLib\Presentation\AbstractPresenter {
+class Show extends \MovLib\Presentation\AbstractPresenter {
 
   /**
    * Initialize person photo presentation.
