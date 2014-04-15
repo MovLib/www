@@ -79,9 +79,9 @@ abstract class AbstractIndexPresenter extends \MovLib\Presentation\AbstractPrese
     $this->initLanguageLinks("/{$set->pluralKey}", null, true);
     $this->sidebarInit([
       [ $set->route, $title, [ "class" => "ico ico-{$set->singularKey}" ] ],
-      [ $this->intl->r("/{$set->singularKey}/random"), $this->intl->t("Random") ],
-      [ $this->intl->rp("/{$set->singularKey}/charts"), $this->intl->t("Charts") ],
-      [ $this->intl->r("/help/database/{$set->pluralKey}"), $this->intl->t("Help") ],
+      [ $this->intl->r("/{$set->singularKey}/random"), $this->intl->t("Random"), [ "class" => "ico ico-random"] ],
+      [ $this->intl->rp("/{$set->singularKey}/charts"), $this->intl->t("Charts"), [ "class" => "ico ico-chart"] ],
+      [ $this->intl->r("/help/database/{$set->pluralKey}"), $this->intl->t("Help"), [ "class" => "ico ico-help"] ],
     ]);
     $this->paginationInit();
     return $this;
