@@ -18,7 +18,7 @@
 namespace MovLib\Data\Cast;
 
 /**
- * @todo Description of Cast
+ * Defines a cast entity object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,11 +26,25 @@ namespace MovLib\Data\Cast;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Cast extends \MovLib\Data\AbstractEntity {
+final class Cast extends \MovLib\Data\Job\Job {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
+
+  /**
+   * The cast's alias.
+   *
+   * @var string
+   */
+  public $alias;
+
+  /**
+   * The character identifier (for characters with their own pages).
+   *
+   * @var integer
+   */
+  public $roleId;
 
   /**
    * The entity this cast member belongs to.
@@ -38,6 +52,41 @@ final class Cast extends \MovLib\Data\AbstractEntity {
    * @var \MovLib\Data\AbstractEntity
    */
   protected $entity;
+
+  /**
+   * The cast's movie identifier.
+   *
+   * @var integer
+   */
+  public $movieId;
+
+  /**
+   * The cast's person identifier.
+   *
+   * @var integer
+   */
+  public $personId = self::MANDATORY;
+
+  /**
+   * The role name (for roles with no further data).
+   *
+   * @var string
+   */
+  public $role;
+
+  /**
+   * The role identifier (for persons playing other persons).
+   *
+   * @var integer
+   */
+  public $roleId;
+
+  /**
+   * The cast's series identifier.
+   *
+   * @var integer
+   */
+  public $seriesId;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
