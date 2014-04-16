@@ -852,7 +852,7 @@ abstract class AbstractLocalStreamWrapper {
     try {
       $this->uri = $uri;
       $realpath  = $this->realpath();
-      if (file_exists($realpath)) {
+      if ($realpath !== false && file_exists($realpath)) {
         return stat($realpath);
       }
       return false;
