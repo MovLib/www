@@ -30,24 +30,14 @@ namespace MovLib\Partial\FormElement;
 class TextareaLineArray extends \MovLib\Partial\FormElement\InputText {
 
   /**
-   * The user's raw input in this field.
-   *
-   * @var string
-   */
-  protected $valueRaw;
-
-  /**
    * @inheritdoc
    */
   public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, &$value, array $attributes = null) {
     parent::__construct($diContainerHTTP, $id, $label, $value, $attributes);
     unset($this->attributes["type"]);
     $this->attributes["spellcheck"] = "true";
-    if (!is_array($this->value)) {
-      $this->valueRaw = $this->value;
-    }
-    else {
-      $this->valueRaw = implode("\n", array_values($this->value));
+    if (is_array($this->value)) {
+      $this->value = implode("\n", array_values($this->value));
     }
   }
 
@@ -61,7 +51,7 @@ class TextareaLineArray extends \MovLib\Partial\FormElement\InputText {
     // @codeCoverageIgnoreEnd
     // @devEnd
       unset($this->attributes["value"]);
-      return "{$this->helpPopup}<p><label for='{$this->id}'>{$this->label}</label><textarea{$this->expandTagAttributes($this->attributes)}>{$this->valueRaw}</textarea></p>";
+      return "{$this->helpPopup}<p><label for='{$this->id}'>{$this->label}</label><textarea{$this->expandTagAttributes($this->attributes)}>{$this->value}</textarea></p>";
     // @devStart
     // @codeCoverageIgnoreStart
     }
@@ -84,18 +74,18 @@ class TextareaLineArray extends \MovLib\Partial\FormElement\InputText {
    */
   protected function validateValue($text, &$errors) {
     // Normalize line feeds.
-    $this->valueRaw = $this->normalizeLineFeeds($text);
-
+    $this->value = $this->normalizeLineFeeds($text);
+    $result = [];
     // Split text on line feeds and validate each line.
-    $lines = explode("\n", $this->valueRaw);
+    $lines = explode("\n", $this->value);
     $c = count($lines);
     for ($i = 0; $i < $c; ++$i) {
-      // Set value to current line and make use of the URL validation function of InputURL.
-      $this->value = $lines[$i];
-      $lines[$i] = parent::validate($text, $errors);
+      if (!empty(trim($lines[$i]))) {
+        // Make use of the validation function of InputText.
+        $result[] = parent::validateValue($lines[$i], $errors);
+      }
     }
-
-    return $text;
+    return implode("\n", $result);
   }
 
 }

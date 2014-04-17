@@ -205,22 +205,29 @@ SQL
    * @throws \mysqli_sql_exception
    */
   public function commit() {
-//    $stmt = $this->getMySQLi()->prepare(<<<SQL
-//UPDATE `genres` SET
-//  `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, '{$this->intl->languageCode}', ?),
-//  `dyn_names`        = COLUMN_ADD(`dyn_names`, '{$this->intl->languageCode}', ?),
-//  `dyn_wikipedia`    = COLUMN_ADD(`dyn_wikipedia`, '{$this->intl->languageCode}', ?)
-//WHERE `id` = {$this->id}
-//SQL
-//    );
-//    $stmt->bind_param(
-//      "sss",
-//      $this->description,
-//      $this->name,
-//      $this->wikipedia
-//    );
-//    $stmt->execute();
-//    $stmt->close();
+    $this->aliases = empty($this->aliases)? serialize([]) : serialize(explode("\n", $this->aliases));
+    $this->links   = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
+
+    $stmt = $this->getMySQLi()->prepare(<<<SQL
+UPDATE `awards` SET
+  `aliases`          = ?,
+  `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, '{$this->intl->languageCode}', ?),
+  `dyn_wikipedia`    = COLUMN_ADD(`dyn_wikipedia`, '{$this->intl->languageCode}', ?),
+  `name`             = ?,
+  `links`            = ?
+WHERE `id` = {$this->id}
+SQL
+    );
+    $stmt->bind_param(
+      "sssss",
+      $this->aliases,
+      $this->description,
+      $this->wikipedia,
+      $this->name,
+      $this->links
+    );
+    $stmt->execute();
+    $stmt->close();
     return $this;
   }
 
@@ -228,7 +235,7 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
-    $this->aliases        && ($this->aliases        = unserialize(($this->aliases)));
+    $this->aliases        && ($this->aliases        = unserialize($this->aliases));
     $this->links          && ($this->links          = unserialize($this->links));
     $this->firstEventYear && ($this->firstEventYear = new Date($this->firstEventYear));
     $this->lastEventYear  && ($this->lastEventYear  = new Date($this->lastEventYear));

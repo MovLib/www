@@ -56,7 +56,7 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    $this->headingBefore = "<div class='r'><div class='s s10'>";
+
 
     $this->entity->links          && $this->infoboxAdd($this->intl->t("Sites"), $this->formatWeblinks($this->entity->links));
     $this->entity->firstEventYear && $this->infoboxAdd($this->intl->t("First Event"), (new Date($this->intl, $this))->format($this->entity->firstEventYear));
