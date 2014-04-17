@@ -38,7 +38,7 @@ trait GenreTrait {
     }
     foreach ([
       [ "movie", "movies", $this->intl->t("Movies"), $this->entity->movieCount ],
-      [ "series separator", "series", $this->intl->t("{0,plural,one{Series}other{Series}}"), $this->entity->seriesCount ],
+      [ "series separator", "series", $this->intl->tp("Series"), $this->entity->seriesCount ],
     ] as list($icon, $plural, $title, $count)) {
       $items[] = [
         $this->intl->rp("/genre/{0}/{$plural}", $this->entity->id),

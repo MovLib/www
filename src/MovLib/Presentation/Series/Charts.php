@@ -37,7 +37,7 @@ class Charts extends \MovLib\Presentation\AbstractPresenter {
   public function init() {
     $this->set = new SeriesSet($this->diContainerHTTP);
     $this->initPage($this->intl->t("Series Charts"));
-    $this->initBreadcrumb([ [ $this->intl->rp("/series"), $this->intl->t("{0,plural,one{Series}other{Series}}") ] ]);
+    $this->initBreadcrumb([ [ $this->intl->rp("/series"), $this->intl->tp("Series") ] ]);
     $this->breadcrumbTitle = $this->intl->t("Charts");
     $this->initLanguageLinks("/series/charts");
     $this->sidebarInit([

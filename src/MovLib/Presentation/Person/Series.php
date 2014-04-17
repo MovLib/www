@@ -40,7 +40,7 @@ class Series extends \MovLib\Presentation\AbstractIndexPresenter {
 //    $this->person->init((integer) $_SERVER["PERSON_ID"]);
 //    $this->initPage($this->intl->t("Series with {0}", [ $this->person->name ]));
 //    $this->pageTitle        = $this->intl->t("Series with {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
-//    $this->breadcrumbTitle  = $this->intl->t("{0,plural,one{Series}other{Series}}");
+//    $this->breadcrumbTitle  = $this->intl->tp("Series");
 //    $this->initLanguageLinks("/person/{0}/series", [ $this->person->id ], true);
 //    $this->initPersonBreadcrumb();
 //    $this->sidebarInit();

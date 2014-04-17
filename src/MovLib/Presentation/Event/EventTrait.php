@@ -38,7 +38,7 @@ trait EventTrait {
     }
     foreach ([
       [ "movie", "movies", $this->intl->t("Movies"), $this->entity->movieCount ],
-      [ "series", "series", $this->intl->t("{0,plural,one{Series}other{Series}}"), $this->entity->seriesCount ],
+      [ "series", "series", $this->intl->tp("Series"), $this->entity->seriesCount ],
       [ "person", "persons", $this->intl->t("Persons"), $this->entity->personCount ],
       [ "company separator", "companies", $this->intl->t("Companies"), $this->entity->companyCount ],
     ] as list($icon, $plural, $title, $count)) {

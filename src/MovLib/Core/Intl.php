@@ -511,17 +511,17 @@ final class Intl {
       assert(is_string($singular));
     }
     assert(is_numeric($count));
-    assert(empty($args["@count"]));
+    assert(empty($args[0]));
     // @codeCoverageIgnoreEnd
     // @devEnd
-    if (empty($singular)) {
+    if (!$singular) {
       $singular = $plural;
     }
     if ($args) {
       $args = (array) $args;
     }
-    $args["@count"] = $count;
-    return $this->translate("{@count, plural, one{{$singular}} other{{$plural}}}", $args, "messages", $locale);
+    $args[0] = $count;
+    return $this->translate("{0,plural,one{{$singular}}other{{$plural}}}", $args, "messages", $locale);
   }
 
   /**
@@ -562,10 +562,14 @@ final class Intl {
       "Don't simply use three dots in a row, use the actual Unicode character with proper semantic: …"
     );
     assert(strip_tags($pattern) == $pattern, "HTML is not allowed in translation patterns.");
-    assert(!isset($args) || !empty($args));
-    assert(!empty($context));
-    assert(is_string($context));
-    assert(!isset($locale) || preg_match("/[a-z]{2}[_\-][a-z]{2}/i", $locale));
+    // Allow passing NULL, 0, "false", false, ... etc.
+    assert(!$args || !empty($args), "Message formatter arguments cannot be empty if given.");
+    assert(!empty($context), "Translation context cannot be empty.");
+    assert(is_string($context), "Translation context must be of type string.");
+    assert(
+      !isset($locale) || preg_match("/[a-z]{2}[_\-][A-Z]{2}/", $locale),
+      "A locale consists of a language and country part, e.g. 'de_AT' or 'de-AT'."
+    );
     // @codeCoverageIgnoreEnd
     // @devEnd
     try {
@@ -585,10 +589,10 @@ final class Intl {
         }
       }
 
-      if ($args) {
-        return \MessageFormatter::formatMessage($locale, self::$translations[$locale][$context][$pattern], (array) $args);
+      if ($args === null) {
+        return self::$translations[$locale][$context][$pattern];
       }
-      return self::$translations[$locale][$context][$pattern];
+      return \MessageFormatter::formatMessage($locale, self::$translations[$locale][$context][$pattern], (array) $args);
     }
     catch (\Exception $e) {
       throw new \IntlException("Couldn't translate '{$pattern}'.", null, $e);
