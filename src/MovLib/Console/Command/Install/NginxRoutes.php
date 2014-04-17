@@ -410,8 +410,11 @@ NGX;
    * @return this
    */
   protected function translateAndCompileRoutes(Intl $intl, array &$fastCGIparams) {
-    /* @var $routes array Used to collect all routes for this translation. */
+    /* @var $routes array Used to collect all routes for this locale. */
     $routes = [];
+
+    /* @var $routeParts array Used to collect the various route parts that will be written to a separate file. */
+    $routeParts = [];
 
     /* @var $collator \MovLib\Data\Collator Used to sort routes. */
     $collator = new Collator($intl->locale);
@@ -456,7 +459,7 @@ NGX;
       }
 
       // Now we can be certain that we have the full route in the default locale, time to translate.
-      $translatedRoute = $this->translateRoute($intl, $route, $docReader);
+      $translatedRoute = $this->translateRoute($intl, $route, $docReader, $routeParts);
 
       // We need protecting location blocks for routes with regular expressions, build them.
       $this->setRouteLocation($translatedRoute, $routes, $className, $docReader);
@@ -465,8 +468,8 @@ NGX;
     // Sort the routes in natural order, a sorted routes file makes it easier for humans to find entries.
     $collator->ksort($routes);
 
-    $locations     = "";
-    $redirects     = [];
+    $locations = "";
+    $redirects = [];
 
     foreach ($routes as $protection => $subRoutes) {
       if ($protection == "/") {
@@ -480,6 +483,17 @@ NGX;
     $target = "dr://etc/nginx/sites/conf/routes/{$intl->languageCode}.conf";
     $this->writeVeryVerbose("Writing routes file for <comment>{$intl->locale}</comment> to <comment>{$target}</comment>");
     file_put_contents($target, $locations);
+
+    if ($intl->locale != $intl->defaultLocale && !empty($routeParts)) {
+      $this->writeDebug("Expanding route parts...");
+      $expandedRouteParts = "<?php return [";
+      foreach ($routeParts as $k => $v) {
+        $expandedRouteParts .= "\"{$k}\"=>\"{$v}\",";
+      }
+      $target = "dr://var/intl/{$intl->locale}/routes.php";
+      $this->writeVeryVerbose("Writing route parts look-up file to <comment>{$target}</comment>");
+      file_put_contents($target, rtrim($expandedRouteParts, ",") . "];");
+    }
 
     return $this;
   }
@@ -497,10 +511,12 @@ NGX;
    *   The route to translate.
    * @param \DocBlockReader\Reader $docReader [optional]
    *   Annotation DocReader instance, if given class is checked for possible forced singular form.
+   * @param array $routeParts [optional]
+   *   The array used to collect the various route parts for the final translation file.
    * @return string
    *   The translated route.
    */
-  protected function translateRoute(Intl $intl, $route, DocReader $docReader = null) {
+  protected function translateRoute(Intl $intl, $route, DocReader $docReader = null, array &$routeParts = null) {
     static $slash = "/";
     static $messages = [];
 
@@ -567,8 +583,10 @@ NGX;
 
       // Not that we're going backwards and have to actually append the already translated route parts. Also we have
       // to make sure that we don't forget to include and reset any previously set token after consumption.
-      $translated = $slash . strtr($part, " ", "-") . $token . $translated;
-      $token      = null;
+      $part                                = $slash . strtr($part, " ", "-") . $token;
+      $routeParts["/{$parts[$c]}{$token}"] = $part;
+      $translated                          = "{$part}{$translated}";
+      $token                               = null;
     }
 
     return $translated;

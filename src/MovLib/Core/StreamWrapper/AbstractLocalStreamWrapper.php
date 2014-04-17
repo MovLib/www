@@ -478,12 +478,12 @@ abstract class AbstractLocalStreamWrapper {
   final public function stream_close() {
     try {
       $status = fclose($this->handle);
-      if (isset($this->context["privileged"]) && $this->context["privileged"]) {
-        if (is_dir($this->uri)) {
-          chmod($this->uri, FileSystem::MODE_DIR);
+      if (self::$fs->privileged) {
+        if (isset(self::$fs->user)) {
+          chown($this->uri, self::$fs->user);
         }
-        elseif (is_file($this->uri)) {
-          chmod($this->uri, FileSystem::MODE_FILE);
+        if (isset(self::$fs->group)) {
+          chgrp($this->uri, self::$fs->group);
         }
       }
       return $status;

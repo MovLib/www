@@ -263,36 +263,6 @@ final class Intl {
   }
 
   /**
-   * Translate and format singular route.
-   *
-   * @param string $route
-   *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
-   * @param mixed $args [optional]
-   *   The arguments that should be passed to the message formatter, default to <code>NULL</code> and the message
-   *   formatter isn't used at all. You can pass either a single scaler value or an array.
-   * @param string $locale [optional]
-   *   Use a different locale for this translation.
-   * @return string
-   *   The translated and formatted singular route.
-   * @throws \IntlException
-   */
-  public function r($route, $args = null, $locale = null) {
-    if ($route == "/") {
-      return "/";
-    }
-    if ($route === (array) $route) {
-      $routeArray = $route;
-      $route = "";
-      $c = count($routeArray);
-      for ($i = 0; $i < $c; ++$i) {
-        $route .= $this->translate($routeArray[$i], $args, "routes/singular", $locale);
-      }
-      return $route;
-    }
-    return $this->translate($route, $args, "routes/singular", $locale);
-  }
-
-  /**
    * Translate and format route or query key.
    *
    * This is the new routing method that combines handling of plural and singular routes and allows totally automated
@@ -321,7 +291,7 @@ final class Intl {
    * @throws \ErrorException
    *   If the given route is empty or a part of the route is empty.
    */
-  public function route($route, $args = null, $locale = null) {
+  public function r($route, $args = null, $locale = null) {
     static $routes = [];
     // @devStart
     // @codeCoverageIgnoreStart
@@ -396,10 +366,7 @@ final class Intl {
    * @throws \IntlException
    */
   public function rp($route, $args = null, $locale = null) {
-    if ($route == "/") {
-      return "/";
-    }
-    return $this->translate($route, $args, "routes/plural", $locale);
+    return $route;
   }
 
   /**
