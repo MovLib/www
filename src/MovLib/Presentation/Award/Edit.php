@@ -65,12 +65,12 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
         "placeholder" => $this->intl->t("Enter the award’s alternative names here, line by line."),
       ]))
       ->addElement(new TextareaHTML($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
-        "#help-popup" => $this->intl->t("Description of the job."),
-        "placeholder" => $this->intl->t("Describe the job."),
+        "#help-popup" => $this->intl->t("Description of the award."),
+        "placeholder" => $this->intl->t("Describe the award."),
       ], [ "blockquote", "external", "headings", "lists", ]))
       ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
         "#help-popup"         => $this->intl->t("Link to a corresponding Wikipedia Page."),
-        "placeholder"         => $this->intl->t("Enter the job’s corresponding Wikipedia link."),
+        "placeholder"         => $this->intl->t("Enter the award’s corresponding Wikipedia link."),
         "data-allow-external" => "true",
       ]))
       ->addElement(new TextareaLineURLArray($this->diContainerHTTP, "links", $this->intl->t("Weblinks (line by line)"), $this->entity->links, [

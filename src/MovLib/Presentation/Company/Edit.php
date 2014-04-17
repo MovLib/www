@@ -18,6 +18,13 @@
 namespace MovLib\Presentation\Company;
 
 use \MovLib\Data\Company\Company;
+use \MovLib\Partial\Form;
+use \MovLib\Partial\FormElement\InputDateSeparate;
+use \MovLib\Partial\FormElement\InputText;
+use \MovLib\Partial\FormElement\InputWikipedia;
+use \MovLib\Partial\FormElement\TextareaHTML;
+use \MovLib\Partial\FormElement\TextareaLineArray;
+use \MovLib\Partial\FormElement\TextareaLineURLArray;
 
 /**
  * Allows editing of a company's information.
@@ -28,24 +35,8 @@ use \MovLib\Data\Company\Company;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Edit extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Partial\SidebarTrait;
+class Edit extends \MovLib\Presentation\AbstractEditPresenter {
   use \MovLib\Presentation\Company\CompanyTrait;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The entity to present.
-   *
-   * @var \MovLib\Data\AbstractEntity
-   */
-  protected $entity;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
 
   /**
    * {@inheritdoc}
@@ -55,21 +46,47 @@ class Edit extends \MovLib\Presentation\AbstractPresenter {
     $pageTitle    = $this->intl->t("Edit {0}", [ $this->entity->name ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Edit"))
-      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/edit", $this->entity->id)
-      ->breadcrumb->addCrumbs([
-        [ $this->intl->rp("/companies"), $this->intl->t("Companies") ],
-        [ $this->entity->route, $this->entity->name ]
-      ])
+      ->initEdit($this->entity, $this->intl->t("Companies"), $this->getSidebarItems())
     ;
-
   }
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("edit company"));
+    return (new Form($this->diContainerHTTP))
+      ->addElement(new InputText($this->diContainerHTTP, "name", $this->intl->t("Name"), $this->entity->name, [
+        "#help-popup" => $this->intl->t("The name of the company."),
+        "placeholder" => $this->intl->t("Enter the company’s name."),
+        "autofocus"   => true,
+        "required"    => true,
+      ]))
+      ->addElement(new TextareaLineArray($this->diContainerHTTP, "aliases", $this->intl->t("Alternative Names (line by line)"), $this->entity->aliases, [
+        "#help-popup" => $this->intl->t("The alternative names of the company, line by line."),
+        "placeholder" => $this->intl->t("Enter the company’s alternative names here, line by line."),
+      ]))
+      ->addElement(new InputDateSeparate($this->diContainerHTTP, "foundingDate", $this->intl->t("Founding Date"), $this->entity->foundingDate, [
+        "#help-popup" => $this->intl->t("The founding date of the company."),
+      ], [
+        "year_max" => date("Y"),
+        "year_min" => 1900
+      ]))
+      ->addElement(new TextareaHTML($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
+        "#help-popup" => $this->intl->t("Description of the company."),
+        "placeholder" => $this->intl->t("Describe the company."),
+      ], [ "blockquote", "external", "headings", "lists", ]))
+      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
+        "#help-popup"         => $this->intl->t("Link to a corresponding Wikipedia Page."),
+        "placeholder"         => $this->intl->t("Enter the company’s corresponding Wikipedia link."),
+        "data-allow-external" => "true",
+      ]))
+      ->addElement(new TextareaLineURLArray($this->diContainerHTTP, "links", $this->intl->t("Weblinks (line by line)"), $this->entity->links, [
+        "#help-popup" => $this->intl->t("Weblinks relatet to the company, line by line."),
+        "placeholder" => $this->intl->t("Enter the company’s related weblinks, line by line."),
+      ]))
+      ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
+      ->init([ $this, "valid" ])
+    ;
   }
 
 }

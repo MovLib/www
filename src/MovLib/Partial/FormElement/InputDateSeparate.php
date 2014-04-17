@@ -17,8 +17,6 @@
  */
 namespace MovLib\Partial\FormElement;
 
-use \MovLib\Exception\ValidationException;
-
 /**
  * Date input consisting of three number input elements for day, month and year.
  *
@@ -32,24 +30,54 @@ use \MovLib\Exception\ValidationException;
 class InputDateSeparate extends \MovLib\Partial\FormElement\AbstractFormElement {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * Error code for missing mandatory field.
+   *
+   * @var integer
+   */
+  const ERROR_MISSING_MANDATORY = 1;
+
+  /**
+   * Error code for to big year.
+   *
+   * @var integer
+   */
+  const ERROR_YEAR_MAX = 2;
+
+  /**
+   * Error code for to small year.
+   *
+   * @var integer
+   */
+  const ERROR_YEAR_MIN = 3;
+
+  /**
+   * Error code for an invalid date.
+   *
+   * @var integer
+   */
+  const ERROR_INVALID = 4;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  protected $month;
+  protected $day;
+  protected $year;
+
+
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
    * Instantiate new date input with day, month and year fields.
    *
-   * @param string $id
-   *   The date's global unique identifier.
-   * @param string $label
-   *   The date's translated label text.
-   * @param null|string $value [optional]
-   *   The date's default value, date in W3C format, defaults to no default value.
-   * @param array $attributes [optional]
-   *   The date's additional attributes, the following attributes are set by default:
-   *   <ul>
-   *     <li><code>"id"</code> is set to <var>$id</var></li>
-   *     <li><code>"class"</code> is set to or extended with <code>"date-separate"</code></li>
-   *   </ul>
+   * {@inheritdoc}
+   *
    * @param array $options [optional]
    *   Associative array containing additional options:
    *   <ul>
@@ -57,8 +85,8 @@ class InputDateSeparate extends \MovLib\Partial\FormElement\AbstractFormElement 
    *     <li><code>"year_min</code> set this to the minimum year that can be entered, defaults to <code>0</code></li>
    *   </ul>
    */
-  public function __construct($id, $label, $value = null, array $attributes = null, array $options = null) {
-    parent::__construct($id, $label, $attributes);
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, &$value, array $attributes = null, array $options = null) {
+    parent::__construct($diContainerHTTP, $id, $label, $value, $attributes);
 
     if (isset($options["year_max"])) {
       $this->yearMax = $options["year_max"];
@@ -67,36 +95,10 @@ class InputDateSeparate extends \MovLib\Partial\FormElement\AbstractFormElement 
       $this->yearMin = $options["year_min"];
     }
 
-    // Check if we have POST data and prepare date parts array for looping.
-    $dateParts = [ "year", "month", "day" ];
-
-    // Export possibly set value to class scope.
-    if ($value) {
-      $this->value = $value;
-      // @devStart
-      // @codeCoverageIgnoreStart
-      if (preg_match("/[0-9]{4}-[0-9]{2}-[0-9]{2}/", $this->value) == false) {
-        throw new \LogicException("The value attribute must be a valid date in W3C format");
-      }
-      // @codeCoverageIgnoreEnd
-      // @devEnd
-      // Date format is always "Y-m-d".
-      $date = explode("-", $this->value);
-      foreach ($dateParts as $delta => $property) {
-        if (isset($date[$delta])) {
-          $date[$delta] = (integer) $date[$delta];
-          // Only export to class scope if the date part is non zero.
-          if ($date[$delta]) {
-            $this->{$property} = $date[$delta];
-          }
-        }
-      }
-    }
-
-    // Export possibly submitted POST data to class scope and override exported values.
-    foreach ($dateParts as $property) {
-      $this->{$property} = $this->filterInput("{$this->id}-{$property}", $this->{$property}, FILTER_VALIDATE_INT);
-    }
+    $this->log->debug($value);
+    $this->log->debug($this->year);
+    $this->exportDateProperties($value);
+    $this->log->debug($this->year);
   }
 
   /**
@@ -116,9 +118,33 @@ class InputDateSeparate extends \MovLib\Partial\FormElement\AbstractFormElement 
       $this->addClass("date-separate", $this->attributes);
 
       $attributes = [
-        "y" => [],
-        "m" => [],
-        "d" => [],
+        "y" => [
+          "id"          => "{$this->id}-year",
+          "max"         => $this->yearMax,
+          "min"         => $this->yearMin,
+          "name"        => "{$this->id}[year]",
+          "placeholder" => $this->intl->t("yyyy"),
+          "type"        => "number",
+          "value"       => $this->year,
+        ],
+        "m" => [
+          "id"          => "{$this->id}-month",
+          "name"        => "{$this->id}[month]",
+          "max"         => 12,
+          "min"         => 1,
+          "placeholder" => $this->intl->t("mm"),
+          "type"        => "number",
+          "value"       => $this->month,
+        ],
+        "d" => [
+          "id"          => "{$this->id}-day",
+          "max"         => 31,
+          "min"         => 1,
+          "name"        => "{$this->id}[day]",
+          "placeholder" => $this->intl->t("dd"),
+          "type"        => "number",
+          "value"       => $this->day,
+        ],
       ];
 
       return
@@ -134,7 +160,7 @@ class InputDateSeparate extends \MovLib\Partial\FormElement\AbstractFormElement 
     // @codeCoverageIgnoreStart
     }
     catch (\Exception $e) {
-      return (string) new \MovLib\Presentation\Partial\Alert("<pre>{$e}</pre>", "Error Rendering Element", \MovLib\Presentation\Partial\Alert::SEVERITY_ERROR);
+      return $this->callout("<pre>{$e}</pre>", "Stacktrace", "error");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -144,81 +170,88 @@ class InputDateSeparate extends \MovLib\Partial\FormElement\AbstractFormElement 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
-  /**
-   * Get the rendered date separate input element.
-   *
-   * @return string
-   *   The rendered date separate input element.
-   */
-  protected function render() {
-    // Always add CSS class for proper styling.
-    $this->addClass("date-separate", $this->attributes);
+  protected function exportDateProperties($date) {
+    // Check if we have POST data and prepare date parts array for looping.
+    $dateParts = [ "year", "month", "day" ];
 
-    return
-      "{$this->helpPopup}<fieldset{$this->expandTagAttributes($this->attributes)}><legend>{$this->label}</legend><p>" .
-        "<label class='s s1'>" .
-          "<span class='vh'>{$this->intl->t("Day")}</span>" .
-          "<input id='{$this->id}-day' max='31' min='1' name='{$this->id}-day' placeholder='{$this->intl->t("dd")}' type='number' value='{$this->day}'>" .
-        "</label>" .
-        "<label class='s s1'>" .
-          "<span class='vh'>{$this->intl->t("Month")}</span>" .
-          "<input id='{$this->id}-month' max='12' min='1' name='{$this->id}-month' placeholder='{$this->intl->t("mm")}' type='number' value='{$this->month}'>" .
-        "</label>" .
-        "<label class='s s2'>" .
-          "<span class='vh'>{$this->intl->t("Year")}</span>" .
-          "<input id='{$this->id}-year' max='{$this->yearMax}' min='{$this->yearMin}' name='{$this->id}-year' placeholder='{$this->intl->t("yyyy")}' type='number' value='{$this->year}'>" .
-        "</label>" .
-      "</p></fieldset>"
-    ;
+    // Export possibly set value to class scope.
+    $this->value = $date;
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (preg_match("/[0-9]{4}-[0-9]{2}-[0-9]{2}/", $this->value) == false) {
+      throw new \LogicException("The value attribute must be a valid date in W3C format");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    // Date format is always "Y-m-d".
+    $date = explode("-", $this->value);
+    foreach ($dateParts as $delta => $property) {
+      if (isset($date[$delta])) {
+        $date[$delta] = (integer) $date[$delta];
+        // Only export to class scope if the date part is non zero.
+        if ($date[$delta]) {
+          $this->{$property} = $date[$delta];
+        }
+      }
+    }
+
+    // Export possibly submitted POST data to class scope and override exported values.
+    foreach ($dateParts as $property) {
+      $this->{$property} = $this->request->filterInput(INPUT_GET, "{$this->id}[{$property}]", $this->{$property}, FILTER_VALIDATE_INT);
+    }
+
+    return $this;
   }
 
   /**
-   * Validate the user submitted date.
+   * Validate the submitted Date.
    *
-   * @return this
-   * @throws \MovLib\Exception\ValidationException
+   * @param string $date
+   *   The user submitted date to validate.
+   * @param null|array $errors
+   *   Parameter to collect error messages.
+   * @return string
+   *   The valid date.
    */
-  public function validate() {
-    // Validate if the field is mandatory.
-    if (!$this->day && !$this->month && !$this->year) {
-      if ($this->required === true) {
-        throw new ValidationException($this->intl->t("The “{0}” date is mandatory.", [ $this->label ]));
-      }
-      return $this;
-    }
-
+  protected function validateValue($date, &$errors) {
+    $this->exportDateProperties($date);
     // Month and year are mandatory when a day is present.
     if ($this->day && (!$this->month || !$this->year)) {
-      throw new ValidationException($this->intl->t("Month and Year are mandatory in “{0}” date.", [ $this->label ]));
+      $errors[self::ERROR_MISSING_MANDATORY] = $this->intl->t("Month and Year are mandatory in “{0}” date.", [ $this->label ]);
+      return $date;
     }
-
     // Year is mandatory when a month is present.
     if ($this->month && !$this->year) {
-      throw new ValidationException($this->intl->t("Year is mandatory in “{0}” date.", [ $this->label ]));
+      $errors[self::ERROR_MISSING_MANDATORY] = $this->intl->t("Year is mandatory in “{0}” date.", [ $this->label ]);
+      return $date;
     }
-
     // Always validate the year right away against the request range.
     if ($this->year > $this->yearMax) {
-      throw new ValidationException("The year {0} must not be greater than {1}.", [ $this->year, $this->yearMax ]);
+      $errors[self::ERROR_YEAR_MAX] = $this->intl->t("The year {0} must not be greater than {1}.", [ $this->year, $this->yearMax ]);
+      return $date;
     }
     if ($this->year < $this->yearMin) {
-      throw new ValidationException("The year {0} must not be less than {1}.", [ $this->year, $this->yearMin ]);
+      $errors[self::ERROR_YEAR_MAX] = $this->intl->t("The year {0} must not be less than {1}.", [ $this->year, $this->yearMin ]);
+      return $date;
     }
 
     // Validate the given date depending on submitted parts.
     if ($this->month && $this->day) {
       $this->value = "{$this->year}-{$this->month}-{$this->day}";
       $date        = \DateTime::createFromFormat(DATE_W3C, $this->value);
-      if ($date === false || ($errors = $date->getLastErrors() && ($errors["error_count"] !== 0 || $errors["warning_count"] !== 0))) {
-        throw new ValidationException($this->intl->t("The “{0}” date is invalid.", [ $this->label ]));
+      if ($date === false || ($errors = $date->getLastErrors())) {
+        $errors[self::ERROR_INVALID] = $this->intl->t("The “{0}” date is invalid.", [ $this->label ]);
+        return $date;
       }
     }
     elseif ($this->month) {
       if ($this->month > 12) {
-        throw new ValidationException("The month {0} must not be greater than {1}.", [ $this->month, 12 ]);
+        $errors[self::ERROR_INVALID] = $this->intl->t("The month {0} must not be greater than {1}.", [ $this->month, 12 ]);
+        return $date;
       }
       if ($this->month < 1) {
-        throw new ValidationException("The month {0} must not be less than {1}.", [ $this->month, 1 ]);
+        $errors[self::ERROR_INVALID] = $this->intl->t("The month {0} must not be less than {1}.", [ $this->month, 1 ]);
+        return $date;
       }
       $this->value = "{$this->year}-{$this->month}-00";
     }
