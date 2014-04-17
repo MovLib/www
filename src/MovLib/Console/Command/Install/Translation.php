@@ -70,9 +70,9 @@ class Translation extends \MovLib\Console\Command\AbstractCommand {
 
               foreach ([
                 [ $msgstr, "'", " isn't allowed in {$poPath} on line {$lineNumber}" ],
-                [ $msgid, "'", " isn't allowed in:\n{$comments}" ],
+                [ $msgid,  "'", " isn't allowed in:\n{$comments}" ],
                 [ $msgstr, '"', " isn't allowed in {$poPath} on line {$lineNumber}" ],
-                [ $msgid, '"', " isn't allowed in:\n{$comments}" ],
+                [ $msgid,  '"', " isn't allowed in:\n{$comments}" ],
               ] as list($v, $c, $m)) {
                 if (strpos($v, $c) !== false) {
                   throw new \LogicException("{$c}{$m}");
@@ -151,19 +151,37 @@ class Translation extends \MovLib\Console\Command\AbstractCommand {
 
     $this->writeVerbose("Fixing embedded translations...", self::MESSAGE_TYPE_INFO);
     /* @var $fileinfo \SplFileInfo */
-    foreach ($this->fs->getRecursiveIterator($srcPath) as  $fileinfo) {
-      if ($fileinfo->isFile() && $fileinfo->getExtension() == "php") {
-        $this->writeDebug("Fixing embedded translations in <comment>{$fileinfo->getPathname()}</comment>");
-        $content = file_get_contents($fileinfo);
-        $count = [];
-        for ($i = 0; $i < 4; ++$i) {
-          $content = preg_replace('/\{(\$[a-z0-9\$_\->]+)\((.*)\)(\s*)\}/isU', '" . $1($2) . $3"', $content, -1, $count[]);
-        }
-        $countSum = array_sum($count);
-        $this->writeDebug("Fixed {$countSum} patterns in file...");
-        file_put_contents($fileinfo, $content);
+    foreach (new \RegexIterator($this->fs->getRecursiveIterator($srcPath), "/\.php$/") as  $fileinfo) {
+      $path = $fileinfo->getPathname();
+      $this->writeDebug("Fixing embedded translations in <comment>{$path}</comment>");
+      $content = file_get_contents($path);
+      $count = [];
+      for ($i = 0; $i < 4; ++$i) {
+        $content = preg_replace('/\{(\$[a-z0-9\$_\->]+)\((.*)\)(\s*)\}/isU', '" . $1($2) . $3"', $content, -1, $count[]);
+      }
+      $countSum = array_sum($count);
+      $this->writeDebug("Fixed {$countSum} patterns in file...");
+      file_put_contents($path, $content);
+    }
+
+    $this->writeVerbose("Expanding tp calls...", self::MESSAGE_TYPE_INFO);
+    /* @var $fileinfo \SplFileInfo */
+    foreach (new \RegexIterator($this->fs->getRecursiveIterator($srcPath), "/\.php$/") as  $fileinfo) {
+      $path    = $fileinfo->getPathname();
+      $content = file_get_contents($path);
+      if (strpos($content, "->tp(") !== false) {
+        $this->writeDebug("Expanding tp calls in <comment>{$path}</comment>");
+        $content = preg_replace_callback('/->tp\("([^"].+)"(, "([^"].+)")?.*\)/isU', function ($matches) {
+          if (empty($matches[2])) {
+            $matches[2] = $matches[1];
+          }
+          return '->t("{0,plural,one{' . $matches[1] . '}other{' . $matches[2] . '}}")';
+        }, $content, -1, $count);
+        $this->writeDebug("Expanded {$count} tp calls in file...");
+        file_put_contents($path, $content);
       }
     }
+
 
     $this->writeVerbose("Getting all translation keys from php files...", self::MESSAGE_TYPE_INFO);
     $command = "find {$srcPath} -iname '*.php' | xargs xgettext";
@@ -188,7 +206,7 @@ class Translation extends \MovLib\Console\Command\AbstractCommand {
     $this->exec($command);
 
     $this->writeVerbose("Deleting temporary copy of source files...", self::MESSAGE_TYPE_INFO);
-    $this->exec("rm -r {$srcPath}");
+//    $this->exec("rm -r {$srcPath}");
 
     $this->writeVerbose("Updating po files for all languages...", self::MESSAGE_TYPE_INFO);
     foreach ($this->intl->systemLocales as $code => $locale) {
