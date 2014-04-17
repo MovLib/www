@@ -20,6 +20,7 @@ namespace MovLib\Presentation\SystemPage\About;
 /**
  * Defines the edit about presenter.
  *
+ * @route /about/edit
  * @routeCache false
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib

@@ -56,7 +56,7 @@ abstract class AbstractShow extends \MovLib\Presentation\AbstractPresenter {
       ->initPage($headTitle, $pageTitle, $breadcrumbTitle)
       ->initLanguageLinks($this->systemPage->routeKey)
       ->sidebarInit([
-        [ $this->intl->r("/about-movlib"), $this->intl->t("About {sitename}", [ "sitename" => $this->config->sitename ]) ],
+        [ $this->intl->r("/about"), $this->intl->t("About {sitename}", [ "sitename" => $this->config->sitename ]) ],
         [ $this->intl->r("/team"), $this->intl->t("Team") ],
         [ $this->intl->r("/privacy-policy"), $this->intl->t("Privacy Policy") ],
         [ $this->intl->r("/terms-of-use"), $this->intl->t("Terms of Use") ],
