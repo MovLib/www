@@ -75,7 +75,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
           "<div class='s s9'>" .
             "<div class='fr'>" .
               "<a class='ico ico-movie label' href='{$this->intl->rp("/person/{0}/movies", [ $id ])}' title='{$this->intl->t("Movies")}'>{$person->countMovies}</a>" .
-              "<a class='ico ico-series label' href='{$this->intl->rp("/person/{0}/series", [ $id ])}' title='{$this->intl->t("Series")}'>{$person->countSeries}</a>" .
+              "<a class='ico ico-series label' href='{$this->intl->rp("/person/{0}/series", [ $id ])}' title='{$this->intl->t("{0,plural,one{Series}other{Series}}")}'>{$person->countSeries}</a>" .
               "<a class='ico ico-release label' href='{$this->intl->rp("/person/{0}/releases", [ $id ])}' title='{$this->intl->t("Releases")}'>{$person->countReleases}</a>" .
               "<a class='ico ico-award label' href='{$this->intl->rp("/person/{0}/awards", [ $id ])}' title='{$this->intl->t("Awards")}'>{$person->countAwards}</a>" .
             "</div>" .

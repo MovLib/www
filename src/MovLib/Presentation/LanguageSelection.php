@@ -27,6 +27,7 @@ use \MovLib\Partial\Navigation;
  * and they're doing a really awful job there). Freedom of joice is the motto. This page is different than most other
  * MovLib page's and therefor we extend the abstract page and not the reference implementation.
  *
+ * @route false
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0

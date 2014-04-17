@@ -58,7 +58,7 @@ class Edit extends \MovLib\Presentation\AbstractPresenter {
       ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
       ->initLanguageLinks("/{$this->entity->singularKey}/{0}/edit", $this->entity->id)
       ->breadcrumb->addCrumbs([
-        [ $this->intl->rp("/series"), $this->intl->t("Series") ],
+        [ $this->intl->rp("/series"), $this->intl->t("{0,plural,one{Series}other{Series}}") ],
         [ $this->entity->route, $this->entity->displayTitle ]
       ])
     ;

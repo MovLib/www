@@ -79,7 +79,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
           "<div class='s s9'>" .
             "<div class='fr'>" .
               "<a class='ico ico-movie label' href='{$this->intl->rp("/award/{0}/category/{1}/movies", [ $category->award->id, $category->id ])}' title='{$this->intl->t("Movies")}'>{$category->movieCount}</a>" .
-              "<a class='ico ico-series label' href='{$this->intl->rp("/award/{0}/category/{1}/series", [ $category->award->id, $category->id ])}' title='{$this->intl->t("Series")}'>{$category->seriesCount}</a>" .
+              "<a class='ico ico-series label' href='{$this->intl->rp("/award/{0}/category/{1}/series", [ $category->award->id, $category->id ])}' title='{$this->intl->t("{0,plural,one{Series}other{Series}}")}'>{$category->seriesCount}</a>" .
               "<a class='ico ico-person label' href='{$this->intl->rp("/award/{0}/category/{1}/persons", [ $category->award->id, $category->id ])}' title='{$this->intl->t("Persons")}'>{$category->seriesCount}</a>" .
               "<a class='ico ico-company label' href='{$this->intl->rp("/award/{0}/category/{1}/companies", [ $category->award->id, $category->id ])}' title='{$this->intl->t("Companies")}'>{$category->seriesCount}</a>" .
             "</div>" .

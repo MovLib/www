@@ -17,9 +17,8 @@
  */
 namespace MovLib\Console\Command\Install;
 
-use \MovLib\Console\Command\Admin\NginxRoutes;
+use \MovLib\Console\Command\Install\NginxRoutes;
 use \MovLib\Data\FileSystem;
-use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\StringInput;
 use \Symfony\Component\Console\Output\ConsoleOutput;
 use \Symfony\Component\Console\Output\OutputInterface;

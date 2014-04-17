@@ -20,6 +20,7 @@ namespace MovLib\Presentation\Series;
 /**
  * Allows the creation of a new series.
  *
+ * @routeForceSingular true
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -33,7 +34,7 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
    */
   public function init() {
     $this->initPage($this->intl->t("Create Series"));
-    $this->initBreadcrumb([ [ $this->intl->rp("/series"), $this->intl->t("Series") ] ]);
+    $this->initBreadcrumb([ [ $this->intl->rp("/series"), $this->intl->t("{0,plural,one{Series}other{Series}}") ] ]);
     $this->breadcrumbTitle = $this->intl->t("Create");
     $this->initLanguageLinks("/series/create");
   }

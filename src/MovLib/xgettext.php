@@ -28,4 +28,9 @@
 
 t("About");
 t("Category");
+t("Event");
+t("Job");
+t("Movie");
+t("Release");
+t("{0,plural,one{Series}other{Series}}");
 t("User");

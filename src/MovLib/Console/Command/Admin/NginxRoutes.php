@@ -31,7 +31,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
+abstract class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants

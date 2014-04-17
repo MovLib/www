@@ -48,7 +48,7 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
     $this->entity = new Series($this->diContainerHTTP, $_SERVER["SERIES_ID"]);
     $this
       ->initPage($this->entity->displayTitle, $this->getStructuredDisplayTitle($this->entity, false, true))
-      ->initShow($this->entity, $this->intl->t("Series"), "Series", null, $this->getSidebarItems())
+      ->initShow($this->entity, $this->intl->t("{0,plural,one{Series}other{Series}}"), "Series", null, $this->getSidebarItems())
     ;
     return $this;
   }

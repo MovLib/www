@@ -65,9 +65,10 @@ SQL;
    * {@inheritdoc}
    */
   protected function init() {
-    $this->pluralKey   = $this->tableName = "help_categories";
+    $this->tableName   = "help_categories";
+    $this->pluralKey   = "categories";
     $this->route       = $this->intl->r("/help");
-    $this->singularKey = "help_category";
+    $this->singularKey = "category";
     return parent::init();
   }
 

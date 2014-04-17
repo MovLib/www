@@ -110,7 +110,7 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
       [ $this->intl->r("/person/{0}/delete", $routeArgs), $this->intl->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
 
       [ $this->intl->rp("/person/{0}/movies", $routeArgs), "{$this->intl->t("Movies")} <span class='fr'>{$this->intl->format("{0,number}", [ $this->person->getMoviesCount() ])}</span>", [ "class" => "ico ico-movie" ] ],
-      [ $this->intl->rp("/person/{0}/series", $routeArgs), "{$this->intl->t("Series")} <span class='fr'>{$this->intl->format("{0,number}", [ $this->person->getSeriesCount() ])}</span>", [ "class" => "ico ico-series" ] ],
+      [ $this->intl->rp("/person/{0}/series", $routeArgs), "{$this->intl->t("{0,plural,one{Series}other{Series}}")} <span class='fr'>{$this->intl->format("{0,number}", [ $this->person->getSeriesCount() ])}</span>", [ "class" => "ico ico-series" ] ],
       [ $this->intl->rp("/person/{0}/releases", $routeArgs), "{$this->intl->t("Releases")} <span class='fr'>{$this->intl->format("{0,number}", [ $this->person->getReleasesCount() ])}</span>", [ "class" => "ico ico-release separator" ] ],
     ]);
   }

@@ -173,10 +173,11 @@ SQL
    */
   protected function init() {
     $this->articleCount = $this->getCount("help_articles", "`deleted` = false AND `help_category_id` = {$this->id} AND `help_subcategory_id` IS NULL");
-    $this->pluralKey    = $this->tableName = "help_categories";
+    $this->tableName    = "help_categories";
+    $this->pluralKey    = "categories";
     $this->route        = $this->intl->r("/help/{0}", [ $this->fs->sanitizeFilename($this->title) ]);
     $this->routeKey     = "/help/{$this->fs->sanitizeFilename($this->routeKey)}";
-    $this->singularKey  = "help_category";
+    $this->singularKey  = "category";
     return parent::init();
   }
 
