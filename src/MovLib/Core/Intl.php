@@ -263,6 +263,36 @@ final class Intl {
   }
 
   /**
+   * Translate and format singular route.
+   *
+   * @param string $route
+   *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
+   * @param mixed $args [optional]
+   *   The arguments that should be passed to the message formatter, default to <code>NULL</code> and the message
+   *   formatter isn't used at all. You can pass either a single scaler value or an array.
+   * @param string $locale [optional]
+   *   Use a different locale for this translation.
+   * @return string
+   *   The translated and formatted singular route.
+   * @throws \IntlException
+   */
+  public function r($route, $args = null, $locale = null) {
+    if ($route == "/") {
+      return "/";
+    }
+    if ($route === (array) $route) {
+      $routeArray = $route;
+      $route = "";
+      $c = count($routeArray);
+      for ($i = 0; $i < $c; ++$i) {
+        $route .= $this->translate($routeArray[$i], $args, "routes/singular", $locale);
+      }
+      return $route;
+    }
+    return $this->translate($route, $args, "routes/singular", $locale);
+  }
+
+  /**
    * Translate and format route or query key.
    *
    * This is the new routing method that combines handling of plural and singular routes and allows totally automated
@@ -291,7 +321,7 @@ final class Intl {
    * @throws \ErrorException
    *   If the given route is empty or a part of the route is empty.
    */
-  public function r($route, $args = null, $locale = null) {
+  public function route($route, $args = null, $locale = null) {
     static $routes = [];
     // @devStart
     // @codeCoverageIgnoreStart
@@ -349,6 +379,27 @@ final class Intl {
       return \MessageFormatter::formatMessage($locale, $routes[$locale][$route], (array) $args);
     }
     return $routes[$locale][$route];
+  }
+
+  /**
+   * Translate and format plural route.
+   *
+   * @param string $route
+   *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
+   * @param mixed $args [optional]
+   *   The arguments that should be passed to the message formatter, default to <code>NULL</code> and the message
+   *   formatter isn't used at all. You can pass either a single scaler value or an array.
+   * @param string $locale [optional]
+   *   Use a different locale for this translation.
+   * @return string
+   *   The translated and formatted plural route.
+   * @throws \IntlException
+   */
+  public function rp($route, $args = null, $locale = null) {
+    if ($route == "/") {
+      return "/";
+    }
+    return $this->translate($route, $args, "routes/plural", $locale);
   }
 
   /**
@@ -460,17 +511,17 @@ final class Intl {
       assert(is_string($singular));
     }
     assert(is_numeric($count));
-    assert(empty($args[0]));
+    assert(empty($args["@count"]));
     // @codeCoverageIgnoreEnd
     // @devEnd
-    if (!$singular) {
+    if (empty($singular)) {
       $singular = $plural;
     }
     if ($args) {
       $args = (array) $args;
     }
-    $args[0] = $count;
-    return $this->translate("{0,plural,one{{$singular}}other{{$plural}}}", $args, "messages", $locale);
+    $args["@count"] = $count;
+    return $this->translate("{@count, plural, one{{$singular}} other{{$plural}}}", $args, "messages", $locale);
   }
 
   /**
@@ -494,8 +545,8 @@ final class Intl {
     // @devStart
     // @codeCoverageIgnoreStart
     assert(!empty($pattern), "The pattern cannot be empty.");
-    assert(strpos($pattern, "'") === false, "Always use the real English apostrophe ( ’ )!");
-    assert(strpos($pattern, '"') === false, "Always use the real English quotation marks ( “ opening, ” closing)!");
+    assert(strpos("'", $pattern) === false, "Always use the real English apostrophe ( ’ )!");
+    assert(strpos('"', $pattern) === false, "Always use the real English quotation marks ( “ opening, ” closing)!");
     $placeholderPattern = "\{[0-9a-z_\- ]*\}";
     assert(
       preg_match("/^\s*{$placeholderPattern}(\s*{$placeholderPattern})*\s*$/i", $pattern) !== 1,
@@ -506,19 +557,11 @@ final class Intl {
       preg_match("/(plural|select)/", $pattern) === 1 || preg_match("/\{[a-z0-9_]*[A-Z|\-| ]+[a-z0-9_]*\}/", $pattern) !== 1,
       "Always use snake case for intl placeholder tokens."
     );
-    assert(
-      strpos($pattern, "...") === false,
-      "Don't simply use three dots in a row, use the actual Unicode character with proper semantic: …"
-    );
     assert(strip_tags($pattern) == $pattern, "HTML is not allowed in translation patterns.");
-    // Allow passing NULL, 0, "false", false, ... etc.
-    assert(!$args || !empty($args), "Message formatter arguments cannot be empty if given.");
-    assert(!empty($context), "Translation context cannot be empty.");
-    assert(is_string($context), "Translation context must be of type string.");
-    assert(
-      !isset($locale) || preg_match("/[a-z]{2}[_\-][A-Z]{2}/", $locale),
-      "A locale consists of a language and country part, e.g. 'de_AT' or 'de-AT'."
-    );
+    assert(!isset($args) || $args === 0 || !empty($args));
+    assert(!empty($context));
+    assert(is_string($context));
+    assert(!isset($locale) || preg_match("/[a-z]{2}[_\-][a-z]{2}/i", $locale));
     // @codeCoverageIgnoreEnd
     // @devEnd
     try {
@@ -538,10 +581,10 @@ final class Intl {
         }
       }
 
-      if ($args === null) {
-        return self::$translations[$locale][$context][$pattern];
+      if ($args !== null) {
+        return \MessageFormatter::formatMessage($locale, self::$translations[$locale][$context][$pattern], (array) $args);
       }
-      return \MessageFormatter::formatMessage($locale, self::$translations[$locale][$context][$pattern], (array) $args);
+      return self::$translations[$locale][$context][$pattern];
     }
     catch (\Exception $e) {
       throw new \IntlException("Couldn't translate '{$pattern}'.", null, $e);
