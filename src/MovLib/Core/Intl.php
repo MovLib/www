@@ -352,24 +352,6 @@ final class Intl {
   }
 
   /**
-   * Translate and format plural route.
-   *
-   * @param string $route
-   *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
-   * @param mixed $args [optional]
-   *   The arguments that should be passed to the message formatter, default to <code>NULL</code> and the message
-   *   formatter isn't used at all. You can pass either a single scaler value or an array.
-   * @param string $locale [optional]
-   *   Use a different locale for this translation.
-   * @return string
-   *   The translated and formatted plural route.
-   * @throws \IntlException
-   */
-  public function rp($route, $args = null, $locale = null) {
-    return $route;
-  }
-
-  /**
    * Set the locale.
    *
    * @param string $language
@@ -512,8 +494,8 @@ final class Intl {
     // @devStart
     // @codeCoverageIgnoreStart
     assert(!empty($pattern), "The pattern cannot be empty.");
-    assert(strpos("'", $pattern) === false, "Always use the real English apostrophe ( ’ )!");
-    assert(strpos('"', $pattern) === false, "Always use the real English quotation marks ( “ opening, ” closing)!");
+    assert(strpos($pattern, "'") === false, "Always use the real English apostrophe ( ’ )!");
+    assert(strpos($pattern, '"') === false, "Always use the real English quotation marks ( “ opening, ” closing)!");
     $placeholderPattern = "\{[0-9a-z_\- ]*\}";
     assert(
       preg_match("/^\s*{$placeholderPattern}(\s*{$placeholderPattern})*\s*$/i", $pattern) !== 1,

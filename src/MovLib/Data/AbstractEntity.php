@@ -199,23 +199,8 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
    *   The translated and formatted singular route.
    * @throws \IntlException
    */
-  public function r($route, array $args = null) {
-    return $this->intl->r("{$this->routeKey}{$route}", (array) $this->routeArgs + (array) $args);
-  }
-
-  /**
-   * Translate and format plural entity sub-route.
-   *
-   * @param string $route
-   *   The route key of the subpage.
-   * @param array $args [optional]
-   *   Additional route arguments, defaults to <code>NULL</code>.
-   * @return string
-   *   The translated and formatted plural route.
-   * @throws \IntlException
-   */
-  public function rp($route, array $args = null) {
-    return $this->intl->rp("{$this->routeKey}{$route}", (array) $this->routeArgs + (array) $args);
+  public function r($route, $args = null) {
+    return "{$this->routeKey}{$this->intl->r($route, $args)}";
   }
 
 }

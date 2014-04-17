@@ -581,12 +581,19 @@ NGX;
         }
       }
 
-      // Not that we're going backwards and have to actually append the already translated route parts. Also we have
-      // to make sure that we don't forget to include and reset any previously set token after consumption.
-      $part                                = $slash . strtr($part, " ", "-") . $token;
-      $routeParts["/{$parts[$c]}{$token}"] = $part;
-      $translated                          = "{$part}{$translated}";
-      $token                               = null;
+      // Not that we're going backwards and have to actually append the already translated route parts.
+      $part       = strtr($part, " ", "-");
+      $translated = "{$slash}{$part}{$token}{$translated}";
+
+      // We also need to include this in the route parts array for creation of the look-up file used in Intl for a fast
+      // translation of routes that isn't based on the messages (like we have it within this command).
+      if (!empty($token)) {
+        $token = "{$slash}{" . ($c - 1) . "}";
+      }
+      $routeParts["{$slash}{$parts[$c]}{$token}"] = "{$slash}{$part}{$token}";
+
+      // Reset the token for the next iteration.
+      $token = null;
     }
 
     return $translated;
