@@ -132,7 +132,8 @@ FROM `persons`
   LEFT JOIN `posters` FORCE INDEX (PRIMARY)
     ON `posters`.`id` = `display_posters`.`poster_id`
     AND `posters`.`deleted` = false
-WHERE `movies`.`deleted` = false AND `persons`.`id` = {$person->id}
+WHERE `movies`.`deleted` = false
+  AND `persons`.`id` = {$person->id}
 ORDER BY `movies`.`year` DESC
 SQL
     );
@@ -220,6 +221,7 @@ SQL
         $reflector->invoke($this->entities[$row->movieId]->crew->entities[$row->crewId]);
       }
     }
+    $result->free();
 
     (new \MovLib\Data\Genre\GenreSet($this->diContainer))->loadEntitySets($this);
 
