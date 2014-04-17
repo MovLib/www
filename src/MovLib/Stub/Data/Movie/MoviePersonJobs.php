@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Director;
+namespace MovLib\Stub\Data\Movie;
 
 /**
- * Defines a director entity object
+ * Movie job stub class
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -26,59 +26,41 @@ namespace MovLib\Data\Director;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Director extends \MovLib\Data\Job\Job {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
+class MoviePersonJobs {
 
   /**
-   * The director's alias.
+   * The movie.
    *
-   * @var string
+   * @var \MovLib\Data\Movie\Movie
    */
-  public $alias;
+  public $movie;
 
   /**
-   * The director's job identifier.
+   * The cast jobs.
    *
-   * @var integer
+   * @var \MovLib\Data\Cast\CastSet
    */
-  public $jobId;
+  public $cast;
 
   /**
-   * The director's movie identifier.
+   * The crew jobs.
    *
-   * @var integer
+   * @var \MovLib\Data\Crew\CrewSet
    */
-  public $movieId;
+  public $crew;
 
   /**
-   * The director's person identifier.
+   * The director job.
    *
-   * @var integer
+   * @var \MovLib\Data\Director\Director
    */
-  public $personId;
+  public $director;
 
   /**
-   * The director's series identifier.
+   * The movie's genres.
    *
-   * @var integer
+   * @var \MovLib\Data\Genre\GenreSet
    */
-  public $seriesId;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new director object.
-   *
-   * @param \MovLib\Core\DIContainer $diContainer
-   *   {{@inheritdoc}}
-   */
-  public function __construct(\MovLib\Core\DIContainer $diContainer) {
-    parent::__construct($diContainer);
-  }
+  public $genreSet;
 
 }

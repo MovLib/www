@@ -17,7 +17,8 @@
  */
 namespace MovLib\Presentation\Person;
 
-use \MovLib\Data\Person\Person;
+use \MovLib\Partial\Genre;
+use \MovLib\Data\Cast\Cast;
 use \MovLib\Data\Movie\MovieJobSet;
 
 /**
@@ -29,7 +30,8 @@ use \MovLib\Data\Movie\MovieJobSet;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Movies extends \MovLib\Presentation\AbstractIndexPresenter {
+class Movies extends \MovLib\Presentation\Person\AbstractPersonPresenter {
+  use \MovLib\Presentation\Movie\MovieTrait;
 
   /**
    * Initialize person movies presentation.
@@ -37,34 +39,82 @@ class Movies extends \MovLib\Presentation\AbstractIndexPresenter {
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function init() {
-    $this->person = new Person($this->diContainerHTTP, (integer) $_SERVER["PERSON_ID"]);
-//    $this->initPage($this->intl->t("Movies with {0}", [ $this->person->name ]));
-//    $this->pageTitle        = $this->intl->t(
-//      "Movies with {0}",
-//      [ "<a href='{$this->person->route}' property='url'><span property='name'>{$this->person->name}</span></a>" ]
-//    );
-//    $this->breadcrumbTitle  = $this->intl->t("Movies");
-//    $this->initLanguageLinks("/person/{0}/movies", [ $this->person->id ], true);
-//    $this->initPersonBreadcrumb();
-//    $this->sidebarInit();
-//    $this->schemaType = "Person";
-    // @todo: Replace with the real set!
+    $this->initPersonPresentation(
+      $this->intl->t("Movies with {name}"),
+      $this->intl->t("Movies with {name}"),
+      $this->intl->t("Movies")
+    );
+  }
+
+  public function getContent() {
     $set = new MovieJobSet($this->diContainerHTTP);
-    $set->loadEntitiesByPerson($this->person);
-    $this->initIndex($set, "Fix me!", "Fix me!");
-  }
+    /* @var $jobs \MovLib\Stub\Data\Movie\MoviePersonJobs */
+    $listing = null;
+    foreach ($set->loadEntitiesByPerson($this->entity) as $movieId => $jobs) {
+      $jobList = null;
+      if (isset($jobs->director)) {
+        $jobList .= "<li><a href='{$jobs->director->route}'>{$jobs->director->names[$this->entity->sex]}</a></li>";
+      }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function formatListingItem(\MovLib\Data\AbstractEntity $item, $delta) {
+      $cast        = null;
+      $castJobName = null;
+      $castRoute   = null;
+      /* @var $castJob \MovLib\Data\Cast\Cast */
+      foreach ($jobs->cast as $id => $castJob) {
+        if (!$castJobName) {
+          $castJobName = $castJob->names[$this->entity->sex];
+          $castRoute   = $castJob->route;
+        }
+        if ($cast) {
+          $cast .= ", ";
+        }
+        // Simple role string.
+        if ($castJob->role) {
+          $cast .= $castJob->role;
+        }
+        // Person is playing him/herself.
+        elseif ($castJob->roleId === $this->entity->id) {
+          $cast .= "<a href='{$this->entity->route}'>" . Cast::$roleTitleSelf[$this->entity->sex] . "</a>";
+        }
+        // Person is playing another person.
+        elseif ($castJob->roleId && $castJob->roleName) {
+          $cast .= "<a href='{$this->intl->r($this->entity->routeKey, $castJob->roleId)}'>{$castJob->roleName}</a>";
+        }
+      }
+      if ($cast) {
+        $jobList .= "<li>{$this->intl->t(
+          "{job} as {roles}",
+          [ "job" => "<a href='{$castRoute}'>{$castJobName}</a>", "roles" => $cast ]
+        )}</li>";
+      }
 
-  }
+      /* @var $crewJob \MovLib\Data\Crew\Crew */
+      foreach ($jobs->crew as $id => $crewJob) {
+        $jobList .= "<li><a href='{$crewJob->route}'>{$crewJob->names[$this->entity->sex]}</a></li>";
+      }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getNoItemsContent() {
+      if ($jobList) {
+        $jobList = "<ul class='no-list small'>{$jobList}</ul>";
+      }
+      $listing .=
+        "<li class='hover-item r'>" .
+          "<article typeof='Movie'>" .
+            "<div class='s s1' property='image'>{$this->img($jobs->movie->imageGetStyle("s1"))}</div>" .
+            "<div class='s s8'>" .
+              "<h2 class='para'>{$this->getStructuredDisplayTitle($jobs->movie)}</h2>" .
+              $this->getStructuredOriginalTitle($jobs->movie, "small") .
+              (new Genre($this->diContainerHTTP))->getLabels($jobs->genreSet, [ "class" => "small cf mb10" ]) .
+              $jobList .
+            "</div>" .
+            "<div class='s s1 rating-mean tac'>{$this->intl->format("{0,number}", $jobs->movie->meanRating)}</div>" .
+          "</article>" .
+        "</li>"
+      ;
+    }
+    if ($listing) {
+      return "<ol class='hover-list no-list'>{$listing}</ol>";
+    }
+
     return $this->callout(
       "<p>{$this->intl->t("We couldn’t find any movies this person has worked on.")}</p>",
       $this->intl->t("No Movies"),

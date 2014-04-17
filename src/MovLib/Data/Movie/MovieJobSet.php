@@ -35,7 +35,13 @@ use \MovLib\Data\Movie\Movie;
  */
 class MovieJobSet extends \MovLib\Data\Movie\MovieSet {
 
-
+  /**
+   * Load the movies and jobs for a specific person.
+   *
+   * @param \MovLib\Data\Person\Person $person
+   *   The person to load the information for.
+   * @return this
+   */
   public function loadEntitiesByPerson(\MovLib\Data\Person\Person $person) {
     $result = $this->getMySQLi()->query(<<<SQL
 SELECT
@@ -86,7 +92,31 @@ SELECT
     COLUMN_GET(`crew_job`.`dyn_names_sex{$person->sex}`, '{$this->intl->defaultLanguageCode}' AS BINARY)
   ) AS `crewJobName`,
   `crew_alias`.`alias` AS `crewAlias`
-FROM `movies` FORCE INDEX (`movies_deleted`)
+FROM `persons`
+  LEFT JOIN `movies_directors` FORCE INDEX (`fk_movies_directors_persons`)
+    ON `movies_directors`.`person_id` = `persons`.`id`
+  LEFT JOIN `jobs` AS `director_job`
+    ON `director_job`.`id` = `movies_directors`.`job_id`
+  LEFT JOIN `persons_aliases` AS `director_alias`
+    ON `director_alias`.`id` = `movies_directors`.`alias_id`
+  LEFT JOIN `movies_cast` FORCE INDEX (`fk_movies_cast_persons`)
+    ON `movies_cast`.`person_id` = `persons`.`id`
+  LEFT JOIN `jobs` AS `cast_job`
+    ON `cast_job`.`id` = `movies_cast`.`job_id`
+  LEFT JOIN `persons_aliases` AS `cast_alias`
+    ON `cast_alias`.`id` = `movies_cast`.`alias_id`
+  LEFT JOIN `persons` AS `cast_role`
+    ON `cast_role`.`id` = `movies_cast`.`role_id`
+  LEFT JOIN `movies_crew` FORCE INDEX (`fk_movies_crew_persons`)
+    ON `movies_crew`.`person_id` = `persons`.`id`
+  LEFT JOIN `jobs` AS `crew_job`
+    ON `crew_job`.`id` = `movies_crew`.`job_id`
+  LEFT JOIN `persons_aliases` AS `crew_alias`
+    ON `crew_alias`.`id` = `movies_crew`.`alias_id`
+  INNER JOIN `movies` FORCE INDEX (`movies_deleted`)
+    ON `movies`.`id` = `movies_directors`.`movie_id`
+    OR `movies`.`id` = `movies_cast`.`movie_id`
+    OR `movies`.`id` = `movies_crew`.`movie_id`
   INNER JOIN `movies_original_titles`
     ON `movies_original_titles`.`movie_id` = `movies`.`id`
   INNER JOIN `movies_titles` AS `original_title` FORCE INDEX (PRIMARY)
@@ -102,31 +132,8 @@ FROM `movies` FORCE INDEX (`movies_deleted`)
   LEFT JOIN `posters` FORCE INDEX (PRIMARY)
     ON `posters`.`id` = `display_posters`.`poster_id`
     AND `posters`.`deleted` = false
-  LEFT JOIN `movies_directors` FORCE INDEX (`fk_movies_directors_movies`)
-    ON `movies_directors`.`movie_id` = `movies`.`id`
-  LEFT JOIN `jobs` AS `director_job`
-    ON `director_job`.`id` = `movies_directors`.`job_id`
-  LEFT JOIN `persons_aliases` AS `director_alias`
-    ON `director_alias`.`id` = `movies_directors`.`alias_id`
-  LEFT JOIN `movies_cast` FORCE INDEX (`fk_movies_cast_movies`)
-    ON `movies_cast`.`movie_id` = `movies`.`id`
-  LEFT JOIN `jobs` AS `cast_job`
-    ON `cast_job`.`id` = `movies_cast`.`job_id`
-  LEFT JOIN `persons_aliases` AS `cast_alias`
-    ON `cast_alias`.`id` = `movies_cast`.`alias_id`
-  LEFT JOIN `persons` AS `cast_role`
-    ON `cast_role`.`id` = `movies_cast`.`role_id`
-  LEFT JOIN `movies_crew` FORCE INDEX (`fk_movies_crew_movies`)
-    ON `movies_crew`.`movie_id` = `movies`.`id`
-  LEFT JOIN `jobs` AS `crew_job`
-    ON `crew_job`.`id` = `movies_crew`.`job_id`
-  LEFT JOIN `persons_aliases` AS `crew_alias`
-    ON `crew_alias`.`id` = `movies_crew`.`alias_id`
-  INNER JOIN `persons`
-    ON `persons`.`id` = `movies_directors`.`person_id`
-    OR `persons`.`id` = `movies_cast`.`person_id`
-    OR `persons`.`id` = `movies_crew`.`person_id`
 WHERE `movies`.`deleted` = false AND `persons`.`id` = {$person->id}
+ORDER BY `movies`.`year` DESC
 SQL
     );
 
@@ -135,8 +142,8 @@ SQL
       if (empty($this->entities[$row->movieId])) {
         $this->entities[$row->movieId] = (object) [
           "movie"    => new Movie($this->diContainer),
-          "cast"     => null,
-          "crew"     => null,
+          "cast"     => new CastSet($this->diContainer),
+          "crew"     => new CrewSet($this->diContainer),
           "director" => null,
         ];
         /* @var $this->entities[$row->movieId] \MovLib\Stub\Data\Movie\MovieJob */
@@ -170,59 +177,53 @@ SQL
         $this->entities[$row->movieId]->director->names[$person->sex] = $row->directorJobName;
         $this->entities[$row->movieId]->director->movieId             = $row->movieId;
         $this->entities[$row->movieId]->director->personId            = $row->personId;
+        $this->entities[$row->movieId]->director->routeArgs           = $row->directorJobId;
         $reflector = new \ReflectionMethod($this->entities[$row->movieId]->director, "init");
         $reflector->setAccessible(true);
         $reflector->invoke($this->entities[$row->movieId]->director);
       }
 
       // Add a cast entry.
-      if (isset($row->castId)) {
-        // Initialize the cast set if not present yet.
-        if (empty($this->entities[$row->movieId]->cast)) {
-          $this->entities[$row->movieId]->cast = new CastSet($this->diContainer);
-        }
-        if (empty($this->entities[$row->movieId]->cast->entities[$row->castId])) {
-          $this->entities[$row->movieId]->cast->entities[$row->castId]                      = new Cast($this->diContainer, $person);
-          $this->entities[$row->movieId]->cast->entities[$row->castId]->id                  = $row->castId;
-          $this->entities[$row->movieId]->cast->entities[$row->castId]->created             = $row->castCreated;
-          $this->entities[$row->movieId]->cast->entities[$row->castId]->changed             = $row->castChanged;
-          $this->entities[$row->movieId]->cast->entities[$row->castId]->alias               = $row->castAlias;
-          $this->entities[$row->movieId]->cast->entities[$row->castId]->jobId               = $row->castJobId;
-          $this->entities[$row->movieId]->cast->entities[$row->castId]->names[$person->sex] = $row->castJobName;
-          $this->entities[$row->movieId]->cast->entities[$row->castId]->movieId             = $row->movieId;
-          $this->entities[$row->movieId]->cast->entities[$row->castId]->personId            = $row->personId;
-          $this->entities[$row->movieId]->cast->entities[$row->castId]->role                = $row->castRole;
-          $this->entities[$row->movieId]->cast->entities[$row->castId]->roleId              = $row->castRoleId;
-          $this->entities[$row->movieId]->cast->entities[$row->castId]->roleName            = $row->castRoleName;
-          $reflector = new \ReflectionMethod($this->entities[$row->movieId]->cast->entities[$row->castId], "init");
-          $reflector->setAccessible(true);
-          $reflector->invoke($this->entities[$row->movieId]->cast->entities[$row->castId]);
-        }
+      if (isset($row->castId) && empty($this->entities[$row->movieId]->cast->entities[$row->castId])) {
+        $this->entities[$row->movieId]->cast->entities[$row->castId]                      = new Cast($this->diContainer, $person);
+        $this->entities[$row->movieId]->cast->entities[$row->castId]->id                  = $row->castId;
+        $this->entities[$row->movieId]->cast->entities[$row->castId]->created             = $row->castCreated;
+        $this->entities[$row->movieId]->cast->entities[$row->castId]->changed             = $row->castChanged;
+        $this->entities[$row->movieId]->cast->entities[$row->castId]->alias               = $row->castAlias;
+        $this->entities[$row->movieId]->cast->entities[$row->castId]->jobId               = $row->castJobId;
+        $this->entities[$row->movieId]->cast->entities[$row->castId]->names[$person->sex] = $row->castJobName;
+        $this->entities[$row->movieId]->cast->entities[$row->castId]->movieId             = $row->movieId;
+        $this->entities[$row->movieId]->cast->entities[$row->castId]->personId            = $row->personId;
+        $this->entities[$row->movieId]->cast->entities[$row->castId]->role                = $row->castRole;
+        $this->entities[$row->movieId]->cast->entities[$row->castId]->roleId              = (integer)$row->castRoleId;
+        $this->entities[$row->movieId]->cast->entities[$row->castId]->roleName            = $row->castRoleName;
+        $this->entities[$row->movieId]->cast->entities[$row->castId]->routeArgs           = $row->castJobId;
+        $reflector = new \ReflectionMethod($this->entities[$row->movieId]->cast->entities[$row->castId], "init");
+        $reflector->setAccessible(true);
+        $reflector->invoke($this->entities[$row->movieId]->cast->entities[$row->castId]);
       }
 
       // Add a crew entry.
-      if (isset($row->crewId)) {
-        // Initialize the crew set if not present yet.
-        if (empty($this->entities[$row->movieId]->crew)) {
-          $this->entities[$row->movieId]->crew = new CrewSet($this->diContainer);
-        }
-        if (empty($this->entities[$row->movieId]->crew->entities[$row->crewId])) {
-          $this->entities[$row->movieId]->crew->entities[$row->crewId]                      = new Crew($this->diContainer);
-          $this->entities[$row->movieId]->crew->entities[$row->crewId]->id                  = $row->crewId;
-          $this->entities[$row->movieId]->crew->entities[$row->crewId]->created             = $row->crewCreated;
-          $this->entities[$row->movieId]->crew->entities[$row->crewId]->changed             = $row->crewChanged;
-          $this->entities[$row->movieId]->crew->entities[$row->crewId]->alias               = $row->crewAlias;
-          $this->entities[$row->movieId]->crew->entities[$row->crewId]->jobId               = $row->crewJobId;
-          $this->entities[$row->movieId]->crew->entities[$row->crewId]->names[$person->sex] = $row->crewJobName;
-          $this->entities[$row->movieId]->crew->entities[$row->crewId]->movieId             = $row->movieId;
-          $this->entities[$row->movieId]->crew->entities[$row->crewId]->personId            = $row->personId;
-          $reflector = new \ReflectionMethod($this->entities[$row->movieId]->crew->entities[$row->crewId], "init");
-          $reflector->setAccessible(true);
-          $reflector->invoke($this->entities[$row->movieId]->crew->entities[$row->crewId]);
-        }
+      if (isset($row->crewId) && empty($this->entities[$row->movieId]->crew->entities[$row->crewId])) {
+        $this->entities[$row->movieId]->crew->entities[$row->crewId]                      = new Crew($this->diContainer);
+        $this->entities[$row->movieId]->crew->entities[$row->crewId]->id                  = $row->crewId;
+        $this->entities[$row->movieId]->crew->entities[$row->crewId]->created             = $row->crewCreated;
+        $this->entities[$row->movieId]->crew->entities[$row->crewId]->changed             = $row->crewChanged;
+        $this->entities[$row->movieId]->crew->entities[$row->crewId]->alias               = $row->crewAlias;
+        $this->entities[$row->movieId]->crew->entities[$row->crewId]->jobId               = $row->crewJobId;
+        $this->entities[$row->movieId]->crew->entities[$row->crewId]->names[$person->sex] = $row->crewJobName;
+        $this->entities[$row->movieId]->crew->entities[$row->crewId]->movieId             = $row->movieId;
+        $this->entities[$row->movieId]->crew->entities[$row->crewId]->personId            = $row->personId;
+        $this->entities[$row->movieId]->crew->entities[$row->crewId]->routeArgs           = $row->crewJobId;
+        $reflector = new \ReflectionMethod($this->entities[$row->movieId]->crew->entities[$row->crewId], "init");
+        $reflector->setAccessible(true);
+        $reflector->invoke($this->entities[$row->movieId]->crew->entities[$row->crewId]);
       }
     }
-    $this->log->debug("entities", $this->entities);
+
+    (new \MovLib\Data\Genre\GenreSet($this->diContainer))->loadEntitySets($this);
+
+    return $this;
   }
 
 }

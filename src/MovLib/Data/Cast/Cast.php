@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data\Cast;
 
+use \MovLib\Partial\Sex;
+
 /**
  * Defines a cast entity object.
  *
@@ -69,11 +71,6 @@ final class Cast extends \MovLib\Data\Job\Job {
   public $personId;
 
   /**
-   * {@inheritdoc}
-   */
-  public $pluralKey = "cast";
-
-  /**
    * The role name (for roles with no further data).
    *
    * @var string
@@ -94,17 +91,19 @@ final class Cast extends \MovLib\Data\Job\Job {
    */
   public $roleName;
 
+  public static $roleTitleSelf = [
+    Sex::UNKNOWN        => "Self",
+    Sex::MALE           => "Himself",
+    Sex::FEMALE         => "Herself",
+    Sex::NOT_APPLICABLE => null,
+  ];
+
   /**
    * The cast's series identifier.
    *
    * @var integer
    */
   public $seriesId;
-
-  /**
-   * {@inheritdoc}
-   */
-  public $singularKey = "cast";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods

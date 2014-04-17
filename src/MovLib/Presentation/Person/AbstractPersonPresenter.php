@@ -46,6 +46,8 @@ abstract class AbstractPersonPresenter extends \MovLib\Presentation\AbstractPres
    *   default to the person's name.
    * @param string $pageTitle [optional]
    *   The presentation's translated page title with the placeholder (only has to be supplied if different from the title).
+   *
+   *   The person's name will be linked automatically and will also contain correct structured markup.
    * @param string $breadcrumbTitle
    *   The presentation's translated breadcrumb title with the placeholder (only has to be supplied if different from the title).
    */
@@ -56,10 +58,15 @@ abstract class AbstractPersonPresenter extends \MovLib\Presentation\AbstractPres
     $this->schemaType            = "Person";
     $this->headingSchemaProperty = "name";
 
-    $this->entity = new Person($this->diContainerHTTP, (integer) $_SERVER["PERSON_ID"]);
-
     $title = $title ? str_replace("{name}", $this->entity->name, $title) : $this->entity->name;
-    $pageTitle       && $pageTitle = str_replace("{name}", $this->entity->name, $pageTitle);
+    if ($pageTitle) {
+      $this->headingSchemaProperty = null;
+      $pageTitle = str_replace(
+        "{name}",
+        "<a href='{$this->entity->route}'><span property='name'>{$this->entity->name}</span></a>",
+        $pageTitle
+      );
+    }
     $breadcrumbTitle && $breadcrumbTitle = str_replace("{name}", $this->entity->name, $breadcrumbTitle);
 
     $this->initPage($title, $pageTitle, $breadcrumbTitle);
@@ -68,7 +75,7 @@ abstract class AbstractPersonPresenter extends \MovLib\Presentation\AbstractPres
     $this->breadcrumb->addCrumb($this->intl->r("/persons"), $this->intl->t("Persons"));
     $routeKey = $this->entity->routeKey;
     if (($shortName = strtolower($this->shortName())) != "show") {
-      $routeKey .= "{$shortName}";
+      $routeKey .= "/{$shortName}";
       $this->breadcrumb->addCrumb($this->entity->route, $this->entity->name);
     }
 
@@ -79,10 +86,10 @@ abstract class AbstractPersonPresenter extends \MovLib\Presentation\AbstractPres
     $additionalSidebarItems = null;
     if (!$this->entity->deleted) {
       foreach ([
-        [ "movie", "movies", $this->intl->t("Movies"), $this->entity->countMovies ],
-        [ "series", "series", $this->intl->t("Series"), $this->entity->countSeries ],
-        [ "release", "releases", $this->intl->t("Releases"), $this->entity->countReleases ],
-        [ "award separator", "awards", $this->intl->t("Awards"), $this->entity->countAwards ],
+        [ "movie", "movies", $this->intl->tp("Movies"), $this->entity->countMovies ],
+        [ "series", "series", $this->intl->tp("Series"), $this->entity->countSeries ],
+        [ "release", "releases", $this->intl->tp("Releases"), $this->entity->countReleases ],
+        [ "award separator", "awards", $this->intl->tp("Awards"), $this->entity->countAwards ],
       ] as list($icon, $routeAddition, $title, $count)) {
         $additionalSidebarItems[] = [
           $this->intl->r("/person/{0}/{$routeAddition}", $this->entity->id),
