@@ -15,44 +15,17 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Cast;
+namespace MovLib\Data\Movie;
 
 /**
- * @todo Description of CastSet
+ * @todo Description of MovieJob
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class CastSet extends \MovLib\Data\AbstractSet {
-
-  /**
-   * {@inheritdoc}
-   */
-  public $pluralKey = "cast";
-
-  /**
-   * {@inheritdoc}
-   */
-  public $singularKey = "cast";
-
-  protected function getEntitiesQuery($where = null, $orderBy = null) {
-    return <<<SQL
-SELECT
-
-{$where} {$orderBy}
-SQL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
-    return <<<SQL
-
-SQL;
-  }
-
+class MovieJob extends \MovLib\Data\AbstractEntity {
+  
 }

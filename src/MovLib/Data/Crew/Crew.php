@@ -26,7 +26,11 @@ namespace MovLib\Data\Crew;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Crew extends \MovLib\Data\Cast\Cast {
+final class Crew extends \MovLib\Data\Job\Job {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
    * The crew's alias.
@@ -43,6 +47,13 @@ final class Crew extends \MovLib\Data\Cast\Cast {
   public $companyId;
 
   /**
+   * The crew's job identifier.
+   *
+   * @var integer
+   */
+  public $jobId;
+
+  /**
    * The crew's movie identifier.
    *
    * @var integer
@@ -54,7 +65,12 @@ final class Crew extends \MovLib\Data\Cast\Cast {
    *
    * @var integer
    */
-  public $personId = self::MANDATORY;
+  public $personId;
+
+  /**
+   * {@inheritdoc}
+   */
+  public $pluralKey = "crew";
 
   /**
    * The crew's series identifier.
@@ -62,6 +78,15 @@ final class Crew extends \MovLib\Data\Cast\Cast {
    * @var integer
    */
   public $seriesId;
+
+  /**
+   * {@inheritdoc}
+   */
+  public $singularKey = "crew";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
    * Instantiate new crew object.

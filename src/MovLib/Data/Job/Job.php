@@ -18,6 +18,7 @@
 namespace MovLib\Data\Job;
 
 use \MovLib\Exception\ClientException\NotFoundException;
+use \MovLib\Partial\Sex;
 
 /**
  * Defines the job entity object.
@@ -52,6 +53,7 @@ class Job extends \MovLib\Data\AbstractEntity {
    * The job's translated female name.
    *
    * @var string
+   * @deprecated since version 0.0.1-dev
    */
   public $femaleName;
 
@@ -59,6 +61,7 @@ class Job extends \MovLib\Data\AbstractEntity {
    * The job's translated male name.
    *
    * @var string
+   * @deprecated since version 0.0.1-dev
    */
   public $maleName;
 
@@ -66,8 +69,22 @@ class Job extends \MovLib\Data\AbstractEntity {
    * The job's translated unisex name.
    *
    * @var string
+   * @deprecated since version 0.0.1-dev
    */
   public $name;
+
+  /**
+   * The job's translated and gender specific names.
+   *
+   * The Keys are {@see \MovLib\Partial\Sex} class constants.
+   *
+   * @var array
+   */
+  public $names = [
+    Sex::UNKNOWN => null,
+    Sex::MALE    => null,
+    Sex::FEMALE  => null,
+  ];
 
   /**
    * The job's person count.
@@ -75,6 +92,16 @@ class Job extends \MovLib\Data\AbstractEntity {
    * @var integer
    */
   public $personCount;
+
+  /**
+   * {@inheritdoc}
+   */
+  public $pluralKey = "jobs";
+
+  /**
+   * {@inheritdoc}
+   */
+  public $singularKey = "job";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Initialize
@@ -213,22 +240,6 @@ SQL
     $this->id = $stmt->insert_id;
     $stmt->close();
     return $this->init();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function construct(\stdClass $properties) {
-    $this->setProperties([ "companyCount", "description", "femaleName", "maleName", "name", "personCount" ], $properties);
-    return parent::construct($properties);
-  }
-  /**
-   * {@inheritdoc}
-   */
-  protected function init() {
-    $this->pluralKey   = "jobs";
-    $this->singularKey = "job";
-    return parent::init();
   }
 
   /**

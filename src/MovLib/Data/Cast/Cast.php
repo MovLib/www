@@ -21,6 +21,7 @@ namespace MovLib\Data\Cast;
  * Defines a cast entity object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -40,18 +41,18 @@ final class Cast extends \MovLib\Data\Job\Job {
   public $alias;
 
   /**
-   * The character identifier (for characters with their own pages).
-   *
-   * @var integer
-   */
-  public $roleId;
-
-  /**
    * The entity this cast member belongs to.
    *
    * @var \MovLib\Data\AbstractEntity
    */
   protected $entity;
+
+  /**
+   * The cast's job identifier.
+   *
+   * @var integer
+   */
+  public $jobId;
 
   /**
    * The cast's movie identifier.
@@ -65,7 +66,12 @@ final class Cast extends \MovLib\Data\Job\Job {
    *
    * @var integer
    */
-  public $personId = self::MANDATORY;
+  public $personId;
+
+  /**
+   * {@inheritdoc}
+   */
+  public $pluralKey = "cast";
 
   /**
    * The role name (for roles with no further data).
@@ -82,14 +88,26 @@ final class Cast extends \MovLib\Data\Job\Job {
   public $roleId;
 
   /**
+   * The role person's name.
+   *
+   * @var string
+   */
+  public $roleName;
+
+  /**
    * The cast's series identifier.
    *
    * @var integer
    */
   public $seriesId;
 
+  /**
+   * {@inheritdoc}
+   */
+  public $singularKey = "cast";
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**

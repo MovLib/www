@@ -28,12 +28,23 @@ namespace MovLib\Data\Director;
  */
 final class Director extends \MovLib\Data\Job\Job {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /**
    * The director's alias.
    *
    * @var string
    */
   public $alias;
+
+  /**
+   * The director's job identifier.
+   *
+   * @var integer
+   */
+  public $jobId;
 
   /**
    * The director's movie identifier.
@@ -47,7 +58,12 @@ final class Director extends \MovLib\Data\Job\Job {
    *
    * @var integer
    */
-  public $personId = self::MANDATORY;
+  public $personId;
+
+  /**
+   * {@inheritdoc}
+   */
+  public $pluralKey = "directors";
 
   /**
    * The director's series identifier.
@@ -55,6 +71,15 @@ final class Director extends \MovLib\Data\Job\Job {
    * @var integer
    */
   public $seriesId;
+
+  /**
+   * {@inheritdoc}
+   */
+  public $singularKey = "director";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
    * Instantiate new director object.

@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Person;
 
 use \MovLib\Data\Person\Person;
-use \MovLib\Partial\Listing\PersonMovieListing;
+use \MovLib\Data\Movie\MovieJobSet;
 
 /**
  * Presentation of a person's movies.
@@ -37,7 +37,7 @@ class Movies extends \MovLib\Presentation\AbstractIndexPresenter {
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function init() {
-//    $this->person = new Person($this->diContainerHTTP, (integer) $_SERVER["PERSON_ID"]);
+    $this->person = new Person($this->diContainerHTTP, (integer) $_SERVER["PERSON_ID"]);
 //    $this->initPage($this->intl->t("Movies with {0}", [ $this->person->name ]));
 //    $this->pageTitle        = $this->intl->t(
 //      "Movies with {0}",
@@ -49,7 +49,9 @@ class Movies extends \MovLib\Presentation\AbstractIndexPresenter {
 //    $this->sidebarInit();
 //    $this->schemaType = "Person";
     // @todo: Replace with the real set!
-    $this->initIndex(new \MovLib\Data\Movie\MovieSet($this->diContainerHTTP), "Fix me!", "Fix me!");
+    $set = new MovieJobSet($this->diContainerHTTP);
+    $set->loadEntitiesByPerson($this->person);
+    $this->initIndex($set, "Fix me!", "Fix me!");
   }
 
   /**

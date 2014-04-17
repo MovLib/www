@@ -28,7 +28,7 @@ use \MovLib\Data\Genre\GenreSet;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class MovieSet extends \MovLib\Data\AbstractSet {
+class MovieSet extends \MovLib\Data\AbstractSet {
 
   /**
    * {@inheritdoc}

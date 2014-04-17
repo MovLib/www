@@ -31,17 +31,6 @@ use \MovLib\Data\DateTime;
 abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
-  /**
-   * Constant used as value for properties that are mandatory during construction of an entity.
-   *
-   * @var integer
-   */
-  const MANDATORY = -1;
-
-
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
@@ -50,7 +39,7 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
    *
    * @var integer
    */
-  public $id = self::MANDATORY;
+  public $id;
 
   /**
    * The entity's changed date and time.
@@ -100,26 +89,6 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * Initialize the entity.
-   *
-   * Set the properties of the entity for cases when \mysqli_result::fetch_object is not applicable.
-   *
-   * @param \stdClass $properties
-   *   The properties to set, prefixed by {@see AbstractEntity::singularKey}.
-   * @return this
-   */
-  public function construct(\stdClass $properties) {
-    foreach ($this as $k => $v) {
-      $kp = $this->singularKey . ucfirst($k);
-      if ($this->$k === self::MANDATORY || isset($properties->$kp)) {
-        $this->$k = $properties->$kp;
-      }
-    }
-    return $this->init();
-  }
 
   /**
    * Get the count of a relationship.

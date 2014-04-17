@@ -15,44 +15,41 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Cast;
+namespace MovLib\Data\Crew;
 
 /**
- * @todo Description of CastSet
+ * Defines the crew set object.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class CastSet extends \MovLib\Data\AbstractSet {
+final class CrewSet extends \MovLib\Data\AbstractSet {
 
   /**
    * {@inheritdoc}
    */
-  public $pluralKey = "cast";
+  public $pluralKey = "crew";
 
   /**
    * {@inheritdoc}
    */
-  public $singularKey = "cast";
+  public $singularKey = "crew";
 
+  /**
+   * {@inheritdoc}
+   */
   protected function getEntitiesQuery($where = null, $orderBy = null) {
-    return <<<SQL
-SELECT
 
-{$where} {$orderBy}
-SQL;
   }
 
   /**
    * {@inheritdoc}
    */
   protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
-    return <<<SQL
 
-SQL;
   }
 
 }
