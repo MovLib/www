@@ -56,8 +56,6 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-
-
     $this->entity->links          && $this->infoboxAdd($this->intl->t("Sites"), $this->formatWeblinks($this->entity->links));
     $this->entity->firstEventYear && $this->infoboxAdd($this->intl->t("First Event"), (new Date($this->intl, $this))->format($this->entity->firstEventYear));
     $this->entity->lastEventYear  && $this->infoboxAdd($this->intl->t("Last Event"), (new Date($this->intl, $this))->format($this->entity->lastEventYear));

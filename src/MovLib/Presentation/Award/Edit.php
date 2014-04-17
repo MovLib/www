@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Award;
 
 use \MovLib\Data\Award\Award;
-use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Partial\FormElement\InputWikipedia;
@@ -35,24 +34,8 @@ use \MovLib\Partial\FormElement\TextareaLineURLArray;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Edit extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Partial\SidebarTrait;
+class Edit extends \MovLib\Presentation\AbstractEditPresenter {
   use \MovLib\Presentation\Award\AwardTrait;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The entity to present.
-   *
-   * @var \MovLib\Data\AbstractEntity
-   */
-  protected $entity;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
 
   /**
    * {@inheritdoc}
@@ -62,14 +45,8 @@ class Edit extends \MovLib\Presentation\AbstractPresenter {
     $pageTitle    = $this->intl->t("Edit {0}", [ $this->entity->name ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Edit"))
-      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/edit", $this->entity->id)
-      ->breadcrumb->addCrumbs([
-        [ $this->intl->rp("/awards"), $this->intl->t("Awards") ],
-        [ $this->entity->route, $this->entity->name ]
-      ])
+      ->initEdit($this->entity, $this->intl->t("Awards"), $this->getSidebarItems())
     ;
-
   }
 
   /**
@@ -105,14 +82,4 @@ class Edit extends \MovLib\Presentation\AbstractPresenter {
     ;
   }
 
-  /**
-   * Auto-validation of the form succeeded.
-   *
-   * @return this
-   */
-  public function valid() {
-    $this->entity->commit();
-    $this->alertSuccess($this->intl->t("The award was updated successfully."));
-    throw new SeeOtherException($this->entity->route);
-  }
 }
