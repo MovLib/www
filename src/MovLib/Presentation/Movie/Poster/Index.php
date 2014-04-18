@@ -49,7 +49,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    */
   protected function formatListingItem(\MovLib\Data\AbstractEntity $poster, $delta) {
     /* @var $poster \MovLib\Data\Movie\Poster */
-    return
+    $return =
       "<li class='mb20 s s2 tac'>" .
         "<a class='no-link' href='{$poster->route}' typeof='ImageObject'>" .
           $this->img($poster->imageGetStyle(), [ "property" => "thumbnail" ], false) .
@@ -60,6 +60,16 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
         "</a>" .
       "</li>"
     ;
+    $styles = new \ReflectionProperty($poster, "imageStyles");
+    $styles->setAccessible(true);
+    $styles = $styles->getValue($poster);
+    if (!is_array($styles)) {
+      $styles = unserialize($styles);
+    }
+    ob_start();
+    print_r($styles);
+    $styles = ob_get_clean();
+    return "{$return}<li class='mb20 s s8 tal'><pre>{$styles}</pre></li>";
   }
 
   /**

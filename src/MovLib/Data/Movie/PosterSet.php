@@ -26,58 +26,22 @@ namespace MovLib\Data\Movie;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class PosterSet extends \MovLib\Data\AbstractSet {
+final class PosterSet extends \MovLib\Data\Image\AbstractImageSet {
 
   /**
-   * Unique identifier of an entity these posters belong to.
-   *
-   * @var mixed
+   * {@inheritdoc}
    */
-  protected $entityId;
-
-  /**
-   * Instantiate new poster set object.
-   *
-   * @param \MovLib\Core\DIContainer $diContainer
-   *   The dependency injection container.
-   * @param mixed $entityId
-   *   The unique identifier of an entity these posters belong to.
-   */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $entityId) {
-    parent::__construct($diContainer);
-    $this->entityId = $entityId;
-  }
-
-  /**
-   * Get the total count of available (not deleted) entities.
-   *
-   * @return integer
-   *   The total count of available (not deleted) entities.
-   */
-  public function getCount() {
-    $query = "SELECT COUNT(*) FROM `posters` WHERE `deleted` = false";
-    if ($this->entityId) {
-      $query .= " AND `movie_id` = {$this->entityId}";
-    }
-    $result = $this->getMySQLi()->query("{$query} LIMIT 1");
-    $count  = $result->fetch_row()[0];
-    $result->free();
-    return $count;
+  protected function init() {
+    $this->entityKey   = "movie";
+    $this->pluralKey   = "posters";
+    $this->singularKey = "poster";
+    return parent::init();
   }
 
   /**
    * {@inheritdoc}
    */
   protected function getEntitiesQuery($where = null, $orderBy = null) {
-    if ($this->entityId) {
-      if ($where) {
-        $where .= " AND ";
-      }
-      else {
-        $where = " WHERE ";
-      }
-      $where .= " `movie_id` = {$this->entityId}";
-    }
     return <<<SQL
 SELECT
   `id`,
@@ -103,15 +67,6 @@ SQL;
   protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
     return <<<SQL
 SQL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function init() {
-    $this->pluralKey   = "posters";
-    $this->singularKey = "poster";
-    return parent::init();
   }
 
 }

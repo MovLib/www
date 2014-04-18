@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,32 +15,31 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie\Poster;
+namespace MovLib\Data\Upload;
 
 /**
- * Defines the movie poster presentation.
+ * Defines the upload set.
  *
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Show extends \MovLib\Presentation\AbstractShowPresenter {
+final class UploadSet extends \MovLib\Data\AbstractSet {
 
   /**
    * {@inheritdoc}
    */
-  public function init() {
-    $this->initPage($this->intl->t("Poster"));
-    $this->initShow(new \MovLib\Stub\Data\Dummy\Dummy($this->diContainerHTTP, $_SERVER["IMAGE_ID"], "poster", "posters"), $this->intl->t("Posters"), "ImageObject");
+  protected function getEntitiesQuery($where = null, $orderBy = null) {
+
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getContent() {
-    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("movie poster") ]), $this->intl->t("Check back later"), "info");
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+
   }
 
 }

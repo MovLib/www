@@ -31,8 +31,12 @@ final class Poster extends \MovLib\Data\Image\AbstractImageEntity {
   /**
    * {@inheritdoc}
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null, $entityId = null) {
+  public function __construct(\MovLib\Core\DIContainer $diContainer, $entityId, $id = null) {
     parent::__construct($diContainer);
+    $this->entityId = $entityId;
+    if ($id) {
+      // @todo Load poster!
+    }
     if ($this->id) {
       $this->init();
     }
@@ -43,6 +47,7 @@ final class Poster extends \MovLib\Data\Image\AbstractImageEntity {
    */
   protected function init() {
     //$this->imageAlternativeText = $this->intl->t("{movie_title} poster.", [ "movie_title" => $this->displayTitleAndYear]);
+    $this->entityKey            = "movie";
     $this->imageAlternativeText = "Alternative Text";
     $this->imageDirectory       = "upload://movie/{$this->entityId}/poster";
     $this->imageFilename        = $this->id;
@@ -53,19 +58,6 @@ final class Poster extends \MovLib\Data\Image\AbstractImageEntity {
     $this->route                = $this->intl->r($this->routeKey, $this->routeArgs);
     $this->routeIndex           = $this->intl->r("/movie/{0}/posters", $this->entityId);
     return parent::init();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function imageSaveStyles() {
-    return $this;
-    $styles = serialize($this->imageStyles);
-    $stmt   = $this->getMySQLi()->prepare("UPDATE `posters` SET `styles` = ? WHERE `id` = ? AND `movie_id` = ?");
-    $stmt->bind_param("sdd", $styles, $this->id, $this->entityId);
-    $stmt->execute();
-    $stmt->close();
-    return $this;
   }
 
 }

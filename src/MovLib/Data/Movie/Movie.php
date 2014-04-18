@@ -291,8 +291,8 @@ SQL
    */
   protected function imageSaveStyles() {
     $styles = serialize($this->imageStyles);
-    $stmt   = $this->getMySQLi()->prepare("UPDATE `posters` SET `styles` = ? WHERE `movie_id` = ?");
-    $stmt->bind_param("sd", $styles, $this->id);
+    $stmt   = $this->getMySQLi()->prepare("UPDATE `posters` SET `styles` = ? WHERE `id` = ? AND `movie_id` = ?");
+    $stmt->bind_param("sdd", $styles, $this->imageFilename, $this->id);
     $stmt->execute();
     $stmt->close();
     return $this;

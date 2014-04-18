@@ -89,6 +89,13 @@ final class ImageResizeEffect extends \MovLib\Data\Image\AbstractImageEffect {
     $this->width  = $width;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function __sleep() {
+    return [ "crop", "filter", "height", "quality", "styleName", "width" ];
+  }
+
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
