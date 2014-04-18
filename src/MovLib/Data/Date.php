@@ -157,18 +157,18 @@ final class Date extends \DateTime {
   /**
    * Format the date according to the intl rules of the given locale.
    *
-   * @param string $locale
-   *   The locale to use for formatting.
+   * @param \MovLib\Core\Intl $intl
+   *   The active Intl instance.
    * @param integer $type [optional]
    *   Any of the {@see \IntlDateFormatter} constants, defaults to {@see \IntlDateFormatter::MEDIUM}.
    * @return string
    *   The date according to the intl rules of the given locale.
    */
-  public function formatIntl($locale, $type = \IntlDateFormatter::MEDIUM) {
+  public function formatIntl(\MovLib\Core\Intl $intl, $type = \IntlDateFormatter::MEDIUM) {
     if ($this->day || $this->month) {
-      $fmt = new \IntlDateFormatter($locale, $type, \IntlDateFormatter::NONE);
-      if (!$this->month) {
-        $fmt->setPattern(self::$patterns[$type]);
+      $fmt = new \IntlDateFormatter($intl->locale, $type, \IntlDateFormatter::NONE);
+      if (!$this->day) {
+        $fmt->setPattern(self::$patterns[$intl->languageCode][$type]);
       }
       return $fmt->format($this);
     }

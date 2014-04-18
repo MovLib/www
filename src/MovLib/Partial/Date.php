@@ -85,7 +85,7 @@ final class Date {
    */
   public function format(\MovLib\Data\Date $date, array $attributes = [], $type = \IntlDateFormatter::MEDIUM) {
     $attributes["datetime"] = $this->formatISO8601($date);
-    return "<time{$this->presenter->expandTagAttributes($attributes)}>{$date->formatIntl($this->intl->locale, $type)}</time>";
+    return "<time{$this->presenter->expandTagAttributes($attributes)}>{$date->formatIntl($this->intl, $type)}</time>";
   }
 
   /**

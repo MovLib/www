@@ -213,6 +213,11 @@ form p {
   margin-bottom: 20px;
 }
 
+.r fieldset,
+.r input {
+  margin-bottom: 0;
+}
+
 option[value=""] {
   font-style: italic;
   color: #999;
