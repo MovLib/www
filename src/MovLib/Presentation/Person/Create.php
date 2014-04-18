@@ -126,7 +126,7 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
    */
   public function init() {
     $this->initPage($this->intl->t("Create Person"));
-    $this->initBreadcrumb([ [ $this->intl->rp("/persons"), $this->intl->t("Persons") ] ]);
+    $this->initBreadcrumb([ [ $this->intl->r("/persons"), $this->intl->t("Persons") ] ]);
 
     $this->inputName      = new InputText("name", $this->intl->t("Name"), [ "placeholder" => $this->intl->t("Enter the person’s name"), "required" => true ]);
     $this->inputBornName  = new InputText("born-name", $this->intl->t("Born as"), [ "placeholder" => $this->intl->t("Enter the person’s birth name") ]);

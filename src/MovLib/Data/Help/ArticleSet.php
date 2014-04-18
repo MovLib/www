@@ -87,7 +87,7 @@ SQL;
    */
   protected function init() {
     $this->pluralKey   = $this->tableName = "help_articles";
-    $this->route       = $this->intl->rp("/help");
+    $this->route       = $this->intl->r("/help");
     $this->singularKey = "help_article";
     return parent::init();
   }

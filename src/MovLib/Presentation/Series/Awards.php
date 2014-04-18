@@ -58,7 +58,7 @@ class Awards extends \MovLib\Presentation\AbstractPresenter {
       ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
       ->initLanguageLinks("/{$this->entity->singularKey}/{0}/awards", $this->entity->id)
       ->breadcrumb->addCrumbs([
-        [ $this->intl->rp("/series"), $this->intl->tp("Series") ],
+        [ $this->intl->r("/series"), $this->intl->tp("Series") ],
         [ $this->entity->route, $this->entity->displayTitle ]
       ])
     ;

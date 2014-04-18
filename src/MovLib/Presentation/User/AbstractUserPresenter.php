@@ -58,17 +58,17 @@ abstract class AbstractUserPresenter extends \MovLib\Presentation\AbstractPresen
 
     if ($this->user->deleted) {
       $this->sidebarInit([
-        [ $this->user->rp("/contributions"), $this->intl->t("Contributions") ],
-        [ $this->user->rp("/uploads"), $this->intl->t("Uploads") ],
+        [ $this->user->r("/contributions"), $this->intl->t("Contributions") ],
+        [ $this->user->r("/uploads"), $this->intl->t("Uploads") ],
       ]);
     }
     else {
       $this->sidebarInit([
         [ $this->user->r("/collection"), $this->intl->t("Collection") ],
         [ $this->user->r("/wantlist"), $this->intl->t("Wantlist") ],
-        [ $this->user->rp("/lists"), $this->intl->t("Lists") ],
-        [ $this->user->rp("/contributions"), $this->intl->t("Contributions") ],
-        [ $this->user->rp("/uploads"), $this->intl->t("Uploads") ],
+        [ $this->user->r("/lists"), $this->intl->t("Lists") ],
+        [ $this->user->r("/contributions"), $this->intl->t("Contributions") ],
+        [ $this->user->r("/uploads"), $this->intl->t("Uploads") ],
         [ $this->user->r("/contact"), $this->intl->t("Contact") ],
       ]);
     }

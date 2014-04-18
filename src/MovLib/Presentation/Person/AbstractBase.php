@@ -77,7 +77,7 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
     // @devEnd
 
     return $this->initBreadcrumb([
-      [ $this->intl->rp("/persons"), $this->intl->t("Persons") ],
+      [ $this->intl->r("/persons"), $this->intl->t("Persons") ],
       [ $this->person->route, $this->person->name ]
     ]);
   }
@@ -109,9 +109,9 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
       [ $this->intl->r("/person/{0}/history", $routeArgs), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
       [ $this->intl->r("/person/{0}/delete", $routeArgs), $this->intl->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
 
-      [ $this->intl->rp("/person/{0}/movies", $routeArgs), "{$this->intl->t("Movies")} <span class='fr'>{$this->intl->format("{0,number}", [ $this->person->getMoviesCount() ])}</span>", [ "class" => "ico ico-movie" ] ],
-      [ $this->intl->rp("/person/{0}/series", $routeArgs), "{$this->intl->tp("Series")} <span class='fr'>{$this->intl->format("{0,number}", [ $this->person->getSeriesCount() ])}</span>", [ "class" => "ico ico-series" ] ],
-      [ $this->intl->rp("/person/{0}/releases", $routeArgs), "{$this->intl->t("Releases")} <span class='fr'>{$this->intl->format("{0,number}", [ $this->person->getReleasesCount() ])}</span>", [ "class" => "ico ico-release separator" ] ],
+      [ $this->intl->r("/person/{0}/movies", $routeArgs), "{$this->intl->t("Movies")} <span class='fr'>{$this->intl->format("{0,number}", [ $this->person->getMoviesCount() ])}</span>", [ "class" => "ico ico-movie" ] ],
+      [ $this->intl->r("/person/{0}/series", $routeArgs), "{$this->intl->tp("Series")} <span class='fr'>{$this->intl->format("{0,number}", [ $this->person->getSeriesCount() ])}</span>", [ "class" => "ico ico-series" ] ],
+      [ $this->intl->r("/person/{0}/releases", $routeArgs), "{$this->intl->t("Releases")} <span class='fr'>{$this->intl->format("{0,number}", [ $this->person->getReleasesCount() ])}</span>", [ "class" => "ico ico-release separator" ] ],
     ]);
   }
 

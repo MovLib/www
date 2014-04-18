@@ -44,7 +44,7 @@ trait SeriesTrait {
       [ "release separator", "releases", $this->intl->t("Releases"), $this->entity->releaseCount ],
     ] as list($icon, $plural, $title, $count)) {
       $items[] = [
-        $this->intl->rp("/series/{0}/{$plural}", $this->entity->id),
+        $this->intl->r("/series/{0}/{$plural}", $this->entity->id),
         "{$title} <span class='fr'>{$this->intl->format("{0,number}", $count)}</span>",
         [ "class" => "ico ico-{$icon}" ]
       ];
@@ -73,12 +73,12 @@ trait SeriesTrait {
         (new Date($this->intl, $this))->formatYear(
           $series->startYear,
           [ "property" => "startDate" ],
-          $linkYears ? [ "href" => $this->intl->rp("/year/{0}/series", $series->startYear->year) ] : null
+          $linkYears ? [ "href" => $this->intl->r("/year/{0}/series", $series->startYear->year) ] : null
         ),
         (new Date($this->intl, $this))->formatYear(
           $series->endYear,
           [ "property" => "startDate" ],
-          $linkYears ? [ "href" => $this->intl->rp("/year/{0}/series", $series->endYear->year) ] : null
+          $linkYears ? [ "href" => $this->intl->r("/year/{0}/series", $series->endYear->year) ] : null
         )
       ]);
     }
@@ -86,7 +86,7 @@ trait SeriesTrait {
       $title = $this->intl->t("{0} ({1})", [ $title, (new Date($this->intl, $this))->formatYear(
         $series->startYear,
         [ "property" => "startDate" ],
-        $linkYears ? [ "href" => $this->intl->rp("/year/{0}/series", $series->startYear->year) ] : null
+        $linkYears ? [ "href" => $this->intl->r("/year/{0}/series", $series->startYear->year) ] : null
       ) ]);
     }
     if ($linkTitle) {

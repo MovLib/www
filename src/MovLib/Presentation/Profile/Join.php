@@ -91,7 +91,7 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
 
     // Start rendering the page.
     $this->initPage($this->intl->t("Join"));
-    $this->initBreadcrumb([[ $this->intl->rp("/users"), $this->intl->t("Users") ]]);
+    $this->initBreadcrumb([[ $this->intl->r("/users"), $this->intl->t("Users") ]]);
     $this->breadcrumb->ignoreQuery = true;
     $this->initLanguageLinks("/profile/join");
 

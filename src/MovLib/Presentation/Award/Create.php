@@ -33,7 +33,7 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
    */
   public function init() {
     $this->initPage($this->intl->t("Create Award"));
-    $this->initBreadcrumb([ [ $this->intl->rp("/awards"), $this->intl->t("Awards") ] ]);
+    $this->initBreadcrumb([ [ $this->intl->r("/awards"), $this->intl->t("Awards") ] ]);
     $this->breadcrumbTitle = $this->intl->t("Create");
     $this->initLanguageLinks("/award/create");
   }

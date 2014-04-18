@@ -94,7 +94,7 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
 
     // Start rendering the page.
     $this->initPage($this->intl->t("Sign In"));
-    $this->breadcrumb->addCrumb($this->intl->rp("/users"), $this->intl->t("Users"));
+    $this->breadcrumb->addCrumb($this->intl->r("/users"), $this->intl->t("Users"));
     $this->initLanguageLinks($routeKey, null, false, $query);
     $this->breadcrumb->ignoreQuery = true;
 
