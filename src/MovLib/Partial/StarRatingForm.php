@@ -93,13 +93,16 @@ final class StarRatingForm extends \MovLib\Core\Presentation\DependencyInjection
     assert(property_exists($entity, "ratingVotes"), "Your entity needs to contain a \$ratingVotes property (use the RatingTrait)!");
     // @codeCoverageIgnoreEnd
     // @devEnd
+    $this->entity = $entity;
 
     // Get the currently signed in user's rating for this entity.
     if ($this->session->isAuthenticated) {
       $this->userRating = (new User($this->diContainerHTTP))->getRating($entity, $this->session->userId);
     }
+    else {
+      $this->userRating = round($this->entity->ratingMean);
+    }
 
-    $this->entity = $entity;
     $this->diContainerHTTP->presenter->addClass("star-rating", $attributes);
     $this->form   = new Form($diContainerHTTP, $attributes, "stars-rating-{$entity->id}");
     $this->form->init(null, [ $this, "validate" ]);
@@ -121,7 +124,7 @@ final class StarRatingForm extends \MovLib\Core\Presentation\DependencyInjection
     if ($entity->ratingVotes === 0) {
       $this->summary = $this->intl->t("No one has rated so far, be the first!");
     }
-    elseif ($entity->ratingVotes === 1 && $this->userRating !== null) {
+    elseif ($entity->ratingVotes === 1 && $this->session->isAuthenticated && $this->userRating !== null) {
       $this->summary = $this->intl->t("You’re the only one who rated yet.");
     }
     else {
