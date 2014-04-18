@@ -149,7 +149,7 @@ abstract class AbstractSet extends \MovLib\Data\AbstractConfig implements \Itera
     // @codeCoverageIgnoreEnd
     // @devEnd
     if (empty($this->route)) {
-      $this->route = $this->intl->rp("/{$this->pluralKey}");
+      $this->route = $this->intl->r("/{$this->pluralKey}");
     }
     if (empty($this->tableName)) {
       $this->tableName = $this->pluralKey;

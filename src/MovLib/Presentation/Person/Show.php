@@ -141,7 +141,7 @@ class Show extends \MovLib\Presentation\Person\AbstractPersonPresenter {
       return $this->sections;
     }
     return $this->callout(
-      "<p>{$this->intl->t("{sitename} doesnâ€™t have further details about this person.", [ "sitename" => $this->config->sitename ])}</p>" .
+      "<p>{$this->intl->t("{sitename} doesn’t have further details about this person.", [ "sitename" => $this->config->sitename ])}</p>" .
       "<p>{$this->intl->t("Would you like to {0}add additional information{1}?", [ "<a href='{$this->intl->r("/person/{0}/edit", $this->entity->id)}'>", "</a>" ])}</p>",
       $this->intl->t("No Information"),
       "info"

@@ -57,9 +57,9 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
         "<article>" .
           "<div class='s s10'>" .
             "<div class='fr'>" .
-              "<a class='ico ico-award label' href='{$this->intl->rp("/series/{0}/awards", $series->id)}' title='{$this->intl->t("Awards")}'>{$series->awardCount}</a>" .
-              "<a class='ico ico-season label' href='{$this->intl->rp("/series/{0}/seasons", $series->id)}' title='{$this->intl->t("Seasons")}'>{$series->seasonCount}</a>" .
-              "<a class='ico ico-release label' href='{$this->intl->rp("/series/{0}/releases", $series->id)}' title='{$this->intl->t("Releases")}'>{$series->releaseCount}</a>" .
+              "<a class='ico ico-award label' href='{$series->r("/awards", $series->id)}' title='{$this->intl->t("Awards")}'>{$series->awardCount}</a>" .
+              "<a class='ico ico-season label' href='{$series->r("/seasons", $series->id)}' title='{$this->intl->t("Seasons")}'>{$series->seasonCount}</a>" .
+              "<a class='ico ico-release label' href='{$series->r("/releases", $series->id)}' title='{$this->intl->t("Releases")}'>{$series->releaseCount}</a>" .
             "</div>" .
             "<h2 class='para'>{$this->getStructuredDisplayTitle($series)}</h2>" .
             $this->getStructuredOriginalTitle($series, "small") .

@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Presentation\Partial\Alert;
-
 /**
  * Movies charts presentation.
  *
@@ -35,9 +33,8 @@ class Charts extends \MovLib\Presentation\AbstractPresenter {
 
 
   public function init() {
-    $this->initPage($this->intl->t("Movie Charts"));
-    $this->initBreadcrumb([ [ $this->intl->rp("/movies"), $this->intl->t("Movies") ] ]);
-    $this->breadcrumbTitle = $this->intl->t("Charts");
+    $this->initPage($this->intl->t("Movie Charts"), null, $this->intl->t("Charts"));
+    $this->initBreadcrumb([ [ $this->intl->r("/movies"), $this->intl->t("Movies") ] ]);
     $this->initLanguageLinks("/movies/charts", null, true);
     $this->contentBefore = "<div class='c'>";
     $this->contentAfter  = "</div>";
@@ -54,11 +51,7 @@ class Charts extends \MovLib\Presentation\AbstractPresenter {
    *   The presentation's page content.
    */
   public function getContent() {
-    return $this->callout(
-      $this->intl->t("The movies charts feature isn’t implemented yet."),
-      $this->intl->t("Check back later"),
-      "info"
-    );
+    return $this->checkBackLater($this->title);
   }
 
 }

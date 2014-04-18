@@ -40,6 +40,41 @@ final class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
 
 
   /**
+   * Used to collect all dynamic FastCGI parameteres.
+   *
+   * @var array
+   */
+  protected $fastCgiParams = [];
+
+  /**
+   * URI to the dynamic FastCGI parameteres file.
+   *
+   * @var string
+   */
+  protected $fastCgiParamsURI = "dr://etc/nginx/sites/conf/fastcgi_dynamic_params.conf";
+
+  /**
+   * URI to the location of the nginx configuration that contains the location blocks.
+   *
+   * @var string
+   */
+  protected $locationConfigurationURI = "dr://etc/nginx/sites/conf/routes/{{ language_code }}.conf";
+
+  /**
+   * Namespaces for which no regular expression is inserted.
+   *
+   * @var array
+   */
+  protected $noRegularExpressionNamespaces = [ "Help", "Profile", "SystemPage" ];
+
+  /**
+   * Presenter short name's which have no regular expression auto-inserted.
+   *
+   * @var array
+   */
+  protected $noRegularExpressionPresenters = [ "Create", "Charts", "Random" ];
+
+  /**
    * Contains all available regular expression tokens.
    *
    * @var array
@@ -50,6 +85,21 @@ final class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
     "lc" => [ "regex" => "([a-z]{2})",    "var" => "language_code"       ],
     "un" => [ "regex" => "([^/].+)",      "var" => "user_name"           ],
   ];
+
+  /**
+   * Namespace to regular expression mapping.
+   *
+   * @var array
+   */
+  protected $regularExpressionTokensMap = [ "User" => "un", "Country" => "cc", "Language" => "lc" ];
+
+  /**
+   * Namespace parts that should be removed from the canonical absolute class name of each presenter before trying to
+   * auto-generate the path.
+   *
+   * @var array
+   */
+  protected $removeNamespaceParts = [ "\\MovLib\\Presentation", "\\SystemPage" ];
 
   /**
    * Array used to collect route keys that might be untranslated.
@@ -76,25 +126,19 @@ final class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
   protected function execute(InputInterface $input, OutputInterface $output) {
     $this->writeVerbose("Starting to translate and compile nginx routes...", self::MESSAGE_TYPE_COMMENT);
 
-    $fastCGIparams = [];
+    // Translate and compile routes for all system locales.
     foreach ($this->intl->systemLocales as $code => $locale) {
       $this->writeDebug("Translating and compiling routes for <comment>{$locale}</comment>");
-      $this->translateAndCompileRoutes(new Intl($this->config, $code), $fastCGIparams);
+      $this->translateAndCompileRoutes(new Intl($this->config, $code));
     }
 
-    if (!empty($fastCGIparams)) {
-      $target = "dr://etc/nginx/sites/conf/fastcgi_dynamic_params.conf";
-      $this->writeVeryVerbose("Writing dynamic FastCGI parameters to <comment>{$target}</comment>");
-      file_put_contents($target, implode($fastCGIparams));
+    // Dynamic FastCGI parameters are the same for all locales, therefore we can write them once.
+    if (!empty($this->fastCgiParams)) {
+      $this->writeVeryVerbose("Writing dynamic FastCGI parameters to <comment>{$this->fastCgiParamsURI}</comment>");
+      file_put_contents($this->fastCgiParamsURI, implode($this->fastCgiParams));
     }
 
-    if (!empty($this->translationPossiblyMissing)) {
-      foreach ($this->translationPossiblyMissing as $locale => $possiblyMissing) {
-        $this->write("The following {$locale} routes might be untranslated, please check!", self::MESSAGE_TYPE_COMMENT);
-        $this->write($possiblyMissing);
-      }
-    }
-
+    // Only attempt to realod nginx if we have the needed privileges.
     if ($this->privileged) {
       (new Nginx($this->diContainer))->importKeysAndCertificates($output);
       $this->exec("nginx -t");
@@ -105,6 +149,15 @@ final class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
     }
 
     $this->writeVerbose("Successfully translated and compiled nginx routes!", self::MESSAGE_TYPE_INFO);
+
+    // Possibly untranslated route parts come last because we want the caller to see this.
+    if (!empty($this->translationPossiblyMissing)) {
+      foreach ($this->translationPossiblyMissing as $locale => $possiblyMissing) {
+        $this->write("The following {$locale} routes might be untranslated, please check!", self::MESSAGE_TYPE_COMMENT);
+        $this->write($possiblyMissing);
+      }
+    }
+
     return 0;
   }
 
@@ -154,8 +207,6 @@ final class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
    *   The variable used to collect all locations.
    * @param array $redirects
    *   The array used to collect all redirects.
-   * @param array $fastCGIparams
-   *   The array used to collect FastCGI parameters.
    * @param array $routes
    *   The array containing all sub routes for which we can generate location blocks.
    * @param string $protection
@@ -164,12 +215,12 @@ final class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
    *   Used in recursion for correct indentation of output.
    * @return this
    */
-  protected function generateProtectedLocation(Collator $collator, &$locations, array &$redirects, array &$fastCGIparams, array $routes, $protection, $indent = "") {
+  protected function generateProtectedLocation(Collator $collator, &$locations, array &$redirects, array $routes, $protection, $indent = "") {
     $locations .= "\n{$indent}#\n{$indent}# Protection block for '{$protection}' routes\n{$indent}#\n\n{$indent}location ^~ '/{$protection}/' {\n";
     $collator->ksort($routes);
     foreach ($routes as $route => $args) {
       if (strpos($route, "/") === false) {
-        $this->generateProtectedLocation($collator, $locations, $redirects, $fastCGIparams, $args, "{$protection}/{$route}", "{$indent}  ");
+        $this->generateProtectedLocation($collator, $locations, $redirects, $args, "{$protection}/{$route}", "{$indent}  ");
         continue;
       }
 
@@ -177,15 +228,15 @@ final class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
       $presenterParts = array_map("mb_strtolower", explode("\\", $presenter));
       $nginxVariables = null;
 
-      $route = preg_replace_callback("#/(.+)/{(.+)}#U", function ($matches) use (&$fastCGIparams, $indent, &$nginxVariables, $presenterParts) {
+      $route = preg_replace_callback("#/(.+)/{(.+)}#U", function ($matches) use ($indent, &$nginxVariables, $presenterParts) {
         static $c = 1;
         $name = str_replace("{{ presenter }}", $presenterParts[$c - 1], $this->regularExpressionTokens[$matches[2]]["var"]);
         $nginxVariables .= "\n{$indent}    set \$movlib_{$name} \${$c};";
-        if (empty($fastCGIparams[$name])) {
+        if (empty($this->fastCgiParams[$name])) {
           $offset = strtoupper($name) . str_repeat(" ", (20 - strlen($name)));
           $var    = '$movlib_' . $name;
           $var    = $var . str_repeat(" ", (30 - strlen($var)));
-          $fastCGIparams[$name] = "fastcgi_param    {$offset}{$var}if_not_empty;\n";
+          $this->fastCgiParams[$name] = "fastcgi_param    {$offset}{$var}if_not_empty;\n";
         }
         ++$c;
         return "/{$matches[1]}/{$this->regularExpressionTokens[$matches[2]]["regex"]}";
@@ -252,48 +303,36 @@ NGX;
   }
 
   /**
+   *
    * Get route from class name.
    *
-   * @staticvar array $noRegularExpressionInRoute
-   *   Array containing namespaces for which no regular expression is inserted in the complete path.
-   * @staticvar array $noRegularExpressionAfterFirstRoutePath
-   *   Array containing concrete presenter short name's for which no auto regular expression should be inserted after
-   *   the first route path.
-   * @staticvar array $regularExpressionTokensMap
-   *   Array containing a regular expression token mapping for known special namespace's that use different regular
-   *   expressions in their first level.
-   * @staticvar array $removeNamespaceParts
-   *   Array containing namespace parts that should be removed from the class name and therefore ignored while auto
-   *   creating the route based on the class's name.
    * @param string $className
    *   The class name to get the route for.
+   * @param \DocBlockReader\Reader $docReader
+   *   Reader for annotations.
    * @return string
    *   The route from class name.
    */
-  protected function getRouteFromClassName($className) {
-    static $noRegularExpressionInRoute = [ "Help", "Profile", "SystemPage" ];
-    static $noRegularExpressionAfterFirstRoutePath = [ "Create", "Charts", "Random" ];
-    static $regularExpressionTokensMap = [ "User" => "un", "Country" => "cc", "Language" => "lc" ];
-    static $removeNamespaceParts = [ "\\MovLib\\Presentation", "\\SystemPage" ];
+  protected function getRouteFromClassName($className, DocReader $docReader) {
     $route = "";
 
-    // Some namespace's don't need any kind of regular expression in their route.
-    $noRegularExpressionAtAll = false;
-    foreach ($noRegularExpressionInRoute as $namespace) {
+    // Some namespace's don't need a regular expression in their route.
+    $noRegularExpression = false;
+    foreach ($this->noRegularExpressionNamespaces as $namespace) {
       if (strpos($className, "\\{$namespace}\\") !== false) {
-        $noRegularExpressionAtAll = true;
+        $noRegularExpression = true;
         break;
       }
     }
 
     // Split the class's name at the PHP namespace separator into it's parts.
-    $className = str_replace($removeNamespaceParts, "", $className);
+    $className = str_replace($this->removeNamespaceParts, "", $className);
     $parts     = explode("\\", $className);
     $c         = count($parts) - 1;
 
     // We use the identifier regular expression by default, but some namespace's have special known regular expressions.
     $regularExpressionToken = "id";
-    foreach ($regularExpressionTokensMap as $namespace => $token) {
+    foreach ($this->regularExpressionTokensMap as $namespace => $token) {
       if ($parts[0] == $namespace) {
         $regularExpressionToken = $token;
         break;
@@ -306,23 +345,25 @@ NGX;
       array_pop($parts) && --$c;
 
       // Now we have to replace the new last key with its plural form.
-      $parts[$c] = $this->getDataSet($className)->pluralKey;
+      if (!($parts[$c] = $docReader->getParameter("routePluralKey"))) {
+        $parts[$c] = $this->getDataSet($className)->pluralKey;
+      }
     }
 
     do {
-      // Reset the regular expression token back to the identifier regular expression is we're deeper.
+      // Reset the regular expression token back to the identifier regular expression if we're deep enough.
       if ($c > 2) {
         $regularExpressionToken = "id";
       }
 
       // Replace show with token for identifier regular expression.
       if ($parts[$c] == "Show") {
-        if ($noRegularExpressionAtAll) {
+        if ($noRegularExpression) {
           continue;
         }
         $part = "{{$regularExpressionToken}}";
       }
-      // Transform CamelCase to camel-case; class name's never contain any characters that arent' allowed in a URL, so
+      // Transform CamelCase to camel-case; class name's never contain any characters that aren't allowed in a URL, so
       // we don't have to perform any special cleaning jobs at this point.
       else {
         $part = trim(preg_replace_callback("/[A-Z][^A-Z]/", function ($match) {
@@ -330,7 +371,7 @@ NGX;
         }, $parts[$c]), "-");
 
         // Prepend regular expression token if this isn't a root route and if we're allowed to.
-        if (!$noRegularExpressionAtAll && !in_array($parts[$c], $noRegularExpressionAfterFirstRoutePath) && $c > 1) {
+        if (!$noRegularExpression && !in_array($parts[$c], $this->noRegularExpressionPresenters) && $c > 1) {
           $part = "{{$regularExpressionToken}}/{$part}";
         }
       }
@@ -341,6 +382,24 @@ NGX;
     while (--$c);
 
     return mb_strtolower($route);
+  }
+
+  /**
+   * Replace the regular expression tokens with simple numeric placeholders.
+   *
+   * <b>EXAMPLE</b><br>
+   * The route <code>"/entity/{id}"</code> will become <code>"/entity/{0}"</code>
+   *
+   * @param string $pattern
+   *   The message formatter pattern to replace tokens in.
+   * @return string
+   *   The message formatter pattern with replaced tokens.
+   */
+  protected function replaceRegularExpressionTokens($pattern) {
+    return preg_replace_callback("/{[^}].+}/", function () {
+      static $c = 0;
+      return "{" . $c++ . "}";
+    }, $pattern);
   }
 
   /**
@@ -405,16 +464,14 @@ NGX;
    *
    * @param \MovLib\Core\Intl $intl
    *   The Intl instance to translate and compile the routes for.
-   * @param array $fastCGIparams
-   *   Array used to collect FastCGI parameters.
    * @return this
    */
-  protected function translateAndCompileRoutes(Intl $intl, array &$fastCGIparams) {
-    /* @var $routes array Used to collect all routes for this locale. */
+  protected function translateAndCompileRoutes(Intl $intl) {
+    /* @var $routes array Used to collect all routes for this locale with suitable nginx configuration hierarchy. */
     $routes = [];
 
-    /* @var $routeParts array Used to collect the various route parts that will be written to a separate file. */
-    $routeParts = [];
+    /* @var $translatedRoutes array Used to collect the final translated routes for the Intl look-up file. */
+    $translatedRoutes = [];
 
     /* @var $collator \MovLib\Data\Collator Used to sort routes. */
     $collator = new Collator($intl->locale);
@@ -425,7 +482,7 @@ NGX;
       $this->writeDebug("Translating and compiling routes for <comment>{$path}</comment>");
 
       // The error presentations are for internal nginx usage only and don't have public accessible routes.
-      // The tool presentations are unused as of now.
+      // The tool presentations are unused at the moment.
       foreach ([ "Error", "Tool" ] as $pathPart) {
         if (strpos($path, "/{$pathPart}/") !== false) {
           $this->writeDebug("Routes aren't auto-generated for presenters in {$pathPart} namespace, <comment>skipping!</comment>");
@@ -455,11 +512,14 @@ NGX;
       // We'll try to build the route based on the current namespace, filename and hierarchy if no annotation was found.
       if (!$route) {
         $this->writeDebug("<comment>No @route annotation found</comment>, trying to build route based on class's name.");
-        $route = $this->getRouteFromClassName($className);
+        $route = $this->getRouteFromClassName($className, $docReader);
       }
 
       // Now we can be certain that we have the full route in the default locale, time to translate.
-      $translatedRoute = $this->translateRoute($intl, $route, $docReader, $routeParts);
+      $translatedRoute = $this->translateRoute($intl, $route, $docReader, $translatedRoutes);
+
+      // Keep track of this translated route.
+      $translatedRoutes[$this->replaceRegularExpressionTokens($route)] = $this->replaceRegularExpressionTokens($translatedRoute);
 
       // We need protecting location blocks for routes with regular expressions, build them.
       $this->setRouteLocation($translatedRoute, $routes, $className, $docReader);
@@ -468,31 +528,40 @@ NGX;
     // Sort the routes in natural order, a sorted routes file makes it easier for humans to find entries.
     $collator->ksort($routes);
 
+    // Build the final nginx location block configuration.
     $locations = "";
     $redirects = [];
-
     foreach ($routes as $protection => $subRoutes) {
       if ($protection == "/") {
         $this->generateDirectMatchLocation($intl, $collator, $locations, $redirects, $subRoutes);
       }
       else {
-        $this->generateProtectedLocation($collator, $locations, $redirects, $fastCGIparams, $subRoutes, $protection);
+        $this->generateProtectedLocation($collator, $locations, $redirects, $subRoutes, $protection);
       }
     }
 
-    $target = "dr://etc/nginx/sites/conf/routes/{$intl->languageCode}.conf";
-    $this->writeVeryVerbose("Writing routes file for <comment>{$intl->locale}</comment> to <comment>{$target}</comment>");
-    file_put_contents($target, $locations);
+    // Write the locations to the appropriate position on disk.
+    $locationConfigurationURI = str_replace("{{ language_code }}", $intl->languageCode, $this->locationConfigurationURI);
+    $this->writeVeryVerbose("Writing routes file for <comment>{$intl->locale}</comment> to <comment>{$locationConfigurationURI}</comment>");
+    file_put_contents($locationConfigurationURI, $locations);
 
-    if ($intl->locale != $intl->defaultLocale && !empty($routeParts)) {
+    // Write the look-up file for the Intl class if this isn't the default locale and if we actually have anything to
+    // be looked up.
+    if ($intl->locale != $intl->defaultLocale && !empty($translatedRoutes)) {
+      // Build the look-up file's content.
       $this->writeDebug("Expanding route parts...");
+      $collator->ksort($translatedRoutes);
       $expandedRouteParts = "<?php return [";
-      foreach ($routeParts as $k => $v) {
+      foreach ($translatedRoutes as $k => $v) {
         $expandedRouteParts .= "\"{$k}\"=>\"{$v}\",";
       }
+      // Be sure to remove the last comma from the output.
+      $expandedRouteParts = substr($expandedRouteParts, 0, -1) . "];";
+
+      // Write the content to the file.
       $target = "dr://var/intl/{$intl->locale}/routes.php";
       $this->writeVeryVerbose("Writing route parts look-up file to <comment>{$target}</comment>");
-      file_put_contents($target, rtrim($expandedRouteParts, ",") . "];");
+      file_put_contents($target, $expandedRouteParts);
     }
 
     return $this;
@@ -511,12 +580,10 @@ NGX;
    *   The route to translate.
    * @param \DocBlockReader\Reader $docReader [optional]
    *   Annotation DocReader instance, if given class is checked for possible forced singular form.
-   * @param array $routeParts [optional]
-   *   The array used to collect the various route parts for the final translation file.
    * @return string
    *   The translated route.
    */
-  protected function translateRoute(Intl $intl, $route, DocReader $docReader = null, array &$routeParts = null) {
+  protected function translateRoute(Intl $intl, $route, DocReader $docReader = null) {
     static $slash = "/";
     static $messages = [];
 
@@ -528,6 +595,7 @@ NGX;
       return $slash;
     }
 
+    // We have to lowercase all available translations because all routes are lowercased.
     if (empty($messages[$intl->locale])) {
       foreach ($intl->getTranslations("messages") as $k => $v) {
         $messages[$intl->locale][mb_strtolower($k)] = mb_strtolower($v);
@@ -581,19 +649,11 @@ NGX;
         }
       }
 
-      // Not that we're going backwards and have to actually append the already translated route parts.
-      $part       = strtr($part, " ", "-");
-      $translated = "{$slash}{$part}{$token}{$translated}";
-
-      // We also need to include this in the route parts array for creation of the look-up file used in Intl for a fast
-      // translation of routes that isn't based on the messages (like we have it within this command).
-      if (!empty($token)) {
-        $token = "{$slash}{" . ($c - 1) . "}";
-      }
-      $routeParts["{$slash}{$parts[$c]}{$token}"] = "{$slash}{$part}{$token}";
-
-      // Reset the token for the next iteration.
-      $token = null;
+      // Not that we're going backwards and have append the already translated route parts. It's also important that we
+      // don't forget about the token that might have been set in the last iteration of this loop. We also have to
+      // reset the token because we consumed it.
+      $translated = $slash . strtr($part, " ", "-") . "{$token}{$translated}";
+      $token      = null;
     }
 
     return $translated;
