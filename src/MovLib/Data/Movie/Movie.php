@@ -311,7 +311,7 @@ SQL
     }
     $this->imageAlternativeText = $this->intl->t("{movie_title} poster.", [ "movie_title" => $this->displayTitleAndYear]);
     $this->imageDirectory       = "upload://movie/{$this->id}/poster";
-    $this->pluralKey            = $this->tableName = "movies";
+    $this->pluralKey            = "movies";
     $this->singularKey          = "movie";
     return parent::init();
   }

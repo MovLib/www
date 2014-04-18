@@ -99,27 +99,20 @@ ol ol {
 }
 
 .grid-list img {
-  opacity: 0.75;
-  outline: 1px solid #e5e5e5;
-  transition: 0.4s ease-in-out;
-  transition-property: opacity, outline-color;
-}
-
-.grid-list a {
-  margin-bottom: 5px;
   display: block;
-  transition: box-shadow 0.4s ease-in-out;
+  margin-bottom: 5px;
+  border: 1px solid #e5e5e5;
+  opacity: 0.75;
+  transition: 0.4s ease-in-out;
+  transition-property: border-color, box-shadow, opacity;
 }
 
-.grid-list a:focus,
-.grid-list a:hover {
-  box-shadow: 0 0 10px rgba(82, 168, 236, 0.6);
-}
-
-.grid-list a:focus img,
-.grid-list a:hover img {
+.grid-list a:hover img,
+.grid-list a:focus img {
+  border-color: #09c;
+  border-color: rgba(82, 168, 236, 0.5);
   opacity: 1;
-  outline-color: rgba(82, 168, 236, 0.8);
+  box-shadow: 0 0 10px rgba(82, 168, 236, 0.6);
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------
