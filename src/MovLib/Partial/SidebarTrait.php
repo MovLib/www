@@ -140,17 +140,17 @@ trait SidebarTrait {
     if ($entity->deleted) {
       $toolboxItems = [
         [ $this->entity->route, $this->intl->t("View"), $viewAttributes ],
-        [ $this->intl->r([ $this->entity->routeKey, "/discussion" ], $this->entity->routeArgs), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
-        [ $this->intl->r([ $this->entity->routeKey, "/history" ], $this->entity->routeArgs), $this->intl->t("History"), [ "class" => "ico ico-history" ] ]
+        [ $this->intl->r("{$this->entity->routeKey}/discussion", $this->entity->routeArgs), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
+        [ $this->intl->r("{$this->entity->routeKey}/history", $this->entity->routeArgs), $this->intl->t("History"), [ "class" => "ico ico-history" ] ]
       ];
     }
     else {
       $toolboxItems = [
         [ $this->intl->r($this->entity->routeKey, $this->entity->routeArgs), $this->intl->t("View"), $viewAttributes ],
-        [ $this->intl->r([ $this->entity->routeKey, "/edit" ], $this->entity->routeArgs), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
-        [ $this->intl->r([ $this->entity->routeKey, "/discussion" ], $this->entity->routeArgs), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
-        [ $this->intl->r([ $this->entity->routeKey, "/history" ], $this->entity->routeArgs), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
-        [ $this->intl->r([ $this->entity->routeKey, "/delete" ], $this->entity->routeArgs), $this->intl->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
+        [ $this->intl->r("{$this->entity->routeKey}/edit", $this->entity->routeArgs), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
+        [ $this->intl->r("{$this->entity->routeKey}/discussion", $this->entity->routeArgs), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
+        [ $this->intl->r("{$this->entity->routeKey}/history", $this->entity->routeArgs), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
+        [ $this->intl->r("{$this->entity->routeKey}/delete", $this->entity->routeArgs), $this->intl->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
       ];
     }
     if ($menuitems) {
