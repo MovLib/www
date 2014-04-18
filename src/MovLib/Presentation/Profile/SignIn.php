@@ -84,7 +84,7 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
     // If the client is signed in, but didn't request to be signed out or is currently submitting this form, redirect to
     // the personal dashboard.
     elseif ($this->request->methodGET && $this->session->isAuthenticated) {
-      throw new SeeOtherException($this->intl->r("/my"));
+      throw new SeeOtherException($this->intl->r("/dashboard"));
     }
     // Append the URL to the action attribute of our form.
     elseif (($this->redirectTo = $this->request->filterInputString(INPUT_GET, $redirectToKey)) && $this->redirectTo != $route) {
@@ -154,7 +154,7 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
         $this->intl->t("Welcome back {username}!", [ "username" => $this->placeholder($this->session->userName) ])
       );
 
-      throw new SeeOtherException($this->redirectTo ?: $this->intl->r("/my"));
+      throw new SeeOtherException($this->redirectTo ?: $this->intl->r("/dashboard"));
     }
 
     $this->alertError(
