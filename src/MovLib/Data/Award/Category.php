@@ -183,7 +183,8 @@ SQL
     $this->pluralKey      = "categories";
     $this->singularKey    = "category";
     $this->tableName      = "awards_categories";
-    $this->route          = $this->intl->r("/award/{0}/category/{1}", [ $this->award->id, $this->id ]);
+    $this->routeKey       = "/award/{0}/category/{1}";
+    $this->routeArgs      = [ $this->award->id, $this->id ];
     $this->routeIndex     = $this->intl->r("/award/{0}/categories", $this->award->id);
     return parent::init();
   }

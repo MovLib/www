@@ -133,12 +133,6 @@ trait SidebarTrait {
    * @return this
    */
   final protected function sidebarInitToolbox(\MovLib\Data\AbstractEntity $entity, array $menuitems = null, $small = false) {
-    if (isset($this->entity) && !isset($this->entity->route)) {
-      $route = "/{$this->entity->singularKey}/{0}";
-    }
-    else {
-      $route = $this->entity->route;
-    }
     $viewAttributes = [ "class" => "ico ico-view" ];
     if ($this->schemaType && $this->request->path != $this->entity->route) {
       $viewAttributes["property"] = "url";
@@ -146,17 +140,17 @@ trait SidebarTrait {
     if ($entity->deleted) {
       $toolboxItems = [
         [ $this->entity->route, $this->intl->t("View"), $viewAttributes ],
-        [ $this->entity->r("/discussion"), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
-        [ $this->entity->r("/history"), $this->intl->t("History"), [ "class" => "ico ico-history" ] ]
+        [ $this->intl->r([ $this->entity->routeKey, "/discussion" ], $this->entity->routeArgs), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
+        [ $this->intl->r([ $this->entity->routeKey, "/history" ], $this->entity->routeArgs), $this->intl->t("History"), [ "class" => "ico ico-history" ] ]
       ];
     }
     else {
       $toolboxItems = [
-        [ $this->entity->route, $this->intl->t("View"), $viewAttributes ],
-        [ $this->entity->r("/edit"), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
-        [ $this->entity->r("/discussion"), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
-        [ $this->entity->r("/history"), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
-        [ $this->entity->r("/delete"), $this->intl->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
+        [ $this->intl->r($this->entity->routeKey, $this->entity->routeArgs), $this->intl->t("View"), $viewAttributes ],
+        [ $this->intl->r([ $this->entity->routeKey, "/edit" ], $this->entity->routeArgs), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
+        [ $this->intl->r([ $this->entity->routeKey, "/discussion" ], $this->entity->routeArgs), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
+        [ $this->intl->r([ $this->entity->routeKey, "/history" ], $this->entity->routeArgs), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
+        [ $this->intl->r([ $this->entity->routeKey, "/delete" ], $this->entity->routeArgs), $this->intl->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
       ];
     }
     if ($menuitems) {
