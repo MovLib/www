@@ -60,4 +60,16 @@ final class Poster extends \MovLib\Data\Image\AbstractImageEntity {
     return parent::init();
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  protected function imageSaveStyles() {
+    $styles = serialize($this->imageStyles);
+    $stmt   = $this->getMySQLi()->prepare("UPDATE `{$this->tableName}` SET `styles` = ? WHERE `id` = ? AND `movie_id` = ?");
+    $stmt->bind_param("sdd", $styles, $this->id, $this->entityId);
+    $stmt->execute();
+    $stmt->close();
+    return $this;
+  }
+
 }

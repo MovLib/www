@@ -51,13 +51,6 @@ abstract class AbstractImageEntity extends \MovLib\Data\Image\AbstractReadOnlyIm
 
 
   /**
-   * The column name of the entity where the unique identifier is stored (without <code>"_id"</code> suffix).
-   *
-   * @var string
-   */
-  protected $entityKey;
-
-  /**
    * Whether this image was just newly uploaded.
    *
    * <b>NOTE</b><br>
@@ -72,15 +65,6 @@ abstract class AbstractImageEntity extends \MovLib\Data\Image\AbstractReadOnlyIm
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-
-  // @devStart
-  // @codeCoverageIgnoreStart
-  protected function init() {
-    assert(!empty($this->entityKey), "You have to set the \$entityKey property in your concrete image class.");
-    return parent::init();
-  }
-  // @codeCoverageIgnoreEnd
-  // @devEnd
 
   /**
    * Delete the original image and all of its styles.
@@ -145,18 +129,6 @@ abstract class AbstractImageEntity extends \MovLib\Data\Image\AbstractReadOnlyIm
       }
     }
     $this->imageFilename = $newFilename;
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function imageSaveStyles() {
-    $styles = serialize($this->imageStyles);
-    $stmt   = $this->getMySQLi()->prepare("UPDATE `{$this->tableName}` SET `styles` = ? WHERE `id` = ? AND `{$this->entityKey}_id` = ?");
-    $stmt->bind_param("sdd", $styles, $this->id, $this->entityId);
-    $stmt->execute();
-    $stmt->close();
     return $this;
   }
 
