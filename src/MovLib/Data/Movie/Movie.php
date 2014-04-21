@@ -46,6 +46,20 @@ final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity impleme
   private $countries;
 
   /**
+   * The movie's total award count.
+   *
+   * @var integer
+   */
+  public $countAwards;
+
+  /**
+   * The movie's total release count.
+   *
+   * @var integer
+   */
+  public $countReleases;
+
+  /**
    * The movie's display title <b>for</b> the current locale.
    *
    * <b>NOTE</b><br>
@@ -154,6 +168,8 @@ final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity impleme
       $stmt   = $mysqli->prepare(<<<SQL
 SELECT
   `movies`.`id`,
+  `movies`.`count_awards`,
+  `movies`.`count_releases`,
   `movies`.`year`,
   `movies`.`rank`,
   `movies`.`votes`,
@@ -204,6 +220,8 @@ SQL
       $stmt->execute();
       $stmt->bind_result(
         $this->id,
+        $this->countAwards,
+        $this->countReleases,
         $this->year,
         $this->ratingRank,
         $this->ratingVotes,

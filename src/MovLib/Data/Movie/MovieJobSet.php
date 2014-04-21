@@ -61,7 +61,7 @@ SELECT
   `movies_crew`.`id` AS `crewId`,
   `movies_crew`.`person_id` AS `personId`,
   `movies_crew`.`created` AS `crewCreated`,
-  `movies_crew`.`created` AS `crewChanged`,
+  `movies_crew`.`changed` AS `crewChanged`,
   `movies_crew`.`job_id` AS `crewJobId`,
   IFNULL(
     COLUMN_GET(`jobs`.`dyn_names_sex{$person->sex}`, '{$this->intl->languageCode}' AS BINARY),

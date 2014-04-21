@@ -71,7 +71,7 @@ class Movies extends \MovLib\Presentation\Person\AbstractPersonPresenter {
         }
         // Person is playing him/herself.
         elseif ($castJob->roleId === $this->entity->id) {
-          $cast .= "<a href='{$this->entity->route}'>" . Cast::$roleTitleSelf[$this->entity->sex] . "</a>";
+          $cast .= "<a href='{$this->entity->route}'>{$castJob->roleTitleSelf}</a>";
         }
         // Person is playing another person.
         elseif ($castJob->roleId && $castJob->roleName) {

@@ -17,8 +17,7 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\Movie\Movie;
-use \MovLib\Presentation\Partial\Listing\PersonCastListing;
+use \MovLib\Data\Cast\CastSet;
 
 /**
  * Presentation of single movie's cast.
@@ -29,35 +28,64 @@ use \MovLib\Presentation\Partial\Listing\PersonCastListing;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Cast extends \MovLib\Presentation\AbstractIndexPresenter {
+class Cast extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
 
   /**
    * Initialize new movie cast presentation.
    *
    */
   public function init() {
-    $this->movie = new Movie($_SERVER["MOVIE_ID"]);
-    $this->initPage($this->intl->t("Cast"));
-    $this->pageTitle = $this->intl->t(
-      "Cast of {0}",
-      [ "<a href='{$this->movie->route}' property='url'><span property='name'>{$this->movie->displayTitleWithYear}</span></a>" ]
-    );
-    $this->initLanguageLinks("/movie/{0}/cast", [ $this->movie->id ]);
-    // @todo: Replace with the real set!
-    $this->initIndex(new \MovLib\Data\Person\PersonSet($this->diContainerHTTP), "Fix me!", "Fix me!");
+    $this->initMoviePresenation(
+      $this->intl->t("Cast of {title}"),
+      $this->intl->t("Cast of {title}"),
+      $this->intl->t("Cast"))
+    ;
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function formatListingItem(\MovLib\Data\AbstractEntity $item, $delta) {
+  public function getContent() {
+    $set     = new CastSet($this->diContainerHTTP);
+    $listing = null;
 
-  }
+    /* @var $moviePerson \MovLib\Stub\Data\Movie\MoviePerson */
+    foreach ($set->loadMovieCast($this->entity) as $personId => $moviePerson) {
+      $roles = null;
+      /* @var $cast \MovLib\Data\Cast\Cast */
+      foreach ($moviePerson->castSet as $crewId => $cast) {
+        if ($roles) {
+          $roles .= ", ";
+        }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getNoItemsContent() {
+        if ($cast->role) {
+          $roles .= $cast->role;
+        }
+        elseif ($cast->roleId === $moviePerson->person->id) {
+          $roles .= "<a href='{$this->intl->r($moviePerson->person->routeKey, $cast->roleId)}'>{$cast->roleTitleSelf}</a>";
+        }
+        elseif ($cast->roleId && $cast->roleName) {
+          $roles .= "<a href='{$this->intl->r($moviePerson->person->routeKey, $cast->roleId)}'>{$cast->roleName}</a>";
+        }
+      }
+      if ($roles) {
+        $roles = "<small>{$this->intl->t("as {roles}", [ "roles" => $roles ])}</small>";
+      }
+
+      $listing .=
+        "<li class='hover-item r'>" .
+          "<article typeof='Person'>" .
+            "<div class='s s1' property='image'>{$this->img($moviePerson->person->imageGetStyle("s1"))}</div>" .
+            "<div class='s s9'>" .
+              "<h2 class='para' property='name'>{$moviePerson->person->name}</h2>" .
+              $roles .
+            "</div>" .
+          "</article>" .
+        "</li>"
+      ;
+    }
+
+    if ($listing) {
+      return "<ol class='hover-list no-list'>{$listing}</ol>";
+    }
+
     return $this->callout(
       "<p>{$this->intl->t("We couldn’t find the cast for this movie.")}</p>",
       $this->intl->t("No Cast"),

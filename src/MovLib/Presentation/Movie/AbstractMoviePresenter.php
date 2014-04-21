@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Person;
+namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\Person\Person;
+use \MovLib\Data\Movie\Movie;
 
 /**
- * Defines the base class for most person presentations.
+ * Base class for most movie presentations.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -28,55 +28,53 @@ use \MovLib\Data\Person\Person;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractPersonPresenter extends \MovLib\Presentation\AbstractPresenter {
+abstract class AbstractMoviePresenter extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Presentation\Movie\MovieTrait;
 
   /**
-   * The person this presentation is for.
+   * The movie this presentation is for.
    *
-   * @var \MovLib\Data\Person\Person
+   * @var \MovLib\Data\Movie\Movie
    */
   protected $entity;
 
   /**
-   * Initialize the person presentation.
+   * Initialize the movie presentation.
    *
    * @param string $title [optional]
-   *   The presentation's translated title with the placeholder for the person's name "{name}",
-   *   defaults to the person's name.
+   *   The presentation's translated title with the placeholder for the movie's display title "{title}",
+   *   defaults to the movie's display title with year.
    * @param string $pageTitle [optional]
    *   The presentation's translated page title with the placeholder (only has to be supplied if different from the title).
    *
-   *   The person's name will be linked automatically and will also contain correct structured markup.
+   *   The movie's name will be linked automatically and will also contain correct structured markup.
    * @param string $breadcrumbTitle
    *   The presentation's translated breadcrumb title with the placeholder (only has to be supplied if different from the title).
    */
-  final protected function initPersonPresentation($title = null, $pageTitle = null, $breadcrumbTitle = null) {
+  final protected function initMoviePresenation($title = null, $pageTitle = null, $breadcrumbTitle = null) {
     if (!$this->entity) {
-      $this->entity = new Person($this->diContainerHTTP, (integer) $_SERVER["PERSON_ID"]);
+      $this->entity = new Movie($this->diContainerHTTP, (integer) $_SERVER["MOVIE_ID"]);
     }
-    $this->schemaType            = "Person";
-    $this->headingSchemaProperty = "name";
+    $this->schemaType            = "Movie";
+    $this->headingSchemaProperty = null;
 
-    $title = $title ? str_replace("{name}", $this->entity->name, $title) : $this->entity->name;
-    if ($pageTitle) {
-      $this->headingSchemaProperty = null;
-      $pageTitle = str_replace(
-        "{name}",
-        "<a href='{$this->entity->route}'><span property='name'>{$this->entity->name}</span></a>",
-        $pageTitle
-      );
-    }
-    $breadcrumbTitle && $breadcrumbTitle = str_replace("{name}", $this->entity->name, $breadcrumbTitle);
+    $title =
+      $title
+        ? str_replace("{title}", $this->entity->displayTitleAndYear, $title)
+        : $this->entity->displayTitleAndYear
+    ;
+
+    $pageTitle && $pageTitle = str_replace("{title}", $this->getStructuredDisplayTitle($this->entity), $pageTitle);
+    $breadcrumbTitle && $breadcrumbTitle = str_replace("{title}", $this->getStructuredDisplayTitle($this->entity), $breadcrumbTitle);
 
     $this->initPage($title, $pageTitle, $breadcrumbTitle);
 
     // Construct the breadcrumbs and route key.
-    $this->breadcrumb->addCrumb($this->intl->r("/persons"), $this->intl->tp("Persons", "Person"));
+    $this->breadcrumb->addCrumb($this->intl->r("/movies"), $this->intl->tp("Movies", "Movie"));
     $routeKey = $this->entity->routeKey;
     if (($shortName = strtolower($this->shortName())) != "show") {
       $routeKey .= "/{$shortName}";
-      $this->breadcrumb->addCrumb($this->entity->route, $this->entity->name);
     }
 
     // There's no single subpage requiring another placeholder, construct language links immediately.
@@ -85,38 +83,22 @@ abstract class AbstractPersonPresenter extends \MovLib\Presentation\AbstractPres
     // Initialize the sidebar.
     $additionalSidebarItems = null;
     foreach ([
-      [ "movie", "movies", $this->intl->tp("Movies", "Movie"), $this->entity->countMovies ],
-      [ "series", "series", $this->intl->tp("Series"), $this->entity->countSeries ],
+      [ "cast", "cast", $this->intl->t("Cast"), null ],
+      [ "crew", "crew", $this->intl->t("Crew"), null ],
       [ "release", "releases", $this->intl->tp("Releases", "Release"), $this->entity->countReleases ],
       [ "award separator", "awards", $this->intl->tp("Awards", "Award"), $this->entity->countAwards ],
     ] as list($icon, $routeAddition, $title, $count)) {
+      $count && $count =  "<span class='fr'>{$this->intl->format("{0,number}", $count)}</span>";
       $additionalSidebarItems[] = [
-        $this->intl->r("/person/{0}/{$routeAddition}", $this->entity->id),
-        "{$title}<span class='fr'>{$this->intl->format("{0,number}", $count)}</span>",
+        $this->intl->r("/movie/{0}/{$routeAddition}", $this->entity->id),
+        "{$title}{$count}",
         [ "class" => "ico ico-{$icon}" ]
       ];
     }
 
     $this->sidebarInitToolbox($this->entity, $additionalSidebarItems);
 
-    $this->stylesheets[] = "person";
-  }
-
-  /**
-   * Get the formatted born name with structured data.
-   *
-   * @param \MovLib\Data\Person\Person $person
-   * @param type $wrap
-   * @param type $wrapAttributes
-   */
-  protected function getStructuredBornName(\MovLib\Data\Person\Person $person, $wrap = null, $wrapAttributes = null) {
-    if ($person->bornName) {
-      if ($wrap) {
-        $wrapAttributes["property"] = "additionalName";
-        return "<{$wrap}{$this->expandTagAttributes($wrapAttributes)}>{$person->bornName}</{$wrap}>";
-      }
-      return "<span property='additionalName'>{$person->bornName}</span>";
-    }
+    $this->stylesheets[] = "movie";
   }
 
 }

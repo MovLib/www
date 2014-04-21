@@ -95,12 +95,12 @@ final class Cast extends \MovLib\Data\Job\Job {
    */
   public $roleName;
 
-  public static $roleTitleSelf = [
-    Sex::UNKNOWN        => "Self",
-    Sex::MALE           => "Himself",
-    Sex::FEMALE         => "Herself",
-    Sex::NOT_APPLICABLE => null,
-  ];
+  /**
+   * The cast's translated role title for persons playing themselves.
+   *
+   * @var string
+   */
+  public $roleTitleSelf;
 
   /**
    * The cast's series identifier.
@@ -133,7 +133,16 @@ final class Cast extends \MovLib\Data\Job\Job {
   /**
    * {@inheritdoc}
    */
-  public function init() {
+  public function init($sex = Sex::UNKNOWN) {
+    if ($sex === Sex::MALE) {
+      $this->roleTitleSelf = $this->intl->t("Himself");
+    }
+    elseif ($sex === Sex::FEMALE) {
+      $this->roleTitleSelf = $this->intl->t("Herself");
+    }
+    else {
+      $this->roleTitleSelf = $this->intl->t("Self");
+    }
     return parent::init();
   }
 
