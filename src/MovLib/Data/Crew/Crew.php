@@ -68,21 +68,11 @@ final class Crew extends \MovLib\Data\Job\Job {
   public $personId;
 
   /**
-   * {@inheritdoc}
-   */
-  public $pluralKey = "crew";
-
-  /**
    * The crew's series identifier.
    *
    * @var integer
    */
   public $seriesId;
-
-  /**
-   * {@inheritdoc}
-   */
-  public $singularKey = "crew";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods

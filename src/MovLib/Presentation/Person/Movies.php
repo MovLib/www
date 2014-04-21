@@ -52,9 +52,6 @@ class Movies extends \MovLib\Presentation\Person\AbstractPersonPresenter {
     $listing = null;
     foreach ($set->loadEntitiesByPerson($this->entity) as $movieId => $jobs) {
       $jobList = null;
-      if (isset($jobs->director)) {
-        $jobList .= "<li><a href='{$jobs->director->route}'>{$jobs->director->names[$this->entity->sex]}</a></li>";
-      }
 
       $cast        = null;
       $castJobName = null;
