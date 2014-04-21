@@ -75,6 +75,7 @@ abstract class AbstractMoviePresenter extends \MovLib\Presentation\AbstractPrese
     $routeKey = $this->entity->routeKey;
     if (($shortName = strtolower($this->shortName())) != "show") {
       $routeKey .= "/{$shortName}";
+      $this->breadcrumb->addCrumb($this->entity->route, $this->entity->displayTitleAndYear);
     }
 
     // There's no single subpage requiring another placeholder, construct language links immediately.
@@ -83,12 +84,14 @@ abstract class AbstractMoviePresenter extends \MovLib\Presentation\AbstractPrese
     // Initialize the sidebar.
     $additionalSidebarItems = null;
     foreach ([
-      [ "cast", "cast", $this->intl->t("Cast"), null ],
-      [ "crew", "crew", $this->intl->t("Crew"), null ],
+      [ "person", "cast", $this->intl->t("Cast"), null ],
+      [ "company", "crew", $this->intl->t("Crew"), null ],
       [ "release", "releases", $this->intl->tp("Releases", "Release"), $this->entity->countReleases ],
       [ "award separator", "awards", $this->intl->tp("Awards", "Award"), $this->entity->countAwards ],
     ] as list($icon, $routeAddition, $title, $count)) {
-      $count && $count =  "<span class='fr'>{$this->intl->format("{0,number}", $count)}</span>";
+      if (isset($count)) {
+        $count =  "<span class='fr'>{$this->intl->format("{0,number}", $count)}</span>";
+      }
       $additionalSidebarItems[] = [
         $this->intl->r("/movie/{0}/{$routeAddition}", $this->entity->id),
         "{$title}{$count}",
