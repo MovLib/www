@@ -66,6 +66,7 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
 
     $this->entity->startYear && $this->infoboxAdd($this->intl->t("From"), (new Date($this->intl, $this))->format($this->entity->startYear));
     $this->entity->endYear   && $this->infoboxAdd($this->intl->t("To"), (new Date($this->intl, $this))->format($this->entity->endYear));
+    $this->entity->status    && $this->infoboxAdd($this->intl->t("Status"), $this->getStatus());
 
     $this->entity->synopsis  && $this->sectionAdd($this->intl->t("Synopsis"), $this->entity->synopsis);
     if ($this->sections) {

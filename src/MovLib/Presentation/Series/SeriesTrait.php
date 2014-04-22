@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Series;
 
+use \MovLib\Data\Series\Series;
 use \MovLib\Partial\Date;
 
 /**
@@ -50,6 +51,25 @@ trait SeriesTrait {
       ];
     }
     return $items;
+  }
+
+  /**
+   * Get the series's status.
+   *
+   * @return string|null
+   *   The series's translated status or null.
+   */
+  final protected function getStatus() {
+    $status = [
+      Series::STATUS_UNKNOWN   => $this->intl->t("Unknown"),
+      Series::STATUS_NEW       => $this->intl->t("New"),
+      Series::STATUS_RETURNING => $this->intl->t("Returning"),
+      Series::STATUS_ENDED     => $this->intl->t("Endet"),
+      Series::STATUS_CANCELLED => $this->intl->t("Cancelled"),
+    ];
+    if (isset($this->entity->status) && isset($status[$this->entity->status])) {
+      return $status[$this->entity->status];
+    }
   }
 
   /**

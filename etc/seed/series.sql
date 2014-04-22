@@ -40,7 +40,8 @@ INSERT INTO `series` SET
   ),
   `original_title`               = 'Game of Thrones',
   `original_title_language_code` = 'en',
-  `start_year`                   = 2011
+  `start_year`                   = 2011,
+  `status`                       = 2
 ;
 SET @series_game_of_thrones = LAST_INSERT_ID();
 
