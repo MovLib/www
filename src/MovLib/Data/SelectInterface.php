@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -18,39 +18,27 @@
 namespace MovLib\Data;
 
 /**
- * Handling of one Style.
+ * Defines the select interface for type hinting.
  *
+ * @see \MovLib\Data\SelectTrait
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Style extends \MovLib\Data\Database {
-
-
- // ------------------------------------------------------------------------------------------------------------------- Properties
-
+interface SelectInterface {
 
   /**
-   * The style's unique identifier.
+   * Load options for a select field.
    *
-   * @var int
+   * @param string $column [optional]
+   *   The column to get the option from, defaults to <var>"`name`"</var> e.g.: <var>"`title`"</var> or
+   *   <var>"COLUMN_GET(`dyn_titles`, '{$this->intl->languageCode}' AS CHAR)"</var>.
+   * @return array
+   *   Assiciative array with entity id as key and option content as value.
+   * @throws \mysqli_sql_exception
    */
-  public $id;
-
-  /**
-   * The style's display name.
-   *
-   * @var string
-   */
-  public $name;
-
-  /**
-   * The style's translated name.
-   *
-   * @var string
-   */
-  public $dynName;
+  public function loadSelectOptions($column = "`name`");
 
 }

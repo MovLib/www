@@ -157,13 +157,6 @@ class Event extends \MovLib\Data\AbstractEntity {
    */
   public $startDate;
 
-  /**
-   * The event’s translated Wikipedia link.
-   *
-   * @var string
-   */
-  public $wikipedia;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Initialize
 
@@ -238,6 +231,46 @@ SQL
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Update the event.
+   *
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function commit() {
+    $this->aliases = empty($this->aliases)? serialize([]) : serialize(explode("\n", $this->aliases));
+    $this->links   = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
+
+    $stmt = $this->getMySQLi()->prepare(<<<SQL
+UPDATE `events` SET
+  `aliases`          = ?,
+  `award_id`         = ?,
+  `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, '{$this->intl->languageCode}', ?),
+  `dyn_wikipedia`    = COLUMN_ADD(`dyn_wikipedia`, '{$this->intl->languageCode}', ?),
+  `end_date`         = ?,
+  `links`            = ?,
+  `name`             = ?,
+  `start_date`       = ?
+WHERE `id` = {$this->id}
+SQL
+    );
+    $stmt->bind_param(
+      "sdssssss",
+      $this->aliases,
+      $this->award->id,
+      $this->description,
+      $this->wikipedia,
+      $this->endDate,
+      $this->links,
+      $this->name,
+      $this->startDate
+    );
+    $stmt->execute();
+    $stmt->close();
+    return $this;
+  }
 
 
   /**

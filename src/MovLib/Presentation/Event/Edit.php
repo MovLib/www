@@ -17,7 +17,16 @@
  */
 namespace MovLib\Presentation\Event;
 
+use \MovLib\Data\Award\AwardSet;
 use \MovLib\Data\Event\Event;
+use \MovLib\Partial\Form;
+use \MovLib\Partial\FormElement\InputDateSeparate;
+use \MovLib\Partial\FormElement\InputText;
+use \MovLib\Partial\FormElement\InputWikipedia;
+use \MovLib\Partial\FormElement\Select;
+use \MovLib\Partial\FormElement\TextareaHTML;
+use \MovLib\Partial\FormElement\TextareaLineArray;
+use \MovLib\Partial\FormElement\TextareaLineURLArray;
 
 /**
  * Allows editing of a event's information.
@@ -28,24 +37,8 @@ use \MovLib\Data\Event\Event;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Edit extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Partial\SidebarTrait;
+class Edit extends \MovLib\Presentation\AbstractEditPresenter {
   use \MovLib\Presentation\Event\EventTrait;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The entity to present.
-   *
-   * @var \MovLib\Data\AbstractEntity
-   */
-  protected $entity;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
 
   /**
    * {@inheritdoc}
@@ -55,21 +48,65 @@ class Edit extends \MovLib\Presentation\AbstractPresenter {
     $pageTitle    = $this->intl->t("Edit {0}", [ $this->entity->name ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Edit"))
-      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/edit", $this->entity->id)
-      ->breadcrumb->addCrumbs([
-        [ $this->intl->r("/events"), $this->intl->t("Events") ],
-        [ $this->entity->route, $this->entity->name ]
-      ])
+      ->initEdit($this->entity, $this->intl->t("Events"), $this->getSidebarItems())
     ;
-
   }
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("edit event"));
+    $awardOptions = (new AwardSet($this->diContainerHTTP))->loadSelectOptions();
+    $form = (new Form($this->diContainerHTTP))
+      ->addElement(new Select($this->diContainerHTTP, "award", $this->intl->t("Award"), $awardOptions, $this->entity->award->id, [
+        "#help-popup" => $this->intl->t("The Award this Event is belonging to."),
+        "placeholder" => $this->intl->t("Select the event’s Award."),
+        "autofocus"   => true,
+        "required"    => true,
+      ]))
+      ->addElement(new InputText($this->diContainerHTTP, "name", $this->intl->t("Name"), $this->entity->name, [
+        "#help-popup" => $this->intl->t("The name of the event."),
+        "placeholder" => $this->intl->t("Enter the event’s name."),
+        "required"    => true,
+      ]))
+      ->addElement(new TextareaLineArray($this->diContainerHTTP, "aliases", $this->intl->t("Alternative Names (line by line)"), $this->entity->aliases, [
+        "#help-popup" => $this->intl->t("The alternative names of the event, line by line."),
+        "placeholder" => $this->intl->t("Enter the event’s alternative names here, line by line."),
+      ]))
+      ->addElement(new InputDateSeparate($this->diContainerHTTP, "start-date", $this->intl->t("Start Date"), $this->entity->startDate, [
+        "#help-popup" => $this->intl->t("The start date of the event."),
+        "required"    => true,
+      ]))
+      ->addElement(new InputDateSeparate($this->diContainerHTTP, "end-date", $this->intl->t("End Date"), $this->entity->endDate, [
+        "#help-popup" => $this->intl->t("The end date of the event."),
+      ]))
+      ->addElement(new TextareaHTML($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
+        "#help-popup" => $this->intl->t("Description of the event."),
+        "placeholder" => $this->intl->t("Describe the event."),
+      ], [ "blockquote", "external", "headings", "lists", ]))
+      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
+        "#help-popup"         => $this->intl->t("Link to a corresponding Wikipedia Page."),
+        "placeholder"         => $this->intl->t("Enter the event’s corresponding Wikipedia link."),
+        "data-allow-external" => "true",
+      ]))
+      ->addElement(new TextareaLineURLArray($this->diContainerHTTP, "links", $this->intl->t("Weblinks (line by line)"), $this->entity->links, [
+        "#help-popup" => $this->intl->t("Weblinks relatet to the event, line by line."),
+        "placeholder" => $this->intl->t("Enter the event’s related weblinks, line by line."),
+      ]))
+      ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
+      ->init([ $this, "valid" ])
+    ;
+    return
+      $form->open() .
+      $form->elements["award"] .
+      $form->elements["name"] .
+      $form->elements["aliases"] .
+      "<div class='r'><div class='s s5'>{$form->elements["start-date"]}</div><div class='s s5'>{$form->elements["end-date"]}</div></div>" .
+      $form->elements["description"] .
+      $form->elements["wikipedia"] .
+      $form->elements["links"] .
+      $form->close()
+    ;
   }
 
 }
