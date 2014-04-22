@@ -17,84 +17,67 @@
  */
 namespace MovLib\Partial;
 
-use \MovLib\Presentation\Partial\FormElement\Select;
+use \MovLib\Partial\FormElement\Select;
 
 /**
  * Represents a single language in HTML and provides an interface to all available languages.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Language extends \MovLib\Presentation\AbstractBase {
+final class Language extends \MovLib\Core\Presentation\DependencyInjectionBase {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
+ // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The attributes array.
+   * All available languages in the current locale.
    *
    * @var array
    */
-  protected $attributes;
-
-  /**
-   * The language to present.
-   *
-   * @var \MovLib\Stub\Data\Language
-   */
-  protected $language;
-
-  /**
-   * The HTML tag to wrap the language.
-   *
-   * @var string
-   */
-  protected $tag;
+  public $languages;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new language partial.
-   *
-   * @param string $code
-   *   The ISO 639-1 code of the language.
-   * @param array $attributes [optional]
-   *   Additional attributes that should be applied to the element.
-   * @param string $tag [optional]
-   *   The tag that should be used to wrap this language, defaults to <code>"span"</code>.
+   * {@inheritdoc}
    */
-  public function __construct($code, array $attributes = null, $tag = "span") {
-    $this->attributes             = $attributes;
-    $this->attributes[]           = "itemscope";
-    $this->attributes["itemtype"] = "http://schema.org/Language";
-    $this->language               = $this->intl->getTranslations("languages")[$code];
-    $this->tag                    = $tag;
-
-    // The special code xx isn't valid if we use it as lang attribute, but the ISO 639-2 code zxx is, make sure we use
-    // the right language code.
-    if ($this->language->code != $this->intl->languageCode) {
-      $this->attributes["lang"] = $this->language->code == "xx" ? "zxx" : $this->language->code;
-    }
-  }
-
-  /**
-   * Get the string representation of the language.
-   *
-   * @return string
-   */
-  public function __toString() {
-    return "<{$this->tag}{$this->expandTagAttributes($this->attributes)}><span itemprop='name'>{$this->language->name}</span><meta itemprop='alternateName' content='{$this->language->native}'></{$this->tag}>";
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+    parent::__construct($diContainerHTTP);
+    $this->languages = $this->intl->getTranslations("languages");
   }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  /**
+   * Format a language.
+   *
+   * @param string $languageCode
+   *   The language's ISO alpha-2 code.
+   * @param array $attributes [optional]
+   *   Additional attributes that should be applied to the element. Note that the <code>"typeof"</code> attribute is
+   *   always overwritten.
+   * @param string $tag [optional]
+   *   The tag that should be used to wrap the language, defaults to <code>"span"</code>.
+   * @return string
+   *   The formatted language.
+   * @throws \ErrorException
+   *   If the language code is invalid.
+   */
+  public function format($languageCode, array $attributes = [], $tag = "span") {
+    $language = $this->languages[$languageCode];
+    $attributes["typeof"] = "Language";
+    return "<{$tag}{$this->expandTagAttributes($attributes)}><span property='name'>{$language->name}</span><meta itemprop='alternateName' content='{$this->language->native}'></{$tag}>";
+  }
 
   /**
    * Get select form element to select a language.
@@ -110,8 +93,13 @@ final class Language extends \MovLib\Presentation\AbstractBase {
    * @return \MovLib\Presentation\Partial\FormElement\Select
    *   The select form element to select a language.
    */
-  public static function getSelectFormElement(&$value, array $attributes = null, $id = "language", $label = null) {
-    return new Select($id, $label ?: $this->intl->t("Language"), self::getLanguages(), $value, $attributes);
+  public function getSelectFormElement(&$value, array $attributes = null, $id = "language", $label = null) {
+    $options = [];
+    /* @var $language \MovLib\Stub\Data\Language */
+    foreach ($this->languages as $language) {
+      $options[$language->code] = $language->name;
+    }
+    return new Select($this->diContainerHTTP, $id, $label ?: $this->intl->t("Language"), $options, $value, $attributes);
   }
 
 }

@@ -31,6 +31,7 @@ use \MovLib\Partial\Date;
  */
 trait SeriesTrait {
 
+
   /**
    * {@inheritdoc}
    */
@@ -60,16 +61,26 @@ trait SeriesTrait {
    *   The series's translated status or null.
    */
   final protected function getStatus() {
-    $status = [
+    $status = $this->getStatusArray();
+    if (isset($this->entity->status) && isset($status[$this->entity->status])) {
+      return $status[$this->entity->status];
+    }
+  }
+
+    /**
+   * Get the series's status array.
+   *
+   * @return array
+   *   Associative array with series status codes.
+   */
+  final protected function getStatusArray() {
+    return [
       Series::STATUS_UNKNOWN   => $this->intl->t("Unknown"),
       Series::STATUS_NEW       => $this->intl->t("New"),
       Series::STATUS_RETURNING => $this->intl->t("Returning"),
       Series::STATUS_ENDED     => $this->intl->t("Endet"),
       Series::STATUS_CANCELLED => $this->intl->t("Cancelled"),
     ];
-    if (isset($this->entity->status) && isset($status[$this->entity->status])) {
-      return $status[$this->entity->status];
-    }
   }
 
   /**

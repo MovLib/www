@@ -57,8 +57,6 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    $this->headingBefore = "<div class='r'><div class='s s10'>";
-
     $starRating = new StarRatingForm($this->diContainerHTTP, $this->entity);
     $this->infoboxBefore =
       "{$this->getStructuredOriginalTitle($this->entity, "p")}{$starRating}"

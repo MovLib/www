@@ -272,7 +272,6 @@ SQL
     return $this;
   }
 
-
   /**
    * {@inheritdoc}
    */
