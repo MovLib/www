@@ -31,6 +31,15 @@ final class UploadSet extends \MovLib\Data\AbstractSet {
   /**
    * {@inheritdoc}
    */
+  protected function init() {
+    $this->singularKey = "upload";
+    $this->pluralKey   = "uploads";
+    return parent::init();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function getEntitiesQuery($where = null, $orderBy = null) {
 
   }
