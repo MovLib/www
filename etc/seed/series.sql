@@ -70,4 +70,10 @@ INSERT INTO `series_display_titles` SET
   `title_id`      = @game_of_thrones_dt
 ;
 
+INSERT INTO `series_display_titles` SET
+  `language_code` = 'en',
+  `series_id`     = @series_game_of_thrones,
+  `title_id`      = @game_of_thrones_dt
+;
+
 -- END "Game of Thrones"

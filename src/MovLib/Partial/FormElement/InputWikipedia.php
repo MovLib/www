@@ -74,7 +74,7 @@ class InputWikipedia extends \MovLib\Partial\FormElement\InputURL {
     }
     if ($parts["host"] != "{$this->intl->languageCode}.wikipedia.org") {
       $errors[self::ERROR_WRONG_LOCALE] = $this->intl->t(
-        "Only links to the {0} Wikipedia are allowed.",
+        "Only links to Wikipedia in the current language ({0}) are allowed.",
         [ $this->intl->getTranslations("languages")[$this->intl->languageCode]->name ]
       );
       return $url;

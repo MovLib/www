@@ -208,12 +208,10 @@ select:-moz-focusring {
 }
 
 fieldset,
-form .r,
 form p {
   margin-bottom: 20px;
 }
 
-.r fieldset,
 .r input {
   margin-bottom: 0;
 }

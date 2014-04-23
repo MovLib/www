@@ -73,8 +73,7 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
         "placeholder" => $this->intl->t("Write a synopsis."),
       ], [ "blockquote", "external", "headings", "lists", ]))
       ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
-        "#help-popup"         => $this->intl->t("Link to the right language."),
-        "placeholder"         => $this->intl->t("Enter the series’s corresponding Wikipedia link."),
+        "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/...",
         "data-allow-external" => "true",
       ]))
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
@@ -82,7 +81,11 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
     ;
     return
       $form->open() .
-      "<div class='r'><div class='s s3'>{$form->elements["start-year"]}</div><div class='s s3'>{$form->elements["end-year"]}</div><div class='s s3 o1'>{$form->elements["status"]}</div></div>" .
+      "<div class='r'>" .
+        "<div class='s s2'>{$form->elements["start-year"]}</div>" .
+        "<div class='s s2'>{$form->elements["end-year"]}</div>" .
+        "<div class='s s3 o3'>{$form->elements["status"]}</div>" .
+      "</div>" .
       $form->elements["synopsis"] .
       $form->elements["wikipedia"] .
       $form->close()

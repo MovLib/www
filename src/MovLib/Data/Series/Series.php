@@ -155,6 +155,13 @@ class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Data\RatingI
    */
   public $synopsis;
 
+  /**
+   * Assiciative array containing all titles of the series.
+   *
+   * @var array
+   */
+  public $titles;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 

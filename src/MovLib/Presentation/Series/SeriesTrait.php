@@ -78,7 +78,7 @@ trait SeriesTrait {
       Series::STATUS_UNKNOWN   => $this->intl->t("Unknown"),
       Series::STATUS_NEW       => $this->intl->t("New"),
       Series::STATUS_RETURNING => $this->intl->t("Returning"),
-      Series::STATUS_ENDED     => $this->intl->t("Endet"),
+      Series::STATUS_ENDED     => $this->intl->t("Ended"),
       Series::STATUS_CANCELLED => $this->intl->t("Cancelled"),
     ];
   }
