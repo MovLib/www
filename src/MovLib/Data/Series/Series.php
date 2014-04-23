@@ -283,11 +283,81 @@ SQL
   }
 
   /**
+   * Create new series.
+   *
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function create() {
+    $mysqli = $this->getMySQLi();
+    $mysqli->autocommit(FALSE);
+
+    $stmtSeries = $mysqli->prepare(<<<SQL
+INSERT INTO `series` (
+  `dyn_synopses`,
+  `dyn_wikipedia`,
+  `end_year`,
+  `start_year`,
+  `status`
+) VALUES (COLUMN_CREATE('{$this->intl->languageCode}', ?), COLUMN_CREATE('{$this->intl->languageCode}', ?), ?, ?, ?)
+SQL
+    );
+    $stmtSeries->bind_param(
+      "ssddi",
+      $this->synopsis,
+      $this->wikipedia,
+      $this->endYear->year,
+      $this->startYear->year,
+      $this->status
+    );
+    $stmtSeries->execute();
+    $this->id = $stmtSeries->insert_id;
+
+    $stmtSeriesTitles = $mysqli->prepare(
+      "INSERT INTO `series_titles` (`series_id`, `dyn_comments`, `language_code`, `title`) VALUES (?, '', ?, ?)"
+    );
+    $stmtSeriesTitles->bind_param(
+      "dss",
+      $this->id,
+      $this->originalTitleLanguageCode,
+      $this->originalTitle
+    );
+    $stmtSeriesTitles->execute();
+    $seriesTitleId = $stmtSeriesTitles->insert_id;
+
+    $stmtSeriesOriginalTitles = $mysqli->prepare(
+      "INSERT INTO `series_original_titles` (`title_id`, `series_id`) VALUES (?, ?)"
+    );
+    $stmtSeriesOriginalTitles->bind_param(
+      "dd",
+      $seriesTitleId,
+      $this->id
+    );
+    $stmtSeriesOriginalTitles->execute();
+
+    if ($stmtSeries && $stmtSeriesTitles && $stmtSeriesOriginalTitles) {
+      $mysqli->commit();
+    }
+    else {
+      $mysqli->rollback();
+    }
+
+    $mysqli->autocommit(TRUE);
+    $mysqli->close();
+
+    return $this->init();
+  }
+
+  /**
    * {@inheritdoc}
    */
   protected function init() {
-    $this->startYear     && ($this->startYear = new Date($this->startYear));
-    $this->endYear       && ($this->endYear = new Date($this->endYear));
+    if (isset($this->startYear) && !$this->startYear instanceof \stdClass) {
+      $this->startYear = new Date($this->startYear);
+    }
+    if (isset($this->endYear) && !$this->endYear instanceof \stdClass) {
+      $this->endYear = new Date($this->endYear);
+    }
     $this->pluralKey   = "series";
     $this->singularKey = "series";
     return parent::init();

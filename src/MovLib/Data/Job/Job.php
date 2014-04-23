@@ -206,7 +206,7 @@ SQL
   }
 
   /**
-   * Update the job.
+   * Create new job.
    *
    * @return this
    * @throws \mysqli_sql_exception

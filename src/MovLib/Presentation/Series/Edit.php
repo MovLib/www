@@ -21,10 +21,8 @@ use \MovLib\Data\Series\Series;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputInteger;
 use \MovLib\Partial\FormElement\Select;
-use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Partial\FormElement\InputWikipedia;
 use \MovLib\Partial\FormElement\TextareaHTML;
-use \MovLib\Partial\Language;
 
 /**
  * Allows editing of a series's information.
