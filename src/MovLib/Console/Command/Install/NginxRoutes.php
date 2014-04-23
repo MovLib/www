@@ -299,7 +299,10 @@ NGX;
     if ($setAlternateExists === true) {
       $setClassName = $setAlternateClassName;
     }
-    return new $setClassName($this->diContainer);
+    // Image related classes always require an entity's unique identifier they belong to for loading, we fake this by
+    // passing an invalid number, remember that we won't call any loading methods and that it doesn't matter for us at
+    // this point, we only want access to the singular and plural key.
+    return new $setClassName($this->diContainer, -1);
   }
 
   /**
@@ -327,7 +330,7 @@ NGX;
 
     // Split the class's name at the PHP namespace separator into it's parts.
     $className = str_replace($this->removeNamespaceParts, "", $className);
-    $parts     = explode("\\", $className);
+    $parts     = explode("\\", trim($className, "\\"));
     $c         = count($parts) - 1;
 
     // We use the identifier regular expression by default, but some namespace's have special known regular expressions.
@@ -351,11 +354,6 @@ NGX;
     }
 
     do {
-      // Reset the regular expression token back to the identifier regular expression if we're deep enough.
-      if ($c > 2) {
-        $regularExpressionToken = "id";
-      }
-
       // Replace show with token for identifier regular expression.
       if ($parts[$c] == "Show") {
         if ($noRegularExpression) {
@@ -371,7 +369,7 @@ NGX;
         }, $parts[$c]), "-");
 
         // Prepend regular expression token if this isn't a root route and if we're allowed to.
-        if (!$noRegularExpression && !in_array($parts[$c], $this->noRegularExpressionPresenters) && $c > 1) {
+        if (!$noRegularExpression && !in_array($parts[$c], $this->noRegularExpressionPresenters) && $c > 0) {
           $part = "{{$regularExpressionToken}}/{$part}";
         }
       }
@@ -379,7 +377,7 @@ NGX;
       // We're going backwards, therefore we have to append the already translated parts.
       $route = "/{$part}{$route}";
     }
-    while (--$c);
+    while (--$c > -1);
 
     return mb_strtolower($route);
   }
