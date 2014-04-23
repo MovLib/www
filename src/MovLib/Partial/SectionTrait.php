@@ -72,9 +72,11 @@ trait SectionTrait {
    * @param array|string $attributes [optional]
    *   Additional attributes that should be applied to the <code><section></code>, note that the <code>"id"</code> is
    *   always overwritten. If you pass a string it's assumed that you want to add CSS classes.
+   * @param string $editRoute [optional]
+   *   The route to the edit page of this section, defaults to <code>NULL</code>
    * @return this
    */
-  final protected function sectionAdd($title, $content, $decode = true, $attributes = null) {
+  final protected function sectionAdd($title, $content, $decode = true, $attributes = null, $editRoute = null) {
     $decode && ($content = $this->htmlDecode($content));
 
     if ($attributes !== (array) $attributes) {
@@ -86,7 +88,13 @@ trait SectionTrait {
     }
 
     $this->sidebarNavigation->menuitems[] = [ "#{$attributes["id"]}", $title ];
-    $this->sections .= "<section{$this->expandTagAttributes($attributes)}><h2 class='title'>{$title}</h2>{$content}</section>";
+    if ($editRoute) {
+      $title = "<div class='cf'><a class='edit btn btn-info fr' href='{$editRoute}'>{$this->intl->t("Edit")}</a><h2 class='title'>{$title}</h2></div>";
+    }
+    else {
+      $title = "<h2 class='title'>{$title}</h2>";
+    }
+    $this->sections .= "<section{$this->expandTagAttributes($attributes)}>{$title}{$content}</section>";
 
     return $this;
   }
