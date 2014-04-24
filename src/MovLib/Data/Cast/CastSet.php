@@ -19,6 +19,7 @@ namespace MovLib\Data\Cast;
 
 use \MovLib\Data\Cast\Cast;
 use \MovLib\Data\Person\Person;
+use \MovLib\Partial\Sex;
 
 /**
  * @todo Description of CastSet
@@ -133,6 +134,55 @@ SQL
       }
 
     }
+
+    return $this;
+  }
+
+  public function loadMovieCastLimited(\MovLib\Data\Movie\Movie $movie, $limit = 5) {
+    $jobId = Cast::JOB_ID;
+    $limit = "LIMIT {$limit}";
+    $result = $this->getMySQLi()->query(<<<SQL
+SELECT
+  `movies_crew`.`id`,
+  `persons`.`id` AS `personId`,
+  `persons`.`name` AS `personName`,
+  `persons_aliases`.`alias`,
+  `movies_crew`.`job_id` AS `jobId`,
+  IFNULL(
+    COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$this->intl->languageCode}' AS BINARY),
+    COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$this->intl->defaultLanguageCode}' AS BINARY)
+  ) AS `jobName`
+FROM `movies_crew`
+  INNER JOIN `persons`
+    ON `persons`.`id` = `movies_crew`.`person_id`
+  INNER JOIN `jobs`
+    ON `jobs`.`id` = `movies_crew`.`job_id`
+  LEFT JOIN `persons_aliases`
+    ON `persons_aliases`.`id` = `movies_crew`.`alias_id`
+WHERE `movies_crew`.`movie_id` = {$movie->id}
+  AND `movies_crew`.`job_id` = {$jobId}
+  AND `persons`.`deleted` = false
+ORDER BY `persons`.`name`{$this->collations[$this->intl->languageCode]} ASC
+{$limit}
+SQL
+    );
+    while ($row = $result->fetch_object()) {
+      $row->id       = (integer) $row->id;
+      $row->personId = (integer) $row->personId;
+      $row->jobId    = (integer) $row->jobId;
+      if (empty($this->entities[$row->id])) {
+        $this->entities[$row->id] = new Cast($this->diContainer);
+        $this->entities[$row->id]->id = $row->id;
+        $this->entities[$row->id]->personId = $row->personId;
+        $this->entities[$row->id]->personName = $row->personName;
+        $this->entities[$row->id]->alias = $row->alias;
+        $this->entities[$row->id]->names[Sex::UNKNOWN] = $row->jobName;
+        $reflector = new \ReflectionMethod($this->entities[$row->id], "init");
+        $reflector->setAccessible(true);
+        $reflector->invoke($this->entities[$row->id]);
+      }
+    }
+    $result->free();
 
     return $this;
   }

@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Director;
+namespace MovLib\Data\Title;
 
 /**
- * Defines a director entity object
+ * Defines a title entity object.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -26,72 +26,67 @@ namespace MovLib\Data\Director;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Director extends \MovLib\Data\Job\Job {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
-  const JOB_ID = 2;
+class Title extends \MovLib\Data\AbstractEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The director's alias.
+   * The title's translated comment.
    *
    * @var string
    */
-  public $alias;
+  public $comment;
 
   /**
-   * The director's job identifier.
+   * The entity's singular key the title belongs to.
    *
-   * @var integer
+   * @var string
    */
-  public $jobId;
+  protected $entitySingularKey;
 
   /**
-   * The director's movie identifier.
+   * The entity's plural key the title belongs to.
+   *
+   * @var string
+   */
+  protected $entityPluralKey;
+
+  /**
+   * The title's ISO alpha-2 language code.
+   *
+   * @var string
+   */
+  public $languageCode;
+
+  /**
+   * The title's movie identifier.
    *
    * @var integer
    */
   public $movieId;
 
   /**
-   * The director's person identifier.
-   *
-   * @var integer
-   */
-  public $personId;
-
-  /**
-   * The director's person name.
-   *
-   * @var string
-   */
-  public $personName;
-
-  /**
-   * The director's series identifier.
+   * The title's series identifier.
    *
    * @var integer
    */
   public $seriesId;
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+  /**
+   * The title.
+   *
+   * @var string
+   */
+  public $title;
 
   /**
-   * Instantiate new director object.
-   *
-   * @param \MovLib\Core\DIContainer $diContainer
-   *   {{@inheritdoc}}
+   * {@inheritdoc}
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer) {
-    parent::__construct($diContainer);
+  protected function init() {
+    $this->tableName = "{$this->entityPluralKey}_titles";
+    return parent::init();
   }
 
 }

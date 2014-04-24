@@ -15,52 +15,27 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Job;
+namespace MovLib\Data\Movie;
 
 /**
- * Defines the job set object.
+ * Defines the movie title entity.
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class JobSet extends \MovLib\Data\AbstractSet {
+class MovieTitle extends \MovLib\Data\Title\Title {
 
   /**
    * {@inheritdoc}
    */
-  protected function getEntitiesQuery($where = null, $orderBy = null) {
-    return <<<SQL
-SELECT
-  `jobs`.`id` AS `id`,
-  IFNULL(COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$this->intl->languageCode}' AS CHAR), COLUMN_GET(`dyn_names_sex0`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `name`,
-  `jobs`.`count_companies` AS `companyCount`,
-  `jobs`.`count_persons` AS `personCount`
-FROM `jobs`
-{$where}
-{$orderBy}
-SQL;
-  }
+  public $singularKey = "movieTitle";
 
   /**
    * {@inheritdoc}
    */
-  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
-    return <<<SQL
-
-SQL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function init() {
-    $this->pluralKey   = "jobs";
-    $this->singularKey = "job";
-    return parent::init();
-  }
+  public $plurakKey = "movieTitles";
 
 }

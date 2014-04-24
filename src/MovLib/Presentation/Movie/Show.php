@@ -17,10 +17,14 @@
  */
 namespace MovLib\Presentation\Movie;
 
+use \MovLib\Data\Cast\CastSet;
+use \MovLib\Data\Director\DirectorSet;
 use \MovLib\Data\Movie\Movie;
+use \MovLib\Data\Movie\MovieTitleSet;
 use \MovLib\Partial\Country;
 use \MovLib\Partial\Duration;
 use \MovLib\Partial\Genre;
+use \MovLib\Partial\Sex;
 use \MovLib\Partial\StarRatingForm;
 
 /**
@@ -40,18 +44,15 @@ use \MovLib\Partial\StarRatingForm;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Show extends \MovLib\Presentation\AbstractShowPresenter {
-  use \MovLib\Presentation\Movie\MovieTrait;
+final class Show extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
+  use \MovLib\Partial\InfoboxTrait;
+  use \MovLib\Partial\SectionTrait;
 
   /**
    * {@inheritdoc}
    */
   public function init() {
-    $movie = new Movie($this->diContainerHTTP, $_SERVER["MOVIE_ID"]);
-    $this
-      ->initPage($movie->displayTitleAndYear, $this->getStructuredDisplayTitle($movie, false, true))
-      ->initShow($movie, $this->intl->t("Movies"), "Movie", null)
-    ;
+    $this->initMoviePresenation();
     $this->stylesheets[] = "movie";
     $this->javascripts[] = "Movie";
     return $this;
@@ -67,11 +68,40 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
     ;
     $this->infoboxImageRoute = $this->intl->r("/movie/{0}/posters", $this->entity->id);
 
+    $directorsInfo = null;
+    $directorJob   = null;
+    $directors     = new DirectorSet($this->diContainerHTTP);
+    /* @var $director \MovLib\Data\Director\Director */
+    foreach ($directors->loadMovieDirectorsLimited($this->entity) as $director) {
+      if (!$directorJob) {
+        $directorJob = $director->names[Sex::UNKNOWN];
+      }
+      if ($directorsInfo) {
+        $directorsInfo .= ", ";
+      }
+      $directorsInfo .= "<a href='{$this->intl->r("/person", $director->personId)}'>{$director->personName}</a>";
+    }
+    if ($directorsInfo) {
+      $this->infoboxAdd($directorJob, $directorsInfo);
+    }
+
+    $castInfo = null;
+    $cast     = new CastSet($this->diContainerHTTP);
+    foreach ($cast->loadMovieCastLimited($this->entity) as $castMember) {
+      if ($castInfo) {
+        $castInfo .= ", ";
+      }
+      $castInfo .= "<a href='{$this->intl->r("/person", $castMember->personId)}'>{$castMember->personName}</a>";
+    }
+    if ($castInfo) {
+      $this->infoboxAdd($this->intl->t("Cast"), $castInfo);
+    }
+
     $this->entity->runtime   && $this->infoboxAdd($this->intl->t("Runtime"), (new Duration($this->diContainerHTTP))->formatMinutes($this->entity->runtime, [ "property" => "runtime" ]));
     $this->entity->genreSet  && $this->infoboxAdd($this->intl->t("Genres"), (new Genre($this->diContainerHTTP))->getList($this->entity->genreSet));
     $this->entity->countries && $this->infoboxAdd($this->intl->t("Countries"), (new Country($this->diContainerHTTP))->getList($this->entity->countries, "contentLocation"));
 
-    $this->entity->synopsis && $this->sectionAdd($this->intl->t("Synopsis"), $this->entity->synopsis);
+    $this->entity->synopsis && $this->sectionAdd($this->intl->t("Synopsis"), $this->entity->synopsis, true, "callout");
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($this->entity->synopsis)) {
@@ -79,27 +109,32 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    $this->sectionAdd(
-      "Quote Test",
-      "<blockquote>Quotes are rendered in the current locale…</blockquote><p>Meet the <q><code>&lt;q&gt;</code></q> tag.</p><blockquote lang='ja'>日本語はどうですか？</blockquote>" .
-      "<blockquote lang='fr'>Nous avons également quelques citations de français. <q lang='en'>This even includes a nested quote in a different language!</q></blockquote>" .
 
-      "<blockquote>Document language <q lang='de'>nested de</q></blockquote>" .
-      "<blockquote>Document language <q lang='fr'>nested fr</q></blockquote>" .
-      "<blockquote>Document language <q lang='ja'>nested ja</q></blockquote>" .
-      "<blockquote>Document language <q lang='en'>nested en</q></blockquote>" .
-
-      "<blockquote lang='de'>Language de <q lang='fr'>nested fr</q></blockquote>" .
-      "<blockquote lang='de'>Language de <q lang='ja'>nested ja</q></blockquote>" .
-      "<blockquote lang='de'>Language de <q lang='en'>nested en</q></blockquote>" .
-
-      "<blockquote lang='fr'>Language fr <q lang='de'>nested de</q></blockquote>" .
-      "<blockquote lang='fr'>Language fr <q lang='ja'>nested ja</q></blockquote>" .
-      "<blockquote lang='fr'>Language fr <q lang='en'>nested en</q></blockquote>",
-      false,
-      "callout"
-    );
-    $this->sectionAdd($this->intl->t("Alternative Titles"), "Not implemented yet!", false, "callout callout-info");
+    $titleSet = new MovieTitleSet($this->diContainerHTTP, $this->entity->id);
+    $titles = null;
+    /* @var $title \MovLib\Data\Title\Title */
+    foreach ($titleSet->loadEntityTitles() as $title) {
+      $titles .=
+        "<tr>" .
+          "<td class='s8'>{$title->title}</td>" .
+          "<td class='s2'>{$this->intl->getTranslations("languages")[$title->languageCode]->name}</td>" .
+        "</tr>"
+      ;
+    }
+    if ($titles) {
+      $titles =
+        "<table class='table table-striped'>" .
+          "<thead>" .
+            "<tr>" .
+              "<th>{$this->intl->t("Title")}</th>" .
+              "<th>{$this->intl->t("Language")}</th>" .
+            "</tr>" .
+          "</thead>" .
+          "<tbody>{$titles}</tbody>" .
+        "</table>"
+      ;
+      $this->sectionAdd($this->intl->t("Alternative Titles"), $titles, true, null, $this->intl->r("{$this->entity->routeKey}/titles", $this->entity->id));
+    }
     $this->sectionAdd($this->intl->t("Trailers"), "Not implemented yet!", false, "callout callout-warning");
     $this->sectionAdd($this->intl->t("Weblinks"), "Not implemented yet!", false, "callout callout-danger");
 

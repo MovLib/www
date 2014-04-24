@@ -34,7 +34,9 @@ final class Cast extends \MovLib\Data\Job\Job {
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
+
   const JOB_ID = 1;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
@@ -73,6 +75,13 @@ final class Cast extends \MovLib\Data\Job\Job {
    * @var integer
    */
   public $personId;
+
+  /**
+   * The cast's person name.
+   *
+   * @var string
+   */
+  public $personName;
 
   /**
    * The role name (for roles with no further data).
@@ -118,12 +127,9 @@ final class Cast extends \MovLib\Data\Job\Job {
    *
    * @param \MovLib\Core\DIContainer $diContainer
    *   {@inheritdoc}
-   * @param \MovLib\Data\AbstractEntity $entity
-   *   The entity this cast member belongs to.
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, \MovLib\Data\AbstractEntity $entity) {
+  public function __construct(\MovLib\Core\DIContainer $diContainer) {
     parent::__construct($diContainer);
-    $this->entity = $entity;
   }
 
 
