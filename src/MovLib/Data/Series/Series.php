@@ -162,6 +162,16 @@ class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Data\RatingI
    */
   public $titles;
 
+  /**
+   * {@inheritdoc}
+   */
+  public $pluralKey = "series";
+
+  /**
+   * {@inheritdoc}
+   */
+  public $singularKey = "series";
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -354,8 +364,6 @@ SQL
     if (isset($this->endYear) && !$this->endYear instanceof \stdClass) {
       $this->endYear = new Date($this->endYear);
     }
-    $this->pluralKey   = "series";
-    $this->singularKey = "series";
     return parent::init();
   }
 

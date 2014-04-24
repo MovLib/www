@@ -51,23 +51,19 @@ abstract class AbstractCreatePresenter extends \MovLib\Presentation\AbstractPres
    *
    * @param \MovLib\Data\AbstractEntity $entity
    *   The new entity to create.
-   * @param string $singularKey
-   *   The singular key of the entity.
-   * @param string $pluralKey
-   *   The plural key of the entity.
    * @param string $breadcrumbIndexTitle
    *   The entity's index title.
    * @return this
    */
-  final protected function initCreate(\MovLib\Data\AbstractEntity $entity, $singularKey, $pluralKey, $breadcrumbIndexTitle) {
+  final protected function initCreate(\MovLib\Data\AbstractEntity $entity, $breadcrumbIndexTitle) {
     $this->entity = $entity;
     $this->sidebarInit([
-      [ $this->intl->r("/{$pluralKey}/create"), $this->intl->t("Create"), [ "class" => "ico ico-create"] ],
-      [ $this->intl->r("/help/database/{$pluralKey}/create"), $this->intl->t("Help"), [ "class" => "ico ico-help"] ],
+      [ $this->intl->r("/{$this->entity->pluralKey}"), $breadcrumbIndexTitle, [ "class" => "ico ico-{$this->entity->singularKey}"] ],
+      [ $this->intl->r("/help/database/{$this->entity->pluralKey}/create"), $this->intl->t("Help"), [ "class" => "ico ico-help"] ],
     ]);
-    $this->initLanguageLinks("/{$singularKey}/create");
+    $this->initLanguageLinks("/{$this->entity->singularKey}/create");
     $this->breadcrumb->addCrumbs([
-      [ $this->intl->r("/{$pluralKey}"), $breadcrumbIndexTitle ],
+      [ $this->intl->r("/{$this->entity->pluralKey}"), $breadcrumbIndexTitle ],
     ]);
     return $this;
   }
