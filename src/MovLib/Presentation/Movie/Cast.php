@@ -71,13 +71,13 @@ class Cast extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
 
       $listing .=
         "<li class='hover-item r'>" .
-          "<article typeof='Person'>" .
+          "<div typeof='Person'>" .
             "<div class='s s1' property='image'>{$this->img($moviePerson->person->imageGetStyle("s1"))}</div>" .
             "<div class='s s9'>" .
-              "<h2 class='para' property='name'>{$moviePerson->person->name}</h2>" .
+              "<h2 class='para' property='name'><a href='{$this->intl->r("/person/{0}", $moviePerson->person->id)}'>{$moviePerson->person->name}</a></h2>" .
               $roles .
             "</div>" .
-          "</article>" .
+          "</div>" .
         "</li>"
       ;
     }

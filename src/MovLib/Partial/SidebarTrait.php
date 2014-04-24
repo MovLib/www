@@ -133,20 +133,16 @@ trait SidebarTrait {
    * @return this
    */
   final protected function sidebarInitToolbox(\MovLib\Data\AbstractEntity $entity, array $menuitems = null, $small = false) {
-    $viewAttributes = [ "class" => "ico ico-view" ];
-    if ($this->schemaType && $this->request->path != $this->entity->route) {
-      $viewAttributes["property"] = "url";
-    }
     if ($entity->deleted) {
       $toolboxItems = [
-        [ $this->entity->route, $this->intl->t("View"), $viewAttributes ],
+        [ $this->entity->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
         [ $this->intl->r("{$this->entity->routeKey}/discussion", $this->entity->routeArgs), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
         [ $this->intl->r("{$this->entity->routeKey}/history", $this->entity->routeArgs), $this->intl->t("History"), [ "class" => "ico ico-history" ] ]
       ];
     }
     else {
       $toolboxItems = [
-        [ $this->intl->r($this->entity->routeKey, $this->entity->routeArgs), $this->intl->t("View"), $viewAttributes ],
+        [ $this->intl->r($this->entity->routeKey, $this->entity->routeArgs), $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
         [ $this->intl->r("{$this->entity->routeKey}/edit", $this->entity->routeArgs), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
         [ $this->intl->r("{$this->entity->routeKey}/discussion", $this->entity->routeArgs), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
         [ $this->intl->r("{$this->entity->routeKey}/history", $this->entity->routeArgs), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],

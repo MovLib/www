@@ -63,7 +63,7 @@ abstract class AbstractPersonPresenter extends \MovLib\Presentation\AbstractPres
       $this->headingSchemaProperty = null;
       $pageTitle = str_replace(
         "{name}",
-        "<a href='{$this->entity->route}'><span property='name'>{$this->entity->name}</span></a>",
+        "<a href='{$this->entity->route}' property='url'><span property='name'>{$this->entity->name}</span></a>",
         $pageTitle
       );
     }
