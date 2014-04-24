@@ -22,6 +22,7 @@ use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Partial\FormElement\InputWikipedia;
 use \MovLib\Partial\FormElement\TextareaHTML;
+use \MovLib\Partial\Sex;
 
 /**
  * Defines the job edit presentation.
@@ -57,31 +58,26 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    */
    public function getContent() {
     return (new Form($this->diContainerHTTP))
-      ->addElement(new InputText($this->diContainerHTTP, "name", $this->intl->t("Unisex Name"), $this->entity->name, [
-        "#help-popup" => $this->intl->t("The unisex name of the job."),
+      ->addElement(new InputText($this->diContainerHTTP, "name", $this->intl->t("Unisex Name"), $this->entity->names[Sex::UNKNOWN], [
         "placeholder" => $this->intl->t("Enter the job’s unisex name."),
         "autofocus"   => true,
         "required"    => true,
       ]))
-      ->addElement(new InputText($this->diContainerHTTP, "maleName", $this->intl->t("Male Name"), $this->entity->maleName, [
-        "#help-popup" => $this->intl->t("The male name of the job."),
+      ->addElement(new InputText($this->diContainerHTTP, "male-name", $this->intl->t("Male Name"), $this->entity->names[Sex::MALE], [
         "placeholder" => $this->intl->t("Enter the job’s male name."),
         "required"    => true,
       ]))
-      ->addElement(new InputText($this->diContainerHTTP, "femaleName", $this->intl->t("Female Name"), $this->entity->femaleName, [
-        "#help-popup" => $this->intl->t("The female name of the job."),
+      ->addElement(new InputText($this->diContainerHTTP, "female-name", $this->intl->t("Female Name"), $this->entity->names[Sex::FEMALE], [
         "placeholder" => $this->intl->t("Enter the job’s female name."),
         "required"    => true,
       ]))
+      ->addElement(new TextareaHTML($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
+        "placeholder" => $this->intl->t("Describe the job."),
+      ], [ "blockquote", "external", "headings", "lists", ]))
       ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
-        "#help-popup"         => $this->intl->t("Link to a corresponding Wikipedia Page."),
         "placeholder"         => $this->intl->t("Enter the job’s corresponding Wikipedia link."),
         "data-allow-external" => "true",
       ]))
-      ->addElement(new TextareaHTML($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
-        "#help-popup" => $this->intl->t("Description of the job."),
-        "placeholder" => $this->intl->t("Describe the job."),
-      ], [ "blockquote", "external", "headings", "lists", ]))
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
       ->init([ $this, "valid" ])
     ;

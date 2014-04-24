@@ -36,7 +36,7 @@ final class JobSet extends \MovLib\Data\AbstractSet {
     return <<<SQL
 SELECT
   `jobs`.`id` AS `id`,
-  COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$this->intl->languageCode}' AS CHAR) AS `name`,
+  IFNULL(COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$this->intl->languageCode}' AS CHAR), COLUMN_GET(`dyn_names_sex0`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `name`,
   `jobs`.`count_companies` AS `companyCount`,
   `jobs`.`count_persons` AS `personCount`
 FROM `jobs`

@@ -50,26 +50,22 @@ class Job extends \MovLib\Data\AbstractEntity {
   public $description;
 
   /**
-   * The job's translated female name.
+   * The job's gender specific names in default language.
    *
-   * @var string
-   * @deprecated since version 0.0.1-dev
-   */
-  public $femaleName;
-
-  /**
-   * The job's translated male name.
+   * The Keys are {@see \MovLib\Partial\Sex} class constants.
    *
-   * @var string
-   * @deprecated since version 0.0.1-dev
+   * @var array
    */
-  public $maleName;
+  public $defaultNames = [
+    Sex::UNKNOWN => null,
+    Sex::MALE    => null,
+    Sex::FEMALE  => null,
+  ];
 
   /**
    * The job's translated unisex name.
    *
    * @var string
-   * @deprecated since version 0.0.1-dev
    */
   public $name;
 
@@ -125,10 +121,10 @@ SELECT
   `jobs`.`created` AS `created`,
   `jobs`.`deleted` AS `deleted`,
   COLUMN_GET(`jobs`.`dyn_descriptions`, ? AS CHAR) AS `description`,
-  IFNULL(COLUMN_GET(`jobs`.`dyn_names_sex2`, ? AS CHAR), COLUMN_GET(`dyn_names_sex2`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `femaleName`,
   `jobs`.`id` AS `id`,
-  IFNULL(COLUMN_GET(`jobs`.`dyn_names_sex1`, ? AS CHAR), COLUMN_GET(`dyn_names_sex1`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `maleName`,
-  IFNULL(COLUMN_GET(`jobs`.`dyn_names_sex0`, ? AS CHAR), COLUMN_GET(`dyn_names_sex0`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `name`,
+  IFNULL(COLUMN_GET(`jobs`.`dyn_names_sex0`, ? AS CHAR), COLUMN_GET(`dyn_names_sex0`, '{$this->intl->defaultLanguageCode}' AS CHAR)),
+  IFNULL(COLUMN_GET(`jobs`.`dyn_names_sex1`, ? AS CHAR), COLUMN_GET(`dyn_names_sex1`, '{$this->intl->defaultLanguageCode}' AS CHAR)),
+  IFNULL(COLUMN_GET(`jobs`.`dyn_names_sex2`, ? AS CHAR), COLUMN_GET(`dyn_names_sex2`, '{$this->intl->defaultLanguageCode}' AS CHAR)),
   IFNULL(COLUMN_GET(`jobs`.`dyn_wikipedia`, ? AS CHAR), COLUMN_GET(`dyn_wikipedia`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `wikipedia`,
   `jobs`.`count_companies` AS `companyCount`,
   `jobs`.`count_persons` AS `personCount`
@@ -152,10 +148,10 @@ SQL
         $this->created,
         $this->deleted,
         $this->description,
-        $this->femaleName,
         $this->id,
-        $this->maleName,
-        $this->name,
+        $this->names[Sex::UNKNOWN],
+        $this->names[Sex::MALE],
+        $this->names[Sex::FEMALE],
         $this->wikipedia,
         $this->companyCount,
         $this->personCount
@@ -195,9 +191,9 @@ SQL
     $stmt->bind_param(
       "sssss",
       $this->description,
-      $this->name,
-      $this->maleName,
-      $this->femaleName,
+      $this->names[Sex::UNKNOWN],
+      $this->names[Sex::MALE],
+      $this->names[Sex::FEMALE],
       $this->wikipedia
     );
     $stmt->execute();
@@ -212,7 +208,10 @@ SQL
    * @throws \mysqli_sql_exception
    */
   public function create() {
-    $stmt = $this->getMySQLi()->prepare(<<<SQL
+    $mysqli = $this->getMySQLi();
+
+    if ($this->intl->languageCode === $this->intl->defaultLanguageCode) {
+      $stmt = $mysqli->prepare(<<<SQL
 INSERT INTO `jobs` (
   `dyn_descriptions`,
   `dyn_names_sex0`,
@@ -227,18 +226,58 @@ INSERT INTO `jobs` (
   COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?)
 );
 SQL
-    );
-    $stmt->bind_param(
-      "sssss",
-      $this->description,
-      $this->name,
-      $this->maleName,
-      $this->femaleName,
-      $this->wikipedia
-    );
+      );
+      $stmt->bind_param(
+        "sssss",
+        $this->description,
+        $this->names[Sex::UNKNOWN],
+        $this->names[Sex::MALE],
+        $this->names[Sex::FEMALE],
+        $this->wikipedia
+      );
+    }
+    else {
+      $stmt = $mysqli->prepare(<<<SQL
+INSERT INTO `jobs` (
+  `dyn_descriptions`,
+  `dyn_names_sex0`,
+  `dyn_names_sex1`,
+  `dyn_names_sex2`,
+  `dyn_wikipedia`
+) VALUES (
+  COLUMN_CREATE('{$this->intl->languageCode}', ?),
+  COLUMN_CREATE(
+    '{$this->intl->defaultLanguageCode}', ?,
+    '{$this->intl->languageCode}', ?
+  ),
+  COLUMN_CREATE(
+    '{$this->intl->defaultLanguageCode}', ?,
+    '{$this->intl->languageCode}', ?
+  ),
+  COLUMN_CREATE(
+    '{$this->intl->defaultLanguageCode}', ?,
+    '{$this->intl->languageCode}', ?
+  ),
+  COLUMN_CREATE('{$this->intl->languageCode}', ?)
+);
+SQL
+      );
+      $stmt->bind_param(
+        "ssssssss",
+        $this->description,
+        $this->defaultNames[Sex::UNKNOWN],
+        $this->names[Sex::UNKNOWN],
+        $this->defaultNames[Sex::MALE],
+        $this->names[Sex::MALE],
+        $this->defaultNames[Sex::FEMALE],
+        $this->names[Sex::FEMALE],
+        $this->wikipedia
+      );
+    }
+
     $stmt->execute();
     $this->id = $stmt->insert_id;
-    $stmt->close();
+
     return $this->init();
   }
 
@@ -279,6 +318,14 @@ SQL
       "ssd",
       [ $this->intl->languageCode, $this->intl->languageCode, $this->id ]
     )->get_result();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function init() {
+    $this->names[Sex::UNKNOWN] && $this->name = $this->names[Sex::UNKNOWN];
+    return parent::init();
   }
 
 }

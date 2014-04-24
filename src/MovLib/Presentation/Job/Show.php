@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Job;
 
 use \MovLib\Data\Job\Job;
+use \MovLib\Partial\Sex;
 
 /**
  * Presentation of a single job.
@@ -40,12 +41,6 @@ class Show extends \MovLib\Presentation\AbstractShowPresenter {
       ->initPage($this->entity->name)
       ->initShow($this->entity, $this->intl->t("Jobs"), "Job", null, $this->getSidebarItems())
     ;
-    $this->pageTitle .=
-      "<span class='small'>" .
-        " (<span property='alternateName' class='ico ico-sex1 sex sex-1' title='{$this->intl->t("male")}'>{$this->entity->maleName}</span>, " .
-        "<span property='alternateName' class='ico ico-sex2 sex sex-2' title='{$this->intl->t("female")}'>{$this->entity->femaleName}</span>)" .
-      "</span>"
-    ;
     return $this;
   }
 
@@ -53,6 +48,11 @@ class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
+    $this->infoboxBefore .=
+      "<p property='alternateName' class='ico ico-sex1 sex-1' title='{$this->intl->t("male")}'> {$this->entity->names[Sex::MALE]}</p>" .
+      "<p property='alternateName' class='ico ico-sex2 sex-2' title='{$this->intl->t("female")}'> {$this->entity->names[Sex::FEMALE]}</p>"
+    ;
+
     if(!empty($this->entity->description)) {
       return $this->htmlDecode($this->entity->description);
     }
