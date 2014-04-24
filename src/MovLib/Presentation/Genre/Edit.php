@@ -58,20 +58,17 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
   public function getContent() {
     return (new Form($this->diContainerHTTP))
       ->addElement(new InputText($this->diContainerHTTP, "name", $this->intl->t("Name"), $this->entity->name, [
-        "#help-popup" => $this->intl->t("The name of the genre."),
         "placeholder" => $this->intl->t("Enter the genre’s name."),
         "autofocus"   => true,
         "required"    => true,
       ]))
+      ->addElement(new TextareaHTML($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
+        "placeholder" => $this->intl->t("Describe the genre."),
+      ], [ "blockquote", "external", "headings", "lists", ]))
       ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
-        "#help-popup"         => $this->intl->t("Link to a corresponding Wikipedia Page."),
         "placeholder"         => $this->intl->t("Enter the genre’s corresponding Wikipedia link."),
         "data-allow-external" => "true",
       ]))
-      ->addElement(new TextareaHTML($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
-        "#help-popup" => $this->intl->t("Description of the genre."),
-        "placeholder" => $this->intl->t("Describe the genre."),
-      ], [ "blockquote", "external", "headings", "lists", ]))
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
       ->init([ $this, "valid" ])
     ;

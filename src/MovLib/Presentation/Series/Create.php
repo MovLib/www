@@ -27,7 +27,7 @@ use \MovLib\Partial\FormElement\TextareaHTML;
 use \MovLib\Partial\Language;
 
 /**
- * Allows editing of a series's information.
+ * Allows creating a series.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
