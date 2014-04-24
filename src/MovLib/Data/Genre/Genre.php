@@ -49,6 +49,13 @@ final class Genre extends \MovLib\Data\AbstractEntity {
   public $created;
 
   /**
+   * The genre's name in default language.
+   *
+   * @var string
+   */
+  public $defaultName;
+
+  /**
    * The genre's deletion state.
    *
    * @var boolean
@@ -96,6 +103,16 @@ final class Genre extends \MovLib\Data\AbstractEntity {
    * @var null|integer
    */
   public $seriesCount;
+
+  /**
+   * {@inheritdoc}
+   */
+  public $pluralKey = "genres";
+
+  /**
+   * {@inheritdoc}
+   */
+  public $singularKey = "genre";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -186,12 +203,63 @@ SQL
   }
 
   /**
-   * {@inheritdoc}
+   * Create new genre.
+   *
+   * @return this
+   * @throws \mysqli_sql_exception
    */
-  protected function init() {
-    $this->pluralKey   = "genres";
-    $this->singularKey = "genre";
-    return parent::init();
+  public function create() {
+    $mysqli = $this->getMySQLi();
+
+    if ($this->intl->languageCode === $this->intl->defaultLanguageCode) {
+      $stmt = $mysqli->prepare(<<<SQL
+INSERT INTO `genres` (
+  `dyn_descriptions`,
+  `dyn_names`,
+  `dyn_wikipedia`
+) VALUES (
+  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
+  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
+  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?)
+);
+SQL
+      );
+      $stmt->bind_param(
+        "sss",
+        $this->description,
+        $this->name,
+        $this->wikipedia
+      );
+    }
+    else {
+      $stmt = $mysqli->prepare(<<<SQL
+INSERT INTO `genres` (
+  `dyn_descriptions`,
+  `dyn_names`,
+  `dyn_wikipedia`
+) VALUES (
+  COLUMN_CREATE('{$this->intl->languageCode}', ?),
+  COLUMN_CREATE(
+    '{$this->intl->defaultLanguageCode}', ?,
+    '{$this->intl->languageCode}', ?
+  ),
+  COLUMN_CREATE('{$this->intl->languageCode}', ?)
+);
+SQL
+      );
+      $stmt->bind_param(
+        "ssss",
+        $this->description,
+        $this->defaultName,
+        $this->name,
+        $this->wikipedia
+      );
+    }
+
+    $stmt->execute();
+    $this->id = $stmt->insert_id;
+
+    return $this->init();
   }
 
 }
