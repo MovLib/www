@@ -83,7 +83,7 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
         "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/...",
         "data-allow-external" => "true",
       ]))
-      ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
+      ->addAction($this->intl->t("Create"), [ "class" => "btn btn-large btn-success" ])
       ->init([ $this, "valid" ])
     ;
     return

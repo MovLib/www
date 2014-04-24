@@ -285,14 +285,16 @@ SQL
   /**
    * Create new series.
    *
-   * @return this
+   * @return boolean
+   *   Returns <var>true</var> if create was successful, otherwise <var>false</var>.
    * @throws \mysqli_sql_exception
    */
   public function create() {
     $mysqli = $this->getMySQLi();
     $mysqli->autocommit(FALSE);
 
-    $stmtSeries = $mysqli->prepare(<<<SQL
+    try {
+      $stmtSeries = $mysqli->prepare(<<<SQL
 INSERT INTO `series` (
   `dyn_synopses`,
   `dyn_wikipedia`,
@@ -301,49 +303,43 @@ INSERT INTO `series` (
   `status`
 ) VALUES (COLUMN_CREATE('{$this->intl->languageCode}', ?), COLUMN_CREATE('{$this->intl->languageCode}', ?), ?, ?, ?)
 SQL
-    );
-    $stmtSeries->bind_param(
-      "ssddi",
-      $this->synopsis,
-      $this->wikipedia,
-      $this->endYear->year,
-      $this->startYear->year,
-      $this->status
-    );
-    $stmtSeries->execute();
-    $this->id = $stmtSeries->insert_id;
+      );
+      $stmtSeries->bind_param(
+        "ssddi",
+        $this->synopsis,
+        $this->wikipedia,
+        $this->endYear->year,
+        $this->startYear->year,
+        $this->status
+      );
+      $stmtSeries->execute();
+      $this->id = $stmtSeries->insert_id;
 
-    $stmtSeriesTitles = $mysqli->prepare(
-      "INSERT INTO `series_titles` (`series_id`, `dyn_comments`, `language_code`, `title`) VALUES (?, '', ?, ?)"
-    );
-    $stmtSeriesTitles->bind_param(
-      "dss",
-      $this->id,
-      $this->originalTitleLanguageCode,
-      $this->originalTitle
-    );
-    $stmtSeriesTitles->execute();
-    $seriesTitleId = $stmtSeriesTitles->insert_id;
+      $stmtTitle = $mysqli->prepare(
+        "INSERT INTO `series_titles` (`series_id`, `dyn_comments`, `language_code`, `title`) VALUES (?, '', ?, ?)"
+      );
+      $stmtTitle->bind_param(
+        "dss",
+        $this->id,
+        $this->originalTitleLanguageCode,
+        $this->originalTitle
+      );
+      $stmtTitle->execute();
+      $titleId = $stmtTitle->insert_id;
 
-    $stmtSeriesOriginalTitles = $mysqli->prepare(
-      "INSERT INTO `series_original_titles` (`title_id`, `series_id`) VALUES (?, ?)"
-    );
-    $stmtSeriesOriginalTitles->bind_param(
-      "dd",
-      $seriesTitleId,
-      $this->id
-    );
-    $stmtSeriesOriginalTitles->execute();
-
-    if ($stmtSeries && $stmtSeriesTitles && $stmtSeriesOriginalTitles) {
+      $mysqli->query(
+        "INSERT INTO `series_original_titles` (`title_id`, `series_id`) VALUES ({$titleId}, {$this->id})"
+      );
       $mysqli->commit();
     }
-    else {
+    catch (\Exception $e) {
       $mysqli->rollback();
+      throw $e;
     }
-
-    $mysqli->autocommit(TRUE);
-    $mysqli->close();
+    finally {
+      $mysqli->autocommit(TRUE);
+      $mysqli->close();
+    }
 
     return $this->init();
   }
