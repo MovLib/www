@@ -36,14 +36,13 @@ class Charts extends \MovLib\Presentation\AbstractPresenter {
    */
   public function init() {
     $this->set = new SeriesSet($this->diContainerHTTP);
-    $this->initPage($this->intl->t("Series Charts"));
-    $this->initBreadcrumb([ [ $this->intl->rp("/series"), $this->intl->tp("Series") ] ]);
-    $this->breadcrumbTitle = $this->intl->t("Charts");
+    $this->initPage($this->intl->t("Series Charts"), null, $this->intl->t("Charts"));
+    $this->initBreadcrumb([ [ $this->intl->r("/series"), $this->intl->tp("Series") ] ]);
     $this->initLanguageLinks("/series/charts");
     $this->sidebarInit([
       [ $this->set->route, $this->title, [ "class" => "ico ico-{$this->set->singularKey}" ] ],
-      [ $this->intl->r("/{$this->set->singularKey}/random"), $this->intl->t("Random") ],
-      [ $this->intl->rp("/{$this->set->singularKey}/charts"), $this->intl->t("Charts") ],
+      [ $this->intl->r("/{$this->set->singularKey}/random"), $this->intl->t("Random"), [ "class" => "ico ico-random" ] ],
+      [ $this->intl->r("/{$this->set->pluralKey}/charts"), $this->intl->t("Charts"), [ "class" => "ico ico-chart" ] ],
     ]);
   }
 
@@ -51,7 +50,7 @@ class Charts extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("series charts"));
+    return $this->checkBackLater($this->title);
   }
 
 }

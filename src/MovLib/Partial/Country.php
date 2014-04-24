@@ -138,7 +138,7 @@ final class Country extends \MovLib\Core\Presentation\DependencyInjectionBase {
           $list .= $comma;
         }
         $list .=
-          "<a href='{$this->intl->rp("/country/{country_code}/movies", [ "country_code" => $country->code ])}'{$property} typeof='Country'>" .
+          "<a href='{$this->intl->r("/country/{0}/movies", $country->code)}'{$property} typeof='Country'>" .
             "<span property='name'>{$country->name}</span>" .
           "</a>"
         ;

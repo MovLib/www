@@ -43,7 +43,7 @@ trait CategoryTrait {
       [ "company separator", "companies", $this->intl->t("Companies"), $this->entity->companyCount ],
     ] as list($icon, $plural, $title, $count)) {
       $items[] = [
-        $this->intl->rp("/award/{0}/category/{1}/{$plural}", [ $this->entity->award->id, $this->entity->id ]),
+        $this->intl->r("/award/{0}/category/{1}/{$plural}", [ $this->entity->award->id, $this->entity->id ]),
         "{$title} <span class='fr'>{$this->intl->format("{0,number}", $count)}</span>",
         [ "class" => "ico ico-{$icon}" ]
       ];
@@ -58,9 +58,9 @@ trait CategoryTrait {
    */
   protected function getBreadCrumbs() {
     return [
-      [ $this->intl->rp("/awards"), $this->intl->t("Awards") ],
+      [ $this->intl->r("/awards"), $this->intl->t("Awards") ],
       [ $this->intl->r("/award/{0}/", [ $this->entity->award->id ]), $this->entity->award->name ],
-      [ $this->intl->rp("/award/{0}/categories", [ $this->entity->award->id ]), $this->intl->t("Categories") ],
+      [ $this->intl->r("/award/{0}/categories", [ $this->entity->award->id ]), $this->intl->t("Categories") ],
       [ $this->entity->route, $this->entity->name ]
     ];
   }

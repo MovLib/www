@@ -54,7 +54,7 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return (new Form($this->diContainerHTTP))
+    $form = (new Form($this->diContainerHTTP))
       ->addElement(new InputText($this->diContainerHTTP, "name", $this->intl->t("Name"), $this->entity->name, [
         "#help-popup" => $this->intl->t("The name of the company."),
         "placeholder" => $this->intl->t("Enter the company’s name."),
@@ -65,11 +65,12 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
         "#help-popup" => $this->intl->t("The alternative names of the company, line by line."),
         "placeholder" => $this->intl->t("Enter the company’s alternative names here, line by line."),
       ]))
-      ->addElement(new InputDateSeparate($this->diContainerHTTP, "foundingDate", $this->intl->t("Founding Date"), $this->entity->foundingDate, [
+      ->addElement(new InputDateSeparate($this->diContainerHTTP, "founding-date", $this->intl->t("Founding Date"), $this->entity->foundingDate, [
         "#help-popup" => $this->intl->t("The founding date of the company."),
-      ], [
-        "year_max" => date("Y"),
-        "year_min" => 1900
+        "required"    => true,
+      ]))
+      ->addElement(new InputDateSeparate($this->diContainerHTTP, "defunct-date", $this->intl->t("Defunct Date"), $this->entity->defunctDate, [
+        "#help-popup" => $this->intl->t("The defunct date of the company."),
       ]))
       ->addElement(new TextareaHTML($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
         "#help-popup" => $this->intl->t("Description of the company."),
@@ -86,6 +87,16 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
       ]))
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
       ->init([ $this, "valid" ])
+    ;
+    return
+      $form->open() .
+      $form->elements["name"] .
+      $form->elements["aliases"] .
+      "<div class='r'><div class='s s5'>{$form->elements["founding-date"]}</div><div class='s s5'>{$form->elements["defunct-date"]}</div></div>" .
+      $form->elements["description"] .
+      $form->elements["wikipedia"] .
+      $form->elements["links"] .
+      $form->close()
     ;
   }
 

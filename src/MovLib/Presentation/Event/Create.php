@@ -35,7 +35,7 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
    */
   public function init() {
     $this->initPage($this->intl->t("Create Event"));
-    $this->initBreadcrumb([ [ $this->intl->rp("/events"), $this->intl->t("Events") ] ]);
+    $this->initBreadcrumb([ [ $this->intl->r("/events"), $this->intl->t("Events") ] ]);
     $this->breadcrumbTitle = $this->intl->t("Create");
     $this->initLanguageLinks("/event/create");
   }

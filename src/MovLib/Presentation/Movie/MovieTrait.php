@@ -85,7 +85,7 @@ trait MovieTrait {
       $title = $this->intl->t("{0} ({1})", [ $title, (new Date($this->intl, $this))->formatYear(
         $movie->year,
         [ "property" => "datePublished" ],
-        $linkYear ? [ "href" => $this->intl->rp("/year/{0}/movies", $movie->year->year) ] : null
+        $linkYear ? [ "href" => $this->intl->r("/year/{0}/movies", $movie->year->year) ] : null
       ) ]);
     }
     if ($linkTitle) {

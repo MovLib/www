@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Series;
 
+use \MovLib\Data\Series\Series;
 use \MovLib\Partial\Date;
 
 /**
@@ -29,6 +30,7 @@ use \MovLib\Partial\Date;
  * @since 0.0.1-dev
  */
 trait SeriesTrait {
+
 
   /**
    * {@inheritdoc}
@@ -44,12 +46,41 @@ trait SeriesTrait {
       [ "release separator", "releases", $this->intl->t("Releases"), $this->entity->releaseCount ],
     ] as list($icon, $plural, $title, $count)) {
       $items[] = [
-        $this->intl->rp("/series/{0}/{$plural}", $this->entity->id),
+        $this->intl->r("/series/{0}/{$plural}", $this->entity->id),
         "{$title} <span class='fr'>{$this->intl->format("{0,number}", $count)}</span>",
         [ "class" => "ico ico-{$icon}" ]
       ];
     }
     return $items;
+  }
+
+  /**
+   * Get the series's status.
+   *
+   * @return string|null
+   *   The series's translated status or null.
+   */
+  final protected function getStatus() {
+    $status = $this->getStatusArray();
+    if (isset($this->entity->status) && isset($status[$this->entity->status])) {
+      return $status[$this->entity->status];
+    }
+  }
+
+    /**
+   * Get the series's status array.
+   *
+   * @return array
+   *   Associative array with series status codes.
+   */
+  final protected function getStatusArray() {
+    return [
+      Series::STATUS_UNKNOWN   => $this->intl->t("Unknown"),
+      Series::STATUS_NEW       => $this->intl->t("New"),
+      Series::STATUS_RETURNING => $this->intl->t("Returning"),
+      Series::STATUS_ENDED     => $this->intl->t("Ended"),
+      Series::STATUS_CANCELLED => $this->intl->t("Cancelled"),
+    ];
   }
 
   /**
@@ -73,12 +104,12 @@ trait SeriesTrait {
         (new Date($this->intl, $this))->formatYear(
           $series->startYear,
           [ "property" => "startDate" ],
-          $linkYears ? [ "href" => $this->intl->rp("/year/{0}/series", $series->startYear->year) ] : null
+          $linkYears ? [ "href" => $this->intl->r("/year/{0}/series", $series->startYear->year) ] : null
         ),
         (new Date($this->intl, $this))->formatYear(
           $series->endYear,
           [ "property" => "startDate" ],
-          $linkYears ? [ "href" => $this->intl->rp("/year/{0}/series", $series->endYear->year) ] : null
+          $linkYears ? [ "href" => $this->intl->r("/year/{0}/series", $series->endYear->year) ] : null
         )
       ]);
     }
@@ -86,7 +117,7 @@ trait SeriesTrait {
       $title = $this->intl->t("{0} ({1})", [ $title, (new Date($this->intl, $this))->formatYear(
         $series->startYear,
         [ "property" => "startDate" ],
-        $linkYears ? [ "href" => $this->intl->rp("/year/{0}/series", $series->startYear->year) ] : null
+        $linkYears ? [ "href" => $this->intl->r("/year/{0}/series", $series->startYear->year) ] : null
       ) ]);
     }
     if ($linkTitle) {

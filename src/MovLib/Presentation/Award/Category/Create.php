@@ -42,9 +42,9 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
     $award = new Award($this->diContainerHTTP, $_SERVER["AWARD_ID"]);
     $this->initPage($this->intl->t("Create"));
     $this->initBreadcrumb([
-      [ $this->intl->rp("/awards"), $this->intl->t("Awards") ],
+      [ $this->intl->r("/awards"), $this->intl->t("Awards") ],
       [ $this->intl->r("/award/{0}/", [ $award->id ]), $award->name ],
-      [ $this->intl->rp("/award/{0}/categories", [ $award->id ]), $this->intl->t("Categories") ],
+      [ $this->intl->r("/award/{0}/categories", [ $award->id ]), $this->intl->t("Categories") ],
     ]);
     $this->breadcrumbTitle = $this->intl->t("Create");
     $this->initLanguageLinks("/award/{0}/category/create", $award->id);

@@ -6,8 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MovLib Messages 0.0.1-dev\n"
-"Report-Msgid-Bugs-To: https://github.com/MovLib/www/issues?"
-"labels=translation\n"
+"Report-Msgid-Bugs-To: https://github.com/MovLib/www/issues?labels=translation\n"
 "POT-Creation-Date: 2014-04-17 15:03+0000\n"
 "PO-Revision-Date: 2014-04-24 10:40+0100\n"
 "Last-Translator: Sebastian Geschke <sebastian.geschke@gmail.com>\n"
@@ -164,7 +163,6 @@ msgstr "Die {0}-Funktion wurde noch nicht implementiert."
 
 #: /src/MovLib/Core/Presentation/DependencyInjectionBase.php:202
 #: /src/MovLib/Presentation/Movie/History.php:47
-#: /src/MovLib/Presentation/Movie/Charts.php:59
 #: /src/MovLib/Presentation/Movie/Backdrop/History.php:35
 #: /src/MovLib/Presentation/Movie/Backdrop/Edit.php:35
 #: /src/MovLib/Presentation/Movie/Backdrop/Discussion.php:35
@@ -504,55 +502,55 @@ msgstr ""
 msgid "Disallowed CSS classes in “{label}” text, allowed values are: {classes}"
 msgstr ""
 
-#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:126
+#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:140
 msgid "yyyy"
 msgstr "yyyy"
 
-#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:135
+#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:149
 msgid "mm"
 msgstr "MM"
 
-#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:144
+#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:158
 msgid "dd"
 msgstr "DD"
 
-#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:153
+#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:167
 msgid "Year"
 msgstr "Jahr"
 
-#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:154
+#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:168
 msgid "Month"
 msgstr "Monat"
 
-#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:155
+#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:169
 msgid "Day"
 msgstr "Tag"
 
-#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:220
+#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:240
 msgid "Month and Year are mandatory in “{0}” date."
 msgstr "Monat und Jahr werden in “{0}” benötigt"
 
-#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:225
+#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:245
 msgid "Year is mandatory in “{0}” date."
 msgstr "Jahr wird in “{0}” benötigt."
 
-#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:230
+#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:250
 msgid "The year {0} must not be greater than {1}."
 msgstr ""
 
-#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:234
+#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:254
 msgid "The year {0} must not be less than {1}."
 msgstr ""
 
-#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:243
+#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:263
 msgid "The “{0}” date is invalid."
 msgstr "Das Datum  “{0}” ist ungültig."
 
-#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:249
+#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:269
 msgid "The month {0} must not be greater than {1}."
 msgstr ""
 
-#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:253
+#: /src/MovLib/Partial/FormElement/InputDateSeparate.php:273
 msgid "The month {0} must not be less than {1}."
 msgstr ""
 
@@ -742,7 +740,7 @@ msgstr ""
 #: /src/MovLib/Partial/Listing/AwardMovieListing.php:58
 #: /src/MovLib/Partial/Listing/CompanyMovieListing.php:58
 #: /src/MovLib/Presentation/Movie/Index.php:94
-#: /src/MovLib/Presentation/Person/Movies.php:72
+#: /src/MovLib/Presentation/Person/Movies.php:120
 msgid "No Movies"
 msgstr ""
 
@@ -881,8 +879,8 @@ msgstr ""
 msgid "Secondary Navigation"
 msgstr ""
 
-#: /src/MovLib/Partial/SidebarTrait.php:148
-#: /src/MovLib/Partial/SidebarTrait.php:155
+#: /src/MovLib/Partial/SidebarTrait.php:142
+#: /src/MovLib/Partial/SidebarTrait.php:149
 #: /src/MovLib/Presentation/AbstractShowPresenter.php:96
 #: /src/MovLib/Presentation/AbstractShowPresenter.php:102
 #: /src/MovLib/Presentation/Movie/AbstractBase.php:67
@@ -890,8 +888,8 @@ msgstr ""
 msgid "View"
 msgstr "Ansehen"
 
-#: /src/MovLib/Partial/SidebarTrait.php:149
-#: /src/MovLib/Partial/SidebarTrait.php:157
+#: /src/MovLib/Partial/SidebarTrait.php:143
+#: /src/MovLib/Partial/SidebarTrait.php:151
 #: /src/MovLib/Presentation/AbstractShowPresenter.php:97
 #: /src/MovLib/Presentation/AbstractShowPresenter.php:104
 #: /src/MovLib/Presentation/Movie/AbstractBase.php:68
@@ -901,8 +899,8 @@ msgstr "Ansehen"
 msgid "Discuss"
 msgstr "Diskutieren"
 
-#: /src/MovLib/Partial/SidebarTrait.php:150
-#: /src/MovLib/Partial/SidebarTrait.php:158
+#: /src/MovLib/Partial/SidebarTrait.php:144
+#: /src/MovLib/Partial/SidebarTrait.php:152
 #: /src/MovLib/Presentation/Job/History.php:57
 #: /src/MovLib/Presentation/Award/History.php:57
 #: /src/MovLib/Presentation/Award/Category/History.php:57
@@ -920,7 +918,7 @@ msgstr "Diskutieren"
 msgid "History"
 msgstr "Geschichte"
 
-#: /src/MovLib/Partial/SidebarTrait.php:156
+#: /src/MovLib/Partial/SidebarTrait.php:150
 #: /src/MovLib/Presentation/Job/Edit.php:50
 #: /src/MovLib/Presentation/Award/Edit.php:47
 #: /src/MovLib/Presentation/Award/Category/Edit.php:57
@@ -937,7 +935,7 @@ msgstr "Geschichte"
 msgid "Edit"
 msgstr "Bearbeiten"
 
-#: /src/MovLib/Partial/SidebarTrait.php:159
+#: /src/MovLib/Partial/SidebarTrait.php:153
 #: /src/MovLib/Presentation/Job/Delete.php:57
 #: /src/MovLib/Presentation/Profile/DangerZone.php:109
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:82
@@ -1240,7 +1238,7 @@ msgstr ""
 #: /src/MovLib/Presentation/Person/AbstractBase.php:80
 #: /src/MovLib/Presentation/Person/History.php:42
 #: /src/MovLib/Presentation/Person/Index.php:49
-#: /src/MovLib/Presentation/Person/AbstractPersonPresenter.php:79
+#: /src/MovLib/Presentation/Person/AbstractPersonPresenter.php:75
 #: /src/MovLib/Presentation/Person/Edit.php:42
 #: /src/MovLib/Presentation/Person/Discussion.php:42
 #: /src/MovLib/Presentation/Person/Photo/Show.php:42
@@ -2314,7 +2312,6 @@ msgstr ""
 #: /src/MovLib/Presentation/Series/Awards.php:57
 #: /src/MovLib/Presentation/AbstractPresenter.php:541
 #: /src/MovLib/Presentation/Person/Index.php:80
-#: /src/MovLib/Presentation/Person/AbstractPersonPresenter.php:96
 msgid "Awards"
 msgstr "Auszeichnungen"
 
@@ -2355,12 +2352,11 @@ msgstr ""
 #: /src/MovLib/Presentation/Search/Show.php:156
 #: /src/MovLib/Presentation/Movie/AbstractBase.php:55
 #: /src/MovLib/Presentation/Movie/Index.php:49
-#: /src/MovLib/Presentation/Movie/Charts.php:39
+#: /src/MovLib/Presentation/Movie/Charts.php:37
 #: /src/MovLib/Presentation/Movie/Show.php:53
 #: /src/MovLib/Presentation/Person/AbstractBase.php:112
 #: /src/MovLib/Presentation/Person/Index.php:77
-#: /src/MovLib/Presentation/Person/Movies.php:54
-#: /src/MovLib/Presentation/Person/AbstractPersonPresenter.php:93
+#: /src/MovLib/Presentation/Person/Movies.php:45
 #: /src/MovLib/Presentation/Genre/Index.php:58
 #: /src/MovLib/Presentation/Genre/Movies.php:57
 #: /src/MovLib/Presentation/Genre/GenreTrait.php:40
@@ -2394,7 +2390,7 @@ msgstr "Filme"
 #: /src/MovLib/Presentation/AbstractPresenter.php:537
 #: /src/MovLib/Presentation/Person/AbstractBase.php:113
 #: /src/MovLib/Presentation/Person/Index.php:78
-#: /src/MovLib/Presentation/Person/AbstractPersonPresenter.php:94
+#: /src/MovLib/Presentation/Person/AbstractPersonPresenter.php:90
 #: /src/MovLib/Presentation/Genre/Index.php:59
 #: /src/MovLib/Presentation/Genre/Series.php:58
 #: /src/MovLib/Presentation/Genre/GenreTrait.php:41
@@ -2748,7 +2744,6 @@ msgstr "Staffel"
 #: /src/MovLib/Presentation/Release/Index.php:48
 #: /src/MovLib/Presentation/Person/AbstractBase.php:114
 #: /src/MovLib/Presentation/Person/Index.php:79
-#: /src/MovLib/Presentation/Person/AbstractPersonPresenter.php:95
 #: /src/MovLib/Presentation/Home.php:65
 msgid "Releases"
 msgstr "Veröffentlichungen"
@@ -2784,22 +2779,18 @@ msgstr ""
 msgid "Series Charts"
 msgstr ""
 
-#: /src/MovLib/Presentation/Series/Charts.php:41
-#: /src/MovLib/Presentation/Series/Charts.php:46
-#: /src/MovLib/Presentation/Movie/Charts.php:40
+#: /src/MovLib/Presentation/Series/Charts.php:39
+#: /src/MovLib/Presentation/Series/Charts.php:45
+#: /src/MovLib/Presentation/Movie/Charts.php:36
 #: /src/MovLib/Presentation/AbstractIndexPresenter.php:83
 msgid "Charts"
 msgstr "Charts"
 
-#: /src/MovLib/Presentation/Series/Charts.php:45
+#: /src/MovLib/Presentation/Series/Charts.php:44
 #: /src/MovLib/Presentation/AbstractIndexPresenter.php:82
 #: /src/MovLib/Presentation/User/Index.php:53
 msgid "Random"
 msgstr "Zufällig"
-
-#: /src/MovLib/Presentation/Series/Charts.php:54
-msgid "series charts"
-msgstr ""
 
 #: /src/MovLib/Presentation/Series/Edit.php:72
 #, fuzzy
@@ -3351,12 +3342,8 @@ msgstr ""
 msgid "Would you like to {0}create a movie{1}?"
 msgstr ""
 
-#: /src/MovLib/Presentation/Movie/Charts.php:38
+#: /src/MovLib/Presentation/Movie/Charts.php:36
 msgid "Movie Charts"
-msgstr ""
-
-#: /src/MovLib/Presentation/Movie/Charts.php:58
-msgid "The movies charts feature isn’t implemented yet."
 msgstr ""
 
 #: /src/MovLib/Presentation/Movie/Backdrop/History.php:35
@@ -3729,16 +3716,36 @@ msgstr ""
 msgid "No Persons"
 msgstr ""
 
-#: /src/MovLib/Presentation/Person/Movies.php:52
-#: /src/MovLib/Presentation/Person/Movies.php:53
-#, fuzzy
-#| msgid "Movies with {0}"
+#: /src/MovLib/Presentation/Person/Movies.php:43
+#: /src/MovLib/Presentation/Person/Movies.php:44
 msgid "Movies with {name}"
-msgstr "Filme mit {0}"
+msgstr "Filme mit {name}"
 
-#: /src/MovLib/Presentation/Person/Movies.php:71
+#: /src/MovLib/Presentation/Person/Movies.php:86
+msgid "{job} as {roles}"
+msgstr ""
+
+#: /src/MovLib/Presentation/Person/Movies.php:119
 msgid "We couldn’t find any movies this person has worked on."
 msgstr ""
+
+#: /src/MovLib/Presentation/Person/AbstractPersonPresenter.php:89
+#, fuzzy
+#| msgid "{0,plural,one{Series}other{Series}}"
+msgid "{0,plural,one{Movies}other{Movies}}"
+msgstr "{0,plural,one{Serie}other{Serien}}"
+
+#: /src/MovLib/Presentation/Person/AbstractPersonPresenter.php:91
+#, fuzzy
+#| msgid "{0,plural,one{Series}other{Series}}"
+msgid "{0,plural,one{Releases}other{Releases}}"
+msgstr "{0,plural,one{Serie}other{Serien}}"
+
+#: /src/MovLib/Presentation/Person/AbstractPersonPresenter.php:92
+#, fuzzy
+#| msgid "{0,plural,one{Series}other{Series}}"
+msgid "{0,plural,one{Awards}other{Awards}}"
+msgstr "{0,plural,one{Serie}other{Serien}}"
 
 #: /src/MovLib/Presentation/Person/Edit.php:50
 msgid "edit person"
@@ -3890,7 +3897,7 @@ msgid "Died"
 msgstr ""
 
 #: /src/MovLib/Presentation/Person/Show.php:144
-msgid "{sitename} doesnâ€™t have further details about this person."
+msgid "{sitename} doesn’t have further details about this person."
 msgstr ""
 
 #: /src/MovLib/Presentation/Person/Show.php:146
@@ -4084,6 +4091,10 @@ msgstr ""
 #| msgid "Deletion Requests"
 msgid "deletion request"
 msgstr "Löschanträge"
+
+#: /src/MovLib/Presentation/Dashboard.php:41
+msgid "Dashboard"
+msgstr ""
 
 #: /src/MovLib/Presentation/User/AbstractUserPresenter.php:61
 #: /src/MovLib/Presentation/User/AbstractUserPresenter.php:70

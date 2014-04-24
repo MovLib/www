@@ -31,15 +31,15 @@ abstract class MoviePerson {
   /**
    * The movie's person.
    *
-   * @var \MovLib\Data\Person\FullPerson
+   * @var \MovLib\Data\Person\Person
    */
   public $person;
 
   /**
-   * Numeric array with the roles as {@see \MovLib\Stub\Data\Person\PersonRole} objects.
+   * The person's cast set.
    *
-   * @var array
+   * @var \MovLib\Data\Cast\CastSet
    */
-  public $roles;
+  public $castSet;
 
 }

@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Movie\Poster;
 
+use \MovLib\Data\Movie\PosterSet;
+
 /**
  * Defines the movie poster index presentation.
  *
@@ -26,13 +28,60 @@ namespace MovLib\Presentation\Movie\Poster;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Index extends \MovLib\Presentation\AbstractIndexPresenter {
+final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
 
   /**
    * {@inheritdoc}
    */
-  protected function formatListingItem(\MovLib\Data\AbstractEntity $item, $delta) {
+  public function init() {
+    $this->initIndex(
+      new PosterSet($this->diContainerHTTP, $_SERVER["MOVIE_ID"]),
+      $this->intl->t("Posters"),
+      $this->intl->t("Upload New Poster")
+    );
+    $this->breadcrumb->addCrumb($this->set->route, $this->intl->t("Movies"));
+    $this->breadcrumb->addCrumb($this->intl->r("/movie/{0}", $_SERVER["MOVIE_ID"]), $this->intl->t("Movie"));
+    return $this;
+  }
 
+  /**
+   * {@inheritdoc}
+   */
+  protected function formatListingItem(\MovLib\Data\AbstractEntity $poster, $delta) {
+    /* @var $poster \MovLib\Data\Movie\Poster */
+    $return =
+      "<li class='mb20 s s2 tac'>" .
+        "<a class='no-link' href='{$poster->route}' typeof='ImageObject'>" .
+          $this->img($poster->imageGetStyle(), [ "property" => "thumbnail" ], false) .
+          $this->intl->t("{width} × {height}", [
+            "width"  => "<span property='width'>{$poster->imageWidth}<span class='vh'> px</span></span>",
+            "height" => "<span property='height'>{$poster->imageHeight}<span class='vh'> px</span></span>",
+          ]) .
+        "</a>" .
+      "</li>"
+    ;
+    $styles = new \ReflectionProperty($poster, "imageStyles");
+    $styles->setAccessible(true);
+    $styles = $styles->getValue($poster);
+    if (!is_array($styles)) {
+      $styles = unserialize($styles);
+    }
+    ob_start();
+    print_r($styles);
+    $styles = ob_get_clean();
+    return "{$return}<li class='mb20 s s8 tal'><pre>{$styles}</pre></li>";
+  }
+
+  /**
+   * Get the listing.
+   *
+   * @param string $items
+   *   The formatted listing's items.
+   * @return string
+   *   The listing.
+   */
+  protected function getListing($items) {
+    return "<ol class='grid-list no-list r'>{$items}</ol>";
   }
 
   /**
@@ -44,13 +93,6 @@ class Index extends \MovLib\Presentation\AbstractIndexPresenter {
       $this->intl->t("No Posters"),
       "info"
     );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-    $this->initIndex(new \MovLib\Stub\Data\Dummy\DummySet($this->diContainerHTTP), $this->intl->t("Posters"), null);
   }
 
 }

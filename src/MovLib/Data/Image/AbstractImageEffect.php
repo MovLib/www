@@ -19,6 +19,7 @@ namespace MovLib\Data\Image;
 
 use \MovLib\Core\FileSystem;
 use \MovLib\Core\Shell;
+use \MovLib\Exception\FileSystemException;
 
 /**
  * Defines the base class for all image effects.
@@ -48,6 +49,21 @@ abstract class AbstractImageEffect {
    * @var string
    */
   protected $styleName;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+
+  /**
+   * Called if this object is serialized.
+   *
+   * @return array
+   *   Array containing the names of the propertyies that should be serialized.
+   */
+  public function __sleep() {
+    return [ "styleName" ];
+  }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
@@ -99,7 +115,13 @@ abstract class AbstractImageEffect {
     if (!$shell) {
       $shell = new Shell();
     }
-    return $this->convert($shell, $fs->realpath($source), $fs->realpath($destination));
+    if (!($source = $fs->realpath($source))) {
+      throw new FileSystemException("Couldn't generate real path for source file '{$source}'!");
+    }
+    if (!($destination = $fs->realpath($destination))) {
+      throw new FileSystemException("Couldn't generate real path for destination file '{$destination}'!");
+    }
+    return $this->convert($shell, $source, $destination);
   }
 
 }

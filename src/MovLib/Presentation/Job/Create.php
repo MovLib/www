@@ -60,7 +60,7 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
   public function init() {
     $this->entity = new Job($this->diContainerHTTP);
     $this->initPage($this->intl->t("Create Job"));
-    $this->initBreadcrumb([ [ $this->intl->rp("/jobs"), $this->intl->t("Jobs") ] ]);
+    $this->initBreadcrumb([ [ $this->intl->r("/jobs"), $this->intl->t("Jobs") ] ]);
     $this->breadcrumbTitle = $this->intl->t("Create");
     $this->initLanguageLinks("/job/create");
   }

@@ -41,7 +41,7 @@ class Releases extends \MovLib\Presentation\AbstractIndexPresenter {
 //    $this->initPage($this->intl->t("Releases with {0}", [ $this->person->name ]));
 //    $this->pageTitle        = $this->intl->t("Releases with {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
 //    $this->breadcrumbTitle  = $this->intl->t("Releases");
-//    $this->initLanguageLinks($this->intl->rp("/person/{0}/releases"), [ $this->person->id ], true);
+//    $this->initLanguageLinks($this->intl->r("/person/{0}/releases"), [ $this->person->id ], true);
 //    $this->initPersonBreadcrumb();
 //    $this->sidebarInit();
     // @todo: Replace with the real set!

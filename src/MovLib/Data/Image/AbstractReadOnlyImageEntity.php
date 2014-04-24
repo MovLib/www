@@ -165,6 +165,23 @@ abstract class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
 
 
   /**
+   * {@inheritdoc}
+   */
+  protected function init() {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    foreach ([ "AlternativeText", "Directory" ] as $property) {
+      $property = "image{$property}";
+      assert(!empty($this->$property), "You must set the \${$property} property in your class " . static::class . ".");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    $this->imageExists = (boolean) $this->imageCacheBuster;
+    $this->imageStyles && ($this->imageStyles = unserialize($this->imageStyles));
+    return parent::init();
+  }
+
+  /**
    * Generate image styles.
    *
    * @return this
@@ -209,7 +226,7 @@ abstract class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
 
     // Check if the image exists.
     if ($this->imageCacheBuster) {
-      if (!isset($this->imageStyles[$style]) || !is_file($this->imageGetStyleURI($style))) {
+      if (empty($this->imageStyles[$style]) || !is_file($this->imageGetStyleURI($style))) {
         $this->log->warning("Generating all image styles because file is missing from storage!");
         $this->imageGenerateStyles()->imageSaveStyles();
       }
@@ -252,23 +269,6 @@ abstract class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
    */
   final protected function imageGetURI() {
     return str_replace("upload://", "dr://var/lib/uploads/", "{$this->imageDirectory}/{$this->imageFilename}.{$this->imageExtension}");
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function init() {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    foreach ([ "AlternativeText", "Directory" ] as $property) {
-      $property = "image{$property}";
-      assert(!empty($this->$property), "You must set the \${$property} property in your class " . static::class . ".");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    $this->imageExists = (boolean) $this->imageCacheBuster;
-    $this->imageStyles && ($this->imageStyles = unserialize($this->imageStyles));
-    return parent::init();
   }
 
 }

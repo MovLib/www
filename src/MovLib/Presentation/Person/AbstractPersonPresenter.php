@@ -43,7 +43,7 @@ abstract class AbstractPersonPresenter extends \MovLib\Presentation\AbstractPres
    *
    * @param string $title [optional]
    *   The presentation's translated title with the placeholder for the person's name "{name}",
-   *   default to the person's name.
+   *   defaults to the person's name.
    * @param string $pageTitle [optional]
    *   The presentation's translated page title with the placeholder (only has to be supplied if different from the title).
    *
@@ -72,7 +72,7 @@ abstract class AbstractPersonPresenter extends \MovLib\Presentation\AbstractPres
     $this->initPage($title, $pageTitle, $breadcrumbTitle);
 
     // Construct the breadcrumbs and route key.
-    $this->breadcrumb->addCrumb($this->intl->r("/persons"), $this->intl->t("Persons"));
+    $this->breadcrumb->addCrumb($this->intl->r("/persons"), $this->intl->tp("Persons", "Person"));
     $routeKey = $this->entity->routeKey;
     if (($shortName = strtolower($this->shortName())) != "show") {
       $routeKey .= "/{$shortName}";
@@ -84,20 +84,19 @@ abstract class AbstractPersonPresenter extends \MovLib\Presentation\AbstractPres
 
     // Initialize the sidebar.
     $additionalSidebarItems = null;
-    if (!$this->entity->deleted) {
-      foreach ([
-        [ "movie", "movies", $this->intl->tp("Movies"), $this->entity->countMovies ],
-        [ "series", "series", $this->intl->tp("Series"), $this->entity->countSeries ],
-        [ "release", "releases", $this->intl->tp("Releases"), $this->entity->countReleases ],
-        [ "award separator", "awards", $this->intl->tp("Awards"), $this->entity->countAwards ],
-      ] as list($icon, $routeAddition, $title, $count)) {
-        $additionalSidebarItems[] = [
-          $this->intl->r("/person/{0}/{$routeAddition}", $this->entity->id),
-          "{$title} <span class='fr'>{$this->intl->format("{0,number}", $count)}</span>",
-          [ "class" => "ico ico-{$icon}" ]
-        ];
-      }
+    foreach ([
+      [ "movie", "movies", $this->intl->tp("Movies", "Movie"), $this->entity->countMovies ],
+      [ "series", "series", $this->intl->tp("Series"), $this->entity->countSeries ],
+      [ "release", "releases", $this->intl->tp("Releases", "Release"), $this->entity->countReleases ],
+      [ "award separator", "awards", $this->intl->tp("Awards", "Award"), $this->entity->countAwards ],
+    ] as list($icon, $routeAddition, $title, $count)) {
+      $additionalSidebarItems[] = [
+        $this->intl->r("/person/{0}/{$routeAddition}", $this->entity->id),
+        "{$title}<span class='fr'>{$this->intl->format("{0,number}", $count)}</span>",
+        [ "class" => "ico ico-{$icon}" ]
+      ];
     }
+
     $this->sidebarInitToolbox($this->entity, $additionalSidebarItems);
 
     $this->stylesheets[] = "person";

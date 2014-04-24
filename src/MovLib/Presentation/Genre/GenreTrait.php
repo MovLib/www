@@ -41,7 +41,7 @@ trait GenreTrait {
       [ "series separator", "series", $this->intl->tp("Series"), $this->entity->seriesCount ],
     ] as list($icon, $plural, $title, $count)) {
       $items[] = [
-        $this->intl->rp("/genre/{0}/{$plural}", $this->entity->id),
+        $this->intl->r("/genre/{0}/{$plural}", $this->entity->id),
         "{$title} <span class='fr'>{$this->intl->format("{0,number}", $count)}</span>",
         [ "class" => "ico ico-{$icon}" ]
       ];

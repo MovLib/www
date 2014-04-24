@@ -15,42 +15,40 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Data\Upload;
 
 /**
- * Handling of one Style.
+ * Defines the upload set.
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @author Richard Fussenegger <richard@fussenegger.info>
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Style extends \MovLib\Data\Database {
-
-
- // ------------------------------------------------------------------------------------------------------------------- Properties
-
+final class UploadSet extends \MovLib\Data\AbstractSet {
 
   /**
-   * The style's unique identifier.
-   *
-   * @var int
+   * {@inheritdoc}
    */
-  public $id;
+  protected function init() {
+    $this->singularKey = "upload";
+    $this->pluralKey   = "uploads";
+    return parent::init();
+  }
 
   /**
-   * The style's display name.
-   *
-   * @var string
+   * {@inheritdoc}
    */
-  public $name;
+  protected function getEntitiesQuery($where = null, $orderBy = null) {
+
+  }
 
   /**
-   * The style's translated name.
-   *
-   * @var string
+   * {@inheritdoc}
    */
-  public $dynName;
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+
+  }
 
 }

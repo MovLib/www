@@ -44,14 +44,14 @@ abstract class AbstractSet extends \MovLib\Data\AbstractConfig implements \Itera
    *
    * @var string
    */
-  private $entityClassName;
+  protected $entityClassName;
 
   /**
    * The short name of this set to access set properties in other entities to export itself.
    *
    * @var string
    */
-  private $shortName;
+  protected $shortName;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -149,7 +149,7 @@ abstract class AbstractSet extends \MovLib\Data\AbstractConfig implements \Itera
     // @codeCoverageIgnoreEnd
     // @devEnd
     if (empty($this->route)) {
-      $this->route = $this->intl->rp("/{$this->pluralKey}");
+      $this->route = $this->intl->r("/{$this->pluralKey}");
     }
     if (empty($this->tableName)) {
       $this->tableName = $this->pluralKey;

@@ -38,10 +38,10 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Category($this->diContainerHTTP, $_SERVER["AWARD_CATEGORY_ID"]);
+    $this->entity = new Category($this->diContainerHTTP, $_SERVER["CATEGORY_ID"]);
     $this->initPage($this->entity->name);
     $this->breadcrumb->addCrumbs([
-      [ $this->intl->rp("/awards"), $this->intl->t("Awards") ],
+      [ $this->intl->r("/awards"), $this->intl->t("Awards") ],
       [ $this->intl->r("/award/{0}/", [ $this->entity->award->id ]), $this->entity->award->name ],
     ]);
     $this->initShow($this->entity, $this->intl->t("Categories"), "Category", null, $this->getSidebarItems())

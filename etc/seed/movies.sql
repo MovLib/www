@@ -25,57 +25,9 @@
 -- ---------------------------------------------------------------------------------------------------------------------
 
 TRUNCATE TABLE `movies_countries`;
-TRUNCATE TABLE `movies_directors`;
 TRUNCATE TABLE `movies_trailers`;
--- TRUNCATE TABLE `movies_images`;
 TRUNCATE TABLE `movies`;
 TRUNCATE TABLE `persons`;
-
--- Insert director and actor jobs
-
-INSERT INTO `jobs` SET
-  `dyn_names_sex0`   = COLUMN_CREATE(
-    'en', 'Direction',
-    'de', 'Regie'
-  ),
-  `dyn_names_sex1`   = COLUMN_CREATE(
-    'en', 'Director',
-    'de', 'Regisseur'
-  ),
-  `dyn_names_sex2`   = COLUMN_CREATE(
-    'en', 'Director',
-    'de', 'Regisseurin'
-  ),
-  `dyn_descriptions` = '',
-  `dyn_wikipedia`    = COLUMN_CREATE(
-    'en', 'http://en.wikipedia.org/wiki/Film_director',
-    'de', 'http://de.wikipedia.org/wiki/Filmregisseur'
-  )
-;
-
-SET @job_director = LAST_INSERT_ID();
-
-INSERT INTO `jobs` SET
-  `dyn_names_sex0` = COLUMN_CREATE(
-    'en', 'Actor',
-    'de', 'Schauspiel'
-  ),
-  `dyn_names_sex1` = COLUMN_CREATE(
-    'en', 'Actor',
-    'de', 'Schauspieler'
-  ),
-  `dyn_names_sex2` = COLUMN_CREATE(
-    'en', 'Actress',
-    'de', 'Schauspielerin'
-  ),
-  `dyn_descriptions` = '',
-  `dyn_wikipedia`    = COLUMN_CREATE(
-    'en', 'http://en.wikipedia.org/wiki/Actor',
-    'de', 'http://de.wikipedia.org/wiki/Schauspieler'
-  )
-;
-
-SET @job_actor = LAST_INSERT_ID();
 
 -- START "Roundhay Garden Scene"
 
@@ -133,7 +85,7 @@ INSERT INTO `persons` SET
 
 SET @louis_le_prince_id = LAST_INSERT_ID();
 
-INSERT INTO `movies_directors` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @louis_le_prince_id, `job_id` = @job_director;
+INSERT INTO `movies_crew` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @louis_le_prince_id, `job_id` = 2, `dyn_role` = '';
 
 INSERT INTO `persons` SET
   `name`                   = 'Harriet Hartley',
@@ -142,7 +94,7 @@ INSERT INTO `persons` SET
   `dyn_image_descriptions` = ''
 ;
 SET @harriet_hartley_id = LAST_INSERT_ID();
-INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @harriet_hartley_id, `job_id` = @job_actor, `dyn_role` = '';
+INSERT INTO `movies_crew` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @harriet_hartley_id, `job_id` = 1, `dyn_role` = '';
 
 INSERT INTO `persons` SET
   `name`                   = 'Adolphe Le Prince',
@@ -151,7 +103,7 @@ INSERT INTO `persons` SET
   `dyn_image_descriptions` = ''
 ;
 SET @adolphe_le_prince_id = LAST_INSERT_ID();
-INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @adolphe_le_prince_id, `job_id` = @job_actor, `dyn_role` = '', `role_id` = @adolphe_le_prince_id;
+INSERT INTO `movies_crew` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @adolphe_le_prince_id, `job_id` = 1, `dyn_role` = '', `role_id` = @adolphe_le_prince_id;
 
 INSERT INTO `persons` SET
   `name`                   = 'Joseph Whitley',
@@ -160,7 +112,7 @@ INSERT INTO `persons` SET
   `dyn_image_descriptions` = ''
 ;
 SET @joseph_whitley_id = LAST_INSERT_ID();
-INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @joseph_whitley_id, `job_id` = @job_actor, `dyn_role` = '', `role_id` = @joseph_whitley_id;
+INSERT INTO `movies_crew` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @joseph_whitley_id, `job_id` = 1, `dyn_role` = '', `role_id` = @joseph_whitley_id;
 
 INSERT INTO `persons` SET
   `name`                   = 'Sarah Whitley',
@@ -172,7 +124,7 @@ INSERT INTO `persons` SET
   `dyn_image_descriptions` = ''
 ;
 SET @sarah_whitley_id = LAST_INSERT_ID();
-INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @sarah_whitley_id, `job_id` = @job_actor, `dyn_role` = '', `role_id` = @sarah_whitley_id;
+INSERT INTO `movies_crew` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @sarah_whitley_id, `job_id` = 1, `dyn_role` = '', `role_id` = @sarah_whitley_id;
 
 -- END "Roundhay Garden Scene"
 
@@ -237,37 +189,12 @@ INSERT INTO `persons` SET
 
 SET @sacha_goedegebure_id = LAST_INSERT_ID();
 
-INSERT INTO `movies_directors` SET `movie_id` = @big_buck_bunny_id, `person_id` = @sacha_goedegebure_id, `job_id` = @job_director;
+INSERT INTO `movies_crew` SET `movie_id` = @big_buck_bunny_id, `person_id` = @sacha_goedegebure_id, `job_id` = 2, `dyn_role` = '';
 
 INSERT INTO `movies_countries` SET `movie_id` = @big_buck_bunny_id, `country_code` = 'US';
 INSERT INTO `movies_languages` SET `movie_id` = @big_buck_bunny_id, `language_code` = 'xx';
 INSERT INTO `movies_genres` SET `movie_id` = @big_buck_bunny_id, `genre_id` = (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Short Film' LIMIT 1);
 INSERT INTO `movies_genres` SET `movie_id` = @big_buck_bunny_id, `genre_id` = (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Animation' LIMIT 1);
-
--- INSERT INTO `movies_images` SET
---   `id`               = 1,
---   `movie_id`         = @big_buck_bunny_id,
---   `type_id`          = 2,
---   `license_id`       = (SELECT `id` FROM `licenses` WHERE `abbreviation` = 'CC BY 3.0' LIMIT 1),
---   `country_code`     = 'US',
---   `language_code`    = 'en',
---   `date`             = '2008-03-25',
---   `deleted`          = false,
---   `width`            = 1500,
---   `height`           = 2107,
---   `filesize`         = 493629,
---   `extension`        = 'jpg',
---   `changed`          = '2013-11-28 15:13:42',
---   `created`          = '2013-11-28 15:13:42',
---   `dyn_authors`      = COLUMN_CREATE('en', '&lt;p&gt;Blender Foundation | www.blender.org&lt;/p&gt;'),
---   `dyn_descriptions` = COLUMN_CREATE(
---     'de', '&lt;p&gt;Offizielles Poster.&lt;/p&gt;',
---     'en', '&lt;p&gt;Official poster.&lt;/p&gt;'
---   ),
---   `dyn_sources`      = COLUMN_CREATE('en', '&lt;a href="http://download.blender.org/peach/presskit.zip" rel="nofollow" target="_blank"&gt;http://download.blender.org/peach/presskit.zip&lt;/a&gt;'),
---   `styles`           = 'a:5:{i:540;a:3:{s:6:"height";i:540;s:5:"width";i:384;s:9:"resizeArg";s:10:"\'540x540>\'";}i:220;a:3:{s:6:"height";i:309;s:5:"width";i:220;s:9:"resizeArg";s:7:"\'220x>\'";}i:140;a:3:{s:6:"height";i:197;s:5:"width";i:140;s:9:"resizeArg";s:7:"\'140x>\'";}i:60;a:3:{s:6:"height";i:84;s:5:"width";i:60;s:9:"resizeArg";s:6:"\'60x>\'";}s:5:"60x60";a:3:{s:6:"height";i:60;s:5:"width";i:60;s:9:"resizeArg";s:53:"\'60x60>^\' -gravity \'Center\' -crop \'60x60+0+0\' +repage";}}',
---   `user_id`          = 1
--- ;
 
 -- END "Big Buck Bunny"
 
@@ -338,10 +265,11 @@ INSERT INTO `persons` SET
 ;
 SET @frank_darabont_id = LAST_INSERT_ID();
 
-INSERT INTO `movies_directors` SET
+INSERT INTO `movies_crew` SET
   `movie_id`  = @the_shawshank_redemption_id,
   `person_id` = @frank_darabont_id,
-  `job_id` = @job_director
+  `job_id` = 2,
+  `dyn_role` = ''
 ;
 
 INSERT INTO `persons` SET
@@ -357,7 +285,8 @@ SET @morgan_freeman_id = LAST_INSERT_ID();
 INSERT INTO `movies_crew` SET
   `movie_id`  = @the_shawshank_redemption_id,
   `person_id` = @morgan_freeman_id,
-  `job_id` = @job_actor
+  `job_id` = 1,
+  `dyn_role` = ''
 ;
 
 INSERT INTO `movies_titles` SET

@@ -40,19 +40,29 @@ SELECT
   `series`.`created` AS `created`,
   `series`.`deleted` AS `deleted`,
   `series`.`end_year` AS `endYear`,
-  `series`.`original_title` AS `originalTitle`,
-  `series`.`original_title_language_code` AS `originalTitleLanguageCode`,
+  `series`.`mean_rating` AS `ratingMean`,
+  `series`.`rank` AS `ratingRank`,
+  `series`.`rating` AS `ratingBayes`,
   `series`.`start_year` AS `startYear`,
   `series`.`status` AS `status`,
-  `series_titles`.`title` AS `displayTitle`,
+  `original_title`.`title` AS `originalTitle`,
+  `original_title`.`language_code` AS `originalTitleLanguageCode`,
+  IFNULL(`display_title`.`title`, `original_title`.`title`) AS `displayTitle`,
+  IFNULL(`display_title`.`language_code`, `original_title`.`language_code`) AS `displayTitleLanguageCode`,
+  `series`.`votes` AS `ratingVotes`,
   `series`.`count_awards` AS `awardCount`,
   `series`.`count_seasons` AS `seasonCount`,
   `series`.`count_releases` AS `releaseCount`
 FROM `series`
-  LEFT JOIN `series_titles`
-    ON `series_titles`.`series_id` = `series`.`id`
-    AND `series_titles`.`language_code` = '{$this->intl->languageCode}'
-    AND `series_titles`.`display` = true
+  LEFT JOIN `series_display_titles`
+    ON `series_display_titles`.`series_id` = `series`.`id`
+    AND `series_display_titles`.`language_code` = '{$this->intl->languageCode}'
+  LEFT JOIN `series_titles` AS `display_title`
+    ON `display_title`.`id` = `series_display_titles`.`title_id`
+  LEFT JOIN `series_original_titles`
+    ON `series_original_titles`.`series_id` = `series`.`id`
+  LEFT JOIN `series_titles` AS `original_title`
+    ON `original_title`.`id` = `series_original_titles`.`title_id`
 {$where}
 {$orderBy}
 SQL;

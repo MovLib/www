@@ -136,6 +136,7 @@ SELECT
   `companies`.`changed` AS `changed`,
   `companies`.`created` AS `created`,
   `companies`.`deleted` AS `deleted`,
+  `companies`.`aliases` AS `aliases`,
   `companies`.`name` AS `name`,
   COLUMN_GET(`companies`.`dyn_descriptions`, '{$this->intl->languageCode}' AS CHAR) AS `description`,
   `companies`.`links` AS `links`,
@@ -162,6 +163,7 @@ SQL
         $this->changed,
         $this->created,
         $this->deleted,
+        $this->aliases,
         $this->name,
         $this->description,
         $this->links,
@@ -187,6 +189,43 @@ SQL
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+ /**
+   * Update the genre.
+   *
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function commit() {
+    $this->aliases = empty($this->aliases)? serialize([]) : serialize(explode("\n", $this->aliases));
+    $this->links   = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
+
+    $stmt = $this->getMySQLi()->prepare(<<<SQL
+UPDATE `companies` SET
+  `aliases`          = ?,
+  `defunct_date`     = ?,
+  `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, '{$this->intl->languageCode}', ?),
+  `dyn_wikipedia`    = COLUMN_ADD(`dyn_wikipedia`, '{$this->intl->languageCode}', ?),
+  `founding_date`    = ?,
+  `name`             = ?,
+  `links`            = ?
+WHERE `id` = {$this->id}
+SQL
+    );
+    $stmt->bind_param(
+      "sssssss",
+      $this->aliases,
+      $this->defunctDate,
+      $this->description,
+      $this->wikipedia,
+      $this->foundingDate,
+      $this->name,
+      $this->links
+    );
+    $stmt->execute();
+    $stmt->close();
+    return $this;
+  }
 
   /**
    * {@inheritdoc}

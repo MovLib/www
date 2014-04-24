@@ -48,7 +48,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
       ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
       ->initLanguageLinks("/{$this->entity->singularKey}/{0}/categories", $this->entity->id, true)
       ->breadcrumb->addCrumbs([
-        [ $this->intl->rp("/awards"), $this->intl->t("Awards") ],
+        [ $this->intl->r("/awards"), $this->intl->t("Awards") ],
         [ $this->entity->route, $this->entity->name ]
       ])
     ;
@@ -78,10 +78,10 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
           "</a>" .
           "<div class='s s9'>" .
             "<div class='fr'>" .
-              "<a class='ico ico-movie label' href='{$this->intl->rp("/award/{0}/category/{1}/movies", [ $category->award->id, $category->id ])}' title='{$this->intl->t("Movies")}'>{$category->movieCount}</a>" .
-              "<a class='ico ico-series label' href='{$this->intl->rp("/award/{0}/category/{1}/series", [ $category->award->id, $category->id ])}' title='{$this->intl->tp("Series")}'>{$category->seriesCount}</a>" .
-              "<a class='ico ico-person label' href='{$this->intl->rp("/award/{0}/category/{1}/persons", [ $category->award->id, $category->id ])}' title='{$this->intl->t("Persons")}'>{$category->seriesCount}</a>" .
-              "<a class='ico ico-company label' href='{$this->intl->rp("/award/{0}/category/{1}/companies", [ $category->award->id, $category->id ])}' title='{$this->intl->t("Companies")}'>{$category->seriesCount}</a>" .
+              "<a class='ico ico-movie label' href='{$this->intl->r("/award/{0}/category/{1}/movies", [ $category->award->id, $category->id ])}' title='{$this->intl->t("Movies")}'>{$category->movieCount}</a>" .
+              "<a class='ico ico-series label' href='{$this->intl->r("/award/{0}/category/{1}/series", [ $category->award->id, $category->id ])}' title='{$this->intl->tp("Series")}'>{$category->seriesCount}</a>" .
+              "<a class='ico ico-person label' href='{$this->intl->r("/award/{0}/category/{1}/persons", [ $category->award->id, $category->id ])}' title='{$this->intl->t("Persons")}'>{$category->seriesCount}</a>" .
+              "<a class='ico ico-company label' href='{$this->intl->r("/award/{0}/category/{1}/companies", [ $category->award->id, $category->id ])}' title='{$this->intl->t("Companies")}'>{$category->seriesCount}</a>" .
             "</div>" .
             "<h2 class='para'><a href='{$route}' property='url'><span property='name'>{$category->name}</span></a></h2>" .
             $categoryDates .

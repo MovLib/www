@@ -26,29 +26,47 @@ namespace MovLib\Data\Movie;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class PosterSet extends \MovLib\Data\AbstractSet {
+final class PosterSet extends \MovLib\Data\Image\AbstractImageSet {
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function init() {
+    $this->entityKey   = "movie";
+    $this->pluralKey   = "posters";
+    $this->singularKey = "poster";
+    return parent::init();
+  }
 
   /**
    * {@inheritdoc}
    */
   protected function getEntitiesQuery($where = null, $orderBy = null) {
-
+    return <<<SQL
+SELECT
+  `id`,
+  `movie_id` AS `entityId`,
+  `changed`,
+  `created`,
+  `deleted`,
+  HEX(`cache_buster`) AS `imageCacheBuster`,
+  `extension` AS `imageExtension`,
+  `filesize` AS `imageFilesize`,
+  `height` AS `imageHeight`,
+  `width` AS `imageWidth`,
+  `country_code` AS `countryCode`,
+  `styles` AS `imageStyles`
+FROM `posters`
+{$where} {$orderBy}
+SQL;
   }
 
   /**
    * {@inheritdoc}
    */
   protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
-
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function init() {
-    $this->pluralKey   = "posters";
-    $this->singularKey = "poster";
-    return parent::init();
+    return <<<SQL
+SQL;
   }
 
 }

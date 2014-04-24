@@ -208,9 +208,12 @@ select:-moz-focusring {
 }
 
 fieldset,
-form .r,
 form p {
   margin-bottom: 20px;
+}
+
+.r input {
+  margin-bottom: 0;
 }
 
 option[value=""] {

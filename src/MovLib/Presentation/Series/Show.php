@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Series;
 
 use \MovLib\Data\Series\Series;
+use \MovLib\Data\Series\TitleSet;
 use \MovLib\Partial\Date;
 use \MovLib\Partial\StarRatingForm;
 
@@ -57,8 +58,6 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    $this->headingBefore = "<div class='r'><div class='s s10'>";
-
     $starRating = new StarRatingForm($this->diContainerHTTP, $this->entity);
     $this->infoboxBefore =
       "{$this->getStructuredOriginalTitle($this->entity, "p")}{$starRating}"
@@ -66,8 +65,12 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
 
     $this->entity->startYear && $this->infoboxAdd($this->intl->t("From"), (new Date($this->intl, $this))->format($this->entity->startYear));
     $this->entity->endYear   && $this->infoboxAdd($this->intl->t("To"), (new Date($this->intl, $this))->format($this->entity->endYear));
+    $this->entity->status    && $this->infoboxAdd($this->intl->t("Status"), $this->getStatus());
 
     $this->entity->synopsis  && $this->sectionAdd($this->intl->t("Synopsis"), $this->entity->synopsis);
+
+    $this->sectionAdd($this->intl->t("Titles"), $this->getTitleSection(), true, null, $this->intl->r("/series/{0}/titles", $this->entity->id));
+
     if ($this->sections) {
       return $this->sections;
     }
@@ -76,6 +79,30 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
       $this->intl->t("Would you like to {0}add additional information{1}?", [ "<a href='{$this->intl->r("/series/{0}/edit", $this->entity->id)}'>", "</a>" ]),
       $this->intl->t("{sitename} doesn’t have further details about this series.", [ "sitename" => $this->config->sitename ])
     );
+  }
+
+  protected function getTitleSection() {
+    $items = null;
+    foreach ((new TitleSet($this->diContainerHTTP))->loadEntitiesBySeries($this->entity)->entities as $entity) {
+      $original = $entity["isOriginalTitle"]? " ({$this->intl->t("Originaltitel")})" : null;
+      $items .=
+        "<tr>" .
+          "<td class='s8'>{$entity["title"]}{$original}</td>" .
+          "<td class='s2'>{$this->intl->getTranslations("languages")[$entity["languageCode"]]->name}</td>" .
+        "</tr>"
+      ;
+    }
+    return
+      "<table class='table table-striped'>" .
+        "<thead>" .
+          "<tr>" .
+            "<th>{$this->intl->t("Title")}</th>" .
+            "<th>{$this->intl->t("Language")}</th>" .
+          "</tr>" .
+        "</thead>" .
+        "<tbody>{$items}</tbody>" .
+      "</table>"
+    ;
   }
 
 }

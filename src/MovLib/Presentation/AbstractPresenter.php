@@ -440,7 +440,7 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
 
       // Translate the rest of the available languages.
       foreach ($locales as $code => $locale) {
-        $route = $plural ? $this->intl->rp($routeKey, $args, $locale) : $this->intl->r($routeKey, $args, $locale);
+        $route = $this->intl->r($routeKey, $args, $locale);
         if ($queries) {
           array_walk($queries, function (&$value, $key) {
             $value = rawurlencode($this->intl->r($key)) . "=" . rawurlencode($value);
@@ -533,15 +533,15 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
   public function getHeader() {
     $exploreNavigation =
       "<ul class='o1 sm2 no-list'>" .
-        "<li>{$this->a($this->intl->rp("/movies"), $this->intl->t("Movies"), [ "class" => "ico ico-movie" ])}</li>" .
-        "<li>{$this->a($this->intl->rp("/series"), $this->intl->tp("Series"), [ "class" => "ico ico-series" ])}</li>" .
-        "<li>{$this->a($this->intl->rp("/releases"), $this->intl->t("Releases"), [ "class" => "ico ico-release" ])}</li>" .
-        "<li>{$this->a($this->intl->rp("/persons"), $this->intl->t("Persons"), [ "class" => "ico ico-person" ])}</li>" .
-        "<li>{$this->a($this->intl->rp("/companies"), $this->intl->t("Companies"), [ "class" => "ico ico-company" ])}</li>" .
-        "<li>{$this->a($this->intl->rp("/awards"), $this->intl->t("Awards"), [ "class" => "ico ico-award" ])}</li>" .
-        "<li>{$this->a($this->intl->rp("/events"), $this->intl->t("Events"), [ "class" => "ico ico-event" ])}</li>" .
-        "<li>{$this->a($this->intl->rp("/genres"), $this->intl->t("Genres"), [ "class" => "ico ico-genre" ])}</li>" .
-        "<li>{$this->a($this->intl->rp("/jobs"), $this->intl->t("Jobs"), [ "class" => "ico ico-job" ])}</li>" .
+        "<li>{$this->a($this->intl->r("/movies"), $this->intl->t("Movies"), [ "class" => "ico ico-movie" ])}</li>" .
+        "<li>{$this->a($this->intl->r("/series"), $this->intl->tp("Series"), [ "class" => "ico ico-series" ])}</li>" .
+        "<li>{$this->a($this->intl->r("/releases"), $this->intl->t("Releases"), [ "class" => "ico ico-release" ])}</li>" .
+        "<li>{$this->a($this->intl->r("/persons"), $this->intl->t("Persons"), [ "class" => "ico ico-person" ])}</li>" .
+        "<li>{$this->a($this->intl->r("/companies"), $this->intl->t("Companies"), [ "class" => "ico ico-company" ])}</li>" .
+        "<li>{$this->a($this->intl->r("/awards"), $this->intl->t("Awards"), [ "class" => "ico ico-award" ])}</li>" .
+        "<li>{$this->a($this->intl->r("/events"), $this->intl->t("Events"), [ "class" => "ico ico-event" ])}</li>" .
+        "<li>{$this->a($this->intl->r("/genres"), $this->intl->t("Genres"), [ "class" => "ico ico-genre" ])}</li>" .
+        "<li>{$this->a($this->intl->r("/jobs"), $this->intl->t("Jobs"), [ "class" => "ico ico-job" ])}</li>" .
         "<li class='separator'>{$this->a($this->intl->r("/help"), $this->intl->t("Help"), [ "class" => "ico ico-help" ])}</li>" .
       "</ul>"
     ;
@@ -554,8 +554,8 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
 
     $communityNavigation =
       "<ul class='o1 sm2 no-list'>" .
-        "<li>{$this->a($this->intl->rp("/users"), $this->intl->t("Users"), [ "class" => "ico ico-person" ])}</li>" .
-        "<li class='separator'>{$this->a($this->intl->rp("/deletion-requests"), $this->intl->t("Deletion Requests"), [ "class" => "ico ico-delete" ])}</li>" .
+        "<li>{$this->a($this->intl->r("/users"), $this->intl->t("Users"), [ "class" => "ico ico-person" ])}</li>" .
+        "<li class='separator'>{$this->a($this->intl->r("/deletion-requests"), $this->intl->t("Deletion Requests"), [ "class" => "ico ico-delete" ])}</li>" .
       "</ul>"
     ;
 

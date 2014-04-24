@@ -83,7 +83,7 @@ final class ResetPassword extends \MovLib\Presentation\AbstractPresenter {
    */
   public function init() {
     $this->initPage($this->intl->t("Reset Password"));
-    $this->initBreadcrumb([[ $this->intl->rp("/users"), $this->intl->t("Users") ]]);
+    $this->initBreadcrumb([[ $this->intl->r("/users"), $this->intl->t("Users") ]]);
     $this->breadcrumb->ignoreQuery = true;
     $this->initLanguageLinks("/profile/reset-password");
 

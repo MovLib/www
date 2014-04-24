@@ -90,6 +90,7 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
   /**
    * Get the count of a relationship.
    *
@@ -139,7 +140,7 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
     $this->routeKey   || ($this->routeKey   = "/{$this->singularKey}/{0}");
     $this->routeArgs  || ($this->routeArgs  = $this->id);
     $this->route      || ($this->route      = $this->intl->r($this->routeKey, $this->routeArgs));
-    $this->routeIndex || ($this->routeIndex = $this->intl->rp("/{$this->pluralKey}"));
+    $this->routeIndex || ($this->routeIndex = $this->intl->r("/{$this->pluralKey}"));
     $this->tableName  || ($this->tableName  = $this->pluralKey);
     $this->changed    = new DateTime($this->changed);
     $this->created    = new DateTime($this->created);

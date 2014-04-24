@@ -263,52 +263,8 @@ final class Intl {
   }
 
   /**
-   * Translate and format singular route.
+   * Translate and format route.
    *
-   * @param string $route
-   *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
-   * @param mixed $args [optional]
-   *   The arguments that should be passed to the message formatter, default to <code>NULL</code> and the message
-   *   formatter isn't used at all. You can pass either a single scaler value or an array.
-   * @param string $locale [optional]
-   *   Use a different locale for this translation.
-   * @return string
-   *   The translated and formatted singular route.
-   * @throws \IntlException
-   */
-  public function r($route, $args = null, $locale = null) {
-    if ($route == "/") {
-      return "/";
-    }
-    if ($route === (array) $route) {
-      $routeArray = $route;
-      $route = "";
-      $c = count($routeArray);
-      for ($i = 0; $i < $c; ++$i) {
-        $route .= $this->translate($routeArray[$i], $args, "routes/singular", $locale);
-      }
-      return $route;
-    }
-    return $this->translate($route, $args, "routes/singular", $locale);
-  }
-
-  /**
-   * Translate and format route or query key.
-   *
-   * This is the new routing method that combines handling of plural and singular routes and allows totally automated
-   * building of routes based on their parts. This allows us to minimize the translation effort that it takes to
-   * translate routes. There is a simply rule that applies to any route, it's unique an can only present a single page,
-   * not only for SEO reasons, but also for class hierarchy reasons. We use this fact and the fact that singular route
-   * parts always have some kind of message formatter placeholder appended to combine singular and plural forms of
-   * routes into a single file. This minimizes IO and we can combine as many translations as possible, thus only have
-   * to translte keys a single time.
-   *
-   * @todo Most route parts match translations that we already have in the messages, we should utilize this fact to
-   *       auto-translate as many route parts as possible. Passing a translation through
-   *       {@see \MovLib\Core\FileSystem::sanitizeFilename()} will always give us a correct translation.
-   *
-   * @staticvar array $routes
-   *   Used to cache translated route patterns.
    * @param string $route
    *   The route or query key pattern to translate.
    * @param mixed $args [optional]
@@ -321,85 +277,17 @@ final class Intl {
    * @throws \ErrorException
    *   If the given route is empty or a part of the route is empty.
    */
-  public function route($route, $args = null, $locale = null) {
-    static $routes = [];
+  public function r($route, $args = null, $locale = null) {
     // @devStart
     // @codeCoverageIgnoreStart
     assert(!empty($route), "A route cannot be empty!");
     // @codeCoverageIgnoreEnd
     // @devEnd
-
     // Nothing to do if this is the index route.
     if ($route == "/") {
       return $route;
     }
-
-    // The route is a query key if it isn't starting with a slash.
-    if ($route{0} != "/") {
-      return $this->translate($route, $args, "routes", $locale);
-    }
-
-    // We need another level of caching above the translate method because we don't want to repeat the building of the
-    // route parts on each request.
-    $locale || ($locale = $this->locale);
-    if (empty($routes[$locale][$route])) {
-      // Ensure that the array for the offset is actually present and directly create the entry.
-      empty($routes) && ($routes[$locale] = []);
-      $routes[$locale][$route] = "";
-
-      // Split the given route at the only character that we can be certain of that it exists and initialize the
-      // variables that we need to build the translated version of this route.
-      $parts = explode("/", $route);
-      $c     = count($parts);
-      $token = null;
-
-      // The first element is always empty because a route always starts with a slash, also see above condition that
-      // checks if the first character is actually a slash. Therefore we directly decrease the counter variable before
-      // we enter the first loop and jump right over that index.
-      while (--$c) {
-        // If this part of the route starts with a curly brace it's an Intl placeholder token that we want to append to
-        // the upcoming part of the route.
-        if ($parts[$c]{0} == "{") {
-          $token = "/{$parts[$c]}";
-        }
-        // If it isn't starting with a curly brace it's an actual translateable string that we have to pass to our
-        // translate method. Note that we're going backwards here, therefore we have to append the already translated
-        // route parts to the untranslated route parts to re-generate the original order.
-        else {
-          $routes[$locale][$route] = "{$this->translate("/{$parts[$c]}{$token}", null, "routes", $locale)}{$routes[$locale][$route]}";
-          // Reset the token!
-          $token = null;
-        }
-      }
-    }
-
-    // We have to replace the arguments ourself, because we're caching already translated routes. Pretty much the same
-    // as is happening in our translate method.
-    if ($args) {
-      return \MessageFormatter::formatMessage($locale, $routes[$locale][$route], (array) $args);
-    }
-    return $routes[$locale][$route];
-  }
-
-  /**
-   * Translate and format plural route.
-   *
-   * @param string $route
-   *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
-   * @param mixed $args [optional]
-   *   The arguments that should be passed to the message formatter, default to <code>NULL</code> and the message
-   *   formatter isn't used at all. You can pass either a single scaler value or an array.
-   * @param string $locale [optional]
-   *   Use a different locale for this translation.
-   * @return string
-   *   The translated and formatted plural route.
-   * @throws \IntlException
-   */
-  public function rp($route, $args = null, $locale = null) {
-    if ($route == "/") {
-      return "/";
-    }
-    return $this->translate($route, $args, "routes/plural", $locale);
+    return $this->translate($route, $args, "routes", $locale);
   }
 
   /**
@@ -467,7 +355,7 @@ final class Intl {
       return $title;
     }
     $titleCase = explode(" ", $title);
-    $c = count($titleCase) - 1;
+    $c         = count($titleCase) - 1;
     for ($i = 0; $i <= $c; ++$i) {
       if (($i === 0 || $i === $c || mb_strlen($titleCase[$i]) > 4) && mb_strtoupper($titleCase[$i]) != $titleCase[$i]) {
         $titleCase[$i] = mb_convert_case($titleCase[$i], MB_CASE_TITLE);
@@ -511,17 +399,13 @@ final class Intl {
       assert(is_string($singular));
     }
     assert(is_numeric($count));
-    assert(empty($args["@count"]));
+    assert(empty($args[0]));
     // @codeCoverageIgnoreEnd
     // @devEnd
-    if (empty($singular)) {
-      $singular = $plural;
-    }
-    if ($args) {
-      $args = (array) $args;
-    }
-    $args["@count"] = $count;
-    return $this->translate("{@count, plural, one{{$singular}} other{{$plural}}}", $args, "messages", $locale);
+    $singular || ($singular = $plural);
+    $args && ($args = (array) $args);
+    $args[0] = $count;
+    return $this->translate("{0,plural,one{{$singular}}other{{$plural}}}", $args, "messages", $locale);
   }
 
   /**
@@ -545,8 +429,8 @@ final class Intl {
     // @devStart
     // @codeCoverageIgnoreStart
     assert(!empty($pattern), "The pattern cannot be empty.");
-    assert(strpos("'", $pattern) === false, "Always use the real English apostrophe ( ’ )!");
-    assert(strpos('"', $pattern) === false, "Always use the real English quotation marks ( “ opening, ” closing)!");
+    assert(strpos($pattern, "'") === false, "Always use the real English apostrophe ( ’ )!");
+    assert(strpos($pattern, '"') === false, "Always use the real English quotation marks ( “ opening, ” closing)!");
     $placeholderPattern = "\{[0-9a-z_\- ]*\}";
     assert(
       preg_match("/^\s*{$placeholderPattern}(\s*{$placeholderPattern})*\s*$/i", $pattern) !== 1,
@@ -557,17 +441,23 @@ final class Intl {
       preg_match("/(plural|select)/", $pattern) === 1 || preg_match("/\{[a-z0-9_]*[A-Z|\-| ]+[a-z0-9_]*\}/", $pattern) !== 1,
       "Always use snake case for intl placeholder tokens."
     );
+    assert(
+      strpos($pattern, "...") === false,
+      "Don't simply use three dots in a row, use the actual Unicode character with proper semantic: …"
+    );
     assert(strip_tags($pattern) == $pattern, "HTML is not allowed in translation patterns.");
-    assert(!isset($args) || $args === 0 || !empty($args));
-    assert(!empty($context));
-    assert(is_string($context));
-    assert(!isset($locale) || preg_match("/[a-z]{2}[_\-][a-z]{2}/i", $locale));
+    // Allow passing NULL, 0, "false", false, ... etc.
+    assert(!$args || !empty($args), "Message formatter arguments cannot be empty if given.");
+    assert(!empty($context), "Translation context cannot be empty.");
+    assert(is_string($context), "Translation context must be of type string.");
+    assert(
+      !isset($locale) || preg_match("/[a-z]{2}[_\-][A-Z]{2}/", $locale),
+      "A locale consists of a language and country part, e.g. 'de_AT' or 'de-AT'."
+    );
     // @codeCoverageIgnoreEnd
     // @devEnd
     try {
-      if (!$locale) {
-        $locale = $this->locale;
-      }
+      $locale || ($locale = $this->locale);
       // Only attempt to translate the pattern if we have no cached translation.
       if (empty(self::$translations[$locale][$context][$pattern])) {
         $this->getTranslations($context, $locale);
@@ -581,10 +471,10 @@ final class Intl {
         }
       }
 
-      if ($args !== null) {
-        return \MessageFormatter::formatMessage($locale, self::$translations[$locale][$context][$pattern], (array) $args);
+      if ($args === null) {
+        return self::$translations[$locale][$context][$pattern];
       }
-      return self::$translations[$locale][$context][$pattern];
+      return \MessageFormatter::formatMessage($locale, self::$translations[$locale][$context][$pattern], (array) $args);
     }
     catch (\Exception $e) {
       throw new \IntlException("Couldn't translate '{$pattern}'.", null, $e);
@@ -607,9 +497,7 @@ final class Intl {
    */
   public function transliterate($text, $locale = null) {
     static $transliterators = [];
-    if (!$locale) {
-      $locale = $this->locale;
-    }
+    $locale || ($locale = $this->locale);
     if (empty($transliterators[$locale])) {
       $transliterators[$locale] = \Transliterator::create("Any-{$locale}");
     }

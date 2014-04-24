@@ -46,6 +46,20 @@ final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity impleme
   private $countries;
 
   /**
+   * The movie's total award count.
+   *
+   * @var integer
+   */
+  public $countAwards;
+
+  /**
+   * The movie's total release count.
+   *
+   * @var integer
+   */
+  public $countReleases;
+
+  /**
    * The movie's display title <b>for</b> the current locale.
    *
    * <b>NOTE</b><br>
@@ -154,6 +168,8 @@ final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity impleme
       $stmt   = $mysqli->prepare(<<<SQL
 SELECT
   `movies`.`id`,
+  `movies`.`count_awards`,
+  `movies`.`count_releases`,
   `movies`.`year`,
   `movies`.`rank`,
   `movies`.`votes`,
@@ -204,6 +220,8 @@ SQL
       $stmt->execute();
       $stmt->bind_result(
         $this->id,
+        $this->countAwards,
+        $this->countReleases,
         $this->year,
         $this->ratingRank,
         $this->ratingVotes,
@@ -291,8 +309,8 @@ SQL
    */
   protected function imageSaveStyles() {
     $styles = serialize($this->imageStyles);
-    $stmt   = $this->getMySQLi()->prepare("UPDATE `posters` SET `styles` = ? WHERE `movie_id` = ?");
-    $stmt->bind_param("sd", $styles, $this->id);
+    $stmt   = $this->getMySQLi()->prepare("UPDATE `posters` SET `styles` = ? WHERE `id` = ? AND `movie_id` = ?");
+    $stmt->bind_param("sdd", $styles, $this->imageFilename, $this->id);
     $stmt->execute();
     $stmt->close();
     return $this;
@@ -311,7 +329,7 @@ SQL
     }
     $this->imageAlternativeText = $this->intl->t("{movie_title} poster.", [ "movie_title" => $this->displayTitleAndYear]);
     $this->imageDirectory       = "upload://movie/{$this->id}/poster";
-    $this->pluralKey            = $this->tableName = "movies";
+    $this->pluralKey            = "movies";
     $this->singularKey          = "movie";
     return parent::init();
   }

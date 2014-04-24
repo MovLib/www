@@ -52,10 +52,10 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
    * The form's auto-validate elements.
    *
    * @internal
-   *   Keep visibility at protected and allow implementing class to access the various form elements.
+   *   Keep visibility at public and allow implementing class to access the various form elements.
    * @var array
    */
-  protected $elements;
+  public $elements;
 
   /**
    * The form's hidden elements (e.g. CSRF).

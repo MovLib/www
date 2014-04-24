@@ -155,6 +155,13 @@ class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Data\RatingI
    */
   public $synopsis;
 
+  /**
+   * Assiciative array containing all titles of the series.
+   *
+   * @var array
+   */
+  public $titles;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -179,24 +186,30 @@ SELECT
   `series`.`deleted` AS `deleted`,
   `series`.`end_year` AS `endYear`,
   `series`.`mean_rating` AS `ratingMean`,
-  `series`.`original_title` AS `originalTitle`,
-  `series`.`original_title_language_code` AS `originalTitleLanguageCode`,
   `series`.`rank` AS `ratingRank`,
   `series`.`rating` AS `ratingBayes`,
   `series`.`start_year` AS `startYear`,
   `series`.`status` AS `status`,
   COLUMN_GET(`series`.`dyn_synopses`, '{$this->intl->languageCode}' AS CHAR) AS `synopsis`,
   COLUMN_GET(`series`.`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR) AS `wikipedia`,
-  `series_titles`.`title` AS `displayTitle`,
+  `original_title`.`title`,
+  `original_title`.`language_code`,
+  IFNULL(`display_title`.`title`, `original_title`.`title`),
+  IFNULL(`display_title`.`language_code`, `original_title`.`language_code`),
   `series`.`votes` AS `ratingVotes`,
   `series`.`count_awards` AS `awardCount`,
   `series`.`count_seasons` AS `seasonCount`,
   `series`.`count_releases` AS `releaseCount`
 FROM `series`
-  LEFT JOIN `series_titles`
-    ON `series_titles`.`series_id` = `series`.`id`
-    AND `series_titles`.`language_code` = '{$this->intl->languageCode}'
-    AND `series_titles`.`display` = true
+  LEFT JOIN `series_display_titles`
+    ON `series_display_titles`.`series_id` = `series`.`id`
+    AND `series_display_titles`.`language_code` = '{$this->intl->languageCode}'
+  LEFT JOIN `series_titles` AS `display_title`
+    ON `display_title`.`id` = `series_display_titles`.`title_id`
+  LEFT JOIN `series_original_titles`
+    ON `series_original_titles`.`series_id` = `series`.`id`
+  LEFT JOIN `series_titles` AS `original_title`
+    ON `original_title`.`id` = `series_original_titles`.`title_id`
 WHERE `series`.`id` = ?
 SQL
       );
@@ -209,15 +222,16 @@ SQL
         $this->deleted,
         $this->endYear,
         $this->ratingMean,
-        $this->originalTitle,
-        $this->originalTitleLanguageCode,
         $this->ratingRank,
         $this->ratingBayes,
         $this->startYear,
         $this->status,
         $this->synopsis,
         $this->wikipedia,
+        $this->originalTitle,
+        $this->originalTitleLanguageCode,
         $this->displayTitle,
+        $this->displayTitleLanguageCode,
         $this->ratingVotes,
         $this->awardCount,
         $this->seasonCount,
@@ -239,18 +253,111 @@ SQL
 
 
   /**
+   * Update the series.
+   *
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function commit() {
+    $stmt = $this->getMySQLi()->prepare(<<<SQL
+UPDATE `series` SET
+  `dyn_synopses`  = COLUMN_ADD(`dyn_synopses`, '{$this->intl->languageCode}', ?),
+  `dyn_wikipedia` = COLUMN_ADD(`dyn_wikipedia`, '{$this->intl->languageCode}', ?),
+  `end_year`      = ?,
+  `start_year`    = ?,
+  `status`        = ?
+WHERE `id` = {$this->id}
+SQL
+    );
+    $stmt->bind_param(
+      "ssddi",
+      $this->synopsis,
+      $this->wikipedia,
+      $this->endYear->year,
+      $this->startYear->year,
+      $this->status
+    );
+    $stmt->execute();
+    $stmt->close();
+    return $this;
+  }
+
+  /**
+   * Create new series.
+   *
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function create() {
+    $mysqli = $this->getMySQLi();
+    $mysqli->autocommit(FALSE);
+
+    $stmtSeries = $mysqli->prepare(<<<SQL
+INSERT INTO `series` (
+  `dyn_synopses`,
+  `dyn_wikipedia`,
+  `end_year`,
+  `start_year`,
+  `status`
+) VALUES (COLUMN_CREATE('{$this->intl->languageCode}', ?), COLUMN_CREATE('{$this->intl->languageCode}', ?), ?, ?, ?)
+SQL
+    );
+    $stmtSeries->bind_param(
+      "ssddi",
+      $this->synopsis,
+      $this->wikipedia,
+      $this->endYear->year,
+      $this->startYear->year,
+      $this->status
+    );
+    $stmtSeries->execute();
+    $this->id = $stmtSeries->insert_id;
+
+    $stmtSeriesTitles = $mysqli->prepare(
+      "INSERT INTO `series_titles` (`series_id`, `dyn_comments`, `language_code`, `title`) VALUES (?, '', ?, ?)"
+    );
+    $stmtSeriesTitles->bind_param(
+      "dss",
+      $this->id,
+      $this->originalTitleLanguageCode,
+      $this->originalTitle
+    );
+    $stmtSeriesTitles->execute();
+    $seriesTitleId = $stmtSeriesTitles->insert_id;
+
+    $stmtSeriesOriginalTitles = $mysqli->prepare(
+      "INSERT INTO `series_original_titles` (`title_id`, `series_id`) VALUES (?, ?)"
+    );
+    $stmtSeriesOriginalTitles->bind_param(
+      "dd",
+      $seriesTitleId,
+      $this->id
+    );
+    $stmtSeriesOriginalTitles->execute();
+
+    if ($stmtSeries && $stmtSeriesTitles && $stmtSeriesOriginalTitles) {
+      $mysqli->commit();
+    }
+    else {
+      $mysqli->rollback();
+    }
+
+    $mysqli->autocommit(TRUE);
+    $mysqli->close();
+
+    return $this->init();
+  }
+
+  /**
    * {@inheritdoc}
    */
   protected function init() {
-    if (isset($this->displayTitle)) {
-      $this->displayTitleLanguageCode = $this->intl->languageCode;
+    if (isset($this->startYear) && !$this->startYear instanceof \stdClass) {
+      $this->startYear = new Date($this->startYear);
     }
-    else {
-      $this->displayTitle = $this->originalTitle;
-      $this->displayTitleLanguageCode = $this->originalTitleLanguageCode;
+    if (isset($this->endYear) && !$this->endYear instanceof \stdClass) {
+      $this->endYear = new Date($this->endYear);
     }
-    $this->startYear     && ($this->startYear = new Date($this->startYear));
-    $this->endYear       && ($this->endYear = new Date($this->endYear));
     $this->pluralKey   = "series";
     $this->singularKey = "series";
     return parent::init();

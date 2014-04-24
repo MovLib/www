@@ -43,7 +43,7 @@ trait EventTrait {
       [ "company separator", "companies", $this->intl->t("Companies"), $this->entity->companyCount ],
     ] as list($icon, $plural, $title, $count)) {
       $items[] = [
-        $this->intl->rp("/event/{0}/{$plural}", $this->entity->id),
+        $this->intl->r("/event/{0}/{$plural}", $this->entity->id),
         "{$title} <span class='fr'>{$this->intl->format("{0,number}", $count)}</span>",
         [ "class" => "ico ico-{$icon}" ]
       ];

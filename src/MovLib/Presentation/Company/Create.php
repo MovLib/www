@@ -33,7 +33,7 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
    */
   public function init() {
     $this->initPage($this->intl->t("Create Company"));
-    $this->initBreadcrumb([ [ $this->intl->rp("/companies"), $this->intl->t("Companies") ] ]);
+    $this->initBreadcrumb([ [ $this->intl->r("/companies"), $this->intl->t("Companies") ] ]);
     $this->breadcrumbTitle = $this->intl->t("Create");
     $this->initLanguageLinks("/company/create");
   }

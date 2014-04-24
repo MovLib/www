@@ -57,7 +57,7 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
       ->sidebarInitToolbox($this->entity)
       ->initLanguageLinks("/{$this->entity->singularKey}/{0}/logo", $this->entity->id)
       ->breadcrumb->addCrumbs([
-        [ $this->intl->rp("/companies"), $this->intl->t("Companies") ],
+        [ $this->intl->r("/companies"), $this->intl->t("Companies") ],
         [ $this->entity->route, $this->entity->name ]
       ])
     ;

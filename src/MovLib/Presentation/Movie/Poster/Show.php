@@ -26,14 +26,7 @@ namespace MovLib\Presentation\Movie\Poster;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\AbstractShowPresenter {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getContent() {
-    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("movie poster") ]), $this->intl->t("Check back later"), "info");
-  }
+final class Show extends \MovLib\Presentation\AbstractShowPresenter {
 
   /**
    * {@inheritdoc}
@@ -41,6 +34,13 @@ class Show extends \MovLib\Presentation\AbstractShowPresenter {
   public function init() {
     $this->initPage($this->intl->t("Poster"));
     $this->initShow(new \MovLib\Stub\Data\Dummy\Dummy($this->diContainerHTTP, $_SERVER["IMAGE_ID"], "poster", "posters"), $this->intl->t("Posters"), "ImageObject");
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {
+    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("movie poster") ]), $this->intl->t("Check back later"), "info");
   }
 
 }

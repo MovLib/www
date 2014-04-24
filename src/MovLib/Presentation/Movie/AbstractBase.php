@@ -52,7 +52,7 @@ abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
    */
   protected function initBreadcrumb(array $breadcrumbs = []) {
     array_unshift($breadcrumbs, [ $this->movie->route, $this->movie->displayTitle ]);
-    array_unshift($breadcrumbs, [ $this->intl->rp("/movies"), $this->intl->t("Movies") ]);
+    array_unshift($breadcrumbs, [ $this->intl->r("/movies"), $this->intl->t("Movies") ]);
     return parent::initBreadcrumb($breadcrumbs);
   }
 

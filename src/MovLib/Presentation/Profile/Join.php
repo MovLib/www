@@ -86,12 +86,12 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
   public function init() {
     // If the user is signed in, no need for joining.
     if ($this->session->isAuthenticated) {
-      throw new SeeOtherException($this->intl->r("/my"));
+      throw new SeeOtherException($this->intl->r("/dashboard"));
     }
 
     // Start rendering the page.
     $this->initPage($this->intl->t("Join"));
-    $this->initBreadcrumb([[ $this->intl->rp("/users"), $this->intl->t("Users") ]]);
+    $this->initBreadcrumb([[ $this->intl->r("/users"), $this->intl->t("Users") ]]);
     $this->breadcrumb->ignoreQuery = true;
     $this->initLanguageLinks("/profile/join");
 

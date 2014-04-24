@@ -56,7 +56,7 @@ trait CompanyTrait {
       [ "release separator", "releases", $this->intl->t("Releases"), $this->entity->releaseCount ],
     ] as list($icon, $plural, $title, $count)) {
       $items[] = [
-        $this->intl->rp("/company/{0}/{$plural}", $this->entity->id),
+        $this->intl->r("/company/{0}/{$plural}", $this->entity->id),
         "{$title} <span class='fr'>{$this->intl->format("{0,number}", $count)}</span>",
         [ "class" => "ico ico-{$icon}" ]
       ];
