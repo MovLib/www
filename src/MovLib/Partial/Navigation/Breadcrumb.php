@@ -130,7 +130,7 @@ final class Breadcrumb extends \MovLib\Core\Presentation\DependencyInjectionBase
       if (empty($attributes["title"])) {
         $attributes["title"] = $text;
       }
-      $text = mb_strimwidth($text, 0, 25);
+      $text = mb_strimwidth($text, 0, 25, $this->intl->t("…"));
     }
     $attributes["property"] = "url";
     $this->trail[] = [ $route, $text, $attributes ];
