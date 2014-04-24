@@ -65,8 +65,11 @@ abstract class AbstractMoviePresenter extends \MovLib\Presentation\AbstractPrese
         : $this->entity->displayTitleAndYear
     ;
 
-    $pageTitle && $pageTitle = str_replace("{title}", $this->getStructuredDisplayTitle($this->entity), $pageTitle);
-    $breadcrumbTitle && $breadcrumbTitle = str_replace("{title}", $this->getStructuredDisplayTitle($this->entity), $breadcrumbTitle);
+    $pageTitle = $pageTitle
+      ? str_replace("{title}", $this->getStructuredDisplayTitle($this->entity), $pageTitle)
+      : $this->getStructuredDisplayTitle($this->entity, false)
+    ;
+    $breadcrumbTitle && $breadcrumbTitle = str_replace("{title}", $this->entity->displayTitleAndYear, $breadcrumbTitle);
 
     $this->initPage($title, $pageTitle, $breadcrumbTitle);
 
