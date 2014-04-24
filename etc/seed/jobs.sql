@@ -106,7 +106,7 @@ SET @production_company_id = LAST_INSERT_ID();
 
 INSERT INTO `jobs` SET
   `dyn_names_sex0`   = COLUMN_CREATE(
-    'en', 'Screenwriter',
+    'en', 'Screenwriting',
     'de', 'Drehbuch'
   ),
   `dyn_names_sex1`   = COLUMN_CREATE(
@@ -115,7 +115,7 @@ INSERT INTO `jobs` SET
   ),
   `dyn_names_sex2`   = COLUMN_CREATE(
     'en', 'Screenwriter',
-    'de', 'Drehbuchautoring'
+    'de', 'Drehbuchautorin'
   ),
   `dyn_descriptions` = '',
   `dyn_wikipedia`    = COLUMN_CREATE(
