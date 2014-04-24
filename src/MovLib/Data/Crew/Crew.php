@@ -29,6 +29,31 @@ namespace MovLib\Data\Crew;
 final class Crew extends \MovLib\Data\Job\Job {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * The direction job's identifier.
+   *
+   * @var integer
+   */
+  const JOB_ID_DIRECTION = 2;
+
+  /**
+   * The production job's identifier.
+   *
+   * @var integer
+   */
+  const JOB_ID_PRODUCTION = 3;
+
+  /**
+   * The screenwritin job's identifier.
+   *
+   * @var integer
+   */
+  const JOB_ID_SCREENWRITING = 4;
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
@@ -45,6 +70,13 @@ final class Crew extends \MovLib\Data\Job\Job {
    * @var integer
    */
   public $companyId;
+
+  /**
+   * The company associated with the company identifier (for the sake of simplicity).
+   *
+   * @var \MovLib\Data\Company\Company
+   */
+  public $company;
 
   /**
    * The crew's job identifier.
@@ -66,6 +98,13 @@ final class Crew extends \MovLib\Data\Job\Job {
    * @var integer
    */
   public $personId;
+
+  /**
+   * The person associated with the person identifier (for the sake of simplicity).
+   *
+   * @var \MovLib\Data\Person\Person
+   */
+  public $person;
 
   /**
    * The crew's series identifier.

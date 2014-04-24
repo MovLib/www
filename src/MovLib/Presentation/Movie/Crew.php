@@ -17,8 +17,8 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\Movie\Movie;
-use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Data\Crew\CrewSet;
+use \MovLib\Partial\Sex;
 
 /**
  * Presentation of a single movie's crew.
@@ -29,7 +29,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Crew extends \MovLib\Presentation\AbstractIndexPresenter {
+class Crew extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
 
   /**
    * Initialize new movie crew presentation.
@@ -37,31 +37,43 @@ class Crew extends \MovLib\Presentation\AbstractIndexPresenter {
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function init() {
-    $cache->cacheable = false;
-    $cache->delete();
-    $this->movie = new Movie($_SERVER["MOVIE_ID"]);
-    $this->initPage($this->intl->t("Crew"));
-    $this->initBreadcrumb();
-    $this->pageTitle = $this->intl->t(
-      "Crew of {0}",
-      [ "<a href='{$this->movie->route}' property='url'><span property='name'>{$this->movie->displayTitleWithYear}</span></a>" ]
+    $this->initMoviePresenation(
+      $this->intl->t("Crew of {title}"),
+      $this->intl->t("Crew of {title}"),
+      $this->intl->t("Crew")
     );
-    $this->initLanguageLinks("/movie/{0}/crew", [ $this->movie->id ]);
-    // @todo: Replace with the real set!
-    $this->initIndex(new \MovLib\Data\Person\PersonSet($this->diContainerHTTP), "Fix me!", "Fix me!");
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function formatListingItem(\MovLib\Data\AbstractEntity $item, $delta) {
+  public function getContent() {
+    $set     = new CrewSet($this->diContainerHTTP);
+    $listing = null;
 
-  }
+    /* @var $movieCrew \MovLib\Stub\Data\Movie\MovieCrew */
+    foreach ($set->loadMovieCrew($this->entity) as $jobId => $movieCrew) {
+      $listing .= "<dt><a class='no-link' href='{$this->intl->r("/job/{0}", $jobId)}'>{$movieCrew->job->names[Sex::UNKNOWN]}</a></dt>";
+      /* @var $crew \MovLib\Data\Crew\Crew */
+      foreach ($movieCrew->crewSet as $crewId => $crew) {
+        if (isset($crew->person)) {
+          $entityType  = "Person";
+          $entityName  = $crew->person->name;
+          $entityRoute = $crew->person->route;
+        }
+        else {
+          $entityType  = "Company";
+          $entityName  = $crew->company->name;
+          $entityRoute = $crew->company->route;
+        }
+        $listing .= "<dd typeof='{$entityType}'><a href='{$entityRoute}' property='url'><span property='name'>{$entityName}</span></a></dd>";
+      }
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getNoItemsContent() {
+    if ($listing) {
+      return "<dl class='dl-big'>{$listing}</dl>";
+    }
+
     return $this->callout(
       "<p>{$this->intl->t("We couldn’t find the crew for this movie.")}</p>",
       $this->intl->t("No Crew"),

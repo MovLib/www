@@ -31,15 +31,15 @@ abstract class MovieCrew {
   /**
    * The job of the crew members.
    *
-   * @var \MovLib\Stub\Data\Job
+   * @var \MovLib\Data\Job\Job
    */
   public $job;
 
   /**
-   * Numeric array containing the crew members as {@see \MovLib\Stub\Entity} objects.
+   * The crew set associated with the job
    *
-   * @var array
+   * @var \MovLib\Data\Crew\CrewSet
    */
-  public $members;
+  public $crewSet;
 
 }
