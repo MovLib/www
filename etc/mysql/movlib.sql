@@ -606,7 +606,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_titles` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `dyn_comments` BLOB NOT NULL COMMENT 'The title’s comment in various languages. Keys are ISO alpha-2 language codes.',
   `language_code` CHAR(2) NOT NULL COMMENT 'The title’s ISO alpha-2 language code.',
-  `title` BLOB NOT NULL COMMENT 'The movie’s title.',
+  `title` TEXT NOT NULL COMMENT 'The movie’s title.',
   INDEX `fk_movies_titles_movies` (`movie_id` ASC),
   PRIMARY KEY (`id`, `movie_id`),
   CONSTRAINT `fk_movies_titles_movies`
