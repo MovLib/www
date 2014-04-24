@@ -6,10 +6,11 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MovLib Messages 0.0.1-dev\n"
-"Report-Msgid-Bugs-To: https://github.com/MovLib/www/issues?labels=translation\n"
+"Report-Msgid-Bugs-To: https://github.com/MovLib/www/issues?"
+"labels=translation\n"
 "POT-Creation-Date: 2014-04-17 15:03+0000\n"
-"PO-Revision-Date: 2014-04-17 14:45+0100\n"
-"Last-Translator: Richard Fussenegger <richard@fussenegger.info>\n"
+"PO-Revision-Date: 2014-04-24 10:40+0100\n"
+"Last-Translator: Sebastian Geschke <sebastian.geschke@gmail.com>\n"
 "Language-Team: MovDev <developers@movlib.org>\n"
 "Language: de_AT\n"
 "MIME-Version: 1.0\n"
@@ -22,16 +23,14 @@ msgstr ""
 #: /src/MovLib/Data/Format/AbstractFormat.php:101
 #: /src/MovLib/Partial/Format/AbstractFormat.php:101
 msgid "Black & White and Color"
-msgstr ""
+msgstr "Schwarz & Weiß und Farbe"
 
 #: /src/MovLib/Data/Company/Company.php:202
 msgid "{company_name} logo."
-msgstr ""
+msgstr "{company_name} Logo."
 
-#: /src/MovLib/Data/Movie/Movie.php:306
-#: /src/MovLib/Partial/License.php:100
-#: /src/MovLib/Partial/Currency.php:53
-#: /src/MovLib/Partial/PersonTrait.php:43
+#: /src/MovLib/Data/Movie/Movie.php:306 /src/MovLib/Partial/License.php:100
+#: /src/MovLib/Partial/Currency.php:53 /src/MovLib/Partial/PersonTrait.php:43
 #: /src/MovLib/Console/Command/Install/SeedAspectRatios.php:90
 #: /src/MovLib/Presentation/Series/SeriesTrait.php:86
 #: /src/MovLib/Presentation/Series/SeriesTrait.php:114
@@ -46,11 +45,11 @@ msgstr "{0} ({1})"
 
 #: /src/MovLib/Data/Movie/Movie.php:312
 msgid "{movie_title} poster."
-msgstr ""
+msgstr "{movie_title} Poster."
 
 #: /src/MovLib/Data/Person/Person.php:221
 msgid "Photo of {name}"
-msgstr ""
+msgstr "Photo von {name}"
 
 #: /src/MovLib/Data/User/User.php:375
 msgid "{username}’s avatar image."
@@ -59,50 +58,50 @@ msgstr "{username}s Avatarbild."
 #: /src/MovLib/Data/User/Collection.php:66
 #: /src/MovLib/Data/User/Collection.php:93
 msgid "Mint (M)"
-msgstr ""
+msgstr "Neuwertig (N)"
 
 #: /src/MovLib/Data/User/Collection.php:67
 #: /src/MovLib/Data/User/Collection.php:94
 msgid "Near Mint (NM or M-)"
-msgstr ""
+msgstr "Fast Wie Neu (FN oder N-)"
 
 #: /src/MovLib/Data/User/Collection.php:68
 #: /src/MovLib/Data/User/Collection.php:95
 msgid "Very Good Plus (VG+)"
-msgstr ""
+msgstr "Sehr Gut Plus (SG+)"
 
 #: /src/MovLib/Data/User/Collection.php:69
 #: /src/MovLib/Data/User/Collection.php:96
 msgid "Very Good (VG)"
-msgstr ""
+msgstr "Sehr Gut (SG)"
 
 #: /src/MovLib/Data/User/Collection.php:70
 #: /src/MovLib/Data/User/Collection.php:97
 msgid "Good Plus (G+)"
-msgstr ""
+msgstr "Gut Plus (G+)"
 
 #: /src/MovLib/Data/User/Collection.php:71
 #: /src/MovLib/Data/User/Collection.php:98
 msgid "Good (G)"
-msgstr ""
+msgstr "Gut (G)"
 
 #: /src/MovLib/Data/User/Collection.php:72
 #: /src/MovLib/Data/User/Collection.php:99
 msgid "Fair (F)"
-msgstr ""
+msgstr "Mittelmäßig (M)"
 
 #: /src/MovLib/Data/User/Collection.php:73
 #: /src/MovLib/Data/User/Collection.php:100
 msgid "Poor (P)"
-msgstr ""
+msgstr "Schlecht (S)"
 
 #: /src/MovLib/Data/User/Collection.php:91
 msgid "Generic"
-msgstr ""
+msgstr "Allgemein"
 
 #: /src/MovLib/Data/User/Collection.php:92
 msgid "No Cover"
-msgstr ""
+msgstr "Keine Hülle"
 
 #: /src/MovLib/Core/HTTP/Request.php:203
 msgid "IP address or user agent string is invalid or empty."
@@ -118,8 +117,14 @@ msgid "Privacy Policy"
 msgstr "Datenschutz"
 
 #: /src/MovLib/Core/HTTP/Request.php:205
-msgid "Please note that you have to submit your IP address and user agent string to identify yourself as being human; should you have privacy concerns read our {privacy_policy}."
-msgstr "Bitte nimm zur Kenntniss, dass du deine IP-Adresse und User-Agent-Zeichenkette übermitteln musst um dich als Mensch zu identifizieren; sollte du Datenschutzbedenken haben lies unsere {privacy_policy}."
+msgid ""
+"Please note that you have to submit your IP address and user agent string to "
+"identify yourself as being human; should you have privacy concerns read our "
+"{privacy_policy}."
+msgstr ""
+"Bitte nimm zur Kenntniss, dass du deine IP-Adresse und User-Agent-"
+"Zeichenkette übermitteln musst um dich als Mensch zu identifizieren; sollte "
+"du Datenschutzbedenken haben lies unsere {privacy_policy}."
 
 #: /src/MovLib/Core/Presentation/DependencyInjectionBase.php:171
 #: /src/MovLib/Presentation/AbstractPresenter.php:432
@@ -197,7 +202,7 @@ msgstr "{0}, {1}"
 
 #: /src/MovLib/Partial/StarRatingForm.php:111
 msgid "{0,plural,=1{Awful}=2{Bad}=3{Okay}=4{Fine}=5{Awesome}other{Unknown}}"
-msgstr ""
+msgstr "{0,plural,=1{Awful}=2{Bad}=3{Okay}=4{Fine}=5{Awesome}oder{Unknown}}"
 
 #: /src/MovLib/Partial/StarRatingForm.php:114
 msgid "Rate with {0,plural,one{one star} other{# stars}}."
@@ -205,31 +210,41 @@ msgstr "Bewerte mit {0,plural,one{einem Stern} other{# Sternen}}."
 
 #: /src/MovLib/Partial/StarRatingForm.php:122
 msgid "No one has rated so far, be the first!"
-msgstr ""
+msgstr "Es gibt noch keine Bewertungen, sei der/die erste!"
 
 #: /src/MovLib/Partial/StarRatingForm.php:125
 msgid "You’re the only one who rated yet."
-msgstr ""
+msgstr "Sie sind der/die erste die eine Bewertung abgegeben hat."
 
 #: /src/MovLib/Partial/StarRatingForm.php:132
 msgid "View the rating demographics."
-msgstr ""
+msgstr "Sehen Sie die Bewertungsdemographie an."
 
 #: /src/MovLib/Partial/StarRatingForm.php:129
-msgid "Rated by {0,plural,=1{{ratingVotes} user} other{{ratingVotes} users}} with {0,plural,=1{{rating}} other{a {1}mean rating{2} of {rating}}}."
-msgstr "Bewertet von {0,plural,=1{{ratingVotes}. Benutzer} other{{ratingVotes} Benutzern}} mit {0,plural,=1{{rating}} other{einer {1}Durchschnittsbewertung{2} von {rating}}}."
+msgid ""
+"Rated by {0,plural,=1{{ratingVotes} user} other{{ratingVotes} users}} with "
+"{0,plural,=1{{rating}} other{a {1}mean rating{2} of {rating}}}."
+msgstr ""
+"Bewertet von {0,plural,=1{{ratingVotes}. Benutzer} other{{ratingVotes} "
+"Benutzern}} mit {0,plural,=1{{rating}} other{einer {1}"
+"Durchschnittsbewertung{2} von {rating}}}."
 
 #: /src/MovLib/Partial/StarRatingForm.php:150
 msgid "Rate"
-msgstr ""
+msgstr "Bewertung"
 
 #: /src/MovLib/Partial/StarRatingForm.php:173
 msgid "Please {1}sign in{0} or {2}join{0} to rate."
 msgstr ""
+"Bitte {1}loggen Sie sich ein{0} oder {2}Registrieren Sie sich{0} um eine "
+"Bewertung abgeben zu können."
 
 #: /src/MovLib/Partial/StarRatingForm.php:183
-msgid "The submitted rating isn’t valid. Valid ratings range from {min} to {max}."
+msgid ""
+"The submitted rating isn’t valid. Valid ratings range from {min} to {max}."
 msgstr ""
+"Die abgegebene Bewertung ist nicht gültig. Gültige Bewertungen liegen "
+"zwischen {min} und {max}."
 
 #: /src/MovLib/Partial/Date.php:119
 msgid "{0}–{1}"
@@ -268,7 +283,7 @@ msgstr "Brotkrümelnavigation"
 
 #: /src/MovLib/Partial/PaginationTrait.php:158
 msgid "Page {0, number, integer}"
-msgstr ""
+msgstr "Seite {0, number, integer}"
 
 #: /src/MovLib/Partial/PaginationTrait.php:187
 #: /src/MovLib/Partial/PaginationTrait.php:194
@@ -287,28 +302,35 @@ msgstr "weiter"
 
 #: /src/MovLib/Partial/PaginationTrait.php:246
 msgid "Pagination"
-msgstr ""
+msgstr "Nummerierung"
 
 #: /src/MovLib/Partial/PaginationTrait.php:252
-msgid "Results from {from,number,integer} to {to,number,integer} of {total,number,integer} results."
-msgstr "Ergebnisse von {from,number,integer} bis {to,number,integer} von {total,number,integer} Ergebnissen."
+msgid ""
+"Results from {from,number,integer} to {to,number,integer} of {total,number,"
+"integer} results."
+msgstr ""
+"Ergebnisse von {from,number,integer} bis {to,number,integer} von {total,"
+"number,integer} Ergebnissen."
 
 #: /src/MovLib/Partial/Form.php:274
 msgid "Form Outdated"
-msgstr ""
+msgstr "Formular Veraltet"
 
 #: /src/MovLib/Partial/Form.php:276
-msgid "The form has become outdated. Copy any unsaved work in the form below and then {0}reload this page{1}."
+msgid ""
+"The form has become outdated. Copy any unsaved work in the form below and "
+"then {0}reload this page{1}."
 msgstr ""
+"Das Formular ist veraltet. Kopieren Sie nicht gespeicherte Änderungen aus "
+"dem Formular unten und {0} laden Sie die Seite neu {1}."
 
 #: /src/MovLib/Partial/Form.php:325
 #: /src/MovLib/Presentation/Profile/DangerZone.php:169
 msgid "Validation Error"
-msgstr ""
+msgstr "Fehler in der Überprüfung"
 
 #. / The "," is used to separate list items, please note the space after the comma!
-#: /src/MovLib/Partial/Genre.php:43
-#: /src/MovLib/Partial/InfoboxTrait.php:120
+#: /src/MovLib/Partial/Genre.php:43 /src/MovLib/Partial/InfoboxTrait.php:120
 #: /src/MovLib/Partial/Country.php:133
 msgid ", "
 msgstr ", "
@@ -330,45 +352,51 @@ msgstr ", "
 msgid "Genres"
 msgstr "Genres"
 
-#: /src/MovLib/Partial/Genre.php:84
-#: /src/MovLib/Partial/InfoboxTrait.php:122
+#: /src/MovLib/Partial/Genre.php:84 /src/MovLib/Partial/InfoboxTrait.php:122
 #: /src/MovLib/Presentation/Movie/MovieTrait.php:64
 msgid "{0}:"
 msgstr "{0}:"
 
 #: /src/MovLib/Partial/FormElement/TextareaHTMLRaw.php:176
-msgid "You must be signed in and have administrator privileges to enter raw HTML."
+msgid ""
+"You must be signed in and have administrator privileges to enter raw HTML."
 msgstr ""
+"Sie müssen eingeloggt sein und administrator Rechte besitzen um auf HTML "
+"zugreifen zu können"
 
 #: /src/MovLib/Partial/FormElement/InputFloat.php:59
 #: /src/MovLib/Partial/FormElement/InputInteger.php:44
 msgid "The “{0}” field must be an integer."
-msgstr ""
+msgstr "Das Feld “{0}“ muss eine Ganzzahl sein."
 
 #: /src/MovLib/Partial/FormElement/InputFloat.php:65
 msgid "The “{0}” is too large, the value must be {1,number} or less."
-msgstr ""
+msgstr "Der Wert “{0}“ ist zu groß, er muss {1, number} oder kleiner sein."
 
 #: /src/MovLib/Partial/FormElement/InputFloat.php:68
 msgid "The “{0}” is too low, the value must be {1,number} or more."
-msgstr ""
+msgstr "Der Wert “{0}” ist zu kleine, er muss zwischen {1,number} liegen."
 
 #: /src/MovLib/Partial/FormElement/InputURL.php:120
-msgid "The URL must start with either http:// or https:// and continue with a valid domain (username, password and port are not allowed)"
+msgid ""
+"The URL must start with either http:// or https:// and continue with a valid "
+"domain (username, password and port are not allowed)"
 msgstr ""
+"Die URL muss mit entweder http:// oder https:// beginnen und mit einer "
+"validen Domain fortsetzen (Username, Passwort und Port sind nicht erlaubt)"
 
 #: /src/MovLib/Partial/FormElement/InputURL.php:146
 #: /src/MovLib/Partial/FormElement/InputURL.php:215
 msgid "The URL is invalid."
-msgstr ""
+msgstr "Die URL ist unzulässig."
 
 #: /src/MovLib/Partial/FormElement/InputURL.php:156
 msgid "Scheme (protocol) and host are mandatory in a URL."
-msgstr ""
+msgstr "Schema (Protokoll) und Host sind in einer URL verpflichtend."
 
 #: /src/MovLib/Partial/FormElement/InputURL.php:160
 msgid "Scheme (protocol) must be of type HTTP or HTTPS."
-msgstr ""
+msgstr "Das Schema (Protokoll) müssen von Typ HTTP oder HTTPS sein."
 
 #: /src/MovLib/Partial/FormElement/InputURL.php:165
 msgid "Top-level domain"
@@ -376,19 +404,23 @@ msgstr "Top-Level-Domain"
 
 #: /src/MovLib/Partial/FormElement/InputURL.php:164
 msgid "The URL must have a valid {0}TLD{1}."
-msgstr ""
+msgstr "Die URL muss einen validen {0}TLD{1} besitzen."
 
 #: /src/MovLib/Partial/FormElement/InputURL.php:177
 msgid "External URLs are not allowed."
-msgstr ""
+msgstr "Externe URLs sind nicht erlaubt."
 
 #: /src/MovLib/Partial/FormElement/InputURL.php:183
-msgid "The URL contains illegal parts. Port, usernames and passwords are not allowed!"
+msgid ""
+"The URL contains illegal parts. Port, usernames and passwords are not "
+"allowed!"
 msgstr ""
+"Die URL enthält nicht erlaubte Teile. Port, Usernamen und Passwörter sind "
+"nicht erlaubt!"
 
 #: /src/MovLib/Partial/FormElement/InputURL.php:243
 msgid "The URL doesn’t exists (more specifically isn’t reachable)."
-msgstr ""
+msgstr "Die URL existiert nicht (genauer ist nicht erreichbar)."
 
 #: /src/MovLib/Partial/FormElement/AbstractFormElement.php:158
 msgid "This field is required."
@@ -396,7 +428,7 @@ msgstr "Dies ist ein Pflichtfeld."
 
 #: /src/MovLib/Partial/FormElement/AbstractFormElement.php:225
 msgid "The “{0}” field is required."
-msgstr ""
+msgstr "Das Feld “{0}” ist erforderlich."
 
 #: /src/MovLib/Partial/FormElement/TextareaHTML.php:340
 msgid "Invalid HTML in “{label}” text."
@@ -417,7 +449,7 @@ msgstr ""
 
 #: /src/MovLib/Partial/FormElement/TextareaHTML.php:409
 msgid "No external links are allowed in “{label}” text."
-msgstr ""
+msgstr "Keine externen Links sind im Text “{label}” erlaubt."
 
 #: /src/MovLib/Partial/FormElement/TextareaHTML.php:436
 msgid "Credentials are not allowed in “{label}” text ({link_url})."
@@ -440,7 +472,8 @@ msgid "Found disallowed tag {tag} in quotation."
 msgstr ""
 
 #: /src/MovLib/Partial/FormElement/TextareaHTML.php:561
-msgid "Found disallowed HTML tags in image caption, allowed tags are: {taglist}"
+msgid ""
+"Found disallowed HTML tags in image caption, allowed tags are: {taglist}"
 msgstr ""
 
 #: /src/MovLib/Partial/FormElement/TextareaHTML.php:564
@@ -477,11 +510,11 @@ msgstr "yyyy"
 
 #: /src/MovLib/Partial/FormElement/InputDateSeparate.php:135
 msgid "mm"
-msgstr ""
+msgstr "MM"
 
 #: /src/MovLib/Partial/FormElement/InputDateSeparate.php:144
 msgid "dd"
-msgstr ""
+msgstr "DD"
 
 #: /src/MovLib/Partial/FormElement/InputDateSeparate.php:153
 msgid "Year"
@@ -489,19 +522,19 @@ msgstr "Jahr"
 
 #: /src/MovLib/Partial/FormElement/InputDateSeparate.php:154
 msgid "Month"
-msgstr ""
+msgstr "Monat"
 
 #: /src/MovLib/Partial/FormElement/InputDateSeparate.php:155
 msgid "Day"
-msgstr ""
+msgstr "Tag"
 
 #: /src/MovLib/Partial/FormElement/InputDateSeparate.php:220
 msgid "Month and Year are mandatory in “{0}” date."
-msgstr ""
+msgstr "Monat und Jahr werden in “{0}” benötigt"
 
 #: /src/MovLib/Partial/FormElement/InputDateSeparate.php:225
 msgid "Year is mandatory in “{0}” date."
-msgstr ""
+msgstr "Jahr wird in “{0}” benötigt."
 
 #: /src/MovLib/Partial/FormElement/InputDateSeparate.php:230
 msgid "The year {0} must not be greater than {1}."
@@ -513,7 +546,7 @@ msgstr ""
 
 #: /src/MovLib/Partial/FormElement/InputDateSeparate.php:243
 msgid "The “{0}” date is invalid."
-msgstr ""
+msgstr "Das Datum  “{0}” ist ungültig."
 
 #: /src/MovLib/Partial/FormElement/InputDateSeparate.php:249
 msgid "The month {0} must not be greater than {1}."
@@ -524,8 +557,12 @@ msgid "The month {0} must not be less than {1}."
 msgstr ""
 
 #: /src/MovLib/Partial/FormElement/InputEmail.php:92
-msgid "An email address in the format [local]@[host].[tld] with a maximum of {0,number,integer} characters"
-msgstr "Eine E-Mail-Adresse im Format [local]@[host].[tld] mit maximal {0,number,integer} Zeichen."
+msgid ""
+"An email address in the format [local]@[host].[tld] with a maximum of {0,"
+"number,integer} characters"
+msgstr ""
+"Eine E-Mail-Adresse im Format [local]@[host].[tld] mit maximal {0,number,"
+"integer} Zeichen."
 
 #: /src/MovLib/Partial/FormElement/InputEmail.php:113
 msgid "The email address is too long: it must be {0,number,integer} or less."
@@ -533,35 +570,40 @@ msgstr ""
 
 #: /src/MovLib/Partial/FormElement/InputEmail.php:118
 msgid "The email address is invalid."
-msgstr ""
+msgstr "Die Email-Adresse ist üngültig"
 
 #: /src/MovLib/Partial/FormElement/InputEmail.php:133
 msgid "The email address is unreachable."
-msgstr ""
+msgstr "Die Email-Adresse"
 
 #: /src/MovLib/Partial/FormElement/AbstractInputFile.php:85
 msgid "The “{0}” file is required."
-msgstr ""
+msgstr "Die Datei “{0}” ist Pflicht."
 
 #: /src/MovLib/Partial/FormElement/AbstractInputFile.php:97
 msgid "The uploaded file is too large, it must be: {maxsize} or less"
 msgstr ""
+"Die Hochgeladene Datei ist zu groß, sie muss {maxsize} oder kleiner sein."
 
 #: /src/MovLib/Partial/FormElement/AbstractInputFile.php:103
 msgid "The upload didn’t complete, please try again."
 msgstr ""
 
 #: /src/MovLib/Partial/FormElement/AbstractInputFile.php:108
-msgid "An unknown problem was encountered while processing your upload, please try again."
+msgid ""
+"An unknown problem was encountered while processing your upload, please try "
+"again."
 msgstr ""
+"Ein unbekanntes Problem ist während dem verarbeiten Ihres Uploads passiert, "
+"bitte versuchen Sie es erneut."
 
 #: /src/MovLib/Partial/FormElement/InputText.php:73
 msgid "The “{0}” field contains invalid UTF-8 characters."
-msgstr ""
+msgstr "Das Feld “{0}” enthält ungültige UTF-8 Zeichen"
 
 #: /src/MovLib/Partial/FormElement/InputText.php:78
 msgid "The “{0}” field contains illegal low ASCII characters."
-msgstr ""
+msgstr "Das Feld “{0}” enthält illegale ASCII Zeichen"
 
 #: /src/MovLib/Partial/FormElement/Select.php:108
 msgid "Please Select…"
@@ -578,13 +620,16 @@ msgstr "{0} ist keine valide Wahl."
 #: /src/MovLib/Partial/FormElement/InputInteger.php:50
 msgid "The “{0}” is too large, the value must be {1,number,integer} or less."
 msgstr ""
+"Der Wert “{0}” ist zu groß, er muss {1,number,integer} oder kleiner sein."
 
 #: /src/MovLib/Partial/FormElement/InputInteger.php:53
 msgid "The “{0}” is too low, the value must be {1,number,integer} or more."
 msgstr ""
+"Der Wert “{0}” ist zu gering, er muss {1,number,integer} oder größer sein."
 
 #: /src/MovLib/Partial/FormElement/InputDate.php:104
-msgid "The “{0}” date is invalid, only the following format is valid: {format}."
+msgid ""
+"The “{0}” date is invalid, only the following format is valid: {format}."
 msgstr ""
 
 #: /src/MovLib/Partial/FormElement/InputDate.php:111
@@ -597,42 +642,63 @@ msgstr ""
 
 #: /src/MovLib/Partial/FormElement/InputCheckbox.php:107
 msgid "The checkbox is required."
-msgstr ""
+msgstr "Die Checkbox ist Pflicht."
 
 #: /src/MovLib/Partial/FormElement/InputWikipedia.php:72
 msgid "Only links to articles on wikipedia.org are allowed."
-msgstr ""
+msgstr "Nur Links zu Artikeln auf wikipedia.org sind erlaubt."
 
 #: /src/MovLib/Partial/FormElement/InputWikipedia.php:77
 msgid "Only links to the {0} Wikipedia are allowed."
-msgstr ""
+msgstr "Nur Links zum {0} Wikipedia sind erlaubt."
 
 #: /src/MovLib/Partial/FormElement/InputImage.php:122
-msgid "You must be signed in to upload images. If you don’t have an account yet why not {0}join {sitename}{1}?."
+msgid ""
+"You must be signed in to upload images. If you don’t have an account yet why "
+"not {0}join {sitename}{1}?."
 msgstr ""
+"Sie müssen eingeloggt sein um Bilder hochladen zu können. Falls sie noch "
+"keinen Account besitzen, wieso registrieren sie sicht nicht {0}hier{sitename}"
+"{1}?."
 
 #: /src/MovLib/Partial/FormElement/InputImage.php:137
-msgid "Image must be larger than {width} × {height} pixels and less than {size}. Allowed image types: JPG and PNG"
+msgid ""
+"Image must be larger than {width} × {height} pixels and less than {size}. "
+"Allowed image types: JPG and PNG"
 msgstr ""
+"Das Bild muss größer als {width} x {height} Pixel und kleiner als {size} "
+"sein. Erlaubte Bildtypen sind: JPG und PNG"
 
 #: /src/MovLib/Partial/FormElement/InputImage.php:147
 msgid "The image you see is only a preview, you still have to submit the form."
-msgstr "Das Bild das du siehst ist ausschließlich eine Vorschau, du musst das Formular absenden um es hochzuladen."
+msgstr ""
+"Das Bild das du siehst ist ausschließlich eine Vorschau, du musst das "
+"Formular absenden um es hochzuladen."
 
 #: /src/MovLib/Partial/FormElement/InputImage.php:148
-msgid "The image you are trying to upload is too large, it must be {size} or smaller."
+msgid ""
+"The image you are trying to upload is too large, it must be {size} or "
+"smaller."
 msgstr ""
 
 #: /src/MovLib/Partial/FormElement/InputImage.php:152
-msgid "New images should have a better quality than already existing images, this includes the resolution. The current image’s resolution is {width} × {height} and your new image’s is {width_new} × {height_new} pixels. Please confirm that your upload has a better quality than the existing one despite the fact of smaller dimensions."
+msgid ""
+"New images should have a better quality than already existing images, this "
+"includes the resolution. The current image’s resolution is {width} × "
+"{height} and your new image’s is {width_new} × {height_new} pixels. Please "
+"confirm that your upload has a better quality than the existing one despite "
+"the fact of smaller dimensions."
 msgstr ""
 
 #: /src/MovLib/Partial/FormElement/InputImage.php:157
-msgid "The image is too small, it must be larger than {width} × {height} pixels."
+msgid ""
+"The image is too small, it must be larger than {width} × {height} pixels."
 msgstr ""
 
 #: /src/MovLib/Partial/FormElement/InputImage.php:161
-msgid "Unsupported image type and/or corrupt image, the following types are supported: JPG and PNG"
+msgid ""
+"Unsupported image type and/or corrupt image, the following types are "
+"supported: JPG and PNG"
 msgstr ""
 
 #: /src/MovLib/Partial/FormElement/InputImage.php:183
@@ -641,15 +707,22 @@ msgstr "Bild Auwählen …"
 
 #: /src/MovLib/Partial/FormElement/InputPassword.php:83
 #: /src/MovLib/Presentation/Profile/PasswordSettings.php:86
-msgid "A password must contain lowercase and uppercase letters, numbers, and must be at least {0,number,integer} characters long."
-msgstr "Ein Passwort muss Nummern und Klein- sowie Großbuchstaben enthalten und mindestens {0,number,integer} Zeichen lang sein."
+msgid ""
+"A password must contain lowercase and uppercase letters, numbers, and must "
+"be at least {0,number,integer} characters long."
+msgstr ""
+"Ein Passwort muss Nummern und Klein- sowie Großbuchstaben enthalten und "
+"mindestens {0,number,integer} Zeichen lang sein."
 
 #: /src/MovLib/Partial/FormElement/InputPassword.php:104
-msgid "The password is too short: it must be {0,number,integer} characters or more."
+msgid ""
+"The password is too short: it must be {0,number,integer} characters or more."
 msgstr ""
 
 #: /src/MovLib/Partial/FormElement/InputPassword.php:109
-msgid "The password is not complex enough: it must contain numbers plus lowercase and uppercase letters."
+msgid ""
+"The password is not complex enough: it must contain numbers plus lowercase "
+"and uppercase letters."
 msgstr ""
 
 #: /src/MovLib/Partial/Listing/AwardEventListing.php:62
@@ -701,11 +774,14 @@ msgid "{0} × nominated"
 msgstr "{0} × nominiert"
 
 #: /src/MovLib/Partial/Listing/PersonCastListing.php:65
-msgid "No cast assigned yet, please edit this page to provide this information."
+msgid ""
+"No cast assigned yet, please edit this page to provide this information."
 msgstr ""
 
 #: /src/MovLib/Partial/Listing/CompanyListing.php:137
-msgid "We couldn’t find any company matching your filter criteria, or there simply isn’t any company available.Would you like to {0}create a new entry{1}?"
+msgid ""
+"We couldn’t find any company matching your filter criteria, or there simply "
+"isn’t any company available.Would you like to {0}create a new entry{1}?"
 msgstr ""
 
 #: /src/MovLib/Partial/Listing/CompanyListing.php:141
@@ -743,7 +819,7 @@ msgstr "Geburtsname"
 
 #: /src/MovLib/Partial/Time.php:104
 msgid "one second ago"
-msgstr ""
+msgstr "vor einer Sekunde"
 
 #: /src/MovLib/Partial/Time.php:104
 msgid "{0,number,integer} seconds ago"
@@ -759,7 +835,7 @@ msgstr "vor {0,number,integer} Minuten"
 
 #: /src/MovLib/Partial/Time.php:113
 msgid "an hour ago"
-msgstr ""
+msgstr "vor einer Stunde"
 
 #: /src/MovLib/Partial/Time.php:116
 msgid "{0,number,integer} hours ago"
@@ -775,7 +851,7 @@ msgstr "vor {0,number,integer} Tagen"
 
 #: /src/MovLib/Partial/Time.php:126
 msgid "one month ago"
-msgstr ""
+msgstr "vor einem Monat"
 
 #: /src/MovLib/Partial/Time.php:126
 msgid "{0,number,integer} months ago"
@@ -783,7 +859,7 @@ msgstr "vor {0,number,integer} Monaten"
 
 #: /src/MovLib/Partial/Time.php:129
 msgid "one year ago"
-msgstr ""
+msgstr "vor einem Jahr"
 
 #: /src/MovLib/Partial/Time.php:129
 msgid "{0,number,integer} years ago"
@@ -883,7 +959,9 @@ msgid "Country"
 msgstr "Land"
 
 #: /src/MovLib/Exception/ClientException/UnauthorizedException.php:61
-msgid "You must be signed in to access this content. Please use the form below to sign in or {0}join {sitename}{1}."
+msgid ""
+"You must be signed in to access this content. Please use the form below to "
+"sign in or {0}join {sitename}{1}."
 msgstr ""
 
 #: /src/MovLib/Exception/ClientException/UnauthorizedException.php:68
@@ -969,7 +1047,9 @@ msgid "This link can only be used once within the next 24 hours."
 msgstr ""
 
 #: /src/MovLib/Mail/Profile/EmailAddressChangeEmail.php:104
-msgid "Once you click the link above, you won’t be able to sign in with your old email address."
+msgid ""
+"Once you click the link above, you won’t be able to sign in with your old "
+"email address."
 msgstr ""
 
 #: /src/MovLib/Mail/Profile/EmailAddressChangeEmail.php:105
@@ -990,7 +1070,10 @@ msgid "You (or someone else) requested to delete your account."
 msgstr ""
 
 #: /src/MovLib/Mail/Profile/AccountDeletionEmail.php:93
-msgid "Once you click the link above your account will be deleted and all your personal data will be purged. Please note that you won’t be able to sign in anymore and there is no possibility to reclaim your account later on."
+msgid ""
+"Once you click the link above your account will be deleted and all your "
+"personal data will be purged. Please note that you won’t be able to sign in "
+"anymore and there is no possibility to reclaim your account later on."
 msgstr ""
 
 #: /src/MovLib/Mail/Profile/PasswordChangeEmail.php:91
@@ -1003,7 +1086,9 @@ msgstr ""
 
 #: /src/MovLib/Mail/Profile/PasswordChangeEmail.php:109
 #: /src/MovLib/Mail/User/ResetPassword.php:100
-msgid "Once you click the link above, you won’t be able to sign in with your old password."
+msgid ""
+"Once you click the link above, you won’t be able to sign in with your old "
+"password."
 msgstr ""
 
 #: /src/MovLib/Mail/Users/EmailExists.php:56
@@ -1011,7 +1096,10 @@ msgid "Forgot Your Password?"
 msgstr ""
 
 #: /src/MovLib/Mail/Users/EmailExists.php:78
-msgid "You (or someone else) tried to sign up a new account with this email address. If you forgot your password go to the {0}reset password{1} page to request a new one."
+msgid ""
+"You (or someone else) tried to sign up a new account with this email "
+"address. If you forgot your password go to the {0}reset password{1} page to "
+"request a new one."
 msgstr ""
 
 #: /src/MovLib/Mail/Users/Join.php:92
@@ -1023,7 +1111,9 @@ msgid "Hi {username}!"
 msgstr ""
 
 #: /src/MovLib/Mail/Users/Join.php:111
-msgid "Thank you for joining {0}. You may now sign in and activate your new account by {1}clicking this link{2}."
+msgid ""
+"Thank you for joining {0}. You may now sign in and activate your new account "
+"by {1}clicking this link{2}."
 msgstr ""
 
 #: /src/MovLib/Mail/Users/Join.php:117
@@ -1059,8 +1149,7 @@ msgstr "Angeforderte Passwort-Rücksetzung"
 msgid "You (or someone else) requested to reset your password."
 msgstr ""
 
-#: /src/MovLib/Mail/Webmaster.php:79
-#: /src/MovLib/Mail/Webmaster.php:86
+#: /src/MovLib/Mail/Webmaster.php:79 /src/MovLib/Mail/Webmaster.php:86
 msgid "Hi webmaster!"
 msgstr ""
 
@@ -1169,7 +1258,9 @@ msgid "Create New Job"
 msgstr "Neue Tätigkeit Anlegen"
 
 #: /src/MovLib/Presentation/Job/Index.php:73
-msgid "We couldn’t find any jobs matching your filter criteria, or there simply aren’t any jobs available."
+msgid ""
+"We couldn’t find any jobs matching your filter criteria, or there simply "
+"aren’t any jobs available."
 msgstr ""
 
 #: /src/MovLib/Presentation/Job/Index.php:74
@@ -1271,10 +1362,9 @@ msgstr "Beschreibung"
 
 #: /src/MovLib/Presentation/Job/Edit.php:82
 #: /src/MovLib/Presentation/Job/Create.php:95
-#, fuzzy
 #| msgid "Description"
 msgid "Description of the job."
-msgstr "Beschreibung"
+msgstr "Beschreibung des Jobs"
 
 #: /src/MovLib/Presentation/Job/Edit.php:83
 #: /src/MovLib/Presentation/Job/Create.php:96
@@ -1470,18 +1560,23 @@ msgstr "Gefahrenzone"
 #: /src/MovLib/Presentation/Profile/PasswordSettings.php:71
 #: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:48
 msgid "Please sign in again to verify the legitimacy of this request."
-msgstr "Bitte melde dich erneut an um die Legitimität dieser Anfrage zu bestätigen."
+msgstr ""
+"Bitte melde dich erneut an um die Legitimität dieser Anfrage zu bestätigen."
 
 #: /src/MovLib/Presentation/Profile/DangerZone.php:66
 msgid "Terminate"
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/DangerZone.php:67
-msgid "Terminate this session, the associated user agent will be signed out immediately."
+msgid ""
+"Terminate this session, the associated user agent will be signed out "
+"immediately."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/DangerZone.php:72
-msgid "If you use this button all your active session will be terminated and you’ll be signe out!"
+msgid ""
+"If you use this button all your active session will be terminated and you’ll "
+"be signe out!"
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/DangerZone.php:73
@@ -1494,7 +1589,14 @@ msgid "Active Sessions"
 msgstr "Aktive Sessions"
 
 #: /src/MovLib/Presentation/Profile/DangerZone.php:93
-msgid "The following table contains a listing of all your active sessions. You can terminate any session by clicking on the button to the right. Your current session is highlighted with a yellow background color and the button reads “sign out” instead of “terminate”. If you have the feeling that some sessions that are listed weren’t initiated by you, terminate them and consider to {0}set a new password{1} to ensure that nobody else has access to your account."
+msgid ""
+"The following table contains a listing of all your active sessions. You can "
+"terminate any session by clicking on the button to the right. Your current "
+"session is highlighted with a yellow background color and the button reads "
+"“sign out” instead of “terminate”. If you have the feeling that some "
+"sessions that are listed weren’t initiated by you, terminate them and "
+"consider to {0}set a new password{1} to ensure that nobody else has access "
+"to your account."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/DangerZone.php:100
@@ -1510,7 +1612,17 @@ msgid "IP address"
 msgstr "IP-Adresse"
 
 #: /src/MovLib/Presentation/Profile/DangerZone.php:115
-msgid "If you want to delete your account—for whatever reason—click the button below. All your personal data is purged from our system and this action is final. Please note that all your contributions and your username will stay in our system. You agreed to release all your contributions to the {sitename} database along with an open and free license, therefor each of your contributions don’t belong to you anymore. Attribution to you stays with the username you’ve initially chosen. This doesn’t include any reviews of yours which have no open license, they are deleted as well and lost forever. Again, this action is final and there’s no way for you to reclaim your account after deletion!"
+msgid ""
+"If you want to delete your account—for whatever reason—click the button "
+"below. All your personal data is purged from our system and this action is "
+"final. Please note that all your contributions and your username will stay "
+"in our system. You agreed to release all your contributions to the "
+"{sitename} database along with an open and free license, therefor each of "
+"your contributions don’t belong to you anymore. Attribution to you stays "
+"with the username you’ve initially chosen. This doesn’t include any reviews "
+"of yours which have no open license, they are deleted as well and lost "
+"forever. Again, this action is final and there’s no way for you to reclaim "
+"your account after deletion!"
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/DangerZone.php:124
@@ -1530,7 +1642,9 @@ msgid "Successfully Requested Deletion"
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/DangerZone.php:149
-msgid "You have to follow the link that we just sent to you via email to complete this action."
+msgid ""
+"You have to follow the link that we just sent to you via email to complete "
+"this action."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/DangerZone.php:150
@@ -1544,7 +1658,9 @@ msgid "The submitted session identifier was invalid."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/DangerZone.php:175
-msgid "You’ve been signed out from your current session and all your active sessions have been deleted."
+msgid ""
+"You’ve been signed out from your current session and all your active "
+"sessions have been deleted."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/DangerZone.php:176
@@ -1556,7 +1672,9 @@ msgstr ""
 #: /src/MovLib/Presentation/Profile/ResetPassword.php:197
 #: /src/MovLib/Presentation/Profile/ResetPassword.php:207
 #: /src/MovLib/Presentation/Profile/PasswordSettings.php:187
-msgid "Your confirmation token is invalid or expired, please fill out the form again."
+msgid ""
+"Your confirmation token is invalid or expired, please fill out the form "
+"again."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/DangerZone.php:201
@@ -1573,11 +1691,15 @@ msgstr ""
 #: /src/MovLib/Presentation/Profile/DangerZone.php:211
 #: /src/MovLib/Presentation/Profile/EmailSettings.php:178
 #: /src/MovLib/Presentation/Profile/PasswordSettings.php:198
-msgid "The confirmation token is invalid, please sign in again and request a new token."
+msgid ""
+"The confirmation token is invalid, please sign in again and request a new "
+"token."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/DangerZone.php:221
-msgid "Your account has been purged from our system. We’re very sorry to see you leave."
+msgid ""
+"Your account has been purged from our system. We’re very sorry to see you "
+"leave."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/DangerZone.php:222
@@ -1597,7 +1719,9 @@ msgid "Change Email Settings"
 msgstr "Emaileinstellungen Ändern"
 
 #: /src/MovLib/Presentation/Profile/EmailSettings.php:88
-msgid "{sitename} takes your privacy seriously. That’s why your email address will never show up in public. In fact, it stays top secret like your password."
+msgid ""
+"{sitename} takes your privacy seriously. That’s why your email address will "
+"never show up in public. In fact, it stays top secret like your password."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/EmailSettings.php:110
@@ -1605,7 +1729,9 @@ msgid "Successfully Requested Email Change"
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/EmailSettings.php:116
-msgid "You have to sign in with your old email address until you’ve successfully confirmed your email change via the link that we’ve just sent you."
+msgid ""
+"You have to sign in with your old email address until you’ve successfully "
+"confirmed your email change via the link that we’ve just sent you."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/EmailSettings.php:139
@@ -1617,7 +1743,9 @@ msgid "This email address is already in use, please choose another one."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/EmailSettings.php:187
-msgid "Your email address was successfully changed. Please use your new email address to sign in from now on."
+msgid ""
+"Your email address was successfully changed. Please use your new email "
+"address to sign in from now on."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/EmailSettings.php:188
@@ -1649,8 +1777,12 @@ msgid "Enter your new password again"
 msgstr "Gib dein neues Passwort erneut ein"
 
 #: /src/MovLib/Presentation/Profile/ResetPassword.php:112
-msgid "Enter the email address associated with your {sitename} account. Password reset instructions will be sent via email."
-msgstr "Gib die E-Mail-Adresse deines {sitename}-Kontos ein. Instruktionen zum Zurücksetzen deines Passworts werden via E-Mail versandt."
+msgid ""
+"Enter the email address associated with your {sitename} account. Password "
+"reset instructions will be sent via email."
+msgstr ""
+"Gib die E-Mail-Adresse deines {sitename}-Kontos ein. Instruktionen zum "
+"Zurücksetzen deines Passworts werden via E-Mail versandt."
 
 #: /src/MovLib/Presentation/Profile/ResetPassword.php:117
 msgid "Request Reset"
@@ -1662,7 +1794,9 @@ msgstr ""
 
 #: /src/MovLib/Presentation/Profile/ResetPassword.php:160
 #: /src/MovLib/Presentation/Profile/PasswordSettings.php:207
-msgid "Your password was successfully changed. Please use your new password to sign in from now on."
+msgid ""
+"Your password was successfully changed. Please use your new password to sign "
+"in from now on."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/ResetPassword.php:161
@@ -1672,7 +1806,8 @@ msgstr ""
 
 #: /src/MovLib/Presentation/Profile/ResetPassword.php:179
 #: /src/MovLib/Presentation/Profile/PasswordSettings.php:162
-msgid "The confirmation password doesn’t match the new password, please try again."
+msgid ""
+"The confirmation password doesn’t match the new password, please try again."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:56
@@ -1713,7 +1848,9 @@ msgid "Sex"
 msgstr "Geschlecht"
 
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:101
-msgid "Your sex will be displayed on your profile page and is used to create demographic evaluations."
+msgid ""
+"Your sex will be displayed on your profile page and is used to create "
+"demographic evaluations."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:103
@@ -1723,7 +1860,9 @@ msgid "Date of Birth"
 msgstr "Geburtsdatum"
 
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:104
-msgid "Your birthday will be displayed on your profile page and is used to create demographic evaluations."
+msgid ""
+"Your birthday will be displayed on your profile page and is used to create "
+"demographic evaluations."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:108
@@ -1748,7 +1887,9 @@ msgid "Tell others about yourself, what do you do, what do you like, …"
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:120
-msgid "Your country will be displayed on your profile page and is used to create demographic evaluations."
+msgid ""
+"Your country will be displayed on your profile page and is used to create "
+"demographic evaluations."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:122
@@ -1756,11 +1897,15 @@ msgid "Time Zone"
 msgstr "Zeitzone"
 
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:123
-msgid "Your time zone will be used to display any time related information correctly."
+msgid ""
+"Your time zone will be used to display any time related information "
+"correctly."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:126
-msgid "Your currency will be used to display any money related information correctly."
+msgid ""
+"Your currency will be used to display any money related information "
+"correctly."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:128
@@ -1768,7 +1913,10 @@ msgid "System Language"
 msgstr "Systemsprache"
 
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:130
-msgid "Select your preferred system language, this will be used to redirect you if you visit {sitename} without a subdomain and may be from other use in the future."
+msgid ""
+"Select your preferred system language, this will be used to redirect you if "
+"you visit {sitename} without a subdomain and may be from other use in the "
+"future."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:135
@@ -1776,7 +1924,13 @@ msgid "Keep my data private!"
 msgstr "Halte meine Daten privat!"
 
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:137
-msgid "Check the following box if you’d like to hide your private data on your profile page. Your data will only be used by {sitename} for anonymous demographical evaluation of usage statistics and ratings. By providing basic data like sex and country, scientists around the world are enabled to research the human interests in movies more closely. Of course your real name won’t be used for anything!"
+msgid ""
+"Check the following box if you’d like to hide your private data on your "
+"profile page. Your data will only be used by {sitename} for anonymous "
+"demographical evaluation of usage statistics and ratings. By providing basic "
+"data like sex and country, scientists around the world are enabled to "
+"research the human interests in movies more closely. Of course your real "
+"name won’t be used for anything!"
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:157
@@ -1816,8 +1970,15 @@ msgid "Enter your desired username"
 msgstr "Gib deinen gewünschten Benutzernamen ein"
 
 #: /src/MovLib/Presentation/Profile/Join.php:122
-msgid "A username must be valid UTF-8, cannot contain spaces at the beginning and end or more than one space in a row, it cannot contain any of the following characters {0} and it cannot be longer than {1,number,integer} characters."
-msgstr "Ein Benutzername muss in validem UTF-8 sein, kann keine Leerzeichen am Anfang und Ende oder mehr als eines hintereinander besitzen, weiters kann er keine dieser Zeichen {0} beinhalten und nicht länger als {1,number,integer} Zeichen sein."
+msgid ""
+"A username must be valid UTF-8, cannot contain spaces at the beginning and "
+"end or more than one space in a row, it cannot contain any of the following "
+"characters {0} and it cannot be longer than {1,number,integer} characters."
+msgstr ""
+"Ein Benutzername muss in validem UTF-8 sein, kann keine Leerzeichen am "
+"Anfang und Ende oder mehr als eines hintereinander besitzen, weiters kann er "
+"keine dieser Zeichen {0} beinhalten und nicht länger als {1,number,integer} "
+"Zeichen sein."
 
 #: /src/MovLib/Presentation/Profile/Join.php:132
 msgid "Enter your desired password"
@@ -1825,7 +1986,9 @@ msgstr ""
 
 #: /src/MovLib/Presentation/Profile/Join.php:136
 msgid "I accept the {a1}privacy policy{a} and the {a2}terms of use{a}."
-msgstr "Ich akzeptiere die {a1}Datenschutzerklärung{a} und die {a2}Nutzungsbedingungen{a}."
+msgstr ""
+"Ich akzeptiere die {a1}Datenschutzerklärung{a} und die {a2}"
+"Nutzungsbedingungen{a}."
 
 #: /src/MovLib/Presentation/Profile/Join.php:141
 #: /src/MovLib/Presentation/ComingSoon.php:77
@@ -1833,7 +1996,9 @@ msgid "Sign Up"
 msgstr "Beitreten"
 
 #: /src/MovLib/Presentation/Profile/Join.php:147
-msgid "Mistyped something? No problem, simply {0}go back{1} and fill out the form again."
+msgid ""
+"Mistyped something? No problem, simply {0}go back{1} and fill out the form "
+"again."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/Join.php:176
@@ -1853,7 +2018,8 @@ msgid "The username cannot contain any of the following characters: {0}"
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/Join.php:199
-msgid "The username is too long: it must be {0,number,integer} characters or less."
+msgid ""
+"The username is too long: it must be {0,number,integer} characters or less."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/Join.php:205
@@ -1869,11 +2035,15 @@ msgid "Terms of Use"
 msgstr "Nutzungsbedingungen"
 
 #: /src/MovLib/Presentation/Profile/Join.php:216
-msgid "You have to accept the {privacy_policy} and {terms_of_use} to join {sitename}."
+msgid ""
+"You have to accept the {privacy_policy} and {terms_of_use} to join "
+"{sitename}."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/Join.php:235
-msgid "Too many joining attempts from this IP address. Please wait one hour before trying again."
+msgid ""
+"Too many joining attempts from this IP address. Please wait one hour before "
+"trying again."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/Join.php:255
@@ -1881,7 +2051,9 @@ msgid "Successfully Joined"
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/Join.php:276
-msgid "The activation token is invalid, please go back to the mail we sent you and copy the whole link."
+msgid ""
+"The activation token is invalid, please go back to the mail we sent you and "
+"copy the whole link."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/Join.php:284
@@ -1889,11 +2061,15 @@ msgid "We couldn’t find any activation data for your token."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/Join.php:286
-msgid "The token might have expired, remember that you only have 24 hours to activate your account."
+msgid ""
+"The token might have expired, remember that you only have 24 hours to "
+"activate your account."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/Join.php:287
-msgid "The token might be invalid, check the email again we’ve sent you and be sure to copy the whole link."
+msgid ""
+"The token might be invalid, check the email again we’ve sent you and be sure "
+"to copy the whole link."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/Join.php:288
@@ -1909,11 +2085,15 @@ msgid "Already Activated"
 msgstr "Bereits Aktiviert"
 
 #: /src/MovLib/Presentation/Profile/Join.php:308
-msgid "Unfortunately in the meantime someone took your desired username, please choose another one."
+msgid ""
+"Unfortunately in the meantime someone took your desired username, please "
+"choose another one."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/Join.php:322
-msgid "Your account has been activated, please sign in with your email address and your secret password."
+msgid ""
+"Your account has been activated, please sign in with your email address and "
+"your secret password."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/Join.php:323
@@ -2040,7 +2220,8 @@ msgid "Choose a strong password to secure your account."
 msgstr "Wähle ein sicheres Passwort um dein Konto abzusichern."
 
 #: /src/MovLib/Presentation/Profile/PasswordSettings.php:98
-msgid "As little help we generated the following password for you: {random_password}"
+msgid ""
+"As little help we generated the following password for you: {random_password}"
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/PasswordSettings.php:114
@@ -2056,11 +2237,14 @@ msgid "Successfully Requested Password Change"
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/PasswordSettings.php:140
-msgid "You have to sign in with your old password until you’ve successfully confirmed your password change via the link we’ve just sent you."
+msgid ""
+"You have to sign in with your old password until you’ve successfully "
+"confirmed your password change via the link we’ve just sent you."
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/PasswordSettings.php:167
-msgid "Your new password equals your existing password, please enter a new one."
+msgid ""
+"Your new password equals your existing password, please enter a new one."
 msgstr ""
 
 #: /src/MovLib/Presentation/Error/InternalServerError.php:58
@@ -2076,7 +2260,11 @@ msgid "It appears you’ve found a glitch in the system."
 msgstr ""
 
 #: /src/MovLib/Presentation/Error/InternalServerError.php:71
-msgid "This incident has been reported to the developers and should be fixed in no time. Please try again in a few minutes. More technical details about this error can be found below. Don’t worry if you don’t understand what it says down there, it will help us to solve the issue."
+msgid ""
+"This incident has been reported to the developers and should be fixed in no "
+"time. Please try again in a few minutes. More technical details about this "
+"error can be found below. Don’t worry if you don’t understand what it says "
+"down there, it will help us to solve the issue."
 msgstr ""
 
 #: /src/MovLib/Presentation/Error/InternalServerError.php:89
@@ -2096,8 +2284,12 @@ msgid "The requested page could not be found."
 msgstr "Die angeforderte Seite konnte nicht gefunden werden."
 
 #: /src/MovLib/Presentation/Error/NotFound.php:42
-msgid "There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}."
-msgstr "Es kann viele verschiedene Gründe für diese Fehlermeldung geben. Solltest du der Meinung sein, dass dieser Fehler nicht korrekt ist {0}kontaktiere uns{1}."
+msgid ""
+"There can be various reasons why you might see this error message. If you "
+"feel that receiving this error is a mistake please {0}contact us{1}."
+msgstr ""
+"Es kann viele verschiedene Gründe für diese Fehlermeldung geben. Solltest du "
+"der Meinung sein, dass dieser Fehler nicht korrekt ist {0}kontaktiere uns{1}."
 
 #: /src/MovLib/Presentation/Award/Companies.php:61
 #: /src/MovLib/Presentation/Award/History.php:61
@@ -2240,7 +2432,9 @@ msgid "Events"
 msgstr "Veranstaltungen"
 
 #: /src/MovLib/Presentation/Award/Index.php:98
-msgid "We couldn’t find any awards matching your filter criteria, or there simply aren’t any awards available."
+msgid ""
+"We couldn’t find any awards matching your filter criteria, or there simply "
+"aren’t any awards available."
 msgstr ""
 
 #: /src/MovLib/Presentation/Award/Index.php:99
@@ -2408,7 +2602,9 @@ msgid "To"
 msgstr ""
 
 #: /src/MovLib/Presentation/Award/Category/Index.php:110
-msgid "We couldn’t find any award categories matching your filter criteria, or there simply aren’t any awards categories available."
+msgid ""
+"We couldn’t find any award categories matching your filter criteria, or "
+"there simply aren’t any awards categories available."
 msgstr ""
 
 #: /src/MovLib/Presentation/Award/Category/Index.php:111
@@ -2513,8 +2709,13 @@ msgid "Please select your preferred language from the following list."
 msgstr "Bitte wähle deine bevorzugte Sprache aus der folgenden Liste."
 
 #: /src/MovLib/Presentation/LanguageSelection.php:73
-msgid "Is your language missing from our list? Help us translate {sitename} to your language. More information can be found at {0}our translation portal{1}."
-msgstr "Fehlt deine Sprache in unserer Liste? Hilf uns {sitename} in deine Sprache zu übersetzen. Mehr Informationen findest du in {0}unserem Übersetzungsportal{1}."
+msgid ""
+"Is your language missing from our list? Help us translate {sitename} to your "
+"language. More information can be found at {0}our translation portal{1}."
+msgstr ""
+"Fehlt deine Sprache in unserer Liste? Hilf uns {sitename} in deine Sprache "
+"zu übersetzen. Mehr Informationen findest du in {0}unserem "
+"Übersetzungsportal{1}."
 
 #: /src/MovLib/Presentation/LanguageSelection.php:95
 #: /src/MovLib/Presentation/ComingSoon.php:147
@@ -2553,7 +2754,9 @@ msgid "Releases"
 msgstr "Veröffentlichungen"
 
 #: /src/MovLib/Presentation/Series/Index.php:77
-msgid "We couldn’t find any series matching your filter criteria, or there simply aren’t any series available."
+msgid ""
+"We couldn’t find any series matching your filter criteria, or there simply "
+"aren’t any series available."
 msgstr ""
 
 #: /src/MovLib/Presentation/Series/Index.php:78
@@ -2675,7 +2878,9 @@ msgid "Create New Company"
 msgstr "Neues Unternehmen Anlegen"
 
 #: /src/MovLib/Presentation/Company/Index.php:96
-msgid "We couldn’t find any companies matching your filter criteria, or there simply aren’t any companies available."
+msgid ""
+"We couldn’t find any companies matching your filter criteria, or there "
+"simply aren’t any companies available."
 msgstr ""
 
 #: /src/MovLib/Presentation/Company/Index.php:97
@@ -2715,10 +2920,9 @@ msgid "The founding date of the company."
 msgstr ""
 
 #: /src/MovLib/Presentation/Company/Edit.php:75
-#, fuzzy
 #| msgid "Description"
 msgid "Description of the company."
-msgstr "Beschreibung"
+msgstr "Beschreibung des Unternehmens"
 
 #: /src/MovLib/Presentation/Company/Edit.php:76
 #, fuzzy
@@ -2745,10 +2949,9 @@ msgid "company series"
 msgstr "Unternehmen"
 
 #: /src/MovLib/Presentation/Company/Logo/Show.php:72
-#, fuzzy
 #| msgid "Company"
 msgid "company logo"
-msgstr "Unternehmen"
+msgstr "Unternehmens Logo"
 
 #: /src/MovLib/Presentation/Company/Discussion.php:72
 msgid "discuss company"
@@ -2805,7 +3008,9 @@ msgstr ""
 
 #: /src/MovLib/Presentation/AbstractPresenter.php:327
 #: /src/MovLib/Presentation/Help/Index.php:120
-msgid "Please activate JavaScript in your browser to experience our website with all its features."
+msgid ""
+"Please activate JavaScript in your browser to experience our website with "
+"all its features."
 msgstr ""
 
 #: /src/MovLib/Presentation/AbstractPresenter.php:466
@@ -2813,8 +3018,11 @@ msgid "Choose your language"
 msgstr "Wähle deine Sprache"
 
 #: /src/MovLib/Presentation/AbstractPresenter.php:468
-msgid "Is your language missing in our list? {0}Help us translate {sitename}.{1}"
-msgstr "Fehlt deine Sprache in unserer Liste? {0}Hilf uns {sitename} zu übersetzen.{1}"
+msgid ""
+"Is your language missing in our list? {0}Help us translate {sitename}.{1}"
+msgstr ""
+"Fehlt deine Sprache in unserer Liste? {0}Hilf uns {sitename} zu übersetzen."
+"{1}"
 
 #: /src/MovLib/Presentation/AbstractPresenter.php:481
 #: /src/MovLib/Presentation/ComingSoon.php:103
@@ -2826,12 +3034,20 @@ msgid "Copyright and licensing information"
 msgstr "Urheber- und Lizenzinformationen"
 
 #: /src/MovLib/Presentation/AbstractPresenter.php:486
-msgid "Database data is available under the {0}Creative Commons — CC0 1.0 Universal{1} license."
-msgstr "Datenbankdaten sind unter der {0}Creative Commons — CC0 1.0 Universal{1} Lizenz verfügbar."
+msgid ""
+"Database data is available under the {0}Creative Commons — CC0 1.0 "
+"Universal{1} license."
+msgstr ""
+"Datenbankdaten sind unter der {0}Creative Commons — CC0 1.0 Universal{1} "
+"Lizenz verfügbar."
 
 #: /src/MovLib/Presentation/AbstractPresenter.php:489
-msgid "Additional terms may apply for third-party content, please refer to any license or copyright information that is additionaly stated."
-msgstr "Inhalte von Dritten unterliegen möglicherweise zusätzlichen Bedingungen, bitte achte auf zusätzliche Lizenz- und Urheberinformatinen."
+msgid ""
+"Additional terms may apply for third-party content, please refer to any "
+"license or copyright information that is additionaly stated."
+msgstr ""
+"Inhalte von Dritten unterliegen möglicherweise zusätzlichen Bedingungen, "
+"bitte achte auf zusätzliche Lizenz- und Urheberinformatinen."
 
 #: /src/MovLib/Presentation/AbstractPresenter.php:493
 #: /src/MovLib/Presentation/ComingSoon.php:107
@@ -2970,7 +3186,9 @@ msgid "{0} Help"
 msgstr ""
 
 #: /src/MovLib/Presentation/Help/Index.php:110
-msgid "We couldn’t find any help categories matching your filter criteria, or there simply aren’t any help categories available."
+msgid ""
+"We couldn’t find any help categories matching your filter criteria, or there "
+"simply aren’t any help categories available."
 msgstr ""
 
 #: /src/MovLib/Presentation/Help/Index.php:111
@@ -2982,7 +3200,9 @@ msgid "Help, Please!"
 msgstr ""
 
 #: /src/MovLib/Presentation/Help/Index.php:128
-msgid "Do you like movies? Great, so do we! All the info you need {0} for finding, buying, selling, and cataloging movies is right here."
+msgid ""
+"Do you like movies? Great, so do we! All the info you need {0} for finding, "
+"buying, selling, and cataloging movies is right here."
 msgstr ""
 
 #: /src/MovLib/Presentation/Help/Index.php:132
@@ -3024,8 +3244,12 @@ msgid "Sign up for the {sitename} beta!"
 msgstr "Melde dich jetzt für die {sitename} Beta an!"
 
 #: /src/MovLib/Presentation/ComingSoon.php:82
-msgid "Imagine {1}Wikipedia{0}, {2}Discogs{0}, {3}Last.fm{0}, {4}IMDb{0}, and {5}TheMovieDB{0} combined in a totally free and open project."
-msgstr "Stell dir {1}Wikipedia{0}, {2}Discogs{0}, {3}Last.fm{0}, {4}IMDb{0} und {5}TheMovieDB{0} kombiniert in einem völlig freien und offenen Projekt vor."
+msgid ""
+"Imagine {1}Wikipedia{0}, {2}Discogs{0}, {3}Last.fm{0}, {4}IMDb{0}, and {5}"
+"TheMovieDB{0} combined in a totally free and open project."
+msgstr ""
+"Stell dir {1}Wikipedia{0}, {2}Discogs{0}, {3}Last.fm{0}, {4}IMDb{0} und {5}"
+"TheMovieDB{0} kombiniert in einem völlig freien und offenen Projekt vor."
 
 #: /src/MovLib/Presentation/ComingSoon.php:105
 msgid "The open beta is scheduled to start in June 2014."
@@ -3033,7 +3257,9 @@ msgstr "Die offene Beta ist für den Juni 2014 geplant."
 
 #: /src/MovLib/Presentation/ComingSoon.php:115
 msgid "Wanna see the current alpha version of {sitename}? Go to {alpha_url}"
-msgstr "Willst du die aktuelle Alpha-Version von {sitename} sehen? Gehe zu {alpha_url}"
+msgstr ""
+"Willst du die aktuelle Alpha-Version von {sitename} sehen? Gehe zu "
+"{alpha_url}"
 
 #: /src/MovLib/Presentation/ComingSoon.php:135
 msgid "the free movie library"
@@ -3080,11 +3306,17 @@ msgid "The deletion message is provided below for reference."
 msgstr ""
 
 #: /src/MovLib/Presentation/Movie/AbstractBase.php:91
-msgid "The movie and all its content has been deleted. A look at the edit {0}history{2} or {1}discussion{2} will explain why that is the case. Please discuss with the person responsible for this deletion before you restore this entry from its {0}history{2}."
+msgid ""
+"The movie and all its content has been deleted. A look at the edit {0}"
+"history{2} or {1}discussion{2} will explain why that is the case. Please "
+"discuss with the person responsible for this deletion before you restore "
+"this entry from its {0}history{2}."
 msgstr ""
 
 #: /src/MovLib/Presentation/Movie/AbstractBase.php:96
-msgid "{0}Please note{1}: The images for this movie have been permanently deleted and cannot be restored."
+msgid ""
+"{0}Please note{1}: The images for this movie have been permanently deleted "
+"and cannot be restored."
 msgstr ""
 
 #: /src/MovLib/Presentation/Movie/AbstractBase.php:99
@@ -3110,7 +3342,9 @@ msgid "Create New Movie"
 msgstr "Neuen Film Anlegen"
 
 #: /src/MovLib/Presentation/Movie/Index.php:92
-msgid "We couldn’t find any movies matching your filter criteria, or there simply aren’t any movies available."
+msgid ""
+"We couldn’t find any movies matching your filter criteria, or there simply "
+"aren’t any movies available."
 msgstr ""
 
 #: /src/MovLib/Presentation/Movie/Index.php:93
@@ -3409,7 +3643,9 @@ msgid "Create New Release"
 msgstr "Neue Veröffentlichung Anlegen"
 
 #: /src/MovLib/Presentation/Release/Index.php:77
-msgid "We couldn’t find any releases matching your filter criteria, or there simply aren’t any releases available."
+msgid ""
+"We couldn’t find any releases matching your filter criteria, or there simply "
+"aren’t any releases available."
 msgstr ""
 
 #: /src/MovLib/Presentation/Release/Index.php:78
@@ -3463,7 +3699,11 @@ msgid "Developer specific coverage reports:"
 msgstr ""
 
 #: /src/MovLib/Presentation/Person/AbstractBase.php:58
-msgid "The person and all its content have been deleted. A look at the edit {0}history{2} or {1}discussion{2} will explain why that is the case. Please discuss with the person responsible for this deletion before you restore this entry from its {0}history{2}."
+msgid ""
+"The person and all its content have been deleted. A look at the edit {0}"
+"history{2} or {1}discussion{2} will explain why that is the case. Please "
+"discuss with the person responsible for this deletion before you restore "
+"this entry from its {0}history{2}."
 msgstr ""
 
 #: /src/MovLib/Presentation/Person/Index.php:49
@@ -3476,7 +3716,9 @@ msgid "Date of Death"
 msgstr "Todesdatum"
 
 #: /src/MovLib/Presentation/Person/Index.php:97
-msgid "We couldn’t find any persons matching your filter criteria, or there simply aren’t any persons available."
+msgid ""
+"We couldn’t find any persons matching your filter criteria, or there simply "
+"aren’t any persons available."
 msgstr ""
 
 #: /src/MovLib/Presentation/Person/Index.php:99
@@ -3716,7 +3958,9 @@ msgid "Articles of Association"
 msgstr "Vereinsstatuten"
 
 #: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:42
-msgid "The page you want to edit can only be changed by administrators of {sitename}."
+msgid ""
+"The page you want to edit can only be changed by administrators of "
+"{sitename}."
 msgstr ""
 
 #: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:67
@@ -3768,7 +4012,9 @@ msgid "Create New Genre"
 msgstr "Neues Genre Anlegen"
 
 #: /src/MovLib/Presentation/Genre/Index.php:73
-msgid "We couldn’t find any genres matching your filter criteria, or there simply aren’t any genres available."
+msgid ""
+"We couldn’t find any genres matching your filter criteria, or there simply "
+"aren’t any genres available."
 msgstr ""
 
 #: /src/MovLib/Presentation/Genre/Index.php:74
@@ -3856,7 +4102,9 @@ msgid "Would you like {0}to join {sitename}{1}?"
 msgstr ""
 
 #: /src/MovLib/Presentation/User/Index.php:86
-msgid "We couldn’t find any users matching your filter criteria, or there simply isn’t any user available."
+msgid ""
+"We couldn’t find any users matching your filter criteria, or there simply "
+"isn’t any user available."
 msgstr ""
 
 #: /src/MovLib/Presentation/User/Index.php:87
@@ -3900,7 +4148,9 @@ msgid "Recently Rated Movies"
 msgstr "Zuletzt Bewertete Filme"
 
 #: /src/MovLib/Presentation/User/Show.php:132
-msgid "You haven’t rated a single movie yet, use the {0}search{1} to explore movies you already know."
+msgid ""
+"You haven’t rated a single movie yet, use the {0}search{1} to explore movies "
+"you already know."
 msgstr ""
 
 #: /src/MovLib/Presentation/User/Show.php:138
@@ -3920,19 +4170,28 @@ msgid "We couldn’t find a single random page for you…"
 msgstr ""
 
 #: /src/MovLib/Presentation/Home.php:49
-msgid "Discover new and old movies, find out about all related details like who was the director, when and where was it released, what releases are available, find poster and lobby card art, plus many, many more …"
+msgid ""
+"Discover new and old movies, find out about all related details like who was "
+"the director, when and where was it released, what releases are available, "
+"find poster and lobby card art, plus many, many more …"
 msgstr ""
 
 #: /src/MovLib/Presentation/Home.php:54
-msgid "You always wanted to collect all movies of a specific director, actor or any other movie related person? This is the place for you to go. Find out all details about the person you admire, or simply add them yourself if you are an expert."
+msgid ""
+"You always wanted to collect all movies of a specific director, actor or any "
+"other movie related person? This is the place for you to go. Find out all "
+"details about the person you admire, or simply add them yourself if you are "
+"an expert."
 msgstr ""
 
 #: /src/MovLib/Presentation/Home.php:60
-msgid "Searching for a specific release? Our marketplace is free, open, and built upon the exact release database. This makes it easy for sellers to list their inventory and buyers are able to specify the exact version they want."
+msgid ""
+"Searching for a specific release? Our marketplace is free, open, and built "
+"upon the exact release database. This makes it easy for sellers to list "
+"their inventory and buyers are able to specify the exact version they want."
 msgstr ""
 
-#: /src/MovLib/Presentation/Home.php:66
-#: /src/MovLib/Presentation/Home.php:70
+#: /src/MovLib/Presentation/Home.php:66 /src/MovLib/Presentation/Home.php:70
 msgid "Insert text here …"
 msgstr ""
 
@@ -3949,7 +4208,11 @@ msgid "API"
 msgstr "API"
 
 #: /src/MovLib/Presentation/Home.php:76
-msgid "The {sitename} API is a REST interface to access the free movie library. Specifically designed for all developers out there. We want to keep the barrier as low as possible and ensure that everybody can use the data we all collect here at {sitename}."
+msgid ""
+"The {sitename} API is a REST interface to access the free movie library. "
+"Specifically designed for all developers out there. We want to keep the "
+"barrier as low as possible and ensure that everybody can use the data we all "
+"collect here at {sitename}."
 msgstr ""
 
 #: /src/MovLib/Presentation/Home.php:81
@@ -3975,7 +4238,9 @@ msgid "Create New Event"
 msgstr "Neues Event Anlegen"
 
 #: /src/MovLib/Presentation/Event/Index.php:80
-msgid "We couldn’t find any events matching your filter criteria, or there simply aren’t any events available."
+msgid ""
+"We couldn’t find any events matching your filter criteria, or there simply "
+"aren’t any events available."
 msgstr ""
 
 #: /src/MovLib/Presentation/Event/Index.php:81
@@ -4166,14 +4431,22 @@ msgstr ""
 #~ msgid "No Deletion Requests"
 #~ msgstr "Keine Löschanträge"
 
-#~ msgid "{date}: {user} has requested that {0}this content{1} should be deleted."
-#~ msgstr "{date}: {user} hat angefordert, dass {0}dieser Inhalt{1} gelöscht werden sollte."
+#~ msgid ""
+#~ "{date}: {user} has requested that {0}this content{1} should be deleted."
+#~ msgstr ""
+#~ "{date}: {user} hat angefordert, dass {0}dieser Inhalt{1} gelöscht werden "
+#~ "sollte."
 
-#~ msgid "{date}: {user} has requested that {0}this content{1} should be deleted for the reason: “{reason}”"
-#~ msgstr "{date}: {user} hat angefordert, dass {0}dieser Inhalt{1} gelöscht werden sollte aus dem Grund: „{reason}”"
+#~ msgid ""
+#~ "{date}: {user} has requested that {0}this content{1} should be deleted "
+#~ "for the reason: “{reason}”"
+#~ msgstr ""
+#~ "{date}: {user} hat angefordert, dass {0}dieser Inhalt{1} gelöscht werden "
+#~ "sollte aus dem Grund: „{reason}”"
 
 #~ msgid "You can filter the deletion requests via the sidebar menu."
-#~ msgstr "Du kannst die Löschanträge über das seitliche Navigationsmenü filtern."
+#~ msgstr ""
+#~ "Du kannst die Löschanträge über das seitliche Navigationsmenü filtern."
 
 #~ msgid "An email with further instructions has been sent to {email}."
 #~ msgstr "Eine Email mit weiteren Instruktionen wurde an {email} gesendet."
@@ -4181,8 +4454,16 @@ msgstr ""
 #~ msgid "{0,number,integer} min."
 #~ msgstr "{0,number,integer} Min."
 
-#~ msgid "This error was reported to the system administrators, it should be fixed in no time. Please try again in a few minutes."
-#~ msgstr "Dieser Fehler wurde an die System-Administratoren gemeldet und sollte schnell repariert werden. Bitte probiere es in ein paar Minuten erneut."
+#~ msgid ""
+#~ "This error was reported to the system administrators, it should be fixed "
+#~ "in no time. Please try again in a few minutes."
+#~ msgstr ""
+#~ "Dieser Fehler wurde an die System-Administratoren gemeldet und sollte "
+#~ "schnell repariert werden. Bitte probiere es in ein paar Minuten erneut."
 
-#~ msgid "An unexpected condition which prevented us from fulfilling the request was encountered."
-#~ msgstr "Ein unerwarteter Zustand hat uns davon abgehalten deine Anfrage zu erfüllen."
+#~ msgid ""
+#~ "An unexpected condition which prevented us from fulfilling the request "
+#~ "was encountered."
+#~ msgstr ""
+#~ "Ein unerwarteter Zustand hat uns davon abgehalten deine Anfrage zu "
+#~ "erfüllen."
