@@ -19,8 +19,8 @@ namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Cast\CastSet;
 use \MovLib\Data\Director\DirectorSet;
-use \MovLib\Data\Movie\Movie;
 use \MovLib\Data\Movie\MovieTitleSet;
+use \MovLib\Data\Movie\MovieTaglineSet;
 use \MovLib\Partial\Country;
 use \MovLib\Partial\Duration;
 use \MovLib\Partial\Genre;
@@ -140,6 +140,38 @@ final class Show extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
       ;
       $this->sectionAdd($this->intl->t("Alternative Titles"), $titles, true, null, $this->intl->r("{$this->entity->routeKey}/titles", $this->entity->id));
     }
+
+    $taglineSet = new MovieTaglineSet($this->diContainerHTTP, $this->entity->id);
+    $taglines = null;
+    /* @var $tagline \MovLib\Data\Title\Title */
+    foreach ($taglineSet->loadEntityTaglines() as $tagline) {
+      $tagline->tagline =
+        isset($tagline->comment)
+          ? $this->intl->t("{title} ({comment})", [ "title" => $tagline->tagline, "comment" => $tagline->comment ])
+          : $tagline->tagline
+      ;
+      $taglines .=
+        "<tr>" .
+          "<td class='s8'>{$tagline->tagline}</td>" .
+          "<td class='s2'>{$this->intl->getTranslations("languages")[$tagline->languageCode]->name}</td>" .
+        "</tr>"
+      ;
+    }
+    if ($taglines) {
+      $taglines =
+        "<table class='table table-striped'>" .
+          "<thead>" .
+            "<tr>" .
+              "<th>{$this->intl->t("Tagline")}</th>" .
+              "<th>{$this->intl->t("Language")}</th>" .
+            "</tr>" .
+          "</thead>" .
+          "<tbody>{$taglines}</tbody>" .
+        "</table>"
+      ;
+      $this->sectionAdd($this->intl->t("Taglines"), $taglines, true, null, $this->intl->r("{$this->entity->routeKey}/taglines", $this->entity->id));
+    }
+
     $this->sectionAdd($this->intl->t("Trailers"), "Not implemented yet!", false, "callout callout-warning");
     $this->sectionAdd($this->intl->t("Weblinks"), "Not implemented yet!", false, "callout callout-danger");
 
