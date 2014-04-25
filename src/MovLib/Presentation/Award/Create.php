@@ -26,7 +26,7 @@ use \MovLib\Partial\FormElement\TextareaLineArray;
 use \MovLib\Partial\FormElement\TextareaLineURLArray;
 
 /**
- * Allows creating of a new a award.
+ * Allows creating of an new award.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib

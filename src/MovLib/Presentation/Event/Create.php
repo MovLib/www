@@ -17,10 +17,19 @@
  */
 namespace MovLib\Presentation\Event;
 
+use \MovLib\Data\Award\AwardSet;
 use \MovLib\Data\Event\Event;
+use \MovLib\Partial\Form;
+use \MovLib\Partial\FormElement\InputDateSeparate;
+use \MovLib\Partial\FormElement\InputText;
+use \MovLib\Partial\FormElement\InputWikipedia;
+use \MovLib\Partial\FormElement\Select;
+use \MovLib\Partial\FormElement\TextareaHTML;
+use \MovLib\Partial\FormElement\TextareaLineArray;
+use \MovLib\Partial\FormElement\TextareaLineURLArray;
 
 /**
- * Allows the creation of a new event event.
+ * Allows creating a new event.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -28,23 +37,65 @@ use \MovLib\Data\Event\Event;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Create extends \MovLib\Presentation\AbstractPresenter {
+class Create extends \MovLib\Presentation\AbstractCreatePresenter {
+  use \MovLib\Presentation\Event\EventTrait;
 
   /**
-   * Instantiate new event create presentation.
+   * {@inheritdoc}
    */
   public function init() {
-    $this->initPage($this->intl->t("Create Event"));
-    $this->initBreadcrumb([ [ $this->intl->r("/events"), $this->intl->t("Events") ] ]);
-    $this->breadcrumbTitle = $this->intl->t("Create");
-    $this->initLanguageLinks("/event/create");
+    return $this
+      ->initPage($this->intl->t("Create"))
+      ->initCreate(new Event($this->diContainerHTTP), $this->intl->tp("Events"))
+    ;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    return "<div class='c'>{$this->checkBackLater($this->intl->t("create event"))}</div>";
+    $awardOptions = (new AwardSet($this->diContainerHTTP))->loadSelectOptions();
+    $form = (new Form($this->diContainerHTTP))
+      ->addElement(new Select($this->diContainerHTTP, "award", $this->intl->t("Award"), $awardOptions, $this->entity->award->id, [
+        "placeholder" => $this->intl->t("Select the event’s Award."),
+        "autofocus"   => true,
+        "required"    => true,
+      ]))
+      ->addElement(new InputText($this->diContainerHTTP, "name", $this->intl->t("Name"), $this->entity->name, [
+        "placeholder" => $this->intl->t("Enter the event’s name."),
+        "required"    => true,
+      ]))
+      ->addElement(new TextareaLineArray($this->diContainerHTTP, "aliases", $this->intl->t("Alternative Names (line by line)"), $this->entity->aliases, [
+        "placeholder" => $this->intl->t("Enter the event’s alternative names here, line by line."),
+      ]))
+      ->addElement(new InputDateSeparate($this->diContainerHTTP, "start-date", $this->intl->t("Start Date"), $this->entity->startDate, [
+        "required"    => true,
+      ]))
+      ->addElement(new InputDateSeparate($this->diContainerHTTP, "end-date", $this->intl->t("End Date"), $this->entity->endDate))
+      ->addElement(new TextareaHTML($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
+        "placeholder" => $this->intl->t("Describe the event."),
+      ], [ "blockquote", "external", "headings", "lists", ]))
+      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
+        "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/..",
+        "data-allow-external" => "true",
+      ]))
+      ->addElement(new TextareaLineURLArray($this->diContainerHTTP, "links", $this->intl->t("Weblinks (line by line)"), $this->entity->links, [
+        "placeholder" => $this->intl->t("Enter the event’s related weblinks, line by line."),
+      ]))
+      ->addAction($this->intl->t("Create"), [ "class" => "btn btn-large btn-success" ])
+      ->init([ $this, "valid" ])
+    ;
+    return
+      $form->open() .
+      $form->elements["award"] .
+      $form->elements["name"] .
+      $form->elements["aliases"] .
+      "<div class='r'><div class='s s5'>{$form->elements["start-date"]}</div><div class='s s5'>{$form->elements["end-date"]}</div></div>" .
+      $form->elements["description"] .
+      $form->elements["wikipedia"] .
+      $form->elements["links"] .
+      $form->close()
+    ;
   }
 
 }

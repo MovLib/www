@@ -157,6 +157,16 @@ class Event extends \MovLib\Data\AbstractEntity {
    */
   public $startDate;
 
+  /**
+   * {@inheritdoc}
+   */
+  public $pluralKey = "events";
+
+  /**
+   * {@inheritdoc}
+   */
+  public $singularKey = "event";
+
 
   // ------------------------------------------------------------------------------------------------------------------- Initialize
 
@@ -268,23 +278,99 @@ SQL
       $this->startDate
     );
     $stmt->execute();
-    $stmt->close();
+
+    $this->updateAwardYears();
+
     return $this;
+  }
+
+  /**
+   * Create new new event.
+   *
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function create() {
+    $this->aliases = empty($this->aliases)? serialize([]) : serialize(explode("\n", $this->aliases));
+    $this->links   = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
+
+    $mysqli = $this->getMySQLi();
+    $stmt = $mysqli->prepare(<<<SQL
+INSERT INTO `events` (
+  `aliases`,
+  `award_id`,
+  `dyn_descriptions`,
+  `dyn_wikipedia`,
+  `end_date`,
+  `links`,
+  `name`,
+  `start_date`
+) VALUES (
+  ?,
+  ?,
+  COLUMN_CREATE('{$this->intl->languageCode}', ?),
+  COLUMN_CREATE('{$this->intl->languageCode}', ?),
+  ?,
+  ?,
+  ?,
+  ?
+);
+SQL
+    );
+    $stmt->bind_param(
+      "sdssssss",
+      $this->aliases,
+      $this->award->id,
+      $this->description,
+      $this->wikipedia,
+      $this->endDate,
+      $this->links,
+      $this->name,
+      $this->startDate
+    );
+
+    $stmt->execute();
+    $this->id = $stmt->insert_id;
+
+    $this->updateAwardYears();
+
+    return $this->init();
   }
 
   /**
    * {@inheritdoc}
    */
   protected function init() {
+    if (isset($this->award) && !$this->award instanceof \stdClass) {
+      $this->award = new Award($this->diContainer, $this->award);
+    }
     $this->place     && $this->place = new Place($this->diContainer, $this->place);
-    $this->award     && $this->award = new Award($this->diContainer, $this->award);
-    $this->aliases   && ($this->aliases        = unserialize(($this->aliases)));
-    $this->links     && ($this->links          = unserialize($this->links));
+    $this->aliases   && ($this->aliases = unserialize(($this->aliases)));
+    $this->links     && ($this->links = unserialize($this->links));
     $this->startDate && ($this->startDate = new Date($this->startDate));
     $this->endDate   && ($this->endDate = new Date($this->endDate));
-    $this->pluralKey   = "events";
-    $this->singularKey = "event";
     return parent::init();
+  }
+
+  private function updateAwardYears() {
+    $stmt = $this->getMySQLi()->prepare(<<<SQL
+UPDATE `awards` SET
+  `first_event_year` = (SELECT YEAR(MIN(`start_date`)) FROM `events` WHERE `award_id` = ?),
+  `last_event_year`  = IFNULL(
+    (SELECT YEAR(MAX(`end_date`)) FROM `events` WHERE `award_id` = ?),
+    (SELECT YEAR(MAX(`start_date`)) FROM `events` WHERE `award_id` = ?)
+   )
+WHERE `awards`.`id` = ?
+SQL
+    );
+    $stmt->bind_param(
+      "dddd",
+      $this->award->id,
+      $this->award->id,
+      $this->award->id,
+      $this->award->id
+    );
+    $stmt->execute();
   }
 
  /**
