@@ -121,6 +121,16 @@ final class Award extends \MovLib\Data\AbstractEntity {
    */
   public $seriesCount;
 
+  /**
+   * {@inheritdoc}
+   */
+  public $pluralKey = "awards";
+
+  /**
+   * {@inheritdoc}
+   */
+  public $singularKey = "award";
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -232,6 +242,50 @@ SQL
   }
 
   /**
+   * Create new new award.
+   *
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function create() {
+    $this->aliases = empty($this->aliases)? serialize([]) : serialize(explode("\n", $this->aliases));
+    $this->links   = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
+
+    $stmt = $this->getMySQLi()->prepare(<<<SQL
+INSERT INTO `awards` (
+  `aliases`,
+  `dyn_descriptions`,
+  `dyn_image_descriptions`,
+  `dyn_wikipedia`,
+  `name`,
+  `links`
+) VALUES (
+  ?,
+  COLUMN_CREATE('{$this->intl->languageCode}', ?),
+  '',
+  COLUMN_CREATE('{$this->intl->languageCode}', ?),
+  ?,
+  ?
+);
+SQL
+    );
+    $stmt->bind_param(
+      "sssss",
+      $this->aliases,
+      $this->description,
+      $this->wikipedia,
+      $this->name,
+      $this->links
+    );
+
+    $stmt->execute();
+    $this->id = $stmt->insert_id;
+    $stmt->close();
+
+    return $this->init();
+  }
+
+  /**
    * {@inheritdoc}
    */
   protected function init() {
@@ -239,8 +293,6 @@ SQL
     $this->links          && ($this->links          = unserialize($this->links));
     $this->firstEventYear && ($this->firstEventYear = new Date($this->firstEventYear));
     $this->lastEventYear  && ($this->lastEventYear  = new Date($this->lastEventYear));
-    $this->pluralKey      = "awards";
-    $this->singularKey    = "award";
     return parent::init();
   }
 
