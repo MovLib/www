@@ -114,6 +114,11 @@ final class Show extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
     $titles = null;
     /* @var $title \MovLib\Data\Title\Title */
     foreach ($titleSet->loadEntityTitles() as $title) {
+      $title->title =
+        isset($title->comment)
+          ? $this->intl->t("{title} ({comment})", [ "title" => $title->title, "comment" => $title->comment ])
+          : $title->title
+      ;
       $titles .=
         "<tr>" .
           "<td class='s8'>{$title->title}</td>" .

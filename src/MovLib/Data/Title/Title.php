@@ -61,20 +61,6 @@ class Title extends \MovLib\Data\AbstractEntity {
   public $languageCode;
 
   /**
-   * The title's movie identifier.
-   *
-   * @var integer
-   */
-  public $movieId;
-
-  /**
-   * The title's series identifier.
-   *
-   * @var integer
-   */
-  public $seriesId;
-
-  /**
    * The title.
    *
    * @var string

@@ -80,17 +80,29 @@ abstract class TitleSet extends \MovLib\Data\AbstractSet {
     $result = $this->getMySQLi()->query(<<<SQL
 SELECT
   `{$this->tableName}`.`id`,
-  `{$this->tableName}`.`{$this->entitySingularKey}_id` AS `{$this->entitySingularKey}Id`,
-  COLUMN_GET(`{$this->tableName}`.`dyn_comments`, '{$this->intl->languageCode}' AS BINARY),
+  COLUMN_GET(`{$this->tableName}`.`dyn_comments`, '{$this->intl->languageCode}' AS BINARY) AS `comment`,
   `{$this->tableName}`.`language_code` AS `languageCode`,
   `{$this->tableName}`.`title`
 FROM `{$this->tableName}`
-WHERE `{$this->tableName}`.`{$this->entitySingularKey}_id` = {$this->entityId}{$where}
+  LEFT JOIN `{$this->entityPluralKey}_display_titles`
+    ON `{$this->entityPluralKey}_display_titles`.`title_id` = `{$this->tableName}`.`id`
+    AND `{$this->entityPluralKey}_display_titles`.`{$this->entitySingularKey}_id` = `{$this->tableName}`.`{$this->entitySingularKey}_id`
+    AND `{$this->entityPluralKey}_display_titles`.`language_code` = `{$this->tableName}`.`language_code`
+  LEFT JOIN `{$this->entityPluralKey}_original_titles`
+    ON `{$this->entityPluralKey}_original_titles`.`title_id` = `{$this->tableName}`.`id`
+WHERE `{$this->tableName}`.`{$this->entitySingularKey}_id` = {$this->entityId}
+  AND (
+    `{$this->entityPluralKey}_display_titles`.`language_code` IS NULL
+    OR `{$this->entityPluralKey}_display_titles`.`language_code` != '{$this->intl->languageCode}'
+  )
+  AND `{$this->entityPluralKey}_original_titles`.`title_id` IS NULL{$where}
 ORDER BY `{$this->tableName}`.`title`{$this->collations[$this->intl->languageCode]} ASC
 SQL
     );
 
+    /* @var $title \MovLib\Data\Title\Title */
     while ($title = $result->fetch_object($this->entityClassName, [ $this->diContainer ])) {
+      $title->entityId = $this->entityId;
       $this->entities[$title->id] = $title;
     }
     $result->free();
