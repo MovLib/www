@@ -28,6 +28,10 @@ namespace MovLib\Data\Title;
  */
 abstract class TitleSet extends \MovLib\Data\AbstractSet {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /**
    * The entity's identifier the titles belong to.
    *
@@ -50,6 +54,9 @@ abstract class TitleSet extends \MovLib\Data\AbstractSet {
   protected $entityPluralKey;
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
    * Instantiate new title set.
    *
@@ -64,16 +71,11 @@ abstract class TitleSet extends \MovLib\Data\AbstractSet {
   }
 
   /**
-   * Load the titles for an entity ordered by the titles
+   * Load the titles for an entity ordered by the titles.
    *
-   * @param string $entitySingularKey
-   *   The entity specific singular key.
-   * @param string $entityPluralKey
-   *   The entity specific plural key.
    * @param null|string $where [optional]
    *   The WHERE clause.
-   * @return string
-   *   {@inheritdoc}
+   * @return $this
    */
   public function loadEntityTitles($where = null) {
     $where && $where = " AND {$where}";

@@ -31,11 +31,11 @@ class MovieTitle extends \MovLib\Data\Title\Title {
   /**
    * {@inheritdoc}
    */
-  public $singularKey = "movieTitle";
+  public $singularKey = "movie_title";
 
   /**
    * {@inheritdoc}
    */
-  public $plurakKey = "movieTitles";
+  public $plurakKey = "movie_titles";
 
 }

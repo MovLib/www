@@ -67,6 +67,10 @@ class Title extends \MovLib\Data\AbstractEntity {
    */
   public $title;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+  
+
   /**
    * {@inheritdoc}
    */
