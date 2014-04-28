@@ -44,7 +44,7 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
     $pageTitle    = $this->intl->t("Edit {0}", [ $this->entity->displayTitle ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Edit"))
-      ->initEdit($this->entity, $this->intl->tp("Series"), $this->getSidebarItems())
+      ->initEdit($this->entity, $this->intl->tp(-1, "Series"), $this->getSidebarItems())
     ;
   }
 

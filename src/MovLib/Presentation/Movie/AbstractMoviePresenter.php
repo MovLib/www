@@ -74,7 +74,7 @@ abstract class AbstractMoviePresenter extends \MovLib\Presentation\AbstractPrese
     $this->initPage($title, $pageTitle, $breadcrumbTitle);
 
     // Construct the breadcrumbs and route key.
-    $this->breadcrumb->addCrumb($this->intl->r("/movies"), $this->intl->tp("Movies", "Movie"));
+    $this->breadcrumb->addCrumb($this->intl->r("/movies"), $this->intl->tp(-1, "Movies", "Movie"));
     $routeKey = $this->entity->routeKey;
     if (($shortName = strtolower($this->shortName())) != "show") {
       $routeKey .= "/{$shortName}";
@@ -89,8 +89,8 @@ abstract class AbstractMoviePresenter extends \MovLib\Presentation\AbstractPrese
     foreach ([
       [ "person", "cast", $this->intl->t("Cast"), null ],
       [ "company", "crew", $this->intl->t("Crew"), null ],
-      [ "release", "releases", $this->intl->tp("Releases", "Release"), $this->entity->countReleases ],
-      [ "award separator", "awards", $this->intl->tp("Awards", "Award"), $this->entity->countAwards ],
+      [ "release", "releases", $this->intl->tp(-1, "Releases", "Release"), $this->entity->countReleases ],
+      [ "award separator", "awards", $this->intl->tp(-1, "Awards", "Award"), $this->entity->countAwards ],
     ] as list($icon, $routeAddition, $title, $count)) {
       if (isset($count)) {
         $count =  "<span class='fr'>{$this->intl->format("{0,number}", $count)}</span>";

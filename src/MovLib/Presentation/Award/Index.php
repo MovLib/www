@@ -76,7 +76,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
           "<div class='s s9'>" .
             "<div class='fr'>" .
               "<a class='ico ico-movie label' href='{$this->intl->r("/award/{0}/movies", $award->id)}' title='{$this->intl->t("Movies")}'>{$award->movieCount}</a>" .
-              "<a class='ico ico-series label' href='{$this->intl->r("/award/{0}/series", $award->id)}' title='{$this->intl->tp("Series")}'>{$award->seriesCount}</a>" .
+              "<a class='ico ico-series label' href='{$this->intl->r("/award/{0}/series", $award->id)}' title='{$this->intl->tp(-1, "Series")}'>{$award->seriesCount}</a>" .
               "<a class='ico ico-person label' href='{$this->intl->r("/award/{0}/persons", $award->id)}' title='{$this->intl->t("Persons")}'>{$award->personCount}</a>" .
               "<a class='ico ico-company label' href='{$this->intl->r("/award/{0}/companies", $award->id)}' title='{$this->intl->t("Companies")}'>{$award->companyCount}</a>" .
               "<a class='ico ico-category label' href='{$this->intl->r("/award/{0}/categories", $award->id)}' title='{$this->intl->t("Categories")}'>{$award->categoryCount}</a>" .

@@ -44,7 +44,7 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
   public function init() {
     return $this
       ->initPage($this->intl->t("Create"))
-      ->initCreate(new Series($this->diContainerHTTP), $this->intl->tp("Series"))
+      ->initCreate(new Series($this->diContainerHTTP), $this->intl->tp(-1, "Series"))
     ;
   }
 

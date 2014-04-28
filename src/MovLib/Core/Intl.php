@@ -373,13 +373,15 @@ final class Intl {
    * singular form). If you have to translate a complicated plural form that has more than the two aformentioned English
    * translations use the default translation method {@see I18n::t} by writing the full Intl ICU string.
    *
+   * @param integer|float $count
+   *   The message's count, note that you cannot use offset <code>0</code> in the <var>$args</var> if you use this
+   *   method. If you need to force the plural form for whatever reason simply pass <code>-1</code> because this value
+   *   is safe in all languages and will force the plural form.
    * @param string $plural
    *   The message's plural form to format and translate.
    * @param string $singular [optional]
    *   The message's singular form to format and translate, defaults to <code>NULL</code> which means that the given
    *   <var>$plural</var> is also used for the singular form (e.g. the English word <i>Series</i> has no singular form).
-   * @param integer|float $count [optional]
-   *   The message's count, defaults to <code>1</code>.
    * @param mixed $args [optional]
    *   The arguments that should be passed to the message formatter, default to <code>NULL</code> and the message
    *   formatter isn't used at all. You can pass either a single scaler value or an array.
@@ -389,7 +391,7 @@ final class Intl {
    *   The translated and formatted plural message.
    * @throws \IntlException
    */
-  public function tp($plural, $singular = null, $count = 1, $args = null, $locale = null) {
+  public function tp($count, $plural, $singular = null, $args = null, $locale = null) {
     // @devStart
     // @codeCoverageIgnoreStart
     assert(!empty($plural));
@@ -405,7 +407,7 @@ final class Intl {
     $singular || ($singular = $plural);
     $args && ($args = (array) $args);
     $args[0] = $count;
-    return $this->translate("{0,plural,one{{$singular}}other{{$plural}}}", $args, "messages", $locale);
+    return $this->translate("{0,plural,=1{{$singular}}other{{$plural}}}", $args, "messages", $locale);
   }
 
   /**

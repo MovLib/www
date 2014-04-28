@@ -72,7 +72,7 @@ abstract class AbstractPersonPresenter extends \MovLib\Presentation\AbstractPres
     $this->initPage($title, $pageTitle, $breadcrumbTitle);
 
     // Construct the breadcrumbs and route key.
-    $this->breadcrumb->addCrumb($this->intl->r("/persons"), $this->intl->tp("Persons", "Person"));
+    $this->breadcrumb->addCrumb($this->intl->r("/persons"), $this->intl->tp(-1, "Persons", "Person"));
     $routeKey = $this->entity->routeKey;
     if (($shortName = strtolower($this->shortName())) != "show") {
       $routeKey .= "/{$shortName}";
@@ -85,10 +85,10 @@ abstract class AbstractPersonPresenter extends \MovLib\Presentation\AbstractPres
     // Initialize the sidebar.
     $additionalSidebarItems = null;
     foreach ([
-      [ "movie", "movies", $this->intl->tp("Movies", "Movie"), $this->entity->countMovies ],
-      [ "series", "series", $this->intl->tp("Series"), $this->entity->countSeries ],
-      [ "release", "releases", $this->intl->tp("Releases", "Release"), $this->entity->countReleases ],
-      [ "award separator", "awards", $this->intl->tp("Awards", "Award"), $this->entity->countAwards ],
+      [ "movie", "movies", $this->intl->tp(-1, "Movies", "Movie"), $this->entity->countMovies ],
+      [ "series", "series", $this->intl->tp(-1, "Series"), $this->entity->countSeries ],
+      [ "release", "releases", $this->intl->tp(-1, "Releases", "Release"), $this->entity->countReleases ],
+      [ "award separator", "awards", $this->intl->tp(-1, "Awards", "Award"), $this->entity->countAwards ],
     ] as list($icon, $routeAddition, $title, $count)) {
       $additionalSidebarItems[] = [
         $this->intl->r("/person/{0}/{$routeAddition}", $this->entity->id),

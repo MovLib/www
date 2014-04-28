@@ -52,7 +52,7 @@ trait CompanyTrait {
     }
     foreach ([
       [ "movie", "movies", $this->intl->t("Movies"), $this->entity->movieCount ],
-      [ "series", "series", $this->intl->tp("Series"), $this->entity->seriesCount ],
+      [ "series", "series", $this->intl->tp(-1, "Series"), $this->entity->seriesCount ],
       [ "release separator", "releases", $this->intl->t("Releases"), $this->entity->releaseCount ],
     ] as list($icon, $plural, $title, $count)) {
       $items[] = [

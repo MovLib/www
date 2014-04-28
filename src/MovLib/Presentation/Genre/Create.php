@@ -40,7 +40,7 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
   public function init() {
     return $this
       ->initPage($this->intl->t("Create"))
-      ->initCreate(new Genre($this->diContainerHTTP), $this->intl->tp("Genres"))
+      ->initCreate(new Genre($this->diContainerHTTP), $this->intl->tp(-1, "Genres", "Genre"))
     ;
   }
 

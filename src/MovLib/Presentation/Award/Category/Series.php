@@ -54,7 +54,7 @@ class Series extends \MovLib\Presentation\AbstractPresenter {
     $this->entity = new Category($this->diContainerHTTP, $_SERVER["CATEGORY_ID"]);
     $pageTitle    = $this->intl->t("Series related to {0}", [ $this->entity->name ]);
     return $this
-      ->initPage($pageTitle, $pageTitle, $this->intl->tp("Series"))
+      ->initPage($pageTitle, $pageTitle, $this->intl->tp(-1, "Series"))
       ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
       ->initLanguageLinks("/{$this->entity->singularKey}/{0}/series", $this->entity->id)
       ->breadcrumb->addCrumbs($this->getBreadCrumbs())

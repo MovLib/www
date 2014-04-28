@@ -42,7 +42,7 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
   public function init() {
     return $this
       ->initPage($this->intl->t("Create"))
-      ->initCreate(new Award($this->diContainerHTTP), $this->intl->tp("Awards"))
+      ->initCreate(new Award($this->diContainerHTTP), $this->intl->tp(-1, "Awards", "Award"))
     ;
   }
 

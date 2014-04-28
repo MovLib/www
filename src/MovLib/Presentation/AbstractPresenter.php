@@ -534,7 +534,7 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
     $exploreNavigation =
       "<ul class='o1 sm2 no-list'>" .
         "<li>{$this->a($this->intl->r("/movies"), $this->intl->t("Movies"), [ "class" => "ico ico-movie" ])}</li>" .
-        "<li>{$this->a($this->intl->r("/series"), $this->intl->tp("Series"), [ "class" => "ico ico-series" ])}</li>" .
+        "<li>{$this->a($this->intl->r("/series"), $this->intl->tp(-1, "Series"), [ "class" => "ico ico-series" ])}</li>" .
         "<li>{$this->a($this->intl->r("/releases"), $this->intl->t("Releases"), [ "class" => "ico ico-release" ])}</li>" .
         "<li>{$this->a($this->intl->r("/persons"), $this->intl->t("Persons"), [ "class" => "ico ico-person" ])}</li>" .
         "<li>{$this->a($this->intl->r("/companies"), $this->intl->t("Companies"), [ "class" => "ico ico-company" ])}</li>" .
