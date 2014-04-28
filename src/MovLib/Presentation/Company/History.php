@@ -52,7 +52,7 @@ class History extends \MovLib\Presentation\AbstractPresenter {
    */
   public function init() {
     $this->entity = new Company($this->diContainerHTTP, $_SERVER["COMPANY_ID"]);
-    $pageTitle    = $this->intl->t("Delete {0}", [ $this->entity->name ]);
+    $pageTitle    = $this->intl->t("History of {0}", [ $this->entity->name ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("History"))
       ->sidebarInitToolbox($this->entity, $this->getSidebarItems())

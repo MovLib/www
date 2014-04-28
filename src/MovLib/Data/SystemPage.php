@@ -106,8 +106,14 @@ SQL
   protected function init() {
     // The plural key isn't used anywhere.
     $this->pluralKey   = "system_pages";
-    $this->singularKey = $this->fs->sanitizeFilename($this->routeKey);
-    $this->routeKey    = "/{$this->singularKey}";
+    if ($this->routeKey == "About {$this->config->sitename}") {
+      $this->singularKey = "about";
+      $this->routeKey    = "/about";
+    }
+    else {
+      $this->singularKey = $this->fs->sanitizeFilename($this->routeKey);
+      $this->routeKey    = "/{$this->singularKey}";
+    }
     $this->routeArgs   = [];
     $this->routeIndex  = "/";
     return parent::init();
