@@ -6,10 +6,11 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: MovLib Messages 0.0.1-dev\n"
-"Report-Msgid-Bugs-To: https://github.com/MovLib/www/issues?labels=translation\n"
+"Report-Msgid-Bugs-To: https://github.com/MovLib/www/issues?"
+"labels=translation\n"
 "POT-Creation-Date: 2014-04-17 15:03+0000\n"
-"PO-Revision-Date: 2014-04-24 10:40+0100\n"
-"Last-Translator: Sebastian Geschke <sebastian.geschke@gmail.com>\n"
+"PO-Revision-Date: 2014-04-28 12:52+0100\n"
+"Last-Translator: Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>\n"
 "Language-Team: MovDev <developers@movlib.org>\n"
 "Language: de_AT\n"
 "MIME-Version: 1.0\n"
@@ -200,7 +201,7 @@ msgstr "{0}, {1}"
 
 #: /src/MovLib/Partial/StarRatingForm.php:111
 msgid "{0,plural,=1{Awful}=2{Bad}=3{Okay}=4{Fine}=5{Awesome}other{Unknown}}"
-msgstr "{0,plural,=1{Awful}=2{Bad}=3{Okay}=4{Fine}=5{Awesome}oder{Unknown}}"
+msgstr "{0,plural,=1{Awful}=2{Bad}=3{Okay}=4{Fine}=5{Awesome}other{Unknown}}"
 
 #: /src/MovLib/Partial/StarRatingForm.php:114
 msgid "Rate with {0,plural,one{one star} other{# stars}}."
@@ -3315,10 +3316,9 @@ msgid "This Movie has been deleted."
 msgstr ""
 
 #: /src/MovLib/Presentation/Movie/History.php:35
-#, fuzzy
 #| msgid "History of {0}"
 msgid "History of {title}"
-msgstr "Geschichte von {0}"
+msgstr "Geschichte von {title}"
 
 #: /src/MovLib/Presentation/Movie/History.php:47
 #: /src/MovLib/Presentation/Person/History.php:50
@@ -3428,10 +3428,9 @@ msgid "Edit {title}"
 msgstr ""
 
 #: /src/MovLib/Presentation/Movie/Edit.php:65
-#, fuzzy
 #| msgid "Back to movie"
 msgid "edit movie"
-msgstr "Zurück zum Film"
+msgstr "Bearbeiten"
 
 #: /src/MovLib/Presentation/Movie/Crew.php:46
 msgid "Crew of {0}"
