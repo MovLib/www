@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Presentation\Partial\Alert;
-
 /**
  * Movie deletion presentation.
  *
@@ -28,7 +26,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Delete extends \MovLib\Presentation\AbstractPresenter {
+class Delete extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -38,11 +36,7 @@ class Delete extends \MovLib\Presentation\AbstractPresenter {
    * Instantiate new delete movie presentation.
    */
   public function init() {
-//    $this->initMoviePage();
-    $this->initPage("Delete Movie");
-    $this->initLanguageLinks("/movie/{0}/delete", [ $this->movie->id ]);
-    $this->contentBefore = "<div class='c'>";
-    $this->contentAfter  = "</div>";
+    $this->initMoviePresenation($this->intl->t("Delete {title}"), $this->intl->t("Delete {title}"), $this->intl->t("Delete"));
   }
 
 
@@ -53,7 +47,7 @@ class Delete extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("delete person") ]), $this->intl->t("Check back later"), "info");
+    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("delete movie") ]), $this->intl->t("Check back later"), "info");
   }
 
 }

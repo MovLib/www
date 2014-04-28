@@ -17,11 +17,8 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\Movie\Movie;
-use \MovLib\Presentation\Partial\Alert;
-
 /**
- * Movie deletion presentation.
+ * Movie edit presentation.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -29,7 +26,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Edit extends \MovLib\Presentation\Movie\AbstractBase {
+class Edit extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -45,13 +42,7 @@ class Edit extends \MovLib\Presentation\Movie\AbstractBase {
    *
    */
   public function init() {
-    $this->movie = new Movie($this->diContainerHTTP, $_SERVER["MOVIE_ID"]);
-    $this->initPage($this->intl->t("Edit {title}", [ "title" => $this->movie->displayTitle ]));
-    $this->initLanguageLinks("/movie/{0}/edit", [ $this->movie->id ]);
-    $this->initBreadcrumb();
-    $this->breadcrumbTitle = $this->intl->t("Edit");
-    $this->contentBefore = "<div class='c'>";
-    $this->contentAfter  = "</div>";
+    $this->initMoviePresenation($this->intl->t("Edit {title}"), $this->intl->t("Edit {title}"), $this->intl->t("Edit"));
   }
 
 

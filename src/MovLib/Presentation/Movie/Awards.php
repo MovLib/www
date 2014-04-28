@@ -18,32 +18,28 @@
 namespace MovLib\Presentation\Movie;
 
 /**
- * A movie's discussion
+ * A movie's awards.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Discussion extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
+class Awards extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
 
   /**
-   * Initialize movie discussion presentation.
+   * Initialize the movie awards presentation.
    */
   public function init() {
-    $this->initMoviePresenation(
-      $this->intl->t("Discuss {title}"),
-      $this->intl->t("Discuss {title}"),
-      $this->intl->t("Discussion")
-    );
+    $this->initMoviePresenation($this->intl->t("Awards of {title}"), $this->intl->t("Awards of {title}"), $this->intl->t("Awards"));
   }
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("discuss movie") ]), $this->intl->t("Check back later"), "info");
+    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("movie awards") ]), $this->intl->t("Check back later"), "info");
   }
 
 }

@@ -17,10 +17,8 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\Movie\Movie;
-
 /**
- *
+ * A movie's history.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -28,16 +26,17 @@ use \MovLib\Data\Movie\Movie;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\Movie\AbstractBase {
+class History extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
 
+  /**
+   * Initialize the movie history presentation.
+   */
   public function init() {
-    $this->movie = new Movie($this->diContainerHTTP, $_SERVER["MOVIE_ID"]);
-    $this->initPage($this->intl->t("History of {title}", [ "title" => $this->movie->displayTitle ]));
-    $this->initLanguageLinks("/movie/{0}/history", [ $this->movie->id ]);
-    $this->initBreadcrumb();
-    $this->breadcrumbTitle = $this->intl->t("History");
-    $this->contentBefore = "<div class='c'>";
-    $this->contentAfter  = "</div>";
+    $this->initMoviePresenation(
+      $this->intl->t("History of {title}"),
+      $this->intl->t("History of {title}"),
+      $this->intl->t("History")
+    );
   }
 
   /**
