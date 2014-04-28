@@ -315,7 +315,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_crew` (
   `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the movie crew entry was last changed.',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the movie crew entry was created.',
   `dyn_role` BLOB NOT NULL COMMENT 'The translated role names (if role_id is null) for cast jobs.',
-  `weight` SMALLINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The weight (display order) of the movie’s crew. Default is 0.',
+  `weight` SMALLINT NOT NULL DEFAULT 0 COMMENT 'The weight (display order) of the movie’s crew. Default is 0.',
   `alias_id` BIGINT NULL COMMENT 'The person’s alias identifier.',
   `company_id` BIGINT UNSIGNED NULL COMMENT 'The company’s unique identifier.',
   `person_id` BIGINT UNSIGNED NULL COMMENT 'The person’s unique identifier.',
@@ -629,7 +629,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_taglines` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `dyn_comments` BLOB NOT NULL COMMENT 'The taglines’s comment in various languages. Keys are ISO alpha-2 language codes.',
   `language_code` CHAR(2) NOT NULL COMMENT 'The tagline’s ISO alpha-2 language code.',
-  `tagline` BLOB NOT NULL COMMENT 'The movie’s tagline.',
+  `tagline` TEXT NOT NULL COMMENT 'The movie’s tagline.',
   INDEX `fk_movies_taglines_movies` (`movie_id` ASC),
   PRIMARY KEY (`id`, `movie_id`),
   CONSTRAINT `fk_movies_taglines_movies`
