@@ -201,8 +201,6 @@ final class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
   /**
    * Generate nginx locations that are nested within a protecting matching block.
    *
-   * @param \MovLib\Data\Collator $collator
-   *   A collator for correct sorting of sub routes.
    * @param string $locations
    *   The variable used to collect all locations.
    * @param array $redirects
@@ -215,12 +213,19 @@ final class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
    *   Used in recursion for correct indentation of output.
    * @return this
    */
-  protected function generateProtectedLocation(Collator $collator, &$locations, array &$redirects, array $routes, $protection, $indent = "") {
+  protected function generateProtectedLocation(&$locations, array &$redirects, array $routes, $protection, $indent = "") {
     $locations .= "\n{$indent}#\n{$indent}# Protection block for '{$protection}' routes\n{$indent}#\n\n{$indent}location ^~ '/{$protection}/' {\n";
-    $collator->ksort($routes);
+
+    // nginx always searches for the longest match within the routes, therefore we sort the routes by their length and
+    // ensure that the shortest routes we have are always last within a protected location block.
+    uksort($routes, function ($str1, $str2) {
+      // We need it reversed!
+      return strcmp($str1, $str2) * -1;
+    });
+
     foreach ($routes as $route => $args) {
       if (strpos($route, "/") === false) {
-        $this->generateProtectedLocation($collator, $locations, $redirects, $args, "{$protection}/{$route}", "{$indent}  ");
+        $this->generateProtectedLocation($locations, $redirects, $args, "{$protection}/{$route}", "{$indent}  ");
         continue;
       }
 
@@ -534,7 +539,7 @@ NGX;
         $this->generateDirectMatchLocation($intl, $collator, $locations, $redirects, $subRoutes);
       }
       else {
-        $this->generateProtectedLocation($collator, $locations, $redirects, $subRoutes, $protection);
+        $this->generateProtectedLocation($locations, $redirects, $subRoutes, $protection);
       }
     }
 
