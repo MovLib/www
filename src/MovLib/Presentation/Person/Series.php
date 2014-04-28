@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation\Person;
 
-use \MovLib\Data\Person\FullPerson;
-
 /**
  * Presentation of a person's series.
  *
@@ -28,7 +26,7 @@ use \MovLib\Data\Person\FullPerson;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Series extends \MovLib\Presentation\AbstractIndexPresenter {
+class Series extends \MovLib\Presentation\Person\AbstractPersonPresenter {
 
   /**
    * Initialize person series presentation.
@@ -36,34 +34,18 @@ class Series extends \MovLib\Presentation\AbstractIndexPresenter {
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function init() {
-//    $this->person = new FullPerson($this->diContainerHTTP);
-//    $this->person->init((integer) $_SERVER["PERSON_ID"]);
-//    $this->initPage($this->intl->t("Series with {0}", [ $this->person->name ]));
-//    $this->pageTitle        = $this->intl->t("Series with {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
-//    $this->breadcrumbTitle  = $this->intl->tp(-1, "Series");
-//    $this->initLanguageLinks("/person/{0}/series", [ $this->person->id ], true);
-//    $this->initPersonBreadcrumb();
-//    $this->sidebarInit();
-    // @todo: Replace with the real set!
-    $this->initIndex(new \MovLib\Data\Series\SeriesSet($this->diContainerHTTP), "Fix me!", "Fix me!");
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function formatListingItem(\MovLib\Data\AbstractEntity $item, $delta) {
-
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getNoItemsContent() {
-    return $this->callout(
-      "<p>{$this->intl->t("We couldn’t find any series this person has worked on.")}</p>",
-      $this->intl->t("No Series"),
-      "info"
+    $this->initPersonPresentation(
+      $this->intl->t("Series with {name}"),
+      $this->intl->t("Series with {name}"),
+      $this->intl->t("Series")
     );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {
+    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("person series") ]), $this->intl->t("Check back later"), "info");
   }
 
 }

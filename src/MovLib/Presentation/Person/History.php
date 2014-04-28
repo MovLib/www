@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation\Person;
 
-use \MovLib\Data\Person\Person;
-
 /**
  * A person's history.
  *
@@ -28,24 +26,22 @@ use \MovLib\Data\Person\Person;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\Person\AbstractBase {
+class History extends \MovLib\Presentation\Person\AbstractPersonPresenter {
 
   /**
    * Initialize person history presentation.
    */
   public function init() {
-    $this->person = new Person($this->diContainerHTTP, (integer) $_SERVER["PERSON_ID"]);
-    $this->initPage($this->intl->t("History"));
-    $this->pageTitle        = $this->intl->t("History of {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
-    $this->initLanguageLinks("/person/{0}/history", [ $this->person->id ]);
-    $this->breadcrumb
-      ->addCrumb($this->person->routeIndex, $this->intl->t("Persons"))
-      ->addCrumb($this->person->route, $this->person->name)
-    ;
-    $this->contentBefore = "<div class='c'>";
-    $this->contentAfter  = "</div>";
+    $this->initPersonPresentation(
+      $this->intl->t("History of {name}"),
+      $this->intl->t("History of {name}"),
+      $this->intl->t("History")
+    );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getContent() {
     return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("history") ]), $this->intl->t("Check back later"), "info");
   }

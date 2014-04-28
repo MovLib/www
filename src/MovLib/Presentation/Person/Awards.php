@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -18,15 +18,15 @@
 namespace MovLib\Presentation\Person;
 
 /**
- * Presentation of a person's releases.
+ * Presentation of a person's awards.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @copyright ©  MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Releases extends \MovLib\Presentation\Person\AbstractPersonPresenter {
+class Awards extends \MovLib\Presentation\Person\AbstractPersonPresenter {
 
   /**
    * Initialize person releases presentation.
@@ -35,9 +35,9 @@ class Releases extends \MovLib\Presentation\Person\AbstractPersonPresenter {
    */
   public function init() {
     $this->initPersonPresentation(
-      $this->intl->t("Releases with {name}"),
-      $this->intl->t("Releases with {name}"),
-      $this->intl->t("Releases")
+      $this->intl->t("Awards of {name}"),
+      $this->intl->t("Awards of {name}"),
+      $this->intl->t("Awards")
     );
   }
 
@@ -45,7 +45,7 @@ class Releases extends \MovLib\Presentation\Person\AbstractPersonPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("person releases") ]), $this->intl->t("Check back later"), "info");
+    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("person awards") ]), $this->intl->t("Check back later"), "info");
   }
 
 }

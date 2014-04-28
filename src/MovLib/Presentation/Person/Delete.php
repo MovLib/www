@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation\Person;
 
-use \MovLib\Data\Person\Person;
-
 /**
  * Allows deletion of a person's information.
  *
@@ -28,22 +26,17 @@ use \MovLib\Data\Person\Person;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Delete extends \MovLib\Presentation\AbstractPresenter {
+class Delete extends \MovLib\Presentation\Person\AbstractPersonPresenter {
 
   /**
    * Initialize person delete presentation.
    */
   public function init() {
-    $this->person = new Person($this->diContainerHTTP, (integer) $_SERVER["PERSON_ID"]);
-    $this->initPage($this->intl->t("Delete"));
-    $this->pageTitle        = $this->intl->t("Delete {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
-    $this->initLanguageLinks("/person/{0}/delete", [ $this->person->id ]);
-    $this->breadcrumb
-      ->addCrumb($this->person->routeIndex, $this->intl->t("Persons"))
-      ->addCrumb($this->person->route, $this->person->name)
-    ;
-    $this->contentBefore = "<div class='c'>";
-    $this->contentAfter  = "</div>";
+    $this->initPersonPresentation(
+      $this->intl->t("Delete {name}"),
+      $this->intl->t("Delete {name}"),
+      $this->intl->t("Delete")
+    );
   }
 
   /**
