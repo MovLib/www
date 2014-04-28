@@ -44,7 +44,7 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
   public function init() {
     return $this
       ->initPage($this->intl->t("Create"))
-      ->initCreate(new Job($this->diContainerHTTP), $this->intl->tp(-1, "Jobs", "Job"))
+      ->initCreate(new Job($this->diContainerHTTP), $this->intl->t("Jobs"))
     ;
   }
 

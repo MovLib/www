@@ -89,8 +89,8 @@ abstract class AbstractMoviePresenter extends \MovLib\Presentation\AbstractPrese
     foreach ([
       [ "person", "cast", $this->intl->t("Cast"), null ],
       [ "company", "crew", $this->intl->t("Crew"), null ],
-      [ "release", "releases", $this->intl->tp(-1, "Releases", "Release"), $this->entity->countReleases ],
-      [ "award separator", "awards", $this->intl->tp(-1, "Awards", "Award"), $this->entity->countAwards ],
+      [ "release", "releases", $this->intl->t("Releases"), $this->entity->countReleases ],
+      [ "award separator", "awards", $this->intl->t("Awards"), $this->entity->countAwards ],
     ] as list($icon, $routeAddition, $title, $count)) {
       if (isset($count)) {
         $count =  "<span class='fr'>{$this->intl->format("{0,number}", $count)}</span>";
