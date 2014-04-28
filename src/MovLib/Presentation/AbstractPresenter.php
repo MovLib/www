@@ -513,7 +513,7 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
           "<section class='last s s12 tac'>" .
             "<h3 class='vh'>{$this->intl->t("Dev Links")}</h3>" .
             "<a href='http://www.google.com/webmasters/tools/richsnippets?q={$this->request->scheme}://{$this->request->hostname}{$this->request->uri}'>Rich Snippets</a> · " .
-            "<a href='http://www.w3.org/2012/pyRdfa/extract?validate=yes&amp;uri={$this->request->scheme}://{$this->request->hostname}{$this->request->uri}'>Rdfa</a> · " .
+            "<a href='http://www.w3.org/2012/pyRdfa/extract?validate=yes&amp;uri={$this->request->scheme}://{$this->request->hostname}{$this->request->uri}'>RDFa</a> · " .
             "<a href='http://validator.w3.org/check?uri={$this->request->scheme}://{$this->request->hostname}{$this->request->uri}'>Validator</a> · " .
             "<a href='http://gsnedders.html5.org/outliner/process.py?url={$this->request->scheme}://{$this->request->hostname}{$this->request->uri}'>Outliner</a>" .
           "</section>" .
