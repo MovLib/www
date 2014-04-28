@@ -377,7 +377,7 @@ SQL
     $this->imageFilename        = mb_strtolower($this->name);
     $this->pluralKey            = "users";
     $this->private              = (boolean) $this->private;
-    $this->routeArgs            = $this->imageFilename;
+    $this->routeArgs            = [ $this->imageFilename ];
     $this->singularKey          = "user";
     return parent::init();
   }

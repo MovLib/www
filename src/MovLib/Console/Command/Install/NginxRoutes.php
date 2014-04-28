@@ -83,7 +83,7 @@ final class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
     "cc" => [ "regex" => "([A-Z]{2})",    "var" => "country_code"        ],
     "id" => [ "regex" => "([1-9][0-9]*)", "var" => "{{ presenter }}_id"  ],
     "lc" => [ "regex" => "([a-z]{2})",    "var" => "language_code"       ],
-    "un" => [ "regex" => "([^/].+)",      "var" => "user_name"           ],
+    "un" => [ "regex" => "(.+)",          "var" => "user_name"           ],
   ];
 
   /**

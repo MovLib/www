@@ -138,7 +138,7 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
     // @codeCoverageIgnoreEnd
     // @devEnd
     $this->routeKey   || ($this->routeKey   = "/{$this->singularKey}/{0}");
-    $this->routeArgs  || ($this->routeArgs  = $this->id);
+    $this->routeArgs  || ($this->routeArgs  = [ $this->id ]);
     $this->route      || ($this->route      = $this->intl->r($this->routeKey, $this->routeArgs));
     $this->routeIndex || ($this->routeIndex = $this->intl->r("/{$this->pluralKey}"));
     $this->tableName  || ($this->tableName  = $this->pluralKey);
@@ -169,8 +169,8 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
    *   The translated and formatted singular route.
    * @throws \IntlException
    */
-  public function r($route, $args = null) {
-    return "{$this->routeKey}{$this->intl->r($route, $args)}";
+  public function r($route, $args = []) {
+    return $this->intl->r("{$this->routeKey}{$route}", $this->routeArgs + $args);
   }
 
 }

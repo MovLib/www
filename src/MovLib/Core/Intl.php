@@ -268,7 +268,7 @@ final class Intl {
    * @param string $route
    *   The route or query key pattern to translate.
    * @param mixed $args [optional]
-   *   The arguments that should be passed to the message formatter, defaults to <code>NULL</code> and the message
+   *   The arguments that should be passed to the message formatter, defaults to an empty array and the message
    *   formatter isn't used at all. You can pass either a single scalar value or an array.
    * @param string $locale [optional]
    *   Use a different locale for this translation.
@@ -277,7 +277,7 @@ final class Intl {
    * @throws \ErrorException
    *   If the given route is empty or a part of the route is empty.
    */
-  public function r($route, $args = null, $locale = null) {
+  public function r($route, $args = [], $locale = null) {
     // @devStart
     // @codeCoverageIgnoreStart
     assert(!empty($route), "A route cannot be empty!");
@@ -322,7 +322,7 @@ final class Intl {
    * @param string $message
    *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
    * @param mixed $args [optional]
-   *   The arguments that should be passed to the message formatter, default to <code>NULL</code> and the message
+   *   The arguments that should be passed to the message formatter, defaults to an empty array and the message
    *   formatter isn't used at all. You can pass either a single scaler value or an array.
    * @param string $locale [optional]
    *   Use a different locale for this translation.
@@ -330,7 +330,7 @@ final class Intl {
    *   The formatted and translated <var>$message</var>.
    * @throws \IntlException
    */
-  public function t($message, $args = null, $locale = null) {
+  public function t($message, $args = [], $locale = null) {
     return $this->translate($message, $args, "messages", $locale);
   }
 
@@ -383,7 +383,7 @@ final class Intl {
    *   The message's singular form to format and translate, defaults to <code>NULL</code> which means that the given
    *   <var>$plural</var> is also used for the singular form (e.g. the English word <i>Series</i> has no singular form).
    * @param mixed $args [optional]
-   *   The arguments that should be passed to the message formatter, default to <code>NULL</code> and the message
+   *   The arguments that should be passed to the message formatter, defaults to an empty array and the message
    *   formatter isn't used at all. You can pass either a single scaler value or an array.
    * @param string $locale [optional]
    *   Use a different locale for this translation.
@@ -391,7 +391,7 @@ final class Intl {
    *   The translated and formatted plural message.
    * @throws \IntlException
    */
-  public function tp($count, $plural, $singular = null, $args = null, $locale = null) {
+  public function tp($count, $plural, $singular = null, $args = [], $locale = null) {
     // @devStart
     // @codeCoverageIgnoreStart
     assert(!empty($plural));
