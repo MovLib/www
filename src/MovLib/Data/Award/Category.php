@@ -100,6 +100,26 @@ final class Category extends \MovLib\Data\AbstractEntity {
    */
   public $seriesCount;
 
+  /**
+   * {@inheritdoc}
+   */
+  public $pluralKey = "categories";
+
+  /**
+   * {@inheritdoc}
+   */
+  public $singularKey = "category";
+
+  /**
+   * {@inheritdoc}
+   */
+  public $tableName = "awards_categories";
+
+  /**
+   * {@inheritdoc}
+   */
+  public $routeKey = "/award/{0}/category/{1}";
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -174,16 +194,45 @@ SQL
 
 
   /**
+   * Update the award category.
+   *
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function commit() {
+
+    $stmt = $this->getMySQLi()->prepare(<<<SQL
+UPDATE `awards_categories` SET
+  `award_id`         = ?,
+  `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, '{$this->intl->languageCode}', ?),
+  `dyn_names`        = COLUMN_ADD(`dyn_names`, '{$this->intl->languageCode}', ?),
+  `dyn_wikipedia`    = COLUMN_ADD(`dyn_wikipedia`, '{$this->intl->languageCode}', ?),
+  `first_year`       = ?,
+  `last_year`        = ?
+WHERE `id` = {$this->id}
+SQL
+    );
+    $stmt->bind_param(
+      "dsssii",
+      $this->award->id,
+      $this->description,
+      $this->name,
+      $this->wikipedia,
+      $this->firstYear->year,
+      $this->lastYear->year
+    );
+    $stmt->execute();
+
+    return $this;
+  }
+
+  /**
    * {@inheritdoc}
    */
   protected function init() {
-    $this->award          = new Award($this->diContainer, $this->award);
-    $this->firstYear      && ($this->firstYear = new Date($this->firstYear));
-    $this->lastYear       && ($this->lastYear  = new Date($this->lastYear));
-    $this->pluralKey      = "categories";
-    $this->singularKey    = "category";
-    $this->tableName      = "awards_categories";
-    $this->routeKey       = "/award/{0}/category/{1}";
+    $this->award          && $this->award = new Award($this->diContainer, $this->award);
+    $this->firstYear      && $this->firstYear = new Date($this->firstYear);
+    $this->lastYear       && $this->lastYear  = new Date($this->lastYear);
     $this->routeArgs      = [ $this->award->id, $this->id ];
     $this->routeIndex     = $this->intl->r("/award/{0}/categories", $this->award->id);
     return parent::init();

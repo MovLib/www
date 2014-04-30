@@ -53,8 +53,6 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    $this->headingBefore = "<div class='r'><div class='s s10'>";
-
     $this->entity->firstYear && $this->infoboxAdd($this->intl->t("From"), (new Date($this->intl, $this))->format($this->entity->firstYear));
     $this->entity->lastYear  && $this->infoboxAdd($this->intl->t("To"), (new Date($this->intl, $this))->format($this->entity->lastYear));
 
@@ -64,7 +62,7 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
     }
 
     return $this->callout(
-      $this->intl->t("Would you like to {0}add additional information{1}?", [ "<a href='{$this->intl->r("/award/{0}/category/{1}/edit", [ $this->entity->awardId, $this->entity->id ])}'>", "</a>" ]),
+      $this->intl->t("Would you like to {0}add additional information{1}?", [ "<a href='{$this->intl->r("/award/{0}/category/{1}/edit", [ $this->entity->award->id, $this->entity->id ])}'>", "</a>" ]),
       $this->intl->t("{sitename} doesn’t have further details about this award category.", [ "sitename" => $this->config->sitename ])
     );
   }

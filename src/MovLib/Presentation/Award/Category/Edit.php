@@ -17,7 +17,14 @@
  */
 namespace MovLib\Presentation\Award\Category;
 
+use \MovLib\Data\Award\AwardSet;
 use \MovLib\Data\Award\Category;
+use \MovLib\Partial\Form;
+use \MovLib\Partial\FormElement\InputInteger;
+use \MovLib\Partial\FormElement\InputText;
+use \MovLib\Partial\FormElement\InputWikipedia;
+use \MovLib\Partial\FormElement\Select;
+use \MovLib\Partial\FormElement\TextareaHTML;
 
 /**
  * Allows editing of a award category's information.
@@ -28,24 +35,8 @@ use \MovLib\Data\Award\Category;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Edit extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Partial\SidebarTrait;
+class Edit extends \MovLib\Presentation\AbstractEditPresenter {
   use \MovLib\Presentation\Award\Category\CategoryTrait;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The entity to present.
-   *
-   * @var \MovLib\Data\AbstractEntity
-   */
-  protected $entity;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
 
   /**
    * {@inheritdoc}
@@ -53,19 +44,60 @@ class Edit extends \MovLib\Presentation\AbstractPresenter {
   public function init() {
     $this->entity = new Category($this->diContainerHTTP, $_SERVER["CATEGORY_ID"]);
     $pageTitle    = $this->intl->t("Edit {0}", [ $this->entity->name ]);
-    return $this
-      ->initPage($pageTitle, $pageTitle, $this->intl->t("Edit"))
-      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/edit", $this->entity->id)
-      ->breadcrumb->addCrumbs($this->getBreadCrumbs())
-    ;
+    $this->initPage($pageTitle, $pageTitle, $this->intl->t("Edit"));
+    $this->breadcrumb->addCrumbs([
+      [ $this->intl->r("/awards"), $this->intl->t("Awards") ],
+      [ $this->intl->r("/award/{0}/", [ $this->entity->award->id ]), $this->entity->award->name ],
+    ]);
+    $this->initEdit($this->entity, $this->intl->t("Categories"), $this->getSidebarItems());
+    return $this;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("edit award category"));
+    $awardOptions = (new AwardSet($this->diContainerHTTP))->loadSelectOptions();
+    $form = (new Form($this->diContainerHTTP))
+      ->addElement(new Select($this->diContainerHTTP, "award", $this->intl->t("Award"), $awardOptions, $this->entity->award->id, [
+        "placeholder" => $this->intl->t("Select the event’s Award."),
+        "autofocus"   => true,
+        "required"    => true,
+      ]))
+      ->addElement(new InputText($this->diContainerHTTP, "name", $this->intl->t("Name"), $this->entity->name, [
+        "placeholder" => $this->intl->t("Enter the event’s name."),
+        "required"    => true,
+      ]))
+      ->addElement(new InputInteger($this->diContainerHTTP, "first-year", $this->intl->t("First Year"), $this->entity->firstYear->year, [
+        "placeholder" => $this->intl->t("yyyy"),
+        "required"    => true,
+        "min"         => 1000,
+        "max"         => 9999
+      ]))
+      ->addElement(new InputInteger($this->diContainerHTTP, "last-year", $this->intl->t("Last Year"), $this->entity->lastYear->year, [
+        "placeholder" => $this->intl->t("yyyy"),
+        "min"         => 1000,
+        "max"         => 9999
+      ]))
+      ->addElement(new TextareaHTML($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
+        "placeholder" => $this->intl->t("Describe the event."),
+      ], [ "blockquote", "external", "headings", "lists", ]))
+      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
+        "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/…",
+        "data-allow-external" => "true",
+      ]))
+      ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
+      ->init([ $this, "valid" ])
+    ;
+    return
+      $form->open() .
+      $form->elements["award"] .
+      $form->elements["name"] .
+      "<div class='r'><div class='s s5'>{$form->elements["first-year"]}</div><div class='s s5'>{$form->elements["last-year"]}</div></div>" .
+      $form->elements["description"] .
+      $form->elements["wikipedia"] .
+      $form->close()
+    ;
   }
 
 }

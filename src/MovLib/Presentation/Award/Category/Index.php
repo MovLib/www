@@ -99,7 +99,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
     foreach ($this->set->loadOrdered("`created` DESC", $this->paginationOffset, $this->paginationLimit, "`award_id` = {$this->entity->id}") as $id => $entity) {
       $items .= $this->formatListingItem($entity, $id);
     }
-    return $this->getListing($items);
+    return isset($items)? $this->getListing($items) : $this->getNoItemsContent();
   }
 
   /**
@@ -107,7 +107,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    */
   public function getNoItemsContent() {
     return $this->callout(
-      "<p>{$this->intl->t("We couldn’t find any award categories matching your filter criteria, or there simply aren’t any awards categories available.")}</p>" .
+      "<p>{$this->intl->t("We couldn’t find any categories belonging to this award, or there simply aren’t any categories available.")}</p>" .
       "<p>{$this->intl->t("Would you like to {0}create an award category{1}?", [ "<a href='{$this->intl->r("/award/{0}/category/create", [ $this->entity->id ])}'>", "</a>" ])}</p>",
       $this->intl->t("No Award Categories"),
       "info"
