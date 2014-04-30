@@ -51,6 +51,13 @@ final class Category extends \MovLib\Data\AbstractEntity {
   public $companyCount;
 
   /**
+   * The category's name in our default language.
+   *
+   * @var null|string
+   */
+  public $defaultName;
+
+  /**
    * The category's description in the current locale.
    *
    * @var null|string
@@ -142,6 +149,7 @@ SELECT
   `awards_categories`.`award_id` AS `awardId`,
   `awards_categories`.`changed` AS `changed`,
   `awards_categories`.`created` AS `created`,
+  COLUMN_GET(`awards_categories`.`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR),
   `awards_categories`.`deleted` AS `deleted`,
   IFNULL(
     COLUMN_GET(`awards_categories`.`dyn_names`, '{$this->intl->languageCode}' AS CHAR),
@@ -167,6 +175,7 @@ SQL
         $this->award,
         $this->changed,
         $this->created,
+        $this->defaultName,
         $this->deleted,
         $this->name,
         $this->firstYear,
@@ -227,12 +236,95 @@ SQL
   }
 
   /**
+   * Create new award category.
+   *
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function create() {
+    $mysqli = $this->getMySQLi();
+    if ($this->intl->languageCode === $this->intl->defaultLanguageCode) {
+      $stmt = $mysqli->prepare(<<<SQL
+INSERT INTO `awards_categories` (
+  `award_id`,
+  `dyn_descriptions`,
+  `dyn_names`,
+  `dyn_wikipedia`,
+  `first_year`,
+  `last_year`
+) VALUES (
+  ?,
+  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
+  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
+  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
+  ?,
+  ?
+);
+SQL
+      );
+      $stmt->bind_param(
+        "dsssii",
+        $this->award->id,
+        $this->description,
+        $this->name,
+        $this->wikipedia,
+        $this->firstYear->year,
+        $this->lastYear->year
+      );
+    }
+    else {
+      $stmt = $mysqli->prepare(<<<SQL
+INSERT INTO `awards_categories` (
+  `award_id`,
+  `dyn_descriptions`,
+  `dyn_names`,
+  `dyn_wikipedia`,
+  `first_year`,
+  `last_year`
+) VALUES (
+  ?,
+  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
+  COLUMN_CREATE(
+    '{$this->intl->defaultLanguageCode}', ?,
+    '{$this->intl->languageCode}', ?
+  ),
+  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
+  ?,
+  ?
+);
+SQL
+      );
+      $stmt->bind_param(
+        "dssssii",
+        $this->award->id,
+        $this->description,
+        $this->defaultName,
+        $this->name,
+        $this->wikipedia,
+        $this->firstYear->year,
+        $this->lastYear->year
+      );
+    }
+
+    $stmt->execute();
+    $this->id = $stmt->insert_id;
+
+    return $this->init();
+  }
+
+  /**
    * {@inheritdoc}
    */
   protected function init() {
-    $this->award          && $this->award = new Award($this->diContainer, $this->award);
-    $this->firstYear      && $this->firstYear = new Date($this->firstYear);
-    $this->lastYear       && $this->lastYear  = new Date($this->lastYear);
+    if (isset($this->award) && !$this->award instanceof \MovLib\Data\Award\Award) {
+      $this->award = new Award($this->diContainer, $this->award);
+    }
+    if (isset($this->firstYear) && !$this->firstYear instanceof \stdClass) {
+      $this->firstYear = new Date($this->firstYear);
+    }
+    if (isset($this->lastYear) && !$this->lastYear instanceof \stdClass) {
+      $this->lastYear = new Date($this->lastYear);
+    }
     $this->routeArgs      = [ $this->award->id, $this->id ];
     $this->routeIndex     = $this->intl->r("/award/{0}/categories", $this->award->id);
     return parent::init();

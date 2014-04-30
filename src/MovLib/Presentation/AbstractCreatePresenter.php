@@ -58,12 +58,12 @@ abstract class AbstractCreatePresenter extends \MovLib\Presentation\AbstractPres
   final protected function initCreate(\MovLib\Data\AbstractEntity $entity, $breadcrumbIndexTitle) {
     $this->entity = $entity;
     $this->sidebarInit([
-      [ $this->intl->r("/{$this->entity->pluralKey}"), $breadcrumbIndexTitle, [ "class" => "ico ico-{$this->entity->singularKey}"] ],
+      [ $this->entity->routeIndex, $breadcrumbIndexTitle, [ "class" => "ico ico-{$this->entity->singularKey}"] ],
       [ $this->intl->r("/help/database/{$this->entity->pluralKey}/create"), $this->intl->t("Help"), [ "class" => "ico ico-help"] ],
     ]);
     $this->initLanguageLinks("/{$this->entity->singularKey}/create");
     $this->breadcrumb->addCrumbs([
-      [ $this->intl->r("/{$this->entity->pluralKey}"), $breadcrumbIndexTitle ],
+      [ $this->entity->routeIndex, $breadcrumbIndexTitle ],
     ]);
     return $this;
   }
