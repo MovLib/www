@@ -135,6 +135,16 @@ class Person extends \MovLib\Data\Image\AbstractImageEntity {
    */
   public $sex;
 
+  /**
+   * {@inheritdoc}
+   */
+  public $pluralKey = "persons";
+
+  /**
+   * {@inheritdoc}
+   */
+  public $singularKey = "person";
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -225,8 +235,6 @@ SQL
     $this->imageDirectory       = "upload://person";
     $this->imageFilename        = $this->id;
     $this->links     && ($this->links = unserialize($this->links));
-    $this->pluralKey            = "persons";
-    $this->singularKey          = "person";
     return parent::init();
   }
 
@@ -271,6 +279,57 @@ SQL
     $stmt->execute();
     $stmt->close();
     return $this;
+  }
+
+  /**
+   * Create a new person.
+   *
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function create() {
+    $this->links   = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
+
+    $stmt = $this->getMySQLi()->prepare(<<<SQL
+INSERT INTO `persons` (
+  `birthdate`,
+  `born_name`,
+  `deathdate`,
+  `dyn_biographies`,
+  `dyn_image_descriptions`,
+  `dyn_wikipedia`,
+  `links`,
+  `name`,
+  `sex`
+) VALUES (
+  ?,
+  ?,
+  ?,
+  COLUMN_CREATE('{$this->intl->languageCode}', ?),
+  '',
+  COLUMN_CREATE('{$this->intl->languageCode}', ?),
+  ?,
+  ?,
+  ?
+);
+SQL
+    );
+    $stmt->bind_param(
+      "sssssssi",
+      $this->birthDate,
+      $this->bornName,
+      $this->deathDate,
+      $this->biography,
+      $this->wikipedia,
+      $this->links,
+      $this->name,
+      $this->sex
+    );
+
+    $stmt->execute();
+    $this->id = $stmt->insert_id;
+
+    return $this->init();
   }
 
   /**
