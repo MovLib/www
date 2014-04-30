@@ -17,8 +17,10 @@
  */
 namespace MovLib\Presentation\Movie;
 
+use \MovLib\Data\Movie\MovieSet;
+
 /**
- * Movies charts presentation.
+ * Movie charts presentation.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -27,28 +29,26 @@ namespace MovLib\Presentation\Movie;
  * @since 0.0.1-dev
  */
 class Charts extends \MovLib\Presentation\AbstractPresenter {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  public function init() {
-    $this->initPage($this->intl->t("Movie Charts"), null, $this->intl->t("Charts"));
-    $this->initBreadcrumb([ [ $this->intl->r("/movies"), $this->intl->t("Movies") ] ]);
-    $this->initLanguageLinks("/movies/charts", null, true);
-    $this->contentBefore = "<div class='c'>";
-    $this->contentAfter  = "</div>";
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
+  use \MovLib\Partial\SidebarTrait;
 
   /**
-   * Get the presentation's page content.
-   *
-   * @return string
-   *   The presentation's page content.
+   * Initialize the releases charts presentation.
+   */
+  public function init() {
+    $this->set = new MovieSet($this->diContainerHTTP);
+    $this->initPage($this->intl->t("Movie Charts"), null, $this->intl->t("Charts"));
+    $this->initBreadcrumb([ [ $this->intl->r("/movies"), $this->intl->t("Movies") ] ]);
+    $this->initLanguageLinks("/movie/charts");
+    $this->sidebarInit([
+      [ $this->set->route, $this->intl->t("Movies"), [ "class" => "ico ico-{$this->set->singularKey}" ] ],
+      [ $this->intl->r("/{$this->set->singularKey}/random"), $this->intl->t("Random"), [ "class" => "ico ico-random" ] ],
+      [ $this->intl->r("/{$this->set->singularKey}/charts"), $this->intl->t("Charts"), [ "class" => "ico ico-chart" ] ],
+      [ $this->intl->r("/help/database/{$this->set->pluralKey}"), $this->intl->t("Help"), [ "class" => "ico ico-help"] ],
+    ]);
+  }
+
+  /**
+   * {@inheritdoc}
    */
   public function getContent() {
     return $this->checkBackLater($this->title);

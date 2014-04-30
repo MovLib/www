@@ -15,14 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Series;
+namespace MovLib\Presentation\Genre;
 
-use \MovLib\Data\Series\SeriesSet;
+use \MovLib\Data\Genre\GenreSet;
 
 /**
- * The series charts presentation.
+ * The genre charts presentation.
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -32,15 +32,15 @@ class Charts extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Partial\SidebarTrait;
 
   /**
-   * Instantiate new series charts presentation.
+   * Initialize the releases charts presentation.
    */
   public function init() {
-    $this->set = new SeriesSet($this->diContainerHTTP);
-    $this->initPage($this->intl->t("Series Charts"), null, $this->intl->t("Charts"));
-    $this->initBreadcrumb([ [ $this->intl->r("/series"), $this->intl->tp(-1, "Series") ] ]);
-    $this->initLanguageLinks("/series/charts");
+    $this->set = new GenreSet($this->diContainerHTTP);
+    $this->initPage($this->intl->t("Genre Charts"), null, $this->intl->t("Charts"));
+    $this->initBreadcrumb([ [ $this->intl->r("/genres"), $this->intl->t("Genres") ] ]);
+    $this->initLanguageLinks("/genre/charts");
     $this->sidebarInit([
-      [ $this->set->route, $this->intl->t("Series"), [ "class" => "ico ico-{$this->set->singularKey}" ] ],
+      [ $this->set->route, $this->intl->t("Genres"), [ "class" => "ico ico-{$this->set->singularKey}" ] ],
       [ $this->intl->r("/{$this->set->singularKey}/random"), $this->intl->t("Random"), [ "class" => "ico ico-random" ] ],
       [ $this->intl->r("/{$this->set->singularKey}/charts"), $this->intl->t("Charts"), [ "class" => "ico ico-chart" ] ],
       [ $this->intl->r("/help/database/{$this->set->pluralKey}"), $this->intl->t("Help"), [ "class" => "ico ico-help"] ],
