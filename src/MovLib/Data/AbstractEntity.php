@@ -169,7 +169,7 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
    *   The translated and formatted singular route.
    * @throws \IntlException
    */
-  public function r($route, $args = []) {
+  public function r($route, array $args = []) {
     return $this->intl->r("{$this->routeKey}{$route}", $this->routeArgs + $args);
   }
 
