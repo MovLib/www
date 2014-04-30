@@ -24,7 +24,7 @@ use \MovLib\Partial\FormElement\InputInteger;
 use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Partial\FormElement\InputWikipedia;
 use \MovLib\Partial\FormElement\Select;
-use \MovLib\Partial\FormElement\TextareaHTML;
+use \MovLib\Partial\FormElement\TextareaHTMLExtended;
 
 /**
  * Allows editing of a award category's information.
@@ -79,9 +79,10 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
         "min"         => 1000,
         "max"         => 9999
       ]))
-      ->addElement(new TextareaHTML($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
-        "placeholder" => $this->intl->t("Describe the category."),
-      ], [ "blockquote", "external", "headings", "lists", ]))
+      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
+        "data-allow-external" => "true",
+        "placeholder"         => $this->intl->t("Describe the category."),
+      ]))
       ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
         "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/…",
         "data-allow-external" => "true",

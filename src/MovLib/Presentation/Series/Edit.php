@@ -22,7 +22,7 @@ use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputInteger;
 use \MovLib\Partial\FormElement\Select;
 use \MovLib\Partial\FormElement\InputWikipedia;
-use \MovLib\Partial\FormElement\TextareaHTML;
+use \MovLib\Partial\FormElement\TextareaHTMLExtended;
 
 /**
  * Allows editing of a series's information.
@@ -67,9 +67,10 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
       ->addElement(new Select($this->diContainerHTTP, "status", $this->intl->t("Status"), $this->getStatusArray(), $this->entity->status, [
         "required"    => true,
       ]))
-      ->addElement(new TextareaHTML($this->diContainerHTTP, "synopsis", $this->intl->t("Synopsis"), $this->entity->synopsis, [
-        "placeholder" => $this->intl->t("Write a synopsis."),
-      ], [ "blockquote", "external", "headings", "lists", ]))
+      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "synopsis", $this->intl->t("Synopsis"), $this->entity->synopsis, [
+        "data-allow-external" => "true",
+        "placeholder"         => $this->intl->t("Write a synopsis."),
+      ]))
       ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
         "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/...",
         "data-allow-external" => "true",

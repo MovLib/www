@@ -31,7 +31,7 @@ use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Partial\FormElement\InputURL;
 use \MovLib\Partial\FormElement\RadioGroup;
 use \MovLib\Partial\FormElement\Select;
-use \MovLib\Partial\FormElement\TextareaHTML;
+use \MovLib\Partial\FormElement\TextareaHTMLExtendedImage;
 
 /**
  * Defines the profile account settings presentation.
@@ -114,9 +114,10 @@ final class AccountSettings extends \MovLib\Presentation\Profile\AbstractProfile
         "#help-popup"         => $this->intl->t("Your website will be display on your profile page."),
         "data-allow-external" => "true",
       ]))
-      ->addElement(new TextareaHTML($this->diContainerHTTP, "about_me", $this->intl->t("About Me"), $this->user->aboutMe, [
-        "placeholder" => $this->intl->t("Tell others about yourself, what do you do, what do you like, …"),
-      ], [ "blockquote", "external", "headings", "lists", ]))
+      ->addElement(new TextareaHTMLExtendedImage($this->diContainerHTTP, "about_me", $this->intl->t("About Me"), $this->user->aboutMe, [
+        "data-allow-external" => "true",
+        "placeholder"         => $this->intl->t("Tell others about yourself, what do you do, what do you like, …"),
+      ]))
       ->addElement((new Country())->getSelectFormElement($this->diContainerHTTP, $this->user->countryCode, [
         "#help-popup" => $this->intl->t("Your country will be displayed on your profile page and is used to create demographic evaluations."),
       ]))

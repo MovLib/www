@@ -21,7 +21,7 @@ use \MovLib\Data\Job\Job;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Partial\FormElement\InputWikipedia;
-use \MovLib\Partial\FormElement\TextareaHTML;
+use \MovLib\Partial\FormElement\TextareaHTMLExtended;
 use \MovLib\Partial\Sex;
 
 /**
@@ -66,9 +66,10 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
         "placeholder" => $this->intl->t("Enter the job’s female name."),
         "required"    => true,
       ]))
-      ->addElement(new TextareaHTML($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
-        "placeholder" => $this->intl->t("Describe the job."),
-      ], [ "blockquote", "external", "headings", "lists", ]))
+      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
+        "data-allow-external" => "true",
+        "placeholder"         => $this->intl->t("Describe the job."),
+      ]))
       ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
         "placeholder"         => $this->intl->t("Enter the job’s corresponding Wikipedia link."),
         "data-allow-external" => "true",

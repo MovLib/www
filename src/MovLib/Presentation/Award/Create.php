@@ -21,7 +21,7 @@ use \MovLib\Data\Award\Award;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Partial\FormElement\InputWikipedia;
-use \MovLib\Partial\FormElement\TextareaHTML;
+use \MovLib\Partial\FormElement\TextareaHTMLExtended;
 use \MovLib\Partial\FormElement\TextareaLineArray;
 use \MovLib\Partial\FormElement\TextareaLineURLArray;
 
@@ -59,9 +59,10 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
       ->addElement(new TextareaLineArray($this->diContainerHTTP, "aliases", $this->intl->t("Alternative Names (line by line)"), $this->entity->aliases, [
         "placeholder" => $this->intl->t("Enter the award’s alternative names here, line by line."),
       ]))
-      ->addElement(new TextareaHTML($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
-        "placeholder" => $this->intl->t("Describe the award."),
-      ], [ "blockquote", "external", "headings", "lists", ]))
+      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
+        "data-allow-external" => "true",
+          "placeholder"         => $this->intl->t("Describe the award."),
+      ]))
       ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
         "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/..",
         "data-allow-external" => "true",

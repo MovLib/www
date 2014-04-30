@@ -55,6 +55,7 @@ class TextareaHTMLRaw extends \MovLib\Partial\FormElement\AbstractFormElement {
       );
 
       $this->attributes["id"] = $this->id;
+      $this->attributes["name"] = $this->id;
       $this->attributes["aria-multiline"] = "true";
       return
         "{$this->required}{$this->helpPopup}{$this->helpText}<p>" .

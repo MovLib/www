@@ -23,7 +23,7 @@ use \MovLib\Partial\FormElement\InputDateSeparate;
 use \MovLib\Partial\FormElement\InputSex;
 use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Partial\FormElement\InputWikipedia;
-use \MovLib\Partial\FormElement\TextareaHTML;
+use \MovLib\Partial\FormElement\TextareaHTMLExtended;
 use \MovLib\Partial\FormElement\TextareaLineURLArray;
 
 /**
@@ -65,9 +65,10 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
         "required"    => true,
       ]))
       ->addElement(new InputDateSeparate($this->diContainerHTTP, "death-date", $this->intl->t("Deathdate"), $this->entity->deathDate))
-      ->addElement(new TextareaHTML($this->diContainerHTTP, "biography", $this->intl->t("Biography"), $this->entity->biography, [
-        "placeholder" => $this->intl->t("Describe the person."),
-      ], [ "blockquote", "external", "headings", "lists", ]))
+      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "biography", $this->intl->t("Biography"), $this->entity->biography, [
+        "data-allow-external" => "true",
+        "placeholder"         => $this->intl->t("Describe the person."),
+      ]))
       ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
         "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/…",
         "data-allow-external" => "true",

@@ -21,7 +21,7 @@ use \MovLib\Data\Genre\Genre;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Partial\FormElement\InputWikipedia;
-use \MovLib\Partial\FormElement\TextareaHTML;
+use \MovLib\Partial\FormElement\TextareaHTMLExtended;
 
 /**
  * Defines the genre edit presentation.
@@ -62,9 +62,10 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
         "autofocus"   => true,
         "required"    => true,
       ]))
-      ->addElement(new TextareaHTML($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
-        "placeholder" => $this->intl->t("Describe the genre."),
-      ], [ "blockquote", "external", "headings", "lists", ]))
+      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
+        "data-allow-external" => "true",
+          "placeholder"         => $this->intl->t("Describe the genre."),
+      ]))
       ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
         "placeholder"         => $this->intl->t("Enter the genre’s corresponding Wikipedia link."),
         "data-allow-external" => "true",
