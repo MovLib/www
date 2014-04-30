@@ -72,7 +72,7 @@ abstract class AbstractEditPresenter extends \MovLib\Presentation\AbstractPresen
     }
 
     $this->breadcrumb->addCrumbs([
-      [ $this->intl->r("/{$this->entity->pluralKey}"), $breadcrumbIndexTitle ],
+      [ $this->entity->routeIndex, $breadcrumbIndexTitle ],
       [ $this->entity->route, $this->entity->name ]
     ]);
     return $this;
