@@ -84,25 +84,7 @@ abstract class AbstractMoviePresenter extends \MovLib\Presentation\AbstractPrese
     // There's no single subpage requiring another placeholder, construct language links immediately.
     $this->initLanguageLinks($routeKey, [ $this->entity->id ]);
 
-    // Initialize the sidebar.
-    $additionalSidebarItems = null;
-    foreach ([
-      [ "person", "cast", $this->intl->t("Cast"), null ],
-      [ "company", "crew", $this->intl->t("Crew"), null ],
-      [ "release", "releases", $this->intl->t("Releases"), $this->entity->countReleases ],
-      [ "award separator", "awards", $this->intl->t("Awards"), $this->entity->countAwards ],
-    ] as list($icon, $routeAddition, $title, $count)) {
-      if (isset($count)) {
-        $count =  "<span class='fr'>{$this->intl->format("{0,number}", $count)}</span>";
-      }
-      $additionalSidebarItems[] = [
-        $this->intl->r("/movie/{0}/{$routeAddition}", $this->entity->id),
-        "{$title}{$count}",
-        [ "class" => "ico ico-{$icon}" ]
-      ];
-    }
-
-    $this->sidebarInitToolbox($this->entity, $additionalSidebarItems);
+    $this->sidebarInitToolbox($this->entity, $this->getSidebarItems());
 
     $this->stylesheets[] = "movie";
   }

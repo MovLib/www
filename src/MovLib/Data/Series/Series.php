@@ -295,8 +295,7 @@ SQL
   /**
    * Create new series.
    *
-   * @return boolean
-   *   Returns <var>true</var> if create was successful, otherwise <var>false</var>.
+   * @return this
    * @throws \mysqli_sql_exception
    */
   public function create() {

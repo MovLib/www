@@ -67,6 +67,32 @@ trait MovieTrait {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  protected function getSidebarItems() {
+    $items = [];
+    if ($this->entity->deleted) {
+      return $items;
+    }
+    foreach ([
+      [ "person", "cast", $this->intl->t("Cast"), null ],
+      [ "company", "crew", $this->intl->t("Crew"), null ],
+      [ "release", "releases", $this->intl->t("Releases"), $this->entity->countReleases ],
+      [ "award separator", "awards", $this->intl->t("Awards"), $this->entity->countAwards ],
+    ] as list($icon, $plural, $title, $count)) {
+      if (isset($count)) {
+        $count =  "<span class='fr'>{$this->intl->format("{0,number}", $count)}</span>";
+      }
+      $items[] = [
+        $this->intl->r("/series/{0}/{$plural}", $this->entity->id),
+        "{$title} {$count}",
+        [ "class" => "ico ico-{$icon}" ]
+      ];
+    }
+    return $items;
+  }
+
+  /**
    * Get the movie's display title enhanced with structured data.
    *
    * @param \MovLib\Data\Movie\Movie $movie

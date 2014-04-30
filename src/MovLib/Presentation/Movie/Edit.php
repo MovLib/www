@@ -20,9 +20,8 @@ namespace MovLib\Presentation\Movie;
 use \MovLib\Data\Movie\Movie;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputInteger;
-use \MovLib\Partial\FormElement\Select;
 use \MovLib\Partial\FormElement\InputWikipedia;
-use \MovLib\Partial\FormElement\TextareaHTML;
+use \MovLib\Partial\FormElement\TextareaHTMLExtended;
 
 /**
  * Allows editing of a movie's information.
@@ -34,6 +33,7 @@ use \MovLib\Partial\FormElement\TextareaHTML;
  * @since 0.0.1-dev
  */
 class Edit extends \MovLib\Presentation\AbstractEditPresenter {
+  use \MovLib\Presentation\Movie\MovieTrait;
 
   /**
    * {@inheritdoc}
@@ -43,7 +43,7 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
     $pageTitle    = $this->intl->t("Edit {0}", [ $this->entity->displayTitle ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Edit"))
-      ->initEdit($this->entity, $this->intl->t("Movies"))
+      ->initEdit($this->entity, $this->intl->t("Movies"), $this->getSidebarItems())
     ;
   }
 
@@ -52,10 +52,14 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    */
    public function getContent() {
     $form = (new Form($this->diContainerHTTP))
-      ->addElement(new TextareaHTML($this->diContainerHTTP, "synopsis", $this->intl->t("Synopsis"), $this->entity->synopsis, [
+      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "synopsis", $this->intl->t("Synopsis"), $this->entity->synopsis, [
         "placeholder" => $this->intl->t("Write a synopsis."),
-      ], [ "blockquote", "external", "headings", "lists", ]))
-      ->addElement(new InputInteger($this->diContainerHTTP, "runtime", $this->intl->t("Runtime (in seconds)"), $this->entity->runtime))
+        "data-allow-external" => "true",
+      ]))
+      ->addElement(new InputInteger($this->diContainerHTTP, "runtime", $this->intl->t("Runtime (in seconds)"), $this->entity->runtime, [
+        "min"         => 0,
+        "max"         => 16777215
+      ]))
       ->addElement(new InputInteger($this->diContainerHTTP, "year", $this->intl->t("Year"), $this->entity->year->year, [
         "placeholder" => $this->intl->t("yyyy"),
         "min"         => 1000,

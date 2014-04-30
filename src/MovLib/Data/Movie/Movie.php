@@ -326,6 +326,66 @@ SQL
   }
 
   /**
+   * Create new movie.
+   *
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function create() {
+    $mysqli = $this->getMySQLi();
+    $mysqli->autocommit(FALSE);
+
+    try {
+      $stmtMovie = $mysqli->prepare(<<<SQL
+INSERT INTO `movies` (
+  `dyn_synopses`,
+  `dyn_wikipedia`,
+  `runtime`,
+  `year`
+) VALUES (COLUMN_CREATE('{$this->intl->languageCode}', ?), COLUMN_CREATE('{$this->intl->languageCode}', ?), ?, ?)
+SQL
+      );
+      $stmtMovie->bind_param(
+        "ssdd",
+        $this->synopsis,
+        $this->wikipedia,
+        $this->runtime,
+        $this->year->year
+      );
+      $stmtMovie->execute();
+      $this->id = $stmtMovie->insert_id;
+
+      $stmtTitle = $mysqli->prepare(
+        "INSERT INTO `movies_titles` (`movie_id`, `dyn_comments`, `language_code`, `title`) VALUES (?, '', ?, ?)"
+      );
+      $stmtTitle->bind_param(
+        "dss",
+        $this->id,
+        $this->originalTitleLanguageCode,
+        $this->originalTitle
+      );
+      $stmtTitle->execute();
+      $titleId = $stmtTitle->insert_id;
+
+      $mysqli->query(
+        "INSERT INTO `movies_original_titles` (`title_id`, `movie_id`) VALUES ({$titleId}, {$this->id})"
+      );
+      $mysqli->commit();
+    }
+    catch (\Exception $e) {
+      $mysqli->rollback();
+      throw $e;
+    }
+    finally {
+      $mysqli->autocommit(TRUE);
+      $mysqli->close();
+    }
+
+    return $this->init();
+  }
+
+
+  /**
    * Get the movie's countries.
    *
    * @see Movie::__get()
@@ -358,9 +418,11 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
-    if ($this->year) {
-      $this->displayTitleAndYear = $this->intl->t("{0} ({1})", [ $this->displayTitle, $this->year ]);
+    if (isset($this->year) && !$this->year instanceof \stdClass) {
       $this->year = new Date($this->year);
+    }
+    if ($this->year) {
+      $this->displayTitleAndYear = $this->intl->t("{0} ({1})", [ $this->displayTitle, $this->year->year ]);
     }
     else {
       $this->displayTitleAndYear = $this->displayTitle;
