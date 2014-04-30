@@ -15,14 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Help\Category;
+namespace MovLib\Presentation\Help;
 
 use \MovLib\Data\Help\Category;
 use \MovLib\Data\Help\ArticleSet;
 use \MovLib\Data\Help\SubCategorySet;
 
 /**
- * Defines the help category index presentation.
+ * Defines the abstract help category index presentation.
  *
  * @link http://www.google.com/webmasters/tools/richsnippets?q=https://en.alpha.movlib.org/help/database
  * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/help/database
@@ -34,7 +34,7 @@ use \MovLib\Data\Help\SubCategorySet;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
+abstract class AbstractCategory extends \MovLib\Presentation\AbstractIndexPresenter {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -62,8 +62,14 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function init() {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (!($this->category instanceof \MovLib\Data\Help\Category)) {
+      throw new \LogicException("\$this->category has to be a valid category object!");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     $this->articleSet  = new ArticleSet($this->diContainerHTTP);
-    $this->category    = new Category($this->diContainerHTTP, $_SERVER["HELP_CATEGORY_ID"]);
     $this->set         = new SubCategorySet($this->diContainerHTTP);
 
     $this->initPage($this->category->title);
