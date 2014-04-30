@@ -56,33 +56,25 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
   public function getContent() {
     $form = (new Form($this->diContainerHTTP))
       ->addElement(new InputText($this->diContainerHTTP, "name", $this->intl->t("Name"), $this->entity->name, [
-        "#help-popup" => $this->intl->t("The name of the company."),
         "placeholder" => $this->intl->t("Enter the company’s name."),
         "autofocus"   => true,
         "required"    => true,
       ]))
       ->addElement(new TextareaLineArray($this->diContainerHTTP, "aliases", $this->intl->t("Alternative Names (line by line)"), $this->entity->aliases, [
-        "#help-popup" => $this->intl->t("The alternative names of the company, line by line."),
         "placeholder" => $this->intl->t("Enter the company’s alternative names here, line by line."),
       ]))
       ->addElement(new InputDateSeparate($this->diContainerHTTP, "founding-date", $this->intl->t("Founding Date"), $this->entity->foundingDate, [
-        "#help-popup" => $this->intl->t("The founding date of the company."),
         "required"    => true,
       ]))
-      ->addElement(new InputDateSeparate($this->diContainerHTTP, "defunct-date", $this->intl->t("Defunct Date"), $this->entity->defunctDate, [
-        "#help-popup" => $this->intl->t("The defunct date of the company."),
-      ]))
+      ->addElement(new InputDateSeparate($this->diContainerHTTP, "defunct-date", $this->intl->t("Defunct Date"), $this->entity->defunctDate))
       ->addElement(new TextareaHTML($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
-        "#help-popup" => $this->intl->t("Description of the company."),
         "placeholder" => $this->intl->t("Describe the company."),
       ], [ "blockquote", "external", "headings", "lists", ]))
       ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
-        "#help-popup"         => $this->intl->t("Link to a corresponding Wikipedia Page."),
-        "placeholder"         => $this->intl->t("Enter the company’s corresponding Wikipedia link."),
+        "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/...",
         "data-allow-external" => "true",
       ]))
       ->addElement(new TextareaLineURLArray($this->diContainerHTTP, "links", $this->intl->t("Weblinks (line by line)"), $this->entity->links, [
-        "#help-popup" => $this->intl->t("Weblinks relatet to the company, line by line."),
         "placeholder" => $this->intl->t("Enter the company’s related weblinks, line by line."),
       ]))
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
