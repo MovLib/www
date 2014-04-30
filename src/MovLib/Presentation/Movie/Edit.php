@@ -3,7 +3,7 @@
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
- * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
+ * Copyright © 2014-present {@link https://movlib.org/ MovLib}.
  *
  * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
  * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
@@ -17,43 +17,65 @@
  */
 namespace MovLib\Presentation\Movie;
 
+use \MovLib\Data\Movie\Movie;
+use \MovLib\Partial\Form;
+use \MovLib\Partial\FormElement\InputInteger;
+use \MovLib\Partial\FormElement\Select;
+use \MovLib\Partial\FormElement\InputWikipedia;
+use \MovLib\Partial\FormElement\TextareaHTML;
+
 /**
- * Movie edit presentation.
+ * Allows editing of a movie's information.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Edit extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new edit movie presentation.
-   *
-   */
-  public function init() {
-    $this->initMoviePresenation($this->intl->t("Edit {title}"), $this->intl->t("Edit {title}"), $this->intl->t("Edit"));
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
+class Edit extends \MovLib\Presentation\AbstractEditPresenter {
 
   /**
    * {@inheritdoc}
    */
-  public function getContent() {
-    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("edit movie") ]), $this->intl->t("Check back later"), "info");
+  public function init() {
+    $this->entity = new Movie($this->diContainerHTTP, $_SERVER["MOVIE_ID"]);
+    $pageTitle    = $this->intl->t("Edit {0}", [ $this->entity->displayTitle ]);
+    return $this
+      ->initPage($pageTitle, $pageTitle, $this->intl->t("Edit"))
+      ->initEdit($this->entity, $this->intl->t("Movies"))
+    ;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+   public function getContent() {
+    $form = (new Form($this->diContainerHTTP))
+      ->addElement(new TextareaHTML($this->diContainerHTTP, "synopsis", $this->intl->t("Synopsis"), $this->entity->synopsis, [
+        "placeholder" => $this->intl->t("Write a synopsis."),
+      ], [ "blockquote", "external", "headings", "lists", ]))
+      ->addElement(new InputInteger($this->diContainerHTTP, "runtime", $this->intl->t("Runtime (in seconds)"), $this->entity->runtime))
+      ->addElement(new InputInteger($this->diContainerHTTP, "year", $this->intl->t("Year"), $this->entity->year->year, [
+        "placeholder" => $this->intl->t("yyyy"),
+        "min"         => 1000,
+        "max"         => 9999
+      ]))
+      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
+        "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/…",
+        "data-allow-external" => "true",
+      ]))
+      ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
+      ->init([ $this, "valid" ])
+    ;
+    return
+      $form->open() .
+      $form->elements["synopsis"] .
+      $form->elements["runtime"] .
+      $form->elements["year"] .
+      $form->elements["wikipedia"] .
+      $form->close()
+    ;
   }
 
 }

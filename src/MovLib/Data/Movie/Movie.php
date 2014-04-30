@@ -149,6 +149,16 @@ final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity impleme
    */
   public $year;
 
+  /**
+   * {@inheritdoc}
+   */
+  public $pluralKey = "movies";
+
+  /**
+   * {@inheritdoc}
+   */
+  public $singularKey = "movie";
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -288,6 +298,34 @@ SQL
 
 
   /**
+   * Update the movie.
+   *
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function commit() {
+    $stmt = $this->getMySQLi()->prepare(<<<SQL
+UPDATE `movies` SET
+  `dyn_synopses`  = COLUMN_ADD(`dyn_synopses`, '{$this->intl->languageCode}', ?),
+  `dyn_wikipedia` = COLUMN_ADD(`dyn_wikipedia`, '{$this->intl->languageCode}', ?),
+  `runtime`       = ?,
+  `year`          = ?
+WHERE `id` = {$this->id}
+SQL
+    );
+    $stmt->bind_param(
+      "ssdd",
+      $this->synopsis,
+      $this->wikipedia,
+      $this->runtime,
+      $this->year->year
+    );
+    $stmt->execute();
+    $stmt->close();
+    return $this;
+  }
+
+  /**
    * Get the movie's countries.
    *
    * @see Movie::__get()
@@ -329,8 +367,6 @@ SQL
     }
     $this->imageAlternativeText = $this->intl->t("{movie_title} poster.", [ "movie_title" => $this->displayTitleAndYear]);
     $this->imageDirectory       = "upload://movie/{$this->id}/poster";
-    $this->pluralKey            = "movies";
-    $this->singularKey          = "movie";
     return parent::init();
   }
 
