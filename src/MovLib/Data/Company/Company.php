@@ -114,6 +114,16 @@ final class Company extends \MovLib\Data\Image\AbstractImageEntity {
    */
   public $seriesCount;
 
+  /**
+   * {@inheritdoc}
+   */
+  public $pluralKey = "companies";
+
+  /**
+   * {@inheritdoc}
+   */
+  public $singularKey = "company";
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -286,8 +296,6 @@ SQL
     $this->foundingDate && ($this->foundingDate = new Date($this->foundingDate));
     $this->defunctDate  && ($this->defunctDate  = new Date($this->defunctDate));
     $this->placeId      && ($this->place        = new Place($this->diContainer, $this->placeId));
-    $this->pluralKey            = "companies";
-    $this->singularKey          = "company";
     $this->imageAlternativeText = $this->intl->t("{company_name} logo.", $this->name);
     $this->imageDirectory       = "upload://company";
     return parent::init();
