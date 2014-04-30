@@ -74,7 +74,7 @@ abstract class AbstractMoviePresenter extends \MovLib\Presentation\AbstractPrese
     $this->initPage($title, $pageTitle, $breadcrumbTitle);
 
     // Construct the breadcrumbs and route key.
-    $this->breadcrumb->addCrumb($this->intl->r("/movies"), $this->intl->tp(-1, "Movies", "Movie"));
+    $this->breadcrumb->addCrumb($this->intl->r("/movies"), $this->intl->t("Movies"));
     $routeKey = $this->entity->routeKey;
     if (($shortName = strtolower($this->shortName())) != "show") {
       $routeKey .= "/{$shortName}";
