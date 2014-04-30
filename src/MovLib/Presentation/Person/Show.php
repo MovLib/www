@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presentation\Person;
 
-use \MovLib\Data\Person\Person;
 use \MovLib\Partial\Date;
 use \MovLib\Partial\Place;
 use \MovLib\Partial\Sex;
@@ -128,12 +127,12 @@ class Show extends \MovLib\Presentation\Person\AbstractPersonPresenter {
       $this->sectionAdd($this->intl->t("Also Known As"), "<ol class='no-list r'>{$aliasContent}</ol>");
     }
 
-    if (($links = $this->entity->getLinks())) {
-      $c           = count($links);
+    if (($this->entity->links)) {
+      $c           = count($this->entity->links);
       $linkContent = null;
       for ($i = 0; $i < $c; ++$i) {
-        $hostname     = str_replace("www.", "", parse_url($links[$i], PHP_URL_HOST));
-        $linkContent .= "<li class='mb10 s s3'><a href='{$links[$i]}' rel='nofollow' target='_blank'>{$hostname}</a></li>";
+        $hostname     = str_replace("www.", "", parse_url($this->entity->links[$i], PHP_URL_HOST));
+        $linkContent .= "<li class='mb10 s s3'><a href='{$this->entity->links[$i]}' rel='nofollow' target='_blank'>{$hostname}</a></li>";
       }
     }
 

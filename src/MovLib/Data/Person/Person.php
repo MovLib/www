@@ -25,6 +25,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -93,6 +94,13 @@ class Person extends \MovLib\Data\Image\AbstractImageEntity {
   protected $directory = "person";
 
   /**
+   * The person’s weblinks.
+   *
+   * @var array
+   */
+  public $links = [];
+
+  /**
    * The person's name.
    *
    * @var string
@@ -127,13 +135,6 @@ class Person extends \MovLib\Data\Image\AbstractImageEntity {
    */
   public $sex;
 
-  /**
-   * The person's translated Wikipedia URL.
-   *
-   * @var string
-   */
-  public $wikipedia;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -163,6 +164,7 @@ SELECT
   `deathdate`,
   `deathplace_id`,
   COLUMN_GET(`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR),
+  `links`,
   `count_awards`,
   `count_movies`,
   `count_series`,
@@ -190,6 +192,7 @@ SQL
         $this->deathDate,
         $this->deathPlaceId,
         $this->wikipedia,
+        $this->links,
         $this->countAwards,
         $this->countMovies,
         $this->countSeries,
@@ -221,6 +224,7 @@ SQL
     $this->imageAlternativeText = $this->intl->t("Photo of {name}", [ "name" => $this->name]);
     $this->imageDirectory       = "upload://person";
     $this->imageFilename        = $this->id;
+    $this->links     && ($this->links = unserialize($this->links));
     $this->pluralKey            = "persons";
     $this->singularKey          = "person";
     return parent::init();
@@ -229,6 +233,45 @@ SQL
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  /**
+   * Update the person.
+   *
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function commit() {
+    $this->links = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
+
+    $stmt = $this->getMySQLi()->prepare(<<<SQL
+UPDATE `persons` SET
+  `birthdate`              = ?,
+  `born_name`              = ?,
+  `deathdate`              = ?,
+  `dyn_biographies`        = COLUMN_ADD(`dyn_biographies`, '{$this->intl->languageCode}', ?),
+  `dyn_image_descriptions` = '',
+  `dyn_wikipedia`          = COLUMN_ADD(`dyn_wikipedia`, '{$this->intl->languageCode}', ?),
+  `links`                  = ?,
+  `name`                   = ?,
+  `sex`                    = ?
+WHERE `id` = {$this->id}
+SQL
+    );
+    $stmt->bind_param(
+      "sssssssi",
+      $this->birthDate,
+      $this->bornName,
+      $this->deathDate,
+      $this->biography,
+      $this->wikipedia,
+      $this->links,
+      $this->name,
+      $this->sex
+    );
+    $stmt->execute();
+    $stmt->close();
+    return $this;
+  }
 
   /**
    * Get the person's aliases.
@@ -270,24 +313,6 @@ SQL
     if ($this->deathPlaceId) {
       return new \MovLib\Data\Place\Place($this->diContainer, $this->deathPlaceId);
     }
-  }
-
-  /**
-   * Get the person's aliases.
-   *
-   * @return array
-   *   Numeric array containing the person's aliases.
-   */
-  public function getLinks() {
-    $result = $this->getMySQLi()->query(<<<SQL
-SELECT
-  `url`
-FROM `persons_links`
-WHERE `person_id` = {$this->id}
-  AND `language_code` = '{$this->intl->languageCode}'
-SQL
-    );
-    return array_column($result->fetch_all(), 0);
   }
 
   /**
