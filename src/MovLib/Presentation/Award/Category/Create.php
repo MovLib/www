@@ -18,13 +18,11 @@
 namespace MovLib\Presentation\Award\Category;
 
 use \MovLib\Data\Award\Award;
-use \MovLib\Data\Award\AwardSet;
 use \MovLib\Data\Award\Category;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputInteger;
 use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Partial\FormElement\InputWikipedia;
-use \MovLib\Partial\FormElement\Select;
 use \MovLib\Partial\FormElement\TextareaHTML;
 
 /**
@@ -61,7 +59,7 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
   public function getContent() {
     $form = (new Form($this->diContainerHTTP))
       ->addElement(new InputText($this->diContainerHTTP, "name", $this->intl->t("Name"), $this->entity->name, [
-        "placeholder" => $this->intl->t("Enter the event’s name."),
+        "placeholder" => $this->intl->t("Enter the category’s name."),
         "autofocus"   => true,
         "required"    => true,
       ]))
@@ -77,7 +75,7 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
         "max"         => 9999
       ]))
       ->addElement(new TextareaHTML($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
-        "placeholder" => $this->intl->t("Describe the event."),
+        "placeholder" => $this->intl->t("Describe the category."),
       ], [ "blockquote", "external", "headings", "lists", ]))
       ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
         "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/…",

@@ -60,12 +60,12 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
     $awardOptions = (new AwardSet($this->diContainerHTTP))->loadSelectOptions();
     $form = (new Form($this->diContainerHTTP))
       ->addElement(new Select($this->diContainerHTTP, "award", $this->intl->t("Award"), $awardOptions, $this->entity->award->id, [
-        "placeholder" => $this->intl->t("Select the event’s Award."),
+        "placeholder" => $this->intl->t("Select the category’s Award."),
         "autofocus"   => true,
         "required"    => true,
       ]))
       ->addElement(new InputText($this->diContainerHTTP, "name", $this->intl->t("Name"), $this->entity->name, [
-        "placeholder" => $this->intl->t("Enter the event’s name."),
+        "placeholder" => $this->intl->t("Enter the category’s name."),
         "required"    => true,
       ]))
       ->addElement(new InputInteger($this->diContainerHTTP, "first-year", $this->intl->t("First Year"), $this->entity->firstYear->year, [
@@ -80,7 +80,7 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
         "max"         => 9999
       ]))
       ->addElement(new TextareaHTML($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
-        "placeholder" => $this->intl->t("Describe the event."),
+        "placeholder" => $this->intl->t("Describe the category."),
       ], [ "blockquote", "external", "headings", "lists", ]))
       ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
         "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/…",
