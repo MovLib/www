@@ -3,7 +3,7 @@
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
- * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
+ * Copyright © 2014-present {@link https://movlib.org/ MovLib}.
  *
  * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
  * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
@@ -17,8 +17,17 @@
  */
 namespace MovLib\Presentation\Company;
 
+use \MovLib\Data\Company\Company;
+use \MovLib\Partial\Form;
+use \MovLib\Partial\FormElement\InputDateSeparate;
+use \MovLib\Partial\FormElement\InputText;
+use \MovLib\Partial\FormElement\InputWikipedia;
+use \MovLib\Partial\FormElement\TextareaHTML;
+use \MovLib\Partial\FormElement\TextareaLineArray;
+use \MovLib\Partial\FormElement\TextareaLineURLArray;
+
 /**
- * Allows the creation of a new company.
+ * Allows creating a new company.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -26,23 +35,58 @@ namespace MovLib\Presentation\Company;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Create extends \MovLib\Presentation\AbstractPresenter {
+class Create extends \MovLib\Presentation\AbstractCreatePresenter {
 
   /**
-   * Instantiate new company create presentation.
+   * {@inheritdoc}
    */
   public function init() {
-    $this->initPage($this->intl->t("Create Company"));
-    $this->initBreadcrumb([ [ $this->intl->r("/companies"), $this->intl->t("Companies") ] ]);
-    $this->breadcrumbTitle = $this->intl->t("Create");
-    $this->initLanguageLinks("/company/create");
+    return $this
+      ->initPage($this->intl->t("Create"))
+      ->initCreate(new Company($this->diContainerHTTP), $this->intl->t("Companies"))
+    ;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    return "<div class='c'>{$this->checkBackLater($this->intl->t("create company"))}</div>";
+    $form = (new Form($this->diContainerHTTP))
+      ->addElement(new InputText($this->diContainerHTTP, "name", $this->intl->t("Name"), $this->entity->name, [
+        "placeholder" => $this->intl->t("Enter the company’s name."),
+        "autofocus"   => true,
+        "required"    => true,
+      ]))
+      ->addElement(new TextareaLineArray($this->diContainerHTTP, "aliases", $this->intl->t("Alternative Names (line by line)"), $this->entity->aliases, [
+        "placeholder" => $this->intl->t("Enter the company’s alternative names here, line by line."),
+      ]))
+      ->addElement(new InputDateSeparate($this->diContainerHTTP, "founding-date", $this->intl->t("Founding Date"), $this->entity->foundingDate, [
+        "required"    => true,
+      ]))
+      ->addElement(new InputDateSeparate($this->diContainerHTTP, "defunct-date", $this->intl->t("Defunct Date"), $this->entity->defunctDate))
+      ->addElement(new TextareaHTML($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
+        "placeholder" => $this->intl->t("Describe the company."),
+      ], [ "blockquote", "external", "headings", "lists", ]))
+      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
+        "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/...",
+        "data-allow-external" => "true",
+      ]))
+      ->addElement(new TextareaLineURLArray($this->diContainerHTTP, "links", $this->intl->t("Weblinks (line by line)"), $this->entity->links, [
+        "placeholder" => $this->intl->t("Enter the company’s related weblinks, line by line."),
+      ]))
+      ->addAction($this->intl->t("Create"), [ "class" => "btn btn-large btn-success" ])
+      ->init([ $this, "valid" ])
+    ;
+    return
+      $form->open() .
+      $form->elements["name"] .
+      $form->elements["aliases"] .
+      "<div class='r'><div class='s s5'>{$form->elements["founding-date"]}</div><div class='s s5'>{$form->elements["defunct-date"]}</div></div>" .
+      $form->elements["description"] .
+      $form->elements["wikipedia"] .
+      $form->elements["links"] .
+      $form->close()
+    ;
   }
 
 }

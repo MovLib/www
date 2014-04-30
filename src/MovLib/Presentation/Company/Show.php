@@ -69,11 +69,10 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
       return $this->sections;
     }
 
-    // Otherwise let the client know that we have no further information for this movie.
-    return new Alert(
-      "<p>{$this->intl->t("{sitename} doesn’t have further details about this company.", [ "sitename" => $this->config->sitename ])}</p>" .
-      "<p>{$this->intl->t("Would you like to {0}add additional information{1}?", [ "<a href='{$this->intl->r("/company/{0}/edit", $this->entity->id)}'>", "</a>" ])}</p>",
-      $this->intl->t("No Info")
+    // Otherwise let the client know that we have no further information for this company.
+    return $this->callout(
+      $this->intl->t("Would you like to {0}add additional information{1}?", [ "<a href='{$this->intl->r("/company/{0}/edit", $this->entity->id)}'>", "</a>" ]),
+      $this->intl->t("{sitename} doesn’t have further details about this company.", [ "sitename" => $this->config->sitename ])
     );
   }
 

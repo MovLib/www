@@ -228,6 +228,56 @@ SQL
   }
 
   /**
+   * Create a new company.
+   *
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function create() {
+    $this->aliases = empty($this->aliases)? serialize([]) : serialize(explode("\n", $this->aliases));
+    $this->links   = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
+
+    $mysqli = $this->getMySQLi();
+    $stmt = $mysqli->prepare(<<<SQL
+INSERT INTO `companies` (
+  `aliases`,
+  `defunct_date`,
+  `dyn_descriptions`,
+  `dyn_image_descriptions`,
+  `dyn_wikipedia`,
+  `founding_date`,
+  `name`,
+  `links`
+) VALUES (
+  ?,
+  ?,
+  COLUMN_CREATE('{$this->intl->languageCode}', ?),
+  '',
+  COLUMN_CREATE('{$this->intl->languageCode}', ?),
+  ?,
+  ?,
+  ?
+);
+SQL
+    );
+    $stmt->bind_param(
+      "sssssss",
+      $this->aliases,
+      $this->defunctDate,
+      $this->description,
+      $this->wikipedia,
+      $this->foundingDate,
+      $this->name,
+      $this->links
+    );
+
+    $stmt->execute();
+    $this->id = $stmt->insert_id;
+
+    return $this->init();
+  }
+
+  /**
    * {@inheritdoc}
    */
   protected function init() {
