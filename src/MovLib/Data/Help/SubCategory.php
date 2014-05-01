@@ -171,7 +171,9 @@ SQL
    */
   protected function init() {
     $this->articleCount = $this->getCount("help_articles", "`deleted` = false AND `help_subcategory_id` = {$this->id}");
-    $this->category     = new Category($this->diContainer, $this->category);
+    if (isset($this->category) && !$this->category instanceof \stdClass) {
+      $this->category = new Category($this->diContainer, $this->category);
+    }
     $this->tableName    = "help_subcategories";
     $this->pluralKey    = "categories";
     $this->route        = $this->intl->r("/help/{0}/{1}", [

@@ -58,6 +58,13 @@ final class Article extends \MovLib\Data\AbstractEntity {
   public $created;
 
   /**
+   * The help article's title in default language.
+   *
+   * @var null|string
+   */
+  public $defaultTitle;
+
+  /**
    * The help article's deletion state.
    *
    * @var boolean
@@ -141,6 +148,7 @@ SELECT
     COLUMN_GET(`help_articles`.`dyn_texts`, ? AS CHAR),
     COLUMN_GET(`help_articles`.`dyn_texts`, '{$this->intl->defaultLanguageCode}' AS CHAR)
   ) AS `text`,
+  COLUMN_GET(`help_articles`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR) AS `defaultTitle`,
   IFNULL(
     COLUMN_GET(`help_articles`.`dyn_titles`, ? AS CHAR),
     COLUMN_GET(`help_articles`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)
@@ -161,6 +169,7 @@ SQL
         $this->created,
         $this->deleted,
         $this->text,
+        $this->defaultTitle,
         $this->title,
         $this->viewCount
       );
@@ -180,15 +189,87 @@ SQL
 
 
   /**
+   * Create new help article.
+   *
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function create() {
+    $subCategory = isset($this->subCategory)? $this->subCategory->id : null;
+
+    $mysqli = $this->getMySQLi();
+
+    if ($this->intl->languageCode === $this->intl->defaultLanguageCode) {
+      $stmt = $mysqli->prepare(<<<SQL
+INSERT INTO `help_articles` (
+  `help_category_id`,
+  `help_subcategory_id`,
+  `dyn_titles`,
+  `dyn_texts`
+) VALUES (
+  ?,
+  ?,
+  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
+  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?)
+);
+SQL
+      );
+      $stmt->bind_param(
+        "ddss",
+        $this->category->id,
+        $subCategory,
+        $this->title,
+        $this->text
+      );
+    }
+    else {
+      $stmt = $mysqli->prepare(<<<SQL
+INSERT INTO `help_articles` (
+  `help_category_id`,
+  `help_subcategory_id`,
+  `dyn_titles`,
+  `dyn_texts`
+) VALUES (
+  ?,
+  ?,
+  COLUMN_CREATE(
+    '{$this->intl->defaultLanguageCode}', ?,
+    '{$this->intl->languageCode}', ?
+  ),
+  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?)
+);
+SQL
+      );
+      $stmt->bind_param(
+        "ddsss",
+        $this->category->id,
+        $subCategory,
+        $this->defaultTitle,
+        $this->title,
+        $this->text
+      );
+    }
+
+    $stmt->execute();
+    $this->id = $stmt->insert_id;
+
+    return $this->init();
+  }
+
+  /**
    * {@inheritdoc}
    */
   protected function init() {
-    $this->category      = new Category($this->diContainer, $this->category);
+    if (isset($this->category) && !$this->category instanceof \MovLib\Data\Help\Category) {
+      $this->category = new Category($this->diContainer, $this->category);
+    }
     $this->pluralKey     = $this->tableName = "help_articles";
     $this->routeArgs     = [ $this->id ];
 
     if (isset($this->subCategory)) {
-      $this->subCategory = new SubCategory($this->diContainer, $this->subCategory);
+      if (isset($this->subCategory) && !$this->subCategory instanceof \MovLib\Data\Help\SubCategory) {
+        $this->subCategory = new SubCategory($this->diContainer, $this->subCategory);
+      }
       $this->route       = $this->intl->r("/help/{0}/{1}/{2}", [
         $this->fs->sanitizeFilename($this->category->title),
         $this->fs->sanitizeFilename($this->subCategory->title),

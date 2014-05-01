@@ -23,10 +23,6 @@ use \MovLib\Data\Help\SubCategorySet;
 /**
  * Defines the abstract help category index presentation.
  *
- * @link http://www.google.com/webmasters/tools/richsnippets?q=https://en.alpha.movlib.org/help/database
- * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/help/database
- * @link http://validator.w3.org/check?uri=https://en.movlib.org/help/database
- * @link http://gsnedders.html5.org/outliner/process.py?url=https://en.movlib.org/help/database
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -78,6 +74,9 @@ abstract class AbstractCategory extends \MovLib\Presentation\AbstractIndexPresen
       $sidebarItems[] = [ $entity->route, "{$entity->title} <span class='fr'>{$this->intl->format("{0,number}", [ $entity->articleCount ])}</span>", [ "class" => "ico {$entity->icon}" ] ];
     }
     $this->sidebarInit($sidebarItems);
+
+    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$this->intl->r("{$this->category->routeKey}/create")}'>{$this->intl->t("Create Help Article")}</a>";
+
     return $this;
   }
 

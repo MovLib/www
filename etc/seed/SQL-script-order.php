@@ -32,7 +32,7 @@ return [
   "awards",
   "companies",
   "genres",
-  "help",
+  "help_categories",
   "jobs",
   "licenses",
   "movies",

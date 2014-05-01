@@ -23,10 +23,6 @@ use \MovLib\Data\Help\SubCategorySet;
 /**
  * Defines the abstract help subcategory index presentation.
  *
- * @link http://www.google.com/webmasters/tools/richsnippets?q=https://en.alpha.movlib.org/help/database/movie
- * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/help/database/movie
- * @link http://validator.w3.org/check?uri=https://en.movlib.org/help/database/movie
- * @link http://gsnedders.html5.org/outliner/process.py?url=https://en.movlib.org/help/database/movie
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -61,7 +57,7 @@ abstract class AbstractSubCategory extends \MovLib\Presentation\AbstractIndexPre
    * {@inheritdoc}
    * @param \MovLib\Data\Help\SubCategory $subCategory
    */
-  public function initSubCatrgory(\MovLib\Data\Help\SubCategory $subCategory) {
+  public function initSubCategory(\MovLib\Data\Help\SubCategory $subCategory) {
     $this->set         = new ArticleSet($this->diContainerHTTP);
     $this->subCategory = $subCategory;
 
@@ -77,6 +73,9 @@ abstract class AbstractSubCategory extends \MovLib\Presentation\AbstractIndexPre
       $sidebarItems[] = [ $entity->route, "{$entity->title} <span class='fr'>{$this->intl->format("{0,number}", [ $entity->articleCount ])}</span>", [ "class" => "ico {$entity->icon}" ] ];
     }
     $this->sidebarInit($sidebarItems);
+
+    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$this->intl->r("{$this->subCategory->routeKey}/create")}'>{$this->intl->t("Create Help Article")}</a>";
+
     return $this;
   }
 

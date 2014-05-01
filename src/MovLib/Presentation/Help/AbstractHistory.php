@@ -56,7 +56,7 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractPresenter {
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("History"))
       ->sidebarInitToolbox($this->entity)
-      ->initLanguageLinks("/{$this->entity->routeKey}/history", $this->entity->id)
+      ->initLanguageLinks("{$this->entity->routeKey}/history", $this->entity->id)
       ->breadcrumb->addCrumbs($this->getArticleBreadCrumbs());
     ;
   }

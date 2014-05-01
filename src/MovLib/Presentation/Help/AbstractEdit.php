@@ -17,6 +17,11 @@
  */
 namespace MovLib\Presentation\Help;
 
+use \MovLib\Exception\RedirectException\SeeOtherException;
+use \MovLib\Partial\Form;
+use \MovLib\Partial\FormElement\InputText;
+use \MovLib\Partial\FormElement\TextareaHTMLExtended;
+
 /**
  * Allows deleting a help article.
  *
@@ -56,7 +61,7 @@ abstract class AbstractEdit extends \MovLib\Presentation\AbstractPresenter {
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Edit"))
       ->sidebarInitToolbox($this->entity)
-      ->initLanguageLinks("/{$this->entity->routeKey}/edit", $this->entity->id)
+      ->initLanguageLinks("{$this->entity->routeKey}/edit", $this->entity->id)
       ->breadcrumb->addCrumbs($this->getArticleBreadCrumbs());
     ;
   }
@@ -65,7 +70,31 @@ abstract class AbstractEdit extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("edit article"));
+    return (new Form($this->diContainerHTTP))
+      ->addElement(new InputText($this->diContainerHTTP, "title", $this->intl->t("Title"), $this->entity->title, [
+        "placeholder" => $this->intl->t("Enter the help article’s title."),
+        "autofocus"   => true,
+        "required"    => true,
+      ]))
+      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "text", $this->intl->t("Text"), $this->entity->text, [
+        "data-allow-external" => "true",
+        "placeholder"         => $this->intl->t("The help article."),
+        "required"            => true,
+      ]))
+      ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
+      ->init([ $this, "valid" ])
+    ;
+  }
+
+  /**
+   * Auto-validation of the form succeeded.
+   *
+   * @return this
+   */
+  public function valid() {
+    $this->entity->commit();
+    $this->alertSuccess($this->intl->t("The {$this->entity->singularKey} was updated successfully."));
+    throw new SeeOtherException($this->entity->route);
   }
 
 }
