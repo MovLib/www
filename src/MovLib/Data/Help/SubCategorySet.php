@@ -74,7 +74,7 @@ SQL;
    * {@inheritdoc}
    */
   protected function init() {
-    $this->tableName   = "subcategories";
+    $this->tableName   = "help_subcategories";
     $this->pluralKey   = "categories";
     $this->route       = $this->intl->r("/help");
     $this->singularKey = "category";

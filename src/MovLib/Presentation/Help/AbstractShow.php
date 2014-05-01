@@ -15,24 +15,44 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Help\Database;
+namespace MovLib\Presentation\Help;
 
 /**
- * The database genres help presenation.
+ * Abstract Presentation of a single help article.
  *
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Genres extends \MovLib\Presentation\Help\Database\AbstractDatabasePresenter {
+abstract class AbstractShow extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Presentation\Help\HelpTrait;
+
+  /**
+   * {@inheritdoc}
+   * @param \MovLib\Data\Help\Article $article
+   *   The help article to present.
+   */
+  public function initArticle(\MovLib\Data\Help\Article $article) {
+    $this->entity = $article;
+    $this->initPage($this->entity->title);
+
+    $breadcrumbItems = $this->getArticleBreadCrumbs();
+    array_pop($breadcrumbItems);
+    $this->initBreadcrumb($breadcrumbItems);
+
+    $this->sidebarInitToolbox($this->entity);
+    $this->initLanguageLinks($this->entity->routeKey, [ $this->entity->id ]);
+    return $this;
+  }
 
   /**
    * {@inheritdoc}
    */
-  public function init() {
-    $this->initDatabasePresentation("/help/database/genres", $this->intl->t("Genres Help"), $this->intl->t("Genres"));
+  public function getContent() {
+    return $this->htmlDecode($this->entity->text);
   }
 
 }

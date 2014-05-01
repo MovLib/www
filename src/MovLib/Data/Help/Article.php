@@ -185,6 +185,7 @@ SQL
   protected function init() {
     $this->category      = new Category($this->diContainer, $this->category);
     $this->pluralKey     = $this->tableName = "help_articles";
+    $this->routeArgs     = [ $this->id ];
 
     if (isset($this->subCategory)) {
       $this->subCategory = new SubCategory($this->diContainer, $this->subCategory);

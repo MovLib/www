@@ -65,7 +65,7 @@ final class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
    *
    * @var array
    */
-  protected $noRegularExpressionNamespaces = [ "Help", "Profile", "SystemPage" ];
+  protected $noRegularExpressionNamespaces = [ "Profile", "SystemPage" ];
 
   /**
    * Presenter short name's which have no regular expression auto-inserted.

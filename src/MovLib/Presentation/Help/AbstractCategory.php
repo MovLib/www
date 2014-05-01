@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presentation\Help;
 
-use \MovLib\Data\Help\Category;
 use \MovLib\Data\Help\ArticleSet;
 use \MovLib\Data\Help\SubCategorySet;
 
@@ -60,15 +59,11 @@ abstract class AbstractCategory extends \MovLib\Presentation\AbstractIndexPresen
 
   /**
    * {@inheritdoc}
+   * @param \MovLib\Data\Help\Category $category
+   *   The help category to show.
    */
-  public function init() {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (!($this->category instanceof \MovLib\Data\Help\Category)) {
-      throw new \LogicException("\$this->category has to be a valid category object!");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
+  public function initCategory(\MovLib\Data\Help\Category $category) {
+    $this->category    = $category;
     $this->articleSet  = new ArticleSet($this->diContainerHTTP);
     $this->set         = new SubCategorySet($this->diContainerHTTP);
 

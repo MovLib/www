@@ -15,14 +15,13 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Help\Category\SubCategory;
+namespace MovLib\Presentation\Help;
 
 use \MovLib\Data\Help\ArticleSet;
-use \MovLib\Data\Help\SubCategory;
 use \MovLib\Data\Help\SubCategorySet;
 
 /**
- * Defines the help subcategory index presentation.
+ * Defines the abstract help subcategory index presentation.
  *
  * @link http://www.google.com/webmasters/tools/richsnippets?q=https://en.alpha.movlib.org/help/database/movie
  * @link http://www.w3.org/2012/pyRdfa/extract?validate=yes&uri=https://en.movlib.org/help/database/movie
@@ -34,7 +33,7 @@ use \MovLib\Data\Help\SubCategorySet;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
+abstract class AbstractSubCategory extends \MovLib\Presentation\AbstractIndexPresenter {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -43,14 +42,14 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
   /**
    * The articles to present.
    *
-   * @var \MovLib\Data\Help\Article\ArticleSet
+   * @var \MovLib\Data\Help\ArticleSet
    */
   protected $articleSet;
 
   /**
    * The subcategory to present.
    *
-   * @var \MovLib\Data\Help\SubCategory\SubCategory
+   * @var \MovLib\Data\Help\SubCategory
    */
   protected $subCategory;
 
@@ -60,10 +59,11 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
 
   /**
    * {@inheritdoc}
+   * @param \MovLib\Data\Help\SubCategory $subCategory
    */
-  public function init() {
+  public function initSubCatrgory(\MovLib\Data\Help\SubCategory $subCategory) {
     $this->set         = new ArticleSet($this->diContainerHTTP);
-    $this->subCategory = new SubCategory($this->diContainerHTTP, $_SERVER["HELP_SUBCATEGORY_ID"]);
+    $this->subCategory = $subCategory;
 
     $this->initPage($this->subCategory->title);
     $this->initBreadcrumb([
