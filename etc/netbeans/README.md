@@ -1,7 +1,7 @@
 The NetBeans configuration files are usually stored in the following directory:
 
 * Windows: `C:\Users\<username>\AppData\Roaming\NetBeans\<version>\config`
-* Linux: `/unknown`
+* Linux: `~/.netbeans/<version>/config`
 * Mac: `/unknown`
 
 You can further include the following for the `.nbattrs` file in the `Templates/Licenses` directory:
