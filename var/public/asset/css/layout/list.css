@@ -26,14 +26,22 @@
  * @since 0.0.1-dev
  */
 
-ol,
 ul {
   padding-left: 1em;
-  list-style-position: outside;
+}
+
+ol {
+  list-style-position: inside;
+  padding-left: 0;
 }
 
 ol ol {
   list-style-type: lower-alpha;
+}
+
+ol ul {
+  list-style-position: outside;
+  padding-left: 2.35em;
 }
 
 .hover-list,

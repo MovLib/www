@@ -52,32 +52,71 @@
    */
   function Module(element) {
 
-    /**
-     * The form's textarea, contains the HTML source.
-     *
-     * @property textarea
-     * @type HTMLElement
-     */
-    this.textarea = element.children[1].children[0];
+//    /**
+//     * The form's textarea, contains the HTML source.
+//     *
+//     * @property textarea
+//     * @type HTMLElement
+//     */
+//    this.textarea = element.children[1].children[0];
+//
+//    /**
+//     * The <code><div></code> wrapping the WYSIWYG buttons.
+//     *
+//     * @property editor
+//     * @type HTMLElement
+//     */
+//    this.editor = element.children[2];
+//
+//    /**
+//     * The content editable <code><iframe></code> element.
+//     *
+//     * @property content
+//     * @type HTMLIFrameElement
+//     */
+//    this.content = this.editor.children[this.editor.children.length - 1];
+//
+//    // Enhance the current element.
+//    this.init(element);
 
-    /**
-     * The <code><div></code> wrapping the WYSIWYG buttons.
-     *
-     * @property editor
-     * @type HTMLElement
-     */
-    this.editor = element.children[2];
+    // CKEditor configuration according to our mode.
+    var config = {
+      customConfig: "/asset/js/ckeditor/config.js",
+      format_tags: "p",
+      language: MovLib.settings.ckeditor.language,
+      removeButtons: "Underline,Subscript,Superscript,HorizontalRule,Anchor,Strike,JustifyBlock,Styles"
+    };
 
-    /**
-     * The content editable <code><iframe></code> element.
-     *
-     * @property content
-     * @type HTMLIFrameElement
-     */
-    this.content = this.editor.children[this.editor.children.length - 1];
+    var paragraphGroups = [ "align" ];
+    var insertGroups    = [ "links", "insert" ];
 
-    // Enhance the current element.
-    this.init(element);
+    // We need extended controls and tags.
+    if (MovLib.settings.ckeditor.mode > 0) {
+      paragraphGroups.push("list", "indent");
+      insertGroups.splice(1, 0, "blocks");
+      for (var i = MovLib.settings.ckeditor.headingLevel; i <= 6; i++) {
+        config.format_tags += ";h" + i;
+      }
+    }
+
+    // Remove the image button if no images are permitted.
+    if (MovLib.settings.ckeditor.mode < 2) {
+      config.removeButtons += ",Image";
+    }
+
+    config.toolbarGroups = [
+      { name: "styles" },
+      { name: "basicstyles", groups: [ "basicstyles", "cleanup" ] },
+      { name: "paragraph",   groups: paragraphGroups },
+      { name: "insert" , groups : insertGroups },
+      { name: "undo",   groups: [ "undo" ] },
+      { name: "document",	   groups: [ "mode" ] }
+    ];
+
+    // Enhance the currenct element with the CKEditor for now.
+    window.CKEDITOR.dom.element.prototype.disableContextMenu = function(){};
+    var editor = window.CKEDITOR.replace(element.children[1].id, config);
+
   }
 
   Module.prototype = {

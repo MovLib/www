@@ -83,7 +83,7 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
    *
    * @var string
    */
-  protected $headElements;
+  public $headElements;
 
   /**
    * HTML that should be included after the page's heading.

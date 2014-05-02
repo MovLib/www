@@ -96,3 +96,42 @@
   margin: 4px 0 0;
   outline: 0 !important;
 }
+
+
+/* ==== CKEditor styling ============================================================================================ */
+
+
+.cke_top a:hover,
+.cke_top a:focus {
+  border-bottom-color: #979797;
+}
+
+.inputhtml .cke_editable {
+  padding-top: 10px;
+  min-height: 200px;
+}
+
+.inputhtml .cke_combo_arrow {
+  margin: 11px 0 0;
+}
+
+.inputhtml .cke_resizer_vertical {
+  float: none;
+  position: absolute;
+  bottom: 0;
+  right: 6px;
+}
+
+.inputhtml .cke_bottom {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.inputhtml .cke_path {
+  margin: 0;
+}
+
+.inputhtml .cke_path_item {
+  line-height: 20px;
+  padding: 0 3px;
+}

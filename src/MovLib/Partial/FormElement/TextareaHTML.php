@@ -288,9 +288,26 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
     if (isset($attributes["data-allow-external"])) {
       $this->allowExternalLinks = true;
     }
-    // We don't need the JS, because we only use <textarea> for now. This will change when InputHTML is finished.
-    // $this->presenter->javascripts[] = "InputHTML";
-    $this->presenter->stylesheets[] = "inputhtml";
+    // Load the CKEditor javascript and styles for now.
+    $this->presenter->headElements                  .= "<script type='text/javascript' src='/bower/ckeditor/ckeditor.js'></script>";
+    // CKEditor configuration.
+    if (isset($this->allowedTags["figure"])) {
+      $mode = 2;
+    }
+    elseif (isset ($this->allowedTags["blockquote"])) {
+      $mode = 1;
+    }
+    else {
+      $mode = 0;
+    }
+    $config = [
+      "language"       => $this->intl->languageCode,
+      "headingLevel"   => $this->headingLevel,
+      "mode"           => $mode,
+    ];
+    $this->presenter->javascriptSettings["ckeditor"] = (object) $config;
+    $this->presenter->javascripts[]                  = "InputHTML";
+    $this->presenter->stylesheets[]                  = "inputhtml";
   }
 
   /**
@@ -309,10 +326,10 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
     $this->attributes["name"] = $this->id;
     $this->attributes["aria-multiline"] = "true";
     return
-      "{$this->required}{$this->helpPopup}{$this->helpText}<p>" .
-        "<label for='{$this->id}'>{$this->label}</label>" .
+      "{$this->required}{$this->helpPopup}{$this->helpText}<fieldset class='inputhtml'>" .
+        "<legend>{$this->label}</legend>" .
         "<textarea{$this->presenter->expandTagAttributes($this->attributes)}>{$this->htmlDecode($this->value)}</textarea>" .
-      "</p>"
+      "</fieldset>"
     ;
     // @devStart
     // @codeCoverageIgnoreStart
