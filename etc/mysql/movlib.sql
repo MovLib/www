@@ -1152,7 +1152,7 @@ SHOW WARNINGS;
 -- Table `movlib`.`help_categories`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`help_categories` (
-  `id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The help category’s unique identifier.',
+  `id` TINYINT UNSIGNED NOT NULL COMMENT 'The help category’s unique identifier.',
   `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the help category was last changed.',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the help category was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this help category is marked as deleted (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
@@ -1171,7 +1171,7 @@ SHOW WARNINGS;
 -- Table `movlib`.`help_subcategories`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`help_subcategories` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The help subcategory’s unique identifier.',
+  `id` INT UNSIGNED NOT NULL COMMENT 'The help subcategory’s unique identifier.',
   `help_category_id` TINYINT UNSIGNED NOT NULL COMMENT 'The help category’s unique id.',
   `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the help subcategory was last changed.',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the help subcategory was created.',

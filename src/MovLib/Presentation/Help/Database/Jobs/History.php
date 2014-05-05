@@ -15,31 +15,28 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\Presentation\Help\Database\Jobs;
+
+use \MovLib\Data\Help\Article;
 
 /**
- * Defines the order in which the SQL scripts are imported if all scripts are imported at once.
+ * Defines the jobs article history presentation.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
+ * @route /help/database/jobs/{id}/history
+ *
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
+final class History extends \MovLib\Presentation\Help\AbstractHistory {
 
-// @codeCoverageIgnoreStart
-return [
-  "places",
-  "awards",
-  "companies",
-  "genres",
-  "help_categories",
-  "help_subcategories",
-  "jobs",
-  "licenses",
-  "movies",
-  "movies_posters",
-  "series",
-  "system_pages",
-  "users",
-];
-// @codeCoverageIgnoreEnd
+  /**
+   * {@inheritdoc}
+   */
+  public function init() {
+    return $this->initArticle(new Article($this->diContainerHTTP, $_SERVER["HELP_ID"]));
+  }
+
+}

@@ -100,7 +100,7 @@ WHERE `id` = ?
 LIMIT 1
 SQL
       );
-      $stmt->bind_param("sd", $this->intl->languageCode, $id);
+      $stmt->bind_param("d", $id);
       $stmt->execute();
       $stmt->bind_result(
         $this->category,

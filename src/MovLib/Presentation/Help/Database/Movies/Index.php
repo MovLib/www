@@ -15,31 +15,28 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\Presentation\Help\Database\Movies;
+
+use \MovLib\Data\Help\SubCategory;
 
 /**
- * Defines the order in which the SQL scripts are imported if all scripts are imported at once.
+ * Defines the movies index presentation.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
+ * @route /help/database/movies
+ *
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
+final class Index extends \MovLib\Presentation\Help\AbstractSubCategory {
 
-// @codeCoverageIgnoreStart
-return [
-  "places",
-  "awards",
-  "companies",
-  "genres",
-  "help_categories",
-  "help_subcategories",
-  "jobs",
-  "licenses",
-  "movies",
-  "movies_posters",
-  "series",
-  "system_pages",
-  "users",
-];
-// @codeCoverageIgnoreEnd
+  /**
+   * {@inheritdoc}
+   */
+  public function init() {
+    return $this->initSubCategory(new SubCategory($this->diContainerHTTP, 1));
+  }
+
+}
