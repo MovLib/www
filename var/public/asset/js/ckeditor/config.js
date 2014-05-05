@@ -51,7 +51,7 @@ CKEDITOR.editorConfig = function( config ) {
 
   // Enable automatic growth and content-editable instead of <iframe> editing.
   config.extraAllowedContent = "cite";
-  config.extraPlugins = "autogrow,divarea,find,justify";
+  config.extraPlugins = "autogrow,divarea,justify";
 
   // Define our custom alignment classes.
   config.image2_alignClasses = [ "user-left", "user-center", "user-right" ];

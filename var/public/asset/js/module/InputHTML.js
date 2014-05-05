@@ -113,9 +113,21 @@
       { name: "document",	   groups: [ "mode" ] }
     ];
 
+    var textarea = element.children[element.children.length - 1];
+
+    // Add the "invalid" CSS class to the CKEditor container if the element is invalid.
+    if (textarea.classList.contains("invalid")) {
+      config.on = {
+        instanceReady: function () {
+          console.dir(this.container);
+          this.container.addClass("invalid");
+        }
+      };
+    }
+
     // Enhance the currenct element with the CKEditor for now.
     window.CKEDITOR.dom.element.prototype.disableContextMenu = function(){};
-    var editor = window.CKEDITOR.replace(element.children[1].id, config);
+    var editor = window.CKEDITOR.replace(textarea.id, config);
 
   }
 

@@ -68,7 +68,8 @@ input[type="text"],
 input[type="url"],
 select,
 textarea,
-.inputhtml .content {
+.inputhtml .content
+.inputhtml .cke {
   display: block;
   width: 100%;
   min-height: 30px;
@@ -80,6 +81,7 @@ label,
 legend {
   display: block;
   margin-bottom: 5px;
+  width: 100%;
 }
 
 input[type="checkbox"],
@@ -100,7 +102,8 @@ input[type="search"]::-webkit-search-cancel-button {
 input,
 select,
 textarea,
-.inputhtml .editor {
+.inputhtml .editor,
+.inputhtml .cke {
   display: block;
   vertical-align: middle;
   border: 1px solid #ccc;
@@ -112,14 +115,16 @@ textarea,
 input:focus,
 select:focus,
 textarea:focus,
-.inputhtml .focus {
+.inputhtml .focus
+.inputhtml .cke.cke_focus {
   outline: 0;
 }
 
 input:focus,
 select:focus,
 textarea:focus,
-.inputhtml .focus {
+.inputhtml .focus,
+.inputhtml .cke.cke_focus {
   border-color: rgba(82, 168, 236, 0.8);
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
 }
@@ -127,14 +132,16 @@ textarea:focus,
 input:invalid:not(:empty),
 .invalid,
 textarea:invalid:not(:empty),
-.inputhtml .invalid {
+.inputhtml .invalid,
+.inputhtml .cke.invalid {
   border-color: #ee5f5b;
 }
 
 input:focus:invalid:focus:not(:empty),
 .invalid:focus,
 textarea:focus:invalid:focus:not(:empty),
-.inputhtml .focus.invalid {
+.inputhtml .focus.invalid,
+.inputhtml .cke_focus.invalid {
   border-color: rgba(233, 50, 45, 0.8);
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(233, 50, 45, 0.6);
 }
@@ -196,7 +203,7 @@ textarea:focus::-webkit-input-placeholder {
 }
 
 textarea,
-.inputhtml .content {
+.inputhtml .editor .content {
   z-index: 1;
   min-height: 150px; /* input has 30px, 30 * 5 = 150px (we want people to write a lot). */
   resize: vertical;
