@@ -91,11 +91,11 @@ final class Index extends \MovLib\Presentation\AbstractPresenter {
   protected function formatListingItem(\MovLib\Data\AbstractEntity $category, $delta) {
     return
       "<div class='s s4'>" .
-        "<h2 class='ico {$category->icon} tac'> {$category->title}</h2>" .
-        "<p>{$this->htmlDecode($category->description)}</p>" .
+        "<h2 class='ico {$category->icon} tac'> {$this->intl->t($category->title)}</h2>" .
+        "<p>{$this->htmlDecode($this->intl->t($category->description))}</p>" .
         "<p class='tac'>" .
           "<a class='btn btn-info btn-large' href='{$category->route}'>" .
-            $this->intl->t("{0} Help", [ $category->title ]) .
+            $this->intl->t("{0} Help", [ $this->intl->t($category->title) ]) .
           "</a>" .
         "</p>" .
       "</div>"

@@ -29,42 +29,24 @@ TRUNCATE TABLE `help_categories`;
 -- START "Help Categories"
 
 INSERT INTO `help_categories` SET
-  `id`               = 1,
-  `dyn_titles`       = COLUMN_CREATE(
-    'en', 'Database',
-    'de', 'Datenbank'
-  ),
-  `dyn_descriptions` = COLUMN_CREATE(
-    'en', 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore.',
-    'de', 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore.'
-  ),
-  `icon`             = 'ico-database'
+  `id`          = 1,
+  `title`       = 'Database',
+  `description` = 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore.',
+  `icon`        = 'ico-database'
 ;
 
 INSERT INTO `help_categories` SET
-  `id`               = 2,
-  `dyn_titles`       = COLUMN_CREATE(
-    'en', 'Marketplace',
-    'de', 'Marktplatz'
-  ),
-  `dyn_descriptions` = COLUMN_CREATE(
-    'en', 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore.',
-    'de', 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore.'
-  ),
-  `icon`             = 'ico-marketplace'
+  `id`          = 2,
+  `title`       = 'Marketplace',
+  `description` = 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore.',
+  `icon`        = 'ico-marketplace'
 ;
 
 INSERT INTO `help_categories` SET
-  `id`               = 3,
-  `dyn_titles`       = COLUMN_CREATE(
-    'en', 'Community',
-    'de', 'Community'
-  ),
-  `dyn_descriptions` = COLUMN_CREATE(
-    'en', 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore.',
-    'de', 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore.'
-  ),
-  `icon`             = 'ico-person'
+  `id`          = 3,
+  `title`       = 'Community',
+  `description` = 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore.',
+  `icon`        = 'ico-person'
 ;
 
 -- END "Help Categories"

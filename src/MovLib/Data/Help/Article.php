@@ -43,20 +43,6 @@ final class Article extends \MovLib\Data\AbstractEntity {
    */
   public $category;
 
-/**
-   * The timestamp on which this help article was changed.
-   *
-   * @var integer
-   */
-  public $changed;
-
-  /**
-   * The timestamp on which this help article was created.
-   *
-   * @var integer
-   */
-  public $created;
-
   /**
    * The help article's title in default language.
    *
@@ -65,32 +51,11 @@ final class Article extends \MovLib\Data\AbstractEntity {
   public $defaultTitle;
 
   /**
-   * The help article's deletion state.
-   *
-   * @var boolean
-   */
-  public $deleted;
-
-  /**
    * The help article's unique identifier.
    *
    * @var integer
    */
   public $id;
-
-  /**
-   * The translated route of this help article.
-   *
-   * @var string
-   */
-  public $route;
-
-  /**
-   * The route key of this help article.
-   *
-   * @var string
-   */
-  public $routeKey;
 
   /**
    * The help article sub category.
@@ -187,6 +152,30 @@ SQL
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  /**
+   * Update the article.
+   *
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  public function commit() {
+    $stmt = $this->getMySQLi()->prepare(<<<SQL
+UPDATE `help_articles` SET
+  `dyn_texts`  = COLUMN_ADD(`dyn_texts`, '{$this->intl->languageCode}', ?),
+  `dyn_titles` = COLUMN_ADD(`dyn_titles`, '{$this->intl->languageCode}', ?)
+WHERE `id` = {$this->id}
+SQL
+    );
+    $stmt->bind_param(
+      "ss",
+      $this->text,
+      $this->title
+    );
+    $stmt->execute();
+    $stmt->close();
+    return $this;
+  }
 
   /**
    * Create new help article.

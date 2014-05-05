@@ -50,27 +50,6 @@ final class SubCategory extends \MovLib\Data\AbstractEntity {
   public $category;
 
   /**
-   * The timestamp on which this help subcategory was changed.
-   *
-   * @var integer
-   */
-  public $changed;
-
-  /**
-   * The timestamp on which this help subcategory was created.
-   *
-   * @var integer
-   */
-  public $created;
-
-  /**
-   * The help subcategory's deletion state.
-   *
-   * @var boolean
-   */
-  public $deleted;
-
-  /**
    * The help subcategory title's icon (e.g. ico-person).
    *
    * @var string
@@ -83,20 +62,6 @@ final class SubCategory extends \MovLib\Data\AbstractEntity {
    * @var integer
    */
   public $id;
-
-  /**
-   * The translated route of this help subcategory.
-   *
-   * @var string
-   */
-  public $route;
-
-  /**
-   * The route key in default language.
-   *
-   * @var string
-   */
-  public $routeKey;
 
   /**
    * The help subcategory's title in the current display language.
@@ -129,11 +94,7 @@ SELECT
   `help_subcategories`.`created` AS `created`,
   `help_subcategories`.`deleted` AS `deleted`,
   `help_subcategories`.`icon` AS `icon`,
-  IFNULL(
-    COLUMN_GET(`help_subcategories`.`dyn_titles`, ? AS CHAR),
-    COLUMN_GET(`help_subcategories`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)
-  ) AS `title`,
-  COLUMN_GET(`help_subcategories`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR) AS `routeKey`
+  `help_subcategories`.`title` AS `title`
 FROM `help_subcategories`
 WHERE `id` = ?
 LIMIT 1
@@ -148,8 +109,7 @@ SQL
         $this->created,
         $this->deleted,
         $this->icon,
-        $this->title,
-        $this->routeKey
+        $this->title
       );
       $found = $stmt->fetch();
       $stmt->close();
@@ -180,7 +140,7 @@ SQL
       $this->fs->sanitizeFilename($this->category->title),
       $this->fs->sanitizeFilename($this->title)
     ]);
-    $this->routeKey     = "{$this->category->routeKey}/{$this->fs->sanitizeFilename($this->routeKey)}";
+    $this->routeKey     = "{$this->category->routeKey}/{$this->fs->sanitizeFilename($this->title)}";
     $this->singularKey  = "category";
     return parent::init();
   }

@@ -42,27 +42,6 @@ final class Category extends \MovLib\Data\AbstractEntity {
   public $articleCount;
 
   /**
-   * The timestamp on which this help category was changed.
-   *
-   * @var integer
-   */
-  public $changed;
-
-  /**
-   * The timestamp on which this help category was created.
-   *
-   * @var integer
-   */
-  public $created;
-
-  /**
-   * The help category's deletion state.
-   *
-   * @var boolean
-   */
-  public $deleted;
-
-  /**
    * The help category's description in the current display language.
    *
    * @var string
@@ -82,20 +61,6 @@ final class Category extends \MovLib\Data\AbstractEntity {
    * @var integer
    */
   public $id;
-
-  /**
-   * The translated route of this help category.
-   *
-   * @var string
-   */
-  public $route;
-
-  /**
-   * The route key in default language.
-   *
-   * @var string
-   */
-  public $routeKey;
 
   /**
    * The help category's title in the current display language.
@@ -126,22 +91,15 @@ SELECT
   `help_categories`.`changed` AS `changed`,
   `help_categories`.`created` AS `created`,
   `help_categories`.`deleted` AS `deleted`,
-  `help_categories`.`icon`,
-  IFNULL(
-    COLUMN_GET(`help_categories`.`dyn_descriptions`, ? AS CHAR),
-    COLUMN_GET(`help_categories`.`dyn_descriptions`, '{$this->intl->defaultLanguageCode}' AS CHAR)
-  ) AS `description`,
-  IFNULL(
-    COLUMN_GET(`help_categories`.`dyn_titles`, ? AS CHAR),
-    COLUMN_GET(`help_categories`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)
-  ) AS `title`,
-  COLUMN_GET(`help_categories`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR) AS `routeKey`
+  `help_categories`.`icon` AS `icon`,
+  `help_categories`.`description` AS `description`,
+  `help_categories`.`title` AS `title`
 FROM `help_categories`
 WHERE `id` = ?
 LIMIT 1
 SQL
       );
-      $stmt->bind_param("ssd", $this->intl->languageCode, $this->intl->languageCode, $id);
+      $stmt->bind_param("d", $id);
       $stmt->execute();
       $stmt->bind_result(
         $this->id,
@@ -150,8 +108,7 @@ SQL
         $this->deleted,
         $this->icon,
         $this->description,
-        $this->title,
-        $this->routeKey
+        $this->title
       );
       $found = $stmt->fetch();
       $stmt->close();
@@ -176,7 +133,7 @@ SQL
     $this->tableName    = "help_categories";
     $this->pluralKey    = "categories";
     $this->route        = $this->intl->r("/help/{0}", [ $this->fs->sanitizeFilename($this->title) ]);
-    $this->routeKey     = "/help/{$this->fs->sanitizeFilename($this->routeKey)}";
+    $this->routeKey     = "/help/{$this->fs->sanitizeFilename($this->title)}";
     $this->singularKey  = "category";
     return parent::init();
   }

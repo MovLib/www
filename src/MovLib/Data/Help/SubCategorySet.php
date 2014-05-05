@@ -40,11 +40,7 @@ SELECT
   `help_subcategories`.`created` AS `created`,
   `help_subcategories`.`deleted` AS `deleted`,
   `help_subcategories`.`icon` AS `icon`,
-  IFNULL(
-    COLUMN_GET(`help_subcategories`.`dyn_titles`, '{$this->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`help_subcategories`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)
-  ) AS `title`,
-  COLUMN_GET(`help_subcategories`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR) AS `routeKey`
+  `help_subcategories`.`title` AS `title`
 FROM `help_subcategories`
 {$where}
 {$orderBy}

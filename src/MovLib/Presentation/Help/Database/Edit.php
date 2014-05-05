@@ -15,10 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Help;
+namespace MovLib\Presentation\Help\Database;
+
+use \MovLib\Data\Help\Article;
 
 /**
- * Defines the help category set object.
+ * Defines the database edit article presentation.
+ *
+ * @route /help/database/{id}/edit
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -26,43 +30,13 @@ namespace MovLib\Data\Help;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class CategorySet extends \MovLib\Data\AbstractSet {
+final class Edit extends \MovLib\Presentation\Help\AbstractEdit {
 
   /**
    * {@inheritdoc}
    */
-  protected function getEntitiesQuery($where = null, $orderBy = null) {
-    return <<<SQL
-SELECT
-  `help_categories`.`id` AS `id`,
-  `help_categories`.`changed` AS `changed`,
-  `help_categories`.`created` AS `created`,
-  `help_categories`.`deleted` AS `deleted`,
-  `help_categories`.`icon` AS `icon`,
-  `help_categories`.`description` AS `description`,
-  `help_categories`.`title` AS `title`
-FROM `help_categories`
-{$where}
-{$orderBy}
-SQL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
-    return "";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function init() {
-    $this->tableName   = "help_categories";
-    $this->pluralKey   = "categories";
-    $this->route       = $this->intl->r("/help");
-    $this->singularKey = "category";
-    return parent::init();
+  public function init() {
+    return $this->initArticle(new Article($this->diContainerHTTP, $_SERVER["HELP_ID"]));
   }
 
 }

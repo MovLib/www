@@ -55,7 +55,7 @@ abstract class AbstractEdit extends \MovLib\Presentation\AbstractPresenter {
    * @param \MovLib\Data\Help\Article $article
    *   The help article to present.
    */
-  public function initHelp(\MovLib\Data\Help\Article $article) {
+  public function initArticle(\MovLib\Data\Help\Article $article) {
     $this->entity = $article;
     $pageTitle    = $this->intl->t("Edit {0}", [ $this->entity->title ]);
     return $this
