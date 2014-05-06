@@ -25,11 +25,13 @@ CKEDITOR.editorConfig = function( config ) {
 		{ name: "document",	   groups: [ "mode" ] }
 	];
 
+  // Get rid of useless entities like &nbsp;.
+  config.basicEntities = false;
+
 	// Set the most common block elements.
 	config.format_tags = "p;h2;h3;h4;pre";
-
-	// Simplify the dialog windows.
-	config.removeDialogTabs = "image:advanced;link:advanced";
+  // Disable unwanted &nbsp; characters in empty block elements.
+  config.fillEmptyBlocks = false;
 
   // Enable automatic growth of the editor.
   config.autoGrow_onStartup = true;
@@ -61,9 +63,14 @@ CKEDITOR.editorConfig = function( config ) {
   config.linkShowAdvancedTab = false;
   config.linkShowTargetTab = false;
 
+	// Simplify the dialog windows.
+	config.removeDialogTabs = "image:advanced;link:advanced";
+
   // Remove unnecessary buttons and plugins.
   config.removePlugins = "contextmenu,maximize,table,tableresize,tabletools,scayt";
 
+  // Set the number of TAB spaces to zero.
+  config.tabSpaces = 0;
 
 };
 

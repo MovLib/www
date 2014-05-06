@@ -119,11 +119,13 @@
     if (textarea.classList.contains("invalid")) {
       config.on = {
         instanceReady: function () {
-          console.dir(this.container);
           this.container.addClass("invalid");
         }
       };
     }
+
+    // Escape special HTML characters to prevent the content-editable div of CKEditor to render them wrong.
+    textarea.innerHTML = MovLib.htmlspecialchars(textarea.innerHTML, 'ENT_QUOTES', null, false);
 
     // Enhance the currenct element with the CKEditor for now.
     window.CKEDITOR.dom.element.prototype.disableContextMenu = function(){};
