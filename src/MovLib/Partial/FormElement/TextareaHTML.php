@@ -355,8 +355,9 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
     }
 
     // Parse the HTML input with tidy and clean it.
+    // Double decode to circumvent hacks and decode all entities to characters.
     /* @var $tidy \tidy */
-    $tidy = tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body>{$html}</body></html>");
+    $tidy = tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body>{$this->htmlDecode($this->htmlDecode($html))}</body></html>");
     $tidy->cleanRepair();
     if ($tidy->getStatus() === 2) {
       $errors[self::ERROR_INVALID_HTML] = $this->intl->t("Invalid HTML in “{label}” text.", [ "label" => $this->label ]);
@@ -368,7 +369,7 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
 
     // If there were errors, simply return the user's input.
     if ($errors) {
-      return $this->htmlEncode($html);
+      return $html;
     }
 
     // Reset the level to its default state.
@@ -385,7 +386,7 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
         "Invalid HTML after the validation in “{label}” text.",
         [ "label" => $this->label ]
       );
-      return $this->htmlEncode($html);
+      return $html;
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -412,7 +413,7 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
     $validateURL = null;
 
     // Check if the <code>href</code> attribute was set and validate the URL.
-    if (!isset($node->attribute) || empty($node->attribute["href"])) {
+    if (empty($node->attribute) || empty($node->attribute["href"])) {
       $errors[self::ERROR_LINK_NO_TARGET] = $this->intl->t(
         "Links without a link target in “{label}” text.",
         [ "label" => $this->label ]
@@ -421,11 +422,11 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
     }
 
     // Parse and validate the parts of the URL.
-    if ($node->attribute["href"][0] == "/") {
-      $parts["host"] = $this->config->hostname;
-      $parts["path"] = $node->attribute["href"];
+    if ($node->attribute["href"]{0} == "/") {
+      $node->attribute["href"] = "{$this->request->scheme}://{$this->config->hostname}{$node->attribute["href"]}";
     }
-    elseif (($parts = parse_url($node->attribute["href"])) === false || !isset($parts["host"])) {
+
+    if (($parts = parse_url($node->attribute["href"])) === false || empty($parts["host"])) {
       $errors[self::ERROR_LINK_INVALID] = $this->intl->t(
         "Invalid link in “{label}” text ({link_url}).",
         [ "label" => $this->label, "link_url" => "<code>{$this->htmlEncode($node->attribute["href"])}</code>" ]
@@ -609,7 +610,7 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
             else {
               $methodName = "validate{$node->name}";
               if (method_exists($this, $methodName)) {
-                $node->name = $this->{$methodName}($node, $errors);
+                $node->name = $this->{$methodName}($node, $errors, $level);
               }
             }
 
@@ -679,22 +680,40 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
    *   The figure node to validate.
    * @param mixed $errors
    *   Parameter to collect error messages.
+   *
    * @return string
    *   The starting tag including allowed attributes.
    * @throws ValidationException
    */
-  protected function validateFigure($node, &$errors) {
+  protected function validateFigure($node, &$errors, &$level) {
     $this->insertLastChild = "figure";
     $this->figure          = true;
 
-    // Of course we can communicate the caption as seperate element, as it's visible to the user.
-    if (count($node->child) !== 2 || $node->child[1]->name != "figcaption" || empty($node->child[1]->child)) {
-      $errors[self::ERROR_IMAGE_NO_CAPTION] = $this->intl->t("The image caption is mandatory and cannot be empty.");
+    if (count($node->child) === 2) {
+      // Of course we can communicate the caption as seperate element, as it's visible to the user.
+      if ($node->child[1]->name != "figcaption" || empty($node->child[1]->child)) {
+        $errors[self::ERROR_IMAGE_NO_CAPTION] = $this->intl->t("The image caption is mandatory and cannot be empty.");
+      }
+      $figcaption = $node->child[1];
+
+      // Always communicate the <figure> element as image, the actual implementation isn't the user's concern and might
+      // change with future web technologies.
+      if ($node->child[0]->name != "img" || empty($node->child[0]->attribute["src"])) {
+        $errors[self::ERROR_IMAGE_NO_IMAGE] = $this->intl->t("The image is mandatory and cannot be empty.");
+      }
+      $image = $node->child[0];
+
+      // Delete all children and remove them from the main loop stack, we validate and export them ourselves. Note that
+      // we always have to do so, because even if one of the above errors happened, the main loop continues.
+      $node->child  = null;
+
+      if (isset($errors[self::ERROR_IMAGE_NO_CAPTION]) || isset($errors[self::ERROR_IMAGE_NO_IMAGE])) {
+        return "figure";
+      }
     }
-    // Always communicate the <figure> element as image, the actual implementation isn't the user's concern and might
-    // change with future web technologies.
-    elseif ($node->child[0]->name != "img" || empty($node->child[0]->attribute["src"])) {
-      $errors[self::ERROR_IMAGE_NO_IMAGE] = $this->intl->t("The image is mandatory and cannot be empty.");
+    else {
+      $errors[42] = "TODO: tell user that figure can only have exactly 2 children.";
+      return "figure";
     }
 
     // Validate the caption.
@@ -706,16 +725,24 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
       "i"      => "&lt;i&gt;",
       "strong" => "&lt;strong&gt;",
     ];
-    // This check is necessary, since the above validations continue on errors.
-    if (isset($node->child[1])) {
-      $caption = $this->validateDOM($node->child[1], $captionAllowedTags, $errors);
-    }
+
+    $validateDOMFigcaptionLevel = 0;
+    $caption = $this->validateDOM($figcaption, $captionAllowedTags, $errors, $validateDOMFigcaptionLevel);
+
+    // Disable the special figure check in the main validation loop.
+    $this->figure = false;
+
+    // Increase the level, since we need an ending tag, but have no children.
+    $level++;
 
     // Clean the caption from any tags for the image's alt text.
     $alt = strip_tags($caption);
 
+    // @todo Refactor the following to correctly validate the URL, combine with validateA and the validation method in
+    //       in inputURL!
+
     // Validate the image's src URL.
-    if (($url = parse_url($node->child[0]->attribute["src"])) === false || !isset($url["host"])) {
+    if (($url = parse_url($image->attribute["src"])) === false || !isset($url["host"])) {
       $errors[self::ERROR_IMAGE_INVALID_SOURCE] = $this->intl->t("Image URL seems to be invalid.");
       return "figure";
     }
@@ -731,25 +758,18 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
 
     // Check that the image actually exists and set width and height.
     try {
-      $imgAttributes = getimagesize("dr://public{$url["path"]}")[3];
+      $imgAttributes = getimagesize("dr://var/public{$url["path"]}")[3];
     }
-    catch (\ErrorException $e) {
+    catch (\Exception $e) {
       $errors[self::ERROR_IMAGE_NON_EXISTENT] = $this->intl->t(
         "Image doesn’t exist ({image_src}).",
-        [ "image_src" => "<code>{$node->child[0]->attribute["src"]}</code>" ]
+        [ "image_src" => "<code>{$image->attribute["src"]}</code>" ]
       );
       return "figure";
     }
 
     // Build the image tag.
     $this->lastChild = "<img alt='{$alt}' {$imgAttributes} src='//{$this->config->hostname}{$url["path"]}'><figcaption>{$caption}</figcaption>";
-
-    // Delete all children, since they are already validated and reset figure flag as we aren't within a figure anymore.
-    $node->child  = null;
-    $this->figure = false;
-
-    // Increase the level, since we need an ending tag, but have no children.
-    $this->level++;
 
     return "figure{$this->validateUserClasses($node, $errors)}";
   }
