@@ -37,7 +37,7 @@ final class Create extends \MovLib\Presentation\Help\AbstractCreate {
    * {@inheritdoc}
    */
   public function init() {
-    return $this->initCreate(new Article($this->diContainerHTTP), new Category($this->diContainerHTTP, 2));
+    return $this->initHelpCreate(new Article($this->diContainerHTTP), new Category($this->diContainerHTTP, 2));
   }
 
 }

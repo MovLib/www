@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presentation\Help;
 
-use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Partial\FormElement\TextareaHTMLExtended;
@@ -31,36 +30,25 @@ use \MovLib\Partial\FormElement\TextareaHTMLExtended;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractEdit extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Partial\SidebarTrait;
+abstract class AbstractEdit extends \MovLib\Presentation\AbstractEditPresenter {
   use \MovLib\Presentation\Help\HelpTrait;
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
   /**
-   * The entity to present.
-   *
-   * @var \MovLib\Data\AbstractEntity
-   */
-  protected $entity;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-    /**
-   * {@inheritdoc}
    * @param \MovLib\Data\Help\Article $article
-   *   The help article to present.
+   *   An empty help article instance.
+   * @param string $additionalSidebarItems [optional]
+   *   Additional items for the sidebar.
    */
-  public function initArticle(\MovLib\Data\Help\Article $article) {
+  public function initHelpEdit(\MovLib\Data\Help\Article $article, $additionalSidebarItems = []) {
+    $this->session->checkAuthorization($this->intl->t(
+      "You must be signed in to access this content. Please use the form below to sign in or {0}join {sitename}{1}.",
+      [ "<a href='{$this->intl->r("/profile/join")}'>", "</a>", "sitename" => $this->config->sitename ]
+    ));
     $this->entity = $article;
     $pageTitle    = $this->intl->t("Edit {0}", [ $this->entity->title ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Edit"))
-      ->sidebarInitToolbox($this->entity)
+      ->sidebarInitToolbox($this->entity, $additionalSidebarItems)
       ->initLanguageLinks("{$this->entity->routeKey}/edit", $this->entity->id)
       ->breadcrumb->addCrumbs($this->getArticleBreadCrumbs());
     ;
@@ -84,17 +72,6 @@ abstract class AbstractEdit extends \MovLib\Presentation\AbstractPresenter {
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
       ->init([ $this, "valid" ])
     ;
-  }
-
-  /**
-   * Auto-validation of the form succeeded.
-   *
-   * @return this
-   */
-  public function valid() {
-    $this->entity->commit();
-    $this->alertSuccess($this->intl->t("The {$this->entity->singularKey} was updated successfully."));
-    throw new SeeOtherException($this->entity->route);
   }
 
 }

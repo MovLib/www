@@ -113,9 +113,9 @@ final class Alert {
    *   HTML representation of this alert message.
    */
   public function __toString() {
-    $title    = $this->title    ? "<h2>{$this->title}</h2>" : null;
-    $severity = $this->severity ? " alert-{$severity}"      : null;
-    switch ($severity) {
+    $title    = $this->title    ? "<h2>{$this->title}</h2>"  : null;
+    $severity = $this->severity ? " alert-{$this->severity}" : null;
+    switch ($this->severity) {
       case self::SEVERITY_INFO:
       case self::SEVERITY_SUCCESS:
         $live = "polite";

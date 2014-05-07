@@ -36,7 +36,7 @@ final class Edit extends \MovLib\Presentation\Help\AbstractEdit {
    * {@inheritdoc}
    */
   public function init() {
-    return $this->initArticle(new Article($this->diContainerHTTP, $_SERVER["HELP_ID"]));
+    return $this->initHelpEdit(new Article($this->diContainerHTTP, $_SERVER["HELP_ID"]));
   }
 
 }

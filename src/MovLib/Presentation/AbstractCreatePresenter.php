@@ -56,6 +56,10 @@ abstract class AbstractCreatePresenter extends \MovLib\Presentation\AbstractPres
    * @return this
    */
   final protected function initCreate(\MovLib\Data\AbstractEntity $entity, $breadcrumbIndexTitle) {
+    $this->session->checkAuthorization($this->intl->t(
+      "You must be signed in to access this content. Please use the form below to sign in or {0}join {sitename}{1}.",
+      [ "<a href='{$this->intl->r("/profile/join")}'>", "</a>", "sitename" => $this->config->sitename ]
+    ));
     $this->entity = $entity;
 
     if (!isset($this->entity->routeIndex)) {

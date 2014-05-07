@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presentation\Help;
 
-use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Partial\FormElement\TextareaHTMLExtended;
@@ -31,26 +30,10 @@ use \MovLib\Partial\FormElement\TextareaHTMLExtended;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractCreate extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Partial\SidebarTrait;
+abstract class AbstractCreate extends \MovLib\Presentation\AbstractCreatePresenter {
   use \MovLib\Presentation\Help\HelpTrait;
 
-   // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
   /**
-   * The entity to present.
-   *
-   * @var \MovLib\Data\AbstractEntity
-   */
-  protected $entity;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * {@inheritdoc}
    * @param \MovLib\Data\Help\Article $article
    *   An empty help article instance.
    * @param \MovLib\Data\Help\Category $category
@@ -58,7 +41,11 @@ abstract class AbstractCreate extends \MovLib\Presentation\AbstractPresenter {
    * @param \MovLib\Data\Help\SubCategory $subCategory [optional]
    *   The sub category the article should belong to.
    */
-  public function initCreate(\MovLib\Data\Help\Article $article, \MovLib\Data\Help\Category $category, \MovLib\Data\Help\SubCategory $subCategory = null) {
+  public function initHelpCreate(\MovLib\Data\Help\Article $article, \MovLib\Data\Help\Category $category, \MovLib\Data\Help\SubCategory $subCategory = null) {
+    $this->session->checkAuthorization($this->intl->t(
+      "You must be signed in to access this content. Please use the form below to sign in or {0}join {sitename}{1}.",
+      [ "<a href='{$this->intl->r("/profile/join")}'>", "</a>", "sitename" => $this->config->sitename ]
+    ));
     $this->entity              = $article;
     $this->entity->category    = $category;
     $this->entity->subCategory = $subCategory;
@@ -131,17 +118,6 @@ abstract class AbstractCreate extends \MovLib\Presentation\AbstractPresenter {
     else {
       return $form->init([ $this, "valid" ]);
     }
-  }
-
-  /**
-   * Auto-validation of the form succeeded.
-   *
-   * @return this
-   */
-  public function valid() {
-    $this->entity->create();
-    $this->alertSuccess($this->intl->t("The {$this->entity->singularKey} was created successfully."));
-    throw new SeeOtherException($this->entity->route);
   }
 
 }
