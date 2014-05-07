@@ -48,37 +48,63 @@ class Show extends \MovLib\Presentation\User\AbstractUserPresenter {
    * {@inheritdoc}
    */
   public function getContent(){
-    $this->schemaType            = "Person";
+    // http://schema.org/Person
+    $this->schemaType = "Person";
+
+    // Mark the username as additional name.
     $this->headingSchemaProperty = "additionalName";
 
-    $this->entity->birthdate   && $this->infoboxAdd($this->intl->t("Age"), "<time datetime='{$this->entity->birthdate}' property='birthDate'>" . (new DatePartial($this->intl, $this))->getAge($this->entity->birthdate) . "</time>");
-    if ($this->entity->sex > 0) {
-      $gender = $this->entity->sex === 1 ? $this->intl->t("Male") : $this->intl->t("Female");
-      $this->infoboxAdd($this->intl->t("Gender"), "<span itemprop='gender'>{$gender}</span>");
+    // Wrap the complete header content in a row and the heading itself in a span.
+    $this->headingBefore = "<div class='r'><div class='s s10'>";
+
+    // Create user info.
+    $personalData = null;
+
+    // Format the user's birthday if available.
+    if ($this->entity->birthdate) {
+      $age = (new DatePartial($this->intl, $this))->getAge($this->entity->birthdate);
+      $personalData[] = "<time datetime='{$this->entity->birthdate}' property='birthDate'>{$age}</time>";
     }
-    $this->entity->countryCode && $this->infoboxAdd($this->intl->t("Nationality"), "<span itemprop='nationality'>" . (new Country($this->diContainerHTTP))->formatWithFlag($this->entity->countryCode, true) . "</span>");
+    if ($this->entity->sex > 0) {
+      $gender     = $this->entity->sex === 1 ? $this->intl->t("Male") : $this->intl->t("Female");
+      $personalData[] = "<span itemprop='gender'>{$gender}</span>";
+    }
+    if ($this->entity->countryCode) {
+//      $country        = new Country($this->user->countryCode);
+//      $personalData[] = "<span itemprop='nationality'>{$country}</span>";
+    }
 
     // Link the user's real name to the website if we have both properties.
     if ($this->entity->realName) {
+      // http://microformats.org/wiki/rel-me
+      // http://microformats.org/wiki/rel-nofollow
       if ($this->entity->website) {
-        $this->infoboxAdd($this->intl->t("Name"), "<a href='{$this->entity->website}' itemprop='url name' rel='me nofollow' target='_blank'>{$this->entity->realName}</a>");
+        array_unshift($personalData, "<a href='{$this->entity->website}' itemprop='url name' rel='me nofollow' target='_blank'>{$this->entity->realName}</a>");
       }
       else {
-        $this->infoboxAdd($this->intl->t("Name"), "<span itemprop='name'>{$this->entity->realName}</span>");
+        array_unshift($personalData, "<span itemprop='name'>{$this->entity->realName}</span>");
       }
     }
     // If not use the hostname.
     elseif ($this->entity->website) {
       $hostname = parse_url($this->entity->website, PHP_URL_HOST);
-      $this->infoboxAdd($this->intl->t("Website"), "<a href='{$this->entity->website}' itemprop='url' rel='nofollow' target='_blank'>{$hostname}</a>");
+      $personalData[] = "<br><a href='{$this->entity->website}' itemprop='url' rel='nofollow' target='_blank'>{$hostname}</a>";
     }
 
+    if ($personalData) {
+      $personalData = implode(", ", $personalData);
+      $personalData = "<p>{$personalData}</p>";
+    }
+
+    // Display additional info about this user after the name and the avatar to the right of it.
     $this->headingAfter =
-      "<br><small>{$this->intl->t("Joined {date} and was last seen {time}.", [
-        "date" => (new DatePartial($this->intl, $this->diContainerHTTP->presenter))->format(new Date($this->entity->created->format('Y-m-d'))),
-        "time" => (new Time($this->intl, $this->entity->access))->formatRelative(),
-      ])}</small>"
-    ;
+        $personalData .
+        "<small>{$this->intl->t("Joined {date} and was last seen {time}.", [
+          "date" => (new DatePartial($this->intl, $this->diContainerHTTP->presenter))->format(new Date($this->entity->created->format('Y-m-d'))),
+          "time" => (new Time($this->intl, $this->entity->access))->formatRelative(),
+        ])}</small>" .
+      "</div>" .
+    "</div>";
 
     $this->entity->aboutMe && $this->sectionAdd($this->intl->t("About"), $this->entity->aboutMe);
 
