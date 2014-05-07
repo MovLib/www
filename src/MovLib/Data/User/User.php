@@ -27,6 +27,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * Defines the user entity object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -106,6 +107,13 @@ final class User extends \MovLib\Data\Image\AbstractImageEntity {
   public $birthdate;
 
   /**
+   * The user's contribution count.
+   *
+   * @var null|integer
+   */
+  public $contributionCount;
+
+  /**
    * The user's country code.
    *
    * @var null|string
@@ -132,6 +140,20 @@ final class User extends \MovLib\Data\Image\AbstractImageEntity {
    * @var null|string
    */
   public $email;
+
+  /**
+   * The user's preferred system language's code (e.g. <code>"en"</code>).
+   *
+   * @var null|string
+   */
+  public $languageCode;
+
+  /**
+   * The user's list count.
+   *
+   * @var null|integer
+   */
+  public $listCount;
 
   /**
    * The user's unique name.
@@ -192,13 +214,6 @@ final class User extends \MovLib\Data\Image\AbstractImageEntity {
   public $sex;
 
   /**
-   * The user's preferred system language's code (e.g. <code>"en"</code>).
-   *
-   * @var null|string
-   */
-  public $languageCode;
-
-  /**
    * The user's time zone identifier (e.g. <code>"Europe/Vienna"</code>).
    *
    * @var null|string
@@ -215,6 +230,13 @@ final class User extends \MovLib\Data\Image\AbstractImageEntity {
     self::FROM_EMAIL => "s",
     self::FROM_NAME  => "s",
   ];
+
+  /**
+   * The user's upload count.
+   *
+   * @var null|integer
+   */
+  public $uploadCount;
 
   /**
    * The user's website.
@@ -251,6 +273,7 @@ SELECT
   `changed`,
   `created`,
   `birthdate`,
+  `count_contributions`,
   `country_code`,
   `currency_code`,
   COLUMN_GET(`dyn_about_me`, '{$this->intl->languageCode}' AS CHAR),
@@ -264,7 +287,9 @@ SELECT
   `reputation`,
   `sex`,
   `language_code`,
+  `count_lists`,
   `timezone`,
+  `count_uploads`,
   `website`
 FROM `users` WHERE `{$from}` = ? LIMIT 1
 SQL
@@ -280,6 +305,7 @@ SQL
         $this->changed,
         $this->created,
         $this->birthdate,
+        $this->contributionCount,
         $this->countryCode,
         $this->currencyCode,
         $this->aboutMe,
@@ -293,7 +319,9 @@ SQL
         $this->reputation,
         $this->sex,
         $this->languageCode,
+        $this->listCount,
         $this->timezone,
+        $this->uploadCount,
         $this->website
       );
       $found = $stmt->fetch();
