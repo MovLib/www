@@ -298,17 +298,21 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
     // Load the CKEditor javascript and styles for now.
     $this->presenter->headElements                  .= "<script type='text/javascript' src='/bower/ckeditor/ckeditor.js'></script>";
     // CKEditor configuration.
+    $allowedTags = array_keys($this->allowedTags);
     if (isset($this->allowedTags["figure"])) {
       $mode = 2;
+      $allowedTags[] = "img";
+      $allowedTags[] = "figcaption";
     }
     elseif (isset ($this->allowedTags["blockquote"])) {
       $mode = 1;
+      $allowedTags[] = "cite";
     }
     else {
       $mode = 0;
     }
     $config = [
-      "allowedTags"    => array_keys($this->allowedTags),
+      "allowedTags"    => $allowedTags,
       "language"       => $this->intl->languageCode,
       "headingLevel"   => $this->headingLevel,
       "mode"           => $mode,
@@ -740,8 +744,8 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
     // Increase the level, since we need an ending tag, but have no children.
     $level++;
 
-    // Clean the caption from any tags for the image's alt text.
-    $alt = strip_tags($caption);
+    // Set the caption as the image's alt text if there is no alt text available.
+    $alt = isset($node->attribute["alt"]) ? $node->attribute["alt"] :strip_tags($caption);
 
     // @todo Refactor the following to correctly validate the URL, combine with validateA and the validation method in
     //       in inputURL!
@@ -774,7 +778,9 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
     }
 
     // Build the image tag.
-    $this->lastChild = "<img alt='{$alt}' {$imgAttributes} src='//{$this->config->hostname}{$url["path"]}'><figcaption>{$caption}</figcaption>";
+    // We hide the image for screenreaders, because the figcaption is also read to the user and contains semantic markup
+    // which the alt attribute cannot provide.
+    $this->lastChild = "<img alt='{$alt}' aria-hidden='true' {$imgAttributes} src='//{$this->config->hostname}{$url["path"]}'><figcaption>{$caption}</figcaption>";
 
     return "figure{$this->validateUserClasses($node, $errors)}";
   }

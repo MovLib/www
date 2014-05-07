@@ -66,10 +66,11 @@ CKEDITOR.editorConfig = function( config ) {
 
   // Enable automatic growth and content-editable instead of <iframe> editing.
   config.extraAllowedContent = "cite";
-  config.extraPlugins = "autogrow,divarea,justify";
+  config.extraPlugins = "autogrow,divarea,justify,image2";
 
   // Define our custom alignment classes.
   config.image2_alignClasses = [ "user-left", "user-center", "user-right" ];
+  config.image2_captionedClass = "";
   config.justifyClasses = [ "user-left", "user-center", "user-right", null ];
 
   // Disable advanced link dialog settings.
@@ -88,16 +89,30 @@ CKEDITOR.editorConfig = function( config ) {
 };
 
 // Modify dialog definitions to remove unnecessary items.
-CKEDITOR.on( "dialogDefinition", function( ev ){
-    // Take the dialog name and its definition from the event data.
-    var dialogName = ev.data.name;
-    var dialogDefinition = ev.data.definition;
+CKEDITOR.on( "dialogDefinition", function(ev){
+  // Take the dialog name and its definition from the event data.
+  var dialogName = ev.data.name;
+  var dialogDefinition = ev.data.definition;
 
-    // Check if the definition is from the dialog we"re only interested in the link dialog.
-    if ( dialogName === "link" ) {
-      // Remove unnecessary items from the select boxes.
-      dialogDefinition.getContents("info").get("protocol")["items"] = [["http://‎","http://"],["https://‎","https://"]];
-      dialogDefinition.getContents("info").get("linkType")["items"] = [ dialogDefinition.getContents("info").get("linkType")["items"][0] ];
-    }
+  // Remove unnecessary items from the select boxes of the link dialog.
+  if (dialogName === "link") {
+    dialogDefinition.getContents("info").get("protocol")["items"] = [["http://‎","http://"],["https://‎","https://"]];
+    dialogDefinition.getContents("info").get("linkType")["items"] = [ dialogDefinition.getContents("info").get("linkType")["items"][0] ];
+  }
+
+  // Remove unnecessary "captioned" checkbox from the image dialog.
+  if (dialogName === "image2") {
+    // Check the checkbox by default, since we always want a caption.
+    dialogDefinition.getContents("info").get("hasCaption").default = true;
+
+    // Seems like some kind of event has to be triggered in order to update the state of the checkbox.
+    // This works fine, even if the callback has no body (WTH CKEditor?). It contains a body for sanity's sake.
+    dialogDefinition.getContents("info").get("hasCaption").setup = function () {
+      this.checked = true;
+    };
+    
+    // Hide the checkbox from the user.
+    dialogDefinition.getContents("info").get("hasCaption").className = "dn";
+  }
 });
 
