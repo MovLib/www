@@ -744,8 +744,8 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
     // Increase the level, since we need an ending tag, but have no children.
     $level++;
 
-    // Set the caption as the image's alt text if there is no alt text available.
-    $alt = isset($node->attribute["alt"]) ? $node->attribute["alt"] :strip_tags($caption);
+    // Set the caption as the image's alt text and remove markup.
+    $alt = strip_tags($caption);
 
     // @todo Refactor the following to correctly validate the URL, combine with validateA and the validation method in
     //       in inputURL!

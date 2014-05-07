@@ -102,6 +102,9 @@ CKEDITOR.on( "dialogDefinition", function(ev){
 
   // Remove unnecessary "captioned" checkbox from the image dialog.
   if (dialogName === "image2") {
+    // Hide the alternative text field from the user, since we always use the caption for that purpose.
+    dialogDefinition.getContents("info").get("alt").className = "dn";
+
     // Check the checkbox by default, since we always want a caption.
     dialogDefinition.getContents("info").get("hasCaption").default = true;
 
@@ -110,7 +113,7 @@ CKEDITOR.on( "dialogDefinition", function(ev){
     dialogDefinition.getContents("info").get("hasCaption").setup = function () {
       this.checked = true;
     };
-    
+
     // Hide the checkbox from the user.
     dialogDefinition.getContents("info").get("hasCaption").className = "dn";
   }
