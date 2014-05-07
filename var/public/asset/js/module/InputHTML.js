@@ -81,16 +81,40 @@
 
     // CKEditor configuration according to our mode.
     var config = {
+      allowedContent: {
+        '*': {
+          attributes: 'lang'
+        },
+        'blockquote p figure ol ul': {
+          propertiesOnly: true,
+          classes: 'user-left,user-center,user-right'
+        },
+        '$1': {
+          elements: { a: true },
+          propertiesOnly: true,
+          attributes: '!href'
+        },
+        '$2': {
+          elements: { img: true },
+          propertiesOnly: true,
+          attributes: '!src,alt,width,height'
+        }
+      },
       customConfig: "/asset/js/ckeditor/config.js",
       format_tags: "p",
       language: MovLib.settings.ckeditor.language,
       removeButtons: "Underline,Subscript,Superscript,HorizontalRule,Anchor,Strike,JustifyBlock,Styles"
     };
 
+    // Add all allowed tags.
+    for (var i = 0; i < MovLib.settings.ckeditor.allowedTags.length; i++) {
+      config.allowedContent[MovLib.settings.ckeditor.allowedTags[i]] = true;
+    }
+
     var paragraphGroups = [ "align" ];
     var insertGroups    = [ "links", "insert" ];
 
-    // We need extended controls and tags.
+    // We need extended controls and tags if we are in extended editing mode.
     if (MovLib.settings.ckeditor.mode > 0) {
       paragraphGroups.push("list", "indent");
       insertGroups.splice(1, 0, "blocks");
@@ -124,13 +148,9 @@
       };
     }
 
-    // Escape special HTML characters to prevent the content-editable div of CKEditor to render them wrong.
-    textarea.innerHTML = MovLib.htmlspecialchars(textarea.innerHTML, 'ENT_QUOTES', null, false);
-
     // Enhance the currenct element with the CKEditor for now.
     window.CKEDITOR.dom.element.prototype.disableContextMenu = function(){};
     var editor = window.CKEDITOR.replace(textarea.id, config);
-
   }
 
   Module.prototype = {

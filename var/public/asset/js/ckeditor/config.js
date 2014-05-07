@@ -1,7 +1,20 @@
-/**
- * @license Copyright (c) 2003-2013, CKSource - Frederico Knabben. All rights reserved.
- * For licensing, see LICENSE.html or http://ckeditor.com/license
+/*!
+ * This file is part of {@link https://github.com/MovLib MovLib}.
+ *
+ * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
+ *
+ * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with MovLib.
+ * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+
+/* jshint browser:true */
 
 CKEDITOR.editorConfig = function( config ) {
 	// Define changes to default configuration here.
@@ -42,7 +55,7 @@ CKEDITOR.editorConfig = function( config ) {
   // Override the default italic element, since we use <i> tags.
   config.coreStyles_italic = { element: "i", overrides: "em" };
 
-  // Use the native spell checker of the browser, since SCAYT doesn"t seem to work.
+  // Use the native spell checker of the browser, since SCAYT doesn't seem to work.
   config.disableNativeSpellChecker = false;
 
   // Disable all HTML entities and conversions, since we encode the input ourselves and use UTF-8.
