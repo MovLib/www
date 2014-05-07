@@ -26,7 +26,7 @@ namespace MovLib\Partial;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Time extends \MovLib\Presentation\AbstractBase {
+class Time {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -53,6 +53,13 @@ class Time extends \MovLib\Presentation\AbstractBase {
    */
   public $timeFormat = \IntlDateFormatter::SHORT;
 
+  /**
+   * The active intl instance.
+   *
+   * @var \MovLib\Core\Intl
+   */
+  protected $intl;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -60,16 +67,19 @@ class Time extends \MovLib\Presentation\AbstractBase {
   /**
    * Instantiate new time partial.
    *
+   * @param \MovLib\Core\Intl $intl
+   *   The active intl instance.
    * @param string $time [optional]
    *   A date/time string in a valid format as explined in {@link http://www.php.net/manual/en/datetime.formats.php Date
    *   and Time Formats} or an integer, which is treated as UNIX timestamp. Defaults to <code>"now"</code>.
    * @param array $attributes [optional]
    *   Additional attributes that should be applied to the element.
    */
-  public function __construct($time = "now", array $attributes = null) {
+  public function __construct(\MovLib\Core\Intl $intl, $time = "now", array $attributes = null) {
     if (is_int($time)) {
       $time = "@{$time}";
     }
+    $this->intl       = $intl;
     $this->time       = new \DateTime($time);
     $this->attributes = $attributes;
   }

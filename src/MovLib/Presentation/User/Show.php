@@ -17,7 +17,10 @@
  */
 namespace MovLib\Presentation\User;
 
-use \MovLib\Partial\Date;
+use \MovLib\Data\Date;
+use \MovLib\Partial\Date as DatePartial;
+use \MovLib\Partial\Country;
+use \MovLib\Partial\Time;
 
 /**
  * Public user profile presentation.
@@ -45,103 +48,75 @@ class Show extends \MovLib\Presentation\User\AbstractUserPresenter {
    * {@inheritdoc}
    */
   public function getContent(){
-    // http://schema.org/Person
-    $this->schemaType = "Person";
-
-    // Mark the username as additional name.
+    $this->schemaType            = "Person";
     $this->headingSchemaProperty = "additionalName";
 
-    // Wrap the complete header content in a row and the heading itself in a span.
-    $this->headingBefore = "<div class='r'><div class='s s10'>";
-
-    // Create user info.
-    $personalData = null;
-
-    // Format the user's birthday if available.
-    if ($this->user->birthdate) {
-      $age = (new Date($this->intl, $this))->getAge($this->user->birthdate);
-      $personalData[] = "<time datetime='{$this->user->birthdate}' property='birthDate'>{$age}</time>";
+    $this->entity->birthdate   && $this->infoboxAdd($this->intl->t("Age"), "<time datetime='{$this->entity->birthdate}' property='birthDate'>" . (new DatePartial($this->intl, $this))->getAge($this->entity->birthdate) . "</time>");
+    if ($this->entity->sex > 0) {
+      $gender = $this->entity->sex === 1 ? $this->intl->t("Male") : $this->intl->t("Female");
+      $this->infoboxAdd($this->intl->t("Gender"), "<span itemprop='gender'>{$gender}</span>");
     }
-    if ($this->user->sex > 0) {
-      $gender     = $this->user->sex === 1 ? $this->intl->t("Male") : $this->intl->t("Female");
-      $personalData[] = "<span itemprop='gender'>{$gender}</span>";
-    }
-    if ($this->user->countryCode) {
-//      $country        = new Country($this->user->countryCode);
-//      $personalData[] = "<span itemprop='nationality'>{$country}</span>";
-    }
+    $this->entity->countryCode && $this->infoboxAdd($this->intl->t("Nationality"), "<span itemprop='nationality'>" . (new Country($this->diContainerHTTP))->formatWithFlag($this->entity->countryCode, true) . "</span>");
 
     // Link the user's real name to the website if we have both properties.
-    if ($this->user->realName) {
-      // http://microformats.org/wiki/rel-me
-      // http://microformats.org/wiki/rel-nofollow
-      if ($this->user->website) {
-        array_unshift($personalData, "<a href='{$this->user->website}' itemprop='url name' rel='me nofollow' target='_blank'>{$this->user->realName}</a>");
+    if ($this->entity->realName) {
+      if ($this->entity->website) {
+        $this->infoboxAdd($this->intl->t("Name"), "<a href='{$this->entity->website}' itemprop='url name' rel='me nofollow' target='_blank'>{$this->entity->realName}</a>");
       }
       else {
-        array_unshift($personalData, "<span itemprop='name'>{$this->user->realName}</span>");
+        $this->infoboxAdd($this->intl->t("Name"), "<span itemprop='name'>{$this->entity->realName}</span>");
       }
     }
     // If not use the hostname.
-    elseif ($this->user->website) {
-      $hostname = parse_url($this->user->website, PHP_URL_HOST);
-      $personalData[] = "<br><a href='{$this->user->website}' itemprop='url' rel='nofollow' target='_blank'>{$hostname}</a>";
+    elseif ($this->entity->website) {
+      $hostname = parse_url($this->entity->website, PHP_URL_HOST);
+      $this->infoboxAdd($this->intl->t("Website"), "<a href='{$this->entity->website}' itemprop='url' rel='nofollow' target='_blank'>{$hostname}</a>");
     }
 
-    if ($personalData) {
-      $personalData = implode(", ", $personalData);
-      $personalData = "<p>{$personalData}</p>";
-    }
-
-    // Display additional info about this user after the name and the avatar to the right of it.
     $this->headingAfter =
-        $personalData .
-        "<small>{$this->intl->t("Joined {date} and was last seen {time}.", [
-          "date" => ""/*(new Date($this->user->created))->intlFormat()*/,
-          "time" => ""/*(new Time($this->user->access))->formatRelative()*/,
-        ])}</small>" .
-      "</div>" .
-      $this->img($this->user->imageGetStyle(), [ "class" => "s s2", "property" => "image" ], false) .
-    "</div>";
+      "<br><small>{$this->intl->t("Joined {date} and was last seen {time}.", [
+        "date" => (new DatePartial($this->intl, $this->diContainerHTTP->presenter))->format(new Date($this->entity->created->format('Y-m-d'))),
+        "time" => (new Time($this->intl, $this->entity->access))->formatRelative(),
+      ])}</small>"
+    ;
 
-    $publicProfile = $edit = null;
+    $this->entity->aboutMe && $this->sectionAdd($this->intl->t("About"), $this->entity->aboutMe);
 
-    // ----------------------------------------------------------------------------------------------------------------- About Me
-
-    $aboutMe = null;
-    if (empty($this->user->aboutMe) && $this->session->userId === $this->user->id) {
-      $aboutMe = "<p>{$this->intl->t("Your profile is currently empty, {0}click here to edit{1}.", [
-        "<a href='{$this->intl->r("/profile/account-settings")}'>", "</a>"
-      ])}</p>";
+    if ($this->sections) {
+      return $this->sections;
     }
-    else {
-      $aboutMe = $this->htmlDecode($this->user->aboutMe);
-      if ($this->session->userId === $this->user->id) {
-        $edit = "<a class='small edit' href='{$this->intl->r("/profile/account-settings")}'>{$this->intl->t("edit")}</a>";
-      }
-    }
-    if ($aboutMe) {
-      $publicProfile .= "<h2>{$this->intl->t("About Me")}{$edit}</h2><div itemprop='description'>{$aboutMe}</div>";
-    }
-
-    // ----------------------------------------------------------------------------------------------------------------- Rating Stream
-
-    $publicProfile .= "<h2>{$this->intl->t("Recently Rated Movies")}</h2>";
-    if ($this->session->userId === $this->user->id) {
-      $noRatingsText = $this->intl->t(
-        "You haven’t rated a single movie yet, use the {0}search{1} to explore movies you already know.",
-        [ "<a href='{$this->intl->r("/search")}'>", "</a>" ]
+    elseif ($this->session->userId === $this->entity->id) {
+      return $this->callout(
+        $this->intl->t("Would you like to {0}add additional information{1}?", [ "<a href='{$this->intl->r("/profile/account-settings")}'>", "</a>" ]),
+        $this->intl->t("{sitename} doesn’t have further details about you.", [ "sitename" => $this->config->sitename ])
       );
     }
     else {
-      $noRatingsText = $this->intl->t(
-        "{username} hasn’t rated a single movie yet, that makes us a sad panda.",
-        [ "username" => $this->user->name ]
+      return $this->callout(
+        $this->intl->t("{sitename} doesn’t have further details about this user.", [ "sitename" => $this->config->sitename ])
       );
     }
 
+
+//
+//    // ----------------------------------------------------------------------------------------------------------------- Rating Stream
+//
+//    $publicProfile .= "<h2>{$this->intl->t("Recently Rated Movies")}</h2>";
+//    if ($this->session->userId === $this->entity->id) {
+//      $noRatingsText = $this->intl->t(
+//        "You haven’t rated a single movie yet, use the {0}search{1} to explore movies you already know.",
+//        [ "<a href='{$this->intl->r("/search")}'>", "</a>" ]
+//      );
+//    }
+//    else {
+//      $noRatingsText = $this->intl->t(
+//        "{username} hasn’t rated a single movie yet, that makes us a sad panda.",
+//        [ "username" => $this->entity->name ]
+//      );
+//    }
+//
 //    $ratings = Movie::getUserRatings($this->user->id);
-    $ratingStream = null;
+//    $ratingStream = null;
 //    /* @var $movie \MovLib\Data\Movie\FullMovie */
 //    while ($movie = $ratings->fetch_object("\\MovLib\\Data\\Movie\\FullMovie")) {
 //      // We have to use different micro-data if display and original title differ.
@@ -200,15 +175,15 @@ class Show extends \MovLib\Presentation\User\AbstractUserPresenter {
 //        "</li>"
 //      ;
 //    }
-
-    if ($ratingStream) {
-      $publicProfile .= "<ol class='hover-list no-list'>{$ratingStream}</ol>";
-    }
-    else {
-      $publicProfile .= $this->callout($noRatingsText, $this->intl->t("Nothing Rated"), "info");
-    }
-
-    return $publicProfile;
+//
+//    if ($ratingStream) {
+//      $publicProfile .= "<ol class='hover-list no-list'>{$ratingStream}</ol>";
+//    }
+//    else {
+//      $publicProfile .= $this->callout($noRatingsText, $this->intl->t("Nothing Rated"), "info");
+//    }
+//
+//    return $publicProfile;
   }
 
 }

@@ -23,6 +23,7 @@ use \MovLib\Data\User\User;
  * Defines the base class for user presenters.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -30,13 +31,15 @@ use \MovLib\Data\User\User;
  */
 abstract class AbstractUserPresenter extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Partial\SectionTrait;
+  use \MovLib\Partial\InfoboxTrait;
 
   /**
    * The user to present.
    *
    * @var \MovLib\Data\User\User
    */
-  protected $user;
+  protected $entity;
 
   /**
    * {@inheritdoc}
@@ -44,42 +47,44 @@ abstract class AbstractUserPresenter extends \MovLib\Presentation\AbstractPresen
   final protected function initPage($headTitle, $pageTitle = null, $breadcrumbTitle = null) {
     $this->stylesheets[] = "user";
 
-    $this->user = new User($this->diContainerHTTP, $_SERVER["USER_NAME"]);
+    $this->entity = new User($this->diContainerHTTP, $_SERVER["USER_NAME"]);
 
-    $headTitle = $headTitle ? str_replace("{username}", $this->user->name, $headTitle) : $this->user->name;
-    $pageTitle && ($pageTitle = str_replace("{username}", $this->user->name, $pageTitle));
-    $breadcrumbTitle && ($breadcrumbTitle = str_replace("{username}", $this->user->name, $breadcrumbTitle));
+    $headTitle = $headTitle ? str_replace("{username}", $this->entity->name, $headTitle) : $this->entity->name;
+    $pageTitle && ($pageTitle = str_replace("{username}", $this->entity->name, $pageTitle));
+    $breadcrumbTitle && ($breadcrumbTitle = str_replace("{username}", $this->entity->name, $breadcrumbTitle));
     parent::initPage($headTitle, $pageTitle, $breadcrumbTitle);
 
-    $this->breadcrumb->addCrumb($this->user->routeIndex, $this->intl->t("Users"));
-    if ($this->request->path != $this->user->route) {
-      $this->breadcrumb->addCrumb($this->user->route, $this->user->name);
+    $this->breadcrumb->addCrumb($this->entity->routeIndex, $this->intl->t("Users"));
+    if ($this->request->path != $this->entity->route) {
+      $this->breadcrumb->addCrumb($this->entity->route, $this->entity->name);
     }
 
-    if ($this->user->deleted) {
+    if ($this->entity->deleted) {
       $this->sidebarInit([
-        [ $this->user->r("/contributions"), $this->intl->t("Contributions") ],
-        [ $this->user->r("/uploads"), $this->intl->t("Uploads") ],
+        [ $this->entity->route, $this->intl->t("View"), [ "class" => "ico ico-view" ]],
+        [ $this->entity->r("/contributions"), "{$this->intl->t("Contributions")} <span class='fr'>{$this->intl->format("{0,number}", $this->entity->contributionCount)}</span>", [ "class" => "ico ico-database" ] ],
+        [ $this->entity->r("/uploads"), "{$this->intl->t("Uploads")} <span class='fr'>{$this->intl->format("{0,number}", $this->entity->uploadCount)}</span>", [ "class" => "ico ico-upload" ] ],
       ]);
     }
     else {
       $this->sidebarInit([
-        [ $this->user->r("/collection"), $this->intl->t("Collection") ],
-        [ $this->user->r("/wantlist"), $this->intl->t("Wantlist") ],
-        [ $this->user->r("/lists"), $this->intl->t("Lists") ],
-        [ $this->user->r("/contributions"), $this->intl->t("Contributions") ],
-        [ $this->user->r("/uploads"), $this->intl->t("Uploads") ],
-        [ $this->user->r("/contact"), $this->intl->t("Contact") ],
+        [ $this->entity->route, $this->intl->t("View"), [ "class" => "ico ico-view" ]],
+        [ $this->entity->r("/collection"), $this->intl->t("Collection"), [ "class" => "ico ico-release" ] ],
+        [ $this->entity->r("/wantlist"), $this->intl->t("Wantlist"), [ "class" => "ico ico-heart" ] ],
+        [ $this->entity->r("/lists"), "{$this->intl->t("Lists")} <span class='fr'>{$this->intl->format("{0,number}", $this->entity->listCount)}</span>", [ "class" => "ico ico-ul" ] ],
+        [ $this->entity->r("/contributions"), "{$this->intl->t("Contributions")} <span class='fr'>{$this->intl->format("{0,number}", $this->entity->contributionCount)}</span>", [ "class" => "ico ico-database" ] ],
+        [ $this->entity->r("/uploads"), "{$this->intl->t("Uploads")} <span class='fr'>{$this->intl->format("{0,number}", $this->entity->uploadCount)}</span>", [ "class" => "ico ico-upload" ] ],
+        [ $this->entity->r("/contact"), $this->intl->t("Contact"), [ "class" => "ico ico-email separator" ] ],
       ]);
     }
 
-    $langKey = $this->user->routeKey;
+    $langKey = $this->entity->routeKey;
     if (($shortName = strtolower($this->shortName())) != "show") {
       $langKey .= "/{$shortName}";
       $this->headingBefore .= "<div class='r'><div class='s s11'>";
-      $this->headingAfter  .= "</div><div class='s s1'>{$this->img($this->user->imageGetStyle("s1"))}</div></div>";
+      $this->headingAfter  .= "</div><div class='s s1'>{$this->img($this->entity->imageGetStyle("s1"))}</div></div>";
     }
-    $this->initLanguageLinks($langKey, $this->user->routeArgs);
+    $this->initLanguageLinks($langKey, $this->entity->routeArgs);
 
     return $this;
   }
