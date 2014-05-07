@@ -259,20 +259,12 @@ SQL
       if (isset($this->subCategory) && !$this->subCategory instanceof \MovLib\Data\Help\SubCategory) {
         $this->subCategory = new SubCategory($this->diContainer, $this->subCategory);
       }
-      $this->route       = $this->intl->r("/help/{0}/{1}/{2}", [
-        $this->fs->sanitizeFilename($this->category->title),
-        $this->fs->sanitizeFilename($this->subCategory->title),
-        $this->id
-      ]);
       $this->routeKey = "{$this->subCategory->routeKey}/{0}";
     }
     else {
-      $this->route    = $this->intl->r("/help/{0}/{1}", [
-        $this->fs->sanitizeFilename($this->category->title),
-        $this->id
-      ]);
       $this->routeKey = "{$this->category->routeKey}/{0}";
     }
+    $this->route    = $this->intl->r($this->routeKey, $this->routeArgs);
   }
 
 }

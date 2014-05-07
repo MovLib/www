@@ -136,11 +136,8 @@ SQL
     }
     $this->tableName    = "help_subcategories";
     $this->pluralKey    = "categories";
-    $this->route        = $this->intl->r("/help/{0}/{1}", [
-      $this->fs->sanitizeFilename($this->category->title),
-      $this->fs->sanitizeFilename($this->title)
-    ]);
     $this->routeKey     = "{$this->category->routeKey}/{$this->fs->sanitizeFilename($this->title)}";
+    $this->route        = $this->intl->r($this->routeKey);
     $this->singularKey  = "category";
     return parent::init();
   }

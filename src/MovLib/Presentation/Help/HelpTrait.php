@@ -37,12 +37,12 @@ trait HelpTrait {
   protected function getArticleBreadCrumbs() {
     $breadcrumbItems = [
       [ $this->intl->r("/help"), $this->intl->t("Help") ],
-      [ $this->intl->r($this->entity->category->routeKey), $this->entity->category->title ],
+      [ $this->entity->category->route, $this->intl->t($this->entity->category->title) ],
     ];
     if (isset($this->entity->subCategory)) {
-      $breadcrumbItems[] = [ $this->intl->r($this->entity->subCategory->routeKey), $this->entity->subCategory->title ];
+      $breadcrumbItems[] = [ $this->entity->subCategory->route, $this->intl->t($this->entity->subCategory->title) ];
     }
-    $breadcrumbItems[] = [ $this->intl->r("{$this->entity->routeKey}", [ $this->entity->id ]), $this->entity->title ];
+    $breadcrumbItems[] = [ $this->entity->route, $this->entity->title ];
 
     return $breadcrumbItems;
   }
