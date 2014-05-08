@@ -84,7 +84,7 @@ trait MovieTrait {
         $count =  "<span class='fr'>{$this->intl->format("{0,number}", $count)}</span>";
       }
       $items[] = [
-        $this->intl->r("/series/{0}/{$plural}", $this->entity->id),
+        $this->intl->r("/movie/{0}/{$plural}", $this->entity->id),
         "{$title} {$count}",
         [ "class" => "ico ico-{$icon}" ]
       ];

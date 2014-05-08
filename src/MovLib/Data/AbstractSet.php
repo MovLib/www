@@ -234,11 +234,18 @@ abstract class AbstractSet extends \MovLib\Data\AbstractConfig implements \Itera
    * @throws \mysqli_sql_exception
    */
   public function loadIdentifiers(array $ids, $orderBy = null) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($ids)) {
+      throw new \RuntimeException("\$ids cannot be empty, perform empty() check and only call this method if you have identifiers to load.");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     $ids = implode(",", $ids);
     if ($orderBy) {
       $orderBy = "ORDER BY {$orderBy}";
     }
-    return $this->loadEntities("WHERE `id` IN({$ids})", $orderBy);
+    return $this->loadEntities("WHERE `{$this->tableName}`.`id` IN({$ids})", $orderBy);
   }
 
   /**

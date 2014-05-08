@@ -21,6 +21,8 @@ use \MovLib\Core\HTTP\Session;
 use \MovLib\Data\Date;
 use \MovLib\Data\DateTime;
 use \MovLib\Data\Image\ImageResizeEffect;
+use \MovLib\Data\Movie\MovieSet;
+use \MovLib\Data\Series\SeriesSet;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -408,6 +410,72 @@ SQL
     $this->routeArgs            = [ $this->imageFilename ];
     $this->singularKey          = "user";
     return parent::init();
+  }
+
+  /**
+   * Get all rated entities by an unser.
+   *
+   * @param integer $offset [optional]
+   *   The offset, usually provided by the {@see \MovLib\Presentation\PaginationTrait}, defaults to 0.
+   * @param integer $limit [optional]
+   *   The limit (row count), usually provided by the {@see \MovLib\Presentation\PaginationTrait}, defaults to 10.
+   * @return array
+   *   Array containing rated entities with rating and rating timestamp.
+   * @throws \mysqli_sql_exception
+   */
+  public function loadRatedEntities($offset = 0, $limit = 10) {
+    $ratedEntities  = [];
+    $result = $this->getMySQLi()->query(<<<SQL
+(
+SELECT
+  'Movie' AS `entity`,
+  `movies_ratings`.`movie_id` AS `id`,
+  `movies_ratings`.`rating` AS `rating`,
+  `movies_ratings`.`created` AS `created`
+FROM `movies_ratings`
+WHERE `movies_ratings`.`user_id` = {$this->id}
+)
+UNION ALL
+(
+SELECT
+  'Series' AS `entity`,
+  `series_ratings`.`series_id` AS `id`,
+  `series_ratings`.`rating` AS `rating`,
+  `series_ratings`.`created` AS `created`
+FROM `series_ratings`
+WHERE `series_ratings`.`user_id` = {$this->id}
+)
+ORDER BY `created` DESC
+LIMIT {$limit}
+OFFSET {$offset}
+SQL
+    );
+
+    $ratedMovieIds  = [];
+    $ratedSeriesIds = [];
+    while ($row = $result->fetch_object()) {
+      $ratedEntities[] = $row;
+      if ($row->entity == "Movie") {
+        $ratedMovieIds[] = $row->id;
+      }
+      elseif ($row->entity == "Series") {
+        $ratedSeriesIds[] = $row->id;
+      }
+    }
+    $result->free();
+    $ratedMoviesSet = empty($ratedMovieIds) ? [] : (new MovieSet($this->diContainer))->loadIdentifiers($ratedMovieIds);
+    $ratedSeriesSet = empty($ratedSeriesIds) ? [] : (new SeriesSet($this->diContainer))->loadIdentifiers($ratedSeriesIds);
+
+    $c = count($ratedEntities);
+    for ($i = 0; $i < $c; ++$i) {
+      if ($ratedEntities[$i]->entity == "Movie") {
+        $ratedEntities[$i]->entity = $ratedMoviesSet->entities[$ratedEntities[$i]->id];
+      }
+      elseif ($ratedEntities[$i]->entity == "Series") {
+        $ratedEntities[$i]->entity = $ratedSeriesSet->entities[$ratedEntities[$i]->id];
+      }
+    }
+    return $ratedEntities;
   }
 
   /**

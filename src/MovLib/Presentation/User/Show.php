@@ -18,14 +18,19 @@
 namespace MovLib\Presentation\User;
 
 use \MovLib\Data\Date;
+use \MovLib\Data\Movie\Movie;
+use \MovLib\Data\Series\Series;
 use \MovLib\Partial\Date as DatePartial;
 use \MovLib\Partial\Country;
+use \MovLib\Partial\Helper\MovieHelper;
+use \MovLib\Partial\Helper\SeriesHelper;
 use \MovLib\Partial\Time;
 
 /**
  * Public user profile presentation.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -84,21 +89,19 @@ class Show extends \MovLib\Presentation\User\AbstractUserPresenter {
         array_unshift($personalData, "<span property='name'>{$this->entity->realName}</span>");
       }
     }
+    if ($this->entity->website) {
+      $hostname = parse_url($this->entity->website, PHP_URL_HOST);
+      $website  = "<br><a href='{$this->entity->website}' property='url' rel='nofollow' target='_blank'>{$hostname}</a>";
+    }
 
     if ($personalData) {
       $personalData = implode(", ", $personalData);
-      $personalData = "<p>{$personalData}</p>";
-    }
-
-    if ($this->entity->website) {
-      $hostname = parse_url($this->entity->website, PHP_URL_HOST);
-      $website  = "<p><a href='{$this->entity->website}' property='url' rel='nofollow' target='_blank'>{$hostname}</a></p>";
+      $personalData = "<p>{$personalData}{$website}</p>";
     }
 
     // Display additional info about this user after the name and the avatar to the right of it.
     $this->headingAfter =
         $personalData .
-        $website .
         "<small>{$this->intl->t("Joined {date} and was last seen {time}.", [
           "date" => (new DatePartial($this->intl, $this->diContainerHTTP->presenter))->format(new Date($this->entity->created->format('Y-m-d'))),
           "time" => (new Time($this->intl, $this->entity->access))->formatRelative(),
@@ -109,108 +112,66 @@ class Show extends \MovLib\Presentation\User\AbstractUserPresenter {
 
     $this->entity->aboutMe && $this->sectionAdd($this->intl->t("About"), $this->entity->aboutMe);
 
-    if ($this->sections) {
-      return $this->sections;
-    }
-    elseif ($this->session->userId === $this->entity->id) {
-      return $this->callout(
-        $this->intl->t("Would you like to {0}add additional information{1}?", [ "<a href='{$this->intl->r("/profile/account-settings")}'>", "</a>" ]),
-        $this->intl->t("{sitename} doesn’t have further details about you.", [ "sitename" => $this->config->sitename ])
-      );
+
+    // ----------------------------------------------------------------------------------------------------------------- Rating Stream
+
+
+    $ratingStream = null;
+    $ratedEntities = $this->entity->loadRatedEntities();
+    if (empty($ratedEntities)) {
+      if ($this->session->userId === $this->entity->id) {
+        $ratingStream = $this->intl->t(
+          "You haven’t rated a single movie or series yet, use the {0}search{1} to explore movies or series you already know.",
+          [ "<a href='{$this->intl->r("/search")}'>", "</a>" ]
+        );
+      }
+      else {
+        $ratingStream = $this->intl->t(
+          "{username} hasn’t rated a single movie or series yet, that makes us a sad panda.",
+          [ "username" => $this->entity->name ]
+        );
+      }
     }
     else {
-      return $this->callout(
-        $this->intl->t("{sitename} doesn’t have further details about this user.", [ "sitename" => $this->config->sitename ])
-      );
+      $movieHelper  = new MovieHelper($this->diContainerHTTP);
+      $seriesHelper = new SeriesHelper($this->diContainerHTTP);
+      $ratingStream = "<ol class='hover-list no-list'>";
+      $c = count($ratedEntities);
+      for ($i = 0; $i < $c; ++$i) {
+        if ($ratedEntities[$i]->entity instanceof Movie) {
+          $ratingStream .=
+            "<li class='hover-item r'>" .
+              "<article typeof='Movie'>" .
+                "<div class='s s1' property='image'>{$this->img($ratedEntities[$i]->entity->imageGetStyle("s1"))}</div>" .
+                "<div class='s s8'>" .
+                  "<h2 class='para'>{$movieHelper->getStructuredDisplayTitle($ratedEntities[$i]->entity)}</h2>" .
+                  $movieHelper->getStructuredOriginalTitle($ratedEntities[$i]->entity, "small") .
+                "</div>" .
+                "<div class='s s1 rating-mean tac'>{$this->intl->format("{0,number}", $ratedEntities[$i]->rating)}</div>" .
+              "</article>" .
+            "</li>"
+          ;
+        }
+        elseif ($ratedEntities[$i]->entity instanceof Series) {
+          $ratingStream .=
+            "<li class='hover-item r'>" .
+              "<article>" .
+                "<div class='s s1' property='image'></div>" .
+                "<div class='s s8'>" .
+                  "<h2 class='para'>{$seriesHelper->getStructuredDisplayTitle($ratedEntities[$i]->entity)}</h2>" .
+                  $seriesHelper->getStructuredOriginalTitle($ratedEntities[$i]->entity, "small") .
+                "</div>" .
+                "<div class='s s1 rating-mean tac'>{$this->intl->format("{0,number}", $ratedEntities[$i]->rating)}</div>" .
+              "</article>" .
+            "</li>"
+          ;
+        }
+      }
+      $ratingStream .= "</ol>";
     }
 
-
-//
-//    // ----------------------------------------------------------------------------------------------------------------- Rating Stream
-//
-//    $publicProfile .= "<h2>{$this->intl->t("Recently Rated Movies")}</h2>";
-//    if ($this->session->userId === $this->entity->id) {
-//      $noRatingsText = $this->intl->t(
-//        "You haven’t rated a single movie yet, use the {0}search{1} to explore movies you already know.",
-//        [ "<a href='{$this->intl->r("/search")}'>", "</a>" ]
-//      );
-//    }
-//    else {
-//      $noRatingsText = $this->intl->t(
-//        "{username} hasn’t rated a single movie yet, that makes us a sad panda.",
-//        [ "username" => $this->entity->name ]
-//      );
-//    }
-//
-//    $ratings = Movie::getUserRatings($this->user->id);
-//    $ratingStream = null;
-//    /* @var $movie \MovLib\Data\Movie\FullMovie */
-//    while ($movie = $ratings->fetch_object("\\MovLib\\Data\\Movie\\FullMovie")) {
-//      // We have to use different micro-data if display and original title differ.
-//      if ($movie->displayTitle != $movie->originalTitle) {
-//        $displayTitleItemprop = "alternateName";
-//        $movie->originalTitle = "<br><span class='small'>{$this->intl->t("{0} ({1})", [
-//          "<span property='name'{$this->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>",
-//          "<i>{$this->intl->t("original title")}</i>",
-//        ])}</span>";
-//      }
-//      // Simplay clear the original title if it's the same as the display title.
-//      else {
-//        $displayTitleItemprop = "name";
-//        $movie->originalTitle = null;
-//      }
-//      $movie->displayTitle = "<span class='link-color' property='{$displayTitleItemprop}'{$this->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}</span>";
-//
-//      // Append year enclosed in micro-data to display title if available.
-//      if (isset($movie->year)) {
-//        $movie->displayTitle = $this->intl->t("{0} ({1})", [ $movie->displayTitle, "<span property='datePublished'>{$movie->year}</span>" ]);
-//      }
-//
-//      $ratingInfo = null;
-//      $ratingData = $movie->getUserRating($this->user->id);
-//      if ($ratingData !== null) {
-//        $rating = str_repeat("<img alt='' height='20' src='{$this->getURL("asset://star.svg")}' width='24'>", $ratingData["rating"]);
-//        $ratingTime = (new Time($ratingData["created"]))->formatRelative();
-//        $ratingInfo = "<div class ='rating-user tar' title='{$this->intl->t("{user}’s rating", [ "user" => $this->user->name])}'>{$rating}<br><small>{$ratingTime}</small></div>";
-//      }
-//
-//      // Construct the genre listing.
-//      $genres = null;
-//      $result = $movie->getGenres();
-//      $route  = $this->intl->r("/genre/{0}");
-//      while ($row = $result->fetch_assoc()) {
-//        if ($genres) {
-//          $genres .= "&nbsp;";
-//        }
-//        $row["route"] = str_replace("{0}", $row["id"], $route);
-//        $genres      .= "<a class='label' href='{$row["route"]}' property='genre'>{$row["name"]}</a>";
-//      }
-//      if ($genres) {
-//        $genres = "<p class='small'>{$genres}</p>";
-//      }
-//
-//      // Put the movie list entry together.
-//      $ratingStream .=
-//        "<li class='s10' itemtype='http://schema.org/Movie' itemscope>" .
-//          "<div class='hover-item no-link r'>" .
-//            "<div class='s s1 tac'>" .
-//              $this->getImage($movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01), false, [ "property" => "image" ]) .
-//            "</div>" .
-//            $ratingInfo .
-//            "<span class='s s7'><p><a href='{$movie->route}' property='url'>{$movie->displayTitle}</a>{$movie->originalTitle}</p>{$genres}</span>" .
-//          "</a>" .
-//        "</li>"
-//      ;
-//    }
-//
-//    if ($ratingStream) {
-//      $publicProfile .= "<ol class='hover-list no-list'>{$ratingStream}</ol>";
-//    }
-//    else {
-//      $publicProfile .= $this->callout($noRatingsText, $this->intl->t("Nothing Rated"), "info");
-//    }
-//
-//    return $publicProfile;
+    $this->sectionAdd($this->intl->t("Recently Rated"), isset($ratingStream)? $ratingStream : $noRatingsText);
+    return $this->sections;
   }
 
 }
