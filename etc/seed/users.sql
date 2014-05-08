@@ -77,7 +77,8 @@ INSERT INTO `users` SET
   `real_name`          = 'Markus Deutschl',
   `sex`                = 1,
   `language_code`      = 'en',
-  `timezone`           = 'Europe/Vienna'
+  `timezone`           = 'Europe/Vienna',
+  `private`            = 1
 ;
 
 INSERT INTO `users` SET

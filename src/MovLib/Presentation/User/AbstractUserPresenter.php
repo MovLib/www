@@ -32,7 +32,6 @@ use \MovLib\Data\User\User;
 abstract class AbstractUserPresenter extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Partial\SidebarTrait;
   use \MovLib\Partial\SectionTrait;
-  use \MovLib\Partial\InfoboxTrait;
 
   /**
    * The user to present.

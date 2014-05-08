@@ -51,44 +51,38 @@ class Show extends \MovLib\Presentation\User\AbstractUserPresenter {
     // http://schema.org/Person
     $this->schemaType = "Person";
 
-    // Mark the username as additional name.
-    $this->headingSchemaProperty = "additionalName";
+    if ($this->entity->realName && !$this->entity->private) {
+      $this->headingSchemaProperty = "additionalName";
+    }
+    else {
+      $this->headingSchemaProperty = "name";
+    }
 
     // Wrap the complete header content in a row and the heading itself in a span.
     $this->headingBefore = "<div class='r'><div class='s s10'>";
 
     // Create user info.
-    $personalData = null;
+    $personalData = $website = null;
 
-    // Format the user's birthday if available.
-    if ($this->entity->birthdate) {
-      $age = (new DatePartial($this->intl, $this))->getAge($this->entity->birthdate);
-      $personalData[] = "<time datetime='{$this->entity->birthdate}' property='birthDate'>{$age}</time>";
-    }
-    if ($this->entity->sex > 0) {
-      $gender     = $this->entity->sex === 1 ? $this->intl->t("Male") : $this->intl->t("Female");
-      $personalData[] = "<span itemprop='gender'>{$gender}</span>";
-    }
-    if ($this->entity->countryCode) {
-//      $country        = new Country($this->user->countryCode);
-//      $personalData[] = "<span itemprop='nationality'>{$country}</span>";
-    }
+    if (!$this->entity->private) {
+      // Format the user's birthday if available.
+      if ($this->entity->birthdate) {
+        $age = (new DatePartial($this->intl, $this))->getAge($this->entity->birthdate);
+        $personalData[] = "<time datetime='{$this->entity->birthdate}' property='birthDate'>{$age}</time>";
+      }
+      if ($this->entity->sex > 0) {
+        $gender     = $this->entity->sex === 1 ? $this->intl->t("Male") : $this->intl->t("Female");
+        $personalData[] = "<span property='gender'>{$gender}</span>";
+      }
+      if ($this->entity->countryCode) {
+        $country        = (new Country($this->diContainerHTTP))->format($this->entity->countryCode);
+        $personalData[] = "<span property='nationality'>{$country}</span>";
+      }
 
-    // Link the user's real name to the website if we have both properties.
-    if ($this->entity->realName) {
-      // http://microformats.org/wiki/rel-me
-      // http://microformats.org/wiki/rel-nofollow
-      if ($this->entity->website) {
-        array_unshift($personalData, "<a href='{$this->entity->website}' itemprop='url name' rel='me nofollow' target='_blank'>{$this->entity->realName}</a>");
+      // Link the user's real name to the website if we have both properties.
+      if ($this->entity->realName) {
+        array_unshift($personalData, "<span property='name'>{$this->entity->realName}</span>");
       }
-      else {
-        array_unshift($personalData, "<span itemprop='name'>{$this->entity->realName}</span>");
-      }
-    }
-    // If not use the hostname.
-    elseif ($this->entity->website) {
-      $hostname = parse_url($this->entity->website, PHP_URL_HOST);
-      $personalData[] = "<br><a href='{$this->entity->website}' itemprop='url' rel='nofollow' target='_blank'>{$hostname}</a>";
     }
 
     if ($personalData) {
@@ -96,14 +90,21 @@ class Show extends \MovLib\Presentation\User\AbstractUserPresenter {
       $personalData = "<p>{$personalData}</p>";
     }
 
+    if ($this->entity->website) {
+      $hostname = parse_url($this->entity->website, PHP_URL_HOST);
+      $website  = "<p><a href='{$this->entity->website}' property='url' rel='nofollow' target='_blank'>{$hostname}</a></p>";
+    }
+
     // Display additional info about this user after the name and the avatar to the right of it.
     $this->headingAfter =
         $personalData .
+        $website .
         "<small>{$this->intl->t("Joined {date} and was last seen {time}.", [
           "date" => (new DatePartial($this->intl, $this->diContainerHTTP->presenter))->format(new Date($this->entity->created->format('Y-m-d'))),
           "time" => (new Time($this->intl, $this->entity->access))->formatRelative(),
         ])}</small>" .
       "</div>" .
+      $this->img($this->entity->imageGetStyle(), [ "class" => "s s2", "property" => "image" ], false) .
     "</div>";
 
     $this->entity->aboutMe && $this->sectionAdd($this->intl->t("About"), $this->entity->aboutMe);
@@ -149,7 +150,7 @@ class Show extends \MovLib\Presentation\User\AbstractUserPresenter {
 //      if ($movie->displayTitle != $movie->originalTitle) {
 //        $displayTitleItemprop = "alternateName";
 //        $movie->originalTitle = "<br><span class='small'>{$this->intl->t("{0} ({1})", [
-//          "<span itemprop='name'{$this->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>",
+//          "<span property='name'{$this->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>",
 //          "<i>{$this->intl->t("original title")}</i>",
 //        ])}</span>";
 //      }
@@ -158,11 +159,11 @@ class Show extends \MovLib\Presentation\User\AbstractUserPresenter {
 //        $displayTitleItemprop = "name";
 //        $movie->originalTitle = null;
 //      }
-//      $movie->displayTitle = "<span class='link-color' itemprop='{$displayTitleItemprop}'{$this->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}</span>";
+//      $movie->displayTitle = "<span class='link-color' property='{$displayTitleItemprop}'{$this->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}</span>";
 //
 //      // Append year enclosed in micro-data to display title if available.
 //      if (isset($movie->year)) {
-//        $movie->displayTitle = $this->intl->t("{0} ({1})", [ $movie->displayTitle, "<span itemprop='datePublished'>{$movie->year}</span>" ]);
+//        $movie->displayTitle = $this->intl->t("{0} ({1})", [ $movie->displayTitle, "<span property='datePublished'>{$movie->year}</span>" ]);
 //      }
 //
 //      $ratingInfo = null;
@@ -182,7 +183,7 @@ class Show extends \MovLib\Presentation\User\AbstractUserPresenter {
 //          $genres .= "&nbsp;";
 //        }
 //        $row["route"] = str_replace("{0}", $row["id"], $route);
-//        $genres      .= "<a class='label' href='{$row["route"]}' itemprop='genre'>{$row["name"]}</a>";
+//        $genres      .= "<a class='label' href='{$row["route"]}' property='genre'>{$row["name"]}</a>";
 //      }
 //      if ($genres) {
 //        $genres = "<p class='small'>{$genres}</p>";
@@ -193,10 +194,10 @@ class Show extends \MovLib\Presentation\User\AbstractUserPresenter {
 //        "<li class='s10' itemtype='http://schema.org/Movie' itemscope>" .
 //          "<div class='hover-item no-link r'>" .
 //            "<div class='s s1 tac'>" .
-//              $this->getImage($movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01), false, [ "itemprop" => "image" ]) .
+//              $this->getImage($movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01), false, [ "property" => "image" ]) .
 //            "</div>" .
 //            $ratingInfo .
-//            "<span class='s s7'><p><a href='{$movie->route}' itemprop='url'>{$movie->displayTitle}</a>{$movie->originalTitle}</p>{$genres}</span>" .
+//            "<span class='s s7'><p><a href='{$movie->route}' property='url'>{$movie->displayTitle}</a>{$movie->originalTitle}</p>{$genres}</span>" .
 //          "</a>" .
 //        "</li>"
 //      ;
