@@ -40,6 +40,7 @@ return [
   "movies_posters",
   "series",
   "system_pages",
+  "revision_entity_types",
   "users",
 ];
 // @codeCoverageIgnoreEnd
