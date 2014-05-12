@@ -1905,6 +1905,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`revisions` (
   `entity_id` BIGINT UNSIGNED NOT NULL COMMENT 'The entity’s unique identifier, within a type.',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The revision’s datetime.',
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique identifier.',
+  `commit_msg` VARCHAR(255) NOT NULL,
   `data` BLOB NOT NULL COMMENT 'The revision’s data.',
   PRIMARY KEY (`entity_type_id`, `entity_id`, `created`),
   INDEX `fk_revisions_users_idx` (`user_id` ASC),

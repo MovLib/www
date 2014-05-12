@@ -375,6 +375,35 @@ SQL
   }
 
   /**
+   * Get paginated contributions by an user.
+   *
+   * @param integer $offset
+   *   The offset, usually provided by the {@see \MovLib\Presentation\PaginationTrait}, defaults to 0.
+   * @param integer $limit
+   *   The limit (row count), usually provided by the {@see \MovLib\Presentation\PaginationTrait}, defaults to 10.
+   * @return \mysqli_result
+   * @throws \mysqli_sql_exception
+   */
+  public function getContributions($offset, $limit) {
+    return $this->getMySQLi()->query(<<<SQL
+SELECT
+  `revisions`.`commit_msg` AS `commitMessage`,
+  `revisions`.`entity_id` AS `id`,
+  `revisions`.`created` AS `created`,
+  `revision_entity_types`.`name` AS `entityTypeName`,
+  `revision_entity_types`.`class` AS `entityTypeClass`
+FROM `revisions`
+  INNER JOIN `revision_entity_types`
+    ON `revisions`.`entity_type_id` = `revision_entity_types`.`id`
+WHERE `revisions`.`user_id` = {$this->id}
+ORDER BY `created` DESC
+LIMIT {$limit}
+OFFSET {$offset}
+SQL
+    );
+  }
+
+  /**
    * Get the rating for an entity.
    *
    * @param \MovLib\Data\AbstractEntity $entity
@@ -413,7 +442,7 @@ SQL
   }
 
   /**
-   * Get all rated entities by an unser.
+   * Load all rated entities by an user.
    *
    * @param integer $offset [optional]
    *   The offset, usually provided by the {@see \MovLib\Presentation\PaginationTrait}, defaults to 0.

@@ -27,6 +27,7 @@ namespace MovLib\Presentation\User;
  * @since 0.0.1-dev
  */
 final class Contributions extends \MovLib\Presentation\User\AbstractUserPresenter {
+  use \MovLib\Partial\PaginationTrait;
 
   /**
    * {@inheritdoc}
@@ -39,7 +40,29 @@ final class Contributions extends \MovLib\Presentation\User\AbstractUserPresente
    * {@inheritdoc}
    */
   public function getContent(){
-    return $this->checkBackLater("Contributions");
+    $result = $this->entity->getContributions($this->paginationOffset, $this->paginationLimit);
+    if ($result->num_rows > 0) {
+      $contributions = "<ol class='hover-list no-list'>";
+      while ($row = $result->fetch_assoc()) {
+        $contributions .= "<li>{$row["id"]}</li>";
+      }
+      $contributions .= "</ol>";
+      return $contributions;
+    }
+    else {
+      return $this->getNoItemsContent();
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getNoItemsContent() {
+    return $this->callout(
+      "<p>{$this->intl->t("We couldn’t find any contributions by this user")}</p>",
+       $this->intl->t("No Contributions"),
+      "info"
+    );
   }
 
 }

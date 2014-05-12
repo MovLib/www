@@ -41,6 +41,7 @@ return [
   "series",
   "system_pages",
   "revision_entity_types",
+  "revisions",
   "users",
 ];
 // @codeCoverageIgnoreEnd
