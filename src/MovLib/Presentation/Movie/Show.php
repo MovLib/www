@@ -26,6 +26,7 @@ use \MovLib\Partial\Duration;
 use \MovLib\Partial\Genre;
 use \MovLib\Partial\Sex;
 use \MovLib\Partial\StarRatingForm;
+use \MovLib\Partial\Helper\MovieHelper;
 
 /**
  * Defines the movie presentation.
@@ -62,9 +63,10 @@ final class Show extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    $starRating = new StarRatingForm($this->diContainerHTTP, $this->entity);
+    $movieHelper = new MovieHelper($this->diContainerHTTP);
+    $starRating  = new StarRatingForm($this->diContainerHTTP, $this->entity);
     $this->infoboxBefore =
-      "{$this->getStructuredOriginalTitle($this->entity, "p")}{$this->getStructuredTagline($this->entity)}{$starRating}"
+      "{$movieHelper->getStructuredOriginalTitle($this->entity, "p")}{$movieHelper->getStructuredTagline($this->entity)}{$starRating}"
     ;
     $this->infoboxImageRoute = $this->intl->r("/movie/{0}/posters", $this->entity->id);
 

@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Series;
 
 use \MovLib\Data\Series\SeriesSet;
+use \MovLib\Partial\Helper\SeriesHelper;
 
 /**
  * Defines the series index presentation.
@@ -52,6 +53,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * @param \MovLib\Data\Series\Series $series {@inheritdoc}
    */
   public function formatListingItem(\MovLib\Data\AbstractEntity $series, $delta) {
+    $seriesHelper = new SeriesHelper($this->diContainerHTTP);
     return
       "<li class='hover-item r'>" .
         "<article>" .
@@ -61,8 +63,8 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
               "<a class='ico ico-season label' href='{$series->r("/seasons", [ $series->id ])}' title='{$this->intl->t("Seasons")}'>{$series->seasonCount}</a>" .
               "<a class='ico ico-release label' href='{$series->r("/releases", [ $series->id ])}' title='{$this->intl->t("Releases")}'>{$series->releaseCount}</a>" .
             "</div>" .
-            "<h2 class='para'>{$this->getStructuredDisplayTitle($series)}</h2>" .
-            $this->getStructuredOriginalTitle($series, "small") .
+            "<h2 class='para'>{$seriesHelper->getStructuredDisplayTitle($series)}</h2>" .
+            $seriesHelper->getStructuredOriginalTitle($series, "small") .
           "</div>" .
         "</article>" .
       "</li>"

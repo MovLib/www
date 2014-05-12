@@ -20,6 +20,7 @@ namespace MovLib\Presentation\Series;
 use \MovLib\Data\Series\Series;
 use \MovLib\Data\Series\TitleSet;
 use \MovLib\Partial\Date;
+use \MovLib\Partial\Helper\SeriesHelper;
 use \MovLib\Partial\StarRatingForm;
 
 /**
@@ -46,9 +47,10 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function init() {
+    $this->seriesHelper = new SeriesHelper($this->diContainerHTTP);
     $this->entity = new Series($this->diContainerHTTP, $_SERVER["SERIES_ID"]);
     $this
-      ->initPage($this->entity->displayTitle, $this->getStructuredDisplayTitle($this->entity, false, true))
+      ->initPage($this->entity->displayTitle, $this->seriesHelper->getStructuredDisplayTitle($this->entity, false, true))
       ->initShow($this->entity, $this->intl->tp(-1, "Series"), "Series", null, $this->getSidebarItems())
     ;
     return $this;
@@ -60,7 +62,7 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
   public function getContent() {
     $starRating = new StarRatingForm($this->diContainerHTTP, $this->entity);
     $this->infoboxBefore =
-      "{$this->getStructuredOriginalTitle($this->entity, "p")}{$starRating}"
+      "{$this->seriesHelper->getStructuredOriginalTitle($this->entity, "p")}{$starRating}"
     ;
 
     $this->entity->startYear && $this->infoboxAdd($this->intl->t("From"), (new Date($this->intl, $this))->format($this->entity->startYear));

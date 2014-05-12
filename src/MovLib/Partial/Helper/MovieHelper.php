@@ -31,6 +31,39 @@ use \MovLib\Partial\Date;
 final class MovieHelper extends \MovLib\Core\Presentation\DependencyInjectionBase {
 
   /**
+   * Get the movie's genres formatted as labels.
+   *
+   * @param array|null $genres
+   *   The genres to format as labels.
+   * @param array $attributes [optional]
+   *   Additional attributes that should be applied to <var>$tag</var>, defaults to an empty array.
+   * @param string $tag [optional]
+   *   The tag used to enclose the labels, defaults to <code>"small"</code>.
+   * @param string $labelTag [optional]
+   *   The HTML tag that should be used for the label, defaults to <code>"h3"</code>.
+   * @param boolean $hideLabel [optional]
+   *   Whether to hide the label or not, defaults to <code>TRUE</code> (hide the label).
+   * @return string
+   *   The movie's genres formatted as labels, or <code>NULL</code> if there were no genres to format.
+   */
+  final public function getGenreLabels($genres, array $attributes = null, $tag = "section", $labelTag = "h3", $hideLabel = true) {
+    if ($genres) {
+      $formatted = null;
+      /* @var $genre \MovLib\Data\Genre\Genre */
+      foreach ($genres as $genre) {
+        if ($formatted) {
+          $formatted .= " ";
+        }
+        $formatted .= "<a class='label' href='{$genre->route}' property='genre'>{$genre->name}</a>";
+      }
+      if ($formatted) {
+        $hideLabel = $hideLabel ? " class='vh'" : null;
+        return "<{$tag}{$this->expandTagAttributes($attributes)}><{$labelTag}{$hideLabel}>{$this->intl->t("{0}:", $this->intl->t("Genres"))}</{$labelTag}> {$formatted}</{$tag}>";
+      }
+    }
+  }
+
+  /**
    * Get the movie's display title enhanced with structured data.
    *
    * @param \MovLib\Data\Movie\Movie $movie
@@ -87,4 +120,23 @@ final class MovieHelper extends \MovLib\Core\Presentation\DependencyInjectionBas
     }
   }
 
+  /**
+   * Get the movie's tagline enhanced with structured data.
+   *
+   * @param \MovLib\Data\Movie\Movie $movie
+   *   The movie to get the tagline for.
+   * @param array $attributes [optional]
+   *   Additional attributes that should be applied to the tagline.
+   * @param string $tag [optional]
+   *   The HTML tag used to wrap the tagline.
+   * @return string
+   *   The movie's tagline enhanced with structured data, <code>NULL</code> if there is no tagline to format.
+   */
+  final public function getStructuredTagline(\MovLib\Data\Movie\Movie $movie, array $attributes = [], $tag = "blockquote") {
+    if ($movie->tagline) {
+      $attributes["lang"]     = $movie->taglineLanguageCode;
+      $attributes["property"] = "headline";
+      return "<{$tag}{$this->expandTagAttributes($attributes)}>{$movie->tagline}</{$tag}>";
+    }
+  }
 }

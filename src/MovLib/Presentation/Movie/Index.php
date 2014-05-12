@@ -19,6 +19,7 @@ namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Movie\MovieSet;
 use \MovLib\Partial\Genre;
+use \MovLib\Partial\Helper\MovieHelper;
 
 /**
  * Defines the movie index presentation.
@@ -56,13 +57,14 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    */
   protected function formatListingItem(\MovLib\Data\AbstractEntity $movie, $id) {
     /* @var $movie \MovLib\Data\Movie\Movie */
+    $movieHelper = new MovieHelper($this->diContainerHTTP);
     return
       "<li class='hover-item r'>" .
         "<article typeof='Movie'>" .
           "<div class='s s1' property='image'>{$this->img($movie->imageGetStyle("s1"))}</div>" .
           "<div class='s s8'>" .
-            "<h2 class='para'>{$this->getStructuredDisplayTitle($movie)}</h2>" .
-            $this->getStructuredOriginalTitle($movie, "small") .
+            "<h2 class='para'>{$movieHelper->getStructuredDisplayTitle($movie)}</h2>" .
+            $movieHelper->getStructuredOriginalTitle($movie, "small") .
             (new Genre($this->diContainerHTTP))->getLabels($movie->genreSet, [ "class" => "small" ]) .
           "</div>" .
           "<div class='s s1 rating-mean tac'>{$this->intl->format("{0,number}", $movie->meanRating)}</div>" .

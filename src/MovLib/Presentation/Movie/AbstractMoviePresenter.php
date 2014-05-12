@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Movie\Movie;
+use \MovLib\Partial\Helper\MovieHelper;
 
 /**
  * Base class for most movie presentations.
@@ -65,9 +66,10 @@ abstract class AbstractMoviePresenter extends \MovLib\Presentation\AbstractPrese
         : $this->entity->displayTitleAndYear
     ;
 
-    $pageTitle = $pageTitle
-      ? str_replace("{title}", $this->getStructuredDisplayTitle($this->entity), $pageTitle)
-      : $this->getStructuredDisplayTitle($this->entity, false)
+    $movieHelper = new MovieHelper($this->diContainerHTTP);
+    $pageTitle   = $pageTitle
+      ? str_replace("{title}", $movieHelper->getStructuredDisplayTitle($this->entity), $pageTitle)
+      : $movieHelper->getStructuredDisplayTitle($this->entity, false)
     ;
     $breadcrumbTitle && $breadcrumbTitle = str_replace("{title}", $this->entity->displayTitleAndYear, $breadcrumbTitle);
 
