@@ -35,6 +35,17 @@ final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity impleme
   use \MovLib\Data\RatingTrait;
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * The entity type used to store revisions.
+   *
+   * @var int
+   */
+  const REVISION_ENTITY_TYPE = 1;
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 

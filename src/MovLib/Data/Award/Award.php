@@ -34,6 +34,17 @@ use \MovLib\Exception\ClientException\NotFoundException;
 final class Award extends \MovLib\Data\AbstractEntity {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * The entity type used to store revisions.
+   *
+   * @var int
+   */
+  const REVISION_ENTITY_TYPE = 6;
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 

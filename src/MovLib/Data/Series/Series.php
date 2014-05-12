@@ -36,6 +36,13 @@ class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Data\RatingI
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
+  
+  /**
+   * The entity type used to store revisions.
+   *
+   * @var int
+   */
+  const REVISION_ENTITY_TYPE = 2;
 
   /**
    * Unknown status.

@@ -31,6 +31,17 @@ use \MovLib\Exception\ClientException\NotFoundException;
 final class Genre extends \MovLib\Data\AbstractEntity {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * The entity type used to store revisions.
+   *
+   * @var int
+   */
+  const REVISION_ENTITY_TYPE = 9;
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 

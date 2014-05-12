@@ -29,48 +29,69 @@ TRUNCATE TABLE `revision_entity_types`;
 -- START "Revision Entity Types"
 
 INSERT INTO `revision_entity_types` SET
-  `id`   = 1,
-  `name` = 'Movie'
+  `id`    = 1,
+  `name`  = 'Movie',
+  `class` = '\\Data\\Movie\\Movie'
 ;
 
 INSERT INTO `revision_entity_types` SET
-  `id`   = 2,
-  `name` = 'Series'
+  `id`    = 2,
+  `name`  = 'Series',
+  `class` = '\\Data\\Series\\Series'
 ;
 
 INSERT INTO `revision_entity_types` SET
-  `id`   = 3,
-  `name` = 'Release'
+  `id`    = 3,
+  `name`  = 'Release',
+  `class` = '\\Data\\Release\\Release'
 ;
 
 INSERT INTO `revision_entity_types` SET
-  `id`   = 4,
-  `name` = 'Person'
+  `id`    = 4,
+  `name`  = 'Person',
+  `class` = '\\Data\\Person\\Person'
 ;
 
 INSERT INTO `revision_entity_types` SET
-  `id`   = 5,
-  `name` = 'Company'
+  `id`    = 5,
+  `name`  = 'Company',
+  `class` = '\\Data\\Company\\Company'
 ;
 
 INSERT INTO `revision_entity_types` SET
-  `id`   = 6,
-  `name` = 'Award'
+  `id`    = 6,
+  `name`  = 'Award',
+  `class` = '\\Data\\Award\\Award'
 ;
 
 INSERT INTO `revision_entity_types` SET
-  `id`   = 7,
-  `name` = 'Event'
+  `id`    = 7,
+  `name`  = 'Award Category',
+  `class` = '\\Data\\Award\\Category'
 ;
 
 INSERT INTO `revision_entity_types` SET
-  `id`   = 8,
-  `name` = 'Genre'
+  `id`    = 8,
+  `name`  = 'Event',
+  `class` = '\\Data\\Event\\Event'
 ;
 
 INSERT INTO `revision_entity_types` SET
-  `id`   = 9,
-  `name` = 'Job'
+  `id`    = 9,
+  `name`  = 'Genre',
+  `class` = '\\Data\\Genre\\Genre'
+;
+
+INSERT INTO `revision_entity_types` SET
+  `id`   = 10,
+  `name` = 'Job',
+  `class` = '\\Data\\Job\\Job'
+;
+
+INSERT INTO `revision_entity_types` SET
+  `id`   = 11,
+  `name` = 'Help Article',
+  `class` = '\\Data\\Help\\Article'
 ;
 
 -- END "Revision Entity Types"

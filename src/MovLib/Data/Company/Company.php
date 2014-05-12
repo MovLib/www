@@ -34,6 +34,17 @@ use \MovLib\Data\Place\Place;
 final class Company extends \MovLib\Data\Image\AbstractImageEntity {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * The entity type used to store revisions.
+   *
+   * @var int
+   */
+  const REVISION_ENTITY_TYPE = 5;
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 

@@ -35,6 +35,17 @@ use \MovLib\Exception\ClientException\NotFoundException;
 class Event extends \MovLib\Data\AbstractEntity {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * The entity type used to store revisions.
+   *
+   * @var int
+   */
+  const REVISION_ENTITY_TYPE = 8;
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 

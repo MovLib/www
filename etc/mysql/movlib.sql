@@ -1890,6 +1890,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`revision_entity_types` (
   `id` BIGINT UNSIGNED NOT NULL COMMENT 'The revision entity type’s unique identifier.',
   `name` VARCHAR(255) NOT NULL COMMENT 'The revision entity type’s name, e.g. Movie.',
+  `class` VARCHAR(255) NOT NULL COMMENT 'The revision entity type’s class name including namespace.',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 COMMENT = 'Table containing all available revision entity types.';

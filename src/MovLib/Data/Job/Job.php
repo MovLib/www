@@ -33,6 +33,17 @@ use \MovLib\Partial\Sex;
 class Job extends \MovLib\Data\AbstractEntity {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * The entity type used to store revisions.
+   *
+   * @var int
+   */
+  const REVISION_ENTITY_TYPE = 10;
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
   /**

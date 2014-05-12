@@ -33,6 +33,17 @@ use \MovLib\Exception\ClientException\NotFoundException;
 final class Article extends \MovLib\Data\AbstractEntity {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * The entity type used to store revisions.
+   *
+   * @var int
+   */
+  const REVISION_ENTITY_TYPE = 11;
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
