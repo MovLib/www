@@ -135,6 +135,7 @@ class Show extends \MovLib\Presentation\User\AbstractUserPresenter {
     else {
       $movieHelper  = new MovieHelper($this->diContainerHTTP);
       $seriesHelper = new SeriesHelper($this->diContainerHTTP);
+
       $ratingStream = "<ol class='hover-list no-list'>";
       $c = count($ratedEntities);
       for ($i = 0; $i < $c; ++$i) {
@@ -146,6 +147,7 @@ class Show extends \MovLib\Presentation\User\AbstractUserPresenter {
                 "<div class='s s8'>" .
                   "<h2 class='para'>{$movieHelper->getStructuredDisplayTitle($ratedEntities[$i]->entity)}</h2>" .
                   $movieHelper->getStructuredOriginalTitle($ratedEntities[$i]->entity, "small") .
+                  $this->intl->t("Rated: {0}", [ (new Time($this->intl, $ratedEntities[$i]->created))->formatRelative() ]) .
                 "</div>" .
                 "<div class='s s1 rating-mean tac'>{$this->intl->format("{0,number}", $ratedEntities[$i]->rating)}</div>" .
               "</article>" .
@@ -160,6 +162,7 @@ class Show extends \MovLib\Presentation\User\AbstractUserPresenter {
                 "<div class='s s8'>" .
                   "<h2 class='para'>{$seriesHelper->getStructuredDisplayTitle($ratedEntities[$i]->entity)}</h2>" .
                   $seriesHelper->getStructuredOriginalTitle($ratedEntities[$i]->entity, "small") .
+                  $this->intl->t("Rated: {0}", [ (new Time($this->intl, $ratedEntities[$i]->created))->formatRelative() ]) .
                 "</div>" .
                 "<div class='s s1 rating-mean tac'>{$this->intl->format("{0,number}", $ratedEntities[$i]->rating)}</div>" .
               "</article>" .
