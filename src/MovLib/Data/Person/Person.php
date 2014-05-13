@@ -432,9 +432,9 @@ SQL
         $seriesIds[$row->seriesId] = true;
       }
       // Keep track of the wins in the respective event categories to maintain their association.
-      $eventCategorywins[$row->eventId][$row->awardCategoryId]["movie"]  = $row->movieId;
-      $eventCategorywins[$row->eventId][$row->awardCategoryId]["series"] = $row->seriesId;
-      $eventCategorywins[$row->eventId][$row->awardCategoryId]["won"]    = $row->won;
+      $eventCategorywins[$row->eventId][$row->awardCategoryId]["movie"]  = isset($row->movieId) ? (integer) $row->movieId : null;
+      $eventCategorywins[$row->eventId][$row->awardCategoryId]["series"] = isset($row->seriesId) ? (integer) $row->seriesId : null;
+      $eventCategorywins[$row->eventId][$row->awardCategoryId]["won"]    = (integer) $row->won;
     }
 
     // No awards found, return the empty set.
