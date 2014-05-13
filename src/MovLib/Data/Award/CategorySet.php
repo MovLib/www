@@ -35,7 +35,7 @@ final class CategorySet extends \MovLib\Data\AbstractSet {
     return <<<SQL
 SELECT
   `awards_categories`.`id` AS `id`,
-  `awards_categories`.`award_id` AS `award`,
+  `awards_categories`.`award_id` AS `awardId`,
   `awards_categories`.`changed` AS `changed`,
   `awards_categories`.`created` AS `created`,
   `awards_categories`.`deleted` AS `deleted`,

@@ -170,7 +170,7 @@ abstract class AbstractSet extends \MovLib\Data\AbstractConfig implements \Itera
   protected function loadEntities($where = null, $orderBy = null) {
     $result = $this->getMySQLi()->query($this->getEntitiesQuery($where, $orderBy));
     /* @var $entity \MovLib\Data\AbstractEntity */
-    while ($entity = $result->fetch_object($this->entityClassName, [ $this->diContainer ])) {
+    while ($entity = $result->fetch_object($this->entityClassName, [ $this->diContainer, null, false ])) {
       $this->entities[$entity->id] = $entity;
     }
     $result->free();

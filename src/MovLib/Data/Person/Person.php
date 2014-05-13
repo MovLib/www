@@ -17,6 +17,11 @@
  */
 namespace MovLib\Data\Person;
 
+use \MovLib\Data\Award\AwardSet;
+use \MovLib\Data\Award\CategorySet;
+use \MovLib\Data\Event\EventSet;
+use \MovLib\Data\Movie\MovieSet;
+use \MovLib\Data\Series\SeriesSet;
 use \MovLib\Data\Date;
 use \MovLib\Exception\ClientException\NotFoundException;
 
@@ -359,6 +364,138 @@ ORDER BY `alias`{$this->collations[$this->intl->languageCode]} ASC
 SQL
     );
     return array_column($result->fetch_all(), 0);
+  }
+
+  /**
+   * Get the person's award wins and nominations.
+   *
+   * @return \MovLib\Data\Award\AwardSet
+   */
+  public function getAwards() {
+    $awards = new AwardSet($this->diContainer);
+
+    $result = $this->getMySQLi()->query(<<<SQL
+(
+  SELECT
+    `award_category_id` AS `awardCategoryId`,
+    `award_id` AS `awardId`,
+    `event_id` AS `eventId`,
+    `movie_id` AS `movieId`,
+    NULL AS `seriesId`,
+    `won`
+  FROM `movies_awards`
+  WHERE `person_id` <=> {$this->id}
+)
+UNION ALL
+(
+  SELECT
+    `award_category_id` AS `awardCategoryId`,
+    `award_id` AS `awardId`,
+    `event_id` AS `eventId`,
+    NULL AS `movieId`,
+    `series_id` AS `seriesId`,
+    `won`
+  FROM `series_awards`
+  WHERE `person_id` <=> {$this->id}
+)
+UNION ALL
+(
+  SELECT
+    `award_category_id` AS `awardCategoryId`,
+    `award_id` AS `awardId`,
+    `event_id` AS `eventId`,
+    NULL AS `movieId`,
+    NULL AS `seriesId`,
+    `won`
+  FROM `persons_awards`
+  WHERE `person_id` = {$this->id}
+)
+SQL
+    );
+
+    // Gather the identifiers in order to load the appropriate entitites into the sets.
+    $awardIds          = [];
+    $awardCategoryIds  = [];
+    $eventIds          = [];
+    $movieIds          = null;
+    $seriesIds         = null;
+    $eventCategorywins = [];
+    while ($row = $result->fetch_object()) {
+      $awardIds[$row->awardId]                                           = true;
+      $awardCategoryIds[$row->awardCategoryId]                           = true;
+      $eventIds[$row->eventId]                                           = true;
+      if (isset($row->movieId)) {
+        $movieIds[$row->movieId] = true;
+      }
+      if (isset($row->seriesId)) {
+        $seriesIds[$row->seriesId] = true;
+      }
+      // Keep track of the wins in the respective event categories to maintain their association.
+      $eventCategorywins[$row->eventId][$row->awardCategoryId]["movie"]  = $row->movieId;
+      $eventCategorywins[$row->eventId][$row->awardCategoryId]["series"] = $row->seriesId;
+      $eventCategorywins[$row->eventId][$row->awardCategoryId]["won"]    = $row->won;
+    }
+
+    // No awards found, return the empty set.
+    if (empty($awardIds)) {
+      return $awards;
+    }
+
+    // Load all awards.
+    $awards->loadIdentifiers(array_keys($awardIds), "`name`{$this->collations[$this->intl->languageCode]} ASC");
+
+    // Load all events, regardless of the award.
+    $events = new EventSet($this->diContainer);
+    $events->loadIdentifiers(array_keys($eventIds), "`start_date` DESC");
+
+    // Load all award categories regardless of the event.
+    $categories = new CategorySet($this->diContainer);
+    $categoryOrder = <<<SQL
+IFNULL(
+  COLUMN_GET(`dyn_names`, '{$this->intl->languageCode}' AS CHAR(255)),
+  COLUMN_GET(`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR(255))
+){$this->collations[$this->intl->languageCode]} ASC
+SQL
+    ;
+    $categories->loadIdentifiers(array_keys($awardCategoryIds), $categoryOrder);
+
+    // Load all movies, if any.
+    $movies = new MovieSet($this->diContainer);
+    if (isset($movieIds)) {
+      $movies->loadIdentifiers(array_keys($movieIds));
+    }
+
+    // Load all series, if any.
+    $series = new SeriesSet($this->diContainer);
+    if (isset($seriesIds)) {
+      $series->loadIdentifiers(array_keys($seriesIds));
+    }
+
+    // Fill the awards with the appropriate events and categories.
+    /* @var $event \MovLib\Data\Event\Event */
+    foreach ($events as $eventId => $event) {
+      // Events are pretty straight forward.
+      if (empty($awards->entities[$event->award]->events)) {
+        $awards->entities[$event->award]->events = new EventSet($this->diContainer);
+      }
+      $awards->entities[$event->award]->events->entities[$eventId] = $event;
+
+      $awards->entities[$event->award]->events->entities[$eventId]->categories = new CategorySet($this->diContainer);
+
+      // Get the event -> category association from the array constructed above.
+      foreach ($eventCategorywins[$eventId] as $categoryId => $categoryProperties) {
+        $awards->entities[$event->award]->events->entities[$eventId]->categories->entities[$categoryId] = $categories->entities[$categoryId];
+        if (isset($categoryProperties["movie"])) {
+          $awards->entities[$event->award]->events->entities[$eventId]->categories->entities[$categoryId]->movie = $movies->entities[$categoryProperties["movie"]];
+        }
+        if (isset($categoryProperties["series"])) {
+          $awards->entities[$event->award]->events->entities[$eventId]->categories->entities[$categoryId]->series = $series->entities[$categoryProperties["series"]];
+        }
+        $awards->entities[$event->award]->events->entities[$eventId]->categories->entities[$categoryId]->won = $categoryProperties["won"];
+      }
+    }
+
+    return $awards;
   }
 
   /**

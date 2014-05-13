@@ -84,6 +84,13 @@ final class Award extends \MovLib\Data\AbstractEntity {
   public $eventCount;
 
   /**
+   * The awards events.
+   *
+   * @var \MovLib\Data\Event\EventSet
+   */
+  public $events;
+
+  /**
    * The award's first event year.
    *
    * @var null|\MovLib\Data\Date

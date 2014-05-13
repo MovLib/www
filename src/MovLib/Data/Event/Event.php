@@ -64,6 +64,13 @@ class Event extends \MovLib\Data\AbstractEntity {
   public $award;
 
   /**
+   * The event's award categories.
+   *
+   * @var \MovLib\Data\Award\CategorySet
+   */
+  public $categories;
+
+  /**
    * The timestamp on which this event was changed.
    *
    * @var integer
@@ -352,9 +359,9 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
-    if (isset($this->award) && !$this->award instanceof \stdClass) {
-      $this->award = new Award($this->diContainer, $this->award);
-    }
+//    if (isset($this->award) && !$this->award instanceof \stdClass) {
+//      $this->award = new Award($this->diContainer, $this->award);
+//    }
     $this->place     && $this->place = new Place($this->diContainer, $this->place);
     $this->aliases   && ($this->aliases = unserialize(($this->aliases)));
     $this->links     && ($this->links = unserialize($this->links));

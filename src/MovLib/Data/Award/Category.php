@@ -55,6 +55,13 @@ final class Category extends \MovLib\Data\AbstractEntity {
   public $award;
 
   /**
+   * The category's award identifier.
+   *
+   * @var integer
+   */
+  public $awardId;
+
+  /**
    * The category's company count.
    *
    * @var null|integer
@@ -76,11 +83,26 @@ final class Category extends \MovLib\Data\AbstractEntity {
   public $description;
 
   /**
+   * The category's event.
+   *
+   * @var mixed
+   */
+  public $event;
+
+  /**
    * The category's first year.
    *
    * @var null|\MovLib\Data\Date
    */
   public $firstYear;
+
+  /**
+   * Flag determining if an award should be instanitated
+   * (needed for preventing unnecessary instantiations in fetch_object()).
+   *
+   * @var boolean
+   */
+  protected $initAward;
 
   /**
    * The category's last year.
@@ -149,10 +171,13 @@ final class Category extends \MovLib\Data\AbstractEntity {
    *   {@inheritdoc}
    * @param integer $id [optional]
    *   The category's unique identifier to instantiate, defaults to <code>NULL</code> (no category will be loaded).
+   * @param mixed $initAward [optional]
+   *   Whether to instantiate an award object or not, defaults to <code>TRUE</code>
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null) {
+  public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null, $initAward = true) {
     parent::__construct($diContainer);
+    $this->initAward = $initAward;
     if ($id) {
       $stmt = $this->getMySQLi()->prepare(<<<SQL
 SELECT
@@ -183,7 +208,7 @@ SQL
       $stmt->execute();
       $stmt->bind_result(
         $this->id,
-        $this->award,
+        $this->awardId,
         $this->changed,
         $this->created,
         $this->defaultName,
@@ -327,8 +352,8 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
-    if (isset($this->award) && !$this->award instanceof \MovLib\Data\Award\Award) {
-      $this->award = new Award($this->diContainer, $this->award);
+    if ($this->initAward === true && isset($this->awardId)) {
+      $this->award = new Award($this->diContainer, $this->awardId);
     }
     if (isset($this->firstYear) && !$this->firstYear instanceof \stdClass) {
       $this->firstYear = new Date($this->firstYear);
@@ -336,8 +361,8 @@ SQL
     if (isset($this->lastYear) && !$this->lastYear instanceof \stdClass) {
       $this->lastYear = new Date($this->lastYear);
     }
-    $this->routeArgs      = [ $this->award->id, $this->id ];
-    $this->routeIndex     = $this->intl->r("/award/{0}/categories", $this->award->id);
+    $this->routeArgs      = [ $this->awardId, $this->id ];
+    $this->routeIndex     = $this->intl->r("/award/{0}/categories", $this->awardId);
     return parent::init();
   }
 
