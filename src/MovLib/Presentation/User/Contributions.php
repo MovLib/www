@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\User;
 
+use \MovLib\Partial\Time;
+
 /**
  * Defines the user contribution presentation object.
  *
@@ -44,7 +46,19 @@ final class Contributions extends \MovLib\Presentation\User\AbstractUserPresente
     if ($result->num_rows > 0) {
       $contributions = "<ol class='hover-list no-list'>";
       while ($row = $result->fetch_assoc()) {
-        $contributions .= "<li>{$row["id"]}</li>";
+        $entity = new $row["entityClass"]($this->diContainerHTTP, $row["entityId"]);
+        $contributions .=
+          "<li class='hover-item r'>" .
+            "<div class='s s8'>" .
+              "<h2 class='para'>{$row["entityType"]}: <a href='{$entity->route}'>{$this->htmlDecode($entity->$row["entityNameProperty"])}</a></h2>" .
+              "<p>{$this->htmlDecode($row["commitMessage"])}</p>" .
+            "</div>" .
+            "<div class='s s2 tar'>" .
+              "<p>" . (new Time($this->intl, $row["created"]))->formatRelative() . "</p>" .
+              "<p><a href='{$entity->route}/{$this->intl->t("history")}/{$row["revisionHash"]}'>{$this->intl->t("show diff")}</a></p>" .
+            "</div>" .
+          "</li>"
+        ;
       }
       $contributions .= "</ol>";
       return $contributions;

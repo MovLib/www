@@ -1889,8 +1889,9 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`revision_entity_types` (
   `id` BIGINT UNSIGNED NOT NULL COMMENT 'The revision entity type’s unique identifier.',
-  `name` VARCHAR(255) NOT NULL COMMENT 'The revision entity type’s name, e.g. Movie.',
   `class` VARCHAR(255) NOT NULL COMMENT 'The revision entity type’s class name including namespace.',
+  `name_property` VARCHAR(255) NOT NULL COMMENT 'The property containing the title of the entity.',
+  `type` VARCHAR(255) NOT NULL COMMENT 'The revision entity type’s name, e.g. Movie.',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 COMMENT = 'Table containing all available revision entity types.';
@@ -1903,7 +1904,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`revisions` (
   `entity_type_id` BIGINT UNSIGNED NOT NULL COMMENT 'The revision entity type’s unique identifier.',
   `entity_id` BIGINT UNSIGNED NOT NULL COMMENT 'The entity’s unique identifier, within a type.',
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The revision’s datetime.',
+  `created` DATETIME NOT NULL COMMENT 'The revision’s datetime.',
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique identifier.',
   `commit_msg` VARCHAR(255) NOT NULL,
   `data` BLOB NOT NULL COMMENT 'The revision’s data.',

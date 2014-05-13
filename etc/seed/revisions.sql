@@ -31,24 +31,27 @@ TRUNCATE TABLE `revisions`;
 INSERT INTO `revisions` SET
   `entity_type_id` = 1,
   `entity_id`      = 2,
+  `created`        = CURRENT_TIMESTAMP,
   `user_id`        = 3,
-  `commit_msg`     = 'Edited Movie: Big Buck Bunny (2008)',
+  `commit_msg`     = 'Added german title.',
   `data`           = 'a:0:{}'
 ;
 
 INSERT INTO `revisions` SET
   `entity_type_id` = 4,
   `entity_id`      = 6,
+  `created`        = CURRENT_TIMESTAMP,
   `user_id`        = 3,
-  `commit_msg`     = 'Edited Person: Sacha Goedegebure',
+  `commit_msg`     = 'Added Wikipedia link.',
   `data`           = 'a:0:{}'
 ;
 
 INSERT INTO `revisions` SET
   `entity_type_id` = 5,
   `entity_id`      = 3,
+  `created`        = CURRENT_TIMESTAMP,
   `user_id`        = 3,
-  `commit_msg`     = 'Edited Company: Castle Rock Entertainment',
+  `commit_msg`     = 'Changed description.',
   `data`           = 'a:0:{}'
 ;
 

@@ -388,10 +388,12 @@ SQL
     return $this->getMySQLi()->query(<<<SQL
 SELECT
   `revisions`.`commit_msg` AS `commitMessage`,
-  `revisions`.`entity_id` AS `id`,
+  `revisions`.`entity_id` AS `entityId`,
   `revisions`.`created` AS `created`,
-  `revision_entity_types`.`name` AS `entityTypeName`,
-  `revision_entity_types`.`class` AS `entityTypeClass`
+  md5(`revisions`.`created`) AS `revisionHash`,
+  `revision_entity_types`.`type` AS `entityType`,
+  `revision_entity_types`.`class` AS `entityClass`,
+  `revision_entity_types`.`name_property` AS `entityNameProperty`
 FROM `revisions`
   INNER JOIN `revision_entity_types`
     ON `revisions`.`entity_type_id` = `revision_entity_types`.`id`
