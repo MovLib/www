@@ -19,6 +19,7 @@ namespace MovLib\Data\Event;
 
 use \MovLib\Data\Award\Award;
 use \MovLib\Data\Date;
+use \MovLib\Data\Revision;
 use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Data\Place\Place;
 use \MovLib\Exception\ClientException\NotFoundException;
@@ -32,7 +33,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Event extends \MovLib\Data\AbstractEntity {
+class Event extends \MovLib\Data\AbstractEntity implements \MovLib\Data\RevisionInterface {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -353,6 +354,17 @@ SQL
     $this->updateAwardYears();
 
     return $this->init();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getRevisionInfo() {
+    return new Revision(
+      $this->name,
+      $this->route,
+      $this->intl->t("Event")
+    );
   }
 
   /**

@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\Release;
 
+use \MovLib\Data\Revision;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -29,7 +30,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Event extends \MovLib\Data\AbstractEntity {
+class Event extends \MovLib\Data\AbstractEntity implements \MovLib\Data\RevisionInterface {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -238,6 +239,17 @@ SQL
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getRevisionInfo() {
+    return new Revision(
+      $this->title,
+      $this->route,
+      $this->intl->t("Release")
+    );
+  }
 
   /**
    * {@inheritdoc}

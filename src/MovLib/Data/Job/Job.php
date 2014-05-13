@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\Job;
 
+use \MovLib\Data\Revision;
 use \MovLib\Exception\ClientException\NotFoundException;
 use \MovLib\Partial\Sex;
 
@@ -30,7 +31,7 @@ use \MovLib\Partial\Sex;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Job extends \MovLib\Data\AbstractEntity {
+class Job extends \MovLib\Data\AbstractEntity implements \MovLib\Data\RevisionInterface {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -329,6 +330,17 @@ SQL
       "ssd",
       [ $this->intl->languageCode, $this->intl->languageCode, $this->id ]
     )->get_result();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getRevisionInfo() {
+    return new Revision(
+      $this->names[Sex::UNKNOWN],
+      $this->route,
+      $this->intl->t("Job")
+    );
   }
 
   /**

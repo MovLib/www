@@ -18,6 +18,7 @@
 namespace MovLib\Data\Movie;
 
 use \MovLib\Data\Date;
+use \MovLib\Data\Revision;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -31,7 +32,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity implements \MovLib\Data\RatingInterface {
+final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity implements \MovLib\Data\RatingInterface, \MovLib\Data\RevisionInterface {
   use \MovLib\Data\RatingTrait;
 
 
@@ -395,7 +396,6 @@ SQL
     return $this->init();
   }
 
-
   /**
    * Get the movie's countries.
    *
@@ -411,6 +411,17 @@ SQL
     }
     $result->free();
     return $this->countries;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getRevisionInfo() {
+    return new Revision(
+      $this->displayTitleAndYear,
+      $this->route,
+      $this->intl->t("Movie")
+    );
   }
 
   /**

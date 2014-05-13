@@ -26,33 +26,62 @@
 
 TRUNCATE TABLE `revisions`;
 
--- START "Revision Entity Types"
+-- START "Revisions"
 
 INSERT INTO `revisions` SET
-  `entity_type_id` = 1,
-  `entity_id`      = 2,
-  `created`        = CURRENT_TIMESTAMP,
-  `user_id`        = 3,
-  `commit_msg`     = 'Added german title.',
-  `data`           = 'a:0:{}'
+  `entity_type_id`           = 1,
+  `entity_id`                = 2,
+  `created`                  = CURRENT_TIMESTAMP,
+  `user_id`                  = 3,
+  `commit_msg`               = 'Added german title.',
+  `commit_msg_language_code` = 'en',
+  `data`                     = 'a:0:{}'
 ;
 
 INSERT INTO `revisions` SET
-  `entity_type_id` = 4,
-  `entity_id`      = 6,
-  `created`        = CURRENT_TIMESTAMP,
-  `user_id`        = 3,
-  `commit_msg`     = 'Added Wikipedia link.',
-  `data`           = 'a:0:{}'
+  `entity_type_id`           = 4,
+  `entity_id`                = 6,
+  `created`                  = CURRENT_TIMESTAMP,
+  `user_id`                  = 3,
+  `commit_msg`               = 'Added Wikipedia link.',
+  `commit_msg_language_code` = 'en',
+  `data`                     = 'a:0:{}'
 ;
 
 INSERT INTO `revisions` SET
-  `entity_type_id` = 5,
-  `entity_id`      = 3,
-  `created`        = CURRENT_TIMESTAMP,
-  `user_id`        = 3,
-  `commit_msg`     = 'Changed description.',
-  `data`           = 'a:0:{}'
+  `entity_type_id`           = 5,
+  `entity_id`                = 3,
+  `created`                  = CURRENT_TIMESTAMP,
+  `user_id`                  = 3,
+  `commit_msg`               = 'Changed description.',
+  `commit_msg_language_code` = 'en',
+  `data`                     = 'a:0:{}'
 ;
 
--- END "Revision Entity Types"
+-- END "Revisions"
+
+
+-- START "Image Revisions"
+
+INSERT INTO `image_revisions` SET
+  `entity_type_id`           = 12,
+  `entity_id`                = 1,
+  `created`                  = CURRENT_TIMESTAMP,
+  `user_id`                  = 3,
+  `commit_msg`               = 'Changed image.',
+  `commit_msg_language_code` = 'en',
+  `data`                     = 'a:0:{}',
+  `path`                     = ''
+;
+
+INSERT INTO `image_revisions` SET
+  `entity_type_id`           = 12,
+  `entity_id`                = 2,
+  `created`                  = CURRENT_TIMESTAMP,
+  `user_id`                  = 3,
+  `commit_msg`               = 'Changed image description.',
+  `commit_msg_language_code` = 'en',
+  `data`                     = 'a:0:{}'
+;
+
+-- END "Image Revisions"

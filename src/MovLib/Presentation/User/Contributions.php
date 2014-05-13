@@ -22,7 +22,7 @@ use \MovLib\Partial\Time;
 /**
  * Defines the user contribution presentation object.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -50,12 +50,12 @@ final class Contributions extends \MovLib\Presentation\User\AbstractUserPresente
         $contributions .=
           "<li class='hover-item r'>" .
             "<div class='s s8'>" .
-              "<h2 class='para'>{$row["entityType"]}: <a href='{$entity->route}'>{$this->htmlDecode($entity->$row["entityNameProperty"])}</a></h2>" .
+              "<h2 class='para'>{$entity->getRevisionInfo()->type}: <a href='{$entity->getRevisionInfo()->route}'>{$this->htmlDecode($entity->getRevisionInfo()->name)}</a></h2>" .
               "<p>{$this->htmlDecode($row["commitMessage"])}</p>" .
             "</div>" .
             "<div class='s s2 tar'>" .
               "<p>" . (new Time($this->intl, $row["created"]))->formatRelative() . "</p>" .
-              "<p><a href='{$entity->route}/{$this->intl->t("history")}/{$row["revisionHash"]}'>{$this->intl->t("show diff")}</a></p>" .
+              "<p><a href='{$entity->getRevisionInfo()->route}/{$this->intl->t("history")}/{$row["revisionHash"]}'>{$this->intl->t("show diff")}</a></p>" .
             "</div>" .
           "</li>"
         ;

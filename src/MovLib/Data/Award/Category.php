@@ -17,8 +17,9 @@
  */
 namespace MovLib\Data\Award;
 
-use \MovLib\Data\Date;
 use \MovLib\Data\Award\Award;
+use \MovLib\Data\Date;
+use \MovLib\Data\Revision;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -30,7 +31,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Category extends \MovLib\Data\AbstractEntity {
+final class Category extends \MovLib\Data\AbstractEntity implements \MovLib\Data\RevisionInterface {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -346,6 +347,17 @@ SQL
     $this->id = $stmt->insert_id;
 
     return $this->init();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getRevisionInfo() {
+    return new Revision(
+      $this->name,
+      $this->route,
+      $this->intl->t("Award Category")
+    );
   }
 
   /**

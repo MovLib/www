@@ -23,6 +23,7 @@ use \MovLib\Data\Event\EventSet;
 use \MovLib\Data\Movie\MovieSet;
 use \MovLib\Data\Series\SeriesSet;
 use \MovLib\Data\Date;
+use \MovLib\Data\Revision;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -36,7 +37,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Person extends \MovLib\Data\Image\AbstractImageEntity {
+class Person extends \MovLib\Data\Image\AbstractImageEntity implements \MovLib\Data\RevisionInterface {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -520,6 +521,17 @@ SQL
     if ($this->deathPlaceId) {
       return new \MovLib\Data\Place\Place($this->diContainer, $this->deathPlaceId);
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getRevisionInfo() {
+    return new Revision(
+      $this->name,
+      $this->route,
+      $this->intl->t("Person")
+    );
   }
 
   /**

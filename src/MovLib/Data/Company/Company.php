@@ -18,6 +18,7 @@
 namespace MovLib\Data\Company;
 
 use \MovLib\Data\Date;
+use \MovLib\Data\Revision;
 use \MovLib\Exception\ClientException\NotFoundException;
 use \MovLib\Data\Place\Place;
 
@@ -31,7 +32,7 @@ use \MovLib\Data\Place\Place;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Company extends \MovLib\Data\Image\AbstractImageEntity {
+final class Company extends \MovLib\Data\Image\AbstractImageEntity implements \MovLib\Data\RevisionInterface {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -296,6 +297,17 @@ SQL
     $this->id = $stmt->insert_id;
 
     return $this->init();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getRevisionInfo() {
+    return new Revision(
+      $this->name,
+      $this->route,
+      $this->intl->t("Company")
+    );
   }
 
   /**

@@ -1890,8 +1890,6 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`revision_entity_types` (
   `id` BIGINT UNSIGNED NOT NULL COMMENT 'The revision entity type’s unique identifier.',
   `class` VARCHAR(255) NOT NULL COMMENT 'The revision entity type’s class name including namespace.',
-  `name_property` VARCHAR(255) NOT NULL COMMENT 'The property containing the title of the entity.',
-  `type` VARCHAR(255) NOT NULL COMMENT 'The revision entity type’s name, e.g. Movie.',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 COMMENT = 'Table containing all available revision entity types.';
@@ -1906,7 +1904,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`revisions` (
   `entity_id` BIGINT UNSIGNED NOT NULL COMMENT 'The entity’s unique identifier, within a type.',
   `created` DATETIME NOT NULL COMMENT 'The revision’s datetime.',
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique identifier.',
-  `commit_msg` VARCHAR(255) NOT NULL,
+  `commit_msg` VARCHAR(255) NOT NULL COMMENT 'The revision’s commit message.',
+  `commit_msg_language_code` CHAR(2) NOT NULL COMMENT 'The commit message’s ISO alpha-2 language code.',
   `data` BLOB NOT NULL COMMENT 'The revision’s data.',
   PRIMARY KEY (`entity_type_id`, `entity_id`, `created`),
   INDEX `fk_revisions_users_idx` (`user_id` ASC),
@@ -1922,6 +1921,38 @@ CREATE TABLE IF NOT EXISTS `movlib`.`revisions` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Table containing revisions of varous entities.'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`image_revisions`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`image_revisions` (
+  `entity_type_id` BIGINT UNSIGNED NOT NULL COMMENT 'The image revision’s unique entity type identifier.',
+  `entity_id` BIGINT NOT NULL COMMENT 'The image revision’s unique entity identifier.',
+  `created` DATETIME NOT NULL COMMENT 'The image revision’s timestamp.',
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The image revision’s unique user identifier.',
+  `commit_msg` VARCHAR(255) NOT NULL COMMENT 'The image revision’s commit message.',
+  `commit_msg_language_code` CHAR(2) NOT NULL COMMENT 'The commit message’s ISO alpha-2 language code.',
+  `data` BLOB NOT NULL COMMENT 'The image revision’s metadata.',
+  `path` VARCHAR(255) NULL COMMENT 'The image revision’s image path.',
+  PRIMARY KEY (`entity_type_id`, `entity_id`, `created`),
+  INDEX `fk_image_revisions_revision_entity_types_idx` (`entity_type_id` ASC),
+  INDEX `fk_image_revisions_users_idx` (`user_id` ASC),
+  CONSTRAINT `fk_image_revisions_revision_entity_types`
+    FOREIGN KEY (`entity_type_id`)
+    REFERENCES `movlib`.`revision_entity_types` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_image_revisions_users`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `movlib`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Table containing revisions of varous image entities.'
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
 

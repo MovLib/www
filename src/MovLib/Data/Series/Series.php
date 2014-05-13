@@ -18,6 +18,7 @@
 namespace MovLib\Data\Series;
 
 use \MovLib\Data\Date;
+use \MovLib\Data\Revision;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -30,13 +31,13 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Data\RatingInterface {
+class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Data\RatingInterface, \MovLib\Data\RevisionInterface {
   use \MovLib\Data\RatingTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
-  
+
   /**
    * The entity type used to store revisions.
    *
@@ -358,6 +359,17 @@ SQL
     }
 
     return $this->init();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getRevisionInfo() {
+    return new Revision(
+      $this->displayTitle,
+      $this->route,
+      $this->intl->tp(-1, "Series")
+    );
   }
 
   /**

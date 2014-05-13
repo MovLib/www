@@ -17,6 +17,9 @@
  */
 namespace MovLib\Data\Movie;
 
+use \MovLib\Data\Revision;
+use \MovLib\Data\Movie\Movie;
+
 /**
  * Defines the poster entity object.
  *
@@ -26,7 +29,7 @@ namespace MovLib\Data\Movie;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Poster extends \MovLib\Data\Image\AbstractImageEntity {
+final class Poster extends \MovLib\Data\Image\AbstractImageEntity implements \MovLib\Data\RevisionInterface {
 
   /**
    * {@inheritdoc}
@@ -40,6 +43,17 @@ final class Poster extends \MovLib\Data\Image\AbstractImageEntity {
     if ($this->id) {
       $this->init();
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getRevisionInfo() {
+    return new Revision(
+      (new Movie($this->diContainer, $this->entityId))->displayTitleAndYear,
+      $this->route,
+      $this->intl->t("Movie Poster")
+    );
   }
 
   /**

@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\Help;
 
+use \MovLib\Data\Revision;
 use \MovLib\Data\Help\Category;
 use \MovLib\Data\Help\SubCategory;
 use \MovLib\Exception\ClientException\NotFoundException;
@@ -30,7 +31,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Article extends \MovLib\Data\AbstractEntity {
+final class Article extends \MovLib\Data\AbstractEntity implements \MovLib\Data\RevisionInterface {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -254,6 +255,17 @@ SQL
     $this->id = $stmt->insert_id;
 
     return $this->init();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getRevisionInfo() {
+    return new Revision(
+      $this->title,
+      $this->route,
+      $this->intl->t("Help Article")
+    );
   }
 
   /**
