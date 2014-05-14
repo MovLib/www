@@ -19,12 +19,11 @@ namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\Date;
 use \MovLib\Exception\RedirectException\SeeOtherException;
-use \MovLib\Partial\Alert;
 use \MovLib\Partial\Country;
 use \MovLib\Partial\Currency;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputCheckbox;
-use \MovLib\Partial\FormElement\InputDate;
+use \MovLib\Partial\FormElement\InputDateSeparate;
 use \MovLib\Partial\FormElement\InputImage;
 use \MovLib\Partial\FormElement\InputSex;
 use \MovLib\Partial\FormElement\InputText;
@@ -69,11 +68,7 @@ final class AccountSettings extends \MovLib\Presentation\Profile\AbstractProfile
     $deleteAvatarKey = $this->intl->r("delete_avatar");
     if ($this->request->filterInput(INPUT_GET, $deleteAvatarKey, FILTER_VALIDATE_BOOLEAN) === true) {
       $this->user->deleteAvatar($this->session);
-      $this->alerts .= new Alert(
-        $this->intl->t("Your avatar image was deleted successfully."),
-        $this->intl->t("Avatar Deleted Successfully"),
-        Alert::SEVERITY_SUCCESS
-      );
+      $this->alertSuccess($this->intl->t("Your avatar image was deleted successfully."));
       throw new SeeOtherException($this->request->path);
     }
 
@@ -83,8 +78,8 @@ final class AccountSettings extends \MovLib\Presentation\Profile\AbstractProfile
       $inputFileAfter = "<a class='btn btn-danger' href='{$this->request->path}?{$deleteAvatarKey}=1'>{$this->intl->t("Delete")}</a>";
     }
 
-    $birthdateMax = (new Date())->sub(new \DateInterval("P6Y"));
-    $birthdateMin = (new Date())->sub(new \DateInterval("P120Y"));
+    $birthYearMax = (new Date())->sub(new \DateInterval("P6Y"))->format('Y');
+    $birthYearMin = (new Date())->sub(new \DateInterval("P120Y"))->format('Y');
 
     $languageOptions = [];
     foreach ($this->intl->systemLocales as $code => $locale) {
@@ -101,14 +96,15 @@ final class AccountSettings extends \MovLib\Presentation\Profile\AbstractProfile
       ->addElement(new InputSex($this->diContainerHTTP, "sex", $this->intl->t("Sex"), $this->user->sex, [
         "#help-popup" => $this->intl->t("Your sex will be displayed on your profile page and is used to create demographic evaluations."),
       ]))
-      ->addElement(new InputDate($this->diContainerHTTP, "birthdate", $this->intl->t("Date of Birth"), $this->user->birthdate, [
+      ->addElement(new InputDateSeparate($this->diContainerHTTP, "birthdate", $this->intl->t("Date of Birth"), $this->user->birthdate, [
         "#help-popup" => $this->intl->t("Your birthday will be displayed on your profile page and is used to create demographic evaluations."),
-        "max"         => $birthdateMax,
-        "min"         => $birthdateMin,
         "title"       => $this->intl->t(
           "A birth date must be between {min} (120 years) and {max} (6 years)",
-          [ "max" => $birthdateMax->formatIntl($this->intl->locale), "min" => $birthdateMin->formatIntl($this->intl->locale), ]
+          [ "max" => $birthYearMax, "min" => $birthYearMin, ]
         ),
+      ], [
+        "year_max"    => $birthYearMax,
+        "year_min"    => $birthYearMin,
       ]))
       ->addElement(new InputURL($this->diContainerHTTP, "website", $this->intl->t("Website"), $this->user->website, [
         "#help-popup"         => $this->intl->t("Your website will be display on your profile page."),
@@ -118,7 +114,7 @@ final class AccountSettings extends \MovLib\Presentation\Profile\AbstractProfile
         "data-allow-external" => "true",
         "placeholder"         => $this->intl->t("Tell others about yourself, what do you do, what do you like, …"),
       ]))
-      ->addElement((new Country())->getSelectFormElement($this->diContainerHTTP, $this->user->countryCode, [
+      ->addElement((new Country($this->diContainerHTTP))->getSelectFormElement($this->user->countryCode, [
         "#help-popup" => $this->intl->t("Your country will be displayed on your profile page and is used to create demographic evaluations."),
       ]))
       ->addElement(new Select($this->diContainerHTTP, "tzid", $this->intl->t("Time Zone"), $this->intl->getTranslations("timezones"), $this->user->timezone, [
@@ -155,12 +151,8 @@ final class AccountSettings extends \MovLib\Presentation\Profile\AbstractProfile
    */
   public function valid() {
     $this->user->updateAccount();
-    $this->alerts .= new Alert(
-      $this->intl->t("Your account settings were updated successfully."),
-      $this->intl->t("Account Settings Updated Successfully"),
-      Alert::SEVERITY_SUCCESS
-    );
-    return $this;
+    $this->alertSuccess($this->intl->t("Your account settings were updated successfully."));
+    throw new SeeOtherException($this->request->path);
   }
 
 }

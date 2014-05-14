@@ -104,7 +104,7 @@ final class User extends \MovLib\Data\Image\AbstractImageEntity {
   /**
    * The user's birthday (date).
    *
-   * @var null|\DateTime
+   * @var null|\Date
    */
   public $birthdate;
 

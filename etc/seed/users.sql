@@ -90,7 +90,7 @@ INSERT INTO `users` SET
   `dyn_about_me`       = '',
   `email`              = 'franz@torghele.at',
   `image_cache_buster` = UNHEX('7ef0468e9f45ae317cfdd33cae75d4b7'),
-  `image_extension`    = 'jpg',
+  `image_extension`    = 'png',
   `password`           = '$2y$13$UZQYCsImiKIDQQu1OPfaTe9pZSsOd5OCgsEPVXgAVm98ygQLN0Mje',
   `real_name`          = 'Franz Torghele',
   `sex`                = 1,
