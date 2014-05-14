@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: https://github.com/MovLib/www/issues?"
 "labels=translation\n"
 "POT-Creation-Date: 2014-04-17 15:03+0000\n"
-"PO-Revision-Date: 2014-04-28 12:52+0100\n"
+"PO-Revision-Date: 2014-05-14 12:18+0100\n"
 "Last-Translator: Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>\n"
 "Language-Team: MovDev <developers@movlib.org>\n"
 "Language: de_AT\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 1.6.4\n"
+"X-Generator: Poedit 1.6.5\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
 #: /src/MovLib/Data/Format/AbstractFormat.php:101
@@ -989,10 +989,9 @@ msgid "About"
 msgstr "Über"
 
 #: /src/MovLib/xgettext.php:30
-#, fuzzy
 #| msgid "Categories"
 msgid "Category"
-msgstr "Kategorien"
+msgstr "Kategorie"
 
 #: /src/MovLib/xgettext.php:31
 msgid "Event"
