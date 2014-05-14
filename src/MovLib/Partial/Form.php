@@ -71,6 +71,13 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
    */
   protected $presenter;
 
+  /**
+   * The revision timestamp of the entity for revisioned forms.
+   *
+   * @var null|integer
+   */
+  protected $revision;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -230,6 +237,18 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
   }
 
   /**
+   * Add revision control validation to the form.
+   *
+   * @param \MovLib\Data\AbstractEntity $entity
+   *   The entity for revision control.
+   * @return $this
+   */
+  public function addRevisioning(\MovLib\Data\AbstractEntity $entity) {
+    $this->revision = $entity->changed->getTimestamp();
+    return $this;
+  }
+
+  /**
    * Get the form's action elements and closing tag.
    *
    * @return string
@@ -281,6 +300,18 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
         }
       }
 
+      // Check the revision timestamp against session and database to make sure that nothing has changed and no
+      // form manipulation has been done.
+      if ($this->revision && ($this->revision !== $this->session->storageGet("form_revision_{$this->id}") || $this->revision !== $this->request->post["form_revision"])) {
+        $this->presenter->alertError(
+          $this->intl->t("Conflicting Changes"),
+          "<p>{$this->intl->t(
+            "Someone else has already submitted changes before you. Copy any unsaved work in the form below and then {0}reload this page{1}.",
+            [ "<a href='{$this->request->uri}'>", "</a>" ]
+          )}</p>"
+        );
+      }
+
       // Used to collect error messages of all form elements.
       $errors = null;
 
@@ -323,9 +354,11 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
 
         // Finally export all error messages combined in a single alert message.
         $this->presenter->alertError($this->intl->t("Validation Error"), "<p>{$errors}</p>");
+        return $this;
       }
+
       // If no errors were found continue processing.
-      elseif ($validCallback) {
+      if ($validCallback) {
         $validCallback();
       }
     }
@@ -350,6 +383,15 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
         "form_{$this->id}",
         hash("sha512", openssl_random_pseudo_bytes(1024))
       )}'>";
+
+      // Add the current entity timestamp to the form if we need revisioning.
+      // This is done to ensure that noone has successfully changed the entity meanwhile.
+      if ($this->revision) {
+        $this->hiddenElements .= "<input name='form_revision' type='hidden' value='{$this->session->storageSave(
+          "form_revision_{$this->id}",
+          $this->revision
+        )}'>";
+      }
     }
 
     return "<form{$this->presenter->expandTagAttributes($this->attributes)}>{$this->hiddenElements}";

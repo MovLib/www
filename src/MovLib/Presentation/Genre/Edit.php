@@ -71,6 +71,7 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
         "data-allow-external" => "true",
       ]))
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
+      ->addRevisioning($this->entity)
       ->init([ $this, "valid" ])
     ;
   }
