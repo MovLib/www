@@ -76,7 +76,7 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
       ->addElement(new TextareaLineURLArray($this->diContainerHTTP, "links", $this->intl->t("Weblinks (line by line)"), $this->entity->links, [
         "placeholder" => $this->intl->t("Enter the persons’s related weblinks, line by line."),
       ]))
-      ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
+      ->addAction($this->intl->t("Create"), [ "class" => "btn btn-large btn-success" ])
       ->init([ $this, "valid" ])
     ;
     return

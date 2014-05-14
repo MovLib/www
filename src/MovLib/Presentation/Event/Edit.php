@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Event;
 
+use \MovLib\Data\Award\Award;
 use \MovLib\Data\Award\AwardSet;
 use \MovLib\Data\Event\Event;
 use \MovLib\Partial\Form;
@@ -45,6 +46,7 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    */
   public function init() {
     $this->entity = new Event($this->diContainerHTTP, $_SERVER["EVENT_ID"]);
+    $this->entity->award = new Award($this->diContainerHTTP, $this->entity->award);
     $pageTitle    = $this->intl->t("Edit {0}", [ $this->entity->name ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Edit"))

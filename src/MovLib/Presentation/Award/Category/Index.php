@@ -69,21 +69,20 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
     if ($categoryDates) {
       $categoryDates = "<small>{$categoryDates}</small>";
     }
-    $route = $category->route;
     return
       "<li class='hover-item r'>" .
         "<article typeof='Organization'>" .
-          "<a class='no-link s s1' href='{$route}'>" .
+          "<a class='no-link s s1' href='{$category->route}'>" .
             "<img alt='{$category->name}' src='{$this->fs->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
           "</a>" .
           "<div class='s s9'>" .
             "<div class='fr'>" .
-              "<a class='ico ico-movie label' href='{$this->intl->r("/award/{0}/category/{1}/movies", [ $category->award->id, $category->id ])}' title='{$this->intl->t("Movies")}'>{$category->movieCount}</a>" .
-              "<a class='ico ico-series label' href='{$this->intl->r("/award/{0}/category/{1}/series", [ $category->award->id, $category->id ])}' title='{$this->intl->tp(-1, "Series")}'>{$category->seriesCount}</a>" .
-              "<a class='ico ico-person label' href='{$this->intl->r("/award/{0}/category/{1}/persons", [ $category->award->id, $category->id ])}' title='{$this->intl->t("Persons")}'>{$category->seriesCount}</a>" .
-              "<a class='ico ico-company label' href='{$this->intl->r("/award/{0}/category/{1}/companies", [ $category->award->id, $category->id ])}' title='{$this->intl->t("Companies")}'>{$category->seriesCount}</a>" .
+              "<a class='ico ico-movie label' href='{$this->intl->r("/award/{0}/category/{1}/movies", [ $this->entity->id, $category->id ])}' title='{$this->intl->t("Movies")}'>{$category->movieCount}</a>" .
+              "<a class='ico ico-series label' href='{$this->intl->r("/award/{0}/category/{1}/series", [ $this->entity->id, $category->id ])}' title='{$this->intl->tp(-1, "Series")}'>{$category->seriesCount}</a>" .
+              "<a class='ico ico-person label' href='{$this->intl->r("/award/{0}/category/{1}/persons", [ $this->entity->id, $category->id ])}' title='{$this->intl->t("Persons")}'>{$category->seriesCount}</a>" .
+              "<a class='ico ico-company label' href='{$this->intl->r("/award/{0}/category/{1}/companies", [ $this->entity->id, $category->id ])}' title='{$this->intl->t("Companies")}'>{$category->seriesCount}</a>" .
             "</div>" .
-            "<h2 class='para'><a href='{$route}' property='url'><span property='name'>{$category->name}</span></a></h2>" .
+            "<h2 class='para'><a href='{$category->route}' property='url'><span property='name'>{$category->name}</span></a></h2>" .
             $categoryDates .
           "</div>" .
         "</article>" .

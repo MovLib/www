@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Event;
 
+use \MovLib\Data\Award\Award;
 use \MovLib\Data\Event\Event;
 use \MovLib\Partial\Date;
 
@@ -45,6 +46,7 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    */
   public function init() {
     $this->entity = new Event($this->diContainerHTTP, $_SERVER["EVENT_ID"]);
+    $this->entity->award && $this->entity->award = new Award($this->diContainerHTTP, $this->entity->award);
     $this
       ->initPage($this->entity->name)
       ->initShow($this->entity, $this->intl->t("Events"), "Event", null, $this->getSidebarItems())
