@@ -83,7 +83,7 @@ final class DangerZone extends \MovLib\Presentation\Profile\AbstractProfilePrese
         "<td>{$activeSession->authentication->formatIntl($this->intl->locale, $this->user->timezone)}</td>" .
         "<td class='small'><code>{$this->htmlEncode($activeSession->userAgent)}</code></td>" .
         "<td><code>{$activeSession->remoteAddress}</code></td>" .
-        "<td class='form-actions'><button class='btn btn-danger' name='ssid' title='{$title}' type='submit' value='{$activeSession->ssid}'>{$text}</button></td>" .
+        "<td class='form-actions'><button class='btn btn-error' name='ssid' title='{$title}' type='submit' value='{$activeSession->ssid}'>{$text}</button></td>" .
         "</tr>"
       ;
     }
@@ -105,8 +105,8 @@ final class DangerZone extends \MovLib\Presentation\Profile\AbstractProfilePrese
       )}</th><th></th></tr></thead><tbody>{$sessionsTable}</tbody></table>{$sessions->close()}"
     ;
 
-    $deletion = (new Form($this->diContainerHTTP))
-      ->addAction($this->intl->t("Delete"), [ "class" => "btn btn-large btn-danger" ])
+    $deletion = (new Form($this->diContainerHTTP, [ "class" => "tar" ]))
+      ->addAction($this->intl->t("Delete"), [ "class" => "btn btn-small btn-error" ])
       ->init([ $this, "deleteAccount" ])
     ;
     return
@@ -122,7 +122,7 @@ final class DangerZone extends \MovLib\Presentation\Profile\AbstractProfilePrese
           [ "sitename" => $this->config->sitename ]
         )}</p>{$deletion}",
         $this->intl->t("Delete Account"),
-        "danger"
+        "error"
       )}"
     ;
   }
