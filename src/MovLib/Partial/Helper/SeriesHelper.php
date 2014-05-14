@@ -48,12 +48,12 @@ final class SeriesHelper extends \MovLib\Core\Presentation\DependencyInjectionBa
     if (isset($series->startYear) && isset($series->endYear)) {
       $title = $this->intl->t("{0} ({1}–{2})", [
         $title,
-        (new Date($this->intl, $this))->formatYear(
+        (new Date($this->intl, $this->presenter))->formatYear(
           $series->startYear,
           [ "property" => "startDate" ],
           $linkYears ? [ "href" => $this->intl->r("/year/{0}/series", $series->startYear->year) ] : null
         ),
-        (new Date($this->intl, $this))->formatYear(
+        (new Date($this->intl, $this->presenter))->formatYear(
           $series->endYear,
           [ "property" => "startDate" ],
           $linkYears ? [ "href" => $this->intl->r("/year/{0}/series", $series->endYear->year) ] : null
