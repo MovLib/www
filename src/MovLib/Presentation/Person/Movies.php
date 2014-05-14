@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Person;
 
 use \MovLib\Partial\Genre;
-use \MovLib\Data\Cast\Cast;
+use \MovLib\Partial\Helper\MovieHelper;
 use \MovLib\Data\Movie\MovieJobSet;
 
 /**
@@ -47,6 +47,7 @@ class Movies extends \MovLib\Presentation\Person\AbstractPersonPresenter {
   }
 
   public function getContent() {
+    $helper = new MovieHelper($this->diContainerHTTP);
     $set = new MovieJobSet($this->diContainerHTTP);
     /* @var $jobs \MovLib\Stub\Data\Movie\MoviePersonJobs */
     $listing = null;
@@ -98,8 +99,8 @@ class Movies extends \MovLib\Presentation\Person\AbstractPersonPresenter {
           "<article typeof='Movie'>" .
             "<div class='s s1' property='image'>{$this->img($jobs->movie->imageGetStyle("s1"))}</div>" .
             "<div class='s s8'>" .
-              "<h2 class='para'>{$this->getStructuredDisplayTitle($jobs->movie)}</h2>" .
-              $this->getStructuredOriginalTitle($jobs->movie, "small") .
+              "<h2 class='para'>{$helper->getStructuredDisplayTitle($jobs->movie)}</h2>" .
+              $helper->getStructuredOriginalTitle($jobs->movie, "small") .
               (new Genre($this->diContainerHTTP))->getLabels($jobs->genreSet, [ "class" => "small cf mb10" ]) .
               $jobList .
             "</div>" .
