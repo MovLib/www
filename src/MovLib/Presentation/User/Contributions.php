@@ -47,15 +47,16 @@ final class Contributions extends \MovLib\Presentation\User\AbstractUserPresente
       $contributions = "<ol class='hover-list no-list'>";
       while ($row = $result->fetch_assoc()) {
         $entity = new $row["entityClass"]($this->diContainerHTTP, $row["entityId"]);
+        $revisionInfo = $entity->getRevisionInfo();
         $contributions .=
           "<li class='hover-item r'>" .
             "<div class='s s8'>" .
-              "<h2 class='para'>{$entity->getRevisionInfo()->type}: <a href='{$entity->getRevisionInfo()->route}'>{$this->htmlDecode($entity->getRevisionInfo()->name)}</a></h2>" .
+              "<h2 class='para'>{$revisionInfo->type}: <a href='{$revisionInfo->route}'>{$this->htmlDecode($revisionInfo->name)}</a></h2>" .
               "<p>{$this->htmlDecode($row["commitMessage"])}</p>" .
             "</div>" .
             "<div class='s s2 tar'>" .
               "<p>" . (new Time($this->intl, $row["created"]))->formatRelative() . "</p>" .
-              "<p><a href='{$entity->getRevisionInfo()->route}/{$this->intl->t("history")}/{$row["revisionHash"]}'>{$this->intl->t("show diff")}</a></p>" .
+              "<p><a href='{$revisionInfo->route}/{$this->intl->t("history")}/{$row["revisionHash"]}'>{$this->intl->t("show diff")}</a></p>" .
             "</div>" .
           "</li>"
         ;
