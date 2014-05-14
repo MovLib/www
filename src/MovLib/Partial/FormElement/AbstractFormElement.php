@@ -217,7 +217,7 @@ abstract class AbstractFormElement extends \MovLib\Core\Presentation\DependencyI
    */
   public function validate(&$errors) {
     // Check if a value was submitted for this form element.
-    if (empty($_POST[$this->id])) {
+    if (empty($_POST[$this->id]) && strlen($_POST[$this->id]) === 0) {
       // Make sure that the value is really NULL and not an empty string or similar (important for storing).
       $this->value = null;
 
