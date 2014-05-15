@@ -28,6 +28,8 @@ namespace MovLib\Data;
  */
 final class DateTime extends \DateTime {
 
+  const FORMAT_DATABASE = "Y-m-d\TH:i:s";
+
   /**
    * Get the string representation of the date and time.
    *
@@ -35,7 +37,7 @@ final class DateTime extends \DateTime {
    *   The string representation of the date and time.
    */
   public function __toString() {
-    return $this->format(self::W3C);
+    return $this->format(self::FORMAT_DATABASE);
   }
 
   /**
