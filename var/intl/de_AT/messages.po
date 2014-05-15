@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: MovLib Messages 0.0.1-dev\n"
 "Report-Msgid-Bugs-To: https://github.com/MovLib/www/issues?"
 "labels=translation\n"
-"POT-Creation-Date: 2014-05-15 13:20+0000\n"
-"PO-Revision-Date: 2014-05-15 15:24+0100\n"
+"POT-Creation-Date: 2014-05-15 15:26+0000\n"
+"PO-Revision-Date: 2014-05-15 17:26+0100\n"
 "Last-Translator: Richard Fussenegger <richard@fussenegger.info>\n"
 "Language-Team: MovDev <developers@movlib.org>\n"
 "Language: de_AT\n"
@@ -47,12 +47,10 @@ msgid "{company_name} logo."
 msgstr "{company_name} Logo."
 
 #: /src/MovLib/Data/Help/Article.php:267
-#| msgid "Wikipedia Article"
 msgid "Help Article"
 msgstr "Hilfeartikel"
 
 #: /src/MovLib/Data/Movie/Poster.php:55
-#| msgid "No Posters"
 msgid "Movie Poster"
 msgstr "Filmposter"
 
@@ -101,7 +99,6 @@ msgid "Photo of {name}"
 msgstr "Photo von {name}"
 
 #: /src/MovLib/Data/Person/Person.php:533
-#| msgid "Persons"
 msgid "Person"
 msgstr "Person"
 
@@ -636,7 +633,6 @@ msgid "Day"
 msgstr "Tag"
 
 #: /src/MovLib/Partial/FormElement/InputDateSeparate.php:234
-#| msgid "The “{0}” file is required."
 msgid "The “{0}” is required."
 msgstr "Die “{0}” ist Pflicht."
 
@@ -652,12 +648,10 @@ msgid "Year is mandatory in “{0}” date."
 msgstr "Jahr wird in “{0}” benötigt."
 
 #: /src/MovLib/Partial/FormElement/InputDateSeparate.php:256
-#| msgid "The year {0} must not be greater than {1}."
 msgid "The day {0} must not be greater than {1}."
 msgstr "Das Tag {0} darf nicht größer als {1} sein."
 
 #: /src/MovLib/Partial/FormElement/InputDateSeparate.php:259
-#| msgid "The year {0} must not be less than {1}."
 msgid "The day {0} must not be less than {1}."
 msgstr "Das Tag {0} darf nicht kleiner als {1} sein."
 
@@ -1411,7 +1405,7 @@ msgstr ""
 #: /src/MovLib/Presentation/Person/Edit.php:48
 #: /src/MovLib/Presentation/Person/Photo/Show.php:42
 #: /src/MovLib/Presentation/Person/Create.php:46
-#: /src/MovLib/Presentation/Home.php:53
+#: /src/MovLib/Presentation/Home.php:54
 #: /src/MovLib/Presentation/Event/EventTrait.php:42
 #: /src/MovLib/Presentation/Event/Index.php:64
 #: /src/MovLib/Presentation/Event/Persons.php:57
@@ -1721,7 +1715,7 @@ msgstr "Benutzer"
 
 #: /src/MovLib/Presentation/Profile/SignIn.php:114
 #: /src/MovLib/Presentation/User/Index.php:43
-#: /src/MovLib/Presentation/Home.php:72
+#: /src/MovLib/Presentation/Home.php:97
 msgid "Join {sitename}"
 msgstr "{sitename} beitreten"
 
@@ -2631,7 +2625,7 @@ msgstr ""
 #: /src/MovLib/Presentation/Genre/Index.php:58
 #: /src/MovLib/Presentation/Genre/Movies.php:57
 #: /src/MovLib/Presentation/Genre/GenreTrait.php:40
-#: /src/MovLib/Presentation/Home.php:48
+#: /src/MovLib/Presentation/Home.php:49
 #: /src/MovLib/Presentation/Event/EventTrait.php:40
 #: /src/MovLib/Presentation/Event/Index.php:62
 #: /src/MovLib/Presentation/Event/Movies.php:57
@@ -2894,7 +2888,6 @@ msgid "award category persons"
 msgstr ""
 
 #: /src/MovLib/Presentation/Award/Category/Create.php:47
-#| msgid "Create Category"
 msgid "Create Category for {0}"
 msgstr "Kategorie für {0} anlegen"
 
@@ -3007,7 +3000,7 @@ msgstr "Staffel"
 #: /src/MovLib/Presentation/Person/Index.php:79
 #: /src/MovLib/Presentation/Person/AbstractPersonPresenter.php:90
 #: /src/MovLib/Presentation/Person/Releases.php:40
-#: /src/MovLib/Presentation/Home.php:65
+#: /src/MovLib/Presentation/Home.php:66
 msgid "Releases"
 msgstr "Veröffentlichungen"
 
@@ -3044,13 +3037,11 @@ msgstr "Serien"
 
 #: /src/MovLib/Presentation/Series/Edit.php:56
 #: /src/MovLib/Presentation/Series/Create.php:65
-#| msgid "Start Date"
 msgid "Start Year"
 msgstr "Startjahr"
 
 #: /src/MovLib/Presentation/Series/Edit.php:62
 #: /src/MovLib/Presentation/Series/Create.php:71
-#| msgid "Year"
 msgid "End Year"
 msgstr "Endjahr"
 
@@ -3082,7 +3073,6 @@ msgid "Unknown"
 msgstr "Unbekannt"
 
 #: /src/MovLib/Presentation/Series/SeriesTrait.php:78
-#| msgid "No Crew"
 msgid "New"
 msgstr "Neu"
 
@@ -3091,7 +3081,6 @@ msgid "Returning"
 msgstr ""
 
 #: /src/MovLib/Presentation/Series/SeriesTrait.php:80
-#| msgid "Founded"
 msgid "Ended"
 msgstr "Beendet"
 
@@ -3114,7 +3103,6 @@ msgstr "Originaltitel"
 
 #: /src/MovLib/Presentation/Series/Create.php:57
 #: /src/MovLib/Presentation/Movie/Create.php:55
-#| msgid "The name of the genre."
 msgid "The original title of the series."
 msgstr "Der Originaltitel der Serie."
 
@@ -3144,7 +3132,6 @@ msgid "series awards"
 msgstr ""
 
 #: /src/MovLib/Presentation/Series/Show.php:74
-#| msgid "Title"
 msgid "Titles"
 msgstr "Titel"
 
@@ -3153,7 +3140,6 @@ msgid "{sitename} doesn’t have further details about this series."
 msgstr "{sitename} hat keine weiteren Details über diese Serie."
 
 #: /src/MovLib/Presentation/Series/Show.php:89
-#| msgid "original title"
 msgid "Originaltitel"
 msgstr "Originaltitel"
 
@@ -3355,7 +3341,7 @@ msgid "Explore"
 msgstr "Entdecken"
 
 #: /src/MovLib/Presentation/AbstractPresenter.php:610
-#: /src/MovLib/Presentation/Home.php:59
+#: /src/MovLib/Presentation/Home.php:60
 msgid "Marketplace"
 msgstr "Marktplatz"
 
@@ -3483,7 +3469,6 @@ msgstr "Serie Anlegen"
 #: /src/MovLib/Presentation/Help/AbstractCreate.php:53
 #: /src/MovLib/Presentation/Help/AbstractSubCategory.php:77
 #: /src/MovLib/Presentation/Help/AbstractCategory.php:78
-#| msgid "Create Series"
 msgid "Create Help Article"
 msgstr "Hilfeartikel erstellen"
 
@@ -3579,7 +3564,6 @@ msgstr "Danke für deine Anmeldung zur {sitename} Beta {email}."
 
 #: /src/MovLib/Presentation/Movie/Cast.php:39
 #: /src/MovLib/Presentation/Movie/Cast.php:40
-#| msgid "History of {title}"
 msgid "Cast of {title}"
 msgstr "Darsteller von {title}"
 
@@ -3747,7 +3731,6 @@ msgstr ""
 
 #: /src/MovLib/Presentation/Movie/Crew.php:41
 #: /src/MovLib/Presentation/Movie/Crew.php:42
-#| msgid "Crew of {0}"
 msgid "Crew of {title}"
 msgstr "Stab von {title}"
 
@@ -3771,7 +3754,6 @@ msgid "discuss movie"
 msgstr "Diskussion"
 
 #: /src/MovLib/Presentation/Movie/Releases.php:35
-#| msgid "Releases of {0}"
 msgid "Releases of {title}"
 msgstr "Veröffentlichungen von {title}"
 
@@ -3827,7 +3809,6 @@ msgid "Weblinks"
 msgstr "Weblinks"
 
 #: /src/MovLib/Presentation/Movie/Delete.php:39
-#| msgid "Delete {0}"
 msgid "Delete {title}"
 msgstr "{title} löschen"
 
@@ -3992,7 +3973,6 @@ msgid "No Releases"
 msgstr "Keine Veröffentlichungen"
 
 #: /src/MovLib/Presentation/Release/Charts.php:39
-#| msgid "Series Charts"
 msgid "Release Charts"
 msgstr "Veröffentlichungscharts"
 
@@ -4054,7 +4034,6 @@ msgstr ""
 
 #: /src/MovLib/Presentation/Person/History.php:36
 #: /src/MovLib/Presentation/Person/History.php:37
-#| msgid "History of {0}"
 msgid "History of {name}"
 msgstr "Geschichte von {name}"
 
@@ -4081,7 +4060,6 @@ msgid "No Persons"
 msgstr "Keine Personen"
 
 #: /src/MovLib/Presentation/Person/Charts.php:39
-#| msgid "Series Charts"
 msgid "Person Charts"
 msgstr "Personencharts"
 
@@ -4131,7 +4109,6 @@ msgstr "Biographie"
 
 #: /src/MovLib/Presentation/Person/Edit.php:72
 #: /src/MovLib/Presentation/Person/Create.php:70
-#| msgid "Describe the genre."
 msgid "Describe the person."
 msgstr "Beschreibe die Person."
 
@@ -4157,7 +4134,6 @@ msgstr "Serie Anlegen"
 
 #: /src/MovLib/Presentation/Person/Discussion.php:36
 #: /src/MovLib/Presentation/Person/Discussion.php:37
-#| msgid "Discussion of {0}"
 msgid "Discussion of {name}"
 msgstr "Diskussion über {name}"
 
@@ -4176,7 +4152,6 @@ msgstr ""
 
 #: /src/MovLib/Presentation/Person/Releases.php:38
 #: /src/MovLib/Presentation/Person/Releases.php:39
-#| msgid "Releases with {0}"
 msgid "Releases with {name}"
 msgstr "Veröffentlichungen mit {name}"
 
@@ -4194,7 +4169,6 @@ msgid "Awards of {name}"
 msgstr "Kategorien von {0}"
 
 #: /src/MovLib/Presentation/Person/Awards.php:59
-#| msgid "No Results"
 msgid "Result"
 msgstr "Resultat"
 
@@ -4203,12 +4177,10 @@ msgid "Associated Work"
 msgstr ""
 
 #: /src/MovLib/Presentation/Person/Awards.php:77
-#| msgid "nominated"
 msgid "Nominated"
 msgstr "Nominiert"
 
 #: /src/MovLib/Presentation/Person/Awards.php:81
-#| msgid "won"
 msgid "Won"
 msgstr "gewonnen"
 
@@ -4279,7 +4251,6 @@ msgstr "Keine Informationen"
 
 #: /src/MovLib/Presentation/Person/Delete.php:36
 #: /src/MovLib/Presentation/Person/Delete.php:37
-#| msgid "Delete {0}"
 msgid "Delete {name}"
 msgstr "{name} löschen"
 
@@ -4326,7 +4297,6 @@ msgid "{email} wrote: {message}"
 msgstr "{email} schrieb: {message}"
 
 #: /src/MovLib/Presentation/SystemPage/Contact/Show.php:127
-#| msgid "Contact Successful"
 msgid "Contact successful"
 msgstr "Kontakt erfolgreich"
 
@@ -4412,7 +4382,6 @@ msgid "No Genres"
 msgstr "Keine Genres"
 
 #: /src/MovLib/Presentation/Genre/Charts.php:39
-#| msgid "Series Charts"
 msgid "Genre Charts"
 msgstr "Genrecharts"
 
@@ -4507,7 +4476,6 @@ msgid "We couldn’t find any contributions by this user"
 msgstr ""
 
 #: /src/MovLib/Presentation/User/Contributions.php:78
-#| msgid "Contributions"
 msgid "No Contributions"
 msgstr "Keine Beiträge"
 
@@ -4534,8 +4502,6 @@ msgid ""
 msgstr ""
 
 #: /src/MovLib/Presentation/User/Show.php:130
-#| msgid ""
-#| "{username} hasn’t rated a single movie yet, that makes us a sad panda."
 msgid ""
 "{username} hasn’t rated a single movie or series yet, that makes us a sad "
 "panda."
@@ -4545,12 +4511,10 @@ msgstr ""
 
 #: /src/MovLib/Presentation/User/Show.php:150
 #: /src/MovLib/Presentation/User/Show.php:165
-#| msgid "Edit {0}"
 msgid "Rated: {0}"
 msgstr "Bewertet: {0}"
 
 #: /src/MovLib/Presentation/User/Show.php:176
-#| msgid "Recently Rated Movies"
 msgid "Recently Rated"
 msgstr "Kürzlich bewertet"
 
@@ -4562,17 +4526,18 @@ msgstr "{username}s Sammlung"
 msgid "We couldn’t find a single random page for you…"
 msgstr ""
 
-#: /src/MovLib/Presentation/Home.php:49
+#: /src/MovLib/Presentation/Home.php:50
 msgid ""
 "Discover new and old movies, find out about all related details like who was "
 "the director, when and where was it released, what releases are available, "
 "find poster and lobby card art, plus many, many more …"
 msgstr ""
-"Entdecke neue und alte Filme, finde alles heraus über Details wie wer führte "
-"Regie, wann und wo wurde er veröffentlicht, welche Veröffentlichungen sind "
-"verfügbar, entdecke Poster, Aushangbilder und vieles, vieles mehr …"
+"Entdecke neue und alte Filme, finde alles heraus über Details wie: wer "
+"führte Regie, wann und wo wurde der Film veröffentlicht, welche "
+"Veröffentlichungen sind verfügbar, entdecke Poster, Aushangbilder und "
+"vieles, vieles mehr …"
 
-#: /src/MovLib/Presentation/Home.php:54
+#: /src/MovLib/Presentation/Home.php:55
 msgid ""
 "You always wanted to collect all movies of a specific director, actor or any "
 "other movie related person? This is the place for you to go. Find out all "
@@ -4580,11 +4545,11 @@ msgid ""
 "an expert."
 msgstr ""
 "Du wolltest immer schon alle Filme eines bestimmten Regisseurs, Darstellers "
-"oder irgend einer anderen filmbezogenen Person sammeln? Dann bist du richtig "
-"hier. Entdecke alle Details zu den Personen die du bewunderst, oder gib sie "
-"einfach selbst ein wenn du ein Fachmann bist."
+"oder irgend einer anderen filmbezogenen Person sammeln? Dann bist du hier "
+"genau richtig. Entdecke alle Details zu den Personen die du bewunderst, oder "
+"gib sie einfach selbst ein wenn du eine Fachfrau / ein Fachmann bist."
 
-#: /src/MovLib/Presentation/Home.php:60
+#: /src/MovLib/Presentation/Home.php:61
 msgid ""
 "Searching for a specific release? Our marketplace is free, open, and built "
 "upon the exact release database. This makes it easy for sellers to list "
@@ -4592,26 +4557,58 @@ msgid ""
 msgstr ""
 "Auf der Suche nach einer bestimmten Veröffentlichung? Unser Marktplatz ist "
 "frei, offen und baut auf unserer exakten Veröffentlichungsdatenbank auf. Das "
-"macht es einfach für Verkäufer ihre Bestände aufzulisten und Käufer können "
-"genau angeben welche Version sie haben wollen."
+"macht es einfach für Verkäufer/innen ihre Bestände aufzulisten und Käufer/"
+"innen können genau angeben welche Version sie haben wollen."
 
-#: /src/MovLib/Presentation/Home.php:66 /src/MovLib/Presentation/Home.php:70
-msgid "Insert text here …"
+#: /src/MovLib/Presentation/Home.php:67
+msgid ""
+"The exact release database of {sitename} allows you to search for specific "
+"releases, check if a release is truly uncut, or simply lookup some technical "
+"specs of a release. It allows you to keep track of the exact releases you "
+"own, or the ones you’d like to buy. Cinema, DVD, TV, Digital Download, … "
+"doesn’t matter, all forms and formats have a place at {sitename}."
 msgstr ""
+"Die exakte Veröffentlichungsdatenbank von {sitename} erlaubt es dir nach "
+"spezifischen Fassungen zu suchen, zu überprüfen ob sie wirklich "
+"ungeschnitten ist, oder einfach um technische Details nachschauen. Überblick "
+"über deine spezifischen Veröffentlichungen oder die die du gerne kaufen "
+"würdest. Kino, DVD, TV, digitaler Download, … egal, für alle Formen und "
+"Formate gibt es einen Platz bei {sitename}."
 
-#: /src/MovLib/Presentation/Home.php:69
+#: /src/MovLib/Presentation/Home.php:74
 msgid "My {sitename}"
 msgstr "Mein {sitename}"
 
 #: /src/MovLib/Presentation/Home.php:75
+#| msgid ""
+#| "If you join {sitename} you’ll be able to use the extensive statistical "
+#| "tools that we provide to you for free. You can easily keep track of all "
+#| "your releases you own, the ones you want to buy, create lists (like “All "
+#| "movies with cats as main actors”), track your contributions, rate movies "
+#| "and series, and much more …"
+msgid ""
+"If you join {sitename} you’ll be able to use the extensive statistical tools "
+"that we provide to you for free. You can easily keep track of all the "
+"releases you own, the ones you want to buy, create lists (like “All movies "
+"with cats as main actors”), track your contributions, rate movies and "
+"series, and much more …"
+msgstr ""
+"Wenn du {sitename} beitrittst kannst du die extensiven statistischen "
+"Werkzeuge verwenden die wir kostenlos zur Verfügung stellen. Du kannst "
+"einfach die Veröffentlichungen verwalten die du besitzt, oder die du noch "
+"kaufen möchtest, Listen erstellen (wie „Alle Filme die Katzen als "
+"Hauptdarsteller haben“), deine Bearbeitungen mitverfolgen, Filme und Serien "
+"bewerten und vieles mehr …"
+
+#: /src/MovLib/Presentation/Home.php:81
 msgid "Application Programming Interface"
 msgstr "Programmierschnittstelle"
 
-#: /src/MovLib/Presentation/Home.php:75
+#: /src/MovLib/Presentation/Home.php:81
 msgid "API"
 msgstr "API"
 
-#: /src/MovLib/Presentation/Home.php:76
+#: /src/MovLib/Presentation/Home.php:82
 msgid ""
 "The {sitename} API is a REST interface to access the free movie library. "
 "Specifically designed for all developers out there. We want to keep the "
@@ -4619,15 +4616,22 @@ msgid ""
 "collect here at {sitename}."
 msgstr ""
 "Die {sitename} API ist eine REST-Schnittstelle zum Zugriff auf die freie "
-"Kinemathek. Speziell designed für alle Entwickler da draußen. Wir wollen die "
-"Barriere so gering wie möglich halten und sicherstellen, dass alle die von "
-"uns gesammelten bei {sitename} gesammelten Datein verwenden kann."
+"Kinemathek. Speziell designed für alle Entwickler/innen da draußen. Wir "
+"wollen die Barriere so gering wie möglich halten und sicherstellen, dass "
+"alle die von uns gesammelten bei {sitename} gesammelten Datein verwenden "
+"kann."
 
-#: /src/MovLib/Presentation/Home.php:81
+#: /src/MovLib/Presentation/Home.php:95
+#, fuzzy
+#| msgid "Release"
+msgid "Add a Release"
+msgstr "Veröffentlichung"
+
+#: /src/MovLib/Presentation/Home.php:99
 msgid "Read the API documentation"
 msgstr "Lese die API-Dokumentation"
 
-#: /src/MovLib/Presentation/Home.php:107
+#: /src/MovLib/Presentation/Home.php:119
 msgid "Do you like movies?{0}Great, so do we!"
 msgstr "Du magst Filme?{0}Großartig, wir auch!"
 
@@ -4660,7 +4664,6 @@ msgid "No Events"
 msgstr "Keine Veranstaltungen"
 
 #: /src/MovLib/Presentation/Event/Charts.php:39
-#| msgid "Movie Charts"
 msgid "Event Charts"
 msgstr "Veranstaltungscharts"
 
@@ -4701,7 +4704,6 @@ msgstr ""
 
 #: /src/MovLib/Presentation/Event/Edit.php:81
 #: /src/MovLib/Presentation/Event/Create.php:77
-#| msgid "Describe the genre."
 msgid "Describe the event."
 msgstr "Beschreibe die Veranstaltung."
 

@@ -49,11 +49,11 @@
  * More white space for our description boxes than usual and we have to fix floating on uneven content.
  * ------------------------------------------------------------------------------------------------------------------ */
 
-#home article {
-  margin-top: 40px;
-  margin-bottom: 40px;
+#home #m .s {
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
-#home article:nth-child(3n+1) {
+#home #m .s:nth-child(3n+1) {
   clear: both;
 }

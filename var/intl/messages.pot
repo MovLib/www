@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MovLib Messages 0.0.1-dev\n"
 "Report-Msgid-Bugs-To: https://github.com/MovLib/www/issues?labels=translation\n"
-"POT-Creation-Date: 2014-05-15 13:20+0000\n"
+"POT-Creation-Date: 2014-05-15 15:26+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1296,7 +1296,7 @@ msgstr ""
 #: /src/MovLib/Presentation/Person/Edit.php:48
 #: /src/MovLib/Presentation/Person/Photo/Show.php:42
 #: /src/MovLib/Presentation/Person/Create.php:46
-#: /src/MovLib/Presentation/Home.php:53
+#: /src/MovLib/Presentation/Home.php:54
 #: /src/MovLib/Presentation/Event/EventTrait.php:42
 #: /src/MovLib/Presentation/Event/Index.php:64
 #: /src/MovLib/Presentation/Event/Persons.php:57
@@ -1599,7 +1599,7 @@ msgstr ""
 
 #: /src/MovLib/Presentation/Profile/SignIn.php:114
 #: /src/MovLib/Presentation/User/Index.php:43
-#: /src/MovLib/Presentation/Home.php:72
+#: /src/MovLib/Presentation/Home.php:97
 msgid "Join {sitename}"
 msgstr ""
 
@@ -2372,7 +2372,7 @@ msgstr ""
 #: /src/MovLib/Presentation/Genre/Index.php:58
 #: /src/MovLib/Presentation/Genre/Movies.php:57
 #: /src/MovLib/Presentation/Genre/GenreTrait.php:40
-#: /src/MovLib/Presentation/Home.php:48
+#: /src/MovLib/Presentation/Home.php:49
 #: /src/MovLib/Presentation/Event/EventTrait.php:40
 #: /src/MovLib/Presentation/Event/Index.php:62
 #: /src/MovLib/Presentation/Event/Movies.php:57
@@ -2727,7 +2727,7 @@ msgstr ""
 #: /src/MovLib/Presentation/Person/Index.php:79
 #: /src/MovLib/Presentation/Person/AbstractPersonPresenter.php:90
 #: /src/MovLib/Presentation/Person/Releases.php:40
-#: /src/MovLib/Presentation/Home.php:65
+#: /src/MovLib/Presentation/Home.php:66
 msgid "Releases"
 msgstr ""
 
@@ -3033,7 +3033,7 @@ msgid "Explore"
 msgstr ""
 
 #: /src/MovLib/Presentation/AbstractPresenter.php:610
-#: /src/MovLib/Presentation/Home.php:59
+#: /src/MovLib/Presentation/Home.php:60
 msgid "Marketplace"
 msgstr ""
 
@@ -4102,44 +4102,51 @@ msgstr ""
 msgid "We couldn’t find a single random page for you…"
 msgstr ""
 
-#: /src/MovLib/Presentation/Home.php:49
+#: /src/MovLib/Presentation/Home.php:50
 msgid "Discover new and old movies, find out about all related details like who was the director, when and where was it released, what releases are available, find poster and lobby card art, plus many, many more …"
 msgstr ""
 
-#: /src/MovLib/Presentation/Home.php:54
+#: /src/MovLib/Presentation/Home.php:55
 msgid "You always wanted to collect all movies of a specific director, actor or any other movie related person? This is the place for you to go. Find out all details about the person you admire, or simply add them yourself if you are an expert."
 msgstr ""
 
-#: /src/MovLib/Presentation/Home.php:60
+#: /src/MovLib/Presentation/Home.php:61
 msgid "Searching for a specific release? Our marketplace is free, open, and built upon the exact release database. This makes it easy for sellers to list their inventory and buyers are able to specify the exact version they want."
 msgstr ""
 
-#: /src/MovLib/Presentation/Home.php:66
-#: /src/MovLib/Presentation/Home.php:70
-msgid "Insert text here …"
+#: /src/MovLib/Presentation/Home.php:67
+msgid "The exact release database of {sitename} allows you to search for specific releases, check if a release is truly uncut, or simply lookup some technical specs of a release. It allows you to keep track of the exact releases you own, or the ones you’d like to buy. Cinema, DVD, TV, Digital Download, … doesn’t matter, all forms and formats have a place at {sitename}."
 msgstr ""
 
-#: /src/MovLib/Presentation/Home.php:69
+#: /src/MovLib/Presentation/Home.php:74
 msgid "My {sitename}"
 msgstr ""
 
 #: /src/MovLib/Presentation/Home.php:75
-msgid "Application Programming Interface"
-msgstr ""
-
-#: /src/MovLib/Presentation/Home.php:75
-msgid "API"
-msgstr ""
-
-#: /src/MovLib/Presentation/Home.php:76
-msgid "The {sitename} API is a REST interface to access the free movie library. Specifically designed for all developers out there. We want to keep the barrier as low as possible and ensure that everybody can use the data we all collect here at {sitename}."
+msgid "If you join {sitename} you’ll be able to use the extensive statistical tools that we provide to you for free. You can easily keep track of all the releases you own, the ones you want to buy, create lists (like “All movies with cats as main actors”), track your contributions, rate movies and series, and much more …"
 msgstr ""
 
 #: /src/MovLib/Presentation/Home.php:81
+msgid "Application Programming Interface"
+msgstr ""
+
+#: /src/MovLib/Presentation/Home.php:81
+msgid "API"
+msgstr ""
+
+#: /src/MovLib/Presentation/Home.php:82
+msgid "The {sitename} API is a REST interface to access the free movie library. Specifically designed for all developers out there. We want to keep the barrier as low as possible and ensure that everybody can use the data we all collect here at {sitename}."
+msgstr ""
+
+#: /src/MovLib/Presentation/Home.php:95
+msgid "Add a Release"
+msgstr ""
+
+#: /src/MovLib/Presentation/Home.php:99
 msgid "Read the API documentation"
 msgstr ""
 
-#: /src/MovLib/Presentation/Home.php:107
+#: /src/MovLib/Presentation/Home.php:119
 msgid "Do you like movies?{0}Great, so do we!"
 msgstr ""
 
