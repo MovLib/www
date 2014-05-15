@@ -181,7 +181,7 @@ final class Request {
     $this->https         =  $_SERVER["HTTPS"] == "on";
     $this->method        =  $_SERVER["REQUEST_METHOD"];
     $this->methodGET     =  $this->method == "GET";
-    $this->methodPOST    = !$this->method;
+    $this->methodPOST    = !$this->methodGET;
     $this->path          =  $_SERVER["REQUEST_PATH"];
     $this->post          =& $_POST;
     $this->protocol      =  $_SERVER["SERVER_PROTOCOL"];
