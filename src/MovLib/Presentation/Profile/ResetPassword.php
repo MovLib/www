@@ -47,6 +47,13 @@ final class ResetPassword extends \MovLib\Presentation\AbstractPresenter {
   protected $email;
 
   /**
+   * The password reset form.
+   *
+   * @var \MovLib\Partial\Form
+   */
+  protected $form;
+
+  /**
    * The user's new raw password.
    *
    * @var string
@@ -89,8 +96,9 @@ final class ResetPassword extends \MovLib\Presentation\AbstractPresenter {
 
     $this->headingBefore = "<a class='btn btn-large btn-info fr' href='{$this->intl->r("/profile/sign-in")}'>{$this->intl->t("Sign In")}</a>";
 
-    $this->form = new Form($this->diContainerHTTP);
     if (isset($this->request->query["token"]) && $this->validateToken()) {
+      $this->form = new Form($this->diContainerHTTP, [ "autocomplete" => "off", "class" => "s s6 o3" ]);
+
       // First field to enter the new password.
       $this->form->addElement(new InputPassword($this->diContainerHTTP, "password_new", $this->intl->t("New Password"), $this->rawPasswordNew, [
         "autofocus"   => true,
@@ -105,9 +113,10 @@ final class ResetPassword extends \MovLib\Presentation\AbstractPresenter {
       ]));
 
       $this->formAddAction($this->intl->r("Reset Password"), [ "class" => "btn btn-large btn-success" ]);
-      $this->formInit([ $this, "validReset" ], [ "autocomplete" => "off", "class" => "s s6 o3" ]);
+      $this->formInit([ $this, "validReset" ]);
     }
     else {
+      $this->form = new Form($this->diContainerHTTP, [ "class" => "s s6 o3" ]);
       $this->form->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email Address"), $this->email, [
         "#help-popup" => $this->intl->t("Enter the email address associated with your {sitename} account. Password reset instructions will be sent via email.", [ "sitename" => $this->config->sitename ]),
         "autofocus"   => true,
@@ -115,7 +124,7 @@ final class ResetPassword extends \MovLib\Presentation\AbstractPresenter {
         "required"    => true,
       ]));
       $this->form->addAction($this->intl->t("Request Reset"), [ "class" => "btn btn-large btn-success" ]);
-      $this->form->init([ $this, "validEmail" ], [ "class" => "s s6 o3" ]);
+      $this->form->init([ $this, "validEmail" ]);
     }
   }
 

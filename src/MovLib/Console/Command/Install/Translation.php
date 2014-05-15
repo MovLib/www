@@ -33,74 +33,66 @@ use \Symfony\Component\Console\Output\OutputInterface;
 class Translation extends \MovLib\Console\Command\AbstractCommand {
 
   /**
+   * Prepare a PO file string for PHP array conversion.
+   *
+   * @staticvar array $patterns
+   *   Array containing regular expression patterns to replace.
+   * @staticvar array $replacements
+   *   Array containing replacements patterns.
+   * @param string $string
+   *   The PO file string to prepare.
+   * @return string
+   *   The prepared PO file string for inclusion in a PHP file.
+   * @throws \LogicException
+   */
+  protected function prepare($string) {
+    static $patterns = [ '/"\s+"/', '/\\\\n/', '/\\\\r/', '/\\\\t/', '/\\\\"/', '/\\\\\\\\/' ];
+    static $replacements = [ "", "\n", "\r", "\t", '"', "\\" ];
+    $prepared = (string) preg_replace($patterns, $replacements, substr(rtrim($string), 1, -1));
+    if (strip_tags($prepared) != $prepared) {
+      throw new \LogicException("HTML isn't allowed in translations ({$prepared}).");
+    }
+    if (strpos($prepared, "'") !== false || strpos($prepared, '"') !== false) {
+      throw new \LogicException("Quotes (double and single) aren't allowed in translations ({$prepared}).");
+    }
+    if (($pos = strpos($prepared, "$")) !== false && isset($prepared{++$pos}) && $prepared{$pos} != " " && !is_numeric($prepared{$pos})) {
+      throw new \LogicException("PHP variables aren't allowed in translations ({$prepared}).");
+    }
+    return $prepared;
+  }
+
+  /**
    * Compile all translations.
+   *
+   * @return this
    */
   protected function compile() {
     $this->writeVerbose("Compiling translations...", self::MESSAGE_TYPE_INFO);
 
     foreach ($this->intl->systemLocales as $code => $locale) {
+      $matches = null;
       if ($code != $this->intl->defaultLanguageCode) {
-        $translations = "";
-        $poPath = $this->fs->realpath("dr://var/intl/{$locale}/messages.po");
-        $fh = fopen($poPath, "rb");
-        $lineNumber = 0;
-        $comments   = "";
-        while ($line = fgets($fh)) {
-          ++$lineNumber;
-          if (substr($line, 0, 3) === "#: ") {
-            $comments .= $line;
+        $c = preg_match_all('/msgid\s+((?:".*(?<!\\\\)"\s*)+)\s+msgstr\s+((?:".*(?<!\\\\)"\s*)+)/', file_get_contents("dr://var/intl/{$locale}/messages.po"), $matches);
+        $translations = "<?php return[";
+        for ($i = 0; $i < $c; ++$i) {
+          $msgid = $this->prepare($matches[1][$i]);
+          if (empty($msgid)) {
             continue;
           }
-
-          if (substr($line, 0, 6) == "msgid ") {
-            $line   = trim($line);
-            $msgid  = substr($line, 7, strlen($line) - 8);
-            $line   = trim(fgets($fh));
-            if (substr($line, 0, 7) == "msgstr ") {
-              $msgstr = substr($line, 8, strlen($line) - 9);
-
-              foreach ([
-                $msgstr => "HTML isn't allowed in {$poPath} on line {$lineNumber}",
-                $msgid  => "HTML isn't allowed in:\n{$comments}",
-              ] as $v => $m) {
-                if (strip_tags($v) != $v) {
-                  throw new \LogicException($m);
-                }
-              }
-
-              foreach ([
-                [ $msgstr, "'", " isn't allowed in {$poPath} on line {$lineNumber}" ],
-                [ $msgid,  "'", " isn't allowed in:\n{$comments}" ],
-                [ $msgstr, '"', " isn't allowed in {$poPath} on line {$lineNumber}" ],
-                [ $msgid,  '"', " isn't allowed in:\n{$comments}" ],
-              ] as list($v, $c, $m)) {
-                if (strpos($v, $c) !== false) {
-                  throw new \LogicException("{$c}{$m}");
-                }
-              }
-
-              foreach ([
-                $msgstr => "No PHP variable allowed in {$poPath} on line {$lineNumber}",
-                $msgid  => "No PHP variable allowed in: \n{$comments}",
-              ] as $v => $m) {
-                if (strpos($v, '$') !== false && isset($v[strpos($v, '$') + 1]) && $v[strpos($v, '$') + 1] !== " ") {
-                  throw new \LogicException($m);
-                }
-              }
-
-              $comments = "";
-              if (empty($msgstr) || $msgid == $msgstr) {
-                continue;
-              }
-              $translations .= "\"{$msgid}\"=>\"{$msgstr}\",";
-            }
+          $msgstr = $this->prepare($matches[2][$i]);
+          if (empty($msgstr)) {
+            continue;
           }
+          if ($msgid == $msgstr) {
+            continue;
+          }
+          $translations .= "\"{$msgid}\"=>\"{$msgstr}\",";
         }
-        fclose($fh);
-        file_put_contents("dr://var/intl/{$locale}/messages.php", "<?php return[{$translations}];");
+        file_put_contents("dr://var/intl/{$locale}/messages.php", rtrim($translations, ",") . "];");
       }
     }
-    return 0;
+
+    return $this;
   }
 
   /**
@@ -122,7 +114,7 @@ class Translation extends \MovLib\Console\Command\AbstractCommand {
       "compile",
     ];
 
-    if ($task = $input->getArgument('task')) {
+    if (($task = $input->getArgument('task'))) {
       if (method_exists($this, $task)) {
         $this->$task();
       }
@@ -141,6 +133,8 @@ class Translation extends \MovLib\Console\Command\AbstractCommand {
 
   /**
    * Extract translations to po template and update po files.
+   *
+   * @return this
    */
   protected function extract() {
     $potPath = $this->fs->realpath("dr://var/intl/messages.pot");
@@ -206,7 +200,7 @@ class Translation extends \MovLib\Console\Command\AbstractCommand {
     $this->exec($command);
 
     $this->writeVerbose("Deleting temporary copy of source files...", self::MESSAGE_TYPE_INFO);
-//    $this->exec("rm -r {$srcPath}");
+    $this->fs->registerFileForDeletion($srcPath, true);
 
     $this->writeVerbose("Updating po files for all languages...", self::MESSAGE_TYPE_INFO);
     foreach ($this->intl->systemLocales as $code => $locale) {
@@ -223,7 +217,7 @@ class Translation extends \MovLib\Console\Command\AbstractCommand {
     }
     file_put_contents($potPath, str_replace("{$this->fs->documentRoot}/tmp", "", file_get_contents($potPath)));
 
-    return 0;
+    return $this;
   }
 
 }
