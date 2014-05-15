@@ -34,7 +34,7 @@ INSERT INTO `revisions` SET
   `created`                  = CURRENT_TIMESTAMP,
   `user_id`                  = 3,
   `commit_msg`               = 'Added german title.',
-  `commit_msg_language_code` = 'en',
+  `language_code` = 'en',
   `data`                     = 'a:0:{}'
 ;
 
@@ -44,7 +44,7 @@ INSERT INTO `revisions` SET
   `created`                  = CURRENT_TIMESTAMP,
   `user_id`                  = 3,
   `commit_msg`               = 'Added Wikipedia link.',
-  `commit_msg_language_code` = 'en',
+  `language_code` = 'en',
   `data`                     = 'a:0:{}'
 ;
 
@@ -54,7 +54,7 @@ INSERT INTO `revisions` SET
   `created`                  = CURRENT_TIMESTAMP,
   `user_id`                  = 3,
   `commit_msg`               = 'Changed description.',
-  `commit_msg_language_code` = 'en',
+  `language_code` = 'en',
   `data`                     = 'a:0:{}'
 ;
 
@@ -69,7 +69,7 @@ INSERT INTO `image_revisions` SET
   `created`                  = CURRENT_TIMESTAMP,
   `user_id`                  = 3,
   `commit_msg`               = 'Changed image.',
-  `commit_msg_language_code` = 'en',
+  `language_code` = 'en',
   `data`                     = 'a:0:{}',
   `path`                     = ''
 ;
@@ -80,7 +80,7 @@ INSERT INTO `image_revisions` SET
   `created`                  = CURRENT_TIMESTAMP,
   `user_id`                  = 3,
   `commit_msg`               = 'Changed image description.',
-  `commit_msg_language_code` = 'en',
+  `language_code` = 'en',
   `data`                     = 'a:0:{}'
 ;
 
