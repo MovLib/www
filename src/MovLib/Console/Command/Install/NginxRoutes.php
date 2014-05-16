@@ -80,10 +80,12 @@ final class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
    * @var array
    */
   protected $regularExpressionTokens = [
-    "cc" => [ "regex" => "([A-Z]{2})",    "var" => "country_code"        ],
-    "id" => [ "regex" => "([1-9][0-9]*)", "var" => "{{ presenter }}_id"  ],
-    "lc" => [ "regex" => "([a-z]{2})",    "var" => "language_code"       ],
-    "un" => [ "regex" => "(.+)",          "var" => "user_name"           ],
+    "cc" => [ "regex" => "([A-Z]{2})",         "var" => "country_code"       ],
+    "id" => [ "regex" => "([1-9][0-9]*)",      "var" => "{{ presenter }}_id" ],
+    "lc" => [ "regex" => "([a-z]{2})",         "var" => "language_code"      ],
+    "rn" => [ "regex" => "?([1-9][0-9]{13})?", "var" => "revision_new"       ],
+    "ro" => [ "regex" => "?([1-9][0-9]{13})?", "var" => "revision_old"       ],
+    "un" => [ "regex" => "(.+)",               "var" => "user_name"          ],
   ];
 
   /**
@@ -233,9 +235,13 @@ final class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
       $presenterParts = array_map("mb_strtolower", explode("\\", $presenter));
       $nginxVariables = null;
 
-      $route = preg_replace_callback("#/(.+)/{(.+)}#U", function ($matches) use ($indent, &$nginxVariables, $presenterParts) {
-        static $c = 1;
-        $name = str_replace("{{ presenter }}", $presenterParts[$c - 1], $this->regularExpressionTokens[$matches[2]]["var"]);
+      $route = preg_replace_callback("#/{(.+)}#U", function ($matches) use ($indent, &$nginxVariables, $presenterParts) {
+        static $c = 1, $p = 0;
+        $name = $this->regularExpressionTokens[$matches[1]]["var"];
+        if (strpos($name, "{{ presenter }}") !== false) {
+          $name = str_replace("{{ presenter }}", $presenterParts[$p], $name);
+          ++$p;
+        }
         $nginxVariables .= "\n{$indent}    set \$movlib_{$name} \${$c};";
         if (empty($this->fastCgiParams[$name])) {
           $offset = strtoupper($name) . str_repeat(" ", (20 - strlen($name)));
@@ -244,7 +250,7 @@ final class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
           $this->fastCgiParams[$name] = "fastcgi_param    {$offset}{$var}if_not_empty;\n";
         }
         ++$c;
-        return "/{$matches[1]}/{$this->regularExpressionTokens[$matches[2]]["regex"]}";
+        return "/{$this->regularExpressionTokens[$matches[1]]["regex"]}";
       }, $route);
 
       $presenter  = str_replace("\\", "\\\\", $presenter);
@@ -615,7 +621,7 @@ NGX;
       // If this part of the route starts with a curly brace it's a message fromatter token and part of the next route
       // part.
       if ($parts[$c]{0} == "{") {
-        $token = "{$slash}{$parts[$c]}";
+        $token = "{$slash}{$parts[$c]}{$token}";
         continue;
       }
 
