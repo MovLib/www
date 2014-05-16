@@ -79,13 +79,6 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
    */
   protected $revision;
 
-  /**
-   * The submission notes form element for revisioned forms.
-   *
-   * @var null|\MovLib\Partial\FormElement\Textarea
-   */
-  public $submissionNotes;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -251,15 +244,8 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
    *   The entity for revision control.
    * @return $this
    */
-  public function addRevisioning(\MovLib\Data\AbstractEntity $entity, &$commitMessage) {
+  public function addRevisioning(\MovLib\Data\AbstractEntity $entity) {
     $this->revision = $entity->changed->getTimestamp();
-    $this->submissionNotes = new Textarea(
-      $this->diContainerHTTP,
-      "submission-notes",
-      $this->intl->t("Submission Notes"),
-      $commitMessage,
-      [ "placeholder" => $this->intl->t("Briefly describe the changes you have made"), "required" => true ]
-    );
     return $this;
   }
 
@@ -272,9 +258,6 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
   public function close() {
     if (($actions = $this->actionElements)) {
       $actions = "<p class='actions'>{$actions}</p>";
-    }
-    if ($this->revision) {
-      $actions = "<div class='callout'>{$this->submissionNotes}{$actions}</div>";
     }
     return "{$actions}</form>";
   }
@@ -341,12 +324,6 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
             $errors[$formElement->id] = $error;
           }
         }
-      }
-
-      if ($this->revision) {
-        $error = null;
-        $this->submissionNotes->validate($error);
-        $error && $errors[$this->submissionNotes->id] = $error;
       }
 
       // Allow concrete classes to extend the validation process or alter certain error messages.

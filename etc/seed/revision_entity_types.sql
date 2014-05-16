@@ -24,68 +24,32 @@
 -- @since 0.0.1-dev
 -- ---------------------------------------------------------------------------------------------------------------------
 
-TRUNCATE TABLE `revision_entity_types`;
+TRUNCATE TABLE `revision_entities`;
 
 -- START "Revision Entity Types"
 
-INSERT INTO `revision_entity_types` SET
-  `id`    = 1,
-  `class` = '\\MovLib\\Data\\Movie\\Movie'
-;
+INSERT INTO `revision_entities` SET `class` = '\\MovLib\\Data\\Movie\\Movie';
 
-INSERT INTO `revision_entity_types` SET
-  `id`    = 2,
-  `class` = '\\MovLib\\Data\\Series\\Series'
-;
+INSERT INTO `revision_entities` SET `class` = '\\MovLib\\Data\\Series\\Series';
 
-INSERT INTO `revision_entity_types` SET
-  `id`    = 3,
-  `class` = '\\MovLib\\Data\\Release\\Release'
-;
+INSERT INTO `revision_entities` SET `class` = '\\MovLib\\Data\\Release\\Release';
 
-INSERT INTO `revision_entity_types` SET
-  `id`    = 4,
-  `class` = '\\MovLib\\Data\\Person\\Person'
-;
+INSERT INTO `revision_entities` SET `class` = '\\MovLib\\Data\\Person\\Person';
 
-INSERT INTO `revision_entity_types` SET
-  `id`    = 5,
-  `class` = '\\MovLib\\Data\\Company\\Company'
-;
+INSERT INTO `revision_entities` SET `class` = '\\MovLib\\Data\\Company\\Company';
 
-INSERT INTO `revision_entity_types` SET
-  `id`    = 6,
-  `class` = '\\MovLib\\Data\\Award\\Award'
-;
+INSERT INTO `revision_entities` SET `class` = '\\MovLib\\Data\\Award\\Award';
 
-INSERT INTO `revision_entity_types` SET
-  `id`    = 7,
-  `class` = '\\MovLib\\Data\\Award\\Category'
-;
+INSERT INTO `revision_entities` SET `class` = '\\MovLib\\Data\\Award\\Category';
 
-INSERT INTO `revision_entity_types` SET
-  `id`    = 8,
-  `class` = '\\MovLib\\Data\\Event\\Event'
-;
+INSERT INTO `revision_entities` SET `class` = '\\MovLib\\Data\\Event\\Event';
 
-INSERT INTO `revision_entity_types` SET
-  `id`    = 9,
-  `class` = '\\MovLib\\Data\\Genre\\Genre'
-;
+INSERT INTO `revision_entities` SET `class` = '\\MovLib\\Data\\Genre\\Genre';
 
-INSERT INTO `revision_entity_types` SET
-  `id`    = 10,
-  `class` = '\\MovLib\\Data\\Job\\Job'
-;
+INSERT INTO `revision_entities` SET `class` = '\\MovLib\\Data\\Job\\Job';
 
-INSERT INTO `revision_entity_types` SET
-  `id`    = 11,
-  `class` = '\\MovLib\\Data\\Help\\Article'
-;
+INSERT INTO `revision_entities` SET `class` = '\\MovLib\\Data\\Help\\Article';
 
-INSERT INTO `revision_entity_types` SET
-  `id`    = 12,
-  `class` = '\\MovLib\\Data\\Movie\\Poster'
-;
+INSERT INTO `revision_entities` SET `class` = '\\MovLib\\Data\\Movie\\Poster';
 
 -- END "Revision Entity Types"

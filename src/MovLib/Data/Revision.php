@@ -26,45 +26,144 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Revision {
+final class Revision extends \MovLib\Core\AbstractDatabase {
+
+
+  //-------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
-   * The translated name of the revision's entity.
+   * The new revision entity, depending on the construction parameters.
+   *
+   * @var \MovLib\Data\AbstractRevisionEntity
+   */
+  public $newRevision;
+
+  /**
+   * The old revision entity, depending on the construction parameters.
+   *
+   * @var \MovLib\Data\AbstractRevisionEntity
+   */
+  public $oldRevision;
+
+  /**
+   * The presenting presenter.
+   *
+   * @var \MovLib\Presentation\AbstractPresenter
+   */
+  public $presenter;
+
+  /**
+   * The class name of the revision class.
    *
    * @var string
    */
-  public $name;
+  public $revisionClass;
 
   /**
-   * The translated route of the entity.
+   * The revision entity's identifier.
    *
-   * @var string
+   * @var integer
    */
-  public $route;
+  public $revisionEntityId;
 
   /**
-   * The translated type of the revision's entity, e.g. Movie.
+   * Active request instance.
    *
-   * @var string
+   * @var \MovLib\Core\HTTP\Request
    */
-  public $type;
+  public $request;
+
+  /**
+   * Active response instance.
+   *
+   * @var \MovLib\Core\HTTP\Response
+   */
+  public $response;
+
+  /**
+   * Active session instance.
+   *
+   * @var \MovLib\Core\HTTP\Session
+   */
+  public $session;
+
+
+  //-------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * Instantiate a new Revision object.
+   * Instantiate new Revision.
    *
-   * @param string $name
-   *   The translated name of the revision's entity.
-   * @param string $route
-   *   The translated route of the entity
-   * @param string $type
-   *   The translated type of the revision's entity, e.g. Movie.
-   * @return this
+   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainer
+   *   The dependency injection container for the HTTP context.
+   * @param integer $entityTypeId
+   *
    */
-  public function __construct($name, $route, $type) {
-    $this->name  = $name;
-    $this->route = $route;
-    $this->type  = $type;
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainer, $entityClassName, $entityId, $oldChanged = null, $newChanged = null) {
+    parent::__construct($diContainer);
+    $this->presenter = $diContainer->presenter;
+    $this->request   = $diContainer->request;
+    $this->response  = $diContainer->response;
+    $this->session   = $diContainer->session;
+
+    $this->revisionClass = "\\MovLib\\Data\\{$entityClassName}\\{$entityClassName}Revision";
+    $this->revisionEntityId = constant("{$this->revisionClass}::ENTITY_ID");
+    $this->newRevision = new $this->revisionClass($diContainer, $entityId);
+    if ($newChanged) {
+      // Patch newRevision back to this datetime.
+    }
+    if ($oldChanged) {
+      // Patch from newRevision back to this datetime and put it into oldRevision.
+    }
+  }
+
+  /**
+   * Save a new entity revision.
+   *
+   * @param \MovLib\Data\AbstractEntity $entity
+   *   The entity with the new values.
+   * @return $this
+   * @throws \MovLib\Data\Exception
+   */
+  public function saveRevision(\MovLib\Data\AbstractEntity $entity) {
+    $mysqli = $this->getMySQLi();
+    // Populate the new state and make the patch.
+    $this->oldRevision = $this->newRevision;
+    $this->newRevision = new $this->revisionClass($this->diContainer, $entity->id);
+    $this->newRevision->setEntity($entity);
+    $diff = xdiff_string_bdiff(serialize($this->newRevision), serialize($this->oldRevision));
+
+    try {
+      $mysqli->autocommit(false);
+      $entity->commit();
+      $stmt = $mysqli->prepare(<<<SQL
+INSERT INTO `revisions` SET
+  `revision_entity_id` = ?,
+  `entity_id`      = ?,
+  `id`        = ?,
+  `user_id`        = ?,
+  `data`           = ?
+SQL
+      );
+      $stmt->bind_param(
+        "ddsds",
+        $this->revisionEntityId,
+        $entity->id,
+        $entity->changed,
+        $this->session->userId,
+        $diff
+      );
+      $stmt->execute();
+      $mysqli->commit();
+    }
+    catch (\Exception $e) {
+      $mysqli->rollback();
+      throw $e;
+    }
+    finally {
+      $mysqli->autocommit(true);
+    }
     return $this;
   }
 

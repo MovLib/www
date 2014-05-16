@@ -17,7 +17,10 @@
  */
 namespace MovLib\Presentation\Genre;
 
+use \MovLib\Data\Revision;
+use \MovLib\Data\AbstractRevisionEntity;
 use \MovLib\Data\Genre\Genre;
+use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Partial\FormElement\InputWikipedia;
@@ -71,9 +74,16 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
         "data-allow-external" => "true",
       ]))
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
-      ->addRevisioning($this->entity, $this->submissionNotes)
+      ->addRevisioning($this->entity)
       ->init([ $this, "valid" ])
     ;
+  }
+
+  public function valid() {
+    $revision = new Revision($this->diContainerHTTP, "Genre", $this->entity->id);
+    $revision->saveRevision($this->entity);
+    $this->alertSuccess($this->intl->t("The {$this->entity->singularKey} was updated successfully."));
+    throw new SeeOtherException($this->entity->route);
   }
 
 }

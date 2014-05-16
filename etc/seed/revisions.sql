@@ -29,59 +29,27 @@ TRUNCATE TABLE `revisions`;
 -- START "Revisions"
 
 INSERT INTO `revisions` SET
-  `entity_type_id`           = 1,
+  `id`                  = CURRENT_TIMESTAMP,
+  `revision_entity_id`           = 1,
   `entity_id`                = 2,
-  `created`                  = CURRENT_TIMESTAMP,
   `user_id`                  = 3,
-  `commit_msg`               = 'Added german title.',
-  `language_code` = 'en',
   `data`                     = 'a:0:{}'
 ;
 
 INSERT INTO `revisions` SET
-  `entity_type_id`           = 4,
+  `id`                  = CURRENT_TIMESTAMP,
+  `revision_entity_id`           = 4,
   `entity_id`                = 6,
-  `created`                  = CURRENT_TIMESTAMP,
   `user_id`                  = 3,
-  `commit_msg`               = 'Added Wikipedia link.',
-  `language_code` = 'en',
   `data`                     = 'a:0:{}'
 ;
 
 INSERT INTO `revisions` SET
-  `entity_type_id`           = 5,
+  `id`                  = CURRENT_TIMESTAMP,
+  `revision_entity_id`           = 5,
   `entity_id`                = 3,
-  `created`                  = CURRENT_TIMESTAMP,
   `user_id`                  = 3,
-  `commit_msg`               = 'Changed description.',
-  `language_code` = 'en',
   `data`                     = 'a:0:{}'
 ;
 
 -- END "Revisions"
-
-
--- START "Image Revisions"
-
-INSERT INTO `image_revisions` SET
-  `entity_type_id`           = 12,
-  `entity_id`                = 1,
-  `created`                  = CURRENT_TIMESTAMP,
-  `user_id`                  = 3,
-  `commit_msg`               = 'Changed image.',
-  `language_code` = 'en',
-  `data`                     = 'a:0:{}',
-  `path`                     = ''
-;
-
-INSERT INTO `image_revisions` SET
-  `entity_type_id`           = 12,
-  `entity_id`                = 2,
-  `created`                  = CURRENT_TIMESTAMP,
-  `user_id`                  = 3,
-  `commit_msg`               = 'Changed image description.',
-  `language_code` = 'en',
-  `data`                     = 'a:0:{}'
-;
-
--- END "Image Revisions"
