@@ -747,6 +747,11 @@ SQL
    * @throws \MemcachedException
    */
   protected function start() {
+    if (headers_sent($file, $line)) {
+      $this->log->warning("Cannot start session, headers already sent.", [ "file" => $file, "line" => $line ]);
+      return $this;
+    }
+
     // Save current session data, because PHP will destroy it.
     $data = empty($_SESSION) ? null : $_SESSION;
 
