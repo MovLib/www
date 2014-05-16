@@ -36,14 +36,15 @@ trait AwardTrait {
     if ($this->entity->deleted) {
       return $items;
     }
-    foreach ([
+    $navItems = [
       [ "category", "categories", $this->intl->t("Categories"), $this->entity->categoryCount ],
       [ "event separator", "events", $this->intl->t("Events"), $this->entity->eventCount ],
       [ "movie", "movies", $this->intl->t("Movies"), $this->entity->movieCount ],
       [ "series", "series", $this->intl->tp(-1, "Series"), $this->entity->seriesCount ],
       [ "person", "persons", $this->intl->t("Persons"), $this->entity->personCount ],
       [ "company separator", "companies", $this->intl->t("Companies"), $this->entity->companyCount ],
-    ] as list($icon, $plural, $title, $count)) {
+    ];
+    foreach ($navItems as list($icon, $plural, $title, $count)) {
       $items[] = [
         $this->intl->r("/award/{0}/{$plural}", $this->entity->id),
         "{$title} <span class='fr'>{$this->intl->format("{0,number}", $count)}</span>",

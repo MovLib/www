@@ -36,10 +36,11 @@ trait GenreTrait {
     if ($this->entity->deleted) {
       return $items;
     }
-    foreach ([
+    $navItems = [
       [ "movie", "movies", $this->intl->t("Movies"), $this->entity->movieCount ],
       [ "series separator", "series", $this->intl->tp(-1, "Series"), $this->entity->seriesCount ],
-    ] as list($icon, $plural, $title, $count)) {
+    ];
+    foreach ($navItems as list($icon, $plural, $title, $count)) {
       $items[] = [
         $this->intl->r("/genre/{0}/{$plural}", $this->entity->id),
         "{$title} <span class='fr'>{$this->intl->format("{0,number}", $count)}</span>",

@@ -39,11 +39,12 @@ trait SeriesTrait {
     if ($this->entity->deleted) {
       return $items;
     }
-    foreach ([
+    $navItems = [
       [ "award", "awards", $this->intl->t("Awards"), $this->entity->awardCount ],
       [ "season", "seasons", $this->intl->t("Seasons"), $this->entity->seasonCount ],
       [ "release separator", "releases", $this->intl->t("Releases"), $this->entity->releaseCount ],
-    ] as list($icon, $plural, $title, $count)) {
+    ];
+    foreach ($navItems as list($icon, $plural, $title, $count)) {
       $items[] = [
         $this->intl->r("/series/{0}/{$plural}", $this->entity->id),
         "{$title} <span class='fr'>{$this->intl->format("{0,number}", $count)}</span>",

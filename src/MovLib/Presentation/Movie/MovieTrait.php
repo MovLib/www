@@ -39,12 +39,13 @@ trait MovieTrait {
     if ($this->entity->deleted) {
       return $items;
     }
-    foreach ([
+    $navItems = [
       [ "person", "cast", $this->intl->t("Cast"), null ],
       [ "company", "crew", $this->intl->t("Crew"), null ],
       [ "release", "releases", $this->intl->t("Releases"), $this->entity->countReleases ],
       [ "award separator", "awards", $this->intl->t("Awards"), $this->entity->countAwards ],
-    ] as list($icon, $plural, $title, $count)) {
+    ];
+    foreach ($navItems as list($icon, $plural, $title, $count)) {
       if (isset($count)) {
         $count =  "<span class='fr'>{$this->intl->format("{0,number}", $count)}</span>";
       }

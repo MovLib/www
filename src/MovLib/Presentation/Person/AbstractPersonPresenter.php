@@ -84,12 +84,13 @@ abstract class AbstractPersonPresenter extends \MovLib\Presentation\AbstractPres
 
     // Initialize the sidebar.
     $additionalSidebarItems = null;
-    foreach ([
+    $navItems = [
       [ "movie", "movies", $this->intl->t("Movies"), $this->entity->countMovies ],
       [ "series", "series", $this->intl->tp(-1, "Series"), $this->entity->countSeries ],
       [ "release", "releases", $this->intl->t("Releases"), $this->entity->countReleases ],
       [ "award separator", "awards", $this->intl->t("Awards"), $this->entity->countAwards ],
-    ] as list($icon, $routeAddition, $title, $count)) {
+    ];
+    foreach ($navItems as list($icon, $routeAddition, $title, $count)) {
       $additionalSidebarItems[] = [
         $this->intl->r("/person/{0}/{$routeAddition}", $this->entity->id),
         "{$title}<span class='fr'>{$this->intl->format("{0,number}", $count)}</span>",
