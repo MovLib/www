@@ -192,7 +192,7 @@ final class Request {
     $this->time          =  $_SERVER["REQUEST_TIME"];
     $this->timeFloat     =  $_SERVER["REQUEST_TIME_FLOAT"];
     $this->uri           =  $_SERVER["REQUEST_URI"];
-    $this->userAgent     =  filter_var($_SERVER["HTTP_USER_AGENT"], FILTER_SANITIZE_STRING, FILTER_REQUIRE_SCALAR | FILTER_FLAG_STRIP_LOW);
+    $this->userAgent     =  empty($_SERVER["HTTP_USER_AGENT"]) ? false : filter_var($_SERVER["HTTP_USER_AGENT"], FILTER_SANITIZE_STRING, FILTER_REQUIRE_SCALAR | FILTER_FLAG_STRIP_LOW);
 
     // Careful, it wouldn't make much sense to tell the client to read our privacy policy and at the same time block
     // that page. Therefore we have to make sure that the client without IP address and/or user agent string is at least
