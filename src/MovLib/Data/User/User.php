@@ -443,6 +443,35 @@ SQL
   }
 
   /**
+   * Let the current user instance join MovLib.
+   *
+   * @return this
+   */
+  public function join() {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    $info = password_get_info($this->passwordHash);
+    if (empty($info) || empty($info["algo"])) {
+      throw new \LogicException("The password seems to be unhashed.");
+    }
+    if ($info["algo"] === 0) {
+      throw new \LogicException("The password was hashed with the following unsupported algorithm: {$info["algoName"]}");
+    }
+    if ($info["algo"] !== $this->config->passwordAlgorithm) {
+      throw new \LogicException("The password wasn’t hashed with the currently configured password hashing algorithm.");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    $mysqli = $this->getMySQLi();
+    $stmt = $mysqli->prepare("INSERT INTO `users` (`dyn_about_me`, `email`, `name`, `password`, `language_code`) VALUES('', ?, ?, ?, ?)");
+    $stmt->bind_param("ssss", $this->email, $this->name, $this->passwordHash, $this->intl->languageCode);
+    $stmt->execute();
+    $stmt->close();
+    $this->id = $mysqli->insert_id;
+    return $this;
+  }
+
+  /**
    * Load all rated entities by an user.
    *
    * @param integer $offset [optional]

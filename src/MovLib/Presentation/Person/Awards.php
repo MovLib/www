@@ -37,8 +37,8 @@ class Awards extends \MovLib\Presentation\Person\AbstractPersonPresenter {
    */
   public function init() {
     $this->initPersonPresentation(
-      $this->intl->t("Awards of {name}"),
-      $this->intl->t("Awards of {name}"),
+      $this->intl->t("Awards of {0}"),
+      $this->intl->t("Awards of {0}"),
       $this->intl->t("Awards")
     );
   }
@@ -102,10 +102,9 @@ class Awards extends \MovLib\Presentation\Person\AbstractPersonPresenter {
       return $listing;
     }
 
-    return $this->callout(
-      $this->intl->t("MovLib does not have any award details for this person."),
-      $this->intl->t("No Awards"),
-      "info"
+    return $this->calloutInfo(
+      $this->intl->t("{sitename} doesn’t have any award details for this person.", [ "sitename" => $this->config->siteName ]),
+      $this->intl->t("No Awards")
     );
   }
 

@@ -44,7 +44,7 @@ final class Messages extends \MovLib\Presentation\Profile\AbstractProfilePresent
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("Messages"));
+    return $this->checkBackLater("Messages");
   }
 
 }

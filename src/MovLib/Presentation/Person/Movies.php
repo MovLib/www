@@ -113,10 +113,9 @@ class Movies extends \MovLib\Presentation\Person\AbstractPersonPresenter {
       return "<ol class='hover-list no-list'>{$listing}</ol>";
     }
 
-    return $this->callout(
+    return $this->calloutInfo(
       "<p>{$this->intl->t("We couldn’t find any movies this person has worked on.")}</p>",
-      $this->intl->t("No Movies"),
-      "info"
+      $this->intl->t("No Movies")
     );
   }
 

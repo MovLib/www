@@ -74,11 +74,7 @@ class Crew extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
       return "<dl class='dl-big'>{$listing}</dl>";
     }
 
-    return $this->callout(
-      "<p>{$this->intl->t("We couldn’t find the crew for this movie.")}</p>",
-      $this->intl->t("No Crew"),
-      "info"
-    );
+    return $this->calloutInfo("<p>{$this->intl->t("We couldn’t find the crew for this movie.")}</p>", $this->intl->t("No Crew"));
   }
 
 }

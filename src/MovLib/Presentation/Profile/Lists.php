@@ -44,7 +44,7 @@ final class Lists extends \MovLib\Presentation\Profile\AbstractProfilePresenter 
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("Lists"));
+    return $this->checkBackLater("Lists");
   }
 
 }

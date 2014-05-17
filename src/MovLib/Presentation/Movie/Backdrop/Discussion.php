@@ -32,7 +32,7 @@ class Discussion extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("movie backdrop discussion") ]), $this->intl->t("Check back later"), "info");
+    return $this->checkBackLater("movie backdrop discussion");
   }
 
   /**

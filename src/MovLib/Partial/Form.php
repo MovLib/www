@@ -18,7 +18,6 @@
 namespace MovLib\Partial;
 
 use \MovLib\Partial\FormElement\AbstractInputFile;
-use \MovLib\Partial\FormElement\Textarea;
 
 /**
  * Defines basic POST form.
@@ -130,7 +129,7 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
     // @codeCoverageIgnoreStart
     }
     catch (\Exception $e) {
-      return $this->callout("<pre>{$e}</pre>", "Stacktrace", "error");
+      return $this->calloutError("<pre>{$e}</pre>", "Stacktrace");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -265,14 +264,14 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
   /**
    * Initialize the form.
    *
-   * @param callable $validCallback [optional]
+   * @param callable $submitCallback [optional]
    *   Callable to call if the form is valid. The callable will be invoked without any arguments.
-   * @param callable $validationCallback [optional]
+   * @param callable $validateCallback [optional]
    *   Callable to call to continue form validation in the presenter. The callable will get the errors as first
    *   parameter and you have to return the same array.
    * @return this
    */
-  public function init(callable $validCallback = null, callable $validationCallback = null) {
+  public function init(callable $submitCallback = null, callable $validateCallback = null) {
     // Export attribute to class scope and add default attributes.
     $this->attributes["accept-charset"] = "utf-8";
     $this->attributes["method"]         = "post";
@@ -327,8 +326,15 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
       }
 
       // Allow concrete classes to extend the validation process or alter certain error messages.
-      if ($validationCallback) {
-        $errors = $validationCallback($errors);
+      if ($validateCallback) {
+        $errors = $validateCallback($errors);
+        // @devStart
+        // @codeCoverageIgnoreStart
+        if ($errors !== null && !is_array($errors)) {
+          throw new \LogicException("You have to return the errors array from your validate callback.");
+        }
+        // @codeCoverageIgnoreEnd
+        // @devEnd
       }
 
       // If we have errors at this point export them and abort.
@@ -363,8 +369,8 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
       }
 
       // If no errors were found continue processing.
-      if ($validCallback) {
-        $validCallback();
+      if ($submitCallback) {
+        $submitCallback();
       }
     }
 

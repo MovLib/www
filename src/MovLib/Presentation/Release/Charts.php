@@ -40,7 +40,7 @@ class Charts extends \MovLib\Presentation\AbstractPresenter {
     $this->initBreadcrumb([ [ $this->intl->r("/releases"), $this->intl->t("Releases") ] ]);
     $this->initLanguageLinks("/release/charts");
     $this->sidebarInit([
-      [ $this->set->route, $this->intl->t("Releses"), [ "class" => "ico ico-{$this->set->singularKey}" ] ],
+      [ $this->set->route, $this->intl->t("Releases"), [ "class" => "ico ico-{$this->set->singularKey}" ] ],
       [ $this->intl->r("/{$this->set->singularKey}/random"), $this->intl->t("Random"), [ "class" => "ico ico-random" ] ],
       [ $this->intl->r("/{$this->set->singularKey}/charts"), $this->intl->t("Charts"), [ "class" => "ico ico-chart" ] ],
       [ $this->intl->r("/help/database/{$this->set->pluralKey}"), $this->intl->t("Help"), [ "class" => "ico ico-help"] ],

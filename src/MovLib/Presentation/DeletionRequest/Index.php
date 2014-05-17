@@ -43,7 +43,7 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("deletion request"));
+    return $this->checkBackLater("Deletion Request");
   }
 
 }

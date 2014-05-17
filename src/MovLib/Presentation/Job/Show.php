@@ -23,8 +23,10 @@ use \MovLib\Partial\Sex;
 /**
  * Presentation of a single job.
  *
+ * @property \MovLib\Data\Job\Job $entity
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
- * @copyright Â© 2013 MovLib
+ * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
@@ -48,20 +50,22 @@ class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    $this->infoboxBefore .=
-      "<p property='alternateName' class='ico ico-sex1 sex-1' title='{$this->intl->t("male")}'> {$this->entity->names[Sex::MALE]}</p>" .
-      "<p property='alternateName' class='ico ico-sex2 sex-2' title='{$this->intl->t("female")}'> {$this->entity->names[Sex::FEMALE]}</p>"
-    ;
+    $this->infoboxBefore .= "<p>";
+    foreach ([ Sex::MALE => $this->intl->t("Male"), Sex::FEMALE => $this->intl->t("Female") ] as $code => $title) {
+      $this->infoboxBefore .= "<span property='alternateName' class='ico ico-sex{$code} sex-{$code}' title='{$title}'> {$this->entity->names[$code]}</span> ";
+    }
+    $this->infoboxBefore .= "</p>";
 
-    if(!empty($this->entity->description)) {
-      return $this->htmlDecode($this->entity->description);
+    $this->entity->description && $this->sectionAdd($this->intl->t("Description"), $this->entity->description);
+
+    if ($this->sections) {
+      return $this->sections;
     }
-    else {
-      return $this->callout(
-        $this->intl->t("Would you like to {0}add additional information{1}?", [ "<a href='{$this->intl->r("/job/{0}/edit", $this->entity->id)}'>", "</a>" ]),
-        $this->intl->t("{sitename} doesn’t have further details about this job.", [ "sitename" => $this->config->sitename ])
-      );
-    }
+
+    return $this->calloutInfo($this->intl->t(
+      "We don’t have any further details about this job, could you {0}help us?{1}",
+      [ "<a href='{$this->intl->r("/job/{0}/edit", $this->entity->id)}'>", "</a>" ]
+    ));
   }
 
 }

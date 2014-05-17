@@ -69,7 +69,7 @@ class Releases extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("series releases"));
+    return $this->checkBackLater("series releases");
   }
 
 }

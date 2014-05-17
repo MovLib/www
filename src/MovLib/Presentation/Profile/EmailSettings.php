@@ -79,19 +79,15 @@ final class EmailSettings extends \MovLib\Presentation\Profile\AbstractProfilePr
   public function getContent() {
     $form = (new Form($this->diContainerHTTP))
       ->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email Address"), $this->email, [ "autofocus" => true, "required" => true ]))
-      ->addAction($this->intl->t("Change Email Settings"), [ "class" => "btn btn-large btn-success" ])
+      ->addAction($this->intl->t("Change"), [ "class" => "btn btn-large btn-success" ])
       ->init([ $this, "valid" ], null, [ $this, "validate" ])
     ;
 
-    return "{$this->callout(
-      $this->intl->t(
-        "{sitename} takes your privacy seriously. That’s why your email address will never show up in public. In fact, " .
-        "it stays top secret like your password.",
-        [ "sitename" => $this->config->sitename ]
-      ),
-      null,
-      "info"
-    )}{$form}";
+    return "{$this->calloutInfo($this->intl->t(
+      "{sitename} takes your privacy seriously. That’s why your email address will never show up in public. In fact, " .
+      "it stays top secret like your password.",
+      [ "sitename" => $this->config->sitename ]
+    ))}{$form}";
   }
 
   /**

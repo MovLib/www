@@ -48,15 +48,16 @@ final class Contributions extends \MovLib\Presentation\User\AbstractUserPresente
       while ($row = $result->fetch_assoc()) {
         $entity = new $row["entityClass"]($this->diContainerHTTP, $row["entityId"]);
         $revisionInfo = $entity->getRevisionInfo();
+        $created = new Time($this->intl, $row["created"]);
         $contributions .=
           "<li class='hover-item r'>" .
             "<div class='s s8'>" .
-              "<h2 class='para'>{$revisionInfo->type}: <a href='{$revisionInfo->route}'>{$this->htmlDecode($revisionInfo->name)}</a></h2>" .
+              "<h2 class='para'>{$revisionInfo->type}: {$this->a($revisionInfo->route, $this->htmlDecode($revisionInfo->name))}</h2>" .
               "<p>{$this->htmlDecode($row["commitMessage"])}</p>" .
             "</div>" .
             "<div class='s s2 tar'>" .
-              "<p>" . (new Time($this->intl, $row["created"]))->formatRelative() . "</p>" .
-              "<p><a href='{$revisionInfo->route}/{$this->intl->t("history")}/{$row["revisionHash"]}'>{$this->intl->t("show diff")}</a></p>" .
+              "<p>{$created->formatRelative()}</p>" .
+              "<p><a href='{$revisionInfo->route}/{$this->intl->r("history")}/{$row["revisionHash"]}'>{$this->intl->t("show diff")}</a></p>" .
             "</div>" .
           "</li>"
         ;
@@ -73,10 +74,9 @@ final class Contributions extends \MovLib\Presentation\User\AbstractUserPresente
    * {@inheritdoc}
    */
   public function getNoItemsContent() {
-    return $this->callout(
+    return $this->calloutInfo(
       "<p>{$this->intl->t("We couldn’t find any contributions by this user")}</p>",
-       $this->intl->t("No Contributions"),
-      "info"
+       $this->intl->t("No Contributions")
     );
   }
 

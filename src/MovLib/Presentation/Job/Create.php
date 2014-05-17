@@ -19,7 +19,6 @@ namespace MovLib\Presentation\Job;
 
 use \MovLib\Data\Job\Job;
 use \MovLib\Partial\Form;
-use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Partial\FormElement\InputWikipedia;
 use \MovLib\Partial\FormElement\TextareaHTMLExtended;
 use \MovLib\Partial\Sex;
@@ -27,9 +26,7 @@ use \MovLib\Partial\Sex;
 /**
  * Defines the job create presentation.
  *
- * @link http://validator.w3.org/check?uri=https://en.movlib.org/job/create
- * @link http://gsnedders.html5.org/outliner/process.py?url=https://en.movlib.org/job/create
- *
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -52,81 +49,50 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    $form = (new Form($this->diContainerHTTP))
-      ->addElement(new InputText($this->diContainerHTTP, "name", $this->intl->t("Unisex Name"), $this->entity->names[Sex::UNKNOWN], [
-        "placeholder" => $this->intl->t("Enter the job’s unisex name."),
-        "autofocus"   => true,
-        "required"    => true,
-      ]))
-      ->addElement(new InputText($this->diContainerHTTP, "male-name", $this->intl->t("Male Name"), $this->entity->names[Sex::MALE], [
-        "placeholder" => $this->intl->t("Enter the job’s male name."),
-        "required"    => true,
-      ]))
-      ->addElement(new InputText($this->diContainerHTTP, "female-name", $this->intl->t("Female Name"), $this->entity->names[Sex::FEMALE], [
-        "placeholder" => $this->intl->t("Enter the job’s female name."),
-        "required"    => true,
-      ]))
-      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
-        "data-allow-external" => "true",
-        "placeholder"         => $this->intl->t("Describe the job."),
-      ]))
-      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
-        "placeholder"         => $this->intl->t("Enter the job’s corresponding Wikipedia link."),
-        "data-allow-external" => "true",
-      ]))
+    $translations = $this->intl->languageCode != $this->intl->defaultLanguageCode;
+    $attributes   = [ "aria-describedby" => [ "job-title-description" ], "required" => true ];
+    $form         = new Form($this->diContainerHTTP);
+    $sex          = new Sex();
+
+    $sex->addInputTextElements($this->diContainerHTTP, $form, "title", $this->entity->names, $attributes);
+    if ($translations) {
+      $sex->addInputTextElements($this->diContainerHTTP, $form, "title-{$this->intl->languageCode}", $this->entity->names, $attributes, $this->intl->t(
+        "{0} ({1})",
+        [ 1 => $this->intl->getTranslations("languages")[$this->intl->defaultLanguageCode]->name ]
+      ));
+    }
+
+    $form
+      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description))
+      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia))
       ->addAction($this->intl->t("Create"), [ "class" => "btn btn-large btn-success" ])
     ;
 
-    if ($this->intl->languageCode !== $this->intl->defaultLanguageCode) {
-      $defaultLanguageArg = [ "default_language" =>  $this->intl->getTranslations("languages")[$this->intl->defaultLanguageCode]->name];
-      $form
-        ->addElement(new InputText($this->diContainerHTTP, "default-name", $this->intl->t(
-            "Unisex Name ({default_language})", $defaultLanguageArg
-          ), $this->entity->defaultNames[Sex::UNKNOWN], [
-          "#help-popup" => $this->intl->t("We always need this information in our main Language ({default_language}).", $defaultLanguageArg),
-          "placeholder" => $this->intl->t("Enter the job’s unisex name."),
-          "autofocus"   => true,
-          "required"    => true,
-        ]))
-        ->addElement(new InputText($this->diContainerHTTP, "default-male-name", $this->intl->t(
-            "Male Name ({default_language})", $defaultLanguageArg
-          ), $this->entity->defaultNames[Sex::MALE], [
-          "#help-popup" => $this->intl->t("We always need this information in our main Language ({default_language}).", $defaultLanguageArg),
-          "placeholder" => $this->intl->t("Enter the job’s male name."),
-          "required"    => true,
-        ]))
-        ->addElement(new InputText($this->diContainerHTTP, "default-female-name", $this->intl->t(
-            "Female Name ({default_language})", $defaultLanguageArg
-          ), $this->entity->defaultNames[Sex::FEMALE], [
-          "#help-popup" => $this->intl->t("We always need this information in our main Language ({default_language}).", $defaultLanguageArg),
-          "placeholder" => $this->intl->t("Enter the job’s female name."),
-          "required"    => true,
-        ]))
-        ->init([ $this, "valid" ])
-      ;
-      return
-        $form->open() .
-        "<div class='r'>" .
-          "<div class='s s5'>{$form->elements["default-name"]}</div>" .
-          "<div class='s s5'>{$form->elements["name"]}</div>" .
-        "</div>" .
-        "<div class='r'>" .
-          "<div class='s s5'>{$form->elements["default-male-name"]}</div>" .
-          "<div class='s s5'>{$form->elements["male-name"]}</div>" .
-        "</div>" .
-        "<div class='r'>" .
-          "<div class='s s5'>{$form->elements["default-female-name"]}</div>" .
-          "<div class='s s5'>{$form->elements["female-name"]}</div>" .
-        "</div>" .
+    $jobTitleDescription = "<p>{$this->intl->t(
+      "The unisex job title is used in contexts where no sex is available, like companies. For instance, if you’d " .
+      "create the job producer, the unisex name would be production. Male and female title may be the same, we still " .
+      "require you to enter the same title into both fields. You acknowledge that the title is actually the same for " .
+      "both by doing so."
+    )}</p>";
+    $form->init([ $this, "valid" ]);
 
-        $form->elements["description"] .
-        $form->elements["wikipedia"] .
-        $form->close()
-      ;
+    if ($translations) {
+      $jobTitleDescription .= "<p>{$this->intl->t(
+        "You’re required to enter the job titles in the default language because we need them as fallback for other " .
+        "languages that might be missing the translation."
+      )}</p>";
+      $formContent = null;
+      foreach ([ Sex::UNKNOWN, Sex::MALE, Sex::FEMALE ] as $code) {
+        $formContent .= "<div class='r'>";
+        foreach ([ "", "-{$this->intl->languageCode}" ] as $suffix) {
+          $formContent .= "<div class='s s5'>{$form->elements["title{$suffix}-{$code}"]}</div>";
+        }
+        $formContent .= "</div>";
+      }
+      $form = "{$form->open()}{$formContent}{$form->elements["description"]}{$form->elements["wikipedia"]}{$form->close()}";
     }
-    else {
-      return $form->init([ $this, "valid" ]);
-    }
+
+    return "{$this->calloutInfo($jobTitleDescription, null, [ "id" => "job-title-description" ])}{$form}";
   }
 
 }

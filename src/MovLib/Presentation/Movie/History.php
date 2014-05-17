@@ -43,7 +43,7 @@ class History extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("history") ]), $this->intl->t("Check back later"), "info");
+    return $this->checkBackLater("history");
   }
 
 }

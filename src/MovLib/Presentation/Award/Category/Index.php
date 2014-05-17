@@ -105,11 +105,10 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function getNoItemsContent() {
-    return $this->callout(
+    return $this->calloutInfo(
       "<p>{$this->intl->t("We couldn’t find any categories belonging to this award, or there simply aren’t any categories available.")}</p>" .
       "<p>{$this->intl->t("Would you like to {0}create an award category{1}?", [ "<a href='{$this->intl->r("/award/{0}/category/create", [ $this->entity->id ])}'>", "</a>" ])}</p>",
-      $this->intl->t("No Award Categories"),
-      "info"
+      $this->intl->t("No Award Categories")
     );
   }
 

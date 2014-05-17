@@ -70,7 +70,7 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
    * @return \MovLib\Presentation\Partial\Alert
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("award icon"));
+    return $this->checkBackLater("Award Icon");
   }
 
 }

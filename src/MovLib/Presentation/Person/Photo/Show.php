@@ -47,7 +47,7 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
   }
 
   public function getContent() {
-    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("person photo") ]), $this->intl->t("Check back later"), "info");
+    return $this->checkBackLater("person photo");
   }
 
 }

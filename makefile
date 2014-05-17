@@ -60,7 +60,7 @@ seed-subtitles: $(CP)/Install/SeedSubtitles.php
 	movinstall seed-subtitles -v
 
 translation: $(CP)/Install/Translation.php
-	movinstall translation compile -v
+	movinstall translation-compile -v
 
 clean:
 	rm -rf var/intl/*

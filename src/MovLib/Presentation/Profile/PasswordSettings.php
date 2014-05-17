@@ -88,8 +88,13 @@ final class PasswordSettings extends \MovLib\Presentation\Profile\AbstractProfil
         InputPassword::MIN_LENGTH
       )}</p>"
     ;
-    // Generate a KeePass like random password for the user.
-    $randomPassword = `pwgen -cnBv 20 1`;
+
+    try {
+      // Try to generate a KeePass like random password for the user.
+      $randomPassword = `pwgen -cnBv 20 1`;
+    }
+    catch (\Exception $e) {/* Ignore! */}
+
     if (empty($randomPassword)) {
       $this->log->error("Couldn't execute pwgen command, please ensure that pwgen is installed on the server.");
     }
@@ -111,11 +116,11 @@ final class PasswordSettings extends \MovLib\Presentation\Profile\AbstractProfil
         "placeholder" => $this->intl->t("Enter your new password again"),
         "required"    => true,
       ]))
-      ->addAction($this->intl->t("Change Password Settings"), [ "class" => "btn btn-large btn-success" ])
+      ->addAction($this->intl->t("Change"), [ "class" => "btn btn-large btn-success" ])
       ->init([ $this, "valid" ], [ $this, "validate" ])
     ;
 
-    return "{$this->callout($passwordInfo, $this->intl->t("Tip"), "info")}{$form}";
+    return "{$this->calloutInfo($passwordInfo, $this->intl->t("Tip"))}{$form}";
   }
 
   /**

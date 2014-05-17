@@ -69,11 +69,13 @@ final class DangerZone extends \MovLib\Presentation\Profile\AbstractProfilePrese
     foreach ($this->session->getActiveSessions() as $activeSession) {
       if ($activeSession->ssid == $this->session->ssid) {
         $active = " class='warning'";
-        $title  = $this->intl->t("If you use this button all your active session will be terminated and you’ll be signe out!");
+        $btn    = "error";
+        $title  = $this->intl->t("If you use this button all your active session will be terminated and you’ll be signed out!");
         $text   = $this->intl->t("Sign Out");
       }
       else {
         $active = null;
+        $btn    = "warning";
         $title  = $buttonTitle;
         $text   = $buttonText;
       }
@@ -83,7 +85,7 @@ final class DangerZone extends \MovLib\Presentation\Profile\AbstractProfilePrese
         "<td>{$activeSession->authentication->formatIntl($this->intl->locale, $this->user->timezone)}</td>" .
         "<td class='small'><code>{$this->htmlEncode($activeSession->userAgent)}</code></td>" .
         "<td><code>{$activeSession->remoteAddress}</code></td>" .
-        "<td class='form-actions'><button class='btn btn-error' name='ssid' title='{$title}' type='submit' value='{$activeSession->ssid}'>{$text}</button></td>" .
+        "<td class='form-actions'><button class='btn btn-{$btn}' name='ssid' title='{$title}' type='submit' value='{$activeSession->ssid}'>{$text}</button></td>" .
         "</tr>"
       ;
     }
@@ -105,25 +107,21 @@ final class DangerZone extends \MovLib\Presentation\Profile\AbstractProfilePrese
       )}</th><th></th></tr></thead><tbody>{$sessionsTable}</tbody></table>{$sessions->close()}"
     ;
 
-    $deletion = (new Form($this->diContainerHTTP, [ "class" => "tar" ]))
-      ->addAction($this->intl->t("Delete"), [ "class" => "btn btn-small btn-error" ])
+    $deletion = (new Form($this->diContainerHTTP))
+      ->addAction($this->intl->t("Delete"), [ "class" => "btn btn-error" ])
       ->init([ $this, "deleteAccount" ])
     ;
     return
-      "{$sessionsTable}{$this->callout(
-        "<p>{$this->intl->t(
-          "If you want to delete your account—for whatever reason—click the button below. All your personal data is " .
-          "purged from our system and this action is final. Please note that all your contributions and your username " .
-          "will stay in our system. You agreed to release all your contributions to the {sitename} database along with " .
-          "an open and free license, therefor each of your contributions don’t belong to you anymore. Attribution to " .
-          "you stays with the username you’ve initially chosen. This doesn’t include any reviews of yours which have no " .
-          "open license, they are deleted as well and lost forever. Again, this action is final and there’s no way for " .
-          "you to reclaim your account after deletion!",
-          [ "sitename" => $this->config->sitename ]
-        )}</p>{$deletion}",
-        $this->intl->t("Delete Account"),
-        "error"
-      )}"
+      "{$sessionsTable}<h2>{$this->intl->t("Delete Account")}</h2><p>{$this->intl->t(
+        "If you want to delete your account—for whatever reason—click the button below. All your personal data is " .
+        "purged from our system and this action is final. Please note that all your contributions and your username " .
+        "will stay in our system. You agreed to release all your contributions to the {sitename} database along with " .
+        "an open and free license, therefor each of your contributions don’t belong to you anymore. Attribution to " .
+        "you stays with the username you’ve initially chosen. This doesn’t include any reviews of yours which have no " .
+        "open license, they are deleted as well and lost forever. Again, this action is final and there’s no way for " .
+        "you to reclaim your account after deletion!",
+        [ "sitename" => $this->config->sitename ]
+      )}</p>{$deletion}"
     ;
   }
 

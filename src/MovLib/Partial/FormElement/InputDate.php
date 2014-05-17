@@ -82,7 +82,7 @@ class InputDate extends \MovLib\Partial\FormElement\AbstractInput {
     // @codeCoverageIgnoreStart
     }
     catch (\Exception $e) {
-      return $this->callout("<pre>{$e}</pre>", "Stacktrace", "error");
+      return $this->calloutError("<pre>{$e}</pre>", "Stacktrace");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

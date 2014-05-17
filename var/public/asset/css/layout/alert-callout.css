@@ -37,19 +37,21 @@
   border-left: 5px solid #656565;
 }
 
-.alert p:last-of-type,
-.callout p:last-of-type {
+.alert > :first-child,
+.callout > :first-child {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.alert > :last-child,
+.callout > :last-child {
   margin-bottom: 0;
+  padding-bottom: 0;
 }
 
 .alert code,
 .callout code {
   background-color: #fff;
-}
-
-.alert h2,
-.callout .title {
-  margin: 0 0 5px;
 }
 
 /* ------------------------------------------------------------------------------------------------------------ error */

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Mail\Users;
+namespace MovLib\Mail\Profile;
 
 use \MovLib\Data\TemporaryStorage;
 
@@ -28,23 +28,16 @@ use \MovLib\Data\TemporaryStorage;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Join extends \MovLib\Mail\AbstractEmail {
+class JoinEmail extends \MovLib\Mail\AbstractEmail {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The user's <b>raw</b> password.
+   * The user.
    *
-   * @var string
-   */
-  protected $rawPassword;
-
-  /**
-   * The user's name.
-   *
-   * @var \MovLib\Data\User\FullUser
+   * @var \MovLib\Data\User\User
    */
   protected $user;
 
@@ -62,17 +55,10 @@ class Join extends \MovLib\Mail\AbstractEmail {
   /**
    * Create join email for activation of account.
    *
-   * @param \MovLib\Data\User\FullUser $user
+   * @param \MovLib\Data\User\User $user
    *   The user instance.
    */
-  public function __construct($user) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (!($user instanceof \MovLib\Data\User\FullUser)) {
-      throw new \InvalidArgumentException("\$user must be instance of \\MovLib\\Data\\User\\FullUser");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
+  public function __construct(\MovLib\Data\User\User $user) {
     $this->user = $user;
   }
 
@@ -85,21 +71,31 @@ class Join extends \MovLib\Mail\AbstractEmail {
    *
    * @internal
    *   We base64 encode the email address because it looks akward having your own email address as part of a URL.
+   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   *   The HTTP dependency injection container.
    * @return this
    */
-  public function init() {
+  public function init(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+    parent::init($diContainerHTTP);
+
     $this->recipient = $this->user->email;
-    $this->subject   = $this->intl->t("Welcome to {0}!", [ $kernel->sitename ]);
-    $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$this->intl->r("/profile/join")}?{$this->intl->r("token")}=" . rawurlencode(base64_encode($this->recipient));
+    $this->subject   = $this->intl->t("Welcome to {0}!", [ $diContainerHTTP->config->sitename ]);
+    $this->link      = $this->url($this->intl->r("/profile/join"), [ "token" => base64_encode($this->user->email) ]);
     $key             = "jointoken{$this->user->email}";
-    $tmp             = new TemporaryStorage();
+    $tmp             = new TemporaryStorage($diContainerHTTP);
     $user            = $tmp->get($key);
+
+    // Make sure we won't store an unhashed password in our temporary table.
+    $this->user->passwordHash = password_hash($this->user->passwordHash, $this->config->passwordAlgorithm, $this->config->passwordOptions);
+
+    // Check if we already have a temporary record for this user, create new if we don't and overwrite if we do.
     if ($user === false) {
       $tmp->set($this->user, $key);
     }
     elseif ($user != $this->user) {
       $tmp->update($this->user, $key);
     }
+
     return $this;
   }
 
@@ -107,9 +103,10 @@ class Join extends \MovLib\Mail\AbstractEmail {
    * @inheritdoc
    */
   public function getHTML() {
+    return
       "<p>{$this->intl->t("Hi {username}!", [ "username" => $this->user->name ])}</p>" .
       "<p>{$this->intl->t("Thank you for joining {0}. You may now sign in and activate your new account by {1}clicking this link{2}.", [
-        $kernel->sitename,
+        $this->config->sitename,
         "<a href='{$this->link}'>",
         "</a>"
       ])}</p>" .
@@ -130,7 +127,7 @@ class Join extends \MovLib\Mail\AbstractEmail {
     return <<<EOT
 {$this->intl->t("Hi {username}!", [ "username" => $this->user->name ])}
 
-{$this->intl->t("Thank your for joining {sitename}. You may now sign in and activate your new account by clicking the following link or copying and pasting it to your browser:", [ "sitename" => $kernel->sitename ])}
+{$this->intl->t("Thank your for joining {sitename}. You may now sign in and activate your new account by clicking the following link or copying and pasting it to your browser:", [ "sitename" => $this->config->sitename ])}
 
 {$this->link}
 

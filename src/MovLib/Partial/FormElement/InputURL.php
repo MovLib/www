@@ -119,7 +119,7 @@ class InputURL extends \MovLib\Partial\FormElement\AbstractInput {
     $this->attributes["title"]   = $this->intl->t(
       "The URL must start with either http:// or https:// and continue with a valid domain (username, password and port are not allowed)"
     );
-    if (!isset($this->attributes["placeholder"])) {
+    if (empty($this->attributes["placeholder"])) {
       $this->attributes["placeholder"] = "http(s)://";
     }
     return parent::__toString();

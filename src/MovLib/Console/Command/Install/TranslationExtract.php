@@ -18,125 +18,32 @@
 namespace MovLib\Console\Command\Install;
 
 use \Symfony\Component\Console\Input\InputInterface;
-use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Translation related insatll tasks.
+ * Extract translation strings from source files with xgettext.
  *
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Translation extends \MovLib\Console\Command\AbstractCommand {
-
-  /**
-   * Prepare a PO file string for PHP array conversion.
-   *
-   * @staticvar array $patterns
-   *   Array containing regular expression patterns to replace.
-   * @staticvar array $replacements
-   *   Array containing replacements patterns.
-   * @param string $string
-   *   The PO file string to prepare.
-   * @return string
-   *   The prepared PO file string for inclusion in a PHP file.
-   * @throws \LogicException
-   */
-  protected function prepare($string) {
-    static $patterns = [ '/"\s+"/', '/\\\\n/', '/\\\\r/', '/\\\\t/', '/\\\\"/', '/\\\\\\\\/' ];
-    static $replacements = [ "", "\n", "\r", "\t", '"', "\\" ];
-    $prepared = (string) preg_replace($patterns, $replacements, substr(rtrim($string), 1, -1));
-    if (strip_tags($prepared) != $prepared) {
-      throw new \LogicException("HTML isn't allowed in translations ({$prepared}).");
-    }
-    if (strpos($prepared, "'") !== false || strpos($prepared, '"') !== false) {
-      throw new \LogicException("Quotes (double and single) aren't allowed in translations ({$prepared}).");
-    }
-    if (($pos = strpos($prepared, "$")) !== false && isset($prepared{++$pos}) && $prepared{$pos} != " " && !is_numeric($prepared{$pos})) {
-      throw new \LogicException("PHP variables aren't allowed in translations ({$prepared}).");
-    }
-    return $prepared;
-  }
-
-  /**
-   * Compile all translations.
-   *
-   * @return this
-   */
-  protected function compile() {
-    $this->writeVerbose("Compiling translations...", self::MESSAGE_TYPE_INFO);
-
-    foreach ($this->intl->systemLocales as $code => $locale) {
-      $matches = null;
-      if ($code != $this->intl->defaultLanguageCode) {
-        $c = preg_match_all('/msgid\s+((?:".*(?<!\\\\)"\s*)+)\s+msgstr\s+((?:".*(?<!\\\\)"\s*)+)/', file_get_contents("dr://var/intl/{$locale}/messages.po"), $matches);
-        $translations = "<?php return[";
-        for ($i = 0; $i < $c; ++$i) {
-          $msgid = $this->prepare($matches[1][$i]);
-          if (empty($msgid)) {
-            continue;
-          }
-          $msgstr = $this->prepare($matches[2][$i]);
-          if (empty($msgstr)) {
-            continue;
-          }
-          if ($msgid == $msgstr) {
-            continue;
-          }
-          $translations .= "\"{$msgid}\"=>\"{$msgstr}\",";
-        }
-        file_put_contents("dr://var/intl/{$locale}/messages.php", rtrim($translations, ",") . "];");
-      }
-    }
-
-    return $this;
-  }
+final class TranslationExtract extends \MovLib\Console\Command\AbstractCommand {
 
   /**
    * {@inheritdoc}
    */
   protected function configure() {
-    $this->setName("translation");
-    $this->setDescription("Perform various translation related tasks.");
-    $this->addArgument("task", InputArgument::OPTIONAL, "extract or compile");
+    $this->setName("translation-extract");
+    $this->setDescription("Extract translation strings from source files with xgettext.");
   }
 
   /**
    * {@inheritdoc}
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    // Array containing the names of all tasks that could be executed.
-    $tasks = [
-      "extract",
-      "compile",
-    ];
-
-    if (($task = $input->getArgument('task'))) {
-      if (method_exists($this, $task)) {
-        $this->$task();
-      }
-      else {
-        $this->write("There is no task called '{$task}'.", self::MESSAGE_TYPE_ERROR);
-      }
-    }
-    else {
-      foreach ($tasks as $task) {
-        $this->$task();
-      }
-    }
-
-    return 0;
-  }
-
-  /**
-   * Extract translations to po template and update po files.
-   *
-   * @return this
-   */
-  protected function extract() {
     $potPath = $this->fs->realpath("dr://var/intl/messages.pot");
     $srcPath = $this->fs->realpath("dr://tmp/src");
 
@@ -190,17 +97,15 @@ class Translation extends \MovLib\Console\Command\AbstractCommand {
       "package-version"    => $this->config->version,
       "msgid-bugs-address" => "https://github.com/MovLib/www/issues?labels=translation",
     ] as $option => $arg) {
+      $command .= " --{$option}";
       if (isset($arg)) {
-        $command .= " --{$option}=" . escapeshellarg($arg);
-      }
-      else {
-        $command .= " --{$option}";
+        $command .= "=" . escapeshellarg($arg);
       }
     }
     $this->exec($command);
 
     $this->writeVerbose("Deleting temporary copy of source files...", self::MESSAGE_TYPE_INFO);
-    $this->fs->registerFileForDeletion($srcPath, true);
+    $this->fs->registerFileForDeletion("dr://tmp/src", true);
 
     $this->writeVerbose("Updating po files for all languages...", self::MESSAGE_TYPE_INFO);
     foreach ($this->intl->systemLocales as $code => $locale) {
@@ -217,7 +122,7 @@ class Translation extends \MovLib\Console\Command\AbstractCommand {
     }
     file_put_contents($potPath, str_replace("{$this->fs->documentRoot}/tmp", "", file_get_contents($potPath)));
 
-    return $this;
+    return 0;
   }
 
 }

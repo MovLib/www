@@ -81,13 +81,12 @@ final class InternalServerError extends \MovLib\Presentation\AbstractPresenter {
     if (($previous = $this->exception->getPrevious())) {
       $tableHeader .= "<br>{$this->formatExceptionMessage($previous)}";
     }
-    return "<div class='c'>{$this->callout(
+    return "<div class='c'>{$this->calloutInfo(
       "<table id='stacktrace-details'>" .
         "<thead>{$tableHeader}</thead>" .
         "<tbody>{$this->formatStacktrace($this->exception->getTrace())}</tbody>" .
       "</table>",
-      $this->intl->t("Stacktrace for {0}", $this->placeholder("\\" . get_class($this->exception))),
-      "info"
+      $this->intl->t("Stacktrace for {0}", $this->placeholder("\\" . get_class($this->exception)))
     )}</div>";
   }
 

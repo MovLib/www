@@ -20,6 +20,7 @@ namespace MovLib\Partial\FormElement;
 /**
  * Input Wikipedia form element.
  *
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -45,6 +46,20 @@ class InputWikipedia extends \MovLib\Partial\FormElement\InputURL {
    * @var integer
    */
   const ERROR_WRONG_HOSTNAME = 9;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __toString() {
+    if (empty($this->attributes["placeholder"])) {
+      $this->attributes["placeholder"] = "https://{$this->intl->languageCode}.wikipedia.org/";
+    }
+    return parent::__toString();
+  }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods

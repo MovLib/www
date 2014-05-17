@@ -17,6 +17,8 @@
  */
 namespace MovLib\Partial;
 
+use \MovLib\Partial\FormElement\InputText;
+
 /**
  * Defines the sex object.
  *
@@ -63,50 +65,41 @@ final class Sex {
   const NOT_APPLICABLE = 9;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
+  // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * The sex's unique identifier.
+   * Add input text elements to the form for each valid sex.
    *
-   * @var integer
+   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   *   Active HTTP dependency injection container.
+   * @param \MovLib\Partial\Form $form
+   *   The form to which the sex input field should be added.
+   * @param string $id
+   *   The input text's global unique identifier.
+   * @param array $values
+   *   An array that will contain the input text values, the array should be keyed by ISO 5218 sex codes.
+   * @param array $attributes [optional]
+   *   Additional attributes for the input text element.
+   * @param string $label [optional]
+   *   A translated string that should be used as label for the input text elements. Note that any string within the
+   *   label that matches either <code>"{0}"</code> or <code>"{sex}"</code> will be replaced by the translated sex's
+   *   name. Defaults to <code>NULL</code>.
+   * @return this
    */
-  public $id;
-
-  /**
-   * The sex's name in the current locale.
-   *
-   * @var string
-   */
-  public $name;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new sex object.
-   *
-   * @param \MovLib\Core\Intl $intl
-   *   The active intl instance.
-   * @param integer $sex
-   *   The sex constant to instantiate.
-   * @throws \ErrorException
-   *   If the given <var>$sex</var> is not a valid unique sex identifier.
-   */
-  public function __construct(\MovLib\Core\Intl $intl, $sex) {
-    $this->id   = $sex;
-    $this->name = $intl->getTranslations("sex")[$sex];
-  }
-
-  /**
-   * Get the string representation of the sex.
-   *
-   * @return string
-   *   The string representation of the sex.
-   */
-  public function __toString() {
-    return $this->name;
+  public function addInputTextElements(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, \MovLib\Partial\Form &$form, $id, array $values, array $attributes = null, $label = null) {
+    $sexes = [
+      Sex::UNKNOWN => $diContainerHTTP->intl->t("Unisex"),
+      Sex::MALE    => $diContainerHTTP->intl->t("Male"),
+      Sex::FEMALE  => $diContainerHTTP->intl->t("Female"),
+    ];
+    foreach ($sexes as $code => $name) {
+      if ($label) {
+        $name = str_replace([ "{0}", "{sex}" ], $name, $label);
+      }
+      $form->addElement(new InputText($diContainerHTTP, "{$id}-{$code}", $name, $values[$code], $attributes));
+    }
+    return $this;
   }
 
 }

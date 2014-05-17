@@ -32,14 +32,14 @@ class Awards extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
    * Initialize the movie awards presentation.
    */
   public function init() {
-    $this->initMoviePresenation($this->intl->t("Awards of {title}"), $this->intl->t("Awards of {title}"), $this->intl->t("Awards"));
+    $this->initMoviePresenation($this->intl->t("Awards of {0}"), $this->intl->t("Awards of {0}"), $this->intl->t("Awards"));
   }
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("movie awards") ]), $this->intl->t("Check back later"), "info");
+    return $this->checkBackLater("Movie Awards");
   }
 
 }

@@ -44,7 +44,7 @@ final class NotificationSettings  extends \MovLib\Presentation\Profile\AbstractP
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("Notification Settings"));
+    return $this->checkBackLater("Notification Settings");
   }
 
 }

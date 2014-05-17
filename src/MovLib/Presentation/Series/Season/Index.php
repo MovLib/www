@@ -69,7 +69,7 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("series seasons"));
+    return $this->checkBackLater("series seasons");
   }
 
 }

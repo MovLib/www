@@ -79,7 +79,7 @@ class Search extends \MovLib\Presentation\AbstractPresenter {
 
     return
       "<div class='c'>" .
-        $this->checkBackLater($this->intl->t("Search in Help")) .
+        $this->checkBackLater("Search in Help") .
         $this->intl->t("You searched for: {0}", [ $this->query ]) .
       "</div>"
     ;

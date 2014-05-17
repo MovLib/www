@@ -69,7 +69,7 @@ class Persons extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("award persons"));
+    return $this->checkBackLater("Award Persons");
   }
 
 }

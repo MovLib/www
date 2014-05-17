@@ -65,7 +65,7 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("history of article"));
+    return $this->checkBackLater("history of article");
   }
 
 }

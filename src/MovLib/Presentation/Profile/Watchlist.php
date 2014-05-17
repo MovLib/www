@@ -45,7 +45,7 @@ final class Watchlist extends \MovLib\Presentation\Profile\AbstractProfilePresen
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("Watchlist"));
+    return $this->checkBackLater("Watchlist");
   }
 
 }

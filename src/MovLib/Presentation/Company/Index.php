@@ -92,11 +92,10 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function getNoItemsContent() {
-    return $this->callout(
+    return $this->calloutInfo(
       "<p>{$this->intl->t("We couldn’t find any companies matching your filter criteria, or there simply aren’t any companies available.")}</p>" .
       "<p>{$this->intl->t("Would you like to {0}create an company{1}?", [ "<a href='{$this->intl->r("/company/create")}'>", "</a>" ])}</p>",
-      $this->intl->t("No Companies"),
-      "info"
+      $this->intl->t("No Companies")
     );
   }
 

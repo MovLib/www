@@ -70,7 +70,7 @@ class History extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("genre history"));
+    return $this->checkBackLater("genre history");
   }
 
 }

@@ -56,7 +56,7 @@ class TextareaLineArray extends \MovLib\Partial\FormElement\InputText {
     // @codeCoverageIgnoreStart
     }
     catch (\Exception $e) {
-      return $this->callout("<pre>{$e}</pre>", "Stacktrace", "error");
+      return $this->calloutError("<pre>{$e}</pre>", "Stacktrace");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd

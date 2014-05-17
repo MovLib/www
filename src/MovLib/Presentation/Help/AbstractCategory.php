@@ -110,10 +110,9 @@ abstract class AbstractCategory extends \MovLib\Presentation\AbstractIndexPresen
    * {@inheritdoc}
    */
   public function getNoItemsContent() {
-    return $this->callout(
+    return $this->calloutInfo(
       $this->intl->t("We couldn’t find any articles in this category."),
-      $this->intl->t("No Help In This Category"),
-      "info"
+      $this->intl->t("No Help In This Category")
     );
   }
 

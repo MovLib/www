@@ -69,7 +69,7 @@ class Delete extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("delete event"));
+    return $this->checkBackLater("Delete Event");
   }
 
 }

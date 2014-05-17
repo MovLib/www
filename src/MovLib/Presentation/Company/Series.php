@@ -69,7 +69,7 @@ class Series extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("company series"));
+    return $this->checkBackLater("Company Series");
   }
 
 }

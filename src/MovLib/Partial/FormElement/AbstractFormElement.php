@@ -133,47 +133,33 @@ abstract class AbstractFormElement extends \MovLib\Core\Presentation\DependencyI
 
     // @devStart
     // @codeCoverageIgnoreStart
-    if (empty($id)) {
-      throw new \InvalidArgumentException("A form element's \$id cannot be empty");
-    }
-    if (empty($label)) {
-      throw new \InvalidArgumentException("A form element's \$label cannot be empty");
-    }
-    if (isset($this->attributes["required"]) && !is_bool($this->attributes["required"])) {
-      throw new \InvalidArgumentException("A form element's required attribute has to be of type boolean");
-    }
+    assert(!empty($id), "A form element's \$id cannot be empty");
+    assert(!empty($label), "A form element's \$label cannot be empty");
+    assert(!isset($this->attributes["required"]) || is_bool($this->attributes["required"]), "A form element's required attribute has to be of type boolean");
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-    // Export parameters to class scope.
     $this->attributes = $attributes;
     $this->id         = $id;
     $this->label      = $label;
     $this->value      =& $value;
 
     // Add note to form element if it's required.
-    $ariaDescribedby = null;
     if (isset($this->attributes["required"])) {
-      $ariaDescribedby[] = "required";
-      $this->required    = "<div class='fr ico ico-alert popup' id='{$this->id}-required' role='note'><small class='content'>{$this->intl->t("This field is required.")}</small></div>";
+      $this->attributes["aria-describedby"][] = "{$this->id}-required";
+      $this->required = "<div class='fr ico ico-alert popup' id='{$this->id}-required' role='note'><small class='content'>{$this->intl->t("This field is required.")}</small></div>";
     }
 
     // Add help popup to form element.
     if (isset($this->attributes["#help-popup"])) {
-      $ariaDescribedby[] = "help-popup";
-      $this->helpPopup   = "<div class='fr ico ico-help popup' id='{$this->id}-help-popup' role='note'><small class='content'>{$this->attributes["#help-popup"]}</small></div>";
-      unset($this->attributes["#help-popup"]);
+      $this->attributes["aria-describedby"] = "{$this->id}-help-popup";
+      $this->helpPopup = "<div class='fr ico ico-help popup' id='{$this->id}-help-popup' role='note'><small class='content'>{$this->attributes["#help-popup"]}</small></div>";
     }
 
     // Add help text to form element.
     if (isset($this->attributes["#help-text"])) {
-      $ariaDescribedby[] = "help-text";
-      $this->helpText    = "<small class='fr' id='{$this->id}-help-text' role='note'>{$this->attributes["#help-text"]}</small>";
-      unset($this->attributes["#help-text"]);
-    }
-
-    if ($ariaDescribedby) {
-      $this->attributes["aria-describedby"] = " {$this->id}-" . implode(" {$this->id}-", $ariaDescribedby);
+      $this->attributes["aria-describedby"] = "{$this->id}-help-text";
+      $this->helpText = "<small class='fr' id='{$this->id}-help-text' role='note'>{$this->attributes["#help-text"]}</small>";
     }
   }
 

@@ -17,13 +17,20 @@
  */
 namespace MovLib\Presentation\Profile;
 
+use \MovLib\Core\Memcached;
+use \MovLib\Data\TemporaryStorage;
+use \MovLib\Data\User\User;
+use \MovLib\Exception\ClientException\UnauthorizedException;
 use \MovLib\Exception\RedirectException\SeeOtherException;
+use \MovLib\Mail\Mailer;
+use \MovLib\Mail\Profile\EmailExists;
+use \MovLib\Mail\Profile\JoinEmail;
+use \MovLib\Partial\Alert;
 use \MovLib\Partial\Form;
-use \MovLib\Partial\FormElement\InputText;
+use \MovLib\Partial\FormElement\InputCheckbox;
 use \MovLib\Partial\FormElement\InputEmail;
 use \MovLib\Partial\FormElement\InputPassword;
-use \MovLib\Data\User\User;
-use \MovLib\Partial\FormElement\InputCheckbox;
+use \MovLib\Partial\FormElement\InputText;
 
 /**
  * User join presentation.
@@ -48,32 +55,11 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
   protected $accepted = false;
 
   /**
-   * The user's email address.
-   *
-   * @var string
-   */
-  protected $email;
-
-  /**
-   * The user's raw password.
-   *
-   * @var string
-   */
-  protected $rawPassword;
-
-  /**
-   * The full user object we create during a valid join attempt.
+   * The user that will join MovLib.
    *
    * @var \MovLib\Data\User\User
    */
   protected $user;
-
-  /**
-   * The user's desired username.
-   *
-   * @var string
-   */
-  protected $username;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Setup
@@ -89,11 +75,13 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
       throw new SeeOtherException($this->intl->r("/dashboard"));
     }
 
-    // Start rendering the page.
-    $this->initPage($this->intl->t("Join"));
-    $this->initBreadcrumb([[ $this->intl->r("/users"), $this->intl->t("Users") ]]);
+    $this
+      ->initPage($this->intl->t("Join"))
+      ->initBreadcrumb([[ $this->intl->r("/users"), $this->intl->t("Users") ]])
+      ->initLanguageLinks("/profile/join")
+    ;
     $this->breadcrumb->ignoreQuery = true;
-    $this->initLanguageLinks("/profile/join");
+    $this->user = new User($this->diContainerHTTP);
 
     if ($this->request->methodGET && isset($this->request->query["token"])) {
       $this->validateToken();
@@ -112,7 +100,7 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
 
     $terms = false; // We don't care about the value, the checkbox is required!
     $form  = (new Form($this->diContainerHTTP, [ "autocomplete" => "off", "class" => "s s6 o3" ]))
-      ->addElement(new InputText($this->diContainerHTTP, "username", $this->intl->t("Username"), $this->username, [
+      ->addElement(new InputText($this->diContainerHTTP, "username", $this->intl->t("Username"), $this->user->name, [
         "autofocus"   => true,
         "maxlength"   => User::NAME_MAXIMUM_LENGTH,
         "pattern"     => "^(?!^[ ]+)(?![ ]+$)(?!^.*[ ]{2,}.*$)(?!^.*[" . preg_quote(User::NAME_ILLEGAL_CHARACTERS, "/") . "].*$).*$",
@@ -124,11 +112,11 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
           [ User::NAME_ILLEGAL_CHARACTERS, User::NAME_MAXIMUM_LENGTH ]
         ),
       ]))
-      ->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email Address"), $this->email, [
+      ->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email Address"), $this->user->email, [
         "placeholder" => $this->intl->t("Enter your email address"),
         "required"    => true,
       ]))
-      ->addElement(new InputPassword($this->diContainerHTTP, "password", $this->intl->t("Password"), $this->rawPassword, [
+      ->addElement(new InputPassword($this->diContainerHTTP, "password", $this->intl->t("Password"), $this->user->passwordHash, [
         "placeholder" => $this->intl->t("Enter your desired password"),
         "required"    => true,
       ]))
@@ -139,14 +127,14 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
         "required" => true,
       ]))
       ->addAction($this->intl->t("Sign Up"), [ "class" => "btn  btn-large btn-success" ])
-      ->init([ $this, "valid" ], [ $this, "invalid" ])
+      ->init([ $this, "submit" ], [ $this, "validate" ])
     ;
 
     if ($this->accepted === true) {
-      return "<div class='c'><small>{$this->intl->t(
+      return "<div class='c'><p>{$this->intl->t(
         "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
         [ "<a href='{$this->request->uri}'>", "</a>" ]
-      )}</small></div>";
+      )}</small></p>";
     }
 
     return "<div class='c'><div class='r'>{$form}</div></div>";
@@ -166,42 +154,43 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
    *   Associative array containing all error messages, if any.
    * @return this
    */
-  public function invalid(array &$errors) {
+  public function validate($errors) {
     // Only continue validation process if we have no errors for the username or if the errors we have are not because
     // it's a required field.
-    if (!isset($errors["username"]) || !isset($errors["username"][InputText::ERROR_REQUIRED])) {
-      $this->user->name = $_POST["username"]; // We want to validate the original data again
+    if (empty($errors["username"]) || empty($errors["username"][InputText::ERROR_REQUIRED])) {
+      // We want to validate the original data again
+      $username = $this->request->filterInput(INPUT_POST, "username", FILTER_UNSAFE_RAW);
 
-      if ($this->user->name[0] == " ") {
+      if ($username{0} == " ") {
         $errors["username"][] = $this->intl->t("The username cannot begin with a space.");
       }
 
-      if (substr($this->user->name, -1) == " ") {
+      if (substr($username, -1) == " ") {
         $errors["username"][] = $this->intl->t("The username cannot end with a space.");
       }
 
-      if (strpos($this->user->name, "  ") !== false) {
+      if (strpos($username, "  ") !== false) {
         $errors["username"][] = $this->intl->t("The username cannot contain multiple spaces in a row.");
       }
 
       // Switch to sanitized data
-      $this->user->name = $this->username;
+      $username = $this->user->name;
 
-      if (strpbrk($this->user->name, FullUser::NAME_ILLEGAL_CHARACTERS) !== false) {
+      if (strpbrk($this->user->name, User::NAME_ILLEGAL_CHARACTERS) !== false) {
         $errors["username"][] = $this->intl->t(
           "The username cannot contain any of the following characters: {0}",
-          [ "<code>{$kernel->htmlEncode(FullUser::NAME_ILLEGAL_CHARACTERS)}</code>" ]
+          [ "<code>{$this->htmlEncode(User::NAME_ILLEGAL_CHARACTERS)}</code>" ]
         );
       }
 
-      if (mb_strlen($this->user->name) > FullUser::NAME_MAXIMUM_LENGTH) {
+      if (mb_strlen($this->user->name) > User::NAME_MAXIMUM_LENGTH) {
         $errors["username"][] = $this->intl->t(
           "The username is too long: it must be {0,number,integer} characters or less.",
-          [ FullUser::NAME_MAXIMUM_LENGTH ]
+          [ User::NAME_MAXIMUM_LENGTH ]
         );
       }
 
-      if (empty($errors["username"]) && $this->user->checkName($this->user->name) === true) {
+      if (empty($errors["username"]) && $this->user->inUse("name", $this->user->name) === true) {
         $errors["username"][] = $this->intl->t("The username is already taken, please choose another one.");
       }
 
@@ -212,7 +201,7 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
     }
 
     // More descriptive error message if the user hasn't accepted the privacy policy and terms of use.
-    if ($this->terms === false) {
+    if (isset($errors["terms"])) {
       $errors["terms"] = $this->intl->t("You have to accept the {privacy_policy} and {terms_of_use} to join {sitename}.", [
         "privacy_policy" => "<a href='{$this->intl->r("/privacy-policy")}'>{$this->intl->t("Privacy Policy")}</a>",
         "terms_of_use"   => "<a href='{$this->intl->r("/terms-of-use")}'>{$this->intl->t("Terms of Use")}</a>",
@@ -220,7 +209,11 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
       ]);
     }
 
-    return $this;
+    if ((new Memcached($this->log))->isRemoteAddressFlooding($this->request->remoteAddress, "join") === true) {
+      $errors[] = $this->intl->t("Too many joining attempts from this IP address. Please wait one hour before trying again.");
+    }
+
+    return $errors;
   }
 
   /**
@@ -228,32 +221,26 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
    *
    * @return this
    */
-  public function valid() {
-    $this->user->email    = $this->email->value;
-    $this->user->password = $this->user->hashPassword($this->rawPassword->value);
-    if ((new Memcached())->isRemoteAddressFlooding("join") === true) {
-      $this->checkErrors($this->intl->t("Too many joining attempts from this IP address. Please wait one hour before trying again."));
-    }
-
+  public function submit() {
     // Don't tell the user who's trying to join that we already have this email, otherwise it would be possible to
     // find out which emails we have in our system. Instead we send a message to the user this email belongs to.
-    if ($this->user->checkEmail($this->user->email) === true) {
-      $kernel->sendEmail(new EmailExists($this->user->email));
+    $mailer = new Mailer();
+    if ($this->user->inUse("email", $this->user->email) === true) {
+      $mailer->send($this->diContainerHTTP, new EmailExists($this->user->email));
     }
     // Send email with activation token if this emai isn't already in use.
     else {
-      $kernel->sendEmail(new JoinEmail($this->user));
+      $mailer->send($this->diContainerHTTP, new JoinEmail($this->user));
     }
 
-    // Settings this to true ensures that the user isn't going to see the form again. Check getContent()!
+    // Setting this to true ensures that the user isn't going to see the form again. Check getContent()!
     $this->accepted = true;
 
     // Accepted but further action is required!
     http_response_code(202);
-    $this->alerts .= new Alert(
-      $this->intl->t("An email with further instructions has been sent to {0}.", $this->placeholder($this->email->value)),
+    $this->alertSuccess(
       $this->intl->t("Successfully Joined"),
-      Alert::SEVERITY_SUCCESS
+      $this->intl->t("An email with further instructions has been sent to {0}.", $this->placeholder($this->user->email))
     );
 
     return $this;
@@ -270,16 +257,18 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
    */
   public function validateToken() {
     try {
-      // The token is the base64 encoded email address of the user, decode and validate as email before attempting to
-      // load the user from the temporary table.
-      if (($email = base64_decode($_GET["token"])) === false || filter_var($email, FILTER_VALIDATE_EMAIL, FILTER_REQUIRE_SCALAR) === false) {
+      // The token is the base64 encoded email address of the user.
+      $this->user->email = base64_decode($this->request->filterInputString(INPUT_GET, "token"));
+
+      // Validate as email before attempting to load the user from the temporary table.
+      if ($this->user->email === false || filter_var($this->user->email, FILTER_VALIDATE_EMAIL, FILTER_REQUIRE_SCALAR) === false) {
         throw new ValidationException($this->intl->t("The activation token is invalid, please go back to the mail we sent you and copy the whole link."));
       }
 
       // Email is valid, try to load the user from the temporary database.
-      $tmp  = new Temporary();
-      $user = $tmp->get("jointoken{$email}");
-      if (!($user instanceof FullUser)) {
+      $tmp  = new TemporaryStorage($this->diContainerHTTP);
+      $this->user = $tmp->get("jointoken{$this->user->email}");
+      if (!($this->user instanceof User)) {
         throw new ValidationException(
           "<p>{$this->intl->t("We couldn’t find any activation data for your token.")}</p>" .
           "<ul>" .
@@ -291,18 +280,18 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
       }
 
       // Check if the email is already activated.
-      if ($user->checkEmail($user->email) === true) {
-        throw new Unauthorized(
+      if ($this->user->inUse("email", $this->user->email) === true) {
+        throw new UnauthorizedException(new Alert(
           $this->intl->t("Seems like you’ve already activated your account, please sign in."),
           $this->intl->t("Already Activated"),
           Alert::SEVERITY_INFO
-        );
+        ));
       }
 
       // Check if the username was taken in the meantime.
-      if ($user->checkName($user->name) === true) {
-        $this->username->attributes["value"] = $user->name;
-        $this->email->attributes["value"]    = $user->email;
+      if ($this->user->inUse("name", $this->user->name) === true) {
+        $this->username->attributes["value"] = $this->user->name;
+        $this->email->attributes["value"]    = $this->user->email;
         $this->terms->attributes[]           = "checked"; // No problem, the user already accepted them!
         $this->username->invalid();
         throw new ValidationException($this->intl->t("Unfortunately in the meantime someone took your desired username, please choose another one."));
@@ -310,8 +299,8 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
 
       // Register the new account (this can't be done delayed because the user needs to validate directly after the
       // redirect) and stack the deletion of the temporary database entry.
-      $user->join();
-      $kernel->delayMethodCall([ $tmp, "delete" ], [ "jointoken{$user->email}" ]);
+      $this->user->join();
+      $this->kernel->delayMethodCall([ $tmp, "delete" ], [ "jointoken{$this->user->email}" ]);
 
       // The user has to sign in, this makes sure that the person is really who she or he claims to be. The password is
       // entered by the user while joining and never displayed anywhere to anyone (plus we hash it right away in the
@@ -320,16 +309,16 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
       // because that person would also need the secret password.
       throw new Unauthorized(
         $this->intl->t("Your account has been activated, please sign in with your email address and your secret password."),
-        $this->intl->t("Hi there {0}!", [ $user->name ]),
+        $this->intl->t("Hi {0}!", [ $this->user->name ]),
         Alert::SEVERITY_SUCCESS
       );
     }
     catch (ValidationException $e) {
-      $this->checkErrors($e->getMessage());
+      $this->alertError($this->intl->t("Validation Error"), $e->getMessage());
     }
     catch (Unauthorized $e) {
-      if (isset($user) && isset($user->email)) {
-        $e->signInPresentation->email->attributes["value"] = $user->email;
+      if ($this->user->email) {
+        $e->signInPresentation->email->attributes["value"] = $this->user->email;
       }
       throw $e;
     }

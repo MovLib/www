@@ -69,7 +69,7 @@ class History extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("job history"));
+    return $this->checkBackLater("job history");
   }
 
 }

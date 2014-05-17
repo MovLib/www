@@ -75,11 +75,10 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function getNoItemsContent() {
-    return $this->callout(
+    return $this->calloutInfo(
       "<p>{$this->intl->t("We couldn’t find any series matching your filter criteria, or there simply aren’t any series available.")}</p>" .
       "<p>{$this->intl->t("Would you like to {0}create a series{1}?", [ "<a href='{$this->intl->r("/series/create")}'>", "</a>" ])}</p>",
-      $this->intl->t("No Series"),
-      "info"
+      $this->intl->t("No Series")
     );
   }
 

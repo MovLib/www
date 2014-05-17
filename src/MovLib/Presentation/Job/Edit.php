@@ -27,11 +27,9 @@ use \MovLib\Partial\Sex;
 /**
  * Defines the job edit presentation.
  *
- * @link http://validator.w3.org/check?uri=https://en.movlib.org/job/{id}/edit
- * @link http://gsnedders.html5.org/outliner/process.py?url=https://en.movlib.org/job/{id}/edit
- *
  * @property \MovLib\Data\Job\Job $entity
  *
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -46,9 +44,8 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    */
   public function init() {
     $this->entity = new Job($this->diContainerHTTP, $_SERVER["JOB_ID"]);
-    $pageTitle    = $this->intl->t("Edit {0}", [ $this->entity->name ]);
     return $this
-      ->initPage($pageTitle, $pageTitle, $this->intl->t("Edit"))
+      ->initPage($this->intl->t("Edit {0}", [ $this->entity->name ]), null, $this->intl->t("Edit"))
       ->initEdit($this->entity, $this->intl->t("Jobs"), $this->getSidebarItems())
     ;
   }
@@ -56,29 +53,12 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
   /**
    * {@inheritdoc}
    */
-   public function getContent() {
-    return (new Form($this->diContainerHTTP))
-      ->addElement(new InputText($this->diContainerHTTP, "name", $this->intl->t("Unisex Name"), $this->entity->names[Sex::UNKNOWN], [
-        "placeholder" => $this->intl->t("Enter the job’s unisex name."),
-        "autofocus"   => true,
-        "required"    => true,
-      ]))
-      ->addElement(new InputText($this->diContainerHTTP, "male-name", $this->intl->t("Male Name"), $this->entity->names[Sex::MALE], [
-        "placeholder" => $this->intl->t("Enter the job’s male name."),
-        "required"    => true,
-      ]))
-      ->addElement(new InputText($this->diContainerHTTP, "female-name", $this->intl->t("Female Name"), $this->entity->names[Sex::FEMALE], [
-        "placeholder" => $this->intl->t("Enter the job’s female name."),
-        "required"    => true,
-      ]))
-      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
-        "data-allow-external" => "true",
-          "placeholder"         => $this->intl->t("Describe the job."),
-      ]))
-      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
-        "placeholder"         => $this->intl->t("Enter the job’s corresponding Wikipedia link."),
-        "data-allow-external" => "true",
-      ]))
+  public function getContent() {
+    $form = new Form($this->diContainerHTTP);
+    (new Sex())->addInputTextElements($this->diContainerHTTP, $form, "title", $this->entity->names, [ "required" => true ]);
+    return $form
+      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description))
+      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia))
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
       ->init([ $this, "valid" ])
     ;

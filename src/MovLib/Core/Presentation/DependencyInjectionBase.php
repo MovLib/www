@@ -187,6 +187,110 @@ class DependencyInjectionBase extends \MovLib\Core\Presentation\Base {
   }
 
   /**
+   * Get a callout.
+   *
+   * @param string $message
+   *   The callout's message.
+   * @param string $title [optional]
+   *   The callout's title, defaults to <code>NULL</code>.
+   * @param array $attributes [optional]
+   *   The callout's additional attributes, defaults to an empty array.
+   * @param integer $level [optional]
+   *   The callout's heading level, defaults to <code>3</code>.
+   * @param string $type [optional]
+   *   The callout's type, one of <code>NULL</code> (default), <code>"error"</code>, <code>"info"</code>,
+   *   <code>"success"</code> or <code>"warning"</code>.
+   * @return string
+   *   The callout.
+   */
+  final public function callout($message, $title = null, $attributes = [], $level = 3, $type = null) {
+    $title && ($title = "<h{$level} class='title'>{$title}</h{$level}>");
+    $type  && ($type = " callout-{$type}");
+    $this->addClass("callout{$type}", $attributes);
+    return "<div{$this->expandTagAttributes($attributes)}>{$title}{$message}</div>";
+  }
+
+  /**
+   * Get an error callout.
+   *
+   * <b>Color: RED</b>
+   *
+   * @param string $message
+   *   The callout's message.
+   * @param string $title [optional]
+   *   The callout's title, defaults to <code>NULL</code>.
+   * @param array $attributes [optional]
+   *   The callout's additional attributes, defaults to an empty array.
+   * @param integer $level [optional]
+   *   The callout's heading level, defaults to <code>3</code>.
+   * @return string
+   *   The error callout.
+   */
+  final public function calloutError($message, $title = null, $attributes = [], $level = 3) {
+    return $this->callout($message, $title, $attributes, $level, "error");
+  }
+
+  /**
+   * Get an info callout.
+   *
+   * <b>Color: BLUE</b>
+   *
+   * @param string $message
+   *   The callout's message.
+   * @param string $title [optional]
+   *   The callout's title, defaults to <code>NULL</code>.
+   * @param array $attributes [optional]
+   *   The callout's additional attributes, defaults to an empty array.
+   * @param integer $level [optional]
+   *   The callout's heading level, defaults to <code>3</code>.
+   * @return string
+   *   The info callout.
+   */
+  final public function calloutInfo($message, $title = null, $attributes = [], $level = 3) {
+    return $this->callout($message, $title, $attributes, $level, "info");
+  }
+
+  /**
+   * Get an success callout.
+   *
+   * <b>Color: GREEN</b>
+   *
+   * @param string $message
+   *   The callout's message.
+   * @param string $title [optional]
+   *   The callout's title, defaults to <code>NULL</code>.
+   * @param array $attributes [optional]
+   *   The callout's additional attributes, defaults to an empty array.
+   * @param integer $level [optional]
+   *   The callout's heading level, defaults to <code>3</code>.
+   * @return string
+   *   The success callout.
+   */
+  final public function calloutSuccess($message, $title = null, $attributes = [], $level = 3) {
+    return $this->callout($message, $title, $attributes, $level, "success");
+  }
+
+  /**
+   * Get an info callout.
+   *
+   * <b>Color: ORANGE</b>
+   *
+   * @param string $message
+   *   The callout's message.
+   * @param string $title [optional]
+   *   The callout's title, defaults to <code>NULL</code>.
+   * @param array $attributes [optional]
+   *   The callout's additional attributes, defaults to an empty array.
+   * @param integer $level [optional]
+   *   The callout's heading level, defaults to <code>3</code>.
+   * @return string
+   *   The warning callout.
+   */
+  final public function calloutWarning($message, $title = null, $attributes = [], $level = 3) {
+    return $this->callout($message, $title, $attributes, $level, "warning");
+  }
+
+  /**
    * Output a "check back later" callout for a feature that isn't implemented yet.
    *
    * @param string $what
@@ -197,10 +301,10 @@ class DependencyInjectionBase extends \MovLib\Core\Presentation\Base {
    *   The "check back later" callout.
    */
   final public function checkBackLater($what, $level = 2) {
-    return $this->callout(
-      $this->intl->t("The {0} feature isn’t implemented yet.", "<span class='quotes'>{$what}</span>"),
+    return $this->calloutInfo(
+      $this->intl->t("The {0} feature isn’t implemented yet.", $this->placeholder($what)),
       $this->intl->t("Check back later"),
-      "info",
+      null,
       $level
     );
   }
@@ -231,6 +335,18 @@ class DependencyInjectionBase extends \MovLib\Core\Presentation\Base {
 
       // Go through all attributes and expand them.
       foreach ((array) $attributes as $name => $value) {
+        // @devStart
+        // @codeCoverageIgnoreStart
+        assert(!empty($name), "The name of an attribute cannot be empty.");
+        // @codeCoverageIgnoreEnd
+        // @devEnd
+
+        // Any attribute that starts with a hash is a configuration attribute and shouldn't be included in the actually
+        // printed attributes.
+        if ($name{0} == "#") {
+          continue;
+        }
+
         // Special handling of boolean attributes, only include them if they are true and do not include the value.
         if ($value === (boolean) $value) {
           $value && ($expanded .= " {$name}");
@@ -249,19 +365,24 @@ class DependencyInjectionBase extends \MovLib\Core\Presentation\Base {
         // All other attributes are treated equally, but only if they have a value. But beware that the alt attribute
         // is an exception to this rule.
         elseif ($name == "alt" || !empty($value)) {
-          // @devStart
-          // @codeCoverageIgnoreStart
-          if (empty($name)) {
-            throw new \LogicException("An attribute's name cannot be empty");
-          }
-          // @codeCoverageIgnoreEnd
-          // @devEnd
-
           // Only output the language attribute if it differs from the current document language.
           if ($name == "lang" && $this->intl->languageCode == $value) {
             continue;
           }
-          $expanded .= " {$name}='{$this->htmlEncode($value)}'";
+
+          // Some attributes pass their values as arrays, which we have to expand to a space separated list.
+          if ($value === (array) $value) {
+            $value = implode(" ", $value);
+          }
+
+          // Only encode the value if it's actually not empty. Note that the not empty check from above might not cover
+          // this situation here because the attribute could be an alternative text.
+          if (!empty($value)) {
+            $value = $this->htmlEncode($value);
+          }
+
+          // Finally we can put it all together.
+          $expanded .= " {$name}='{$value}'";
         }
       }
 

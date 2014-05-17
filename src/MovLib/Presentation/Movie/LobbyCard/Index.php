@@ -39,11 +39,7 @@ class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function getNoItemsContent() {
-    return $this->callout(
-      "<p>{$this->intl->t("We couldn’t find any posters for this movie.")}</p>",
-      $this->intl->t("No Lobby Cards"),
-      "info"
-    );
+    return $this->calloutInfo("<p>{$this->intl->t("We couldn’t find any posters for this movie.")}</p>", $this->intl->t("No Lobby Cards"));
   }
 
   /**

@@ -82,7 +82,7 @@ trait SectionTrait {
     if ($attributes !== (array) $attributes) {
       $attributes = [ "class" => $attributes ];
     }
-    $attributes["id"] = mb_strtolower(preg_replace("/[^\d\w-_]+/", "-", $title));
+    $attributes["id"] = $this->htmlStringToID($title);
     if (is_numeric($title{0})) {
       $attributes["id"] = "s{$attributes["id"]}"; // Numeric CSS ids arent' allowed!
     }

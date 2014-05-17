@@ -81,27 +81,6 @@ class Base {
   }
 
   /**
-   * Get a callout.
-   *
-   * @param string $message
-   *   The callout's message.
-   * @param string $title [optional]
-   *   The callout's title, defaults to <code>NULL</code>.
-   * @param string $type [optional]
-   *   The callout's type, one of <code>NULL</code> (default), <code>"danger"</code>, <code>"info"</code>, or
-   *   <code>"warning"</code>.
-   * @param integer $level [optional]
-   *   The callout's heading level, defaults to <code>3</code>.
-   * @return string
-   *   The callout.
-   */
-  final public function callout($message, $title = null, $type = null, $level = 3) {
-    $title && ($title = "<h{$level} class='title'>{$title}</h{$level}>");
-    $type  && ($type = " callout-{$type}");
-    return "<div class='callout{$type}'>{$title}{$message}</div>";
-  }
-
-  /**
    * Get an image.
    *
    * @param \MovLib\Data\Image\ImageStyle $imageStyle
@@ -229,6 +208,35 @@ class Base {
       return $text;
     }
     return htmlspecialchars($text, ENT_QUOTES | ENT_HTML5);
+  }
+
+  /**
+   * Transform any string into a valid value for use within an HTML id attribute.
+   *
+   * @link http://stackoverflow.com/a/79022/1251219
+   * @param string $string
+   *   The string to transform.
+   * @return string
+   *   The transformed string for use within an HTML id attribute.
+   */
+  final public function htmlStringToID($string) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert(is_string($string), "\$string must be of type string.");
+    assert(!empty($string), "\$string cannot be empty.");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    // We go even further than the specifications and replace _ with - as well because our CSS only uses dashes.
+    $id = strtr(mb_strtolower(preg_replace("/[^\d\w-]+/", "-", $string)), "_", "-");
+
+    // A valid id attribute's value never starts with a number. We replace any number at the beginning of the string
+    // with the n character, which stands for number.
+    if (is_numeric($id{0})) {
+      $id{0} = "n";
+    }
+
+    return $id;
   }
 
   /**

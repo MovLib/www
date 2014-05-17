@@ -43,7 +43,7 @@ class Delete extends \MovLib\Presentation\Person\AbstractPersonPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("delete person") ]), $this->intl->t("Check back later"), "info");
+    return $this->checkBackLater("delete person");
   }
 
 }

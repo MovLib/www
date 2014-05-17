@@ -45,7 +45,7 @@ class Series extends \MovLib\Presentation\Person\AbstractPersonPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("person series") ]), $this->intl->t("Check back later"), "info");
+    return $this->checkBackLater("person series");
   }
 
 }

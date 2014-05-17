@@ -43,7 +43,7 @@ class Discussion extends \MovLib\Presentation\Person\AbstractPersonPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("discuss person") ]), $this->intl->t("Check back later"), "info");
+    return $this->checkBackLater("discuss person");
   }
 
 }

@@ -60,18 +60,23 @@ abstract class AbstractMoviePresenter extends \MovLib\Presentation\AbstractPrese
     $this->schemaType            = "Movie";
     $this->headingSchemaProperty = null;
 
-    $title =
-      $title
-        ? str_replace("{title}", $this->entity->displayTitleAndYear, $title)
-        : $this->entity->displayTitleAndYear
-    ;
+    if ($title) {
+      $title = str_replace("{0}", $this->entity->displayTitleAndYear, $title);
+    }
+    else {
+      $title = $this->entity->displayTitleAndYear;
+    }
 
     $movieHelper = new MovieHelper($this->diContainerHTTP);
-    $pageTitle   = $pageTitle
-      ? str_replace("{title}", $movieHelper->getStructuredDisplayTitle($this->entity), $pageTitle)
-      : $movieHelper->getStructuredDisplayTitle($this->entity, false)
-    ;
-    $breadcrumbTitle && $breadcrumbTitle = str_replace("{title}", $this->entity->displayTitleAndYear, $breadcrumbTitle);
+    if ($pageTitle) {
+      $pageTitle = str_replace("{0}", $movieHelper->getStructuredDisplayTitle($this->entity));
+    }
+    else {
+      $pageTitle = $movieHelper->getStructuredDisplayTitle($this->entity, false);
+    }
+    if ($breadcrumbTitle) {
+      $breadcrumbTitle = str_replace("{title}", $this->entity->displayTitleAndYear, $breadcrumbTitle);
+    }
 
     $this->initPage($title, $pageTitle, $breadcrumbTitle);
 

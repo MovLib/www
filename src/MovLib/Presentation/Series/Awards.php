@@ -69,7 +69,7 @@ class Awards extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("series awards"));
+    return $this->checkBackLater("series awards");
   }
 
 }

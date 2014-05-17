@@ -32,7 +32,7 @@ class Create extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->callout($this->intl->t("The {0} feature isn’t implemented yet.", [ $this->intl->t("movie lobby card upload") ]), $this->intl->t("Check back later"), "info");
+    return $this->checkBackLater("movie lobby card upload");
   }
 
   /**

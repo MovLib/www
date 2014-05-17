@@ -86,11 +86,7 @@ class Cast extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
       return "<ol class='hover-list no-list'>{$listing}</ol>";
     }
 
-    return $this->callout(
-      "<p>{$this->intl->t("We couldn’t find the cast for this movie.")}</p>",
-      $this->intl->t("No Cast"),
-      "info"
-    );
+    return $this->calloutInfo("<p>{$this->intl->t("We couldn’t find the cast for this movie.")}</p>", $this->intl->t("No Cast"));
   }
 
 }

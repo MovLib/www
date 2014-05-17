@@ -45,7 +45,7 @@ final class Collection extends \MovLib\Presentation\Profile\AbstractProfilePrese
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("Collection"));
+    return $this->checkBackLater("Collection");
   }
 
 }

@@ -51,6 +51,13 @@ final class Memcached {
 
 
   /**
+   * The active logger instance.
+   *
+   * @var \MovLib\Core\Log
+   */
+  protected $log;
+
+  /**
    * The current persistent memcached connection.
    *
    * @var \Memcached
@@ -86,14 +93,17 @@ final class Memcached {
    * @internal
    *   No clue how it's possible to get to this exception via PHPUnit, setting to ignore because it seems this will
    *   never happen (and if it does, we'll know how to test it).
+   * @param \MovLib\Core\Log $logger
+   *   The active logger instance.
    */
-  public function __construct() {
+  public function __construct(\MovLib\Core\Log $log) {
+    $this->log = $log;
     if (!self::$memcached) {
       self::$memcached = new \Memcached("_");
       if (self::$memcached->setOptions(self::$options) === false || self::$memcached->addServers(self::$servers) === false) {
         // @codeCoverageIgnoreStart
         $e = new \MemcachedException(self::$memcached->getResultMessage(), self::$memcached->getResultCode());
-        Log::critical("Couldn't connect to Memcached server.", [ "exception" => $e ]);
+        $this->log->critical($e);
         throw $e;
         // @codeCoverageIgnoreEnd
       }
@@ -116,7 +126,7 @@ final class Memcached {
     if (self::$memcached->delete($key) === false && ($code = self::$memcached->getResultCode()) !== \Memcached::RES_NOTFOUND) {
       // @codeCoverageIgnoreStart
       $e = new \MemcachedException(self::$memcached->getResultMessage(), $code);
-      Log::critical("Couldn't delete Memcached value.", [ "exception" => $e ]);
+      $this->log->critical($e);
       throw $e;
       // @codeCoverageIgnoreEnd
     }
@@ -138,7 +148,7 @@ final class Memcached {
     if ($value === false && ($code = self::$memcached->getResultCode()) !== \Memcached::RES_NOTFOUND) {
       // @codeCoverageIgnoreStart
       $e = new \MemcachedException(self::$memcached->getResultMessage(), $code);
-      Log::critical("Couldn't get Memcached value.", [ "exception" => $e ]);
+      $this->log->critical($e);
       throw $e;
       // @codeCoverageIgnoreEnd
     }
@@ -165,7 +175,7 @@ final class Memcached {
     if ($value === false) {
       // @codeCoverageIgnoreStart
       $e = new \MemcachedException(self::$memcached->getResultMessage(), self::$memcached->getResultCode());
-      Log::critical("Couldn't increment Memcached value.", [ "exception" => $e ]);
+      $this->log->critical($e);
       throw $e;
       // @codeCoverageIgnoreEnd
     }
@@ -192,16 +202,17 @@ final class Memcached {
   /**
    * Check if this IP attempted to execute an event too many times.
    *
+   * @param string $remoteAddress
+   *   The remote address to check.
    * @param string $event
    *   The event identifier (e.g. presentation identifier, <code>$presentation->id</code>).
    * @return this
    * @throws \MemcachedException
    */
-  public function isRemoteAddressFlooding($event) {
-    if ($this->isFlooding("{$event}{$kernel->remoteAddress}", self::FLOODING_IP_MAX) === true) {
-      $message = "Flooding: too many attempts to invoke event from remote address.";
-      $e       = new \MemcachedException($message);
-      Log::warning($message, [ "event" => $event, "exception" => $e, "remote address" => $kernel->remoteAddress ]);
+  public function isRemoteAddressFlooding($remoteAddress, $event) {
+    if ($this->isFlooding("{$event}{$remoteAddress}", self::FLOODING_IP_MAX) === true) {
+      $e = new \MemcachedException("Flooding: too many attempts to invoke event from remote address.");
+      $this->log->warning($e, [ "remoteAddress" => $remoteAddress ]);
       throw $e;
     }
     return $this;
@@ -223,7 +234,7 @@ final class Memcached {
     if (self::$memcached->set($key, $value, $expiration) === false) {
       // @codeCoverageIgnoreStart
       $e = new \MemcachedException(self::$memcached->getResultMessage(), self::$memcached->getResultCode());
-      Log::critical("Couldn't set Memcached value.", [ "exception" => $e ]);
+      $this->log->critical($e);
       throw $e;
       // @codeCoverageIgnoreEnd
     }

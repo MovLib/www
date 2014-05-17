@@ -157,7 +157,9 @@ final class Kernel {
     $this->diContainer = new DIContainer();
     $this->boot($documentRoot, "{$basename}-cli");
     $this->diContainer->fs->setProcessOwner($this->diContainer->config->user, $this->diContainer->config->group);
-    (new Application($this->diContainer, $basename))->run();
+    $application = new Application($this->diContainer, $basename);
+    $application->setAutoExit(false);
+    $application->run();
     $this->shutdown();
     return $this;
   }

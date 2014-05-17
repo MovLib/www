@@ -69,7 +69,7 @@ class Companies extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("event companies"));
+    return $this->checkBackLater("Event Companies");
   }
 
 }

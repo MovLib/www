@@ -65,7 +65,7 @@ abstract class AbstractDiscussion extends \MovLib\Presentation\AbstractPresenter
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("discuss article"));
+    return $this->checkBackLater("discuss article");
   }
 
 }

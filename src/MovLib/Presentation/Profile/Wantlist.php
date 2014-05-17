@@ -44,7 +44,7 @@ final class Wantlist extends \MovLib\Presentation\Profile\AbstractProfilePresent
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("Wantlist"));
+    return $this->checkBackLater("Wantlist");
   }
 
 }

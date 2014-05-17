@@ -65,7 +65,7 @@ class Movies extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater($this->intl->t("award category movies"));
+    return $this->checkBackLater("Award Category Movies");
   }
 
 }

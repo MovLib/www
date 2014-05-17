@@ -118,7 +118,7 @@ final class Show extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
     foreach ($titleSet->loadEntityTitles() as $title) {
       $title->title =
         isset($title->comment)
-          ? $this->intl->t("{title} ({comment})", [ "title" => $title->title, "comment" => $title->comment ])
+          ? $this->intl->t("{0} ({1})", [ "title" => $title->title, "comment" => $title->comment ])
           : $title->title
       ;
       $titles .=
@@ -149,7 +149,7 @@ final class Show extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
     foreach ($taglineSet->loadEntityTaglines() as $tagline) {
       $tagline->tagline =
         isset($tagline->comment)
-          ? $this->intl->t("{title} ({comment})", [ "title" => $tagline->tagline, "comment" => $tagline->comment ])
+          ? $this->intl->t("{0} ({1})", [ "title" => $tagline->tagline, "comment" => $tagline->comment ])
           : $tagline->tagline
       ;
       $taglines .=

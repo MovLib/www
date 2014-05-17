@@ -69,11 +69,10 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function getNoItemsContent() {
-    return $this->callout(
+    return $this->calloutInfo(
       "<p>{$this->intl->t("We couldn’t find any genres matching your filter criteria, or there simply aren’t any genres available.")}</p>" .
       "<p>{$this->intl->t("Would you like to {0}create an genre{1}?", [ "<a href='{$this->intl->r("/genre/create")}'>", "</a>" ])}</p>",
-      $this->intl->t("No Genres"),
-      "info"
+      $this->intl->t("No Genres")
     );
   }
 
