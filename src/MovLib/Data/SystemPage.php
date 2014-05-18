@@ -130,21 +130,24 @@ SQL
    * @throws \MovLib\Exception\DatabaseException
    */
   public function commit() {
-    $db->query(
-      "UPDATE `system_pages` SET
-        `dyn_titles` = COLUMN_ADD(`dyn_titles`, ?, ?),
-        `dyn_texts` = COLUMN_ADD(`dyn_texts`, ?, ?)
-      WHERE `id` = ?
-      LIMIT 1",
+    $stmt = $this->getMySQLi()->prepare(<<<SQL
+UPDATE `system_pages` SET
+  `dyn_titles` = COLUMN_ADD(`dyn_titles`, ?, ?),
+  `dyn_texts` = COLUMN_ADD(`dyn_texts`, ?, ?)
+WHERE `id` = ?
+LIMIT 1
+SQL
+    );
+    $stmt->bind_param(
       "ssssi",
-      [
-        $i18n->languageCode,
-        $this->title,
-        $i18n->languageCode,
-        $this->text,
-        $this->id,
-      ]
-    )->close();
+      $this->intl->languageCode,
+      $this->title,
+      $this->intl->languageCode,
+      $this->text,
+      $this->id
+    );
+    $stmt->execute();
+    $stmt->close();
 
     return $this;
   }

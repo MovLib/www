@@ -173,10 +173,6 @@ class TextareaHTMLRaw extends \MovLib\Partial\FormElement\AbstractFormElement {
    *   The valid HTML.
    */
   protected function validateValue($html, &$errors) {
-    if ($session->isAdmin() === false) {
-      throw new Unauthorized($this->intl->t("You must be signed in and have administrator privileges to enter raw HTML."));
-    }
-
     // Trim the submitted HTML.
     $html = trim($html);
 

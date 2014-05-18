@@ -532,7 +532,7 @@ SQL
     if ($this->isAuthenticated) {
       if ($isAdmin === null) {
         $result  = $this->getMySQLi()->query("SELECT `admin` FROM `users` WHERE `id` = {$this->userId} LIMIT 1");
-        $isAdmin = $result && $result->fetch_row()[0] === 1;
+        $isAdmin = $result && $result->fetch_row()[0] == 1;
         $result->free();
       }
       return $isAdmin;

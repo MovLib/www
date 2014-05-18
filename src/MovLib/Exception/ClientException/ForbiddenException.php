@@ -17,6 +17,8 @@
  */
 namespace MovLib\Exception\ClientException;
 
+use \MovLib\Presentation\Error\Forbidden;
+
 /**
  * 403 Forbidden
  *
@@ -38,7 +40,8 @@ final class ForbiddenException extends \RuntimeException implements \MovLib\Exce
    * {@inheritdoc}
    */
   public function getPresentation(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-
+    $diContainerHTTP->presenter = (new Forbidden($diContainerHTTP))->init($this->message);
+    return $diContainerHTTP->presenter->getPresentation($diContainerHTTP->presenter->getContent());
   }
 
 }

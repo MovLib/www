@@ -17,9 +17,10 @@
  */
 namespace MovLib\Presentation\SystemPage;
 
+use \MovLib\Partial\Form;
 use \MovLib\Exception\RedirectException\SeeOtherException;
-use \MovLib\Presentation\Partial\FormElement\InputText;
-use \MovLib\Presentation\Partial\FormElement\TextareaHTMLRaw;
+use \MovLib\Partial\FormElement\InputText;
+use \MovLib\Partial\FormElement\TextareaHTMLRaw;
 
 /**
  * Allows administrators to edit system pages.
@@ -39,19 +40,19 @@ abstract class AbstractEdit extends \MovLib\Presentation\SystemPage\AbstractShow
   public function initSystemPage($id, $headTitle, $pageTitle = null, $breadcrumbTitle = null) {
     // Don't allow non-admin users to edit this system page.
     $this->session->checkAuthorizationAdmin($this->intl->t(
-      "The page you want to edit can only be changed by administrators of {sitename}.",
+      "This page can only be changed by administrators of {sitename}.",
       [ "sitename" => $this->config->sitename ]
     ));
 
     // Request authorization from admins who have been logged in for a long time.
-    $this->session->checkAuthorizationTimestamp(
+    $this->session->checkAuthorizationTime(
       $this->intl->t("Please sign in again to verify the legitimacy of this request.")
     );
 
     parent::initSystemPage(
       $id,
+      $this->intl->t("Edit {0}", $headTitle),
       $this->intl->t("Edit {0}", $this->placeholder($headTitle)),
-      null,
       $this->intl->t("Edit")
     );
     $this->breadcrumb->addCrumb($this->systemPage->route, $headTitle);
@@ -64,20 +65,20 @@ abstract class AbstractEdit extends \MovLib\Presentation\SystemPage\AbstractShow
    */
   public function getContent() {
     $form = (new Form($this->diContainerHTTP))
-      ->formAddElement(new InputText("title", $this->intl->t("Title"), $this->systemPage->title, [
+      ->addElement(new InputText($this->diContainerHTTP, "title", $this->intl->t("Title"), $this->systemPage->title, [
         "#help-popup" => $this->intl->t("A system page’s title cannot contain any HTML."),
         "autofocus"   => true,
         "placeholder" => $this->intl->t("Enter the system page title"),
         "required"    => true,
       ]))
-      ->formAddElement(new TextareaHTMLRaw("content", $this->intl->t("Content"), $this->systemPage->text, [
+      ->addElement(new TextareaHTMLRaw($this->diContainerHTTP,"content", $this->intl->t("Content"), $this->systemPage->text, [
         "#help-popup" => $this->intl->t("A system page’s text content can contain any HTML."),
         "placeholder" => $this->intl->t("Enter the system page content"),
         "required"    => true,
         "rows"        => 25,
       ]))
-      ->formAddAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
-      ->formInit([ $this, "valid" ])
+      ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
+      ->init([ $this, "valid" ])
     ;
 
     return "<div class='c'><div class='r'><div class='s s12'>{$form}</div></div></div>";

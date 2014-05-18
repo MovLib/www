@@ -85,8 +85,8 @@ final class Show extends \MovLib\Presentation\SystemPage\AbstractShow {
     ];
 
     if ($this->session->isAuthenticated) {
-      $this->sender        = "{$this->session->userName}@movlib.org";
-      $subjectAttributes[] = "autofocus";
+      $this->sender                   = "{$this->session->userName}@movlib.org";
+      $subjectAttributes["autofocus"] = true;
     }
     else {
       $form->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email address"), $this->sender, [
