@@ -31,14 +31,15 @@
   },
   "require": {
     "php": ">=5.5.0",
+    "cogpowered/finediff": "~0",
     "elasticsearch/elasticsearch": "~1",
-    "symfony/console": "~2",
-    "monolog/monolog": "~1"
+    "monolog/monolog": "~1",
+    "symfony/console": "~2"
   },
   "require-dev": {
-    "phpunit/phpunit": "~4",
     "jan-swiecki/simple-annotations": "~0",
-    "oodle/krumo": "~0"
+    "oodle/krumo": "~0",
+    "phpunit/phpunit": "~4"
   },
   "scripts": {
     "post-install-cmd": "MovLib\\Tool\\Composer::postInstall",
