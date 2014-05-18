@@ -136,7 +136,7 @@ SQL
     }
     $this->tableName    = "help_subcategories";
     $this->pluralKey    = "categories";
-    $this->routeKey     = "{$this->category->routeKey}/{$this->fs->sanitizeFilename($this->title)}";
+    $this->routeKey     = "{$this->category->routeKey}/" . sanitize_filename($this->title);
     $this->route        = $this->intl->r($this->routeKey);
     $this->singularKey  = "category";
     return parent::init();

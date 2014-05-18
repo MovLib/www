@@ -213,4 +213,21 @@ abstract class AbstractDatabase {
     return $stmt;
   }
 
+  /**
+   * Set the dependency injection container.
+   *
+   * @param \MovLib\Core\DIContainer $diContainer
+   *   The dependency injection container to set.
+   * @return this
+   */
+  public function setDependencyInjectionContainer(\MovLib\Core\DIContainer $diContainer) {
+    $this->diContainer = $diContainer;
+    $this->config      = $diContainer->config;
+    $this->fs          = $diContainer->fs;
+    $this->intl        = $diContainer->intl;
+    $this->kernel      = $diContainer->kernel;
+    $this->log         = $diContainer->log;
+    return $this;
+  }
+
 }

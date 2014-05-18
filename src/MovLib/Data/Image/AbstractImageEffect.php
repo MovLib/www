@@ -59,7 +59,7 @@ abstract class AbstractImageEffect {
    * Called if this object is serialized.
    *
    * @return array
-   *   Array containing the names of the propertyies that should be serialized.
+   *   Array containing the names of the properties that should be serialized.
    */
   public function __sleep() {
     return [ "styleName" ];

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Mail\User;
+namespace MovLib\Mail\Profile;
 
 use \MovLib\Data\TemporaryStorage;
 use \MovLib\Data\User\User;
@@ -29,7 +29,7 @@ use \MovLib\Data\User\User;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ResetPassword extends \MovLib\Mail\AbstractEmail {
+class ResetPasswordEmail extends \MovLib\Mail\AbstractEmail {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -68,24 +68,18 @@ class ResetPassword extends \MovLib\Mail\AbstractEmail {
 
 
   /**
-   * Initialize email properties.
+   * Initialize email.
    *
+   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   *   The HTTP dependency injection container.
    * @return this
    */
-  public function init() {
-    try {
-      $this->user    = new User(User::FROM_EMAIL, $this->recipient);
-      $token         = (new TemporaryStorage())->set([
-        "user_id"        => $this->user->id,
-        "reset_password" => true,
-      ]);
-      $this->link    = "{$kernel->scheme}://{$kernel->hostname}{$this->intl->r("/profile/reset-password")}?token={$token}";
-      $this->subject = $this->intl->t("Requested Password Reset");
-    }
-    catch (\DomainException $e) {
-      error_log($e);
-      throw $e;
-    }
+  public function init(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+    parent::init($diContainerHTTP);
+    $this->user = new User($diContainerHTTP, $this->recipient, User::FROM_EMAIL);
+    $this->subject = $this->intl->t("Requested Password Reset");
+    $token = (new TemporaryStorage())->set((object) [ "userId" => $this->user->id ]);
+    $this->link = $this->presenter->url($this->intl->r("/profile/reset-password"), [ "token" => $token ]);
     return $this;
   }
 
@@ -93,6 +87,7 @@ class ResetPassword extends \MovLib\Mail\AbstractEmail {
    * @inheritdoc
    */
   public function getHTML() {
+    return
       "<p>{$this->intl->t("Hi {0}!", [ $this->user->name ])}</p>" .
       "<p>{$this->intl->t("You (or someone else) requested to reset your password.")} {$this->intl->t("You may now confirm this action by {0}clicking this link{1}.", [
         "<a href='{$this->link}'>", "</a>"

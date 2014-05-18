@@ -88,11 +88,12 @@ final class PasswordChangeEmail extends \MovLib\Mail\AbstractEmail {
   public function init(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
     parent::init($diContainerHTTP);
     $this->recipient = $this->user->email;
-    $this->subject   = $this->intl->t("Requested Password Change");
-    $this->link      = $this->url($this->request->path, [ "token" => (new TemporaryStorage($diContainerHTTP))->set((object) [
+    $this->subject = $this->intl->t("Requested Password Change");
+    $token = (new TemporaryStorage($diContainerHTTP))->set((object) [
       "userId"      => $this->user->id,
       "newPassword" => $this->rawPassword,
-    ])]);
+    ]);
+    $this->link = $this->presenter->url($this->request->path, [ $this->intl->r("token") => $token ]);
     return $this;
   }
 

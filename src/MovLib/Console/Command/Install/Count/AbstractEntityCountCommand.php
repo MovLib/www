@@ -154,7 +154,7 @@ abstract class AbstractEntityCountCommand extends \MovLib\Console\Command\Abstra
     // @codeCoverageIgnoreEnd
     // @devEnd
     if (empty($this->getName())) {
-      $this->setName("entity-count-" . $this->fs->sanitizeFilename($this->entityName));
+      $this->setName("entity-count-" . sanitize_filename($this->entityName));
     }
     $this->addOption("seed", null, InputOption::VALUE_NONE);
     // Make sure the id columns form an array, since a simple string is also possible for convenience.

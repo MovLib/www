@@ -83,11 +83,14 @@ final class EmailAddressChangeEmail extends \MovLib\Mail\AbstractEmail {
    */
   public function init(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
     parent::init($diContainerHTTP);
+
     $this->subject = $this->intl->t("Requested Email Change");
-    $this->link    = $this->url($this->request->path, [ "token" => (new TemporaryStorage($this->diContainerHTTP))->set((object) [
+    $token = (new TemporaryStorage($this->diContainerHTTP))->set((object) [
       "userId"   => $this->user->id,
       "newEmail" => $this->recipient,
-    ])]);
+    ]);
+    $this->link = $this->presenter->url($this->request->path, [ $this->intl->r("token") => $token ]);
+
     return $this;
   }
 

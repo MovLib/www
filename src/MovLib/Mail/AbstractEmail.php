@@ -95,6 +95,13 @@ abstract class AbstractEmail {
   protected $log;
 
   /**
+   * The active presenter instance.
+   *
+   * @var \MovLib\Core\Presentation\DependencyInjectionBase
+   */
+  protected $presenter;
+
+  /**
    * The email's priority.
    *
    * @var int
@@ -182,7 +189,7 @@ abstract class AbstractEmail {
   }
 
   /**
-   * Instantiate new email.
+   * Initialize email.
    *
    * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
    *   The HTTP dependency injection container.
@@ -195,6 +202,7 @@ abstract class AbstractEmail {
     $this->intl            = $diContainerHTTP->intl;
     $this->kernel          = $diContainerHTTP->kernel;
     $this->log             = $diContainerHTTP->log;
+    $this->presenter       = $diContainerHTTP->presenter;
     $this->request         = $diContainerHTTP->request;
     $this->response        = $diContainerHTTP->response;
     $this->session         = $diContainerHTTP->session;

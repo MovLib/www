@@ -80,7 +80,7 @@ class JoinEmail extends \MovLib\Mail\AbstractEmail {
 
     $this->recipient = $this->user->email;
     $this->subject   = $this->intl->t("Welcome to {0}!", [ $diContainerHTTP->config->sitename ]);
-    $this->link      = $this->url($this->intl->r("/profile/join"), [ "token" => base64_encode($this->user->email) ]);
+    $this->link      = $this->presenter->url($this->intl->r("/profile/join"), [ $this->intl->r("token") => base64_encode($this->user->email) ]);
     $key             = "jointoken{$this->user->email}";
     $tmp             = new TemporaryStorage($diContainerHTTP);
     $user            = $tmp->get($key);

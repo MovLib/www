@@ -104,13 +104,6 @@ final class Show extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
     $this->entity->countries && $this->infoboxAdd($this->intl->t("Countries"), (new Country($this->diContainerHTTP))->getList($this->entity->countries, "contentLocation"));
 
     $this->entity->synopsis && $this->sectionAdd($this->intl->t("Synopsis"), $this->entity->synopsis, true, "callout");
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (empty($this->entity->synopsis)) {
-      $this->sectionAdd($this->intl->t("Synopsis"), "<div class='quotes'>{$this->blindtext()}</div>");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
 
     $titleSet = new MovieTitleSet($this->diContainerHTTP, $this->entity->id);
     $titles = null;

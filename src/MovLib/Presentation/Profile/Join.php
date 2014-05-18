@@ -75,16 +75,13 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
       throw new SeeOtherException($this->intl->r("/dashboard"));
     }
 
-    $this
-      ->initPage($this->intl->t("Join"))
-      ->initBreadcrumb([[ $this->intl->r("/users"), $this->intl->t("Users") ]])
-      ->initLanguageLinks("/profile/join")
-    ;
-    $this->breadcrumb->ignoreQuery = true;
+    $this->initPage($this->intl->t("Join"));
+    $this->initLanguageLinks("/profile/join");
+    $this->breadcrumb->addCrumb($this->intl->r("/users"), $this->intl->t("Users"));
     $this->user = new User($this->diContainerHTTP);
 
-    if ($this->request->methodGET && isset($this->request->query["token"])) {
-      $this->validateToken();
+    if ($this->request->methodGET && ($token = $this->request->filterInputString(INPUT_GET, "token"))) {
+      $this->validateToken($token);
     }
   }
 
@@ -123,9 +120,7 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
       ->addElement(new InputCheckbox($this->diContainerHTTP, "terms", $this->intl->t(
         "I accept the {a1}privacy policy{a} and the {a2}terms of use{a}.",
         [ "a" => "</a>", "a1" => "<a href='{$this->intl->r("/privacy-policy")}'>", "a2" => "<a href='{$this->intl->r("/terms-of-use")}'>" ]
-      ), $terms, [
-        "required" => true,
-      ]))
+      ), $terms, [ "required" => true ]))
       ->addAction($this->intl->t("Sign Up"), [ "class" => "btn  btn-large btn-success" ])
       ->init([ $this, "submit" ], [ $this, "validate" ])
     ;
@@ -137,7 +132,10 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
       )}</small></p>";
     }
 
-    return "<div class='c'><div class='r'>{$form}</div></div>";
+    return "<div class='c'>{$this->callout($this->intl->t(
+      "{sitename} is now open for beta testers, expect errors and missing features!",
+      [ "sitename" => $this->config->sitename ]
+    ))}<div class='r'>{$form}</div></div>";
   }
 
 
@@ -222,9 +220,10 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
    * @return this
    */
   public function submit() {
+    $mailer = new Mailer();
+
     // Don't tell the user who's trying to join that we already have this email, otherwise it would be possible to
     // find out which emails we have in our system. Instead we send a message to the user this email belongs to.
-    $mailer = new Mailer();
     if ($this->user->inUse("email", $this->user->email) === true) {
       $mailer->send($this->diContainerHTTP, new EmailExists($this->user->email));
     }
@@ -253,21 +252,29 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
   /**
    * Validate the submitted authentication token, join, sign in and redirect to password settings.
    *
+   * @param string $token
+   *   The user submitted token.
    * @return this
    */
-  public function validateToken() {
+  public function validateToken($token) {
     try {
       // The token is the base64 encoded email address of the user.
-      $this->user->email = base64_decode($this->request->filterInputString(INPUT_GET, "token"));
+      $this->user->email = base64_decode($token);
 
       // Validate as email before attempting to load the user from the temporary table.
       if ($this->user->email === false || filter_var($this->user->email, FILTER_VALIDATE_EMAIL, FILTER_REQUIRE_SCALAR) === false) {
         throw new ValidationException($this->intl->t("The activation token is invalid, please go back to the mail we sent you and copy the whole link."));
       }
 
-      // Email is valid, try to load the user from the temporary database.
+      // Email is valid, try to load the user from the temporary database. The key in the temporary storage isn't any
+      // random hash because we want to be able to find the registration data again if a user registers multiple times
+      // with the same email address.
+      //
+      // The temporary storage data is created in \MovLib\Mail\Profile\JoinEmail::init() because there's no need to
+      // create this entry in the database while the user is waiting for the response.
       $tmp  = new TemporaryStorage($this->diContainerHTTP);
       $this->user = $tmp->get("jointoken{$this->user->email}");
+
       if (!($this->user instanceof User)) {
         throw new ValidationException(
           "<p>{$this->intl->t("We couldn’t find any activation data for your token.")}</p>" .

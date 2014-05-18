@@ -57,7 +57,7 @@ final class AssetStreamWrapper extends \MovLib\Core\StreamWrapper\AbstractLocalS
    * {@inheritdoc}
    */
   public function getExternalPath($uri = null, $cacheBuster = null) {
-    $target    = self::$fs->urlEncodePath($this->getTarget($uri));
+    $target    = url_encode_path($this->getTarget($uri));
     $extension = pathinfo($target, PATHINFO_EXTENSION);
 
     $hostnameStatic = self::$fs->hostnameStatic;

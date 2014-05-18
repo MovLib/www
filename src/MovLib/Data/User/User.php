@@ -337,6 +337,20 @@ SQL
     }
   }
 
+  /**
+   * Called if this object is serialized.
+   *
+   * @return array
+   *   Array containing the names of the properties that should be serialized.
+   */
+  public function __sleep() {
+    return [
+      "aboutMe", "access", "birthdate", "contributionCount", "countryCode", "currencyCode", "edits", "email",
+      "languageCode", "listCount", "name", "passwordHash", "private", "profileViews", "realName", "repuation", "sex",
+      "timezone", "uploadCount", "website",
+    ];
+  }
+
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 

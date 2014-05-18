@@ -179,7 +179,7 @@ class DependencyInjectionBase extends \MovLib\Core\Presentation\Base {
       }
 
       // Add the route to the anchor element.
-      $attributes["href"] = $route{0} == "#" ? $route : $this->fs->urlEncodePath($route);
+      $attributes["href"] = $route{0} == "#" ? $route : url_encode_path($route);
     }
 
     // Put it all together.
@@ -427,6 +427,61 @@ class DependencyInjectionBase extends \MovLib\Core\Presentation\Base {
     if ($lang != $this->intl->languageCode) {
       return " lang='{$this->htmlEncode($lang)}'";
     }
+  }
+
+  /**
+   * Build URL for display in an HTML document.
+   *
+   * @param string $route
+   *   The translated and formatted route.
+   * @param array $query [optional]
+   *   Associative array of query key/value-pairs (without any URL encoding) to append to the URL.
+   * @param string $fragment [optional]
+   *   A fragment identifier (named anchor) to append to the URL. Don't include the leading <code>"#"</code>. Defaults
+   *   to <code>NULL</code>.
+   * @param boolean $absolute [optional]
+   *   Whether to create an absolute link (beginning with scheme). Useful for links that will be displayed outside of
+   *   the website such as mails. Defaults to <code>FALSE</code>.
+   * @param string $locale [optional]
+   *   The locale for the subdomain that should be used for the absolute URL. This is only used if <var>$absolute</var>
+   *   is set to <code>TRUE</code> and will only affect the subdomain that the absolute URL will use. Defaults to
+   *   <code>NULL</code> and therefore to the current system locale.
+   * @return string
+   *   The formatted URL ready for print.
+   */
+  final public function url($route, array $query = null, $fragment = null, $absolute = false, $locale = null) {
+    // Encode the route's path for save inclusion in any environment.
+    $route = url_encode_path($route);
+
+    // Append the query string to the URL.
+    if ($query) {
+      $queryString = null;
+      foreach ($query as $key => $value) {
+        if ($queryString) {
+          $queryString .= "&amp;";
+        }
+        $queryString .= rawurlencode($key) . "=" . rawurlencode($value);
+      }
+      $route .= "?{$queryString}";
+    }
+
+    // Append the fragment string to the URL.
+    if ($fragment) {
+      $route .= "#{$fragment}";
+    }
+
+    // Prepend scheme and host to URL.
+    if ($absolute === true) {
+      if ($locale) {
+        $hostname = "{$locale{0}}{$locale{1}}.{$this->config->hostname}";
+      }
+      else {
+        $hostname = $this->request->hostname;
+      }
+      return "{$this->request->scheme}://{$hostname}{$route}";
+    }
+
+    return $route;
   }
 
 }

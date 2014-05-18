@@ -73,9 +73,12 @@ final class AccountDeletionEmail extends \MovLib\Mail\AbstractEmail {
    */
   public function init(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
     parent::init($diContainerHTTP);
+
     $this->recipient = $this->user->email;
-    $this->subject   = $this->intl->t("Requested Deletion");
-    $this->link      = $this->url($this->request->path, [ "token" => (new TemporaryStorage($this->diContainerHTTP))->set($this->user->id) ]);
+    $this->subject = $this->intl->t("Requested Deletion");
+    $token = (new TemporaryStorage($this->diContainerHTTP))->set($this->user->id);
+    $this->link = $this->presenter->url($this->request->path, [ $this->intl->r("token") => $token ]);
+
     return $this;
   }
 

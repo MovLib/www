@@ -92,7 +92,8 @@ final class Breadcrumb extends \MovLib\Core\Presentation\DependencyInjectionBase
       $crumbs .= "<li typeof='Breadcrumb'>{$this->a(
         $this->trail[$i][0],
         "<span class='small' property='title'>{$this->trail[$i][1]}</span>",
-        $this->trail[$i][2]
+        $this->trail[$i][2],
+        true
       )}</li>";
     }
 

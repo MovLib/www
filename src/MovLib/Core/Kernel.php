@@ -114,6 +114,9 @@ final class Kernel {
     // @codeCoverageIgnoreEnd
     // @devEnd
 
+    // Include PHP core extending procedural functions.
+    require __DIR__ . "/functions.php";
+
     // Build absolute path to the serialized config file and use it if present, if not fall back to the default config.
     $serializedConfig = $documentRoot . Config::PATH;
     if (file_exists($serializedConfig)) {

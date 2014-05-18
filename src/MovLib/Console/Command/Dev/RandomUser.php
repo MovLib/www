@@ -195,7 +195,7 @@ abstract class RandomUser extends \MovLib\Console\Command\AbstractCommand {
       $in = rtrim(str_repeat("?,", $c), ",");
       $result = $db->query("SELECT `id`, `name` FROM `users` WHERE `name` IN ({$in})", str_repeat("s", $c), $usersWithAvatar)->get_result();
       while ($row = $result->fetch_assoc()) {
-        $user->filename = $this->fs->sanitizeFilename($row["name"]);
+        $user->filename = sanitize_filename($row["name"]);
         $convert = new \ReflectionMethod($user, "convert");
         $convert->setAccessible(true);
         $convert->invoke($user, $tmp, FullUser::STYLE_SPAN_02);

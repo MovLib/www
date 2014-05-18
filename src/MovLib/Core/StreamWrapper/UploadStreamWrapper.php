@@ -33,7 +33,7 @@ final class UploadStreamWrapper extends \MovLib\Core\StreamWrapper\AbstractLocal
    */
   public function getExternalPath($uri = null, $cacheBuster = null) {
     $hostnameStatic = self::$fs->hostnameStatic;
-    $target         = self::$fs->urlEncodePath("/uploads/{$this->getTarget($uri)}");
+    $target         = url_encode_path("/uploads/{$this->getTarget($uri)}");
     if ($cacheBuster) {
       $cacheBuster = "?{$cacheBuster}";
     }

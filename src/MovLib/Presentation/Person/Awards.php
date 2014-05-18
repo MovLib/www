@@ -103,7 +103,7 @@ class Awards extends \MovLib\Presentation\Person\AbstractPersonPresenter {
     }
 
     return $this->calloutInfo(
-      $this->intl->t("{sitename} doesn’t have any award details for this person.", [ "sitename" => $this->config->siteName ]),
+      $this->intl->t("{sitename} doesn’t have any award details for this person.", [ "sitename" => $this->config->sitename ]),
       $this->intl->t("No Awards")
     );
   }

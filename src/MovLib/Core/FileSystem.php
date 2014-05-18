@@ -367,38 +367,6 @@ final class FileSystem {
   }
 
   /**
-   * Sanitizes a filename, replacing whitespace with dashes and transforming the string to lowercase.
-   *
-   * Removes special characters that are illegal in filenames on certain operating systems and special characters
-   * requiring special escaping to manipulate at the command line. Replaces spaces and consecutive dashes with a single
-   * dash. Trims period, dash und underscore from beginning and end of filename.
-   *
-   * @param string $filename
-   *   The filename to be sanitized.
-   * @return string
-   *   The sanitized filename.
-   */
-  public function sanitizeFilename($filename) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert(!empty($filename) && is_string($filename), "\$filename cannot be empty and must be of type string.");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
-    // Remove characters which aren't allowed in filenames.
-    $filename = str_replace([ "?", "[", "]", "/", "\\", "=", "<", ">", ":", ";", ",", "'", '"', "&", "$", "#", "*", "(", ")", "|", "~" ], "", $filename);
-
-    // Replace whitespace characters with dashes.
-    $filename = preg_replace("/[\s-]+/", "-", $filename);
-
-    // Remove characters which aren't allowed at the beginning and end of a filename.
-    $filename = trim($filename, ".-_");
-
-    // Always lowercase all filenames for better compatibility.
-    return mb_strtolower($filename);
-  }
-
-  /**
    * Set process owner (only used in CLI).
    *
    * @param string $user
@@ -458,21 +426,6 @@ final class FileSystem {
     catch (\ErrorException $e) {
       throw new FileSystemException("Couldn't create symbolic link '{$link}' with target '{$target}'.", null, $e);
     }
-  }
-
-  /**
-   * Encode URL path preserving slashes.
-   *
-   * @param string $path
-   *   The URL path to encode.
-   * @return string
-   *   The encoded URL path.
-   */
-  public function urlEncodePath($path) {
-    if (empty($path) || $path == "/") {
-      return $path;
-    }
-    return str_replace("%2F", "/", rawurlencode($path));
   }
 
 }

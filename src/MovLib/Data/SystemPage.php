@@ -111,7 +111,7 @@ SQL
       $this->routeKey    = "/about";
     }
     else {
-      $this->singularKey = $this->fs->sanitizeFilename($this->routeKey);
+      $this->singularKey = sanitize_filename($this->routeKey);
       $this->routeKey    = "/{$this->singularKey}";
     }
     $this->routeArgs   = [];
