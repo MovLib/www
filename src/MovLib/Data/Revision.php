@@ -97,6 +97,16 @@ final class Revision extends \MovLib\Core\AbstractDatabase {
    *
    * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainer
    *   The dependency injection container for the HTTP context.
+   * @param string $entityClassName
+   *   The entity's class name without namespace.
+   * @param integer $entityId
+   *   The entity's identifier.
+   * @param integer $oldChanged [optional]
+   *   The version to use for the <code>$oldRevision</code> property, will be patched automatically.
+   *   Leave empty to create an empty revision object with the newest revision in the <code>$newRevision</code> property.
+   * @param integer $newChanged [optional]
+   *   The version to use for the <code>$newRevision</code> property, will be patched automatically.
+   *   Leave empty to have the newest revision in the <code>$newRevision</code> property.
    * @param integer $entityTypeId
    *
    */
@@ -110,12 +120,63 @@ final class Revision extends \MovLib\Core\AbstractDatabase {
     $this->revisionClass = "\\MovLib\\Data\\{$entityClassName}\\{$entityClassName}Revision";
     $this->revisionEntityId = constant("{$this->revisionClass}::ENTITY_ID");
     $this->newRevision = new $this->revisionClass($diContainer, $entityId);
-    if ($newChanged) {
-      // Patch newRevision back to this datetime.
-    }
+
+    // Path back revision according to the parameters.
     if ($oldChanged) {
-      // Patch from newRevision back to this datetime and put it into oldRevision.
+      $this->patch($oldChanged, $newChanged);
     }
+  }
+
+  /**
+   * Patch revisions back starting from the newest one and export them
+   * into the <code>$oldRevision</code> and <code>$newRevision</code> properties.
+   *
+   * @param integer $oldChanged
+   *   The older revision to retrieve, will be exported to the <code>$oldRevision</code> property.
+   * @param integer $newChanged [optional]
+   *   The newer revision to retrieve, will be exported to the <code>$newRevision</code> property.
+   *   Leave empty to use the newest revision.
+   */
+  protected function patch($oldChanged, $newChanged = null) {
+    $oldChanged = (integer) $oldChanged;
+    $newChanged = (integer) $newChanged;
+    // Retrieve the revision range back to the older revision.
+    $id     = null;
+    $userId = null;
+    $patch  = null;
+    $stmt   = $this->getMySQLi()->prepare(<<<SQL
+SELECT
+  `id` + 0,
+  `user_id`,
+  `data`
+FROM `revisions`
+WHERE `id` >= CAST(? AS DATETIME)
+ORDER BY `id` DESC
+SQL
+    );
+    $stmt->bind_param("s", $oldChanged);
+    $stmt->execute();
+    $stmt->bind_result($id, $userId, $patch);
+
+    // Do the patching.
+    $entityId     = $this->newRevision->entityId;
+    $revision     = serialize($this->newRevision);
+    while ($stmt->fetch()) {
+      $revision = xdiff_string_bpatch($revision, $patch);
+      if ($id === $oldChanged) {
+        $this->oldRevision               = unserialize($revision);
+        $this->oldRevision->entityTypeId = $this->revisionEntityId;
+        $this->oldRevision->entityId     = $entityId;
+      }
+      elseif ($id === $newChanged) {
+        $this->newRevision               = unserialize($revision);
+        $this->newRevision->entityTypeId = $this->revisionEntityId;
+        $this->newRevision->entityId     = $entityId;
+      }
+    }
+    $stmt->close();
+
+    return $this;
   }
 
   /**
@@ -141,7 +202,7 @@ final class Revision extends \MovLib\Core\AbstractDatabase {
 INSERT INTO `revisions` SET
   `revision_entity_id` = ?,
   `entity_id`      = ?,
-  `id`        = ?,
+  `id`             = CAST(? AS DATETIME),
   `user_id`        = ?,
   `data`           = ?
 SQL

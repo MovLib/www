@@ -125,7 +125,7 @@ abstract class AbstractRevisionEntity extends \MovLib\Core\AbstractDatabase {
    *
    * @var \MovLib\Data\DateTime
    */
-  public $created;
+  public $id;
 
   /**
    * The entity's deleted state.
@@ -158,13 +158,6 @@ abstract class AbstractRevisionEntity extends \MovLib\Core\AbstractDatabase {
   public $entityTypeId;
 
   /**
-   * The revision's language code.
-   *
-   * @var string
-   */
-  public $languageCode;
-
-  /**
    * The revision's author identifier.
    *
    * @var integer
@@ -176,7 +169,10 @@ abstract class AbstractRevisionEntity extends \MovLib\Core\AbstractDatabase {
 
 
   /**
-   * Return all property names to serialize as numeric array.
+   * Called if this object is serialized.
+   *
+   * @return array
+   *   Array containing the names of the properties that should be serialized.
    */
   public function __sleep() {
     return [ "deleted" ];
@@ -197,7 +193,7 @@ abstract class AbstractRevisionEntity extends \MovLib\Core\AbstractDatabase {
    */
   public function setEntity(\MovLib\Data\AbstractEntity $entity) {
     $this->entity   = $entity;
-    $this->created  = $this->entity->changed;
+    $this->id  = $this->entity->changed;
     $this->deleted  = $this->entity->deleted;
     $this->entityId = $this->entity->id;
   }

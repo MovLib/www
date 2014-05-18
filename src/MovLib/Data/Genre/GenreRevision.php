@@ -77,7 +77,7 @@ SQL
       );
       $stmt->bind_param("d", $genreId);
       $stmt->execute();
-      $stmt->bind_result($this->names, $this->descriptions, $this->wikipedia, $this->created, $this->deleted);
+      $stmt->bind_result($this->names, $this->descriptions, $this->wikipedia, $this->id, $this->deleted);
       $found = $stmt->fetch();
       $stmt->close();
       if (!$found) {
@@ -105,7 +105,7 @@ SQL
     if (empty($this->entity)) {
       $this->entity = new Genre($this->diContainer);
       $this->entity->id          = $this->entityId;
-      $this->entity->changed     = $this->created;
+      $this->entity->changed     = $this->id;
       $this->entity->deleted     = $this->deleted;
       $this->entity->name        = $this->names[$this->intl->languageCode];
       $this->entity->description = $this->descriptions[$this->intl->languageCode];
