@@ -27,8 +27,9 @@ use \MovLib\Core\HTTP\Response;
 use \MovLib\Core\HTTP\Session;
 use \MovLib\Core\Intl;
 use \MovLib\Core\Log;
-use \MovLib\Presentation\Error\InternalServerError;
 use \MovLib\Exception\ClientException\ClientExceptionInterface;
+use \MovLib\Mail\Mailer;
+use \MovLib\Presentation\Error\InternalServerError;
 
 /**
  * The MovLib kernel.
@@ -224,7 +225,7 @@ final class Kernel {
     // @codeCoverageIgnoreEnd
     // @devEnd
     if (fastcgi_finish_request() === false) {
-      $this->diContainer->log->error("FastCGI finish request failure");
+      $this->diContainer->log->error("FastCGI finish request failed.");
     }
     $this->diContainer->session->shutdown();
     $this->bench("response", 0.75);
@@ -431,6 +432,9 @@ EOT;
    */
   protected function shutdown() {
     $this->executeDelayedMethods();
+    if ($this->http === true) {
+      (new Mailer())->sendEmailStack($this->diContainer);
+    }
     $this->diContainer->fs->deleteRegisteredFiles($this->diContainer->log);
     return $this;
   }

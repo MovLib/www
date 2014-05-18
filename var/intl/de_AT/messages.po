@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: https://github.com/MovLib/www/issues?"
 "labels=translation\n"
 "POT-Creation-Date: 2014-05-17 19:35+0000\n"
-"PO-Revision-Date: 2014-05-17 21:33+0100\n"
+"PO-Revision-Date: 2014-05-18 16:56+0100\n"
 "Last-Translator: Richard Fussenegger <richard@fussenegger.info>\n"
 "Language-Team: MovDev <developers@movlib.org>\n"
 "Language: de_AT\n"
@@ -335,7 +335,7 @@ msgstr ""
 #: /src/MovLib/Presentation/Profile/DangerZone.php:168
 #: /src/MovLib/Presentation/Profile/Join.php:315
 msgid "Validation Error"
-msgstr "Fehler in der Überprüfung"
+msgstr "Validierungsfehler"
 
 #: /src/MovLib/Partial/Form.php:362
 msgid "Conflicting Changes"
@@ -1034,10 +1034,9 @@ msgid "Delete"
 msgstr "Löschen"
 
 #: /src/MovLib/Partial/Sex.php:92
-#, fuzzy
 #| msgid "Unisex Name"
 msgid "Unisex"
-msgstr "Geschlechtsneutraler Name"
+msgstr "Geschlechtsneutral"
 
 #: /src/MovLib/Partial/Sex.php:93 /src/MovLib/Presentation/Job/Show.php:54
 #: /src/MovLib/Presentation/Person/Show.php:69
@@ -1612,6 +1611,8 @@ msgstr "Anmeldung fehlgeschlagen"
 #: /src/MovLib/Presentation/Profile/SignIn.php:162
 msgid "We either don’t know the email address, or the password was wrong."
 msgstr ""
+"Entweder die E-Mail-Adresse ist uns nicht bekannt oder das Passwort war "
+"falsch."
 
 #: /src/MovLib/Presentation/Profile/Messages.php:37
 msgid "You must be signed in to view your messages."
@@ -3729,10 +3730,9 @@ msgid "Won"
 msgstr "gewonnen"
 
 #: /src/MovLib/Presentation/Person/Awards.php:91
-#, fuzzy
 #| msgid "…"
 msgid "–"
-msgstr "…"
+msgstr "–"
 
 #: /src/MovLib/Presentation/Person/Awards.php:106
 #, fuzzy

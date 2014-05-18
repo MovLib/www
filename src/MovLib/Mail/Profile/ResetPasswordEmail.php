@@ -19,6 +19,7 @@ namespace MovLib\Mail\Profile;
 
 use \MovLib\Data\TemporaryStorage;
 use \MovLib\Data\User\User;
+use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
  * @todo Description of ResetPassword
@@ -68,19 +69,21 @@ class ResetPasswordEmail extends \MovLib\Mail\AbstractEmail {
 
 
   /**
-   * Initialize email.
-   *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
-   *   The HTTP dependency injection container.
-   * @return this
+   * {@inheritdoc}
    */
   public function init(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
     parent::init($diContainerHTTP);
-    $this->user = new User($diContainerHTTP, $this->recipient, User::FROM_EMAIL);
-    $this->subject = $this->intl->t("Requested Password Reset");
-    $token = (new TemporaryStorage())->set((object) [ "userId" => $this->user->id ]);
-    $this->link = $this->presenter->url($this->intl->r("/profile/reset-password"), [ "token" => $token ]);
-    return $this;
+    try {
+      $this->user    = new User($diContainerHTTP, $this->recipient, User::FROM_EMAIL);
+      $this->subject = $this->intl->t("Requested password reset");
+      $token         = (new TemporaryStorage($diContainerHTTP))->set($this->user->id);
+      $this->link    = $this->presenter->url($this->intl->r("/profile/reset-password"), [ "token" => $token ], null, true);
+    }
+    catch (NotFoundException $e) {
+      $this->log->warning("Password reset request for unknown email address.");
+      return false;
+    }
+    return true;
   }
 
   /**

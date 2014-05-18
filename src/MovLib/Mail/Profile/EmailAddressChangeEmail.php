@@ -91,7 +91,7 @@ final class EmailAddressChangeEmail extends \MovLib\Mail\AbstractEmail {
     ]);
     $this->link = $this->presenter->url($this->request->path, [ $this->intl->r("token") => $token ]);
 
-    return $this;
+    return true;
   }
 
   /**

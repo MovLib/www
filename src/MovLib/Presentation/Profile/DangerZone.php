@@ -133,7 +133,7 @@ final class DangerZone extends \MovLib\Presentation\Profile\AbstractProfilePrese
   public function deleteAccount() {
     // The request was accepted but needs further action.
     http_response_code(202);
-    (new Mailer())->send($this->diContainerHTTP, new AccountDeletionEmail($this->user));
+    (new Mailer())->send(new AccountDeletionEmail($this->user));
 
     // Let the user know where to find the instructions to complete the request.
     $this->alerts .= new Alert(

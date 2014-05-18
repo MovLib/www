@@ -114,7 +114,7 @@ final class Show extends \MovLib\Presentation\SystemPage\AbstractShow {
    */
   public function valid() {
     // Send an email to the webmaster.
-    (new Mailer())->send($this->diContainerHTTP, new Webmaster($this->subject, $this->intl->t(
+    (new Mailer())->send(new Webmaster($this->subject, $this->intl->t(
       "{email} wrote: {message}",
       [ "email" => "<a href='mailto:{$this->sender}'>{$this->sender}</a>", "message" => "<p>{$this->htmlDecode($this->message)}</p>" ]
     )));

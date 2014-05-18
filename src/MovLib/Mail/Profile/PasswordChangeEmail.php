@@ -94,7 +94,7 @@ final class PasswordChangeEmail extends \MovLib\Mail\AbstractEmail {
       "newPassword" => $this->rawPassword,
     ]);
     $this->link = $this->presenter->url($this->request->path, [ $this->intl->r("token") => $token ]);
-    return $this;
+    return true;
   }
 
   /**

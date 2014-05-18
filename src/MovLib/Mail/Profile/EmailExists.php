@@ -61,19 +61,19 @@ class EmailExists extends \MovLib\Mail\AbstractEmail {
 
 
   /**
-   * Initialize email properties.
-   *
-   * @return this
+   * {@inheritdoc}
    */
-  public function init() {
-    $this->name = (new User(User::FROM_EMAIL, $this->recipient))->name;
-    return $this;
+  public function init(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+    parent::init($diContainerHTTP);
+    $this->name = (new User($this->diContainerHTTP, $this->recipient, User::FROM_EMAIL))->name;
+    return true;
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getHTML() {
+    return
       "<p>{$this->intl->t("Hi {0}!", [ $this->name ])}</p>" .
       "<p>{$this->intl->t("You (or someone else) tried to sign up a new account with this email address. If you forgot your password go to the {0}reset password{1} page to request a new one.", [
         "<a href='{$this->diContainerHTTP->request->scheme}://{$this->diContainerHTTP->request->hostname}{$this->intl->r("/user/reset-password")}'>", "</a>"
@@ -83,7 +83,7 @@ class EmailExists extends \MovLib\Mail\AbstractEmail {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getPlainText() {
     return <<<EOT

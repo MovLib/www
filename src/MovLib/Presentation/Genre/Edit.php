@@ -61,18 +61,13 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
   public function getContent() {
     return (new Form($this->diContainerHTTP))
       ->addElement(new InputText($this->diContainerHTTP, "name", $this->intl->t("Name"), $this->entity->name, [
-        "placeholder" => $this->intl->t("Enter the genre’s name."),
         "autofocus"   => true,
         "required"    => true,
       ]))
       ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
         "data-allow-external" => "true",
-          "placeholder"         => $this->intl->t("Describe the genre."),
       ]))
-      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
-        "placeholder"         => $this->intl->t("Enter the genre’s corresponding Wikipedia link."),
-        "data-allow-external" => "true",
-      ]))
+      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia))
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
       ->addRevisioning($this->entity)
       ->init([ $this, "valid" ])

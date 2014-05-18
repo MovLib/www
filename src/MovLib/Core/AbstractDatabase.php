@@ -108,11 +108,11 @@ abstract class AbstractDatabase {
    */
   public function __construct(\MovLib\Core\DIContainer $diContainer) {
     $this->diContainer = $diContainer;
-    $this->config      = $diContainer->config;
-    $this->fs          = $diContainer->fs;
-    $this->intl        = $diContainer->intl;
-    $this->kernel      = $diContainer->kernel;
-    $this->log         = $diContainer->log;
+    foreach (get_object_vars($diContainer) as $property => $value) {
+      if (property_exists($this, $property)) {
+        $this->$property = $value;
+      }
+    }
   }
 
 
@@ -211,23 +211,6 @@ abstract class AbstractDatabase {
     }
     $stmt->execute();
     return $stmt;
-  }
-
-  /**
-   * Set the dependency injection container.
-   *
-   * @param \MovLib\Core\DIContainer $diContainer
-   *   The dependency injection container to set.
-   * @return this
-   */
-  public function setDependencyInjectionContainer(\MovLib\Core\DIContainer $diContainer) {
-    $this->diContainer = $diContainer;
-    $this->config      = $diContainer->config;
-    $this->fs          = $diContainer->fs;
-    $this->intl        = $diContainer->intl;
-    $this->kernel      = $diContainer->kernel;
-    $this->log         = $diContainer->log;
-    return $this;
   }
 
 }

@@ -74,7 +74,14 @@ final class InputCheckbox extends \MovLib\Partial\FormElement\AbstractFormElemen
     try {
     // @codeCoverageIgnoreEnd
     // @devEnd
-      return "{$this->required}{$this->helpPopup}<p><label class='checkbox'><input{$this->presenter->expandTagAttributes($this->attributes)} name='{$this->id}' type='checkbox'>{$this->label}</label></p>";
+      $string = "{$this->required}{$this->helpPopup}<p><label class='checkbox'><input{$this->presenter->expandTagAttributes($this->attributes)} name='{$this->id}' type='checkbox'>{$this->label}</label></p>";
+      if (isset($this->attributes["#prefix"])) {
+        $string = "{$this->attributes["#prefix"]}{$string}";
+      }
+      if (isset($this->attributes["#suffix"])) {
+        $string .= $this->attributes["#suffix"];
+      }
+      return $string;
     // @devStart
     // @codeCoverageIgnoreStart
     }

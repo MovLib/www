@@ -67,9 +67,7 @@ final class AccountDeletionEmail extends \MovLib\Mail\AbstractEmail {
 
 
   /**
-   * Initialize email properties.
-   *
-   * @return this
+   * {@inheritdoc}
    */
   public function init(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
     parent::init($diContainerHTTP);
@@ -79,7 +77,7 @@ final class AccountDeletionEmail extends \MovLib\Mail\AbstractEmail {
     $token = (new TemporaryStorage($this->diContainerHTTP))->set($this->user->id);
     $this->link = $this->presenter->url($this->request->path, [ $this->intl->r("token") => $token ]);
 
-    return $this;
+    return true;
   }
 
   /**

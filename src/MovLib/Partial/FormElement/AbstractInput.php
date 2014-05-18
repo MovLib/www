@@ -80,7 +80,14 @@ abstract class AbstractInput extends \MovLib\Partial\FormElement\AbstractFormEle
     try {
     // @codeCoverageIgnoreEnd
     // @devEnd
-      return "{$this->required}{$this->helpPopup}{$this->helpText}<p><label for='{$this->id}'>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
+      $string = "{$this->required}{$this->helpPopup}{$this->helpText}<p><label for='{$this->id}'>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
+      if (isset($this->attributes["#prefix"])) {
+        $string = "{$this->attributes["#prefix"]}{$string}";
+      }
+      if (isset($this->attributes["#suffix"])) {
+        $string .= $this->attributes["#suffix"];
+      }
+      return $string;
     // @devStart
     // @codeCoverageIgnoreStart
     }

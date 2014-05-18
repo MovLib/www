@@ -67,48 +67,52 @@ class JoinEmail extends \MovLib\Mail\AbstractEmail {
 
 
   /**
-   * Initialize properties for email.
-   *
-   * @internal
-   *   We base64 encode the email address because it looks akward having your own email address as part of a URL.
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
-   *   The HTTP dependency injection container.
-   * @return this
+   * {@inheritdoc}
    */
   public function init(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
     parent::init($diContainerHTTP);
 
     $this->recipient = $this->user->email;
-    $this->subject   = $this->intl->t("Welcome to {0}!", [ $diContainerHTTP->config->sitename ]);
-    $this->link      = $this->presenter->url($this->intl->r("/profile/join"), [ $this->intl->r("token") => base64_encode($this->user->email) ]);
-    $key             = "jointoken{$this->user->email}";
-    $tmp             = new TemporaryStorage($diContainerHTTP);
-    $user            = $tmp->get($key);
+    $this->subject = $this->intl->t("Welcome to {0}!", [ $diContainerHTTP->config->sitename ]);
 
-    // Make sure we won't store an unhashed password in our temporary table.
-    $this->user->passwordHash = password_hash($this->user->passwordHash, $this->config->passwordAlgorithm, $this->config->passwordOptions);
+    // The token is the user's email address, but because it's kind a ackward to see your own email address as part of
+    // a URL we hex encode it. Not that a hex encoded string might be longer than a base64 encoded string, but it only
+    // contains characters that are valid within a URL and that's actually what we need here.
+    $token = bin2hex($this->user->email);
+    $this->link = $this->presenter->url($this->intl->r("/profile/join"), [ "token" => $token ], null, true);
 
-    // Check if we already have a temporary record for this user, create new if we don't and overwrite if we do.
+    // Build the data that we're going to store for this join attempt. No need to store the email address, the key
+    // actually is the email address.
+    $data = (object) [
+      "name" => $this->user->name,
+      "passwordHash" => password_hash($this->user->passwordHash, $this->config->passwordAlgorithm, $this->config->passwordOptions),
+    ];
+
+    // Check if we already have some data stored for this email address.
+    $tmp = new TemporaryStorage($diContainerHTTP);
+    $user = $tmp->get($token);
+
+    // We have no data stored for this email address, create a new record.
     if ($user === false) {
-      $tmp->set($this->user, $key);
+      $tmp->set($data, $token);
     }
-    elseif ($user != $this->user) {
-      $tmp->update($this->user, $key);
+    else {
+      $tmp->update($data, $token);
     }
 
-    return $this;
+    return true;
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getHTML() {
     return
       "<p>{$this->intl->t("Hi {username}!", [ "username" => $this->user->name ])}</p>" .
-      "<p>{$this->intl->t("Thank you for joining {0}. You may now sign in and activate your new account by {1}clicking this link{2}.", [
-        $this->config->sitename,
+      "<p>{$this->intl->t("Thank you for joining {sitename}. You may now sign in and activate your new account by {0}clicking this link{1}.", [
+        "sitename" => $this->config->sitename,
         "<a href='{$this->link}'>",
-        "</a>"
+        "</a>",
       ])}</p>" .
       "<p>{$this->intl->t("This link can only be used once within the next 24 hours.")}<br>" .
       "{$this->intl->t("You will be able to sign in with the following data:")}</p>" .
@@ -121,7 +125,7 @@ class JoinEmail extends \MovLib\Mail\AbstractEmail {
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getPlainText() {
     return <<<EOT

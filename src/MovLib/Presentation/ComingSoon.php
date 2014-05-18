@@ -162,7 +162,7 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
    */
   public function valid() {
     // Send an email with the new subscriber to the webmaster.
-    (new Mailer())->send($this->diContainerHTTP, new Webmaster(
+    (new Mailer())->send(new Webmaster(
       "New beta subscription",
       "<a href='mailto:{$this->email}'>{$this->email}</a> would like to be part of the MovLib beta."
     ));

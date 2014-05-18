@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Profile;
 
+use \Guzzle\Service\Exception\ValidationException;
 use \MovLib\Core\Memcached;
 use \MovLib\Data\TemporaryStorage;
 use \MovLib\Data\User\User;
@@ -70,16 +71,13 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    // If the user is signed in, no need for joining.
-    if ($this->session->isAuthenticated) {
+    if ($this->session->isAuthenticated === true) {
       throw new SeeOtherException($this->intl->r("/dashboard"));
     }
-
     $this->initPage($this->intl->t("Join"));
     $this->initLanguageLinks("/profile/join");
     $this->breadcrumb->addCrumb($this->intl->r("/users"), $this->intl->t("Users"));
     $this->user = new User($this->diContainerHTTP);
-
     if ($this->request->methodGET && ($token = $this->request->filterInputString(INPUT_GET, "token"))) {
       $this->validateToken($token);
     }
@@ -191,11 +189,6 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
       if (empty($errors["username"]) && $this->user->inUse("name", $this->user->name) === true) {
         $errors["username"][] = $this->intl->t("The username is already taken, please choose another one.");
       }
-
-      if (!empty($errors["username"])) {
-        $this->formElements["username"]->invalid();
-        $errors["username"] = implode("<br>", $errors["username"]);
-      }
     }
 
     // More descriptive error message if the user hasn't accepted the privacy policy and terms of use.
@@ -225,11 +218,11 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
     // Don't tell the user who's trying to join that we already have this email, otherwise it would be possible to
     // find out which emails we have in our system. Instead we send a message to the user this email belongs to.
     if ($this->user->inUse("email", $this->user->email) === true) {
-      $mailer->send($this->diContainerHTTP, new EmailExists($this->user->email));
+      $mailer->send(new EmailExists($this->user->email));
     }
     // Send email with activation token if this emai isn't already in use.
     else {
-      $mailer->send($this->diContainerHTTP, new JoinEmail($this->user));
+      $mailer->send(new JoinEmail($this->user));
     }
 
     // Setting this to true ensures that the user isn't going to see the form again. Check getContent()!
@@ -257,10 +250,10 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
    * @return this
    */
   public function validateToken($token) {
-    try {
-      // The token is the base64 encoded email address of the user.
-      $this->user->email = base64_decode($token);
+    // The token is the hex encoded email address of the user.
+    $this->user->email = hex2bin($token);
 
+    try {
       // Validate as email before attempting to load the user from the temporary table.
       if ($this->user->email === false || filter_var($this->user->email, FILTER_VALIDATE_EMAIL, FILTER_REQUIRE_SCALAR) === false) {
         throw new ValidationException($this->intl->t("The activation token is invalid, please go back to the mail we sent you and copy the whole link."));
@@ -273,9 +266,10 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
       // The temporary storage data is created in \MovLib\Mail\Profile\JoinEmail::init() because there's no need to
       // create this entry in the database while the user is waiting for the response.
       $tmp  = new TemporaryStorage($this->diContainerHTTP);
-      $this->user = $tmp->get("jointoken{$this->user->email}");
+      $data = $tmp->get($token);
 
-      if (!($this->user instanceof User)) {
+      // Abort if we have not data at all for the token.
+      if ($data === false) {
         throw new ValidationException(
           "<p>{$this->intl->t("We couldn’t find any activation data for your token.")}</p>" .
           "<ul>" .
@@ -296,37 +290,43 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
       }
 
       // Check if the username was taken in the meantime.
-      if ($this->user->inUse("name", $this->user->name) === true) {
-        $this->username->attributes["value"] = $this->user->name;
+      if ($this->user->inUse("name", $data->name) === true) {
+        $this->username->attributes["value"] = $data->name;
         $this->email->attributes["value"]    = $this->user->email;
         $this->terms->attributes[]           = "checked"; // No problem, the user already accepted them!
         $this->username->invalid();
         throw new ValidationException($this->intl->t("Unfortunately in the meantime someone took your desired username, please choose another one."));
       }
 
+      // No we can safely export the data to the user instance.
+      $this->user->name = $data->name;
+      $this->user->passwordHash = $data->passwordHash;
+      $this->user->languageCode = $this->intl->languageCode;
+
       // Register the new account (this can't be done delayed because the user needs to validate directly after the
       // redirect) and stack the deletion of the temporary database entry.
       $this->user->join();
-      $this->kernel->delayMethodCall([ $tmp, "delete" ], [ "jointoken{$this->user->email}" ]);
+      $this->kernel->delayMethodCall([ $tmp, "delete" ], [ $token ]);
 
       // The user has to sign in, this makes sure that the person is really who she or he claims to be. The password is
       // entered by the user while joining and never displayed anywhere to anyone (plus we hash it right away in the
       // validate method of this class, so even we have no clue what it is). Even if somebody was able to activate an
       // account for another person (man in the middle; very unlikely) she or he couldn't access that new account
       // because that person would also need the secret password.
-      throw new Unauthorized(
+      throw new UnauthorizedException(new Alert(
         $this->intl->t("Your account has been activated, please sign in with your email address and your secret password."),
         $this->intl->t("Hi {0}!", [ $this->user->name ]),
         Alert::SEVERITY_SUCCESS
-      );
+      ));
     }
+    // Set error alert message and continue rendering of the join presentation.
     catch (ValidationException $e) {
       $this->alertError($this->intl->t("Validation Error"), $e->getMessage());
     }
-    catch (Unauthorized $e) {
-      if ($this->user->email) {
-        $e->signInPresentation->email->attributes["value"] = $this->user->email;
-      }
+    // Abort rendering of the join presentation and render the sign in form instead. The getContent() method of this
+    // class won't be called!
+    catch (UnauthorizedException $e) {
+      $e->signInPresentation->email->attributes["value"] = $this->user->email;
       throw $e;
     }
 

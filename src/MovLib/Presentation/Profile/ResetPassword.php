@@ -17,8 +17,13 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \MovLib\Exception\UnauthorizedException;
+use \MovLib\Data\TemporaryStorage;
+use \MovLib\Data\User\User;
+use \MovLib\Exception\ClientException\NotFoundException;
+use \MovLib\Exception\ClientException\UnauthorizedException;
+use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Mail\Mailer;
+use \MovLib\Mail\Profile\ResetPasswordEmail;
 use \MovLib\Partial\Alert;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputEmail;
@@ -47,13 +52,6 @@ final class ResetPassword extends \MovLib\Presentation\AbstractPresenter {
   protected $email;
 
   /**
-   * The password reset form.
-   *
-   * @var \MovLib\Partial\Form
-   */
-  protected $form;
-
-  /**
    * The user's new raw password.
    *
    * @var string
@@ -68,11 +66,18 @@ final class ResetPassword extends \MovLib\Presentation\AbstractPresenter {
   protected $rawPasswordConfirm;
 
   /**
+   * The temporary storage instance.
+   *
+   * @var \MovLib\Data\TemporaryStorage
+   */
+  protected $temporaryStorage;
+
+  /**
    * The user who's reseting the password.
    *
-   * @var \MovLib\Data\User\FullUser
+   * @var \MovLib\Data\User\User
    */
-  protected $user;
+  protected $userId;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Presentation
@@ -81,150 +86,122 @@ final class ResetPassword extends \MovLib\Presentation\AbstractPresenter {
   /**
    * {@inheritdoc}
    */
-  public function getContent() {
-    return "<div class='c'><div class='r'>{$this->form}</div></div>";
+  public function init() {
+    if ($this->session->isAuthenticated === true) {
+      throw new SeeOtherException($this->intl->r("/dashboard"));
+    }
+    $this->initPage($this->intl->t("Reset Password"));
+    $this->initLanguageLinks("/profile/reset-password");
+    $this->breadcrumb->addCrumb($this->intl->r("/users"), $this->intl->t("Users"));
+    return $this;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function init() {
-    $this->initPage($this->intl->t("Reset Password"));
-    $this->initBreadcrumb([[ $this->intl->r("/users"), $this->intl->t("Users") ]]);
-    $this->breadcrumb->ignoreQuery = true;
-    $this->initLanguageLinks("/profile/reset-password");
-
-    $this->headingBefore = "<a class='btn btn-large btn-info fr' href='{$this->intl->r("/profile/sign-in")}'>{$this->intl->t("Sign In")}</a>";
-
-    if (isset($this->request->query["token"]) && $this->validateToken()) {
-      $this->form = new Form($this->diContainerHTTP, [ "autocomplete" => "off", "class" => "s s6 o3" ]);
-
-      // First field to enter the new password.
-      $this->form->addElement(new InputPassword($this->diContainerHTTP, "password_new", $this->intl->t("New Password"), $this->rawPasswordNew, [
-        "autofocus"   => true,
-        "placeholder" => $this->intl->t("Enter your new password"),
-        "required"    => true,
-      ]));
-
-      // Second field to enter the new password for confirmation.
-      $this->form->addElement(new InputPassword($this->diContainerHTTP, "password_confirm", $this->intl->t("Confirm Password"), $this->rawPasswordConfirm, [
-        "placeholder" => $this->intl->t("Enter your new password again"),
-        "required"    => true,
-      ]));
-
-      $this->formAddAction($this->intl->r("Reset Password"), [ "class" => "btn btn-large btn-success" ]);
-      $this->formInit([ $this, "validReset" ]);
+  public function getContent() {
+    // Note that we aren't checking against GET request method at this point, because we have to validate the token
+    // before the user enters the new passwords and afterwards.
+    if (($token = $this->request->filterInputString(INPUT_GET, "token"))) {
+      $this->temporaryStorage = new TemporaryStorage($this->diContainerHTTP);
+      $this->userId = $this->temporaryStorage->get($token);
+      if ($this->userId === false || empty($this->userId)) {
+        $this->invalidToken();
+      }
+      $form = (new Form($this->diContainerHTTP, [ "autocomplete" => "off", "class" => "s s6 o3" ]))
+        ->addElement(new InputPassword($this->diContainerHTTP, "password_new", $this->intl->t("New Password"), $this->rawPasswordNew, [
+          "autofocus"   => true,
+          "placeholder" => $this->intl->t("Enter your new password"),
+          "required"    => true,
+        ]))
+        ->addElement(new InputPassword($this->diContainerHTTP, "password_confirm", $this->intl->t("Confirm Password"), $this->rawPasswordConfirm, [
+          "placeholder" => $this->intl->t("Enter your new password again"),
+          "required"    => true,
+        ]))
+        ->init([ $this, "submitReset" ], [ $this, "validateReset" ])
+      ;
     }
     else {
-      $this->form = new Form($this->diContainerHTTP, [ "class" => "s s6 o3" ]);
-      $this->form->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email Address"), $this->email, [
-        "#help-popup" => $this->intl->t("Enter the email address associated with your {sitename} account. Password reset instructions will be sent via email.", [ "sitename" => $this->config->sitename ]),
-        "autofocus"   => true,
-        "placeholder" => $this->intl->t("Enter your email address"),
-        "required"    => true,
-      ]));
-      $this->form->addAction($this->intl->t("Request Reset"), [ "class" => "btn btn-large btn-success" ]);
-      $this->form->init([ $this, "validEmail" ]);
+      $form = (new Form($this->diContainerHTTP, [ "class" => "s s6 o3" ]))
+        ->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email Address"), $this->email, [
+          "#help-popup" => $this->intl->t(
+            "Enter the email address associated with your {sitename} account. Password reset instructions will be " .
+            "sent to you via email.",
+            [ "sitename" => $this->config->sitename ]
+          ),
+          "autofocus" => true,
+          "required"  => true,
+        ]))
+        ->init([ $this, "submitEmail" ])
+      ;
     }
+    $form->addAction($this->intl->t("Reset"), [ "class" => "btn btn-large btn-success" ]);
+    $this->headingBefore = "<a class='btn btn-large btn-info fr' href='{$this->intl->r("/profile/sign-in")}'>{$this->intl->t("Sign In")}</a>";
+    return "<div class='c'><div class='r'>{$form}</div></div>";
   }
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Valid
+  // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * The submitted email address is valid, try to load a user with it and send the reset password email.
+   * Set an alert message that explains that the token is invalid or expired and redirect the client to the initial
+   * reset password form while removing the token from the URL.
+   *
+   * @throws \MovLib\Exception\RedirectException\SeeOtherException
    */
-  public function validEmail() {
+  protected function invalidToken() {
+    $this->alertError(
+      $this->intl->t("Token Invalid"),
+      $this->intl->t("Your confirmation token is invalid or expired, please fill out the form again.")
+    );
+    throw new SeeOtherException($this->request->path);
+  }
+
+  /**
+   * Validate callback for the password reset form.
+   */
+  public function validateReset($errors) {
+    if ($this->rawPasswordNew != $this->rawPasswordConfirm) {
+      $errors["password_confirm"] = $this->intl->t("The confirmation password doesn’t match the new password, please try again.");
+    }
+    return $errors;
+  }
+
+  /**
+   * Submit handler for valid reset password requests.
+   */
+  public function submitEmail() {
     (new Mailer())->send(new ResetPasswordEmail($this->email));
     http_response_code(202);
-    $this->alerts .= new Alert(
-      $this->intl->t("An email with further instructions has been sent to {0}.", $this->placeholder($this->email)),
-      $this->intl->t("Successfully Requested Password Reset"),
-      Alert::SEVERITY_SUCCESS
+    $this->alertSuccess(
+      $this->intl->t("Successfully requested password reset"),
+      $this->intl->t("An email with further instructions has been sent to {email}.", [ "email" => $this->placeholder($this->email) ])
     );
   }
 
   /**
-   * The submitted passwords are valid, update the account with the new password.
+   * Submit handler for valid reset password.
    *
+   * @throws \MovLib\Exception\RedirectException\SeeOtherException
+   *   Thrown if no record exists for the previously stored user identifier.
    * @throws \MovLib\Exception\UnauthorizedException
    *   Always thrown after successful password update, the user has to sign in again.
    */
-  public function validReset() {
-    // Update this user's password.
-    $this->user->updatePassword($this->rawPasswordNew);
-
-    // Delete the token from the temporary database.
-    $this->kernel->delayMethodCall([ new Temporary(), "delete" ], [ $_GET["token"] ]);
-
-    // Make sure that the user isn't redirected to the password reset page after successful login.
-    $this->request->uri = $this->request->path = "/";
-
-    // Delete any left over sessions of this user.
+  public function submitReset() {
+    try {
+      $user = new User($this->diContainerHTTP, $this->userId, User::FROM_ID);
+    }
+    catch (NotFoundException $e) {
+      $this->invalidToken();
+    }
+    $user->updatePassword($this->rawPasswordNew);
     $this->session->destroy(true);
-
-    // Display sign in presentation to the user and let the user know that the password was updated.
-    throw new UnauthorizedException(
+    throw new UnauthorizedException(new Alert(
       $this->intl->t("Your password was successfully changed. Please use your new password to sign in from now on."),
-      $this->intl->t("Password Changed Successfully"),
+      $this->intl->t("Password reset successful"),
       Alert::SEVERITY_SUCCESS
-    );
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Validation
-
-
-  /**
-   * Implements form validation hook.
-   * @param type $errors
-   * @return \MovLib\Presentation\Profile\ResetPassword
-   */
-  public function invalid(&$errors) {
-    if (isset($_GET["token"]) && !empty($this->rawPasswordNew) && $this->rawPasswordNew != $this->rawPasswordConfirm) {
-      $this->formElements[self::FORM_PASSWORD_NEW]->invalid();
-      $this->formElements[self::FORM_PASSWORD_CONFIRM]->invalid();
-      $errors[self::FORM_PASSWORD_CONFIRM][] = $this->intl->t("The confirmation password doesn’t match the new password, please try again.");
-    }
-    return $this;
-  }
-
-  /**
-   * Validate the submitted authentication token and reset the user's password.
-   *
-   * @return boolean
-   *   <code>FALSE</code> if the token is invalid, otherwise <code>TRUE</code>
-   * @throws \MovLib\Presentation\Error\Unauthorized
-   * @throws \MovLib\Presentation\Redirect\SeeOther
-   */
-  protected function validateToken() {
-    $tmp = new Temporary();
-
-    if (($data = $tmp->get($_GET["token"])) === false || empty($data["user_id"]) || empty($data["reset_password"])) {
-      $kernel->alerts .= new Alert(
-        $this->intl->t("Your confirmation token is invalid or expired, please fill out the form again."),
-        $this->intl->t("Token Invalid"),
-        Alert::SEVERITY_ERROR
-      );
-      throw new SeeOther($this->request->path);
-    }
-
-    if ($session->isAuthenticated === true && $session->userId !== $data["user_id"]) {
-      $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
-      throw new Unauthorized(
-        $this->intl->t("Your confirmation token is invalid or expired, please fill out the form again."),
-        $this->intl->t("Token Invalid"),
-        Alert::SEVERITY_ERROR,
-        true
-      );
-    }
-
-    if ($kernel->requestMethod == "POST") {
-      $this->user = new FullUser(FullUser::FROM_ID, $data["user_id"]);
-    }
-
-    return true;
+    ));
   }
 
 }

@@ -193,20 +193,18 @@ abstract class AbstractEmail {
    *
    * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
    *   The HTTP dependency injection container.
-   * @return this
+   * @return boolean
+   *   <code>TRUE</code> if everything is fine and the email should be sent, <code>FALSE</code> if sending of the email
+   *   should be aborted.
    */
   public function init(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    $this->config          = $diContainerHTTP->config;
     $this->diContainerHTTP = $diContainerHTTP;
-    $this->fs              = $diContainerHTTP->fs;
-    $this->intl            = $diContainerHTTP->intl;
-    $this->kernel          = $diContainerHTTP->kernel;
-    $this->log             = $diContainerHTTP->log;
-    $this->presenter       = $diContainerHTTP->presenter;
-    $this->request         = $diContainerHTTP->request;
-    $this->response        = $diContainerHTTP->response;
-    $this->session         = $diContainerHTTP->session;
-    return $this;
+    foreach (get_object_vars($diContainerHTTP) as $property => $value) {
+      if (property_exists($this, $property)) {
+        $this->$property = $value;
+      }
+    }
+    return true;
   }
 
 }

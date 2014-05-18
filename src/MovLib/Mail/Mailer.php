@@ -422,17 +422,11 @@ EOT;
   /**
    * Send the given email.
    *
-   * @param \MovLib\Core\DIContainer $diContainer
-   *   The dependency injection container.
    * @param \MovLib\Data\AbstractEmail $email
    *   The email to send.
    * @return this
    */
-  public function send(\MovLib\Core\DIContainer $diContainer, \MovLib\Mail\AbstractEmail $email) {
-    if (empty(self::$emailStack)) {
-      /* @var $kernel \MovLib\Core\Kernel */
-      $diContainer->kernel->delayMethodCall([ $this, "sendEmailStack" ], [ $diContainer ]);
-    }
+  public function send(\MovLib\Mail\AbstractEmail $email) {
     self::$emailStack[] = $email;
     return $this;
   }
@@ -445,8 +439,7 @@ EOT;
    * @return this
    */
   public function sendEmailStack($diContainerHTTP) {
-    // Allow
-    if (!($diContainerHTTP instanceof \MovLib\Core\HTTP\DIContainerHTTP)) {
+    if (empty(self::$emailStack)) {
       return $this;
     }
     $this->config = $diContainerHTTP->config;
@@ -455,8 +448,9 @@ EOT;
       try {
         $this->email     = $email;
         $this->messageID = uniqid("movlib");
-        $email->init($diContainerHTTP);
-        mail($this->getRecipient(), $this->getSubject(), $this->getMessage(), $this->getHeaders(), $this->getParameters());
+        if ($email->init($diContainerHTTP) === true) {
+          mail($this->getRecipient(), $this->getSubject(), $this->getMessage(), $this->getHeaders(), $this->getParameters());
+        }
       }
       catch (\Exception $e) {
         $diContainerHTTP->log->error($e);

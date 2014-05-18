@@ -77,7 +77,7 @@ final class Log {
       $config->emailDevelopers,
       "IMPORTANT! {$config->sitename} is experiencing problems!",
       $config->emailFrom,
-      Logger::CRITICAL,
+      Logger::ERROR,
       true,
       2048
     );
@@ -89,19 +89,16 @@ final class Log {
     $errorLog->setFormatter(new LineFormatter("%channel% %level_name%: %message% %context% %extra%\n", null, true));
 
     // Always use the fingers crossed handler to ensure that we have as much information as possible.
-    $handlers = [
-      new FingersCrossedHandler($mailer, Logger::CRITICAL),
-      new FingersCrossedHandler($errorLog, Logger::ERROR),
-    ];
+    $handlers = [ $mailer, $errorLog ];
 
     // DEBUG, INFO, and NOTICE are sent to the client's browser if not in production and executed via php-fpm.
     if ($http && !$config->production) {
-      $handlers[] = new FirePHPHandler();
-      $errorLog->setLevel(Logger::WARNING);
+      $handlers[] = new FirePHPHandler(Logger::DEBUG);
+      $errorLog->setLevel(Logger::INFO);
     }
 
     // Instantiate the new logger and store it in the static variable of this method for later usage.
-    $this->logger = new Logger($name, $handlers, [ new IntrospectionProcessor(Logger::WARNING) ]);
+    $this->logger = new Logger($name, $handlers);
   }
 
 

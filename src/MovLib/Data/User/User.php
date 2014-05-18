@@ -478,7 +478,7 @@ SQL
     // @devEnd
     $mysqli = $this->getMySQLi();
     $stmt = $mysqli->prepare("INSERT INTO `users` (`dyn_about_me`, `email`, `name`, `password`, `language_code`) VALUES('', ?, ?, ?, ?)");
-    $stmt->bind_param("ssss", $this->email, $this->name, $this->passwordHash, $this->intl->languageCode);
+    $stmt->bind_param("ssss", $this->email, $this->name, $this->passwordHash, $this->languageCode);
     $stmt->execute();
     $stmt->close();
     $this->id = $mysqli->insert_id;

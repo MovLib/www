@@ -131,7 +131,7 @@ final class PasswordSettings extends \MovLib\Presentation\Profile\AbstractProfil
   public function valid() {
     // The request has been accepted, but further action is required to complete it.
     http_response_code(202);
-    (new Mailer())->send($this->diContainerHTTP, new PasswordChangeEmail($this->user, $this->newPassword));
+    (new Mailer())->send(new PasswordChangeEmail($this->user, $this->newPassword));
 
     // Explain to the user where to find this further action to complete the request.
     $this->alerts .= new Alert(

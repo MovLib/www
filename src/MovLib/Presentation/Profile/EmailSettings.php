@@ -98,7 +98,7 @@ final class EmailSettings extends \MovLib\Presentation\Profile\AbstractProfilePr
   public function valid() {
     // The request has been accepted, but further action is required to complete it.
     http_response_code(202);
-    (new Mailer())->send($this->diContainerHTTP, new EmailAddressChangeEmail($this->user, $this->email));
+    (new Mailer())->send(new EmailAddressChangeEmail($this->user, $this->email));
 
     // Explain to the user where to find this further action to complete the request.
     $this->alerts .= new Alert(
