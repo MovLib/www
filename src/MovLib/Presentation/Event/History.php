@@ -28,48 +28,24 @@ use \MovLib\Data\Event\Event;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Partial\SidebarTrait;
+class History extends \MovLib\Presentation\AbstractHistoryPresenter {
   use \MovLib\Presentation\Event\EventTrait;
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The entity to present.
-   *
-   * @var \MovLib\Data\AbstractEntity
-   */
-  protected $entity;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
+ /**
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Event($this->diContainerHTTP, $_SERVER["EVENT_ID"]);
-    $pageTitle    = $this->intl->t("Delete {0}", [ $this->entity->name ]);
-    return $this
-      ->initPage($pageTitle, $pageTitle, $this->intl->t("History"))
-      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/history", $this->entity->id)
-      ->breadcrumb->addCrumbs([
-        [ $this->intl->r("/events"), $this->intl->t("Events") ],
-        [ $this->entity->route, $this->entity->name ]
-      ])
-    ;
-
+    return $this->initHistory(
+      new Event($this->diContainerHTTP, $_SERVER["EVENT_ID"]),
+      $this->intl->tp(-1, "Events")
+    );
   }
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater("Event History");
+    return $this->getIndexContent("Event");
   }
 
 }

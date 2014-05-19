@@ -20,7 +20,7 @@ namespace MovLib\Presentation\Series;
 use \MovLib\Data\Series\Series;
 
 /**
- * A series's discussion.
+ * A series's history.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -28,48 +28,25 @@ use \MovLib\Data\Series\Series;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Partial\SidebarTrait;
+class History extends \MovLib\Presentation\AbstractHistoryPresenter {
   use \MovLib\Presentation\Series\SeriesTrait;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The entity to present.
-   *
-   * @var \MovLib\Data\AbstractEntity
-   */
-  protected $entity;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Series($this->diContainerHTTP, $_SERVER["SERIES_ID"]);
-    $pageTitle    = $this->intl->t("History of {0}", [ $this->entity->displayTitle ]);
-    return $this
-      ->initPage($pageTitle, $pageTitle, $this->intl->t("History"))
-      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/history", $this->entity->id)
-      ->breadcrumb->addCrumbs([
-        [ $this->intl->r("/series"), $this->intl->tp(-1, "Series") ],
-        [ $this->entity->route, $this->entity->displayTitle ]
-      ])
-    ;
-
+    return $this->initHistory(
+      new Series($this->diContainerHTTP, $_SERVER["SERIES_ID"]),
+      $this->intl->tp(-1, "Series")
+    );
   }
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater("series history");
+    return $this->getIndexContent("Series");
   }
 
 }

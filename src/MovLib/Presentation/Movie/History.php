@@ -26,16 +26,16 @@ namespace MovLib\Presentation\Movie;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
+class History extends \MovLib\Presentation\AbstractHistoryPresenter {
+  use \MovLib\Presentation\Movie\MovieTrait;
 
   /**
-   * Initialize the movie history presentation.
+   * {@inheritdoc}
    */
   public function init() {
-    $this->initMoviePresenation(
-      $this->intl->t("History of {title}"),
-      $this->intl->t("History of {title}"),
-      $this->intl->t("History")
+    return $this->initHistory(
+      new Movie($this->diContainerHTTP, $_SERVER["MOVIE_ID"]),
+      $this->intl->tp(-1, "Movies")
     );
   }
 
@@ -43,7 +43,6 @@ class History extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater("history");
+    return $this->getIndexContent("Movie");
   }
-
 }

@@ -22,42 +22,33 @@ use \MovLib\Data\Award\Category;
 /**
  * A award category's history.
  *
+ * @route /award/{id}/category/{id}/history/{ro}/{rn}
+ *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Partial\SidebarTrait;
+class History extends \MovLib\Presentation\AbstractHistoryPresenter {
   use \MovLib\Presentation\Award\Category\CategoryTrait;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The entity to present.
-   *
-   * @var \MovLib\Data\AbstractEntity
-   */
-  protected $entity;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
 
   /**
    * {@inheritdoc}
    */
   public function init() {
     $this->entity = new Category($this->diContainerHTTP, $_SERVER["CATEGORY_ID"]);
-    $pageTitle    = $this->intl->t("History of {0}", [ $this->entity->name ]);
+    $pageTitle = $this->intl->t("History of {0}", [ $this->entity->name ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("History"))
       ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/history", $this->entity->id)
-      ->breadcrumb->addCrumbs($this->getBreadCrumbs())
+      ->initLanguageLinks("{$this->entity->routeKey}/edit", $this->entity->routeArgs)
+      ->breadcrumb->addCrumbs([
+        [ $this->intl->r("/awards"), $this->intl->t("Awards") ],
+        [ $this->intl->r("/award/{0}/", [ $this->entity->award->id ]), $this->entity->award->name ],
+        [ $this->intl->r("{$this->entity->pluralKey}"), $this->intl->tp(-1, "Categories") ],
+        [ $this->entity->route, $this->entity->name ]
+      ])
     ;
   }
 

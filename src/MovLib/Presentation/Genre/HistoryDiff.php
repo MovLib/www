@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation\Genre;
 
-use \MovLib\Data\Genre\Genre;
-
 /**
  * A genre's history diff.
  *
@@ -30,24 +28,12 @@ use \MovLib\Data\Genre\Genre;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class HistoryDiff extends \MovLib\Presentation\AbstractHistoryPresenter {
-  use \MovLib\Presentation\Genre\GenreTrait;
-  
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-    return $this->initHistory(
-      new Genre($this->diContainerHTTP, $_SERVER["GENRE_ID"]),
-      $this->intl->tp(-1, "Genres")
-    );
-  }
-
+class HistoryDiff extends \MovLib\Presentation\Genre\History {
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater("genre diff");
+    return $this->getDiffContent("Genre");
   }
 }

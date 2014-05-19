@@ -17,10 +17,10 @@
  */
 namespace MovLib\Presentation\Company;
 
-use \MovLib\Data\Company\Company;
-
 /**
- * A company's history.
+ * A company's history diff.
+ *
+ * @route /company/{id}/history/{ro}/{rn}
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -28,24 +28,12 @@ use \MovLib\Data\Company\Company;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\AbstractHistoryPresenter {
-  use \MovLib\Presentation\Company\CompanyTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-    return $this->initHistory(
-      new Company($this->diContainerHTTP, $_SERVER["COMPANY_ID"]),
-      $this->intl->tp(-1, "Companies")
-    );
-  }
+class HistoryDiff extends \MovLib\Presentation\Company\History {
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->getIndexContent("Company");
+    return $this->getDiffContent("Company");
   }
-
 }

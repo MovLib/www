@@ -28,48 +28,24 @@ use \MovLib\Data\Award\Award;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Partial\SidebarTrait;
+class History extends \MovLib\Presentation\AbstractHistoryPresenter {
   use \MovLib\Presentation\Award\AwardTrait;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The entity to present.
-   *
-   * @var \MovLib\Data\AbstractEntity
-   */
-  protected $entity;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
 
   /**
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Award($this->diContainerHTTP, $_SERVER["AWARD_ID"]);
-    $pageTitle    = $this->intl->t("Delete {0}", [ $this->entity->name ]);
-    return $this
-      ->initPage($pageTitle, $pageTitle, $this->intl->t("History"))
-      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/history", $this->entity->id)
-      ->breadcrumb->addCrumbs([
-        [ $this->intl->r("/awards"), $this->intl->t("Awards") ],
-        [ $this->entity->route, $this->entity->name ]
-      ])
-    ;
-
+    return $this->initHistory(
+      new Award($this->diContainerHTTP, $_SERVER["AWARD_ID"]),
+      $this->intl->tp(-1, "Awards")
+    );
   }
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater("Award History");
+    return $this->getIndexContent("Award");
   }
 
 }

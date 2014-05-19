@@ -20,7 +20,7 @@ namespace MovLib\Presentation\Job;
 use \MovLib\Data\Job\Job;
 
 /**
- * A job's discussion.
+ * A job's history.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -28,48 +28,24 @@ use \MovLib\Data\Job\Job;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Partial\SidebarTrait;
+class History extends \MovLib\Presentation\AbstractHistoryPresenter {
   use \MovLib\Presentation\Job\JobTrait;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The entity to present.
-   *
-   * @var \MovLib\Data\AbstractEntity
-   */
-  protected $entity;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
 
   /**
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Job($this->diContainerHTTP, $_SERVER["JOB_ID"]);
-    $pageTitle    = $this->intl->t("Delete {0}", [ $this->entity->name ]);
-    return $this
-      ->initPage($pageTitle, $pageTitle, $this->intl->t("History"))
-      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/history", $this->entity->id)
-      ->breadcrumb->addCrumbs([
-        [ $this->intl->r("/jobs"), $this->intl->t("Jobs") ],
-        [ $this->entity->route, $this->entity->name ]
-      ])
-    ;
-
+    return $this->initHistory(
+      new Job($this->diContainerHTTP, $_SERVER["JOB_ID"]),
+      $this->intl->tp(-1, "Jobs")
+    );
   }
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater("job history");
+    return $this->getIndexContent("Job");
   }
 
 }

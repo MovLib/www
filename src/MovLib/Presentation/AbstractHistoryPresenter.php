@@ -73,6 +73,15 @@ abstract class AbstractHistoryPresenter extends \MovLib\Presentation\AbstractPre
       }
     }
 
+    if (!isset($this->entity->name)) {
+      if (isset($this->entity->displayTitle)) {
+        $this->entity->name = $this->entity->displayTitle;
+      }
+      elseif (isset($this->entity->title)) {
+        $this->entity->name = $this->entity->title;
+      }
+    }
+
     $pageTitle = $this->intl->t("History of {0}", [ $this->entity->name ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("History"))
@@ -86,6 +95,17 @@ abstract class AbstractHistoryPresenter extends \MovLib\Presentation\AbstractPre
   }
 
   /**
+   * Build diff content.
+   *
+   * @param string $entityClassName
+   *   The entity's class name without namespace.
+   */
+  protected function getDiffContent($entityClassName) {
+    return $this->checkBackLater("{$entityClassName} diff");
+  }
+
+  /**
+   * Build paginated revision index.
    *
    * @param string $entityClassName
    *   The entity's class name without namespace.
