@@ -54,9 +54,9 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
     $form         = new Form($this->diContainerHTTP);
     $sex          = new Sex();
 
-    $sex->addInputTextElements($this->diContainerHTTP, $form, "title", $this->entity->names, $attributes);
+    $sex->addInputTextElements($this->diContainerHTTP, $form, "title", $this->entity->defaultTitles, $attributes);
     if ($translations) {
-      $sex->addInputTextElements($this->diContainerHTTP, $form, "title-{$this->intl->languageCode}", $this->entity->names, $attributes, $this->intl->t(
+      $sex->addInputTextElements($this->diContainerHTTP, $form, "title-{$this->intl->languageCode}", $this->entity->titles, $attributes, $this->intl->t(
         "{0} ({1})",
         [ 1 => $this->intl->getTranslations("languages")[$this->intl->defaultLanguageCode]->name ]
       ));

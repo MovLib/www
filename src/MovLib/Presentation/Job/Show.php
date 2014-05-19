@@ -40,7 +40,7 @@ class Show extends \MovLib\Presentation\AbstractShowPresenter {
   public function init() {
     $this->entity = new Job($this->diContainerHTTP, $_SERVER["JOB_ID"]);
     $this
-      ->initPage($this->entity->name)
+      ->initPage($this->entity->title)
       ->initShow($this->entity, $this->intl->t("Jobs"), "Job", null, $this->getSidebarItems())
     ;
     return $this;
@@ -52,7 +52,7 @@ class Show extends \MovLib\Presentation\AbstractShowPresenter {
   public function getContent() {
     $this->infoboxBefore .= "<p>";
     foreach ([ Sex::MALE => $this->intl->t("Male"), Sex::FEMALE => $this->intl->t("Female") ] as $code => $title) {
-      $this->infoboxBefore .= "<span property='alternateName' class='ico ico-sex{$code} sex-{$code}' title='{$title}'> {$this->entity->names[$code]}</span> ";
+      $this->infoboxBefore .= "<span property='alternateName' class='ico ico-sex{$code} sex-{$code}' title='{$title}'> {$this->entity->titles[$code]}</span> ";
     }
     $this->infoboxBefore .= "</p>";
 

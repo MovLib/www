@@ -64,9 +64,9 @@ SELECT
   `movies_crew`.`changed` AS `crewChanged`,
   `movies_crew`.`job_id` AS `crewJobId`,
   IFNULL(
-    COLUMN_GET(`jobs`.`dyn_names_sex{$person->sex}`, '{$this->intl->languageCode}' AS BINARY),
-    COLUMN_GET(`jobs`.`dyn_names_sex{$person->sex}`, '{$this->intl->defaultLanguageCode}' AS BINARY)
-  ) AS `crewJobName`,
+    COLUMN_GET(`jobs`.`dyn_titles_sex{$person->sex}`, '{$this->intl->languageCode}' AS BINARY),
+    COLUMN_GET(`jobs`.`dyn_titles_sex{$person->sex}`, '{$this->intl->defaultLanguageCode}' AS BINARY)
+  ) AS `crewJobTitle`,
   `crew_alias`.`alias` AS `crewAlias`,
   IFNULL(
     COLUMN_GET(`movies_crew`.`dyn_role`, '{$this->intl->languageCode}' AS BINARY),
@@ -145,7 +145,7 @@ SQL
           $this->entities[$row->movieId]->cast->entities[$row->crewId]->changed             = $row->crewChanged;
           $this->entities[$row->movieId]->cast->entities[$row->crewId]->alias               = $row->crewAlias;
           $this->entities[$row->movieId]->cast->entities[$row->crewId]->jobId               = (integer) $row->crewJobId;
-          $this->entities[$row->movieId]->cast->entities[$row->crewId]->names[$person->sex] = $row->crewJobName;
+          $this->entities[$row->movieId]->cast->entities[$row->crewId]->names[$person->sex] = $row->crewJobTitle;
           $this->entities[$row->movieId]->cast->entities[$row->crewId]->movieId             = (integer) $row->movieId;
           $this->entities[$row->movieId]->cast->entities[$row->crewId]->personId            = (integer) $row->personId;
           $this->entities[$row->movieId]->cast->entities[$row->crewId]->role                = $row->crewRole;
@@ -164,7 +164,7 @@ SQL
           $this->entities[$row->movieId]->crew->entities[$row->crewId]->changed             = $row->crewChanged;
           $this->entities[$row->movieId]->crew->entities[$row->crewId]->alias               = $row->crewAlias;
           $this->entities[$row->movieId]->crew->entities[$row->crewId]->jobId               = (integer) $row->crewJobId;
-          $this->entities[$row->movieId]->crew->entities[$row->crewId]->names[$person->sex] = $row->crewJobName;
+          $this->entities[$row->movieId]->crew->entities[$row->crewId]->names[$person->sex] = $row->crewJobTitle;
           $this->entities[$row->movieId]->crew->entities[$row->crewId]->movieId             = (integer) $row->movieId;
           $this->entities[$row->movieId]->crew->entities[$row->crewId]->personId            = (integer) $row->personId;
           $this->entities[$row->movieId]->crew->entities[$row->crewId]->routeArgs           = $row->crewJobId;

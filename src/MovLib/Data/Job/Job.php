@@ -62,33 +62,33 @@ class Job extends \MovLib\Data\AbstractEntity implements \MovLib\Data\RevisionIn
   public $description;
 
   /**
-   * The job's gender specific names in default language.
+   * The job's gender specific titles in default language.
    *
    * The Keys are {@see \MovLib\Partial\Sex} class constants.
    *
    * @var array
    */
-  public $defaultNames = [
+  public $defaultTitles = [
     Sex::UNKNOWN => null,
     Sex::MALE    => null,
     Sex::FEMALE  => null,
   ];
 
   /**
-   * The job's translated unisex name.
+   * The job's translated unisex title.
    *
    * @var string
    */
-  public $name;
+  public $title;
 
   /**
-   * The job's translated and gender specific names.
+   * The job's translated and gender specific titles.
    *
    * The Keys are {@see \MovLib\Partial\Sex} class constants.
    *
    * @var array
    */
-  public $names = [
+  public $titles = [
     Sex::UNKNOWN => null,
     Sex::MALE    => null,
     Sex::FEMALE  => null,
@@ -134,9 +134,9 @@ SELECT
   `jobs`.`deleted` AS `deleted`,
   COLUMN_GET(`jobs`.`dyn_descriptions`, ? AS CHAR) AS `description`,
   `jobs`.`id` AS `id`,
-  IFNULL(COLUMN_GET(`jobs`.`dyn_names_sex0`, ? AS CHAR), COLUMN_GET(`dyn_names_sex0`, '{$this->intl->defaultLanguageCode}' AS CHAR)),
-  IFNULL(COLUMN_GET(`jobs`.`dyn_names_sex1`, ? AS CHAR), COLUMN_GET(`dyn_names_sex1`, '{$this->intl->defaultLanguageCode}' AS CHAR)),
-  IFNULL(COLUMN_GET(`jobs`.`dyn_names_sex2`, ? AS CHAR), COLUMN_GET(`dyn_names_sex2`, '{$this->intl->defaultLanguageCode}' AS CHAR)),
+  IFNULL(COLUMN_GET(`jobs`.`dyn_titles_sex0`, ? AS CHAR), COLUMN_GET(`dyn_titles_sex0`, '{$this->intl->defaultLanguageCode}' AS CHAR)),
+  IFNULL(COLUMN_GET(`jobs`.`dyn_titles_sex1`, ? AS CHAR), COLUMN_GET(`dyn_titles_sex1`, '{$this->intl->defaultLanguageCode}' AS CHAR)),
+  IFNULL(COLUMN_GET(`jobs`.`dyn_titles_sex2`, ? AS CHAR), COLUMN_GET(`dyn_titles_sex2`, '{$this->intl->defaultLanguageCode}' AS CHAR)),
   IFNULL(COLUMN_GET(`jobs`.`dyn_wikipedia`, ? AS CHAR), COLUMN_GET(`dyn_wikipedia`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `wikipedia`,
   `jobs`.`count_companies` AS `companyCount`,
   `jobs`.`count_persons` AS `personCount`
@@ -161,9 +161,9 @@ SQL
         $this->deleted,
         $this->description,
         $this->id,
-        $this->names[Sex::UNKNOWN],
-        $this->names[Sex::MALE],
-        $this->names[Sex::FEMALE],
+        $this->titles[Sex::UNKNOWN],
+        $this->titles[Sex::MALE],
+        $this->titles[Sex::FEMALE],
         $this->wikipedia,
         $this->companyCount,
         $this->personCount
@@ -193,9 +193,9 @@ SQL
     $stmt = $this->getMySQLi()->prepare(<<<SQL
 UPDATE `jobs` SET
   `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, '{$this->intl->languageCode}', ?),
-  `dyn_names_sex0`   = COLUMN_ADD(`dyn_names_sex0`, '{$this->intl->languageCode}', ?),
-  `dyn_names_sex1`   = COLUMN_ADD(`dyn_names_sex1`, '{$this->intl->languageCode}', ?),
-  `dyn_names_sex2`   = COLUMN_ADD(`dyn_names_sex2`, '{$this->intl->languageCode}', ?),
+  `dyn_titles_sex0`  = COLUMN_ADD(`dyn_titles_sex0`, '{$this->intl->languageCode}', ?),
+  `dyn_titles_sex1`  = COLUMN_ADD(`dyn_titles_sex1`, '{$this->intl->languageCode}', ?),
+  `dyn_titles_sex2`  = COLUMN_ADD(`dyn_titles_sex2`, '{$this->intl->languageCode}', ?),
   `dyn_wikipedia`    = COLUMN_ADD(`dyn_wikipedia`, '{$this->intl->languageCode}', ?)
 WHERE `id` = {$this->id}
 SQL
@@ -203,9 +203,9 @@ SQL
     $stmt->bind_param(
       "sssss",
       $this->description,
-      $this->names[Sex::UNKNOWN],
-      $this->names[Sex::MALE],
-      $this->names[Sex::FEMALE],
+      $this->titles[Sex::UNKNOWN],
+      $this->titles[Sex::MALE],
+      $this->titles[Sex::FEMALE],
       $this->wikipedia
     );
     $stmt->execute();
@@ -226,9 +226,9 @@ SQL
       $stmt = $mysqli->prepare(<<<SQL
 INSERT INTO `jobs` (
   `dyn_descriptions`,
-  `dyn_names_sex0`,
-  `dyn_names_sex1`,
-  `dyn_names_sex2`,
+  `dyn_titles_sex0`,
+  `dyn_titles_sex1`,
+  `dyn_titles_sex2`,
   `dyn_wikipedia`
 ) VALUES (
   COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
@@ -242,9 +242,9 @@ SQL
       $stmt->bind_param(
         "sssss",
         $this->description,
-        $this->names[Sex::UNKNOWN],
-        $this->names[Sex::MALE],
-        $this->names[Sex::FEMALE],
+        $this->titles[Sex::UNKNOWN],
+        $this->titles[Sex::MALE],
+        $this->titles[Sex::FEMALE],
         $this->wikipedia
       );
     }
@@ -252,9 +252,9 @@ SQL
       $stmt = $mysqli->prepare(<<<SQL
 INSERT INTO `jobs` (
   `dyn_descriptions`,
-  `dyn_names_sex0`,
-  `dyn_names_sex1`,
-  `dyn_names_sex2`,
+  `dyn_titles_sex0`,
+  `dyn_titles_sex1`,
+  `dyn_titles_sex2`,
   `dyn_wikipedia`
 ) VALUES (
   COLUMN_CREATE('{$this->intl->languageCode}', ?),
@@ -277,12 +277,12 @@ SQL
       $stmt->bind_param(
         "ssssssss",
         $this->description,
-        $this->defaultNames[Sex::UNKNOWN],
-        $this->names[Sex::UNKNOWN],
-        $this->defaultNames[Sex::MALE],
-        $this->names[Sex::MALE],
-        $this->defaultNames[Sex::FEMALE],
-        $this->names[Sex::FEMALE],
+        $this->defaultTitles[Sex::UNKNOWN],
+        $this->titles[Sex::UNKNOWN],
+        $this->defaultTitles[Sex::MALE],
+        $this->titles[Sex::MALE],
+        $this->defaultTitles[Sex::FEMALE],
+        $this->titles[Sex::FEMALE],
         $this->wikipedia
       );
     }
@@ -337,7 +337,7 @@ SQL
    */
   public function getRevisionInfo() {
     return new Revision(
-      $this->names[Sex::UNKNOWN],
+      $this->titles[Sex::UNKNOWN],
       $this->route,
       $this->intl->t("Job")
     );
@@ -347,7 +347,7 @@ SQL
    * {@inheritdoc}
    */
   protected function init() {
-    $this->names[Sex::UNKNOWN] && $this->name = $this->names[Sex::UNKNOWN];
+    $this->titles[Sex::UNKNOWN] && $this->title = $this->titles[Sex::UNKNOWN];
     return parent::init();
   }
 

@@ -19,7 +19,6 @@ namespace MovLib\Presentation\Job;
 
 use \MovLib\Data\Job\Job;
 use \MovLib\Partial\Form;
-use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Partial\FormElement\InputWikipedia;
 use \MovLib\Partial\FormElement\TextareaHTMLExtended;
 use \MovLib\Partial\Sex;
@@ -45,7 +44,7 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
   public function init() {
     $this->entity = new Job($this->diContainerHTTP, $_SERVER["JOB_ID"]);
     return $this
-      ->initPage($this->intl->t("Edit {0}", [ $this->entity->name ]), null, $this->intl->t("Edit"))
+      ->initPage($this->intl->t("Edit {0}", [ $this->entity->title ]), null, $this->intl->t("Edit"))
       ->initEdit($this->entity, $this->intl->t("Jobs"), $this->getSidebarItems())
     ;
   }
@@ -55,7 +54,7 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    */
   public function getContent() {
     $form = new Form($this->diContainerHTTP);
-    (new Sex())->addInputTextElements($this->diContainerHTTP, $form, "title", $this->entity->names, [ "required" => true ]);
+    (new Sex())->addInputTextElements($this->diContainerHTTP, $form, "title", $this->entity->titles, [ "required" => true ]);
     return $form
       ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description))
       ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia))

@@ -42,9 +42,9 @@ SELECT
   `persons_aliases`.`alias`,
   `movies_crew`.`job_id` AS `jobId`,
   IFNULL(
-    COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$this->intl->languageCode}' AS BINARY),
-    COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$this->intl->defaultLanguageCode}' AS BINARY)
-  ) AS `jobName`
+    COLUMN_GET(`jobs`.`dyn_titles_sex0`, '{$this->intl->languageCode}' AS BINARY),
+    COLUMN_GET(`jobs`.`dyn_titles_sex0`, '{$this->intl->defaultLanguageCode}' AS BINARY)
+  ) AS `jobTitle`
 FROM `movies_crew`
   INNER JOIN `persons`
     ON `persons`.`id` = `movies_crew`.`person_id`
@@ -69,7 +69,7 @@ SQL
         $this->entities[$row->id]->personId = $row->personId;
         $this->entities[$row->id]->personName = $row->personName;
         $this->entities[$row->id]->alias = $row->alias;
-        $this->entities[$row->id]->names[Sex::UNKNOWN] = $row->jobName;
+        $this->entities[$row->id]->names[Sex::UNKNOWN] = $row->jobTitle;
         $reflector = new \ReflectionMethod($this->entities[$row->id], "init");
         $reflector->setAccessible(true);
         $reflector->invoke($this->entities[$row->id]);

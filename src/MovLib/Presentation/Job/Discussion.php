@@ -52,14 +52,14 @@ class Discussion extends \MovLib\Presentation\AbstractPresenter {
    */
   public function init() {
     $this->entity = new Job($this->diContainerHTTP, $_SERVER["JOB_ID"]);
-    $pageTitle    = $this->intl->t("Discuss {0}", [ $this->entity->name ]);
+    $pageTitle    = $this->intl->t("Discuss {0}", [ $this->entity->title ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Discussion"))
       ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
       ->initLanguageLinks("/{$this->entity->singularKey}/{0}/discussion", $this->entity->id)
       ->breadcrumb->addCrumbs([
         [ $this->intl->r("/jobs"), $this->intl->t("Jobs") ],
-        [ $this->entity->route, $this->entity->name ]
+        [ $this->entity->route, $this->entity->title ]
       ])
     ;
 

@@ -74,9 +74,9 @@ SELECT
   `movies_crew`.`changed`,
   `movies_crew`.`job_id` AS `jobId`,
   IFNULL(
-    COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$this->intl->languageCode}' AS CHAR(255)),
-    COLUMN_GET(`jobs`.`dyn_names_sex0`, '{$this->intl->defaultLanguageCode}' AS CHAR(255))
-  ) AS `jobName`,
+    COLUMN_GET(`jobs`.`dyn_titles_sex0`, '{$this->intl->languageCode}' AS CHAR(255)),
+    COLUMN_GET(`jobs`.`dyn_titles_sex0`, '{$this->intl->defaultLanguageCode}' AS CHAR(255))
+  ) AS `jobTitle`,
   `crew_alias`.`alias` AS `alias`
 FROM `movies_crew`
   INNER JOIN `jobs`
@@ -91,7 +91,7 @@ WHERE `movies_crew`.`movie_id` = {$movie->id}
   AND `movies_crew`.`job_id` > {$castJobId}
   AND `jobs`.`deleted` = false
   AND (`persons`.`deleted` = false OR `companies`.`deleted` = false)
-ORDER BY `jobName`{$this->collations[ $this->intl->languageCode ]} ASC,
+ORDER BY `jobTitle`{$this->collations[ $this->intl->languageCode ]} ASC,
   `entityName`{$this->collations[ $this->intl->languageCode ]} ASC
 SQL
     );
@@ -108,7 +108,7 @@ SQL
           "crewSet" => new CrewSet($this->diContainer),
         ];
         $this->entities[$row->jobId]->job->id = $row->jobId;
-        $this->entities[$row->jobId]->job->names[Sex::UNKNOWN] = $row->jobName;
+        $this->entities[$row->jobId]->job->names[Sex::UNKNOWN] = $row->jobTitle;
         $reflector = new \ReflectionMethod($this->entities[$row->jobId]->job, "init");
         $reflector->setAccessible(true);
         $reflector->invoke($this->entities[$row->jobId]->job);

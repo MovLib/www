@@ -54,13 +54,13 @@ class Movies extends \MovLib\Presentation\Person\AbstractPersonPresenter {
     foreach ($set->loadEntitiesByPerson($this->entity) as $movieId => $jobs) {
       $jobList = null;
 
-      $cast        = null;
-      $castJobName = null;
-      $castRoute   = null;
+      $cast         = null;
+      $castJobTitle = null;
+      $castRoute    = null;
       /* @var $castJob \MovLib\Data\Cast\Cast */
       foreach ($jobs->cast as $id => $castJob) {
-        if (!$castJobName) {
-          $castJobName = $castJob->names[$this->entity->sex];
+        if (!$castJobTitle) {
+          $castJobTitle = $castJob->names[$this->entity->sex];
           $castRoute   = $castJob->route;
         }
         if ($cast) {
@@ -82,7 +82,7 @@ class Movies extends \MovLib\Presentation\Person\AbstractPersonPresenter {
       if ($cast) {
         $jobList .= "<li>{$this->intl->t(
           "{job} as {roles}",
-          [ "job" => "<a href='{$castRoute}'>{$castJobName}</a>", "roles" => $cast ]
+          [ "job" => "<a href='{$castRoute}'>{$castJobTitle}</a>", "roles" => $cast ]
         )}</li>";
       }
 
