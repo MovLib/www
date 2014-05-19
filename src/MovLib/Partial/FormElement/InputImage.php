@@ -171,14 +171,14 @@ final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
     try {
     // @codeCoverageIgnoreEnd
     // @devEnd
-      $JSON     = json_encode($this->errorMessages);
-      $height   = $this->value->imageHeight ? " data-height='{$this->value->imageHeight}'" : null;
-      $width    = $this->value->imageWidth  ? " data-width='{$this->value->imageWidth}'"   : null;
+      $JSON   = json_encode($this->errorMessages);
+      $height = $this->value->imageHeight ? " data-height='{$this->value->imageHeight}'" : null;
+      $width  = $this->value->imageWidth  ? " data-width='{$this->value->imageWidth}'"   : null;
 
       return
         "<div class='inputimage r' data-max-filesize='{$this->maxFilesize}' data-min-height='{$this->minHeight}' data-min-width='{$this->minWidth}'{$height}{$width}>" .
           "<script type='application/json'>{$JSON}</script>" .
-          "<div class='s s2 preview'>{$this->presenter->img($this->value->imageGetStyle("s2"), [ "class" => "preview" ], false)}</div>" .
+          "<div class='s s2 preview'>{$this->presenter->img($this->value->imageGetStyle("s2"), [], false)}</div>" .
           "<div class='s s8'>{$this->required}{$this->helpPopup}<label for='{$this->id}'>{$this->label}</label>" .
             "<span class='btn input-file'><span aria-hidden='true'>{$this->intl->t("Choose Image …")}</span>" .
               "<input id='{$this->id}' name='{$this->id}' type='file' accept='image/jpeg,image/png'{$this->expandTagAttributes($this->attributes)}>" .

@@ -81,6 +81,7 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
     if ($this->request->methodGET && ($token = $this->request->filterInputString(INPUT_GET, "token"))) {
       $this->validateToken($token);
     }
+    return $this;
   }
 
 

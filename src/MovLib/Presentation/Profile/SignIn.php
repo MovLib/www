@@ -128,7 +128,7 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
         "required"    => true,
       ]))
       ->addAction($this->intl->t("Sign In"), [ "class" => "btn btn-large btn-success" ])
-      ->init([ $this, "valid" ])
+      ->init([ $this, "submit" ])
     ;
 
     return "<div class='c'><div class='r'>{$form}</div></div>";
@@ -139,16 +139,26 @@ final class SignIn extends \MovLib\Presentation\AbstractPresenter {
 
 
   /**
-   * {@inheritdoc}
+   * Submit callback for the sign in form.
+   *
+   * @return this
+   * @throws \MovLib\Exception\RedirectException\SeeOtherException
+   *   Redirects the user to the previously requested page or the dashboard if successfully authenticated.
    */
-  public function valid() {
+  public function submit() {
     // @devStart
     // @codeCoverageIgnoreStart
-    $this->log->debug("Authenticating user", [ "email" => $this->email, "password" => $this->rawPassword ]);
+    $this->log->debug("Authenticating user.", [ "email" => $this->email, "password" => $this->rawPassword ]);
     // @codeCoverageIgnoreEnd
     // @devEnd
 
     if ($this->session->authenticate($this->email, $this->rawPassword)) {
+      // @devStart
+      // @codeCoverageIgnoreStart
+      $this->log->debug("{$this->session->userName} successfully signed in.");
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+
       $this->alertSuccess(
         $this->intl->t("Sign in successful"),
         $this->intl->t("Welcome back {username}!", [ "username" => $this->placeholder($this->session->userName) ])

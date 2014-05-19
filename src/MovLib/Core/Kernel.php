@@ -273,6 +273,11 @@ final class Kernel {
    * @return this
    */
   public function delayMethodCall(callable $callable, array $params = null) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    $this->diContainer->log->debug("Delaying method call.", [ "callable" => $callable, "params" => $params ]);
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     $this->delayedMethods[] = [ $callable, $params ];
     return $this;
   }

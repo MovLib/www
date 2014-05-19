@@ -19,6 +19,7 @@ namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\TemporaryStorage;
 use \MovLib\Exception\ClientException\UnauthorizedException;
+use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Mail\Mailer;
 use \MovLib\Mail\Profile\PasswordChangeEmail;
 use \MovLib\Partial\Alert;
@@ -70,9 +71,11 @@ final class PasswordSettings extends \MovLib\Presentation\Profile\AbstractProfil
       true,
       $this->intl->t("Please sign in again to verify the legitimacy of this request.")
     );
-    if ($this->request->methodGET && ($token = $this->request->filterInputString(INPUT_GET, $this->intl->r("token")))) {
+
+    if ($this->request->methodGET && ($token = $this->request->filterInputString(INPUT_GET, "token"))) {
       $this->validateToken($token);
     }
+
     return $this;
   }
 
@@ -117,7 +120,7 @@ final class PasswordSettings extends \MovLib\Presentation\Profile\AbstractProfil
         "required"    => true,
       ]))
       ->addAction($this->intl->t("Change"), [ "class" => "btn btn-large btn-success" ])
-      ->init([ $this, "valid" ], [ $this, "validate" ])
+      ->init([ $this, "submit" ], [ $this, "validate" ])
     ;
 
     return "{$this->calloutInfo($passwordInfo, $this->intl->t("Tip"))}{$form}";
@@ -128,23 +131,21 @@ final class PasswordSettings extends \MovLib\Presentation\Profile\AbstractProfil
    *
    * @return this
    */
-  public function valid() {
+  public function submit() {
     // The request has been accepted, but further action is required to complete it.
     http_response_code(202);
     (new Mailer())->send(new PasswordChangeEmail($this->user, $this->newPassword));
 
     // Explain to the user where to find this further action to complete the request.
-    $this->alerts .= new Alert(
-      $this->intl->t("An email with further instructions has been sent to {0}.", $this->placeholder($this->user->email)),
-      $this->intl->t("Successfully Requested Password Change"),
-      Alert::SEVERITY_SUCCESS
+    $this->alertSuccess(
+      $this->intl->t("Password change request successful"),
+      $this->intl->t("An email with further instructions has been sent to {email}.", [ "email" => $this->placeholder($this->user->email) ])
     );
 
     // Also explain that this change is no immidiate action and that our system is still using the old password.
-    $this->alerts .= new Alert(
-      $this->intl->t("You have to sign in with your old password until you’ve successfully confirmed your password change via the link we’ve just sent you."),
+    $this->alertInfo(
       $this->intl->t("Important!"),
-      Alert::SEVERITY_INFO
+      $this->intl->t("You have to sign in with your old password until you’ve successfully confirmed your password change via the link we’ve just sent you.")
     );
 
     return $this;
@@ -162,16 +163,14 @@ final class PasswordSettings extends \MovLib\Presentation\Profile\AbstractProfil
    *   Possibly found errors.
    */
   public function validate($errors) {
+    // Make sure the password differs from the current password.
+    if (password_verify($this->newPassword, $this->user->passwordHash)) {
+      $errors["password_new"] = $this->intl->t("Your new password equals your existing password, please enter a new one.");
+    }
     // Both password's have to be equal.
     if ($this->newPassword != $this->confirmPassword) {
       $errors["password_confirm"] = $this->intl->t("The confirmation password doesn’t match the new password, please try again.");
     }
-
-    // Make sure the password differs from the current password.
-    if (password_verify($this->newPassword, $user->passwordHash)) {
-      $errors["password_new"] = $this->intl->t("Your new password equals your existing password, please enter a new one.");
-    }
-
     return $errors;
   }
 
@@ -187,13 +186,12 @@ final class PasswordSettings extends \MovLib\Presentation\Profile\AbstractProfil
     /* @var $data \MovLib\Stub\Mail\Profile\PasswordChange */
     $data = $tmp->get($token);
 
-    if ($data === false || empty($data->userId) || empty($data->newPassword)) {
-      $kernel->alerts .= new Alert(
-        $this->intl->t("Your confirmation token is invalid or expired, please fill out the form again."),
+    if ($data === false || empty($data->userId) || empty($data->newPasswordHash)) {
+      $this->alertError(
         $this->intl->t("Token Invalid"),
-        Alert::SEVERITY_ERROR
+        $this->intl->t("Your confirmation token is invalid or expired, please fill out the form again.")
       );
-      throw new SeeOtherRedirect($this->request->path);
+      throw new SeeOtherException($this->request->path);
     }
 
     $this->kernel->delayMethodCall([ $tmp, "delete" ], [ $token ]);
@@ -206,12 +204,10 @@ final class PasswordSettings extends \MovLib\Presentation\Profile\AbstractProfil
       ));
     }
 
-    $this->user->updatePassword($data->newPassword);
-
-    $this->alerts .= new Alert(
-      $this->intl->t("Your password was successfully changed. Please use your new password to sign in from now on."),
-      $this->intl->t("Password Changed Successfully"),
-      Alert::SEVERITY_SUCCESS
+    $this->user->updatePassword($data->newPasswordHash);
+    $this->alertSuccess(
+      $this->intl->t("Password change successful"),
+      $this->intl->t("Your password was successfully changed. Please use your new password to sign in from now on.")
     );
 
     return $this;

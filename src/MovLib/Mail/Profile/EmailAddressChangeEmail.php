@@ -89,7 +89,7 @@ final class EmailAddressChangeEmail extends \MovLib\Mail\AbstractEmail {
       "userId"   => $this->user->id,
       "newEmail" => $this->recipient,
     ]);
-    $this->link = $this->presenter->url($this->request->path, [ $this->intl->r("token") => $token ]);
+    $this->link = $this->presenter->url($this->request->path, [ "token" => $token ], null, true);
 
     return true;
   }
@@ -100,12 +100,14 @@ final class EmailAddressChangeEmail extends \MovLib\Mail\AbstractEmail {
   public function getHTML() {
     return
       "<p>{$this->intl->t("Hi {0}!", [ $this->user->name ])}</p>" .
-      "<p>{$this->intl->t("You (or someone else) requested to change your account’s email address.")} {$this->intl->t("You may now confirm this action by {0}clicking this link{1}.", [
-        "<a href='{$this->link}'>",
-        "</a>"
-      ])}</p>" .
-      "<p>{$this->intl->t("This link can only be used once within the next 24 hours.")} {$this->intl->t("Once you click the link above, you won’t be able to sign in with your old email address.")}<br>" .
-      "{$this->intl->t("If it wasn’t you who requested this action simply ignore this message.")}</p>"
+      "<p>{$this->intl->t("You (or someone else) requested to change your account’s email address.")} {$this->intl->t(
+        "You may now confirm this action by {0}clicking this link{1}.",
+        [ "<a href='{$this->link}'>", "</a>" ]
+      )}</p>" .
+      "<p>{$this->intl->t("This link can only be used once within the next 24 hours.")} {$this->intl->t(
+        "Once you click the link above, you won’t be able to sign in with your old email address."
+      )}</p>" .
+      "<p>{$this->intl->t("If it wasn’t you who requested this action simply ignore this message.")}</p>"
     ;
   }
 
@@ -121,6 +123,7 @@ final class EmailAddressChangeEmail extends \MovLib\Mail\AbstractEmail {
 {$this->link}
 
 {$this->intl->t("This link can only be used once within the next 24 hours.")} {$this->intl->t("Once you click the link above, you won’t be able to sign in with your old email address.")}
+
 {$this->intl->t("If it wasn’t you who requested this action simply ignore this message.")}
 EOT;
   }

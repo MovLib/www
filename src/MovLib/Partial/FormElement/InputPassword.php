@@ -81,6 +81,9 @@ final class InputPassword extends \MovLib\Partial\FormElement\AbstractInput {
   public function __toString() {
     $this->attributes["pattern"] = self::PATTERN;
     $this->attributes["title"]   = $this->intl->t("A password must contain lowercase and uppercase letters, numbers, and must be at least {0,number,integer} characters long.", [ self::MIN_LENGTH ]);
+    if (isset($this->attributes["value"])) {
+      unset($this->attributes["value"]);
+    }
     return parent::__toString();
   }
 

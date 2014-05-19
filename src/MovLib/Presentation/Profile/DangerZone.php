@@ -136,17 +136,15 @@ final class DangerZone extends \MovLib\Presentation\Profile\AbstractProfilePrese
     (new Mailer())->send(new AccountDeletionEmail($this->user));
 
     // Let the user know where to find the instructions to complete the request.
-    $this->alerts .= new Alert(
-      $this->intl->t("An email with further instructions has been sent to {0}.", $this->placeholder($this->user->email)),
-      $this->intl->t("Successfully Requested Deletion"),
-      Alert::SEVERITY_SUCCESS
+    $this->alertSuccess(
+      $this->intl->t("Successfully requested deletion"),
+      $this->intl->t("An email with further instructions has been sent to {email}.", [ "email" => $this->placeholder($this->user->email) ])
     );
 
     // Make sure the user really understand what to do.
-    $this->alerts .= new Alert(
-      $this->intl->t("You have to follow the link that we just sent to you via email to complete this action."),
+    $this->alertInfo(
       $this->intl->t("Important!"),
-      Alert::SEVERITY_INFO
+      $this->intl->t("You have to follow the link that we just sent to you via email to complete this action.")
     );
 
     return $this;
@@ -162,23 +160,21 @@ final class DangerZone extends \MovLib\Presentation\Profile\AbstractProfilePrese
     $ssid = $this->request->filterInputString(INPUT_POST, "ssid");
 
     if (!$ssid) {
-      $this->alerts .= new Alert(
-        $this->intl->t("The submitted session identifier was invalid."),
+      $this->alertError(
         $this->intl->t("Validation Error"),
-        Alert::SEVERITY_ERROR
+        $this->intl->t("The submitted session identifier is invalid.")
       );
     }
     elseif ($ssid == $this->session->ssid) {
-      $this->alerts .= new Alert(
-        $this->intl->t("You’ve been signed out from your current session and all your active sessions have been deleted."),
-        $this->intl->t("Successfully Signed Out"),
-        Alert::SEVERITY_SUCCESS
+      $this->alertSuccess(
+        $this->intl->t("Successfully signed out"),
+        $this->intl->t("You’ve been signed out from your current session and all your active sessions have been deleted.")
       );
       $this->session->destroy(true);
       throw new SeeOtherException($this->intl->r("/profile/sign-in"));
     }
     else {
-      $this->session->delete($ssid);
+      $this->session->delete([ $ssid ]);
     }
 
     return $this;
@@ -194,10 +190,9 @@ final class DangerZone extends \MovLib\Presentation\Profile\AbstractProfilePrese
     $userId = $tmp->get($token);
 
     if ($userId === false || empty($userId)) {
-      $this->alerts .= new Alert(
-        $this->intl->t("Your confirmation token is invalid or expired, please fill out the form again."),
-        $this->intl->t("Token Invalid"),
-        Alert::SEVERITY_ERROR
+      $this->alertError(
+        $this->intl->t("Token invalid"),
+        $this->intl->t("Your confirmation token is invalid or expired, please fill out the form again.")
       );
       throw new SeeOtherException($this->request->path);
     }
@@ -215,10 +210,9 @@ final class DangerZone extends \MovLib\Presentation\Profile\AbstractProfilePrese
     $this->user->deleteAccount();
     $this->session->destroy(true);
 
-    $this->alerts .= new Alert(
-      $this->intl->t("Your account has been purged from our system. We’re very sorry to see you leave."),
-      $this->intl->t("Account Deletion Successfull"),
-      Alert::SEVERITY_SUCCESS
+    $this->alertSuccess(
+      $this->intl->t("Account deletion successful"),
+      $this->intl->t("You account has been purged from our system. We’re very sorry to see you leave.")
     );
 
     throw new SeeOtherException("/");

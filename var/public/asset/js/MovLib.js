@@ -173,34 +173,33 @@
     },
 
     /**
-     * Get alert message.
+     * Get callout.
      *
-     * Please note that the alert has the CSS class `"hide"` and you have to add the class `"show"` after you inserted
+     * Please note that the callout has the CSS class `"hide"` and you have to add the class `"show"` after you inserted
      * the element into the DOM.
      *
-     * @method getAlert
-     * @param {String} message The already translated alert's message.
-     * @param {String} [title] The already translated alert's title.
-     * @param {String} [severity=""] The alert's severity level, default is empty which conforms to <code>"warning"</code>.
-     * Possible values are: <code>"error"</code>, <code>"info"</code>, and <code>"success"</code>.
-     * @param {Object} [attributes={}] An array containing additional attributes that should be applied to the outermost
-     *   <code><div></code>-element surrounding the alert.
-     * @returns {HTMLElement} The alert message.
+     * @method getCallout
+     * @param {String} message The already translated callout's message.
+     * @param {String} [title] The already translated callout's title.
+     * @param {String} [severity] The callout's severity level, one of `"error"`, `"info"`, or `"success"`.
+     * @param {Object} [attributes={}] Additional attributes that should be applied to the callout.
+     * @returns {HTMLElement} The callout.
      */
-    getAlert: function (message, title, severity, attributes) {
-      var alert = document.createElement("div");
-      attributes = attributes || {};
-      attributes.role = "alert";
-      for (var attribute in attributes) {
-        alert.setAttribute(attribute, attributes[attribute]);
+    getCallout: function (message, title, severity, attributes) {
+      var callout = document.createElement("div");
+      if (attributes) {
+        for (var attribute in attributes) {
+          callout.setAttribute(attribute, attributes[attribute]);
+        }
       }
+      callout.classList.add("callout", "hide");
       if (severity) {
-        severity = "alert-" + severity;
+        callout.classList.add("callout-" + severity);
       }
-      alert.classList.add("alert", "hide", severity);
-      alert.innerHTML = "<div class='c'>" + (title || "") + message + "</div>";
-      return alert;
+      callout.innerHTML = "<div class='c'>" + (title || "") + message + "</div>";
+      return callout;
     },
+
 
     /**
      * Escape special HTML characters like PHP's equivalent function.

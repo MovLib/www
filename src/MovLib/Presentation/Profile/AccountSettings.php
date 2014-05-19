@@ -75,7 +75,7 @@ final class AccountSettings extends \MovLib\Presentation\Profile\AbstractProfile
     // Display delete button if the user just uploaded a new avatar or one is already present.
     $inputFileAfter = null;
     if ($this->user->imageExists) {
-      $inputFileAfter = "<a class='btn btn-danger' href='{$this->request->path}?{$deleteAvatarKey}=1'>{$this->intl->t("Delete")}</a>";
+      $inputFileAfter = "<a class='btn btn-error' href='{$this->request->path}?{$deleteAvatarKey}=1'>{$this->intl->t("Delete")}</a>";
     }
 
     $birthYearMax = (new Date())->sub(new \DateInterval("P6Y"))->format('Y');

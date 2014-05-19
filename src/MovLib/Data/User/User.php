@@ -684,17 +684,17 @@ SQL
   /**
    * Update the user's password.
    *
-   * @param string $rawPassword
-   *   The (raw) new password.
+   * @param string $passwordHash
+   *   The new and already hashed password.
    * @return this
    * @throws \mysqli_sql_exception
    */
-  public function updatePassword($rawPassword) {
-    $this->passwordHash = password_hash($rawPassword, $this->config->passwordAlgorithm, $this->config->passwordOptions);
-    $stmt = $this->getMySQLi()->prepare("UPDATE `users` SET `password` = ? WHERE `id` = {$this->id}");
-    $stmt->bind_param("s", $this->passwordHash);
+  public function updatePassword($passwordHash) {
+    $stmt = $this->getMySQLi()->prepare("UPDATE `users` SET `password` = ? WHERE `id` = ?");
+    $stmt->bind_param("sd", $passwordHash, $this->id);
     $stmt->execute();
     $stmt->close();
+    $this->passwordHash = $passwordHash;
     return $this;
   }
 

@@ -202,17 +202,13 @@ final class Session extends \MovLib\Core\AbstractDatabase {
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
-  /**
-   * Instantiate new session object.
-   *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
-   *   The HTTP dependency injection container.
-   */
+  // @devStart
+  // @codeCoverageIgnoreStart
   public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
     parent::__construct($diContainerHTTP);
-    $this->request  = $diContainerHTTP->request;
-    $this->response = $diContainerHTTP->response;
   }
+  // @codeCoverageIgnoreEnd
+  // @devEnd
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -337,24 +333,25 @@ SQL
    * Deletes this session from our session database.
    *
    * @delayed
-   * @param string|array $ssid [optional]
+   * @param array $ssids [optional]
    *   The unique session ID(s) that should be deleted. If no ID is passed along the current session ID of this instance
    *   will be used. If a numeric array is passed all values are treated as session IDs and deleted.
    * @return this
    * @throws \mysqli_sql_exception
    * @throws \MemcachedException
    */
-  public function delete($ssid = null) {
+  public function delete(array $ssids = null) {
     $mysqli = $this->getMySQLi();
 
-    if (empty($ssid)) {
-      $ssid = [ $this->ssid ]; // Make sure ssid is of type array and always contains the current ssid if none given.
+    // Delete all session identifiers, including the current one, if none was passed.
+    if (!$ssids) {
+      $ssids = [ $this->ssid ];
       $result = $mysqli->query("SELECT `ssid` FROM `sessions` WHERE `user_id` = {$this->userId}");
       while ($row = $result->fetch_row()) {
-        $ssid[] = $row[0];
+        $ssids[] = $row[0];
       }
       $result->free();
-      if (empty($ssid)) {
+      if (empty($ssids)) {
         return $this;
       }
     }
@@ -368,31 +365,22 @@ SQL
     for ($i = 0; $i < $c; ++$i) {
       $servers[$i] = explode(":", $servers[$i]);
       // The port is mandatory!
-      if (!isset($servers[$i][1])) {
+      if (empty($servers[$i][1])) {
         $servers[$i][1] = 0;
       }
     }
 
     $memcached = new \Memcached();
     $memcached->addServers($servers);
-    if (is_array($ssid) && ($c = count($ssid)) > 0) {
-      $in = null;
-      for ($i = 0; $i < $c; ++$i) {
-        if ($in) {
-          $in .= ",";
-        }
-        $in .= "'" . $mysqli->real_escape_string($ssid[$i]) . "'";
-      }
-      $mysqli->query("DELETE FROM `sessions` WHERE `ssid` IN ({$in})");
-      for ($i = 0; $i < $c; ++$i) {
-        $ssid[$i] = "{$sessionPrefix}{$ssid[$i]}";
-      }
-      $memcached->deleteMulti($ssid);
+    $stmt = $mysqli->prepare("DELETE FROM `sessions` WHERE `ssid` = ?");
+    $c = count($ssids);
+    for ($i = 0; $i < $c; ++$i) {
+      $stmt->bind_param("s", $ssids[$i]);
+      $stmt->execute();
+      $ssids[$i] = "{$sessionPrefix}{$ssids[$i]}";
     }
-    else {
-      $mysqli->query("DELETE FROM `sessions` WHERE `ssid` = '{$mysqli->real_escape_string($ssid)}'");
-      $memcached->delete("{$sessionPrefix}{$ssid}");
-    }
+    $stmt->close();
+    $memcached->deleteMulti($ssids);
 
     return $this;
   }
@@ -432,10 +420,10 @@ SQL
     else {
       // @devStart
       // @codeCoverageIgnoreStart
-      $this->log->debug("Deleting session", [ "id" => $this->ssid ]);
+      $this->log->debug("Deleting current session.", [ "id" => $this->ssid ]);
       // @codeCoverageIgnoreEnd
       // @devEnd
-      $this->delete($this->ssid);
+      $this->delete([ $this->ssid ]);
     }
 
     // The user is no longer authenticated.
@@ -553,7 +541,7 @@ SQL
     // @devEnd
     if (session_regenerate_id(true) === true) {
       if ($this->userId > 0) {
-        $this->kernel->delayMethodCall([ $this, "update" ], [ $this->ssid ]);
+        $this->update($this->ssid);
       }
       $this->ssid     = session_id();
       $this->initTime = $this->request->time;

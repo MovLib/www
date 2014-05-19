@@ -50,7 +50,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
       ->initLanguageLinks("/users", null, true)
       ->sidebarInit([
         [ $this->request->path, $this->title, [ "class" => "ico ico-user" ] ],
-        [ $this->intl->r("/user/random"), $this->intl->t("Random") ],
+        [ $this->intl->r("/user/random"), $this->intl->t("Random"), [ "class" => "ico ico-random" ] ],
       ])
       ->paginationInit()
     ;

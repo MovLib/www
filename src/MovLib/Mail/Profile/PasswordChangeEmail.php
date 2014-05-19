@@ -90,10 +90,10 @@ final class PasswordChangeEmail extends \MovLib\Mail\AbstractEmail {
     $this->recipient = $this->user->email;
     $this->subject = $this->intl->t("Requested Password Change");
     $token = (new TemporaryStorage($diContainerHTTP))->set((object) [
-      "userId"      => $this->user->id,
-      "newPassword" => $this->rawPassword,
+      "userId"          => $this->user->id,
+      "newPasswordHash" => password_hash($this->rawPassword, $this->config->passwordAlgorithm, $this->config->passwordOptions),
     ]);
-    $this->link = $this->presenter->url($this->request->path, [ $this->intl->r("token") => $token ]);
+    $this->link = $this->presenter->url($this->request->path, [ "token" => $token ], null, true);
     return true;
   }
 

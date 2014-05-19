@@ -84,7 +84,7 @@ final class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
     "id" => [ "regex" => "([1-9][0-9]*)",      "var" => "{{ presenter }}_id" ],
     "lc" => [ "regex" => "([a-z]{2})",         "var" => "language_code"      ],
     "rn" => [ "regex" => "?([1-9][0-9]{13})?", "var" => "revision_new"       ],
-    "ro" => [ "regex" => "?([1-9][0-9]{13})?", "var" => "revision_old"       ],
+    "ro" => [ "regex" => "([1-9][0-9]{13})",   "var" => "revision_old"       ],
     "un" => [ "regex" => "(.+)",               "var" => "user_name"          ],
   ];
 
@@ -405,7 +405,7 @@ NGX;
    *   The message formatter pattern with replaced tokens.
    */
   protected function replaceRegularExpressionTokens($pattern) {
-    return preg_replace_callback("/{[^}].+}/", function () {
+    return preg_replace_callback("/{[^}]+}/", function () {
       static $c = 0;
       return "{" . $c++ . "}";
     }, $pattern);
@@ -444,7 +444,7 @@ NGX;
     // Build the route's location arguments.
     $args = [ $cache, str_replace("\\MovLib\\Presentation\\", "", $className) ];
 
-    // We can create a direct matchin location block if the route doesn't contain a single token.
+    // We can create a direct matching location block if the route doesn't contain a single token.
     if (strpos($translatedRoute, "{") === false) {
       empty($routes[$slash]) && ($routes[$slash] = []);
       $routes[$slash][$translatedRoute] = $args;
@@ -525,7 +525,7 @@ NGX;
       }
 
       // Now we can be certain that we have the full route in the default locale, time to translate.
-      $translatedRoute = $this->translateRoute($intl, $route, $docReader, $translatedRoutes);
+      $translatedRoute = $this->translateRoute($intl, $route, $docReader);
 
       // Keep track of this translated route.
       $translatedRoutes[$this->replaceRegularExpressionTokens($route)] = $this->replaceRegularExpressionTokens($translatedRoute);
@@ -562,6 +562,13 @@ NGX;
       $collator->ksort($translatedRoutes);
       $expandedRouteParts = "<?php return [";
       foreach ($translatedRoutes as $k => $v) {
+        // We need to create an additional translation pattern if we have a route that ends with two regular expressions.
+        // e.g. /entity/{0}/history/{1}/{2}
+        if (preg_match("#(/{[0-9]+}){2}$#", $k, $matches) === 1) {
+          $kTmp = str_replace($matches[1], "", $k);
+          $vTmp = str_replace($matches[1], "", $v);
+          $expandedRouteParts .= "\"{$kTmp}\"=>\"{$vTmp}\",";
+        }
         $expandedRouteParts .= "\"{$k}\"=>\"{$v}\",";
       }
       // Be sure to remove the last comma from the output.

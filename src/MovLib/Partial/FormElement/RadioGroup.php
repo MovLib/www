@@ -49,7 +49,7 @@ class RadioGroup extends \MovLib\Partial\FormElement\Select {
       foreach ($this->options as $value => $option) {
         $checked  = $this->value == $value ? " checked" : null;
         $options .=
-          "<label class='radio inline'>" .
+          "<label class='radio radio-inline'>" .
             "<input{$checked} name='{$this->id}' required type='radio' value='{$this->htmlEncode($value)}'>{$option}" .
           "</label>"
         ;

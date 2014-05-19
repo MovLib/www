@@ -71,12 +71,10 @@ final class AccountDeletionEmail extends \MovLib\Mail\AbstractEmail {
    */
   public function init(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
     parent::init($diContainerHTTP);
-
     $this->recipient = $this->user->email;
-    $this->subject = $this->intl->t("Requested Deletion");
-    $token = (new TemporaryStorage($this->diContainerHTTP))->set($this->user->id);
-    $this->link = $this->presenter->url($this->request->path, [ $this->intl->r("token") => $token ]);
-
+    $this->subject   = $this->intl->t("Requested Deletion");
+    $token           = (new TemporaryStorage($this->diContainerHTTP))->set($this->user->id);
+    $this->link      = $this->presenter->url($this->request->path, [ "token" => $token ], null, true);
     return true;
   }
 
@@ -86,16 +84,16 @@ final class AccountDeletionEmail extends \MovLib\Mail\AbstractEmail {
   public function getHTML() {
     return
       "<p>{$this->intl->t("Hi {0}!", [ $this->user->name ])}</p>" .
-      "<p>{$this->intl->t("You (or someone else) requested to delete your account.")} {$this->intl->t("You may now confirm this action by {0}clicking this link{1}.", [
-        "<a href='{$this->link}'>",
-        "</a>"
-      ])}</p>" .
+      "<p>{$this->intl->t("You (or someone else) requested to delete your account.")} {$this->intl->t(
+        "You may now confirm this action by {0}clicking this link{1}.",
+        [ "<a href='{$this->link}'>", "</a>" ]
+      )}</p>" .
       "<p>{$this->intl->t("This link can only be used once within the next 24 hours.")} {$this->intl->t(
         "Once you click the link above your account will be deleted and all your personal data will be purged. " .
         "Please note that you won’t be able to sign in anymore and there is no possibility to reclaim your account " .
         "later on."
-      )}<br>" .
-      "{$this->intl->t("If it wasn’t you who requested this action simply ignore this message.")}</p>"
+      )}</p>" .
+      "<p>{$this->intl->t("If it wasn’t you who requested this action simply ignore this message.")}</p>"
     ;
   }
 
@@ -115,6 +113,7 @@ final class AccountDeletionEmail extends \MovLib\Mail\AbstractEmail {
   "Please note that you won’t be able to sign in anymore and there is no possibility to reclaim your account " .
   "later on."
 )}
+
 {$this->intl->t("If it wasn’t you who requested this action simply ignore this message.")}
 EOT;
   }

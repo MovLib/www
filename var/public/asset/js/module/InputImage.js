@@ -272,11 +272,11 @@
           }
         }
         // Make sure the user knows that this is only a preview.
-        else if (!this.element.classList.contains("preview-alert")) {
-          var previewAlert = MovLib.getAlert(this.alerts.preview, "", "info", { "aria-live": "polite" });
-          this.button.parentNode.appendChild(previewAlert);
-          previewAlert.classList.add("show");
-          this.element.classList.add("preview-alert");
+        else if (!this.element.classList.contains("preview-callout")) {
+          var previewCallout = MovLib.getCallout(this.alerts.preview, "", "info", { "aria-live": "polite" });
+          this.button.parentNode.appendChild(previewCallout);
+          previewCallout.classList.add("show");
+          this.element.classList.add("preview-callout");
         }
         this.insertNewImage();
       }

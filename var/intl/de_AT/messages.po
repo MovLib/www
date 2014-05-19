@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: MovLib Messages 0.0.1-dev\n"
 "Report-Msgid-Bugs-To: https://github.com/MovLib/www/issues?"
 "labels=translation\n"
-"POT-Creation-Date: 2014-05-17 19:35+0000\n"
-"PO-Revision-Date: 2014-05-18 16:56+0100\n"
+"POT-Creation-Date: 2014-05-19 08:45+0000\n"
+"PO-Revision-Date: 2014-05-19 12:22+0100\n"
 "Last-Translator: Richard Fussenegger <richard@fussenegger.info>\n"
 "Language-Team: MovDev <developers@movlib.org>\n"
 "Language: de_AT\n"
@@ -70,8 +70,8 @@ msgstr "Film"
 #: /src/MovLib/Presentation/Job/Create.php:60
 #: /src/MovLib/Presentation/AbstractPresenter.php:452
 #: /src/MovLib/Presentation/Search/Show.php:125
-#: /src/MovLib/Presentation/Movie/Show.php:121
-#: /src/MovLib/Presentation/Movie/Show.php:152
+#: /src/MovLib/Presentation/Movie/Show.php:114
+#: /src/MovLib/Presentation/Movie/Show.php:145
 #: /src/MovLib/Presentation/Person/Show.php:98
 #: /src/MovLib/Presentation/Person/Show.php:113
 msgid "{0} ({1})"
@@ -109,7 +109,7 @@ msgstr "Person"
 msgid "Genre"
 msgstr "Genre"
 
-#: /src/MovLib/Data/User/User.php:435
+#: /src/MovLib/Data/User/User.php:449
 msgid "{username}’s avatar image."
 msgstr "{username}s Avatarbild."
 
@@ -166,7 +166,7 @@ msgid "IP address or user agent string is invalid or empty."
 msgstr "IP-Adresse oder User-Agent-Zeichenkette ist invalide oder leer."
 
 #: /src/MovLib/Core/HTTP/Request.php:207
-#: /src/MovLib/Presentation/Profile/Join.php:204
+#: /src/MovLib/Presentation/Profile/Join.php:198
 #: /src/MovLib/Presentation/AbstractPresenter.php:508
 #: /src/MovLib/Presentation/SystemPage/AbstractShow.php:61
 #: /src/MovLib/Presentation/SystemPage/PrivacyPolicy/Edit.php:36
@@ -269,8 +269,8 @@ msgstr "Währung"
 #: /src/MovLib/Partial/Language.php:102
 #: /src/MovLib/Presentation/Series/Show.php:102
 #: /src/MovLib/Presentation/AbstractPresenter.php:473
-#: /src/MovLib/Presentation/Movie/Show.php:137
-#: /src/MovLib/Presentation/Movie/Show.php:168
+#: /src/MovLib/Presentation/Movie/Show.php:130
+#: /src/MovLib/Presentation/Movie/Show.php:161
 msgid "Language"
 msgstr "Sprache"
 
@@ -283,11 +283,11 @@ msgstr "Startseite"
 msgid "Go back to the home page."
 msgstr "Gehe zurück zur Startseite."
 
-#: /src/MovLib/Partial/Navigation/Breadcrumb.php:101
+#: /src/MovLib/Partial/Navigation/Breadcrumb.php:102
 msgid "Breadcrumb"
 msgstr "Brotkrümelnavigation"
 
-#: /src/MovLib/Partial/Navigation/Breadcrumb.php:133
+#: /src/MovLib/Partial/Navigation/Breadcrumb.php:134
 #: /src/MovLib/Partial/PaginationTrait.php:209
 #: /src/MovLib/Partial/PaginationTrait.php:230
 msgid "…"
@@ -328,12 +328,12 @@ msgid ""
 "The form has become outdated. Copy any unsaved work in the form below and "
 "then {0}reload this page{1}."
 msgstr ""
-"Das Formular ist veraltet. Kopieren Sie nicht gespeicherte Änderungen aus "
-"dem Formular unten und {0} laden Sie die Seite neu {1}."
+"Das Formular ist veraltet. Kopiere nicht gespeicherte Änderungen aus dem "
+"unteren Formular und {0}lade die Seite neu{1}."
 
 #: /src/MovLib/Partial/Form.php:354
-#: /src/MovLib/Presentation/Profile/DangerZone.php:168
-#: /src/MovLib/Presentation/Profile/Join.php:315
+#: /src/MovLib/Presentation/Profile/DangerZone.php:164
+#: /src/MovLib/Presentation/Profile/Join.php:325
 msgid "Validation Error"
 msgstr "Validierungsfehler"
 
@@ -379,13 +379,6 @@ msgstr "Genres"
 #: /src/MovLib/Partial/InfoboxTrait.php:122
 msgid "{0}:"
 msgstr "{0}:"
-
-#: /src/MovLib/Partial/FormElement/TextareaHTMLRaw.php:177
-msgid ""
-"You must be signed in and have administrator privileges to enter raw HTML."
-msgstr ""
-"Sie müssen eingeloggt sein und administrator Rechte besitzen um auf HTML "
-"zugreifen zu können"
 
 #: /src/MovLib/Partial/FormElement/InputFloat.php:59
 #: /src/MovLib/Partial/FormElement/InputInteger.php:44
@@ -696,7 +689,7 @@ msgstr ""
 msgid "The date {0} must not be less than {1}."
 msgstr ""
 
-#: /src/MovLib/Partial/FormElement/InputCheckbox.php:107
+#: /src/MovLib/Partial/FormElement/InputCheckbox.php:114
 msgid "The checkbox is required."
 msgstr "Die Checkbox ist Pflicht."
 
@@ -764,7 +757,7 @@ msgid "Choose Image …"
 msgstr "Bild Auwählen …"
 
 #: /src/MovLib/Partial/FormElement/InputPassword.php:83
-#: /src/MovLib/Presentation/Profile/PasswordSettings.php:86
+#: /src/MovLib/Presentation/Profile/PasswordSettings.php:89
 msgid ""
 "A password must contain lowercase and uppercase letters, numbers, and must "
 "be at least {0,number,integer} characters long."
@@ -772,12 +765,12 @@ msgstr ""
 "Ein Passwort muss Nummern und Klein- sowie Großbuchstaben enthalten und "
 "mindestens {0,number,integer} Zeichen lang sein."
 
-#: /src/MovLib/Partial/FormElement/InputPassword.php:104
+#: /src/MovLib/Partial/FormElement/InputPassword.php:107
 msgid ""
 "The password is too short: it must be {0,number,integer} characters or more."
 msgstr "Das Passwort ist zu kurz: es muss {0,number,integer} oder länger sein."
 
-#: /src/MovLib/Partial/FormElement/InputPassword.php:109
+#: /src/MovLib/Partial/FormElement/InputPassword.php:112
 msgid ""
 "The password is not complex enough: it must contain numbers plus lowercase "
 "and uppercase letters."
@@ -959,7 +952,7 @@ msgstr "Infobox"
 #: /src/MovLib/Presentation/Movie/Edit.php:45
 #: /src/MovLib/Presentation/Person/AbstractBase.php:108
 #: /src/MovLib/Presentation/Person/Edit.php:47
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:55
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:56
 #: /src/MovLib/Presentation/Genre/Edit.php:53
 #: /src/MovLib/Presentation/Event/Edit.php:52
 msgid "Edit"
@@ -1016,7 +1009,7 @@ msgstr "Geschichte"
 
 #: /src/MovLib/Partial/SidebarTrait.php:149
 #: /src/MovLib/Presentation/Job/Delete.php:57
-#: /src/MovLib/Presentation/Profile/DangerZone.php:109
+#: /src/MovLib/Presentation/Profile/DangerZone.php:111
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:78
 #: /src/MovLib/Presentation/Award/Category/Delete.php:57
 #: /src/MovLib/Presentation/Award/Delete.php:57
@@ -1034,7 +1027,6 @@ msgid "Delete"
 msgstr "Löschen"
 
 #: /src/MovLib/Partial/Sex.php:92
-#| msgid "Unisex Name"
 msgid "Unisex"
 msgstr "Geschlechtsneutral"
 
@@ -1054,7 +1046,7 @@ msgstr "Weiblich"
 msgid "Country"
 msgstr "Land"
 
-#: /src/MovLib/Exception/ClientException/UnauthorizedException.php:61
+#: /src/MovLib/Exception/ClientException/UnauthorizedException.php:94
 #: /src/MovLib/Presentation/AbstractCreatePresenter.php:60
 #: /src/MovLib/Presentation/Help/AbstractCreate.php:46
 #: /src/MovLib/Presentation/Help/AbstractEdit.php:44
@@ -1064,7 +1056,7 @@ msgid ""
 "sign in or {0}join {sitename}{1}."
 msgstr ""
 
-#: /src/MovLib/Exception/ClientException/UnauthorizedException.php:68
+#: /src/MovLib/Exception/ClientException/UnauthorizedException.php:101
 msgid "Unauthorized"
 msgstr "Unbefugt"
 
@@ -1101,68 +1093,74 @@ msgstr "Veranstaltung"
 msgid "User"
 msgstr "Benutzer"
 
-#: /src/MovLib/Mail/Profile/EmailAddressChangeEmail.php:86
+#: /src/MovLib/Mail/Profile/EmailAddressChangeEmail.php:87
 msgid "Requested Email Change"
 msgstr "Angeforderte Emailänderung"
 
-#: /src/MovLib/Mail/Profile/EmailAddressChangeEmail.php:99
-#: /src/MovLib/Mail/Profile/AccountDeletionEmail.php:87
+#: /src/MovLib/Mail/Profile/EmailAddressChangeEmail.php:102
+#: /src/MovLib/Mail/Profile/AccountDeletionEmail.php:88
 #: /src/MovLib/Mail/Profile/EmailExists.php:77
-#: /src/MovLib/Mail/Profile/PasswordChangeEmail.php:104
-#: /src/MovLib/Mail/User/ResetPassword.php:96
-#: /src/MovLib/Presentation/Profile/Join.php:310
+#: /src/MovLib/Mail/Profile/PasswordChangeEmail.php:105
+#: /src/MovLib/Mail/Profile/ResetPasswordEmail.php:94
+#: /src/MovLib/Presentation/Profile/Join.php:319
 msgid "Hi {0}!"
 msgstr "Hallo {0}!"
 
-#: /src/MovLib/Mail/Profile/EmailAddressChangeEmail.php:100
+#: /src/MovLib/Mail/Profile/EmailAddressChangeEmail.php:103
 msgid "You (or someone else) requested to change your account’s email address."
-msgstr ""
+msgstr "Du (oder jamend anderes) hat eine E-Mail-Änderung angefordert."
 
-#: /src/MovLib/Mail/Profile/EmailAddressChangeEmail.php:100
-#: /src/MovLib/Mail/Profile/AccountDeletionEmail.php:88
-#: /src/MovLib/Mail/Profile/PasswordChangeEmail.php:105
-#: /src/MovLib/Mail/User/ResetPassword.php:97
+#: /src/MovLib/Mail/Profile/EmailAddressChangeEmail.php:103
+#: /src/MovLib/Mail/Profile/AccountDeletionEmail.php:89
+#: /src/MovLib/Mail/Profile/PasswordChangeEmail.php:106
+#: /src/MovLib/Mail/Profile/ResetPasswordEmail.php:95
 msgid "You may now confirm this action by {0}clicking this link{1}."
-msgstr ""
+msgstr "Du kannst diese Aktion bestätigen durch {0}klicken dieses Links{1}."
 
-#: /src/MovLib/Mail/Profile/EmailAddressChangeEmail.php:104
-#: /src/MovLib/Mail/Profile/AccountDeletionEmail.php:92
-#: /src/MovLib/Mail/Profile/PasswordChangeEmail.php:109
-#: /src/MovLib/Mail/Profile/JoinEmail.php:113
-#: /src/MovLib/Mail/User/ResetPassword.php:100
+#: /src/MovLib/Mail/Profile/EmailAddressChangeEmail.php:107
+#: /src/MovLib/Mail/Profile/AccountDeletionEmail.php:93
+#: /src/MovLib/Mail/Profile/PasswordChangeEmail.php:110
+#: /src/MovLib/Mail/Profile/ResetPasswordEmail.php:98
+#: /src/MovLib/Mail/Profile/JoinEmail.php:117
 msgid "This link can only be used once within the next 24 hours."
 msgstr ""
 "Der Link kann nur einmalig in den nächsten 24 Stunden verwendet werden."
 
-#: /src/MovLib/Mail/Profile/EmailAddressChangeEmail.php:104
+#: /src/MovLib/Mail/Profile/EmailAddressChangeEmail.php:107
 msgid ""
 "Once you click the link above, you won’t be able to sign in with your old "
 "email address."
 msgstr ""
+"Sobald du den obigen Link anklickst kannst du dich nicht mehr mit deiner "
+"alten E-Mail-Adresse anmelden."
 
-#: /src/MovLib/Mail/Profile/EmailAddressChangeEmail.php:105
-#: /src/MovLib/Mail/Profile/AccountDeletionEmail.php:97
+#: /src/MovLib/Mail/Profile/EmailAddressChangeEmail.php:108
+#: /src/MovLib/Mail/Profile/AccountDeletionEmail.php:98
 #: /src/MovLib/Mail/Profile/EmailExists.php:81
-#: /src/MovLib/Mail/Profile/PasswordChangeEmail.php:110
-#: /src/MovLib/Mail/Profile/JoinEmail.php:119
-#: /src/MovLib/Mail/User/ResetPassword.php:101
+#: /src/MovLib/Mail/Profile/PasswordChangeEmail.php:111
+#: /src/MovLib/Mail/Profile/ResetPasswordEmail.php:99
+#: /src/MovLib/Mail/Profile/JoinEmail.php:123
 msgid "If it wasn’t you who requested this action simply ignore this message."
 msgstr "Ignoriere diese Nachricht wenn du diese Aktion nicht angefordert hast."
 
-#: /src/MovLib/Mail/Profile/AccountDeletionEmail.php:77
+#: /src/MovLib/Mail/Profile/AccountDeletionEmail.php:76
 msgid "Requested Deletion"
 msgstr "Angeforderte Löschung"
 
-#: /src/MovLib/Mail/Profile/AccountDeletionEmail.php:88
+#: /src/MovLib/Mail/Profile/AccountDeletionEmail.php:89
 msgid "You (or someone else) requested to delete your account."
-msgstr ""
+msgstr "Du (oder jemand anderes) hat die Löschung deines Kontos angefordert."
 
-#: /src/MovLib/Mail/Profile/AccountDeletionEmail.php:93
+#: /src/MovLib/Mail/Profile/AccountDeletionEmail.php:94
 msgid ""
 "Once you click the link above your account will be deleted and all your "
 "personal data will be purged. Please note that you won’t be able to sign in "
 "anymore and there is no possibility to reclaim your account later on."
 msgstr ""
+"Sobald du den obigen Link anklickst werden dein Konto und alle deine "
+"persönlichen Daten für immer gelöscht. Bitte beachte, dass du dich danach "
+"nicht mehr anmelden kannst und es absolut keine Möglichkeit gibt, dass du "
+"dein Konto zurückerhälst."
 
 #: /src/MovLib/Mail/Profile/EmailExists.php:56
 msgid "Forgot Your Password?"
@@ -1174,70 +1172,79 @@ msgid ""
 "address. If you forgot your password go to the {0}reset password{1} page to "
 "request a new one."
 msgstr ""
+"Du (oder jemand anderes) hat versucht ein neues Konto mit dieser E-Mail-"
+"Adresse zu erstellen. Solltest du dein Passwort vergessen haben kannst du es "
+"einfach eine {0}Rücksetzung anfordern{1}."
 
 #: /src/MovLib/Mail/Profile/PasswordChangeEmail.php:91
 msgid "Requested Password Change"
 msgstr "Angeforderte Passwortänderung"
 
-#: /src/MovLib/Mail/Profile/PasswordChangeEmail.php:105
+#: /src/MovLib/Mail/Profile/PasswordChangeEmail.php:106
 msgid "You (or someone else) requested to change your account’s password."
-msgstr ""
+msgstr "Du (oder jemand anderes) hat eine Passwortänderung angefordert."
 
-#: /src/MovLib/Mail/Profile/PasswordChangeEmail.php:109
-#: /src/MovLib/Mail/User/ResetPassword.php:100
+#: /src/MovLib/Mail/Profile/PasswordChangeEmail.php:110
+#: /src/MovLib/Mail/Profile/ResetPasswordEmail.php:98
 msgid ""
 "Once you click the link above, you won’t be able to sign in with your old "
 "password."
 msgstr ""
+"Sobald du den obigen Link anklickst kannst du dich nicht mehr mit deinem "
+"alten Passwort anmelden."
 
-#: /src/MovLib/Mail/Profile/JoinEmail.php:82
+#: /src/MovLib/Mail/Profile/ResetPasswordEmail.php:78
+#| msgid "Requested Password Reset"
+msgid "Requested password reset"
+msgstr "Angeforderte Passwort-Rücksetzung"
+
+#: /src/MovLib/Mail/Profile/ResetPasswordEmail.php:95
+msgid "You (or someone else) requested to reset your password."
+msgstr "Du (oder jemand anderes) hat eine Passwortrücksetzung angefordert."
+
+#: /src/MovLib/Mail/Profile/JoinEmail.php:76
 msgid "Welcome to {0}!"
 msgstr "Willkommen bei {0}!"
 
-#: /src/MovLib/Mail/Profile/JoinEmail.php:107
+#: /src/MovLib/Mail/Profile/JoinEmail.php:111
 msgid "Hi {username}!"
 msgstr "Hallo {username}!"
 
-#: /src/MovLib/Mail/Profile/JoinEmail.php:108
+#: /src/MovLib/Mail/Profile/JoinEmail.php:112
+#| msgid ""
+#| "Thank you for joining {0}. You may now sign in and activate your new "
+#| "account by {1}clicking this link{2}."
 msgid ""
-"Thank you for joining {0}. You may now sign in and activate your new account "
-"by {1}clicking this link{2}."
+"Thank you for joining {sitename}. You may now sign in and activate your new "
+"account by {0}clicking this link{1}."
 msgstr ""
-"Danke für’s Beitreten zu {0}. Du kannst dich jetzt anmelden und dein Konto "
-"freischalten über {1}diesen Link{2}."
+"Danke für’s Beitreten zu {sitename}. Du kannst dich jetzt anmelden und dein "
+"{0}Konto freischalten über diesen Link{1}."
 
-#: /src/MovLib/Mail/Profile/JoinEmail.php:114
+#: /src/MovLib/Mail/Profile/JoinEmail.php:118
 msgid "You will be able to sign in with the following data:"
 msgstr "Du kannst dich mit folgenden Daten anmelden:"
 
-#: /src/MovLib/Mail/Profile/JoinEmail.php:116
+#: /src/MovLib/Mail/Profile/JoinEmail.php:120
 #: /src/MovLib/Presentation/Profile/SignIn.php:120
 #: /src/MovLib/Presentation/Profile/EmailSettings.php:81
-#: /src/MovLib/Presentation/Profile/ResetPassword.php:120
-#: /src/MovLib/Presentation/Profile/Join.php:113
+#: /src/MovLib/Presentation/Profile/ResetPassword.php:126
+#: /src/MovLib/Presentation/Profile/Join.php:111
 #: /src/MovLib/Presentation/Profile/Show.php:59
 #: /src/MovLib/Presentation/ComingSoon.php:72
 msgid "Email Address"
 msgstr "E-Mail-Adresse"
 
-#: /src/MovLib/Mail/Profile/JoinEmail.php:117
+#: /src/MovLib/Mail/Profile/JoinEmail.php:121
 #: /src/MovLib/Presentation/Profile/SignIn.php:126
-#: /src/MovLib/Presentation/Profile/Join.php:117
+#: /src/MovLib/Presentation/Profile/Join.php:115
 #: /src/MovLib/Presentation/Profile/AbstractProfilePresenter.php:93
 msgid "Password"
 msgstr "Passwort"
 
-#: /src/MovLib/Mail/Profile/JoinEmail.php:117
+#: /src/MovLib/Mail/Profile/JoinEmail.php:121
 msgid "Your secret password"
 msgstr "Dein geheimes Passwort"
-
-#: /src/MovLib/Mail/User/ResetPassword.php:83
-msgid "Requested Password Reset"
-msgstr "Angeforderte Passwort-Rücksetzung"
-
-#: /src/MovLib/Mail/User/ResetPassword.php:97
-msgid "You (or someone else) requested to reset your password."
-msgstr ""
 
 #: /src/MovLib/Mail/Webmaster.php:79 /src/MovLib/Mail/Webmaster.php:86
 msgid "Hi webmaster!"
@@ -1421,7 +1428,8 @@ msgstr "Zufällig"
 #: /src/MovLib/Presentation/Help/AbstractEdit.php:48
 #: /src/MovLib/Presentation/Movie/Edit.php:43
 #: /src/MovLib/Presentation/Person/Edit.php:45
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:53
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:54
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:55
 #: /src/MovLib/Presentation/Genre/Edit.php:51
 #: /src/MovLib/Presentation/Event/Edit.php:50
 msgid "Edit {0}"
@@ -1438,7 +1446,7 @@ msgstr "{0} bearbeiten"
 #: /src/MovLib/Presentation/Award/Show.php:65
 #: /src/MovLib/Presentation/Company/Edit.php:70
 #: /src/MovLib/Presentation/Company/Create.php:67
-#: /src/MovLib/Presentation/Genre/Edit.php:68
+#: /src/MovLib/Presentation/Genre/Edit.php:67
 #: /src/MovLib/Presentation/Genre/Create.php:57
 #: /src/MovLib/Presentation/Event/Edit.php:79
 #: /src/MovLib/Presentation/Event/Create.php:75
@@ -1460,7 +1468,7 @@ msgstr "Beschreibung"
 #: /src/MovLib/Presentation/Movie/Create.php:75
 #: /src/MovLib/Presentation/Person/Edit.php:74
 #: /src/MovLib/Presentation/Person/Create.php:72
-#: /src/MovLib/Presentation/Genre/Edit.php:72
+#: /src/MovLib/Presentation/Genre/Edit.php:70
 #: /src/MovLib/Presentation/Genre/Create.php:61
 #: /src/MovLib/Presentation/Event/Edit.php:83
 #: /src/MovLib/Presentation/Event/Create.php:79
@@ -1476,11 +1484,11 @@ msgstr "Wikipedia"
 #: /src/MovLib/Presentation/Help/AbstractEdit.php:72
 #: /src/MovLib/Presentation/Movie/Edit.php:72
 #: /src/MovLib/Presentation/Person/Edit.php:81
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:79
-#: /src/MovLib/Presentation/Genre/Edit.php:76
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:80
+#: /src/MovLib/Presentation/Genre/Edit.php:71
 #: /src/MovLib/Presentation/Event/Edit.php:90
 msgid "Update"
-msgstr "Aktualisierung"
+msgstr "Aktualisieren"
 
 #: /src/MovLib/Presentation/Job/Discussion.php:55
 #: /src/MovLib/Presentation/Award/Discussion.php:55
@@ -1553,23 +1561,24 @@ msgid ""
 msgstr ""
 
 #: /src/MovLib/Presentation/Job/Show.php:66
-#, fuzzy
 #| msgid "{sitename} doesn’t have further details about this job."
 msgid ""
 "We don’t have any further details about this job, could you {0}help us?{1}"
-msgstr "{sitename} hat keine weiteren Details über diesen Beruf."
+msgstr ""
+"Wir haben keine weiteren Details über diesen Beruf, kannst du {0}uns helfen?"
+"{1}"
 
 #: /src/MovLib/Presentation/Profile/SignIn.php:96
 #: /src/MovLib/Presentation/Profile/SignIn.php:130
-#: /src/MovLib/Presentation/Profile/ResetPassword.php:97
-#: /src/MovLib/Presentation/Profile/Join.php:97
+#: /src/MovLib/Presentation/Profile/ResetPassword.php:139
+#: /src/MovLib/Presentation/Profile/Join.php:95
 #: /src/MovLib/Presentation/AbstractPresenter.php:583
 msgid "Sign In"
 msgstr "Anmelden"
 
 #: /src/MovLib/Presentation/Profile/SignIn.php:97
-#: /src/MovLib/Presentation/Profile/ResetPassword.php:93
-#: /src/MovLib/Presentation/Profile/Join.php:78
+#: /src/MovLib/Presentation/Profile/ResetPassword.php:95
+#: /src/MovLib/Presentation/Profile/Join.php:79
 #: /src/MovLib/Presentation/AbstractPresenter.php:557
 #: /src/MovLib/Presentation/User/AbstractUserPresenter.php:56
 #: /src/MovLib/Presentation/User/Index.php:49
@@ -1587,8 +1596,7 @@ msgid "Forgot your password?"
 msgstr "Passwort vergessen?"
 
 #: /src/MovLib/Presentation/Profile/SignIn.php:123
-#: /src/MovLib/Presentation/Profile/ResetPassword.php:123
-#: /src/MovLib/Presentation/Profile/Join.php:114
+#: /src/MovLib/Presentation/Profile/Join.php:112
 msgid "Enter your email address"
 msgstr "Gib deine E-Mail-Adresse ein"
 
@@ -1643,8 +1651,8 @@ msgstr "Gefahrenzone"
 #: /src/MovLib/Presentation/Profile/DangerZone.php:49
 #: /src/MovLib/Presentation/Profile/EmailSettings.php:67
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:60
-#: /src/MovLib/Presentation/Profile/PasswordSettings.php:71
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:48
+#: /src/MovLib/Presentation/Profile/PasswordSettings.php:72
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:49
 msgid "Please sign in again to verify the legitimacy of this request."
 msgstr ""
 "Bitte melde dich erneut an um die Legitimität dieser Anfrage zu bestätigen."
@@ -1659,22 +1667,22 @@ msgid ""
 "immediately."
 msgstr "Sitzung beenden, die assoziierte Sitzung wird sofort abgemeldet."
 
-#: /src/MovLib/Presentation/Profile/DangerZone.php:72
+#: /src/MovLib/Presentation/Profile/DangerZone.php:73
 msgid ""
 "If you use this button all your active session will be terminated and you’ll "
 "be signed out!"
 msgstr ""
 
-#: /src/MovLib/Presentation/Profile/DangerZone.php:73
+#: /src/MovLib/Presentation/Profile/DangerZone.php:74
 #: /src/MovLib/Presentation/AbstractPresenter.php:575
 msgid "Sign Out"
 msgstr "Abmelden"
 
-#: /src/MovLib/Presentation/Profile/DangerZone.php:91
+#: /src/MovLib/Presentation/Profile/DangerZone.php:93
 msgid "Active Sessions"
 msgstr "Aktive Sessions"
 
-#: /src/MovLib/Presentation/Profile/DangerZone.php:93
+#: /src/MovLib/Presentation/Profile/DangerZone.php:95
 msgid ""
 "The following table contains a listing of all your active sessions. You can "
 "terminate any session by clicking on the button to the right. Your current "
@@ -1685,19 +1693,23 @@ msgid ""
 "to your account."
 msgstr ""
 
-#: /src/MovLib/Presentation/Profile/DangerZone.php:100
+#: /src/MovLib/Presentation/Profile/DangerZone.php:102
 msgid "Sign In Time"
 msgstr "Anmeldezeit"
 
-#: /src/MovLib/Presentation/Profile/DangerZone.php:102
+#: /src/MovLib/Presentation/Profile/DangerZone.php:104
 msgid "User Agent"
 msgstr "User-Agent"
 
-#: /src/MovLib/Presentation/Profile/DangerZone.php:104
+#: /src/MovLib/Presentation/Profile/DangerZone.php:106
 msgid "IP address"
 msgstr "IP-Adresse"
 
 #: /src/MovLib/Presentation/Profile/DangerZone.php:115
+msgid "Delete Account"
+msgstr "Konto Löschen"
+
+#: /src/MovLib/Presentation/Profile/DangerZone.php:116
 msgid ""
 "If you want to delete your account—for whatever reason—click the button "
 "below. All your personal data is purged from our system and this action is "
@@ -1711,39 +1723,42 @@ msgid ""
 "your account after deletion!"
 msgstr ""
 
-#: /src/MovLib/Presentation/Profile/DangerZone.php:124
-msgid "Delete Account"
-msgstr "Konto Löschen"
-
-#: /src/MovLib/Presentation/Profile/DangerZone.php:141
-#: /src/MovLib/Presentation/Profile/EmailSettings.php:105
-#: /src/MovLib/Presentation/Profile/ResetPassword.php:142
-#: /src/MovLib/Presentation/Profile/Join.php:241
-#: /src/MovLib/Presentation/Profile/PasswordSettings.php:138
-msgid "An email with further instructions has been sent to {0}."
-msgstr "Eine E-Mail mit weiteren Instruktionen wurde an {0} gesendet."
-
-#: /src/MovLib/Presentation/Profile/DangerZone.php:142
-msgid "Successfully Requested Deletion"
+#: /src/MovLib/Presentation/Profile/DangerZone.php:140
+#| msgid "Successfully Requested Deletion"
+msgid "Successfully requested deletion"
 msgstr "Erfolgreich Löschung angefordert"
 
-#: /src/MovLib/Presentation/Profile/DangerZone.php:148
+#: /src/MovLib/Presentation/Profile/DangerZone.php:141
+#: /src/MovLib/Presentation/Profile/ResetPassword.php:179
+#: /src/MovLib/Presentation/Profile/PasswordSettings.php:142
+msgid "An email with further instructions has been sent to {email}."
+msgstr "Eine E-Mail mit weiteren Instruktionen wurde an {email} gesendet."
+
+#: /src/MovLib/Presentation/Profile/DangerZone.php:146
+#: /src/MovLib/Presentation/Profile/EmailSettings.php:113
+#: /src/MovLib/Presentation/Profile/PasswordSettings.php:147
+msgid "Important!"
+msgstr "Wichtig!"
+
+#: /src/MovLib/Presentation/Profile/DangerZone.php:147
 msgid ""
 "You have to follow the link that we just sent to you via email to complete "
 "this action."
 msgstr ""
+"Du musst dem Link den wir dir soeben via E-Mail gesendet haben folgen um "
+"diese Aktion abzuschließen."
 
-#: /src/MovLib/Presentation/Profile/DangerZone.php:149
-#: /src/MovLib/Presentation/Profile/EmailSettings.php:113
-#: /src/MovLib/Presentation/Profile/PasswordSettings.php:146
-msgid "Important!"
-msgstr "Wichtig!"
-
-#: /src/MovLib/Presentation/Profile/DangerZone.php:167
-msgid "The submitted session identifier was invalid."
+#: /src/MovLib/Presentation/Profile/DangerZone.php:165
+#| msgid "The submitted session identifier was invalid."
+msgid "The submitted session identifier is invalid."
 msgstr "Der übermittelte Sitzungsidentifikator ist nicht valide."
 
-#: /src/MovLib/Presentation/Profile/DangerZone.php:174
+#: /src/MovLib/Presentation/Profile/DangerZone.php:170
+#| msgid "Successfully Signed Out"
+msgid "Successfully signed out"
+msgstr "Erfolgreich abgemeldet"
+
+#: /src/MovLib/Presentation/Profile/DangerZone.php:171
 msgid ""
 "You’ve been signed out from your current session and all your active "
 "sessions have been deleted."
@@ -1751,50 +1766,52 @@ msgstr ""
 "Du wurdest von deiner aktuellen Sitzung abgemeldet und alle aktiven "
 "Sitzungen wurde gelöscht."
 
-#: /src/MovLib/Presentation/Profile/DangerZone.php:175
-msgid "Successfully Signed Out"
-msgstr "Erfolgreich abgemeldet"
+#: /src/MovLib/Presentation/Profile/DangerZone.php:194
+#| msgid "Token Invalid"
+msgid "Token invalid"
+msgstr "Token ungültig"
 
-#: /src/MovLib/Presentation/Profile/DangerZone.php:199
+#: /src/MovLib/Presentation/Profile/DangerZone.php:195
 #: /src/MovLib/Presentation/Profile/EmailSettings.php:163
-#: /src/MovLib/Presentation/Profile/ResetPassword.php:206
-#: /src/MovLib/Presentation/Profile/ResetPassword.php:216
+#: /src/MovLib/Presentation/Profile/ResetPassword.php:156
 #: /src/MovLib/Presentation/Profile/PasswordSettings.php:192
 msgid ""
 "Your confirmation token is invalid or expired, please fill out the form "
 "again."
 msgstr ""
 
-#: /src/MovLib/Presentation/Profile/DangerZone.php:200
-#: /src/MovLib/Presentation/Profile/DangerZone.php:211
-#: /src/MovLib/Presentation/Profile/EmailSettings.php:164
-#: /src/MovLib/Presentation/Profile/EmailSettings.php:175
-#: /src/MovLib/Presentation/Profile/ResetPassword.php:207
-#: /src/MovLib/Presentation/Profile/ResetPassword.php:217
-#: /src/MovLib/Presentation/Profile/PasswordSettings.php:193
-#: /src/MovLib/Presentation/Profile/PasswordSettings.php:204
-msgid "Token Invalid"
-msgstr "Token ungültig"
-
-#: /src/MovLib/Presentation/Profile/DangerZone.php:210
+#: /src/MovLib/Presentation/Profile/DangerZone.php:204
 #: /src/MovLib/Presentation/Profile/EmailSettings.php:174
-#: /src/MovLib/Presentation/Profile/PasswordSettings.php:203
+#: /src/MovLib/Presentation/Profile/PasswordSettings.php:201
 msgid ""
 "The confirmation token is invalid, please sign in again and request a new "
 "token."
 msgstr ""
 
-#: /src/MovLib/Presentation/Profile/DangerZone.php:220
+#: /src/MovLib/Presentation/Profile/DangerZone.php:205
+#: /src/MovLib/Presentation/Profile/EmailSettings.php:164
+#: /src/MovLib/Presentation/Profile/EmailSettings.php:175
+#: /src/MovLib/Presentation/Profile/ResetPassword.php:155
+#: /src/MovLib/Presentation/Profile/PasswordSettings.php:191
+#: /src/MovLib/Presentation/Profile/PasswordSettings.php:202
+msgid "Token Invalid"
+msgstr "Token ungültig"
+
+#: /src/MovLib/Presentation/Profile/DangerZone.php:214
+#| msgid "Account Deletion Successfull"
+msgid "Account deletion successful"
+msgstr "Kontolöschung erfolgreich"
+
+#: /src/MovLib/Presentation/Profile/DangerZone.php:215
+#| msgid ""
+#| "Your account has been purged from our system. We’re very sorry to see you "
+#| "leave."
 msgid ""
-"Your account has been purged from our system. We’re very sorry to see you "
+"You account has been purged from our system. We’re very sorry to see you "
 "leave."
 msgstr ""
 "Dein Konto wurde aus unserem System restlos entfernt. Es tut uns Leid, dass "
 "du uns verlässt."
-
-#: /src/MovLib/Presentation/Profile/DangerZone.php:221
-msgid "Account Deletion Successfull"
-msgstr "Kontolöschung Erfolgreich"
 
 #: /src/MovLib/Presentation/Profile/EmailSettings.php:63
 msgid "You must be signed in to change your email settings."
@@ -1805,7 +1822,7 @@ msgid "Email Settings"
 msgstr "E-Mail-Einstellungen"
 
 #: /src/MovLib/Presentation/Profile/EmailSettings.php:82
-#: /src/MovLib/Presentation/Profile/PasswordSettings.php:119
+#: /src/MovLib/Presentation/Profile/PasswordSettings.php:122
 msgid "Change"
 msgstr "Ändern"
 
@@ -1818,6 +1835,11 @@ msgstr ""
 "deine E-Mail-Adresse niemals öffentlich dargestellt wird. Tatsächlich bleibt "
 "sie streng geheim wie dein Passwort."
 
+#: /src/MovLib/Presentation/Profile/EmailSettings.php:105
+#: /src/MovLib/Presentation/Profile/Join.php:236
+msgid "An email with further instructions has been sent to {0}."
+msgstr "Eine E-Mail mit weiteren Instruktionen wurde an {0} gesendet."
+
 #: /src/MovLib/Presentation/Profile/EmailSettings.php:106
 msgid "Successfully Requested Email Change"
 msgstr "Erfolgreich E-Mail-Änderung angefordert"
@@ -1827,6 +1849,8 @@ msgid ""
 "You have to sign in with your old email address until you’ve successfully "
 "confirmed your email change via the link that we’ve just sent you."
 msgstr ""
+"Du musst deine alte E-Mail-Adresse zur Anmeldung verwenden solange du nicht "
+"erfolgreich die E-Mail-Änderung bestätigt hast."
 
 #: /src/MovLib/Presentation/Profile/EmailSettings.php:135
 msgid "You are already using this email address."
@@ -1841,70 +1865,78 @@ msgid ""
 "Your email address was successfully changed. Please use your new email "
 "address to sign in from now on."
 msgstr ""
+"Deine E-Mail-Adresse wurde erfolgreich geändert. Bitte nutze ab sofort deine "
+"neue E-Mail-Adresse um dich anzumelden."
 
 #: /src/MovLib/Presentation/Profile/EmailSettings.php:184
 msgid "Email Changed Successfully"
 msgstr "E-Mail erfolgreich geändert."
 
-#: /src/MovLib/Presentation/Profile/ResetPassword.php:92
+#: /src/MovLib/Presentation/Profile/ResetPassword.php:93
 msgid "Reset Password"
 msgstr "Passwort Zurücksetzen"
 
-#: /src/MovLib/Presentation/Profile/ResetPassword.php:103
-#: /src/MovLib/Presentation/Profile/PasswordSettings.php:110
+#: /src/MovLib/Presentation/Profile/ResetPassword.php:112
+#: /src/MovLib/Presentation/Profile/PasswordSettings.php:113
 msgid "New Password"
 msgstr "Neues Passwort"
 
-#: /src/MovLib/Presentation/Profile/ResetPassword.php:105
-#: /src/MovLib/Presentation/Profile/PasswordSettings.php:112
+#: /src/MovLib/Presentation/Profile/ResetPassword.php:114
+#: /src/MovLib/Presentation/Profile/PasswordSettings.php:115
 msgid "Enter your new password"
 msgstr "Gib dein neues Passwort ein"
 
-#: /src/MovLib/Presentation/Profile/ResetPassword.php:110
-#: /src/MovLib/Presentation/Profile/PasswordSettings.php:115
+#: /src/MovLib/Presentation/Profile/ResetPassword.php:117
+#: /src/MovLib/Presentation/Profile/PasswordSettings.php:118
 msgid "Confirm Password"
 msgstr "Bestätigunspasswort"
 
-#: /src/MovLib/Presentation/Profile/ResetPassword.php:111
-#: /src/MovLib/Presentation/Profile/PasswordSettings.php:116
+#: /src/MovLib/Presentation/Profile/ResetPassword.php:118
+#: /src/MovLib/Presentation/Profile/PasswordSettings.php:119
 msgid "Enter your new password again"
 msgstr "Gib dein neues Passwort erneut ein"
 
-#: /src/MovLib/Presentation/Profile/ResetPassword.php:121
+#: /src/MovLib/Presentation/Profile/ResetPassword.php:128
+#| msgid ""
+#| "Enter the email address associated with your {sitename} account. Password "
+#| "reset instructions will be sent via email."
 msgid ""
 "Enter the email address associated with your {sitename} account. Password "
-"reset instructions will be sent via email."
+"reset instructions will be sent to you via email."
 msgstr ""
 "Gib die E-Mail-Adresse deines {sitename}-Kontos ein. Instruktionen zum "
 "Zurücksetzen deines Passworts werden via E-Mail versandt."
 
-#: /src/MovLib/Presentation/Profile/ResetPassword.php:126
-msgid "Request Reset"
-msgstr "Rücksetzung Anfordern"
+#: /src/MovLib/Presentation/Profile/ResetPassword.php:138
+msgid "Reset"
+msgstr "Zurücksetzen"
 
-#: /src/MovLib/Presentation/Profile/ResetPassword.php:143
-msgid "Successfully Requested Password Reset"
-msgstr "Erfolgreich Passwortrücksetzung angefordert"
-
-#: /src/MovLib/Presentation/Profile/ResetPassword.php:169
-#: /src/MovLib/Presentation/Profile/PasswordSettings.php:212
-msgid ""
-"Your password was successfully changed. Please use your new password to sign "
-"in from now on."
-msgstr ""
-
-#: /src/MovLib/Presentation/Profile/ResetPassword.php:170
-#: /src/MovLib/Presentation/Profile/PasswordSettings.php:213
-msgid "Password Changed Successfully"
-msgstr "Passwort erfolgreich geändert"
-
-#: /src/MovLib/Presentation/Profile/ResetPassword.php:188
-#: /src/MovLib/Presentation/Profile/PasswordSettings.php:167
+#: /src/MovLib/Presentation/Profile/ResetPassword.php:166
+#: /src/MovLib/Presentation/Profile/PasswordSettings.php:172
 msgid ""
 "The confirmation password doesn’t match the new password, please try again."
 msgstr ""
 "Das Bestätigungspasswort passt nicht mit dem neuen Passwort überein, bitte "
 "versuche es erneut."
+
+#: /src/MovLib/Presentation/Profile/ResetPassword.php:178
+#| msgid "Successfully Requested Password Reset"
+msgid "Successfully requested password reset"
+msgstr "Erfolgreich Passwortrücksetzung angefordert"
+
+#: /src/MovLib/Presentation/Profile/ResetPassword.php:201
+#: /src/MovLib/Presentation/Profile/PasswordSettings.php:210
+msgid ""
+"Your password was successfully changed. Please use your new password to sign "
+"in from now on."
+msgstr ""
+"Dein Passwort wurde erfolgreich geändert. Bitte nutze dein neues Passwort "
+"zum anmelden von jetzt an."
+
+#: /src/MovLib/Presentation/Profile/ResetPassword.php:202
+#| msgid "Password Changed Successfully"
+msgid "Password reset successful"
+msgstr "Passwort erfolgreich zurückgesetzt"
 
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:56
 msgid "You must be signed in to edit your account settings."
@@ -1928,7 +1960,7 @@ msgstr "Bürgerlicher Name"
 
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:93
 msgid "Your real name will be displayed on your profile page."
-msgstr ""
+msgstr "Dein bürgerlicher Name wird auf deiner Profilseite angezeigt werden."
 
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:94
 msgid "Enter our real name"
@@ -1945,6 +1977,8 @@ msgid ""
 "Your sex will be displayed on your profile page and is used to create "
 "demographic evaluations."
 msgstr ""
+"Dein Geschlecht wird auf deiner Profilseite angezeigt werden und für "
+"demographische Evaluationen verwendet."
 
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:99
 #: /src/MovLib/Presentation/Person/Index.php:64
@@ -1967,7 +2001,7 @@ msgstr "Website"
 
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:110
 msgid "Your website will be display on your profile page."
-msgstr ""
+msgstr "Deine Website wird auf deiner Profilseite angezeigt werden."
 
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:113
 msgid "About Me"
@@ -1991,7 +2025,7 @@ msgstr "Zeitzone"
 msgid ""
 "Your time zone will be used to display any time related information "
 "correctly."
-msgstr ""
+msgstr "Deine Zeitzone wird verwendet um Zeitangaben korrekt darzustellen."
 
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:124
 msgid ""
@@ -2051,16 +2085,16 @@ msgstr "Meine Beobachtungsliste"
 msgid "Join"
 msgstr "Beitreten"
 
-#: /src/MovLib/Presentation/Profile/Join.php:101
+#: /src/MovLib/Presentation/Profile/Join.php:99
 #: /src/MovLib/Presentation/Profile/Show.php:55
 msgid "Username"
 msgstr "Benutzername"
 
-#: /src/MovLib/Presentation/Profile/Join.php:105
+#: /src/MovLib/Presentation/Profile/Join.php:103
 msgid "Enter your desired username"
 msgstr "Gib deinen gewünschten Benutzernamen ein"
 
-#: /src/MovLib/Presentation/Profile/Join.php:108
+#: /src/MovLib/Presentation/Profile/Join.php:106
 msgid ""
 "A username must be valid UTF-8, cannot contain spaces at the beginning and "
 "end or more than one space in a row, it cannot contain any of the following "
@@ -2071,56 +2105,63 @@ msgstr ""
 "keine dieser Zeichen {0} beinhalten und nicht länger als {1,number,integer} "
 "Zeichen sein."
 
-#: /src/MovLib/Presentation/Profile/Join.php:118
+#: /src/MovLib/Presentation/Profile/Join.php:116
 msgid "Enter your desired password"
 msgstr "Gib dein gewünschtes Passwort ein"
 
-#: /src/MovLib/Presentation/Profile/Join.php:122
+#: /src/MovLib/Presentation/Profile/Join.php:120
 msgid "I accept the {a1}privacy policy{a} and the {a2}terms of use{a}."
 msgstr ""
 "Ich akzeptiere die {a1}Datenschutzerklärung{a} und die {a2}"
 "Nutzungsbedingungen{a}."
 
-#: /src/MovLib/Presentation/Profile/Join.php:127
+#: /src/MovLib/Presentation/Profile/Join.php:123
 #: /src/MovLib/Presentation/ComingSoon.php:77
 msgid "Sign Up"
 msgstr "Beitreten"
 
-#: /src/MovLib/Presentation/Profile/Join.php:133
+#: /src/MovLib/Presentation/Profile/Join.php:129
 msgid ""
 "Mistyped something? No problem, simply {0}go back{1} and fill out the form "
 "again."
 msgstr ""
 "Vertippt? Kein Problem, einfach {0}zurück gehen{1} und erneut ausfüllen."
 
-#: /src/MovLib/Presentation/Profile/Join.php:163
+#: /src/MovLib/Presentation/Profile/Join.php:135
+msgid ""
+"{sitename} is now open for beta testers, expect errors and missing features!"
+msgstr ""
+"{sitename} ist jetzt offen für Beta-Tester, rechne mit Fehlern und fehlenden "
+"Funktionalitäten."
+
+#: /src/MovLib/Presentation/Profile/Join.php:162
 msgid "The username cannot begin with a space."
 msgstr "Der Benutzername kann nicht mit einem Leerzeichen beginnen."
 
-#: /src/MovLib/Presentation/Profile/Join.php:167
+#: /src/MovLib/Presentation/Profile/Join.php:166
 msgid "The username cannot end with a space."
 msgstr "Der Benutzername kann nicht mit einem Leerzeichen enden."
 
-#: /src/MovLib/Presentation/Profile/Join.php:171
+#: /src/MovLib/Presentation/Profile/Join.php:170
 msgid "The username cannot contain multiple spaces in a row."
 msgstr ""
 "Der Benutzername kann nicht mehrere Leerzeichen hintereinander enthalten."
 
-#: /src/MovLib/Presentation/Profile/Join.php:179
+#: /src/MovLib/Presentation/Profile/Join.php:178
 msgid "The username cannot contain any of the following characters: {0}"
 msgstr "Der Benutzername kann keine der folgenden Zeichen enthalten: {0}"
 
-#: /src/MovLib/Presentation/Profile/Join.php:186
+#: /src/MovLib/Presentation/Profile/Join.php:185
 msgid ""
 "The username is too long: it must be {0,number,integer} characters or less."
 msgstr ""
 "Der Benutzername ist zu lang: er muss {0,number,integer} oder kürzer sein."
 
-#: /src/MovLib/Presentation/Profile/Join.php:192
+#: /src/MovLib/Presentation/Profile/Join.php:191
 msgid "The username is already taken, please choose another one."
 msgstr "Der Benutzername ist bereits in Verwendung, bitte wähle einen anderen."
 
-#: /src/MovLib/Presentation/Profile/Join.php:205
+#: /src/MovLib/Presentation/Profile/Join.php:199
 #: /src/MovLib/Presentation/AbstractPresenter.php:509
 #: /src/MovLib/Presentation/SystemPage/TermsOfUse/Edit.php:36
 #: /src/MovLib/Presentation/SystemPage/TermsOfUse/Show.php:35
@@ -2128,33 +2169,35 @@ msgstr "Der Benutzername ist bereits in Verwendung, bitte wähle einen anderen."
 msgid "Terms of Use"
 msgstr "Nutzungsbedingungen"
 
-#: /src/MovLib/Presentation/Profile/Join.php:203
+#: /src/MovLib/Presentation/Profile/Join.php:197
 msgid ""
 "You have to accept the {privacy_policy} and {terms_of_use} to join "
 "{sitename}."
 msgstr ""
+"Du musst die {privacy_policy} und {terms_of_use} akzeptieren um {sitename} "
+"beitreten zu können."
 
-#: /src/MovLib/Presentation/Profile/Join.php:211
+#: /src/MovLib/Presentation/Profile/Join.php:205
 msgid ""
 "Too many joining attempts from this IP address. Please wait one hour before "
 "trying again."
 msgstr ""
 
-#: /src/MovLib/Presentation/Profile/Join.php:240
+#: /src/MovLib/Presentation/Profile/Join.php:235
 msgid "Successfully Joined"
 msgstr "Erfolgreich beigetreten"
 
-#: /src/MovLib/Presentation/Profile/Join.php:263
+#: /src/MovLib/Presentation/Profile/Join.php:260
 msgid ""
 "The activation token is invalid, please go back to the mail we sent you and "
 "copy the whole link."
 msgstr ""
 
-#: /src/MovLib/Presentation/Profile/Join.php:271
+#: /src/MovLib/Presentation/Profile/Join.php:275
 msgid "We couldn’t find any activation data for your token."
 msgstr "Wir konnten kein Aktivierungsdaten für dein Token finden."
 
-#: /src/MovLib/Presentation/Profile/Join.php:273
+#: /src/MovLib/Presentation/Profile/Join.php:277
 msgid ""
 "The token might have expired, remember that you only have 24 hours to "
 "activate your account."
@@ -2162,7 +2205,7 @@ msgstr ""
 "Das Token ist möglicherweise abgelaufen, vergiss nicht, dass du nur 24 "
 "Stunden Zeit hast dein Konto freizuschalten."
 
-#: /src/MovLib/Presentation/Profile/Join.php:274
+#: /src/MovLib/Presentation/Profile/Join.php:278
 msgid ""
 "The token might be invalid, check the email again we’ve sent you and be sure "
 "to copy the whole link."
@@ -2170,29 +2213,29 @@ msgstr ""
 "Das Token ist möglicherweise nicht valide, überprüfe nochmals die E-Mail die "
 "wir dir gesendet haben und stelle sicher, dass du den gesamten Link kopierst."
 
-#: /src/MovLib/Presentation/Profile/Join.php:275
+#: /src/MovLib/Presentation/Profile/Join.php:279
 msgid "You can also just fill out the form again and we send you a new token."
 msgstr ""
 "Du kannst auch einfach das Formular erneut ausfüllen und wir senden dir ein "
 "neues Token."
 
-#: /src/MovLib/Presentation/Profile/Join.php:283
+#: /src/MovLib/Presentation/Profile/Join.php:287
 msgid "Seems like you’ve already activated your account, please sign in."
 msgstr ""
 "Sieht so aus, als hättest du dein Konto bereits freigeschaltet, bitte melde "
 "dich an."
 
-#: /src/MovLib/Presentation/Profile/Join.php:284
+#: /src/MovLib/Presentation/Profile/Join.php:288
 msgid "Already Activated"
 msgstr "Bereits Aktiviert"
 
-#: /src/MovLib/Presentation/Profile/Join.php:295
+#: /src/MovLib/Presentation/Profile/Join.php:299
 msgid ""
 "Unfortunately in the meantime someone took your desired username, please "
 "choose another one."
 msgstr ""
 
-#: /src/MovLib/Presentation/Profile/Join.php:309
+#: /src/MovLib/Presentation/Profile/Join.php:318
 msgid ""
 "Your account has been activated, please sign in with your email address and "
 "your secret password."
@@ -2314,43 +2357,53 @@ msgstr "Du musst angemeldet sein um deine Sammlung anzusehen."
 msgid "My Collection"
 msgstr "Meine Sammlung"
 
-#: /src/MovLib/Presentation/Profile/PasswordSettings.php:67
+#: /src/MovLib/Presentation/Profile/PasswordSettings.php:68
 msgid "You must be signed in to change your password settings."
 msgstr "Du musst angemeldet sein um deine Passworteinstellungen zu ändern."
 
-#: /src/MovLib/Presentation/Profile/PasswordSettings.php:68
+#: /src/MovLib/Presentation/Profile/PasswordSettings.php:69
 msgid "Password Settings"
 msgstr "Passworteinstellungen"
 
-#: /src/MovLib/Presentation/Profile/PasswordSettings.php:84
+#: /src/MovLib/Presentation/Profile/PasswordSettings.php:87
 msgid "Choose a strong password to secure your account."
 msgstr "Wähle ein sicheres Passwort um dein Konto abzusichern."
 
-#: /src/MovLib/Presentation/Profile/PasswordSettings.php:103
+#: /src/MovLib/Presentation/Profile/PasswordSettings.php:106
 msgid ""
 "As little help we generated the following password for you: {random_password}"
 msgstr ""
 "Als kleine Hilfe haben wir folgendes Passwort für dich generiert: "
 "{random_password}"
 
-#: /src/MovLib/Presentation/Profile/PasswordSettings.php:123
+#: /src/MovLib/Presentation/Profile/PasswordSettings.php:126
 msgid "Tip"
 msgstr "Tipp"
 
-#: /src/MovLib/Presentation/Profile/PasswordSettings.php:139
-msgid "Successfully Requested Password Change"
-msgstr "Erfolgreich Passwortänderung angefordert"
+#: /src/MovLib/Presentation/Profile/PasswordSettings.php:141
+#| msgid "Password Changed Successfully"
+msgid "Password change request successful"
+msgstr "Passwortänderung erfolgreich angefordert"
 
-#: /src/MovLib/Presentation/Profile/PasswordSettings.php:145
+#: /src/MovLib/Presentation/Profile/PasswordSettings.php:148
 msgid ""
 "You have to sign in with your old password until you’ve successfully "
 "confirmed your password change via the link we’ve just sent you."
 msgstr ""
+"Du musst dein altes Passwort zur Anmeldung verwenden solange du nicht "
+"erfolgreich die Passwortänderung bestätigt hast."
 
-#: /src/MovLib/Presentation/Profile/PasswordSettings.php:172
+#: /src/MovLib/Presentation/Profile/PasswordSettings.php:168
 msgid ""
 "Your new password equals your existing password, please enter a new one."
 msgstr ""
+"Dein neues Passwort entspricht deinem existierenden Passwort, bitte gib ein "
+"Neues ein."
+
+#: /src/MovLib/Presentation/Profile/PasswordSettings.php:209
+#| msgid "Password Changed Successfully"
+msgid "Password change successful"
+msgstr "Passwortänderung erfolgreich"
 
 #: /src/MovLib/Presentation/Error/InternalServerError.php:58
 msgid "Internal Server Error"
@@ -2393,12 +2446,17 @@ msgid "The requested page could not be found."
 msgstr "Die angeforderte Seite konnte nicht gefunden werden."
 
 #: /src/MovLib/Presentation/Error/NotFound.php:42
+#: /src/MovLib/Presentation/Error/Forbidden.php:47
 msgid ""
 "There can be various reasons why you might see this error message. If you "
 "feel that receiving this error is a mistake please {0}contact us{1}."
 msgstr ""
 "Es kann viele verschiedene Gründe für diese Fehlermeldung geben. Solltest du "
 "der Meinung sein, dass dieser Fehler nicht korrekt ist {0}kontaktiere uns{1}."
+
+#: /src/MovLib/Presentation/Error/Forbidden.php:50
+msgid "Forbidden"
+msgstr "Verboten"
 
 #: /src/MovLib/Presentation/Award/Companies.php:61
 #: /src/MovLib/Presentation/Award/History.php:61
@@ -2851,7 +2909,6 @@ msgstr ""
 #: /src/MovLib/Presentation/Movie/Edit.php:55
 #: /src/MovLib/Presentation/Movie/Create.php:62
 #: /src/MovLib/Presentation/Movie/Show.php:106
-#: /src/MovLib/Presentation/Movie/Show.php:110
 msgid "Synopsis"
 msgstr "Zusammenfassung"
 
@@ -2860,7 +2917,7 @@ msgstr "Zusammenfassung"
 #: /src/MovLib/Presentation/Movie/Edit.php:56
 #: /src/MovLib/Presentation/Movie/Create.php:63
 msgid "Write a synopsis."
-msgstr ""
+msgstr "Verfasse eine Synopsis."
 
 #: /src/MovLib/Presentation/Series/SeriesTrait.php:78
 msgid "Unknown"
@@ -2923,8 +2980,8 @@ msgstr "Originaltitel"
 #: /src/MovLib/Presentation/Series/Show.php:101
 #: /src/MovLib/Presentation/Help/AbstractCreate.php:85
 #: /src/MovLib/Presentation/Help/AbstractEdit.php:62
-#: /src/MovLib/Presentation/Movie/Show.php:136
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:67
+#: /src/MovLib/Presentation/Movie/Show.php:129
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:68
 msgid "Title"
 msgstr "Titel"
 
@@ -3406,7 +3463,7 @@ msgstr "Hintergrund"
 #: /src/MovLib/Presentation/Movie/Edit.php:59
 #: /src/MovLib/Presentation/Movie/Create.php:66
 msgid "Runtime (in seconds)"
-msgstr ""
+msgstr "Laufzeit (in Sekunden)"
 
 #: /src/MovLib/Presentation/Movie/Crew.php:41
 #: /src/MovLib/Presentation/Movie/Crew.php:42
@@ -3438,23 +3495,23 @@ msgstr "Laufzeit"
 msgid "Countries"
 msgstr "Länder"
 
-#: /src/MovLib/Presentation/Movie/Show.php:143
+#: /src/MovLib/Presentation/Movie/Show.php:136
 msgid "Alternative Titles"
 msgstr "Alternative Titel"
 
-#: /src/MovLib/Presentation/Movie/Show.php:167
+#: /src/MovLib/Presentation/Movie/Show.php:160
 msgid "Tagline"
 msgstr ""
 
-#: /src/MovLib/Presentation/Movie/Show.php:174
+#: /src/MovLib/Presentation/Movie/Show.php:167
 msgid "Taglines"
 msgstr ""
 
-#: /src/MovLib/Presentation/Movie/Show.php:177
+#: /src/MovLib/Presentation/Movie/Show.php:170
 msgid "Trailers"
 msgstr "Trailers"
 
-#: /src/MovLib/Presentation/Movie/Show.php:178
+#: /src/MovLib/Presentation/Movie/Show.php:171
 msgid "Weblinks"
 msgstr "Weblinks"
 
@@ -3730,15 +3787,13 @@ msgid "Won"
 msgstr "gewonnen"
 
 #: /src/MovLib/Presentation/Person/Awards.php:91
-#| msgid "…"
 msgid "–"
 msgstr "–"
 
 #: /src/MovLib/Presentation/Person/Awards.php:106
-#, fuzzy
 #| msgid "{sitename} doesn’t have further details about this person."
 msgid "{sitename} doesn’t have any award details for this person."
-msgstr "{sitename} hat keine weiteren Details über diese Person."
+msgstr "{sitename} hat keine Auszeichnungsdetails zu dieser Person."
 
 #: /src/MovLib/Presentation/Person/Show.php:77
 msgid "Born as: "
@@ -3843,45 +3898,43 @@ msgstr "Über {sitename}"
 msgid "Articles of Association"
 msgstr "Vereinsstatuten"
 
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:42
-msgid ""
-"The page you want to edit can only be changed by administrators of "
-"{sitename}."
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:43
+msgid "This page can only be changed by administrators of {sitename}."
 msgstr ""
 
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:68
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:69
 msgid "A system page’s title cannot contain any HTML."
 msgstr "Der Titel einer Systemseite kann kein HTML enthalten."
 
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:70
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:71
 msgid "Enter the system page title"
 msgstr "Gib den Titel der Systemseite ein."
 
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:73
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:74
 msgid "Content"
 msgstr "Inhalt"
 
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:74
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:75
 msgid "A system page’s text content can contain any HTML."
 msgstr "Der Textinhalt einer Systemseite kann jegliches HTML enthalten."
 
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:75
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:76
 msgid "Enter the system page content"
 msgstr "Gib den Inhalt der Systemseite ein."
 
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:97
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:98
 msgid "Successfully Updated"
 msgstr "Erfolgreich aktualisiert"
 
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:98
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:99
 msgid "The {title} system page was successfully updated."
 msgstr "Die {title} Systemseite wurde erfolgreich aktualisiert."
 
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:103
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:104
 msgid "Valid?"
 msgstr "Valide?"
 
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:104
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:105
 msgid "Please {0}validate your HTML with the W3C Validator{1}."
 msgstr ""
 
@@ -3907,18 +3960,15 @@ msgstr "Keine Genres"
 msgid "Genre Charts"
 msgstr "Genrecharts"
 
-#: /src/MovLib/Presentation/Genre/Edit.php:64
 #: /src/MovLib/Presentation/Genre/Create.php:53
 #: /src/MovLib/Presentation/Genre/Create.php:73
 msgid "Enter the genre’s name."
 msgstr "Gib den Namen des Genres ein."
 
-#: /src/MovLib/Presentation/Genre/Edit.php:70
 #: /src/MovLib/Presentation/Genre/Create.php:59
 msgid "Describe the genre."
 msgstr "Beschreibe das Genre."
 
-#: /src/MovLib/Presentation/Genre/Edit.php:73
 #: /src/MovLib/Presentation/Genre/Create.php:62
 msgid "Enter the genre’s corresponding Wikipedia link."
 msgstr "Gib den dazugehörigen Wikipedia-Link des Genres ein."
@@ -3930,6 +3980,74 @@ msgstr "{sitename} hat keine weiteren Details über dieses Genre."
 #: /src/MovLib/Presentation/Dashboard.php:41
 msgid "Dashboard"
 msgstr "Dashboard"
+
+#: /src/MovLib/Presentation/Dashboard.php:53
+msgid ""
+"{sitename} is now open for beta testers and we are very grateful that you’ve "
+"taken this opportunity and decided to join us. Our goal is pretty simple, "
+"create the best open and free online movie database in the world. But we "
+"need your help to reach this goal."
+msgstr ""
+"{sitename} ist jetzt offen für Beta-Tester und wir sind dir sehr dankbar "
+"dafür, dass du diese Gelegenheit nutzt und entschieden hast uns beizutreten. "
+"Unser Ziel ist ziemlich simpel, die Erstellung der besten offenen und freien "
+"Online-Filmdatenbank der Welt. Jedoch benötigen wir deine Hilfe um dieses "
+"Ziel zu erreichen."
+
+#: /src/MovLib/Presentation/Dashboard.php:57
+msgid ""
+"If you’d like to find out more about {sitename} head over to our {0}about "
+"page{1}."
+msgstr ""
+
+#: /src/MovLib/Presentation/Dashboard.php:59
+msgid "{sitename} is {0}beta software{1}"
+msgstr "{sitename} ist {0}Beta-Software{1}"
+
+#: /src/MovLib/Presentation/Dashboard.php:60
+msgid ""
+"Expect errors and missing features all over the place. {sitename} is still "
+"in a very early development stage. You’re one of the first persons to ever "
+"fiddle around with it. But that’s a good thing, because…"
+msgstr ""
+
+#: /src/MovLib/Presentation/Dashboard.php:62
+msgid "{sitename} is {0}built by you{1}"
+msgstr "{sitename} wird {0}von dir gebaut{1}"
+
+#: /src/MovLib/Presentation/Dashboard.php:63
+msgid ""
+"We (the {0}core developers{1}) worked on the {sitename} software for almost "
+"two years now (and invested an estimated {2}10 person-years of effort{1}), "
+"we started from scratch, without any frameworks, without anything. We wanted "
+"to create a unique highly customized and specialized software that has only "
+"one purpose: being an awesome foundation for a sophisticated online movie "
+"database software. Although we think that we’re on the right track with "
+"that, we need your help to verify that. We need your opinions as movie and "
+"series experts, professionals and collectors. Many websites are built "
+"without asking the audience, the owners and developers simply build what "
+"they think is right for their users. We don’t want to make that mistake, we "
+"want to build {sitename} together with you, so that you end up with exactly "
+"the database you need for your daily dose of movie related structured data, "
+"or your own website."
+msgstr ""
+
+#: /src/MovLib/Presentation/Dashboard.php:73
+msgid "{sitename} is {0}open source{1}"
+msgstr "{sitename} ist {0}Open Source{1}"
+
+#: /src/MovLib/Presentation/Dashboard.php:74
+msgid ""
+"And like almost all open source projects developed by people in their spare "
+"time. We don’t have a 24/7 support team, we aren’t baked by a multi-million "
+"dollar company. This means development will be slow compared to big "
+"commercial projects. We have to go to work each day and take care of other "
+"things. If you have any talent that might be useful for {sitename} and you’d "
+"like to support us, simply {0}get in touch{1}. It doesn’t matter what you "
+"might be good at. Maybe you’re a passioned designer, marketer, or a "
+"developer yourself. Doesn’t matter, {sitename} needs the help of every "
+"person who is interested in the topic to reach our goal."
+msgstr ""
 
 #: /src/MovLib/Presentation/User/AbstractUserPresenter.php:64
 #: /src/MovLib/Presentation/User/AbstractUserPresenter.php:74
@@ -4189,6 +4307,18 @@ msgstr "Gib die zugehörigen Veranstaltungsweblinks Zeile für Zeile ein."
 #: /src/MovLib/Presentation/Event/Show.php:74
 msgid "{sitename} doesn’t have further details about this event."
 msgstr "{sitename} hat keine weiteren Details über diese Veranstaltung."
+
+#~ msgid ""
+#~ "You must be signed in and have administrator privileges to enter raw HTML."
+#~ msgstr ""
+#~ "Sie müssen eingeloggt sein und administrator Rechte besitzen um auf HTML "
+#~ "zugreifen zu können"
+
+#~ msgid "Request Reset"
+#~ msgstr "Rücksetzung Anfordern"
+
+#~ msgid "Successfully Requested Password Change"
+#~ msgstr "Erfolgreich Passwortänderung angefordert"
 
 #~ msgid "Enter the job’s unisex name."
 #~ msgstr "Gib den geschlechtsneutralen Namen des Berufs ein."
@@ -4576,9 +4706,6 @@ msgstr "{sitename} hat keine weiteren Details über diese Veranstaltung."
 #~ msgid "You can filter the deletion requests via the sidebar menu."
 #~ msgstr ""
 #~ "Du kannst die Löschanträge über das seitliche Navigationsmenü filtern."
-
-#~ msgid "An email with further instructions has been sent to {email}."
-#~ msgstr "Eine Email mit weiteren Instruktionen wurde an {email} gesendet."
 
 #~ msgid "{0,number,integer} min."
 #~ msgstr "{0,number,integer} Min."
