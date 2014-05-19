@@ -65,9 +65,9 @@ class GenreRevision extends \MovLib\Data\AbstractRevisionEntity {
     if ($genreId) {
       $stmt = $this->getMySQLi()->prepare(<<<SQL
 SELECT
-  COLUMN_JSON(`dyn_names`),
-  COLUMN_JSON(`dyn_descriptions`),
-  COLUMN_JSON(`dyn_wikipedia`),
+  IF (COLUMN_JSON(`dyn_names`) = '{}', NULL, COLUMN_JSON(`dyn_names`)),
+  IF (COLUMN_JSON(`dyn_descriptions`) = '{}', NULL, COLUMN_JSON(`dyn_descriptions`)),
+  IF (COLUMN_JSON(`dyn_wikipedia`) = '{}', NULL, COLUMN_JSON(`dyn_wikipedia`)),
   `changed`,
   `deleted`
 FROM `genres`
@@ -84,10 +84,12 @@ SQL
         throw new NotFoundException("Couldn't find Genre {$genreId}");
       }
       $this->entityId     = $genreId;
-      $this->names        = json_decode($this->names, true);
-      $this->descriptions = json_decode($this->descriptions, true);
-      $this->wikipedia    = json_decode($this->wikipedia, true);
       $this->deleted      = (boolean) $this->deleted;
+      foreach ([ "names", "descriptions", "wikipedia" ] as $property) {
+        if (isset($this->$property)) {
+          $this->$property = json_decode($this->$property, true);
+        }
+      }
     }
   }
 
@@ -122,12 +124,20 @@ SQL
    *
    * @param \MovLib\Data\Genre\Genre $entity
    *   {@inheritdoc}
+   * @return this
    */
   public function setEntity(\MovLib\Data\AbstractEntity $entity) {
     parent::setEntity($entity);
-    $this->names[$this->intl->languageCode]        = $entity->name;
-    $this->descriptions[$this->intl->languageCode] = $entity->description;
-    $this->wikipedia[$this->intl->languageCode]    = $entity->wikipedia;
+    if (!empty($entity->name)) {
+      $this->names[$this->intl->languageCode]        = $entity->name;
+    }
+    if (!empty($entity->description)) {
+      $this->descriptions[$this->intl->languageCode] = $entity->description;
+    }
+    if (!empty($entity->wikipedia)) {
+      $this->wikipedia[$this->intl->languageCode]    = $entity->wikipedia;
+    }
+    return $this;
   }
 
 }

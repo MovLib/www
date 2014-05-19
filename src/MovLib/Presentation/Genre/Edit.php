@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Genre;
 
 use \MovLib\Data\Revision;
-use \MovLib\Data\AbstractRevisionEntity;
 use \MovLib\Data\Genre\Genre;
 use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Form;
@@ -70,14 +69,19 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
       ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia))
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
       ->addRevisioning($this->entity)
-      ->init([ $this, "valid" ])
+      ->init([ $this, "submit" ])
     ;
   }
 
-  public function valid() {
+  /**
+   * Submit callback for the genre edit form.
+   *
+   * @throws SeeOtherException
+   */
+  public function submit() {
     $revision = new Revision($this->diContainerHTTP, "Genre", $this->entity->id);
     $revision->saveRevision($this->entity);
-    $this->alertSuccess($this->intl->t("The {$this->entity->singularKey} was updated successfully."));
+    $this->alertSuccess($this->intl->t("Update successful"));
     throw new SeeOtherException($this->entity->route);
   }
 

@@ -190,12 +190,14 @@ abstract class AbstractRevisionEntity extends \MovLib\Core\AbstractDatabase {
    *
    * @param \MovLib\Data\AbstractEntity $entity
    *   The entity with the changes.
+   * @return this
    */
   public function setEntity(\MovLib\Data\AbstractEntity $entity) {
     $this->entity   = $entity;
     $this->id  = $this->entity->changed;
     $this->deleted  = $this->entity->deleted;
     $this->entityId = $this->entity->id;
+    return $this;
   }
 
 }

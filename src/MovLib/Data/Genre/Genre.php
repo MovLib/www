@@ -195,22 +195,21 @@ SQL
    * @throws \mysqli_sql_exception
    */
   public function commit() {
-    $stmt = $this->getMySQLi()->prepare(<<<SQL
-UPDATE `genres` SET
-  `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, '{$this->intl->languageCode}', ?),
-  `dyn_names`        = COLUMN_ADD(`dyn_names`, '{$this->intl->languageCode}', ?),
-  `dyn_wikipedia`    = COLUMN_ADD(`dyn_wikipedia`, '{$this->intl->languageCode}', ?)
-WHERE `id` = {$this->id}
-SQL
-    );
-    $stmt->bind_param(
-      "sss",
-      $this->description,
-      $this->name,
-      $this->wikipedia
-    );
-    $stmt->execute();
-    $stmt->close();
+    $mysqli = $this->getMySQLi();
+    $name = $mysqli->real_escape_string($this->name);
+    $query = "UPDATE `genres` SET `dyn_names` = COLUMN_ADD(`dyn_names`, '{$this->intl->languageCode}', '{$name}')";
+    if (!empty($this->description)) {
+      $description = $mysqli->real_escape_string($this->description);
+      $query .= ", `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, '{$this->intl->languageCode}', '{$description}')";
+    }
+    if (!empty($this->wikipedia)) {
+      $wikipedia = $mysqli->real_escape_string($this->wikipedia);
+      $query .= ", `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, '{$this->intl->languageCode}', '{$wikipedia}')";
+    }
+    $query .= " WHERE `id` = {$this->id}";
+    if ($mysqli->query($query) !== true) {
+      throw new \mysqli_sql_exception();
+    }
     return $this;
   }
 
