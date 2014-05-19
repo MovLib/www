@@ -81,6 +81,13 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
   public $routeIndex;
 
   /**
+   * The entity's index route key.
+   *
+   * @var string
+   */
+  public $routeIndexKey;
+
+  /**
    * The entity's Wikipedia link in the current locale.
    *
    * @var null|string

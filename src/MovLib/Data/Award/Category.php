@@ -161,6 +161,11 @@ final class Category extends \MovLib\Data\AbstractEntity implements \MovLib\Data
    */
   public $routeKey = "/award/{0}/category/{1}";
 
+  /**
+   * {@inheritdoc}
+   */
+  public $routeIndexKey = "/award/{0}/category";
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -371,10 +376,11 @@ SQL
       $this->firstYear = new Date($this->firstYear);
     }
     if (isset($this->lastYear) && !$this->lastYear instanceof \stdClass) {
-      $this->lastYear = new Date($this->lastYear);
+      $this->lastYear  = new Date($this->lastYear);
     }
-    $this->routeArgs      = [ $this->awardId, $this->id ];
-    $this->routeIndex     = $this->intl->r("/award/{0}/categories", $this->awardId);
+    $this->routeArgs     = [ $this->awardId, $this->id ];
+    $this->routeIndex    = $this->intl->r($this->routeIndexKey, $this->awardId);
+    $this->routeKey      = $this->intl->r($this->routeKey, $this->routeArgs);
     return parent::init();
   }
 

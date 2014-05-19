@@ -56,7 +56,7 @@ class Series extends \MovLib\Presentation\AbstractPresenter {
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->tp(-1, "Series"))
       ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/series", $this->entity->id)
+      ->initLanguageLinks("{$this->entity->routeKey}/series", $this->entity->routeArgs)
       ->breadcrumb->addCrumbs($this->getBreadCrumbs())
     ;
   }

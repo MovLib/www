@@ -77,10 +77,10 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
           "</a>" .
           "<div class='s s9'>" .
             "<div class='fr'>" .
-              "<a class='ico ico-movie label' href='{$this->intl->r("/award/{0}/category/{1}/movies", [ $this->entity->id, $category->id ])}' title='{$this->intl->t("Movies")}'>{$category->movieCount}</a>" .
-              "<a class='ico ico-series label' href='{$this->intl->r("/award/{0}/category/{1}/series", [ $this->entity->id, $category->id ])}' title='{$this->intl->tp(-1, "Series")}'>{$category->seriesCount}</a>" .
-              "<a class='ico ico-person label' href='{$this->intl->r("/award/{0}/category/{1}/persons", [ $this->entity->id, $category->id ])}' title='{$this->intl->t("Persons")}'>{$category->seriesCount}</a>" .
-              "<a class='ico ico-company label' href='{$this->intl->r("/award/{0}/category/{1}/companies", [ $this->entity->id, $category->id ])}' title='{$this->intl->t("Companies")}'>{$category->seriesCount}</a>" .
+              "<a class='ico ico-movie label' href='{$category->route}/{$this->intl->t("movies")}' title='{$this->intl->t("Movies")}'>{$category->movieCount}</a>" .
+              "<a class='ico ico-series label' href='{$category->route}/{$this->intl->t("series")}' title='{$this->intl->tp(-1, "Series")}'>{$category->seriesCount}</a>" .
+              "<a class='ico ico-person label' href='{$category->route}/{$this->intl->t("persons")}' title='{$this->intl->t("Persons")}'>{$category->seriesCount}</a>" .
+              "<a class='ico ico-company label' href='{$category->route}/{$this->intl->t("companies")}' title='{$this->intl->t("Companies")}'>{$category->seriesCount}</a>" .
             "</div>" .
             "<h2 class='para'><a href='{$category->route}' property='url'><span property='name'>{$category->name}</span></a></h2>" .
             $categoryDates .

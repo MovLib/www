@@ -50,6 +50,7 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
       [ $this->intl->r("/award/{0}/", [ $category->award->id ]), $category->award->name ],
     ]);
     $this->initCreate($category, $this->intl->t("Categories"));
+    $this->initLanguageLinks("{$this->entity->routeIndexKey}/create", $this->entity->award->id);
     return $this;
   }
 

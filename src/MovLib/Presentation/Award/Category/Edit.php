@@ -50,6 +50,7 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
       [ $this->intl->r("/award/{0}/", [ $this->entity->award->id ]), $this->entity->award->name ],
     ]);
     $this->initEdit($this->entity, $this->intl->t("Categories"), $this->getSidebarItems());
+    $this->initLanguageLinks("{$this->entity->routeKey}/edit", $this->entity->routeArgs);
     return $this;
   }
 
