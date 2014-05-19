@@ -128,6 +128,162 @@ final class Revision extends \MovLib\Core\AbstractDatabase {
   }
 
   /**
+   * Apply transformations to a string as computed by @see \MovLib\Data\Revision::diff().
+   *
+   * @link https://github.com/cogpowered/FineDiff.git FineDiff
+   *
+   * @param string $from
+   *   The string to apply the tranformations to.
+   * @param string $patch
+   *   The transformations to apply.
+   * @return string
+   *   The patched string.
+   */
+  public function applyPatch($from, $patch) {
+    $output      = null;
+    $patchLength = mb_strlen($patch);
+    $fromOffset  = $patchOffset = 0;
+
+    while ($patchOffset < $patchLength) {
+      $transformation = mb_substr($patch, $patchOffset, 1);
+      ++$patchOffset;
+      $n = (integer) mb_substr($patch, $patchOffset);
+
+      if ($n) {
+        $patchOffset += strlen((string) $n);
+      }
+      else {
+        $n = 1;
+      }
+
+      // Since we only use text, we can ignore all operations except copy and insert.
+      if ($transformation == "c") {
+        // Copy $n characters from the original string.
+        $output .= mb_substr($from, $fromOffset, $n);
+        $fromOffset += $n;
+      }
+      // Insert $n characters from the patch.
+      elseif ($transformation == "i") {
+        $output .= mb_substr($patch, ++$patchOffset, $n);
+        $patchOffset += $n;
+      }
+      // Ignore $n characters for other operations.
+      else {
+        $fromOffset += $n;
+      }
+    }
+
+    return $output;
+  }
+
+  /**
+   * Compute the difference between two strings as transformations.
+   *
+   * Simplifies cogpowered's implementation, since we only need to compute differences at character level and don't
+   * need to be extensible.
+   *
+   * @link https://github.com/cogpowered/FineDiff.git FineDiff
+   *
+   * @param string $fromText
+   *   The old string.
+   * @param string $toText
+   *   The new string.
+   * @return string
+   *   The transformations needed to modify the from string to the to string.
+   */
+  public function diff($fromText, $toText) {
+    // Initialize all variables needed beforehand and add the first parse job.
+    $result     = [];
+    $jobs       = [[ 0, mb_strlen($fromText), 0, mb_strlen($toText) ]];
+    $copyLength = $fromCopyStart = $toCopyStart = 0;
+
+    while ($job = array_pop($jobs)) {
+      list($fromSegmentStart, $fromSegmentEnd, $toSegmentStart, $toSegmentEnd) = $job;
+      $fromSegmentLength = $fromSegmentEnd - $fromSegmentStart;
+      $toSegmentLength   = $toSegmentEnd - $toSegmentStart;
+
+      // Detect simple insert/delete operations and continue with next job.
+      if ($fromSegmentLength === 0 || $toSegmentLength === 0) {
+        if ($fromSegmentLength > 0) {
+          $deleteLength = $fromSegmentLength === 1 ? null : $fromSegmentLength;
+          $result[$fromSegmentStart * 4 + 0] = "d{$deleteLength}";
+        }
+        elseif ($toSegmentLength > 0) {
+          $insertText   = mb_substr($toText, $toSegmentStart, $toSegmentLength);
+          $insertLength = mb_strlen($insertText);
+          $insertLength = $insertLength === 1 ? null : $insertLength;
+          $result[$fromSegmentStart * 4 + 1] = "i{$insertLength}:{$insertText}";
+        }
+        continue;
+      }
+
+      // Determine start and length for a copy transformation.
+      if ($fromSegmentLength >= $toSegmentLength) {
+        $copyLength = $toSegmentLength;
+
+        while ($copyLength) {
+          $toCopyStartMax = $toSegmentEnd - $copyLength;
+
+          for ($toCopyStart = $toSegmentStart; $toCopyStart <= $toCopyStartMax; ++$toCopyStart) {
+            $fromCopyStart = mb_strpos(
+              mb_substr($fromText, $fromSegmentStart, $fromSegmentLength),
+              mb_substr($toText, $toCopyStart, $copyLength)
+            );
+
+            if ($fromCopyStart !== false) {
+              $fromCopyStart += $fromSegmentStart;
+              break 2;
+            }
+          }
+
+          --$copyLength;
+        }
+      }
+      else {
+        $copyLength = $fromSegmentLength;
+
+        while ($copyLength) {
+          $fromCopyStartMax = $fromSegmentEnd - $copyLength;
+
+          for ($fromCopyStart = $fromSegmentStart; $fromCopyStart <= $fromCopyStartMax; ++$fromCopyStart) {
+            $toCopyStart = mb_strpos(
+              mb_substr($toText, $toSegmentStart, $toSegmentLength),
+              mb_substr($fromText, $fromCopyStart, $copyLength)
+            );
+
+            if ($toCopyStart !== false) {
+              $toCopyStart += $toSegmentStart;
+              break 2;
+            }
+          }
+
+          --$copyLength;
+        }
+      }
+
+      // A copy operation is possible.
+      if ($copyLength) {
+        $copyTranformationLength = $copyLength === 1 ? null : $copyLength;
+        $result[$fromCopyStart * 4 + 2] = "c{$copyTranformationLength}";
+        // Add new jobs for the parts of the segment before and after the copy part.
+        $jobs[] = [ $fromSegmentStart, $fromCopyStart, $toSegmentStart, $toCopyStart ];
+        $jobs[] = [ $fromCopyStart + $copyLength, $fromSegmentEnd, $toCopyStart + $copyLength, $toSegmentEnd ];
+      }
+      // No copy possible, replace everything.
+      else {
+        $deleteLength = $fromSegmentLength === 1 ? null : $fromSegmentLength;
+        $insertLength = $toSegmentLength === 1 ? null : $toSegmentLength;
+        $insertText   = mb_substr($toText, $toSegmentStart, $toSegmentLength);
+        $result[$fromSegmentStart * 4] = "d{$deleteLength}i{$insertLength}:{$insertText}";
+      }
+    }
+
+    // Sort and return the string representation of the transformations.
+    ksort($result, SORT_NUMERIC);
+    return implode(array_values($result));
+  }
+
+  /**
    * Patch revisions back starting from the newest one and export them
    * into the <code>$oldRevision</code> and <code>$newRevision</code> properties.
    *
@@ -159,19 +315,23 @@ SQL
     $stmt->bind_result($id, $userId, $patch);
 
     // Do the patching.
-    $entityId     = $this->newRevision->entityId;
-    $revision     = serialize($this->newRevision);
+    $entityId = $this->newRevision->entityId;
+    $revision = serialize($this->newRevision);
     while ($stmt->fetch()) {
-      $revision = xdiff_string_bpatch($revision, $patch);
+      $revision = $this->applyPatch($revision, $patch);
       if ($id === $oldChanged) {
         $this->oldRevision               = unserialize($revision);
+        $this->oldRevision->id           = new DateTime($id);
         $this->oldRevision->entityTypeId = $this->revisionEntityId;
         $this->oldRevision->entityId     = $entityId;
+        $this->oldRevision->userId       = $userId;
       }
       elseif ($id === $newChanged) {
         $this->newRevision               = unserialize($revision);
+        $this->newRevision->id           = new DateTime($id);
         $this->newRevision->entityTypeId = $this->revisionEntityId;
         $this->newRevision->entityId     = $entityId;
+        $this->newRevision->userId       = $userId;
       }
     }
     $stmt->close();
@@ -188,25 +348,20 @@ SQL
    * @throws \MovLib\Data\Exception
    */
   public function saveRevision(\MovLib\Data\AbstractEntity $entity) {
-    $mysqli = $this->getMySQLi();
-    // Populate the new state and make the patch.
-    $this->oldRevision = $this->newRevision;
-    $this->newRevision = new $this->revisionClass($this->diContainer, $entity->id);
-    $this->newRevision->setEntity($entity);
-    $diff = xdiff_string_bdiff(serialize($this->newRevision), serialize($this->oldRevision));
+    // The current new revision will be the new old revision.
+    $old = serialize($this->newRevision);
 
+    // The new current edition is the entity we just got.
+    $this->newRevision->setEntity($entity);
+
+    // Create a diff between both revisions, we have to pass the result per reference to bind_param() below.
+    $diff = $this->diff(serialize($this->newRevision), $old);
+
+    $mysqli = $this->getMySQLi();
     try {
       $mysqli->autocommit(false);
       $entity->commit();
-      $stmt = $mysqli->prepare(<<<SQL
-INSERT INTO `revisions` SET
-  `revision_entity_id` = ?,
-  `entity_id`      = ?,
-  `id`             = CAST(? AS DATETIME),
-  `user_id`        = ?,
-  `data`           = ?
-SQL
-      );
+      $stmt = $mysqli->prepare("INSERT INTO `revisions` (`revision_entity_id`, `entity_id`, `id`, `user_id`, `data`) VALUES (?, ?, CAST(? AS DATETIME), ?, ?)");
       $stmt->bind_param(
         "ddsds",
         $this->revisionEntityId,
@@ -219,12 +374,15 @@ SQL
       $mysqli->commit();
     }
     catch (\Exception $e) {
+      // Drop the just create new revision, we couldn't update the database, therefore we don't need it anymore.
+      unset($this->newRevision);
       $mysqli->rollback();
       throw $e;
     }
     finally {
       $mysqli->autocommit(true);
     }
+
     return $this;
   }
 
