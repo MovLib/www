@@ -20,7 +20,9 @@ namespace MovLib\Presentation\Genre;
 use \MovLib\Data\Genre\Genre;
 
 /**
- * A genre's history.
+ * A genre's history diff.
+ *
+ * @route /genre/{id}/history/{ro}/{rn}
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -28,9 +30,9 @@ use \MovLib\Data\Genre\Genre;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\AbstractHistoryPresenter {
+class HistoryDiff extends \MovLib\Presentation\AbstractHistoryPresenter {
   use \MovLib\Presentation\Genre\GenreTrait;
-
+  
   /**
    * {@inheritdoc}
    */
@@ -41,11 +43,11 @@ class History extends \MovLib\Presentation\AbstractHistoryPresenter {
     );
   }
 
+
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->getIndexContent("Genre");
+    return $this->checkBackLater("genre diff");
   }
-
 }
