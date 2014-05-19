@@ -57,7 +57,7 @@ class Companies extends \MovLib\Presentation\AbstractPresenter {
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Companies"))
       ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/companies", $this->entity->id)
+      ->initLanguageLinks("{$this->entity->routeKey}/companies", $this->entity->routeArgs)
       ->breadcrumb->addCrumbs($this->getBreadCrumbs())
     ;
   }
