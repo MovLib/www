@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: https://github.com/MovLib/www/issues?"
 "labels=translation\n"
 "POT-Creation-Date: 2014-05-19 08:45+0000\n"
-"PO-Revision-Date: 2014-05-19 12:22+0100\n"
+"PO-Revision-Date: 2014-05-19 20:11+0100\n"
 "Last-Translator: Richard Fussenegger <richard@fussenegger.info>\n"
 "Language-Team: MovDev <developers@movlib.org>\n"
 "Language: de_AT\n"
@@ -217,11 +217,12 @@ msgstr "Es gibt noch keine Bewertungen, sei der/die erste!"
 
 #: /src/MovLib/Partial/StarRatingForm.php:128
 msgid "You’re the only one who rated yet."
-msgstr "Sie sind der/die erste die eine Bewertung abgegeben hat."
+msgstr ""
+"Du bist der/die Einzige der/die bis jetzt eine Bewertung abgegeben hat."
 
 #: /src/MovLib/Partial/StarRatingForm.php:135
 msgid "View the rating demographics."
-msgstr "Sehen Sie die Bewertungsdemographie an."
+msgstr "Schau dir die Bewertungsdemographien an."
 
 #: /src/MovLib/Partial/StarRatingForm.php:132
 msgid ""
@@ -238,9 +239,7 @@ msgstr "Bewertung"
 
 #: /src/MovLib/Partial/StarRatingForm.php:176
 msgid "Please {1}sign in{0} or {2}join{0} to rate."
-msgstr ""
-"Bitte {1}loggen Sie sich ein{0} oder {2}Registrieren Sie sich{0} um eine "
-"Bewertung abgeben zu können."
+msgstr "Bitte {1}melde dich an{0} oder {2}tritt uns bei{0} um zu bewerten."
 
 #: /src/MovLib/Partial/StarRatingForm.php:186
 msgid ""
@@ -648,8 +647,8 @@ msgid ""
 "An unknown problem was encountered while processing your upload, please try "
 "again."
 msgstr ""
-"Ein unbekanntes Problem ist während der Datei passiert, bitte versuche es "
-"erneut."
+"Ein unbekanntes Problem ist aufgetreten während des Hochladens, bitte "
+"versuche es erneut."
 
 #: /src/MovLib/Partial/FormElement/InputText.php:73
 msgid "The “{0}” field contains invalid UTF-8 characters."
@@ -708,9 +707,8 @@ msgid ""
 "You must be signed in to upload images. If you don’t have an account yet why "
 "not {0}join {sitename}{1}?."
 msgstr ""
-"Sie müssen eingeloggt sein um Bilder hochladen zu können. Falls sie noch "
-"keinen Account besitzen, wieso registrieren sie sicht nicht {0}hier{sitename}"
-"{1}?."
+"Du musst angemeldet sein um Bilder hochladen zu können. Solltest du noch "
+"kein Konto haben möchtest du vielleicht {0}{sitename} beitreten{1}?"
 
 #: /src/MovLib/Partial/FormElement/InputImage.php:137
 msgid ""
@@ -1055,6 +1053,8 @@ msgid ""
 "You must be signed in to access this content. Please use the form below to "
 "sign in or {0}join {sitename}{1}."
 msgstr ""
+"Du musst angemeldet sein um auf diesen Inhalt zugreifen zu können. Bitte "
+"nutze das untere Formular um dich anzumelden oder {0}tritt {sitename} bei{1}."
 
 #: /src/MovLib/Exception/ClientException/UnauthorizedException.php:101
 msgid "Unauthorized"

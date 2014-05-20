@@ -41,56 +41,59 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
    */
   public function init() {
     return $this
-      ->initPage($this->intl->t("Create"))
+      ->initPage($this->intl->t("Create new movie"))
       ->initCreate(new Movie($this->diContainerHTTP), $this->intl->t("Movies"))
     ;
   }
 
-  /**16777215
+  /**
    * {@inheritdoc}
    */
    public function getContent() {
-    $form = (new Form($this->diContainerHTTP))
+    return (new Form($this->diContainerHTTP))
       ->addElement(new InputText($this->diContainerHTTP, "original-title", $this->intl->t("Original Title"), $this->entity->originalTitle, [
-        "placeholder" => $this->intl->t("The original title of the series."),
-        "required"    => true,
-        "autofocus"   => true,
+        "#prefix"   => "<div class='r'><div class='s s7'>",
+        "#suffix"   => "</div>",
+        "autofocus" => true,
+        "required"  => true,
       ]))
       ->addElement((new Language($this->diContainerHTTP))->getSelectFormElement($this->entity->originalTitleLanguageCode, [
+        "#prefix"     => "<div class='s s3'>",
+        "#suffix"     => "</div></div>",
+        "#help-popup" => $this->intl->t("The original title’s language."),
         "required"    => true,
-      ], "original-title-language-code", $this->intl->t("Original Title Language")))
-      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "synopsis", $this->intl->t("Synopsis"), $this->entity->synopsis, [
-        "placeholder" => $this->intl->t("Write a synopsis."),
-        "data-allow-external" => "true",
       ]))
-      ->addElement(new InputInteger($this->diContainerHTTP, "runtime", $this->intl->t("Runtime (in seconds)"), $this->entity->runtime, [
-        "min"         => 0,
-        "max"         => 16777215
+      ->addElement(new InputInteger($this->diContainerHTTP, "year", $this->intl->t("Release"), $this->entity->year->year, [
+        "#field_suffix" => " {$this->intl->t("Year")}",
+        "class"         => "s2",
+        "min"           => 1890,
+        "max"           => date("Y") + 5
       ]))
-      ->addElement(new InputInteger($this->diContainerHTTP, "year", $this->intl->t("Year"), $this->entity->year->year, [
-        "placeholder" => $this->intl->t("yyyy"),
-        "min"         => 1000,
-        "max"         => 9999
+      ->addElement(new InputInteger($this->diContainerHTTP, "runtime", $this->intl->t("Approximate runtime"), $this->entity->runtime, [
+        "#field_suffix" => " {$this->intl->t("Minutes")}",
+        "class"         => "s2",
+        "min"           => 0,
+        "max"           => 279620, /* 16777215 seconds */
       ]))
+      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "synopsis", $this->intl->t("Synopsis"), $this->entity->synopsis))
       ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
         "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/…",
         "data-allow-external" => "true",
       ]))
       ->addAction($this->intl->t("Create"), [ "class" => "btn btn-large btn-success" ])
-      ->init([ $this, "valid" ])
+      ->init([ $this, "submit" ])
     ;
-    return
-      $form->open() .
-      "<div class='r'>" .
-        "<div class='s s7'>{$form->elements["original-title"]}</div>" .
-        "<div class='s s3'>{$form->elements["original-title-language-code"]}</div>" .
-      "</div>" .
-      $form->elements["synopsis"] .
-      $form->elements["runtime"] .
-      $form->elements["year"] .
-      $form->elements["wikipedia"] .
-      $form->close()
-    ;
+  }
+
+  /**
+   * Submit callback for creation form.
+   *
+   * @return this
+   */
+  public function submit() {
+
+
+    return $this;
   }
 
 }

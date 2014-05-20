@@ -103,78 +103,47 @@ final class Show extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
     $this->entity->genreSet  && $this->infoboxAdd($this->intl->t("Genres"), (new Genre($this->diContainerHTTP))->getList($this->entity->genreSet));
     $this->entity->countries && $this->infoboxAdd($this->intl->t("Countries"), (new Country($this->diContainerHTTP))->getList($this->entity->countries, "contentLocation"));
 
-    $this->entity->synopsis && $this->sectionAdd($this->intl->t("Synopsis"), $this->entity->synopsis, true, "callout");
-
-    $titleSet = new MovieTitleSet($this->diContainerHTTP, $this->entity->id);
-    $titles = null;
-    /* @var $title \MovLib\Data\Title\Title */
-    foreach ($titleSet->loadEntityTitles() as $title) {
-      $title->title =
-        isset($title->comment)
-          ? $this->intl->t("{0} ({1})", [ "title" => $title->title, "comment" => $title->comment ])
-          : $title->title
-      ;
-      $titles .=
-        "<tr>" .
-          "<td class='s8'>{$title->title}</td>" .
-          "<td class='s2'>{$this->intl->getTranslations("languages")[$title->languageCode]->name}</td>" .
-        "</tr>"
-      ;
+    if ($this->entity->synopsis) {
+      $synopsis = $this->entity->synopsis;
     }
+    else {
+      $synopsis = $this->callout($this->intl->t(
+        "None available, would you like to {0}write a snyopsis?{1}",
+        [ "<a href='{$this->entity->r("/edit")}'>", "</a>" ]
+      ));
+    }
+    $this->sectionAdd($this->intl->t("Synopsis"), $synopsis);
+
+    $titles = $this->entity->getTitles();
     if ($titles) {
-      $titles =
-        "<table class='table table-striped'>" .
-          "<thead>" .
-            "<tr>" .
-              "<th>{$this->intl->t("Title")}</th>" .
-              "<th>{$this->intl->t("Language")}</th>" .
-            "</tr>" .
-          "</thead>" .
-          "<tbody>{$titles}</tbody>" .
-        "</table>"
-      ;
-      $this->sectionAdd($this->intl->t("Alternative Titles"), $titles, true, null, $this->intl->r("{$this->entity->routeKey}/titles", $this->entity->id));
+      $titleSection = "<ol class='titles no-list'>";
+      /* @var $title \MovLib\Data\Title */
+      foreach ($titles as $title) {
+        $titleSection .= "<li class='title'><span{$this->lang($title->languageCode)}>{$title->title}</span>";
+        if ($title->comment) {
+          $titleSection .= $this->intl->t("{0} ({1})", [ null, $title->comment ]);
+        }
+      }
+      $titleSection .= "</ol>";
+      $this->sectionAdd($this->intl->t("Titles"), $titleSection);
     }
 
-    $taglineSet = new MovieTaglineSet($this->diContainerHTTP, $this->entity->id);
-    $taglines = null;
-    /* @var $tagline \MovLib\Data\Title\Title */
-    foreach ($taglineSet->loadEntityTaglines() as $tagline) {
-      $tagline->tagline =
-        isset($tagline->comment)
-          ? $this->intl->t("{0} ({1})", [ "title" => $tagline->tagline, "comment" => $tagline->comment ])
-          : $tagline->tagline
-      ;
-      $taglines .=
-        "<tr>" .
-          "<td class='s8'>{$tagline->tagline}</td>" .
-          "<td class='s2'>{$this->intl->getTranslations("languages")[$tagline->languageCode]->name}</td>" .
-        "</tr>"
-      ;
-    }
+    $taglines = $this->entity->getTaglines();
     if ($taglines) {
-      $taglines =
-        "<table class='table table-striped'>" .
-          "<thead>" .
-            "<tr>" .
-              "<th>{$this->intl->t("Tagline")}</th>" .
-              "<th>{$this->intl->t("Language")}</th>" .
-            "</tr>" .
-          "</thead>" .
-          "<tbody>{$taglines}</tbody>" .
-        "</table>"
-      ;
-      $this->sectionAdd($this->intl->t("Taglines"), $taglines, true, null, $this->intl->r("{$this->entity->routeKey}/taglines", $this->entity->id));
+      $taglineSection = "<ol class='taglines no-list'>";
+      /* @var $tagline \MovLib\Data\Tagline */
+      foreach ($taglines as $tagline) {
+        $taglineSection .= "<li class='tagline'><span{$this->lang($tagline->languageCode)}>{$tagline->tagline}</span>";
+        if ($tagline->comment) {
+          $taglineSection .= $this->intl->t("{0} ({1})", [ null, $tagline->comment ]);
+        }
+        $taglineSection .= "</li>";
+      }
+      $taglineSection .= "</ol>";
+      $this->sectionAdd($this->intl->t("Taglines"), $taglineSection);
     }
 
-    $this->sectionAdd($this->intl->t("Trailers"), "Not implemented yet!", false, "callout callout-warning");
-    $this->sectionAdd($this->intl->t("Weblinks"), "Not implemented yet!", false, "callout callout-danger");
-
-    if ($this->sections) {
-      return $this->sections;
-    }
-
-    return "";
+    return $this->sections;
   }
 
   /**

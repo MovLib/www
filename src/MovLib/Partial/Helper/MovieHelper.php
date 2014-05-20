@@ -133,10 +133,10 @@ final class MovieHelper extends \MovLib\Core\Presentation\DependencyInjectionBas
    *   The movie's tagline enhanced with structured data, <code>NULL</code> if there is no tagline to format.
    */
   final public function getStructuredTagline(\MovLib\Data\Movie\Movie $movie, array $attributes = [], $tag = "blockquote") {
-    if ($movie->tagline) {
-      $attributes["lang"]     = $movie->taglineLanguageCode;
+    if ($movie->displayTagline) {
+      $attributes["lang"]     = $movie->displayTaglineLanguageCode;
       $attributes["property"] = "headline";
-      return "<{$tag}{$this->expandTagAttributes($attributes)}>{$movie->tagline}</{$tag}>";
+      return "<{$tag}{$this->expandTagAttributes($attributes)}>{$movie->displayTagline}</{$tag}>";
     }
   }
 }

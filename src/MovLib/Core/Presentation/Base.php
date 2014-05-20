@@ -188,32 +188,38 @@ class Base {
   }
 
   /**
-   * Transform any string into a valid value for use within an HTML id attribute.
+   * Transform any text into a valid value for the use within an HTML <code>"id"</code> attribute.
    *
    * @link http://stackoverflow.com/a/79022/1251219
-   * @param string $string
-   *   The string to transform.
+   * @param string $text
+   *   The text to transform.
    * @return string
-   *   The transformed string for use within an HTML id attribute.
+   *   The transformed text for use within an HTML <code>"id"</code> attribute.
    */
-  final public function htmlStringToID($string) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert(is_string($string), "\$string must be of type string.");
-    assert(!empty($string), "\$string cannot be empty.");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
+  final public function htmlStringToID($text) {
+    // We go further than the specification and replace underlines (included in the \w meta character class) with dashes
+    // as well. Our CSS styleguide requires the usage of dashes in favor of underlines.
+    $id = trim(mb_strtolower(preg_replace("/[^\w]+/", "-", $text)), "-");
 
-    // We go even further than the specifications and replace _ with - as well because our CSS only uses dashes.
-    $id = strtr(mb_strtolower(preg_replace("/[^\d\w-]+/", "-", $string)), "_", "-");
-
-    // A valid id attribute's value never starts with a number. We replace any number at the beginning of the string
-    // with the n character, which stands for number.
-    if (is_numeric($id{0})) {
+    // A valid id attribute's value cannot start with a number. We replace any number at the beginning of the text with
+    // the character n (for number). Note that we have no additional function call at this point.
+    if ($id{0} === (integer) $id{0}) {
       $id{0} = "n";
     }
 
     return $id;
+  }
+
+  /**
+   * Transform any text into a valid value for the use within an HTML <code>"name"</code> attribute.
+   *
+   * @param string $text
+   *   The text to transform.
+   * @return string
+   *   The transformed text for use within an HTML <code>"name"</code> attribute.
+   */
+  final public function htmlStringToName($text) {
+    return trim(mb_strtolower(preg_replace("/[^\da-zA-Z-]/", "_", $text)), "_");
   }
 
   /**

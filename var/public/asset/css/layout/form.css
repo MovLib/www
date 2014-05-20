@@ -70,11 +70,21 @@ select,
 textarea,
 .inputhtml .content
 .inputhtml .cke {
-  display: block;
-  width: 100%;
+  display: inline-block;
   min-height: 30px;
   padding: 7px 9px;
   margin-bottom: 15px;
+}
+
+input[type="email"],
+input[type="password"],
+input[type="text"],
+input[type="url"],
+select,
+textarea,
+.inputhtml .content
+.inputhtml .cke {
+  width: 100%;
 }
 
 label,

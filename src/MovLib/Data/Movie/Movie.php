@@ -72,6 +72,27 @@ final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity impleme
   public $countReleases;
 
   /**
+   * The movie's display tagline <b>for</b> the current locale.
+   *
+   * @var string
+   */
+  public $displayTagline;
+
+  /**
+   * The movie's display tagline's unique identifier.
+   *
+   * @var integer
+   */
+  public $displayTaglineId;
+
+  /**
+   * The movie's display tagline's ISO 639-1 language code.
+   *
+   * @var string
+   */
+  public $displayTaglineLanguageCode;
+
+  /**
    * The movie's display title <b>for</b> the current locale.
    *
    * <b>NOTE</b><br>
@@ -99,6 +120,13 @@ final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity impleme
   public $displayTitleAndYear;
 
   /**
+   * The movie's display title's unique identifier.
+   *
+   * @var integer
+   */
+  public $displayTitleId;
+
+  /**
    * The display title's ISO 639-1 language code.
    *
    * @var string
@@ -118,6 +146,13 @@ final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity impleme
    * @var string
    */
   public $originalTitle;
+
+  /**
+   * The movie's original title's unique identifier.
+   *
+   * @var integer
+   */
+  public $originalTitleId;
 
   /**
    * The original title's ISO 639-1 language code.
@@ -141,18 +176,20 @@ final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity impleme
   public $synopsis;
 
   /**
-   * The movie's tagline.
+   * The movie's taglines.
    *
-   * @var string
+   * @see Movie::getTaglines()
+   * @var mixed
    */
-  public $tagline;
+  protected $taglines;
 
   /**
-   * The movie's tagline ISO 639-1 language code.
+   * The movie's titles.
    *
-   * @var string
+   * @see Movie::getTitles()
+   * @var mixed
    */
-  public $taglineLanguageCode;
+  protected $titles;
 
   /**
    * The movie's year.
@@ -203,12 +240,15 @@ SELECT
   COLUMN_GET(`movies`.`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR),
   `movies`.`mean_rating`,
   `movies_taglines`.`tagline`,
+  `movies_taglines`.`id` AS `taglineId`,
   `movies_taglines`.`language_code`,
   `original_title`.`title`,
+  `original_title`.`id` AS `originalTitleId`,
   `original_title`.`language_code`,
   IFNULL(`display_title`.`title`, `original_title`.`title`),
-  COLUMN_GET(`movies`.`dyn_synopses`, '{$this->intl->languageCode}' AS CHAR),
+  IFNULL(`display_title`.`id`, `original_title`.`id`) AS `displayTitleId`,
   IFNULL(`display_title`.`language_code`, `original_title`.`language_code`),
+  COLUMN_GET(`movies`.`dyn_synopses`, '{$this->intl->languageCode}' AS CHAR),
   `posters`.`id`,
   HEX(`posters`.`cache_buster`),
   `posters`.`extension`,
@@ -254,13 +294,16 @@ SQL
         $this->created,
         $this->wikipedia,
         $this->ratingMean,
-        $this->tagline,
-        $this->taglineLanguageCode,
+        $this->displayTagline,
+        $this->displayTaglineId,
+        $this->displayTaglineLanguageCode,
         $this->originalTitle,
+        $this->originalTitleId,
         $this->originalTitleLanguageCode,
         $this->displayTitle,
-        $this->synopsis,
+        $this->displayTitleId,
         $this->displayTitleLanguageCode,
+        $this->synopsis,
         $this->imageFilename,
         $this->imageCacheBuster,
         $this->imageExtension,
@@ -452,6 +495,81 @@ SQL
     $this->imageAlternativeText = $this->intl->t("{movie_title} poster.", [ "movie_title" => $this->displayTitleAndYear]);
     $this->imageDirectory       = "upload://movie/{$this->id}/poster";
     return parent::init();
+  }
+
+  /**
+   * Get the movie's taglines.
+   *
+   * @return array|boolean
+   *   An array containing the movie's taglines where the keys are the unique tagline identifiers and the values the
+   *   tagline objects. If this movie has no taglines <code>FALSE</code> is returned.
+   */
+  public function getTaglines() {
+    if ($this->taglines === null) {
+      $result = $this->getMySQLi()->query(<<<SQL
+SELECT
+  `id`,
+  COLUMN_GET(`dyn_comments`, '{$this->intl->languageCode}' AS BINARY) AS `comment`,
+  `language_code` AS `languageCode`,
+  `tagline`
+FROM `movies_taglines`
+WHERE `movie_id` = {$this->id} AND `id` != {$this->displayTaglineId}
+ORDER BY `tagline`{$this->collations[$this->intl->languageCode]}
+SQL
+      );
+      /* @var $tagline \MovLib\Data\Tagline */
+      while ($tagline = $result->fetch_object("\\MovLib\\Data\\Tagline")) {
+        if ($tagline->tagline == $this->displayTagline) {
+          $tagline->display = true;
+        }
+        $this->taglines[$tagline->id] = $tagline;
+      }
+      if (empty($this->taglines)) {
+        $this->taglines = false;
+      }
+    }
+    return $this->taglines;
+  }
+
+  /**
+   * Get the movie's titles.
+   *
+   * @return array|boolean
+   *   An array containing the movie's titles where the keys are the unique title identifiers and the values the title
+   *   objects. If this movie has no titles <code>FALSE</code> is returned.
+   */
+  public function getTitles() {
+    if ($this->titles === null) {
+      $displayTitle = null;
+      if ($this->originalTitleId !== $this->displayTitleId) {
+        $displayTitle = " AND `id` != {$this->displayTitleId}";
+      }
+      $result = $this->getMySQLi()->query(<<<SQL
+SELECT
+  `id`,
+  COLUMN_GET(`dyn_comments`, '{$this->intl->languageCode}' AS BINARY) AS `comment`,
+  `language_code` AS `languageCode`,
+  `title`
+FROM `movies_titles`
+WHERE `movie_id` = {$this->id} AND `id` != {$this->originalTitleId}{$displayTitle}
+ORDER BY `title`{$this->collations[$this->intl->languageCode]}
+SQL
+      );
+      /* @var $title \MovLib\Data\Title */
+      while ($title = $result->fetch_object("\\MovLib\\Data\\Title")) {
+        if ($title->title == $this->displayTitle) {
+          $title->display = true;
+        }
+        if ($title->title == $this->originalTitle) {
+          $title->original = true;
+        }
+        $this->titles[$title->id] = $title;
+      }
+      if (empty($this->titles)) {
+        $this->titles = false;
+      }
+    }
+    return $this->titles;
   }
 
 }

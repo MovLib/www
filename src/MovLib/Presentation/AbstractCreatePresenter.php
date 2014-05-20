@@ -62,7 +62,7 @@ abstract class AbstractCreatePresenter extends \MovLib\Presentation\AbstractPres
     ));
     $this->entity = $entity;
 
-    if (!isset($this->entity->routeIndex)) {
+    if (empty($this->entity->routeIndex)) {
       $this->entity->routeIndex = $this->intl->r("/{$this->entity->pluralKey}");
     }
 
@@ -71,9 +71,7 @@ abstract class AbstractCreatePresenter extends \MovLib\Presentation\AbstractPres
       [ $this->intl->r("/help/database/{$this->entity->pluralKey}"), $this->intl->t("Help"), [ "class" => "ico ico-help"] ],
     ]);
     $this->initLanguageLinks("/{$this->entity->singularKey}/create");
-    $this->breadcrumb->addCrumbs([
-      [ $this->entity->routeIndex, $breadcrumbIndexTitle ],
-    ]);
+    $this->breadcrumb->addCrumb($this->entity->routeIndex, $breadcrumbIndexTitle);
     return $this;
   }
 
@@ -84,7 +82,7 @@ abstract class AbstractCreatePresenter extends \MovLib\Presentation\AbstractPres
    */
   public function valid() {
     $this->entity->create();
-    $this->alertSuccess($this->intl->t("The {$this->entity->singularKey} was created successfully."));
+    $this->alertSuccess($this->intl->t("Successfully created"));
     throw new SeeOtherException($this->entity->route);
   }
 

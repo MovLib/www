@@ -102,15 +102,17 @@ class Select extends \MovLib\Partial\FormElement\AbstractFormElement {
     // @codeCoverageIgnoreEnd
     // @devEnd
       $options = null;
-      //  The first child option element of a select element with a required attribute and without a multiple attribute,
-      //  and whose size is 1, must have either an empty value attribute, or must have no text content.
+
+      $selected = empty($this->value) ? " selected" : null;
+      //  The first child option element of a select element with a required attribute, without a multiple attribute,
+      //  and whose size is 1 must either have an empty value attribute or no text content.
       if ($this->required) {
-        $options = "<option disabled value=''>{$this->intl->t("Please Select…")}</option>";
+        $options = "<option{$selected} disabled value=''>{$this->intl->t("Please Select…")}</option>";
       }
       else {
-        $selected = empty($this->value) ? " selected" : null;
         $options = "<option{$selected} value=''>{$this->intl->t("None")}</option>";
       }
+
       foreach ($this->options as $value => $option) {
         $attributes = [];
         if ($option === (array) $option) {
@@ -123,12 +125,22 @@ class Select extends \MovLib\Partial\FormElement\AbstractFormElement {
         }
         $options .= "<option{$this->expandTagAttributes($attributes)}>{$option}</option>";
       }
-      return
+
+      $string =
         "{$this->required}{$this->helpPopup}{$this->helpText}<p>" .
           "<label for='{$this->id}'>{$this->label}</label>" .
           "<select id='{$this->id}' name='{$this->id}'{$this->expandTagAttributes($this->attributes)}>{$options}</select>" .
         "</p>"
       ;
+
+      if (isset($this->attributes["#prefix"])) {
+        $string = "{$this->attributes["#prefix"]}{$string}";
+      }
+      if (isset($this->attributes["#suffix"])) {
+        $string .= $this->attributes["#suffix"];
+      }
+
+      return $string;
     // @devStart
     // @codeCoverageIgnoreStart
     }

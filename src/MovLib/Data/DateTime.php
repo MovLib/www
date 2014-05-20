@@ -28,7 +28,20 @@ namespace MovLib\Data;
  */
 final class DateTime extends \DateTime {
 
-  const FORMAT_DATABASE = "Y-m-d\TH:i:s";
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * Default date format.
+   *
+   * @var string
+   */
+  const FORMAT = "Y-m-d H:i:s";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
    * Get the string representation of the date and time.
@@ -37,8 +50,35 @@ final class DateTime extends \DateTime {
    *   The string representation of the date and time.
    */
   public function __toString() {
-    return $this->format(self::FORMAT_DATABASE);
+    return $this->format(self::FORMAT);
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Static Methods
+
+
+  /**
+   * Create new instance from timestamp.
+   *
+   * @param mixed $timestamp
+   *   The UNIX timestamp.
+   * @param \DateTimeZone $timezone [optional]
+   *   @see __construct()
+   * @return \DateTime
+   *   The new instance.
+   */
+  public static function createFromTimestamp($timestamp, \DateTimeZone $timezone = null) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert(is_numeric($timestamp), "The timestamp must be numeric.");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    return new static("@{$timestamp}", $timezone);
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * Format the date and time according to the intl rules of the given locale.
