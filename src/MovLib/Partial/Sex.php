@@ -87,7 +87,7 @@ final class Sex {
    *   name. Defaults to <code>NULL</code>.
    * @return this
    */
-  public function addInputTextElements(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, \MovLib\Partial\Form &$form, $id, array $values, array $attributes = null, $label = null) {
+  public function addInputTextElements(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, \MovLib\Partial\Form &$form, $id, array &$values, array $attributes = null, $label = null) {
     $sexes = [
       Sex::UNKNOWN => $diContainerHTTP->intl->t("Unisex"),
       Sex::MALE    => $diContainerHTTP->intl->t("Male"),

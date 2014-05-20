@@ -54,9 +54,9 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
     $form         = new Form($this->diContainerHTTP);
     $sex          = new Sex();
 
-    $sex->addInputTextElements($this->diContainerHTTP, $form, "title", $this->entity->defaultTitles, $attributes);
+    $sex->addInputTextElements($this->diContainerHTTP, $form, "title", $this->entity->titles, $attributes);
     if ($translations) {
-      $sex->addInputTextElements($this->diContainerHTTP, $form, "title-{$this->intl->languageCode}", $this->entity->titles, $attributes, $this->intl->t(
+      $sex->addInputTextElements($this->diContainerHTTP, $form, "title-{$this->intl->defaultLanguageCode}", $this->entity->defaultTitles, $attributes, $this->intl->t(
         "{0} ({1})",
         [ 1 => $this->intl->getTranslations("languages")[$this->intl->defaultLanguageCode]->name ]
       ));
@@ -84,7 +84,7 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
       $formContent = null;
       foreach ([ Sex::UNKNOWN, Sex::MALE, Sex::FEMALE ] as $code) {
         $formContent .= "<div class='r'>";
-        foreach ([ "", "-{$this->intl->languageCode}" ] as $suffix) {
+        foreach ([ "", "-{$this->intl->defaultLanguageCode}" ] as $suffix) {
           $formContent .= "<div class='s s5'>{$form->elements["title{$suffix}-{$code}"]}</div>";
         }
         $formContent .= "</div>";
