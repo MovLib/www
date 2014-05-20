@@ -35,7 +35,7 @@ class History extends \MovLib\Presentation\AbstractHistoryPresenter {
   public function init() {
     return $this->initHistory(
       new Movie($this->diContainerHTTP, $_SERVER["MOVIE_ID"]),
-      $this->intl->tp(-1, "Movies")
+      $this->intl->t("Movies")
     );
   }
 

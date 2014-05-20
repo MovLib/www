@@ -46,7 +46,7 @@ class History extends \MovLib\Presentation\AbstractHistoryPresenter {
       ->breadcrumb->addCrumbs([
         [ $this->intl->r("/awards"), $this->intl->t("Awards") ],
         [ $this->intl->r("/award/{0}/", [ $this->entity->award->id ]), $this->entity->award->name ],
-        [ $this->intl->r("{$this->entity->pluralKey}"), $this->intl->tp(-1, "Categories") ],
+        [ $this->intl->r("{$this->entity->pluralKey}"), $this->intl->t("Categories") ],
         [ $this->entity->route, $this->entity->name ]
       ])
     ;

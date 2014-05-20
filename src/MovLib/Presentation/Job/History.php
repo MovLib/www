@@ -37,7 +37,7 @@ class History extends \MovLib\Presentation\AbstractHistoryPresenter {
   public function init() {
     return $this->initHistory(
       new Job($this->diContainerHTTP, $_SERVER["JOB_ID"]),
-      $this->intl->tp(-1, "Jobs")
+      $this->intl->t("Jobs")
     );
   }
 

@@ -37,7 +37,7 @@ class History extends \MovLib\Presentation\AbstractHistoryPresenter {
   public function init() {
     return $this->initHistory(
       new Event($this->diContainerHTTP, $_SERVER["EVENT_ID"]),
-      $this->intl->tp(-1, "Events")
+      $this->intl->t("Events")
     );
   }
 
