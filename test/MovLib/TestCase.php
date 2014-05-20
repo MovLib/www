@@ -91,24 +91,6 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * Restore global objects to initial state.
-   *
-   * @global array $backup
-   * @global \MovLib\Tool\Database $db
-   * @global \MovLib\TestKernel $kernel
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\User\Session $session
-   */
-  public function assertPostConditions() {
-    global $backup, $db, $kernel, $i18n, $session;
-    foreach ($backup as $name => $object) {
-      ${$name} = clone $object;
-    }
-    $kernel->delayedEmails  = null;
-    $kernel->delayedMethods = null;
-  }
-
-  /**
    * Call a protected method of <var>$object</var>.
    *
    * @param mixed $object
