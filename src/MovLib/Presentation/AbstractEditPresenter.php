@@ -94,7 +94,7 @@ abstract class AbstractEditPresenter extends \MovLib\Presentation\AbstractPresen
    */
   public function valid() {
     $this->entity->commit();
-    $this->alertSuccess($this->intl->t("The {$this->entity->singularKey} was updated successfully."));
+    $this->alertSuccess($this->intl->t("Successfully updated"));
     throw new SeeOtherException($this->entity->route);
   }
 
