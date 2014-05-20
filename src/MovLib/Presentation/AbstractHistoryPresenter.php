@@ -21,7 +21,6 @@ use \MovLib\Data\RevisionEntitySet;
 use \MovLib\Data\DateTime;
 use \MovLib\Exception\RedirectException\TemporaryRedirectException;
 use \MovLib\Partial\DateTime as DateTimePartial;
-use \MovLib\Partial\Time;
 
 /**
  * Defines base class for history presenter.
@@ -62,9 +61,15 @@ abstract class AbstractHistoryPresenter extends \MovLib\Presentation\AbstractPre
    */
   final protected function initHistory(\MovLib\Data\AbstractEntity $entity, $breadcrumbIndexTitle) {
     $this->entity = $entity;
+    $baseRoute    = $this->intl->r("{$this->entity->routeKey}/history", $this->entity->routeArgs);
 
+    // redirect on compare
+    if (isset($_GET["old"]) && isset($_GET["new"])) {
+      throw new TemporaryRedirectException("{$baseRoute}/{$_GET["old"]}/{$_GET["new"]}");
+    }
+
+    // redirect on wrong user input
     if (isset($_SERVER["REVISION_OLD"]) && isset($_SERVER["REVISION_NEW"])) {
-      $baseRoute = $this->intl->r("{$this->entity->routeKey}/history", $this->entity->routeArgs);
       if ($_SERVER["REVISION_OLD"] == $_SERVER["REVISION_NEW"]) {
         throw new TemporaryRedirectException("{$baseRoute}/{$_SERVER["REVISION_NEW"]}");
       }
@@ -119,26 +124,43 @@ abstract class AbstractHistoryPresenter extends \MovLib\Presentation\AbstractPre
     }
     else {
       $revisionItems = "";
-      foreach ($revisions as $created => $entity) {
-        $created   = new Time($this->intl, $entity->id);
-        $baseRoute = $this->intl->r("{$this->entity->routeKey}/history", $this->entity->routeArgs);
+      $c             = 0;
+      foreach ($revisions as $entity) {
+        $radioButtons = $revisionButton = null;
+        $mainSpanSize = 5;
+        if (count($revisions) >= 2) {
+          $mainSpanSize = 3;
+          $radioButtons =
+            "<div class='s s2 tar'>" .
+              "<label class='radio radio-inline'>" .
+                "<input name='new' required type='radio' value='{$entity->revision}'" . (($c==0) ? " checked" : null) . ">{$this->intl->t("new")}" .
+              "</label>" .
+              "<label class='radio radio-inline'>" .
+                "<input name='old' required type='radio' value='{$entity->revision}'" . (($c==1) ? " checked" : null) . ">{$this->intl->t("old")}" .
+              "</label>" .
+            "</div>"
+          ;
+          $revisionButton = "<div class='s s10 tar'><input class='btn btn-medium btn-success' name='submit' type='submit' value='{$this->intl->t("Compare Revisions")}'></div>";
+        }
+        $baseRoute      = $this->intl->r("{$this->entity->routeKey}/history", $this->entity->routeArgs);
         $revisionItems .=
           "<li>" .
             "<div class='hover-item r'>" .
               $this->img($entity->user->imageGetStyle("s1"), [ "class" => "s s1", "property" => "image" ], false) .
-              "<div class='s s6'>" .
-                "<a href='{$entity->user->route}'><h2 class='link-color para' property='name'>{$entity->user->name}</h2></a>" .
-                "<p>{$created->formatRelative()}</p>" .
+              "<div class='s s{$mainSpanSize}'>" .
+                "<a href='{$entity->user->route}'><h2 class='link-color para'>{$entity->user->name}</h2></a>" .
+                "<p class='small'><a href='{$baseRoute}/{$entity->revision}'>{$this->intl->t("diff to current")}</a></p>" .
               "</div>" .
-              "<div class='s s3 tar'>" .
-                "<p>" . (new DateTimePartial($this->intl, $this))->format(new DateTime($entity->id)) . "</p>" .
-                "<p><a href='{$baseRoute}/{$entity->revision}'>{$this->intl->t("show diff")}</a></p>" .
+              "<div class='s s4 tar'>" .
+                (new DateTimePartial($this->intl, $this))->format(new DateTime($entity->id)) .
               "</div>" .
+              $radioButtons .
             "</div>" .
           "</li>"
         ;
+        ++$c;
       }
-      return "<ol class='hover-list no-list'>{$revisionItems}</ol>";
+      return "<form action='{$this->request->uri}'><ol class='hover-list no-list'>{$revisionItems}</ol>{$revisionButton}</form>";
     }
   }
 
