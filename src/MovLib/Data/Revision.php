@@ -351,6 +351,9 @@ SQL
     // The current new revision will be the new old revision.
     $old = serialize($this->newRevision);
 
+    // Set the new changed date and time.
+    $entity->changed = new DateTime("@{$this->request->time}");
+
     // The new current edition is the entity we just got.
     $this->newRevision->setEntity($entity);
 
@@ -371,7 +374,9 @@ SQL
         $diff
       );
       $stmt->execute();
+      $stmt->close();
       $mysqli->commit();
+      $this->newRevision->indexSearch();
     }
     catch (\Exception $e) {
       // Drop the just create new revision, we couldn't update the database, therefore we don't need it anymore.

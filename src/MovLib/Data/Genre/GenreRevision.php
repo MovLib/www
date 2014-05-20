@@ -121,6 +121,40 @@ SQL
 
   /**
    * {@inheritdoc}
+   */
+  public function indexSearch() {
+
+    $elasticClient = new \Elasticsearch\Client();
+    // Remove from index if the genre was deleted.
+    $params = [ "index" => "genres", "type" => "genre", "id" => $this->entityId, "refresh" => true ];
+    if ($this->deleted === true) {
+      try {
+        $elasticClient->delete($params);
+      }
+      catch (\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
+        // The document was already gone, just ignore this state.
+      }
+    }
+    else {
+      // @devStart
+      // @codeCoverageIgnoreStart
+      assert(!empty($this->names), "You cannot index a genre without names.");
+      assert(isset($this->entityId), "You cannot index a genre without an identifier.");
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+      $params["body"] = $this->names;
+      $params["body"]["suggest"]["input"] = array_values($this->names);
+      $params["body"]["suggest"]["output"] = $this->names[$this->intl->defaultLanguageCode];
+      $params["body"]["suggest"]["payload"] = $this->names;
+      $params["body"]["suggest"]["payload"]["genreId"] = $this->entityId;
+      $elasticClient->index($params);
+    }
+
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
    *
    * @param \MovLib\Data\Genre\Genre $entity
    *   {@inheritdoc}

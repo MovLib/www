@@ -198,18 +198,15 @@ SQL
     $mysqli = $this->getMySQLi();
     $name = $mysqli->real_escape_string($this->name);
     $query = "UPDATE `genres` SET `dyn_names` = COLUMN_ADD(`dyn_names`, '{$this->intl->languageCode}', '{$name}')";
-    if (!empty($this->description)) {
-      $description = $mysqli->real_escape_string($this->description);
-      $query .= ", `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, '{$this->intl->languageCode}', '{$description}')";
-    }
-    if (!empty($this->wikipedia)) {
-      $wikipedia = $mysqli->real_escape_string($this->wikipedia);
-      $query .= ", `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, '{$this->intl->languageCode}', '{$wikipedia}')";
-    }
+    $description = $mysqli->real_escape_string($this->description);
+    $query .= ", `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, '{$this->intl->languageCode}', '{$description}')";
+    $wikipedia = $mysqli->real_escape_string($this->wikipedia);
+    $query .= ", `dyn_wikipedia` = COLUMN_ADD(`dyn_wikipedia`, '{$this->intl->languageCode}', '{$wikipedia}')";
     $query .= " WHERE `id` = {$this->id}";
     if ($mysqli->query($query) !== true) {
       throw new \mysqli_sql_exception();
     }
+
     return $this;
   }
 
@@ -221,6 +218,8 @@ SQL
    */
   public function create() {
     $mysqli = $this->getMySQLi();
+
+    $elasticFields["suggest"]["input"] = [];
 
     if ($this->intl->languageCode === $this->intl->defaultLanguageCode) {
       $stmt = $mysqli->prepare(<<<SQL
@@ -241,6 +240,8 @@ SQL
         $this->name,
         $this->wikipedia
       );
+      $elasticFields["suggest"]["input"][] = $elasticFields["suggest"]["payload"][$this->intl->defaultLanguageCode] = $elasticFields[$this->intl->defaultLanguageCode] = $this->name;
+      $elasticFields["suggest"]["output"]  = $this->name;
     }
     else {
       $stmt = $mysqli->prepare(<<<SQL
@@ -265,10 +266,22 @@ SQL
         $this->name,
         $this->wikipedia
       );
+      $elasticFields["suggest"]["input"][] = $elasticFields["suggest"]["payload"][$this->intl->defaultLanguageCode] = $elasticFields[$this->intl->defaultLanguageCode] = $this->defaultName;
+      $elasticFields["suggest"]["output"]  = $this->defaultName;
+      $elasticFields["suggest"]["input"][] = $elasticFields["suggest"]["payload"][$this->intl->languageCode] = $elasticFields[$this->intl->languageCode]        = $this->name;
     }
 
     $stmt->execute();
     $this->id = $stmt->insert_id;
+
+    // Index the newly created genre with ElasticSearch.
+    $elasticClient = new \Elasticsearch\Client();
+    $elasticClient->index([
+      "index" => "genres",
+      "type"  => "genre",
+      "id"    => $this->id,
+      "body"  => $elasticFields,
+    ]);
 
     return $this->init();
   }

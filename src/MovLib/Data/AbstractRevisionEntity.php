@@ -186,6 +186,13 @@ abstract class AbstractRevisionEntity extends \MovLib\Core\AbstractDatabase {
   abstract public function getEntity();
 
   /**
+   * Update the search index with the revision.
+   *
+   * @return this
+   */
+  abstract public function indexSearch();
+
+  /**
    * Update the state of the revision with edit changes.
    *
    * @param \MovLib\Data\AbstractEntity $entity
