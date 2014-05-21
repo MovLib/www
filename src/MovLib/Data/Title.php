@@ -26,7 +26,7 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Title {
+final class Title implements Search\SearchLanguageAnalyzerInterface {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -115,6 +115,20 @@ final class Title {
     !empty($this->displayLanguageCodes) && ($data[] = "displayLanguageCodes");
     $this->original                     && ($data[] = "original");
     return $data;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getLanguageCode() {
+    return $this->languageCode;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getText() {
+    return $this->title;
   }
 
 }

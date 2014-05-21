@@ -26,7 +26,7 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Tagline {
+final class Tagline implements Search\SearchLanguageAnalyzerInterface {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -107,6 +107,20 @@ final class Tagline {
     !empty($this->comments)             && ($data[] = "comments");
     !empty($this->displayLanguageCodes) && ($data[] = "displayLanguageCodes");
     return $data;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getLanguageCode() {
+    return $this->languageCode;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getText() {
+    return $this->tagline;
   }
 
 }
