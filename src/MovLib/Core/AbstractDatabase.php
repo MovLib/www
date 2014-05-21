@@ -123,6 +123,57 @@ abstract class AbstractDatabase {
 
 
   /**
+   * Get dynamic column update query part.
+   *
+   * Dynamic columns have to be either added (updated) or deleted. Which action is necessary depends on the value of
+   * an entity's property. This method takes care of creating the correct string for the update query that is needed to
+   * perform the correct actions. Of course it will escape all data correctly for the query.
+   *
+   * The returned string might look like the following:
+   * <code>" `dyn_names` = COLUMN_ADD(`dyn_names`, 'de', 'Foobar'), `dyn_descriptions` = COLUMN_DELETE(`dyn_descriptions`, 'de')"</code>
+   *
+   * A dynamic column is added (updated) if the accompanion property value evaluates to <code>TRUE</code> and deleted
+   * if <code>FALSE</code> ({@link http://php.net/language.types.boolean.php#language.types.boolean.casting}).
+   *
+   * @param string $languageCode
+   *   The language code of the current request, used to determine which dynamic columns have to updated.
+   * @param mixed $dynamicColumns
+   *   An array that contains the name of the dynamic column in the database (without the <code>"dyn_"</code> prefix)
+   *   and the property in alternating order, e.g.:
+   *   <code>"names", $this->names, "descriptions", $this->descriptions, ...</code>
+   * @return string
+   *   The dynamic column update query part.
+   */
+  final protected function getDynamicColumnUpdateQuery($languageCode, ...$dynamicColumns) {
+    $mysqli = $this->getMySQLi();
+    $c      = count($dynamicColumns);
+
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert($c % 2 === 0, "Dynamic column count doesn't match property count.");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    $query = null;
+    for ($i = 0, $j = 1; $i < $c; $i += 2, $j += 2) {
+      if ($query) {
+        $query .= ",";
+      }
+
+      // Note the comparison with two equal signs!
+      if ($dynamicColumns[$j] == true) {
+        $query .= "`dyn_{$dynamicColumns[$i]}`=COLUMN_ADD(`dyn_{$dynamicColumns[$i]}`,'{$languageCode}' '{$mysqli->real_escape_string($dynamicColumns[$j])}')";
+      }
+      else {
+        $query .= "`dyn_{$dynamicColumns[$i]}`=COLUMN_DELETE(`dyn_{$dynamicColumns[$i]}`,'{$languageCode}')";
+      }
+    }
+
+    // Pad the created query with spaces to avoid incorrect embedding of it.
+    return " {$query} ";
+  }
+
+  /**
    * Get the MySQLi instance.
    *
    * @param string $database
@@ -135,6 +186,15 @@ abstract class AbstractDatabase {
     // Check if we already have a cached instance.
     if (isset(self::$mysqli[$database])) {
       return self::$mysqli[$database];
+    }
+
+    // As per recommendation in the PHP documentation, always explicitely close the connection.
+    if (empty(self::$mysqli)) {
+      register_shutdown_function(function () {
+        foreach (self::$mysqli as $connection) {
+          $connection->close();
+        }
+      });
     }
 
     // We don't want to check all over the place if anything returned FALSE, exceptions are much better.
@@ -153,12 +213,6 @@ abstract class AbstractDatabase {
       return $this->getMySQLi($database);
     }
 
-    // As per recommendation in the PHP documentation, always explicitely close the connection.
-    register_shutdown_function(function () {
-      self::$mysqli[$databaseName]->close();
-      unset(self::$mysqli[$databaseName]);
-    });
-
     return self::$mysqli[$database];
   }
 
@@ -174,17 +228,17 @@ abstract class AbstractDatabase {
    *   The property containing the JSON response.
    * @return this
    */
-  final protected function jsonDecode(&...$properties) {
-    $c = count($properties);
-    for ($i = 0; $i < $c; ++$i) {
-      if (empty($properties[$i]) || $properties[$i] == "{}") {
-        $properties[$i] = null;
-      }
-      else {
-        $properties[$i] = json_decode($properties[$i], true);
-      }
-    }
-    return $this;
-  }
+//  final protected function jsonDecode(&...$properties) {
+//    $c = count($properties);
+//    for ($i = 0; $i < $c; ++$i) {
+//      if (empty($properties[$i]) || $properties[$i] == "{}") {
+//        $properties[$i] = null;
+//      }
+//      else {
+//        $properties[$i] = json_decode($properties[$i], true);
+//      }
+//    }
+//    return $this;
+//  }
 
 }

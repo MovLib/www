@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\Genre;
 
+use \MovLib\Data\Revision\Revision;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -181,17 +182,29 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function commit($userId, \MovLib\Data\DateTime $dateTime, \MovLib\Core\Log $logger) {
+  public function commit($userId, \MovLib\Data\DateTime $dateTime, $languageCode, \MovLib\Core\Log $logger) {
+    $revision = new Revision($this->diContainer, "Genre", $this->id);
+    $revision->save($this);
+    return $this;
+  }
 
-    $mysqli = $this->getMySQLi();
-    $name = $mysqli->real_escape_string($this->name);
-    $query = "UPDATE `genres` SET `dyn_names` = COLUMN_ADD(`dyn_names`, '{$this->intl->languageCode}', '{$name}')";
-    $description = $mysqli->real_escape_string($this->description);
-    $query .= ", `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, '{$this->intl->languageCode}', '{$description}')";
-    $wikipedia = $mysqli->real_escape_string($this->wikipedia);
-    $query .= ", `dyn_wikipedia` = COLUMN_ADD(`dyn_wikipedia`, '{$this->intl->languageCode}', '{$wikipedia}')";
-    $query .= " WHERE `id` = {$this->id}";
-    $mysqli->query($query);
+  /**
+   * {@inheritdoc}
+   */
+  public function update($userId, \MovLib\Data\DateTime $dateTime, $languageCode, \MovLib\Core\Log $logger) {
+    $this->getMySQLi()->query(<<<SQL
+UPDATE `genres` SET
+  `user_id` = {$userId},
+  `changed` = {$dateTime},
+  {$this->getDynamicColumnUpdateQuery(
+    $languageCode,
+    "names", $this->name,
+    "descriptions", $this->description,
+    "wikipedia", $this->wikipedia
+  )}
+WHERE `id` = {$this->id}
+SQL
+    );
     return $this;
   }
 

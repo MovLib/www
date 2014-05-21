@@ -32,24 +32,23 @@ use \MovLib\Partial\FormElement\TextareaHTMLExtended;
  *
  * @property \MovLib\Data\Genre\Genre $entity
  *
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Edit extends \MovLib\Presentation\AbstractEditPresenter {
-  use \MovLib\Presentation\Genre\GenreTrait;
+final class Edit extends \MovLib\Presentation\AbstractEditPresenter {
 
   /**
    * {@inheritdoc}
    */
   public function init() {
     $this->entity = new Genre($this->diContainerHTTP, $_SERVER["GENRE_ID"]);
-    $pageTitle    = $this->intl->t("Edit {0}", [ $this->entity->name ]);
     return $this
-      ->initPage($pageTitle, $pageTitle, $this->intl->t("Edit"))
-      ->initEdit($this->entity, $this->intl->t("Genres"), $this->getSidebarItems())
+      ->initPage($this->intl->t("Edit {0}", [ $this->entity->name ]), null, $this->intl->t("Edit"))
+      ->initEdit($this->entity, $this->intl->t("Genres"))
     ;
   }
 
@@ -75,10 +74,11 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
   /**
    * Submit callback for the genre edit form.
    *
-   * @throws SeeOtherException
+   * @throws \MovLib\Exception\RedirectException\SeeOtherException
+   *   Always redirects the user back to the edited genre.
    */
   public function submit() {
-    $this->entity->commit($this->session->userId, $this->request->dateTime, $this->log);
+    $this->entity->commit($this->session->userId, $this->request->dateTime, $this->intl->languageCode, $this->log);
     $this->alertSuccess($this->intl->t("Update Successful"));
     throw new SeeOtherException($this->entity->route);
   }
