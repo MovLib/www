@@ -26,7 +26,7 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractSet extends \MovLib\Data\AbstractConfig implements \Iterator, \MovLib\Data\PaginationInterface {
+abstract class AbstractEntitySet extends \MovLib\Data\AbstractConfig implements \Iterator, \MovLib\Data\PaginationInterface {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -91,14 +91,14 @@ abstract class AbstractSet extends \MovLib\Data\AbstractConfig implements \Itera
    * Otherwise it's impossible to create a mapping. Also note that this identifier has to be named
    * <code>"entityId"</code> because that's the property in the other class that is made for relational identifier.
    *
-   * @param \MovLib\Data\AbstractSet $set
+   * @param \MovLib\Data\AbstractEntitySet $set
    *   The set for which the query should return entities.
    * @param string $in
    *   The ready made content for the <code>IN</code> clause of the query.
    * @return string
    *   The query for {@see AbstractSet::loadEntitySets()}.
    */
-  abstract protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in);
+  abstract protected function getEntitySetsQuery(\MovLib\Data\AbstractEntitySet $set, $in);
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -194,12 +194,12 @@ abstract class AbstractSet extends \MovLib\Data\AbstractConfig implements \Itera
    * Still confused? Have a look at the implementation of this method!
    *
    * @link https://stackoverflow.com/questions/97197/what-is-the-n1-selects-issue
-   * @param \MovLib\Data\AbstractSet $set
+   * @param \MovLib\Data\AbstractEntitySet $set
    *   The set that contain entities which need sets with entities this set controls.
    * @return this
    * @throws \mysqli_sql_exception
    */
-  public function loadEntitySets(\MovLib\Data\AbstractSet $set) {
+  public function loadEntitySets(\MovLib\Data\AbstractEntitySet $set) {
     // Nothing to do if the passed set has no entities.
     if (empty($set->entities)) {
       return $this;

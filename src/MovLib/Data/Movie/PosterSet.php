@@ -64,7 +64,7 @@ SQL;
   /**
    * {@inheritdoc}
    */
-  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractEntitySet $set, $in) {
     return <<<SQL
 SQL;
   }

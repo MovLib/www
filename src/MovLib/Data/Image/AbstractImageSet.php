@@ -26,7 +26,7 @@ namespace MovLib\Data\Image;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractImageSet extends \MovLib\Data\AbstractSet {
+abstract class AbstractImageSet extends \MovLib\Data\AbstractEntitySet {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

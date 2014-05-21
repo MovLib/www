@@ -42,7 +42,7 @@ trait SelectTrait {
   public function loadSelectOptions($column = "`name`") {
     // @devStart
     // @codeCoverageIgnoreStart
-    assert($this instanceof \MovLib\Data\AbstractSet, "SelectTrait can only be used in an instance of AbstractSet.");
+    assert($this instanceof \MovLib\Data\AbstractEntitySet, "SelectTrait can only be used in an instance of AbstractSet.");
     // @codeCoverageIgnoreEnd
     // @devEnd
     $options = [];

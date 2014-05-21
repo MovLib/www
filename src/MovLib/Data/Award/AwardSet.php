@@ -27,7 +27,7 @@ namespace MovLib\Data\Award;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class AwardSet extends \MovLib\Data\AbstractSet implements \MovLib\Data\SelectInterface {
+final class AwardSet extends \MovLib\Data\AbstractEntitySet implements \MovLib\Data\SelectInterface {
   use \MovLib\Data\SelectTrait;
 
  /**
@@ -64,7 +64,7 @@ SQL;
   /**
    * {@inheritdoc}
    */
-  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractEntitySet $set, $in) {
     return <<<SQL
 
 SQL;

@@ -26,7 +26,7 @@ namespace MovLib\Data\Help;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class SubCategorySet extends \MovLib\Data\AbstractSet {
+final class SubCategorySet extends \MovLib\Data\AbstractEntitySet {
 
   /**
    * {@inheritdoc}
@@ -62,7 +62,7 @@ SQL;
   /**
    * {@inheritdoc}
    */
-  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractEntitySet $set, $in) {
     return "";
   }
 

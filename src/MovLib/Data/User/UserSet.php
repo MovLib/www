@@ -26,7 +26,7 @@ namespace MovLib\Data\User;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class UserSet extends \MovLib\Data\AbstractSet {
+final class UserSet extends \MovLib\Data\AbstractEntitySet {
 
   /**
    * {@inheritdoc}
@@ -51,7 +51,7 @@ SQL;
   /**
    * {@inheritdoc}
    */
-  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractEntitySet $set, $in) {
     return <<<SQL
 
 SQL;

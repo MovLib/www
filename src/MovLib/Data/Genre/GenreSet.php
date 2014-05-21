@@ -26,7 +26,7 @@ namespace MovLib\Data\Genre;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class GenreSet extends \MovLib\Data\AbstractSet {
+final class GenreSet extends \MovLib\Data\AbstractEntitySet {
 
   /**
    * {@inheritdoc}
@@ -53,7 +53,7 @@ SQL;
   /**
    * {@inheritdoc}
    */
-  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractEntitySet $set, $in) {
     return <<<SQL
 SELECT
   `{$set->tableName}_genres`.`{$set->singularKey}_id` AS `entityId`,

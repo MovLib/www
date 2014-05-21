@@ -26,7 +26,7 @@ namespace MovLib\Stub\Data\Dummy;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class DummySet extends \MovLib\Data\AbstractSet {
+class DummySet extends \MovLib\Data\AbstractEntitySet {
 
   /**
    * {@inheritdoc}
@@ -38,7 +38,7 @@ class DummySet extends \MovLib\Data\AbstractSet {
   /**
    * {@inheritdoc}
    */
-  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractEntitySet $set, $in) {
     return "SELECT NULL";
   }
 

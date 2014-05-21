@@ -68,7 +68,7 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
    * An entity might be instantiated for another entity, e.g. a set of genres for a single movie, this property will
    * contain the unique identifier of the movie this particular genre was instantiated for.
    *
-   * @see \MovLib\Data\AbstractSet::loadEntitySets()
+   * @see \MovLib\Data\AbstractEntitySet::loadEntitySets()
    * @var mixed
    */
   public $entityId;

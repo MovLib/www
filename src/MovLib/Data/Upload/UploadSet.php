@@ -26,7 +26,7 @@ namespace MovLib\Data\Upload;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class UploadSet extends \MovLib\Data\AbstractSet {
+final class UploadSet extends \MovLib\Data\AbstractEntitySet {
 
   /**
    * {@inheritdoc}
@@ -47,7 +47,7 @@ final class UploadSet extends \MovLib\Data\AbstractSet {
   /**
    * {@inheritdoc}
    */
-  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractEntitySet $set, $in) {
 
   }
 

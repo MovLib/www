@@ -26,7 +26,7 @@ namespace MovLib\Data\DeletionRequest;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class DeletionRequestSet extends \MovLib\Data\AbstractSet {
+final class DeletionRequestSet extends \MovLib\Data\AbstractEntitySet {
 
   /**
    * {@inheritdoc}
@@ -38,7 +38,7 @@ final class DeletionRequestSet extends \MovLib\Data\AbstractSet {
   /**
    * {@inheritdoc}
    */
-  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractEntitySet $set, $in) {
 
   }
 

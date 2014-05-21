@@ -37,7 +37,7 @@ abstract class AbstractIndexPresenter extends \MovLib\Presentation\AbstractPrese
   /**
    * The set to present.
    *
-   * @var \MovLib\Data\AbstractSet
+   * @var \MovLib\Data\AbstractEntitySet
    */
   protected $set;
 
@@ -64,7 +64,7 @@ abstract class AbstractIndexPresenter extends \MovLib\Presentation\AbstractPrese
   /**
    * Initialize default index presentation.
    *
-   * @param \MovLib\Data\AbstractSet $set
+   * @param \MovLib\Data\AbstractEntitySet $set
    *   The set to present.
    * @param string $title
    *   The title for page title and breadcrumb.
@@ -72,7 +72,7 @@ abstract class AbstractIndexPresenter extends \MovLib\Presentation\AbstractPrese
    *   The translated text for the creation button (title case).
    * @return this
    */
-  public function initIndex(\MovLib\Data\AbstractSet $set, $title, $createText) {
+  public function initIndex(\MovLib\Data\AbstractEntitySet $set, $title, $createText) {
     $this->set           = $set;
     $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/{$set->singularKey}/create")}'>{$createText}</a>";
     $this->initPage($title);

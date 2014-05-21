@@ -28,7 +28,7 @@ use \MovLib\Data\Genre\GenreSet;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieSet extends \MovLib\Data\AbstractSet {
+class MovieSet extends \MovLib\Data\AbstractEntitySet {
 
   /**
    * {@inheritdoc}
@@ -72,7 +72,7 @@ SQL;
   /**
    * {@inheritdoc}
    */
-  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractEntitySet $set, $in) {
     return <<<SQL
 
 SQL;

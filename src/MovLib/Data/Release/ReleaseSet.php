@@ -28,7 +28,7 @@ namespace MovLib\Data\Release;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class ReleaseSet extends \MovLib\Data\AbstractSet {
+final class ReleaseSet extends \MovLib\Data\AbstractEntitySet {
 
   /**
    * {@inheritdoc}
@@ -52,7 +52,7 @@ SQL;
   /**
    * {@inheritdoc}
    */
-  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractEntitySet $set, $in) {
     return <<<SQL
 
 SQL;
