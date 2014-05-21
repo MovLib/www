@@ -18,6 +18,7 @@
 namespace MovLib\Core\HTTP;
 
 use \MovLib\Core\Intl;
+use \MovLib\Data\DateTime;
 use \MovLib\Presentation\Error\Forbidden;
 
 /**
@@ -41,6 +42,13 @@ final class Request {
    * @var array
    */
   public $cookies = [];
+
+  /**
+   * The request's date and time.
+   *
+   * @var \MovLib\Data\DateTime
+   */
+  public $dateTime;
 
   /**
    * The request's submitted files.
@@ -178,6 +186,7 @@ final class Request {
   public function __construct(\MovLib\Core\Intl $intl) {
     $this->cookies       =& $_COOKIE;
     $this->files         =& $_FILES;
+    $this->dateTime      =  DateTime::createFromTimestamp($_SERVER["REQUEST_TIME"]);
     $this->hostname      =  $_SERVER["SERVER_NAME"];
     $this->https         =  $_SERVER["HTTPS"] == "on";
     $this->method        =  $_SERVER["REQUEST_METHOD"];
