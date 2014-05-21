@@ -193,10 +193,7 @@ SQL
     $wikipedia = $mysqli->real_escape_string($this->wikipedia);
     $query .= ", `dyn_wikipedia` = COLUMN_ADD(`dyn_wikipedia`, '{$this->intl->languageCode}', '{$wikipedia}')";
     $query .= " WHERE `id` = {$this->id}";
-    if ($mysqli->query($query) !== true) {
-      throw new \mysqli_sql_exception();
-    }
-
+    $mysqli->query($query);
     return $this;
   }
 

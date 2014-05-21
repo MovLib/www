@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data\Revision;
 
+use \MovLib\Data\DateTime;
+
 /**
  * Defines the revision object.
  *
@@ -95,7 +97,7 @@ final class Revision extends \MovLib\Core\AbstractDatabase {
     // @devEnd
 
     $this->revisionEntityId = constant("{$this->revisionEntityClassName}::ENTITY_ID");
-    $this->cur = new $this->revisionClass($diContainer, $entityId);
+    $this->cur = new $this->revisionEntityClassName($entityId);
   }
 
 
@@ -389,16 +391,16 @@ SQL
    */
   public function save(\MovLib\Data\AbstractEntity $entity) {
     // The current new revision will be the new old revision.
-    $old = serialize($this->new);
+    $old = serialize($this->cur);
 
     // Set the new changed date and time.
     $entity->changed = new DateTime("@{$this->request->time}");
 
     // The new current edition is the entity we just got.
-    $this->new->setEntity($entity);
+    $this->cur->setEntity($entity);
 
     // Create a diff between both revisions, we have to pass the result per reference to bind_param() below.
-    $diff = $this->diff(serialize($this->new), $old);
+    $diff = $this->diff(serialize($this->cur), $old);
 
     $mysqli = $this->getMySQLi();
     try {
@@ -416,15 +418,19 @@ SQL
       $stmt->execute();
       $stmt->close();
       $mysqli->commit();
-      $this->new->indexSearch();
+      $this->cur->indexSearch();
     }
     catch (\Exception $e) {
-      // Drop the just create new revision, we couldn't update the database, therefore we don't need it anymore.
-      unset($this->new);
+      if ($stmt) {
+        $stmt->close();
+      }
       $mysqli->rollback();
       throw $e;
     }
     finally {
+      if ($stmt) {
+        $stmt->close();
+      }
       $mysqli->autocommit(true);
     }
 

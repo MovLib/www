@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data\Genre;
 
-use \MovLib\Data\DateTime;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
