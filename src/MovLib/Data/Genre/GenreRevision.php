@@ -17,19 +17,26 @@
  */
 namespace MovLib\Data\Genre;
 
+use \MovLib\Data\DateTime;
 use \MovLib\Exception\ClientException\NotFoundException;
-use \MovLib\Data\Genre\Genre;
 
 /**
- * @todo Description of GenreRevision
+ * Defines the revision entity object for genre entities.
  *
+ * @property \MovLib\Data\Genre\Genre $entity
+ *
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class GenreRevision extends \MovLib\Data\AbstractRevisionEntity {
+final class GenreRevision extends \MovLib\Data\Revision\AbstractEntity {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
 
   /**
    * The genre entity type identifier.
@@ -37,6 +44,10 @@ class GenreRevision extends \MovLib\Data\AbstractRevisionEntity {
    * @var integer
    */
   const ENTITY_ID = 9;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
    * Associative array containing all the genre's localized names, keyed by language code.
@@ -52,24 +63,29 @@ class GenreRevision extends \MovLib\Data\AbstractRevisionEntity {
    */
   public $descriptions;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
   /**
-   * Associative array containing all the genre's localized wikipedia links, keyed by language code.
+   * Instantiate new genre revision.
    *
-   * @var array
+   * @param integer $genreId [optional]
+   *   The genre's unique identifier, defaults to <code>NULL</code>.
+   * @throws \MovLib\Exception\ClientException\NotFoundException
+   *   If no genre exists for the given genre identifier.
    */
-  public $wikipedia;
-
-
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $genreId) {
-    parent::__construct($diContainer);
+  public function __construct($genreId = null) {
     if ($genreId) {
       $stmt = $this->getMySQLi()->prepare(<<<SQL
 SELECT
-  IF (COLUMN_JSON(`dyn_names`) = '{}', NULL, COLUMN_JSON(`dyn_names`)),
-  IF (COLUMN_JSON(`dyn_descriptions`) = '{}', NULL, COLUMN_JSON(`dyn_descriptions`)),
-  IF (COLUMN_JSON(`dyn_wikipedia`) = '{}', NULL, COLUMN_JSON(`dyn_wikipedia`)),
+  `id`,
+  `user_id`,
   `changed`,
-  `deleted`
+  `deleted`,
+  COLUMN_JSON(`dyn_descriptions`),
+  COLUMN_JSON(`dyn_names`),
+  COLUMN_JSON(`dyn_wikipedia`)
 FROM `genres`
 WHERE `id` = ?
 LIMIT 1
@@ -77,47 +93,37 @@ SQL
       );
       $stmt->bind_param("d", $genreId);
       $stmt->execute();
-      $stmt->bind_result($this->names, $this->descriptions, $this->wikipedia, $this->id, $this->deleted);
+      $stmt->bind_result(
+        $this->entityId,
+        $this->userId,
+        $this->id,
+        $this->deleted,
+        $this->descriptions,
+        $this->names,
+        $this->wikipediaLinks
+      );
       $found = $stmt->fetch();
       $stmt->close();
+
       if (!$found) {
         throw new NotFoundException("Couldn't find Genre {$genreId}");
       }
-      $this->entityId     = $genreId;
-      $this->deleted      = (boolean) $this->deleted;
-      foreach ([ "names", "descriptions", "wikipedia" ] as $property) {
-        if (isset($this->$property)) {
-          $this->$property = json_decode($this->$property, true);
-        }
-      }
+
+      $this->jsonDecode($this->descriptions, $this->names, $this->wikipediaLinks);
     }
+    parent::__construct();
   }
 
   /**
    * {@inheritdoc}
    */
   public function __sleep() {
-    return array_merge(parent::__sleep(), [ "names", "descriptions", "wikipedia" ]);
+    return array_merge(parent::__sleep(), [ "descriptions", "names", "wikipediaLinks" ]);
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getEntity() {
-    if (empty($this->entity)) {
-      $this->entity = new Genre($this->diContainer);
-      $this->entity->id          = $this->entityId;
-      $this->entity->changed     = $this->id;
-      $this->entity->deleted     = $this->deleted;
-      $this->entity->name        = $this->names[$this->intl->languageCode];
-      $this->entity->description = $this->descriptions[$this->intl->languageCode];
-      $this->entity->wikipedia   = $this->wikipedia[$this->intl->languageCode];
-      $reflector = new \ReflectionMethod($this->entity, "init");
-      $reflector->setAccessible(true);
-      $reflector->invoke($this->entity);
-    }
-    return $this->entity;
-  }
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * {@inheritdoc}
@@ -155,23 +161,18 @@ SQL
 
   /**
    * {@inheritdoc}
-   *
-   * @param \MovLib\Data\Genre\Genre $entity
-   *   {@inheritdoc}
-   * @return this
    */
-  public function setEntity(\MovLib\Data\AbstractEntity $entity) {
-    parent::setEntity($entity);
-    if (!empty($entity->name)) {
-      $this->names[$this->intl->languageCode]        = $entity->name;
-    }
-    if (!empty($entity->description)) {
-      $this->descriptions[$this->intl->languageCode] = $entity->description;
-    }
-    if (!empty($entity->wikipedia)) {
-      $this->wikipedia[$this->intl->languageCode]    = $entity->wikipedia;
-    }
-    return $this;
+  public function setEntity(\MovLib\Data\AbstractEntity $entity, $languageCode, &...$dynamicProperties) {
+    return parent::setEntity(
+      $entity,
+      $languageCode,
+      $entity->name,
+      $this->names,
+      $entity->description,
+      $this->descriptions,
+      $entity->wikipedia,
+      $this->wikipediaLinks
+    );
   }
 
 }

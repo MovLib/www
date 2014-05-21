@@ -32,7 +32,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Award extends \MovLib\Data\AbstractEntity implements \MovLib\Data\RevisionInterface {
+final class Award extends \MovLib\Data\AbstractEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -307,18 +307,7 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function getRevisionInfo() {
-    return new Revision(
-      $this->name,
-      $this->route,
-      $this->intl->t("Award")
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function init() {
+  public function init() {
     $this->aliases        && ($this->aliases        = unserialize($this->aliases));
     $this->links          && ($this->links          = unserialize($this->links));
     $this->firstEventYear && ($this->firstEventYear = new Date($this->firstEventYear));

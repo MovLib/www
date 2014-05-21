@@ -45,7 +45,7 @@ final class LobbyCardSet extends \MovLib\Data\AbstractSet {
   /**
    * {@inheritdoc}
    */
-  protected function init() {
+  public function init() {
     $this->pluralKey   = "lobby-cards";
     $this->singularKey = "lobby-card";
     return parent::init();

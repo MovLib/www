@@ -216,11 +216,18 @@ final class User extends \MovLib\Data\Image\AbstractImageEntity {
   public $sex;
 
   /**
+   * The user's time zone.
+   *
+   * @var null|\DateTimeZone
+   */
+  public $timezone;
+
+  /**
    * The user's time zone identifier (e.g. <code>"Europe/Vienna"</code>).
    *
    * @var null|string
    */
-  public $timezone;
+  public $timezoneId;
 
   /**
    * The MySQLi bind param types of the columns.
@@ -322,7 +329,7 @@ SQL
         $this->sex,
         $this->languageCode,
         $this->listCount,
-        $this->timezone,
+        $this->timezoneId,
         $this->uploadCount,
         $this->website
       );
@@ -453,6 +460,7 @@ SQL
     $this->private              = (boolean) $this->private;
     $this->routeArgs            = [ $this->imageFilename ];
     $this->singularKey          = "user";
+    $this->timezoneId           && ($this->timezone = new DateTimeZone($this->timezoneId));
     return parent::init();
   }
 

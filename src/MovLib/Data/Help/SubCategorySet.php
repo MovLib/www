@@ -69,7 +69,7 @@ SQL;
   /**
    * {@inheritdoc}
    */
-  protected function init() {
+  public function init() {
     $this->tableName   = "help_subcategories";
     $this->pluralKey   = "categories";
     $this->route       = $this->intl->r("/help");

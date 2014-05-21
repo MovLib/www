@@ -31,7 +31,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Article extends \MovLib\Data\AbstractEntity implements \MovLib\Data\RevisionInterface {
+final class Article extends \MovLib\Data\AbstractEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -260,18 +260,7 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function getRevisionInfo() {
-    return new Revision(
-      $this->title,
-      $this->route,
-      $this->intl->t("Help Article")
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function init() {
+  public function init() {
     if (isset($this->category) && !$this->category instanceof \MovLib\Data\Help\Category) {
       $this->category = new Category($this->diContainer, $this->category);
     }

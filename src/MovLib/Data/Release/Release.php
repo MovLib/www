@@ -30,7 +30,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Event extends \MovLib\Data\AbstractEntity implements \MovLib\Data\RevisionInterface {
+class Event extends \MovLib\Data\AbstractEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -243,18 +243,7 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function getRevisionInfo() {
-    return new Revision(
-      $this->title,
-      $this->route,
-      $this->intl->t("Release")
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function init() {
+  public function init() {
     $this->pluralKey   = "releases";
     $this->singularKey = "release";
     return parent::init();

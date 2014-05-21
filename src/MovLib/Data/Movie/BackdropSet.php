@@ -45,7 +45,7 @@ final class BackdropSet extends \MovLib\Data\AbstractSet {
   /**
    * {@inheritdoc}
    */
-  protected function init() {
+  public function init() {
     $this->pluralKey   = "backdrops";
     $this->singularKey = "backdrop";
     return parent::init();

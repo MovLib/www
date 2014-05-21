@@ -31,7 +31,7 @@ final class UploadSet extends \MovLib\Data\AbstractSet {
   /**
    * {@inheritdoc}
    */
-  protected function init() {
+  public function init() {
     $this->singularKey = "upload";
     $this->pluralKey   = "uploads";
     return parent::init();

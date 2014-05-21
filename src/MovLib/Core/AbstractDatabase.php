@@ -51,7 +51,7 @@ abstract class AbstractDatabase {
    */
   protected $collations = [
     "en" => null,
-    "de" => "COLLATE utf8mb4_german2_ci",
+    "de" => " COLLATE utf8mb4_german2_ci",
   ];
 
   /**
@@ -103,14 +103,17 @@ abstract class AbstractDatabase {
   /**
    * Instantiate new database object.
    *
-   * @param \MovLib\Core\DIContainer $diContainer
+   * @todo Get rid of dependency injection container!
+   * @param \MovLib\Core\DIContainer $diContainer [optional]
    *   The dependency injection container.
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer) {
-    $this->diContainer = $diContainer;
-    foreach (get_object_vars($diContainer) as $property => $value) {
-      if (property_exists($this, $property)) {
-        $this->$property = $value;
+  public function __construct(\MovLib\Core\DIContainer $diContainer = null) {
+    if ($diContainer) {
+      $this->diContainer = $diContainer;
+      foreach (get_object_vars($diContainer) as $property => $value) {
+        if (property_exists($this, $property)) {
+          $this->$property = $value;
+        }
       }
     }
   }
@@ -122,95 +125,66 @@ abstract class AbstractDatabase {
   /**
    * Get the MySQLi instance.
    *
+   * @param string $database
+   *   The name of the database to connect to, defaults to <code>"movlib"</code>.
    * @return \mysqli
    *   The MySQLi instance.
    * @throws \mysqli_sql_exception
    */
-  final protected function getMySQLi() {
+  final protected function getMySQLi($database = "movlib") {
     // Check if we already have a cached instance.
-    if (self::$mysqli) {
-      // @devStart
-      // @codeCoverageIgnoreStart
-      $this->log->debug("Getting MySQLi", $this->getMySQLiDebugConnectionStats());
-      // @codeCoverageIgnoreEnd
-      // @devEnd
-      return self::$mysqli;
+    if (isset(self::$mysqli[$database])) {
+      return self::$mysqli[$database];
     }
 
     // We don't want to check all over the place if anything returned FALSE, exceptions are much better.
     $driver = new \mysqli_driver();
     $driver->report_mode = MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT;
 
-    // Instantiate, connect, and select database.
     try {
-      self::$mysqli = new \mysqli($this->config->databaseHost, $this->config->databaseUsername, $this->config->databasePassword, $this->config->databaseName);
+      // Instantiate, connect, and select database. Note that the complete configuration is done in PHPs global ini
+      // configuration file.
+      self::$mysqli[$database] = new \mysqli(null, null, null, $database);
     }
     catch (\ErrorException $e) {
-      $this->log->notice("Lost socket connection to database server, trying to recover.");
-      if (isset(self::$mysqli->thread_id)) {
-        self::$mysqli->kill(self::$mysqli->thread_id);
+      if (isset(self::$mysqli[$database]->thread_id)) {
+        self::$mysqli[$database]->kill(self::$mysqli[$database]->thread_id);
       }
-      return $this->getMySQLi();
+      return $this->getMySQLi($database);
     }
 
     // As per recommendation in the PHP documentation, always explicitely close the connection.
-    register_shutdown_function(function () { self::$mysqli->close(); });
+    register_shutdown_function(function () {
+      self::$mysqli[$databaseName]->close();
+      unset(self::$mysqli[$databaseName]);
+    });
 
-    // @devStart
-    // @codeCoverageIgnoreStart
-    $this->log->debug(
-      "Successfully connected (this message should only appear ONCE per request).",
-      $this->getMySQLiDebugConnectionStats(self::$mysqli)
-    );
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
-    return self::$mysqli;
+    return self::$mysqli[$database];
   }
-
-  // @devStart
-  // @codeCoverageIgnoreStart
-  private function getMySQLiDebugConnectionStats() {
-    $connectionStats = null;
-    foreach (self::$mysqli->get_connection_stats() as $key => $value) {
-      if (in_array($key, [ "connection_reused", "reconnect", "pconnect_success", "active_connections", "active_persistent_connections" ])) {
-        $connectionStats[$key] = $value;
-      }
-    }
-    return $connectionStats;
-  }
-  // @codeCoverageIgnoreEnd
-  // @devEnd
 
   /**
-   * Generic query method.
+   * Decode JSON response from dynamic column.
    *
-   * @deprecated Use {@see AbstractDatabase::getMySQLi} and work directly with the native instance. It's WAY faster than
-   *   this method and allows you to implement whatever you want without restrictions. Don't forget that you HAVE TO use
-   *   prepared statements whenever you deal with user supplied data, but you're good to go for normal query's if the
-   *   data you deal with is set by another developer. Normal query's are often much faster.
-   * @param string $query
-   *   The query to be executed.
-   * @param string $types [optional]
-   *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
-   * @param array $params [optional]
-   *   The parameters to bind.
-   * @return \mysqli_stmt
-   * @throws \MovLib\Exception\DatabaseException
+   * We store an empty string in every dynamic column when we insert into a table that contains a dynamic column. This
+   * has the huge advantage that we can simply call column add later on, but if we need all the content from the column
+   * an empty object is returned by the database. This utility method was made to ease the handling of this special
+   * case that's contraproductive for us.
+   *
+   * @param string $property
+   *   The property containing the JSON response.
+   * @return this
    */
-  protected function query($query, $types = null, array $params = null) {
-    $mysqli = $this->getMySQLi();
-    $stmt = $mysqli->prepare($query);
-    if ($types && $params) {
-      $refParams = [ $types ];
-      $c         = count($params);
-      for ($i = 0, $j = 2; $i < $c; ++$i, ++$j) {
-        $refParams[$j] =& $params[$i];
+  final protected function jsonDecode(&...$properties) {
+    $c = count($properties);
+    for ($i = 0; $i < $c; ++$i) {
+      if (empty($properties[$i]) || $properties[$i] == "{}") {
+        $properties[$i] = null;
       }
-      call_user_func_array([ $stmt, "bind_param" ], $refParams);
+      else {
+        $properties[$i] = json_decode($properties[$i], true);
+      }
     }
-    $stmt->execute();
-    return $stmt;
+    return $this;
   }
 
 }

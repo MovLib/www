@@ -197,16 +197,16 @@ final class Kernel {
       $presenterClass = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
       $this->diContainer->presenter = new $presenterClass($this->diContainer);
       $this->diContainer->presenter->init();
-      echo $this->diContainer->presenter->getPresentation($this->diContainer->presenter->getContent());
+      $response = $this->diContainer->presenter->getPresentation($this->diContainer->presenter->getContent());
     }
     // Client exception's are exception's that display a fully rendered page in HTTP context, catch them separately.
     catch (ClientExceptionInterface $clientException) {
       // A client exception might throw another client exception (redirects) that we have to catch.
       try {
-        echo $clientException->getPresentation($this->diContainer);
+        $response = $clientException->getPresentation($this->diContainer);
       }
       catch (ClientExceptionInterface $clientException) {
-        echo $clientException->getPresentation($this->diContainer);
+        $response = $clientException->getPresentation($this->diContainer);
       }
     }
     // Any other exception is an error, but the base system booted nicely therefore we try to display a nice looking
@@ -216,22 +216,19 @@ final class Kernel {
     catch (\Exception $exception) {
       $this->diContainer->presenter = new InternalServerError($this->diContainer);
       $this->diContainer->presenter->init()->setException($exception);
-      echo $this->diContainer->presenter->getPresentation($this->diContainer->presenter->getContent());
+      $response = $this->diContainer->presenter->getPresentation($this->diContainer->presenter->getContent());
     }
 
-    // @devStart
-    // @codeCoverageIgnoreStart
-    $this->diContainer->log->debug("Response Time: " . (microtime(true) - $this->diContainer->request->timeFloat));
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    if (fastcgi_finish_request() === false) {
-      $this->diContainer->log->error("FastCGI finish request failed.");
-    }
+//    if (fastcgi_finish_request() === false) {
+//      $this->diContainer->log->error("FastCGI finish request failed.");
+//    }
     $this->diContainer->session->shutdown();
     $this->bench("response", 0.75);
 //    $this->diContainer->response->cache($presentation);
     $this->shutdown();
     $this->bench("shutdown", 0.5);
+
+    echo $response;
 
     return $this;
   }
@@ -248,17 +245,17 @@ final class Kernel {
   protected function bench($what, $target) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (empty($what) || !is_string($what)) {
-      throw new \InvalidArgumentException("\$what cannot be empty and must be of type string.");
-    }
-    if (empty($target) || !is_numeric($target)) {
-      throw new \InvalidArgumentException("\$target cannot be empty and must be of type number.");
-    }
+    assert(is_string($what), "Short description of bench must be of type string.");
+    assert(!empty($what), "Short description of bench cannot be empty.");
+    assert(is_numeric($target), "Target time of bench must be of type integer or float.");
+    assert($target > 0, "Target time has to be greater than zero.");
     // @codeCoverageIgnoreEnd
     // @devEnd
     if (($time = microtime(true) - $this->diContainer->request->timeFloat) > $target) {
-      // We don't use the logger at this point, because we always want these events to be logged.
-      error_log("Slow {$what} with {$time} for {$this->diContainer->request->uri}");
+      $this->diContainer->log->info("SLOW {$what}", [
+        "time" => $time,
+        "uri"  => $this->diContainer->request->uri,
+      ]);
     }
     return $this;
   }

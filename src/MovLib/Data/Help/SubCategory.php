@@ -129,7 +129,7 @@ SQL
   /**
    * {@inheritdoc}
    */
-  protected function init() {
+  public function init() {
     $this->articleCount = $this->getCount("help_articles", "`deleted` = false AND `help_subcategory_id` = {$this->id}");
     if (isset($this->category) && !$this->category instanceof \stdClass) {
       $this->category = new Category($this->diContainer, $this->category);

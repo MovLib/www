@@ -45,7 +45,7 @@ final class TitleSet extends \MovLib\Data\AbstractSet {
   /**
    * {@inheritdoc}
    */
-  protected function init() {
+  public function init() {
     $this->pluralKey   = "titles";
     $this->singularKey = "title";
     return parent::init();

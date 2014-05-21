@@ -37,12 +37,13 @@ final class NotFound extends \MovLib\Presentation\AbstractPresenter {
     return $this
       ->initPage($this->intl->t("Not Found"))
       ->alertError(
-      $this->intl->t("The requested page could not be found."),
-      $this->intl->t(
-        "There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.",
-        [ "<a href='{$this->intl->r("/contact")}'>", "</a>" ]
+        $this->intl->t("The requested page could not be found."),
+        $this->intl->t(
+          "There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.",
+          [ "<a href='{$this->intl->r("/contact")}'>", "</a>" ]
+        )
       )
-    );
+    ;
   }
 
   /**

@@ -27,21 +27,6 @@
  */
 
 /**
- * Encode URL path preserving slashes.
- *
- * @param string $path
- *   The URL path to encode.
- * @return string
- *   The encoded URL path.
- */
-function url_encode_path($path) {
-  if (empty($path) || $path == "/") {
-    return $path;
-  }
-  return str_replace("%2F", "/", rawurlencode($path));
-}
-
-/**
  * Sanitizes a filename, replacing whitespace with dashes and transforming the string to lowercase.
  *
  * Removes special characters that are illegal in filenames on certain operating systems and special characters
@@ -71,4 +56,19 @@ function sanitize_filename($filename) {
 
   // Always lowercase all filenames for better compatibility.
   return mb_strtolower($filename);
+}
+
+/**
+ * Encode URL path preserving slashes.
+ *
+ * @param string $path
+ *   The URL path to encode.
+ * @return string
+ *   The encoded URL path.
+ */
+function url_encode_path($path) {
+  if (empty($path) || $path == "/") {
+    return $path;
+  }
+  return str_replace("%2F", "/", rawurlencode($path));
 }

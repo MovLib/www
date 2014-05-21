@@ -29,7 +29,7 @@ use \MovLib\Data\Movie\Movie;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Poster extends \MovLib\Data\Image\AbstractImageEntity implements \MovLib\Data\RevisionInterface {
+final class Poster extends \MovLib\Data\Image\AbstractImageEntity {
 
   /**
    * {@inheritdoc}
@@ -48,18 +48,7 @@ final class Poster extends \MovLib\Data\Image\AbstractImageEntity implements \Mo
   /**
    * {@inheritdoc}
    */
-  public function getRevisionInfo() {
-    return new Revision(
-      (new Movie($this->diContainer, $this->entityId))->displayTitleAndYear,
-      $this->route,
-      $this->intl->t("Movie Poster")
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function init() {
+  public function init() {
     //$this->imageAlternativeText = $this->intl->t("{movie_title} poster.", [ "movie_title" => $this->displayTitleAndYear]);
     $this->entityKey            = "movie";
     $this->imageAlternativeText = "Alternative Text";

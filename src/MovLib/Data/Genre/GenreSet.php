@@ -72,7 +72,7 @@ SQL;
   /**
    * {@inheritdoc}
    */
-  protected function init() {
+  public function init() {
     $this->pluralKey   = "genres";
     $this->singularKey = "genre";
     return parent::init();

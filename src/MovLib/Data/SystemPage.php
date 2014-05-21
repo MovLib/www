@@ -103,7 +103,7 @@ SQL
   /**
    * {@inheritdoc}
    */
-  protected function init() {
+  public function init() {
     // The plural key isn't used anywhere.
     $this->pluralKey   = "system_pages";
     if ($this->routeKey == "About {$this->config->sitename}") {

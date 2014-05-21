@@ -45,7 +45,7 @@ final class SeasonSet extends \MovLib\Data\AbstractSet {
   /**
    * {@inheritdoc}
    */
-  protected function init() {
+  public function init() {
     $this->pluralKey   = "seasons";
     $this->singularKey = "season";
     return parent::init();

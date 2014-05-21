@@ -31,7 +31,7 @@ final class PosterSet extends \MovLib\Data\Image\AbstractImageSet {
   /**
    * {@inheritdoc}
    */
-  protected function init() {
+  public function init() {
     $this->entityKey   = "movie";
     $this->pluralKey   = "posters";
     $this->singularKey = "poster";

@@ -194,9 +194,16 @@ final class Session extends \MovLib\Core\AbstractDatabase {
   /**
    * The session user's timezone.
    *
-   * @var string
+   * @var \DateTimeZone
    */
   public $userTimezone;
+
+  /**
+   * The session user's timezone identifier.
+   *
+   * @var string
+   */
+  public $userTimezoneId;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -233,23 +240,13 @@ SQL
     );
     $stmt->bind_param("s", $email);
     $stmt->execute();
-    $stmt->bind_result($this->userId, $this->userImageCacheBuster, $this->userImageExtension, $languageCode, $this->userName, $passwordHash, $this->userTimezone);
+    $stmt->bind_result($this->userId, $this->userImageCacheBuster, $this->userImageExtension, $languageCode, $this->userName, $passwordHash, $this->userTimezoneId);
     $found = $stmt->fetch();
     if (!$found) {
-      // @devStart
-      // @codeCoverageIgnoreStart
-      $this->log->debug("Couldn't find user for '{$email}'.");
-      // @codeCoverageIgnoreEnd
-      // @devEnd
       return false;
     }
 
     if (password_verify($rawPassword, $passwordHash) === false) {
-      // @devStart
-      // @codeCoverageIgnoreStart
-      $this->log->debug("Password didn't match stored password hash.");
-      // @codeCoverageIgnoreEnd
-      // @devEnd
       return false;
     }
 
@@ -260,7 +257,7 @@ SQL
     $_SESSION[self::USER_IMAGE_CACHE_BUSTER] =& $this->userImageCacheBuster;
     $_SESSION[self::USER_IMAGE_EXTENSION]    =& $this->userImageExtension;
     $_SESSION[self::USER_NAME]               =& $this->userName;
-    $_SESSION[self::USER_TIMEZONE]           =& $this->userTimezone;
+    $_SESSION[self::USER_TIMEZONE]           =& $this->userTimezoneId;
 
     // Maybe the user was doing some work as anonymous user and already has a session active. If so generate new session
     // identifier and if not generate a completely new session.
@@ -409,20 +406,10 @@ SQL
 
     // Delete all sessions if the flag is set.
     if ($deleteAllSessions) {
-      // @devStart
-      // @codeCoverageIgnoreStart
-      $this->log->debug("Deleting all sessions");
-      // @codeCoverageIgnoreEnd
-      // @devEnd
       $this->delete();
     }
     // Otherwise only delete the current session.
     else {
-      // @devStart
-      // @codeCoverageIgnoreStart
-      $this->log->debug("Deleting current session.", [ "id" => $this->ssid ]);
-      // @codeCoverageIgnoreEnd
-      // @devEnd
       $this->delete([ $this->ssid ]);
     }
 
@@ -434,7 +421,7 @@ SQL
     $this->userImageCacheBuster = null;
     $this->userImageExtension   = null;
     $this->userName             = $this->request->remoteAddress;
-    $this->userTimezone         = $this->config->timezone;
+    $this->userTimezoneId       = date_default_timezone_get();
 
     return $this;
   }
@@ -529,27 +516,42 @@ SQL
   }
 
   /**
-   * Regenerate session ID and update persistent storage.
+   * Regenerate session identifier and update persistent storage.
    *
+   * @param boolean $force [optional]
+   *   Whether to force regeneration or not. By default a session identifier is only regenerated once per request.
    * @return this
+   * @throws \mysqli_sql_exception
+   * @throws \RuntimeException
+   *   If regenerating the session identifiers fails.
    */
-  protected function regenerate() {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    $this->log->debug("Regenerating session identifier");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    if (session_regenerate_id(true) === true) {
-      if ($this->userId > 0) {
-        $this->update($this->ssid);
+  protected function regenerate($force = false) {
+    static $regenerated = false;
+
+    // Only regenerate the session identifier if we haven't done so during this request or if a regeneration is forced.
+    if ($force === true || $regenerated === false) {
+      // Try to regenerate the session identifier and delete the old identifier from the Memcached storage.
+      if (session_regenerate_id(true) === true) {
+        // Get the newly generated session identifier.
+        $ssid = session_id();
+
+        // Update persistent storage with the new session identifier.
+        if ($this->isAuthenticated === true) {
+          $this->kernel->delayMethodCall([ $this, "updateSecureIdentifier" ], [ $this->userId, $this->ssid, $ssid ]);
+        }
+
+        // Export new values to class scope and set flag that we regenerated the session identifier.
+        $this->ssid     = $ssid;
+        $this->initTime = $this->request->time;
+        $regenerated    = true;
       }
-      $this->ssid     = session_id();
-      $this->initTime = $this->request->time;
+      // Might be Memcached is down if we weren't able to regenerate the session identifier.
+      else {
+        $this->destroy();
+        throw new \RuntimeException("Couldn't regenerate session identifier");
+      }
     }
-    else {
-      $this->log->error("Couldn't regenerate session identifier", [ "session" => $this ]);
-      $this->destroy();
-    }
+
     return $this;
   }
 
@@ -576,18 +578,19 @@ SQL
   }
 
   /**
-   * Resume existing HTTP session.
+   * Resume existing HTTP session from client submitted cookies.
    *
    * @return this
    * @throws \MemcachedException
-   * @throws \MovLib\Exception\DatabaseException
+   * @throws \mysqli_sql_exception
    */
   public function resume() {
     // Only attempt to load the session if a non-empty session ID is present. Anonymous user's don't get any session to
     // ensure that HTTP proxies are able to cache anonymous pageviews.
     if (empty($this->request->cookies[$this->config->sessionName])) {
-      $this->userName     = $this->request->remoteAddress;
-      $this->userTimezone = $this->config->timezone;
+      $this->userName       = $this->request->remoteAddress;
+      $this->userTimezoneId = date_default_timezone_get();
+      $this->userTimezone   = new \DateTimeZone($this->userTimezoneId);
     }
     else {
       // Try to resume the session with the ID from the cookie.
@@ -596,11 +599,6 @@ SQL
       // Try to load the session from the persistent session storage for known users if we just generated a new
       // session ID and have no data stored for it.
       if (empty($_SESSION)) {
-        // @devStart
-        // @codeCoverageIgnoreStart
-        $this->log->debug("Trying to load session from database.");
-        // @codeCoverageIgnoreEnd
-        // @devEnd
         $mysqli = $this->getMySQLi();
         $stmt = $mysqli->prepare(<<<SQL
 SELECT
@@ -617,17 +615,12 @@ SQL
         );
         $stmt->bind_param("s", $this->request->cookies[$this->config->sessionName]);
         $stmt->execute();
-        $stmt->bind_result($this->userId, $this->userImageCacheBuster, $this->userImageExtension, $this->userName, $this->userTimezone, $this->authentication);
+        $stmt->bind_result($this->userId, $this->userImageCacheBuster, $this->userImageExtension, $this->userName, $this->userTimezoneId, $this->authentication);
         $found = $stmt->fetch();
         $stmt->close();
 
         // We couldn't find a valid session and we have no data = invalid session.
         if ($found) {
-          // @devStart
-          // @codeCoverageIgnoreStart
-          $this->log->debug("Loaded session from database");
-          // @codeCoverageIgnoreEnd
-          // @devEnd
           $this->regenerate();
           $_SESSION[self::AUTHENTICATION]          =& $this->authentication;
           $_SESSION[self::INIT_TIME]               =& $this->initTime;
@@ -635,32 +628,24 @@ SQL
           $_SESSION[self::USER_IMAGE_CACHE_BUSTER] =& $this->userImageCacheBuster;
           $_SESSION[self::USER_IMAGE_EXTENSION]    =& $this->userImageExtension;
           $_SESSION[self::USER_NAME]               =& $this->userName;
-          $_SESSION[self::USER_TIMEZONE]           =& $this->userTimezone;
+          $_SESSION[self::USER_TIMEZONE]           =& $this->userTimezoneId;
+          $this->userTimezone                      = new \DateTimeZone($this->userTimezoneId);
           $this->isAuthenticated = true;
         }
         else {
-          // @devStart
-          // @codeCoverageIgnoreStart
-          $this->log->debug("Couldn't restore Session from database");
-          // @codeCoverageIgnoreEnd
-          // @devEnd
           $this->destroy();
         }
       }
       // Session data was loaded from Memcached.
       elseif (isset($_SESSION[self::USER_ID])) {
-        // @devStart
-        // @codeCoverageIgnoreStart
-        $this->log->debug("Loaded session from memcached");
-        // @codeCoverageIgnoreEnd
-        // @devEnd
         $this->authentication       = $_SESSION[self::AUTHENTICATION];
         $this->initTime             = $_SESSION[self::INIT_TIME];
         $this->userId               = $_SESSION[self::USER_ID];
         $this->userImageCacheBuster = $_SESSION[self::USER_IMAGE_CACHE_BUSTER];
         $this->userImageExtension   = $_SESSION[self::USER_IMAGE_EXTENSION];
         $this->userName             = $_SESSION[self::USER_NAME];
-        $this->userTimezone         = $_SESSION[self::USER_TIMEZONE];
+        $this->userTimezoneId       = $_SESSION[self::USER_TIMEZONE];
+        $this->userTimezone         = new \DateTimeZone($this->userTimezoneId);
         $this->isAuthenticated      = true;
 
         // Regenerate the sesson's identifier if the grace time is over.
@@ -682,29 +667,17 @@ SQL
    *
    * @return this
    * @throws \MemcachedException
-   * @throws \DomainException
    */
   public function shutdown() {
     // Absolutely no session data is present (default state).
     if (empty($_SESSION)) {
       // Destroy this session if one is active without any data associated to it.
       if (session_status() === PHP_SESSION_ACTIVE) {
-        // @devStart
-        // @codeCoverageIgnoreStart
-        $this->log->debug("Active session with no session data, destroying...");
-        // @codeCoverageIgnoreEnd
-        // @devEnd
         $this->destroy();
       }
     }
     // We have session data and we have an active session.
     elseif (session_status() === PHP_SESSION_ACTIVE) {
-      // @devStart
-      // @codeCoverageIgnoreStart
-      $this->log->debug("Found session data with active session, updating user access and storing session.");
-      // @codeCoverageIgnoreEnd
-      // @devEnd
-
       // If this session belongs to an authenticated user, update the last access time.
       if ($this->isAuthenticated === true) {
         $this->kernel->delayMethodCall([ $this, "updateUserAccess" ]);
@@ -715,16 +688,10 @@ SQL
     }
     // We have session data but no active session, this means that we have to start a new session for an anonymous user.
     else {
-      // @devStart
-      // @codeCoverageIgnoreStart
-      $this->log->debug("Found session data for non-existend session, starting new anonymous session.");
-      // @codeCoverageIgnoreEnd
-      // @devEnd
       session_set_cookie_params(0);
       $this->start();
       session_write_close();
     }
-
     return $this;
   }
 
@@ -735,28 +702,15 @@ SQL
    * @throws \MemcachedException
    */
   protected function start() {
-    if (headers_sent($file, $line)) {
-      $this->log->warning("Cannot start session, headers already sent.", [ "file" => $file, "line" => $line ]);
-      return $this;
-    }
-
     // Save current session data, because PHP will destroy it.
     $data = empty($_SESSION) ? null : $_SESSION;
 
     // Start new session (if exeution was started by nginx).
     if (($this->active = session_start()) === false) {
-      $e = new \MemcachedException("Couldn't start session (may be Memcached is down?)");
-      $this->log->critical($e);
-      throw $e;
+      throw new \MemcachedException("Couldn't start session (may be Memcached is down?)");
     }
 
     $this->ssid = session_id();
-
-    // @devStart
-    // @codeCoverageIgnoreStart
-    $this->log->debug("Started Session {$this->ssid}");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
 
     // Restore session data.
     if ($data) {
@@ -839,31 +793,22 @@ SQL
   }
 
   /**
-   * Update the ID of a session in our persistent session store.
+   * Update the persistent storage's stored secure session identifier for given user.
    *
-   * @delayed
-   * @param string $oldSsid
-   *   The old session identifier that should be updated.
+   * @param integer $userId
+   *   The user's unique identifier the session belongs to.
+   * @param string $old
+   *   The old session identifier.
+   * @param string $new
+   *   The new session identifier.
    * @return this
+   * @throws \mysqli_sql_exception
    */
-  public function update($oldSsid) {
-    if ($this->ssid && $this->userId && $this->ssid != $oldSsid) {
-      try {
-        $remoteAddress = inet_pton($this->request->remoteAddress);
-        $stmt = $this->getMySQLi()->prepare("UPDATE `sessions` SET `ssid` = ?, `remote_address` = ?, `user_agent` = ? WHERE `ssid` = ? AND `user_id` = ?");
-        $stmt->bind_param("ssssd", $this->ssid, $remoteAddress, $this->request->userAgent, $oldSsid, $this->userId);
-        $stmt->execute();
-        $stmt->close();
-      }
-      catch (\mysqli_sql_exception $e) {
-        $this->log->warning($e);
-        // @devStart
-        // @codeCoverageIgnoreStart
-        throw $e;
-        // @codeCoverageIgnoreEnd
-        // @devEnd
-      }
-    }
+  public function updateSecureIdentifier($userId, $old, $new) {
+    $stmt = $this->getMySQLi()->prepare("UPDATE `sessions` SET `ssid` = ? WHERE `user_id` = ? AND `ssid` = ?");
+    $stmt->bind_param("sds", $new, $userId, $old);
+    $stmt->execute();
+    $stmt->close();
     return $this;
   }
 
@@ -873,17 +818,7 @@ SQL
    * @return this
    */
   public function updateUserAccess() {
-    try {
-      $this->getMySQLi()->query("UPDATE `users` SET `access` = CURRENT_TIMESTAMP WHERE `id` = {$this->userId}");
-    }
-    catch (\mysqli_sql_exception $e) {
-      $this->log->warning($e);
-      // @devStart
-      // @codeCoverageIgnoreStart
-      throw $e;
-      // @codeCoverageIgnoreEnd
-      // @devEnd
-    }
+    $this->getMySQLi()->query("UPDATE `users` SET `access` = CURRENT_TIMESTAMP WHERE `id` = {$this->userId}");
     return $this;
   }
 

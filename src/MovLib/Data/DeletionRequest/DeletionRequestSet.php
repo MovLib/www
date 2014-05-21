@@ -45,7 +45,7 @@ final class DeletionRequestSet extends \MovLib\Data\AbstractSet {
   /**
    * {@inheritdoc}
    */
-  protected function init() {
+  public function init() {
     $this->pluralKey   = "deletion-requests";
     $this->singularKey = "deletion-request";
     return parent::init();

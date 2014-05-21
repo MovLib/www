@@ -67,7 +67,7 @@ SQL;
   /**
    * {@inheritdoc}
    */
-  protected function init() {
+  public function init() {
     $this->pluralKey   = "categories";
     $this->singularKey = "category";
     $this->tableName   = "awards_categories";

@@ -15,56 +15,25 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Release;
+namespace MovLib\Data;
 
 /**
- * Defines the release set object.
+ * Defines the pagination interface for the {@see \MovLib\Partial\PaginationTrait}.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class ReleaseSet extends \MovLib\Data\AbstractSet {
+interface PaginationInterface {
 
   /**
-   * {@inheritdoc}
+   * Get the total count of displayable entities.
+   *
+   * @return integer
+   *   The total count of displayable entities.
    */
-  protected function getEntitiesQuery($where = null, $orderBy = null) {
-    return <<<SQL
-SELECT
-  `release`.`changed`,
-  `release`.`created`,
-  `release`.`country_code`,
-  `release`.`title`,
-  `release`.`publishing_date_rental`,
-  `release`.`publishing_date_sale`,
-  `release`.`edition`
-FROM `release`
-{$where}
-{$orderBy}
-SQL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
-    return <<<SQL
-
-SQL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-    $this->pluralKey   = "releases";
-    $this->singularKey = "release";
-    return parent::init();
-  }
+  public function getCount();
 
 }

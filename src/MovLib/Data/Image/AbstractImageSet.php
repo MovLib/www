@@ -77,7 +77,7 @@ abstract class AbstractImageSet extends \MovLib\Data\AbstractSet {
 
   // @devStart
   // @codeCoverageIgnoreStart
-  protected function init() {
+  public function init() {
     assert(!empty($this->entityKey), "You have to set the \$entityKey property in your image set.");
     return parent::init();
   }

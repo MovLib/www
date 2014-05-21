@@ -279,13 +279,12 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
       $this->attributes["action"] = $this->request->uri;
     }
 
-    if ($this->revision) {
-    }
-
     // Validate the form if we're receiving it.
     if (isset($this->request->post["form_id"]) && $this->request->post["form_id"] == $this->id) {
       // Validate the form's token if we have an active session.
       if ($this->session->active === true) {
+        $this->log->debug("SESSION", $_SESSION);
+
         // Assume that we don't have a form token stored in the user's session.
         $formToken = $this->session->storageGet("form_{$this->id}", false, true);
 

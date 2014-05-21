@@ -31,7 +31,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Data\RatingInterface, \MovLib\Data\RevisionInterface {
+class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Data\RatingInterface {
   use \MovLib\Data\RatingTrait;
 
 
@@ -364,18 +364,7 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function getRevisionInfo() {
-    return new Revision(
-      $this->displayTitle,
-      $this->route,
-      $this->intl->tp(-1, "Series")
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function init() {
+  public function init() {
     if (isset($this->startYear) && !$this->startYear instanceof \stdClass) {
       $this->startYear = new Date($this->startYear);
     }

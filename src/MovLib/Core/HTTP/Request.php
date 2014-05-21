@@ -17,6 +17,7 @@
  */
 namespace MovLib\Core\HTTP;
 
+use \MovLib\Core\Intl;
 use \MovLib\Presentation\Error\Forbidden;
 
 /**
@@ -209,6 +210,35 @@ final class Request {
       );
     }
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Static Methods
+
+
+  /**
+   * Get the language code of the current request.
+   *
+   * @staticvar string $languageCode
+   *   Used to cache the request's language code.
+   * @return string
+   *   The language code of the current request.
+   */
+  public static function getLanguageCode() {
+    static $languageCode = null;
+    if ($languageCode === null) {
+      if (isset($_SERVER["LANGUAGE_CODE"])) {
+        $languageCode = $_SERVER["LANGUAGE_CODE"];
+      }
+      else {
+        $languageCode = Intl::getDefaultLanguageCode();
+      }
+    }
+    return $languageCode;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   // @codeCoverageIgnoreStart
   /**

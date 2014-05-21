@@ -70,6 +70,7 @@ final class DateTime {
   public function __construct(\MovLib\Core\Intl $intl, \MovLib\Presentation\AbstractPresenter $presenter, $timezone = null) {
     $this->intl      = $intl;
     $this->presenter = $presenter;
+    $this->timezone  = $timezone;
   }
 
 
@@ -107,6 +108,53 @@ final class DateTime {
     $time                   = new \IntlDateFormatter($locale, $dateType, $timeType, $timezone);
     $attributes["datetime"] = (string) $dateTime;
     return "<time{$this->presenter->expandTagAttributes($attributes)}>{$time->format($dateTime)}</time>";
+  }
+
+  /**
+   * Get a relative string representation of the time.
+   *
+   * The usage of magic numbers is intended, these calculations will never change!
+   *
+   * @link http://stackoverflow.com/questions/11
+   * @param \MovLib\Data\DateTime $dateTime
+   *   The date and time to format.
+   * @param string $timezone [optional]
+   *   The timezone to use for calculation, defaults to the timezone passed to the constructor (if any) and than to the
+   *   default server timezone.
+   * @return string
+   *   Relative string representation of the date and time.
+   */
+  public function formatRelative(\MovLib\Data\DateTime $dateTime, $timezone = null) {
+    // @todo Change to use interval.
+    //$interval = (new \DateTime("now", $timezone ?: $this->timezone))->diff($dateTime);
+    $delta = $_SERVER["REQUEST_TIME"] - $dateTime->getTimestamp();
+    if ($delta < 60) {
+      return $delta < 2 ? $this->intl->t("one second ago") : $this->intl->t("{0,number,integer} seconds ago", [ $delta ]);
+    }
+    if ($delta < 120) {
+      return $this->intl->t("a minute ago");
+    }
+    if ($delta < 2700) { // 45 minutes
+      return $this->intl->t("{0,number,integer} minutes ago", [ ($delta / 60) ]);
+    }
+    if ($delta < 5400) { // 90 minutes
+      return $this->intl->t("an hour ago");
+    }
+    if ($delta < 86400) { // 1 day
+      return $this->intl->t("{0,number,integer} hours ago", [ ($delta / 3600) ]);
+    }
+    if ($delta < 172800) { // 2 days
+      return $this->intl->t("yesterday");
+    }
+    if ($delta < 2592000) { // 30 days
+      return $this->intl->t("{0,number,integer} days ago", [ ($delta / 86400) ]);
+    }
+    if ($delta < 3.15569e7) { // 1 year
+      $months = $delta / 2592000;
+      return $months < 2 ? $this->intl->t("one month ago") : $this->intl->t("{0,number,integer} months ago", [ $months ]);
+    }
+    $years = $delta / 3.15569e7;
+    return $years < 2 ? $this->intl->t("one year ago") : $this->intl->t("{0,number,integer} years ago", [ $years ]);
   }
 
 }

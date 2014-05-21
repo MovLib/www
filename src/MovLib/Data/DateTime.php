@@ -81,6 +81,16 @@ final class DateTime extends \DateTime {
 
 
   /**
+   * Format the data and time as integer.
+   *
+   * @return integer
+   *   The date and time formatted as integer.
+   */
+  public function formatInteger() {
+    return (integer) $this->format("YmdHis");
+  }
+
+  /**
    * Format the date and time according to the intl rules of the given locale.
    *
    * @param string $locale

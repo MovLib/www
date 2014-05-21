@@ -85,15 +85,15 @@ trait PaginationTrait {
    * entity.
    *
    * <i>Why do we have to re-implement this in each class?</i><br>
-   * The problem are the translations, we can't simply use placeholder tokens for entities (e.g.
-   * <code>"No {entity}"</code>) because we have no clue how this has to be translated in other languages. Translators
+   * The problem are the translations, we can't simply use placeholder tokens for entities (e.g. <code>"No
+   * {entity}"</code>) because we have no clue how this has to be translated in other languages. Translators
    * need highest flexibility because languages are so complex.
    *
    * <b>EXAMPLE</b><br>
    * <code><?php
    *
    * protected function getNoItemsContent() {
-   *   return new Alert(
+   *   return $this->calloutWarning(
    *     "<p>{$this->intl->t("We couldn’t find any entities matching your filter criteria, or there simply aren’t any entities available.")}</p>" .
    *     "<p>{$this->intl->t("Would you like to {0}create a new entity{1}?", [ "<a href='{$this->intl->r("/entity/create")}'>", "</a>" ])}</p>",
    *     $this->intl->t("No Entities")
@@ -117,20 +117,28 @@ trait PaginationTrait {
   /**
    * Initialize the pagination.
    *
+   * @param \Countable $set
+   *   The set that provides the items to paginate.
    * @return this
    */
-  final protected function paginationInit() {
+  final protected function paginationInit(\Countable $set = null) {
     // @devStart
     // @codeCoverageIgnoreStart
     assert($this instanceof \MovLib\Presentation\AbstractPresenter, "You can only use the pagination trait within a presenter.");
     assert(!empty($this->title), "You have to initialize the page before initializing the pagination trait.");
     assert(!empty($this->breadcrumb), "You have to initialize the breadcrumb before initializing the pagination trait.");
     assert(empty($this->contentAfter), "The \$contentAfter variable will be overwritten by the pagination trait.");
-    assert($this->set instanceof \MovLib\Data\AbstractSet, "You have to instantiate and export your set before initalizing the pagination trait.");
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-    $this->paginationTotalResults = $this->set->getCount();
+    // @todo Get rid of this dependency!
+    if (!$set && property_exists($this, "set")) {
+      $this->paginationTotalResults = $this->set->getCount();
+    }
+    else {
+      $this->paginationTotalResults = count($set);
+    }
+
     if ($this->paginationTotalResults === 1) {
       return $this;
     }
@@ -155,7 +163,7 @@ trait PaginationTrait {
       $this->paginationOffset = ($this->paginationCurrentPage - 1) * $this->paginationLimit;
 
       // Extend the page's breadcrumb and title with information about the current pagination page.
-      $title = $this->intl->t("Page {0, number, integer}", [ $this->paginationCurrentPage ]);
+      $title = $this->intl->t("Page {0,number,integer}", [ $this->paginationCurrentPage ]);
       $this->breadcrumb->menuitems[] = [ $this->request->uri, $title ];
       $this->title .= " {$title}";
     }

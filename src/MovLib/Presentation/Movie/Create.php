@@ -24,6 +24,7 @@ use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Partial\FormElement\InputWikipedia;
 use \MovLib\Partial\FormElement\TextareaHTMLExtended;
 use \MovLib\Partial\Language;
+use \MovLib\Exception\RedirectException\SeeOtherException;
 
 /**
  * Allows creating a movie.
@@ -41,7 +42,7 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
    */
   public function init() {
     return $this
-      ->initPage($this->intl->t("Create new movie"))
+      ->initPage($this->intl->t("Create New Movie"))
       ->initCreate(new Movie($this->diContainerHTTP), $this->intl->t("Movies"))
     ;
   }
@@ -63,13 +64,12 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
         "#help-popup" => $this->intl->t("The original title’s language."),
         "required"    => true,
       ]))
-      ->addElement(new InputInteger($this->diContainerHTTP, "year", $this->intl->t("Release"), $this->entity->year->year, [
-        "#field_suffix" => " {$this->intl->t("Year")}",
-        "class"         => "s2",
-        "min"           => 1890,
-        "max"           => date("Y") + 5
+      ->addElement(new InputInteger($this->diContainerHTTP, "year", $this->intl->t("Release Year"), $this->entity->year->year, [
+        "class" => "s2",
+        "min"   => 1890,
+        "max"   => date("Y") + 5
       ]))
-      ->addElement(new InputInteger($this->diContainerHTTP, "runtime", $this->intl->t("Approximate runtime"), $this->entity->runtime, [
+      ->addElement(new InputInteger($this->diContainerHTTP, "runtime", $this->intl->t("Approximate Runtime"), $this->entity->runtime, [
         "#field_suffix" => " {$this->intl->t("Minutes")}",
         "class"         => "s2",
         "min"           => 0,
@@ -91,9 +91,11 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
    * @return this
    */
   public function submit() {
-
-
-    return $this;
+    $this->alertInfo(
+      $this->intl->t("Check back later"),
+      $this->intl->t("The {0} feature isn’t implemented yet.", $this->placeholder($this->title))
+    );
+    throw new SeeOtherException($this->intl->r("/movies"));
   }
 
 }

@@ -86,7 +86,7 @@ SQL;
   /**
    * {@inheritdoc}
    */
-  protected function init() {
+  public function init() {
     $this->pluralKey   = $this->tableName = "users";
     $this->route       = $this->intl->r("/users");
     $this->singularKey = "user";

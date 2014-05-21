@@ -44,14 +44,14 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
   /**
    * The entity's changed date and time.
    *
-   * @var \DateTime
+   * @var \MovLib\Data\DateTime
    */
   public $changed;
 
   /**
    * The entity's creation date and time.
    *
-   * @var \DateTime
+   * @var \MovLib\Data\DateTime
    */
   public $created;
 
@@ -93,6 +93,13 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
    * @var null|string
    */
   public $wikipedia;
+
+  /**
+   * The entity's unique identifier of the user who created this entity.
+   *
+   * @var integer
+   */
+  public $userId;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -137,7 +144,7 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
    *
    * @return this
    */
-  protected function init() {
+  public function init() {
     // @devStart
     // @codeCoverageIgnoreStart
     assert(!empty($this->singularKey), "You must set the \$singularKey property in your class " . static::class);
@@ -153,16 +160,6 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
     $this->created    = new DateTime($this->created);
     $this->deleted    = (boolean) $this->deleted;
     return $this;
-  }
-
-  /**
-   * Whether this entity is gone or not.
-   *
-   * @return boolean
-   *   <code>TRUE</code> if the entity is gone, <code>FALSE</code> otherwise.
-   */
-  public function isGone() {
-    return $this->deleted;
   }
 
   /**

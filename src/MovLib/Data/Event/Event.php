@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data\Event;
 
-use \MovLib\Data\Award\Award;
 use \MovLib\Data\Date;
 use \MovLib\Data\Revision;
 use \MovLib\Data\Movie\FullMovie;
@@ -33,7 +32,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Event extends \MovLib\Data\AbstractEntity implements \MovLib\Data\RevisionInterface {
+class Event extends \MovLib\Data\AbstractEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -359,21 +358,7 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function getRevisionInfo() {
-    return new Revision(
-      $this->name,
-      $this->route,
-      $this->intl->t("Event")
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function init() {
-//    if (isset($this->award) && !$this->award instanceof \stdClass) {
-//      $this->award = new Award($this->diContainer, $this->award);
-//    }
+  public function init() {
     $this->place     && $this->place = new Place($this->diContainer, $this->place);
     $this->aliases   && ($this->aliases = unserialize(($this->aliases)));
     $this->links     && ($this->links = unserialize($this->links));

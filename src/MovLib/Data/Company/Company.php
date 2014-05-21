@@ -32,7 +32,7 @@ use \MovLib\Data\Place\Place;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Company extends \MovLib\Data\Image\AbstractImageEntity implements \MovLib\Data\RevisionInterface {
+final class Company extends \MovLib\Data\Image\AbstractImageEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -302,18 +302,7 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function getRevisionInfo() {
-    return new Revision(
-      $this->name,
-      $this->route,
-      $this->intl->t("Company")
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function init() {
+  public function init() {
     $this->aliases      && ($this->aliases      = unserialize($this->aliases));
     $this->links        && ($this->links        = unserialize($this->links));
     $this->foundingDate && ($this->foundingDate = new Date($this->foundingDate));

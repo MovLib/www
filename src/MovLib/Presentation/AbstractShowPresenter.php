@@ -91,7 +91,7 @@ abstract class AbstractShowPresenter extends \MovLib\Presentation\AbstractPresen
    *   The presenter's sidebar items.
    */
   protected function getSidebarItems() {
-    if ($this->entity->isGone()) {
+    if ($this->entity->deleted === true) {
       return [
         [ $this->entity->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
         [ $this->intl->r("/{$this->entity->singularKey}/{0}/discussion", $this->entity->id), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],

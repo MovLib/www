@@ -69,7 +69,7 @@ SQL;
   /**
    * {@inheritdoc}
    */
-  protected function init() {
+  public function init() {
     $this->pluralKey   = "persons";
     $this->singularKey = "person";
     return parent::init();

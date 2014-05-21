@@ -38,51 +38,6 @@ KEY_BLOCK_SIZE = 8;
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`genres`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`genres` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The genre’s unique identifier.',
-  `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the genre was last changed.',
-  `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The genre’s total number of movie occurrences.',
-  `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The genre’s total number of series occurences.',
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the genre was created.',
-  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the genre was deleted or not.',
-  `dyn_descriptions` BLOB NOT NULL COMMENT 'The genre’s description in various languages. Keys are ISO alpha-2 language codes.',
-  `dyn_names` BLOB NOT NULL COMMENT 'The genre’s name in various languages. Keys are ISO alpha-2 language codes.',
-  `dyn_wikipedia` BLOB NOT NULL COMMENT 'The event’s translated Wikipedia links.',
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB
-COMMENT = 'Contains all genres.'
-ROW_FORMAT = COMPRESSED
-KEY_BLOCK_SIZE = 8;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`movies_genres`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`movies_genres` (
-  `genre_id` BIGINT UNSIGNED NOT NULL COMMENT 'The genre’s unique ID.',
-  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
-  PRIMARY KEY (`genre_id`, `movie_id`),
-  INDEX `fk_movies_genres_genres` (`genre_id` ASC),
-  INDEX `fk_movies_genres_movies` (`movie_id` ASC),
-  CONSTRAINT `fk_movies_genres_movies`
-    FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_genres_genres`
-    FOREIGN KEY (`genre_id`)
-    REFERENCES `movlib`.`genres` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-COMMENT = 'A movie has many genres, a genre has many movies.';
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
 -- Table `movlib`.`users`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`users` (
@@ -121,6 +76,58 @@ ENGINE = InnoDB
 COMMENT = 'Contains all users.'
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`genres`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`genres` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The genre’s unique identifier.',
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’',
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the genre was created.',
+  `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the genre was last changed.',
+  `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The genre’s total number of movie occurrences.',
+  `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The genre’s total number of series occurences.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the genre was deleted or not.',
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The genre’s description in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_names` BLOB NOT NULL COMMENT 'The genre’s name in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_wikipedia` BLOB NOT NULL COMMENT 'The event’s translated Wikipedia links.',
+  PRIMARY KEY (`id`),
+  INDEX `fk_genres_users1_idx` (`user_id` ASC),
+  CONSTRAINT `fk_genres_users1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `movlib`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains all genres.'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`movies_genres`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`movies_genres` (
+  `genre_id` BIGINT UNSIGNED NOT NULL COMMENT 'The genre’s unique ID.',
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
+  PRIMARY KEY (`genre_id`, `movie_id`),
+  INDEX `fk_movies_genres_genres` (`genre_id` ASC),
+  INDEX `fk_movies_genres_movies` (`movie_id` ASC),
+  CONSTRAINT `fk_movies_genres_movies`
+    FOREIGN KEY (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_genres_genres`
+    FOREIGN KEY (`genre_id`)
+    REFERENCES `movlib`.`genres` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'A movie has many genres, a genre has many movies.';
 
 SHOW WARNINGS;
 

@@ -153,6 +153,45 @@ final class Intl {
   }
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Static Methods
+
+
+  /**
+   * Get the default locale.
+   *
+   * @staticvar string $defaultLocale
+   *   Used to cache the default locale.
+   * @return string
+   *   The default locale.
+   */
+  public static function getDefaultLocale() {
+    static $defaultLocale = null;
+    if ($defaultLocale === null) {
+      $defaultLocale = \Locale::getDefault();
+    }
+    return $defaultLocale;
+  }
+
+  /**
+   * Get the default language code.
+   *
+   * @staticvar string $defaultLanguageCode
+   *   Used to cache the default language code.
+   * @return string
+   *   The default language code.
+   */
+  public static function getDefaultLanguageCode() {
+    static $defaultLanguageCode = null;
+    if ($defaultLanguageCode === null) {
+      // We call our own method at this point to seed its static variable and cache the value returned by the method
+      // call to the native Locale class.
+      $locale = self::getDefaultLocale();
+      $defaultLanguageCode = "{$locale{0}}{$locale{1}}";
+    }
+    return $defaultLanguageCode;
+  }
+
+
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 

@@ -167,7 +167,7 @@ abstract class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
   /**
    * {@inheritdoc}
    */
-  protected function init() {
+  public function init() {
     // @devStart
     // @codeCoverageIgnoreStart
     foreach ([ "AlternativeText", "Directory" ] as $property) {

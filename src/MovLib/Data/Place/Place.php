@@ -122,7 +122,7 @@ SQL
   /**
    * {@inheritdoc}
    */
-  protected function init() {
+  public function init() {
     $this->pluralKey   = "places";
     $this->singularKey = "place";
     return parent::init();

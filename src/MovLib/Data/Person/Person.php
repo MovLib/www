@@ -37,7 +37,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Person extends \MovLib\Data\Image\AbstractImageEntity implements \MovLib\Data\RevisionInterface {
+class Person extends \MovLib\Data\Image\AbstractImageEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -245,7 +245,7 @@ SQL
   /**
    * {@inheritdoc}
    */
-  protected function init() {
+  public function init() {
     $this->birthDate && ($this->birthDate = new Date($this->birthDate));
     $this->deathDate && ($this->deathDate = new Date($this->deathDate));
     $this->imageAlternativeText = $this->intl->t("Photo of {name}", [ "name" => $this->name]);
@@ -521,17 +521,6 @@ SQL
     if ($this->deathPlaceId) {
       return new \MovLib\Data\Place\Place($this->diContainer, $this->deathPlaceId);
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getRevisionInfo() {
-    return new Revision(
-      $this->name,
-      $this->route,
-      $this->intl->t("Person")
-    );
   }
 
   /**

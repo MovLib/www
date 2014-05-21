@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data\Genre;
 
-use \MovLib\Data\Revision;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -29,18 +28,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Genre extends \MovLib\Data\AbstractEntity implements \MovLib\Data\RevisionInterface {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
-  /**
-   * The entity type used to store revisions.
-   *
-   * @var int
-   */
-  const REVISION_ENTITY_TYPE = 9;
+final class Genre extends \MovLib\Data\AbstractEntity implements \MovLib\Data\Revision\RevisionInterface {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -144,26 +132,28 @@ final class Genre extends \MovLib\Data\AbstractEntity implements \MovLib\Data\Re
     if ($id) {
       $stmt = $this->getMySQLi()->prepare(<<<SQL
 SELECT
-  `genres`.`id` AS `id`,
-  `genres`.`changed` AS `changed`,
-  `genres`.`created` AS `created`,
-  `genres`.`deleted` AS `deleted`,
+  `id`,
+  `user_id`,
+  `changed`,
+  `created`,
+  `deleted`,
   IFNULL(
-    COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR)
-  ) AS `name`,
-  COLUMN_GET(`genres`.`dyn_descriptions`, '{$this->intl->languageCode}' AS CHAR) AS `description`,
-  COLUMN_GET(`genres`.`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR) AS `wikipedia`,
-  `genres`.`count_movies` AS `movieCount`,
-  `genres`.`count_series` AS `seriesCount`
+    COLUMN_GET(`dyn_names`, '{$this->intl->languageCode}' AS CHAR),
+    COLUMN_GET(`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+  ),
+  COLUMN_GET(`dyn_descriptions`, '{$this->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR),
+  `count_movies`,
+  `count_series`
 FROM `genres`
-WHERE `genres`.`id` = ?
+WHERE `id` = ?
 SQL
       );
       $stmt->bind_param("d", $id);
       $stmt->execute();
       $stmt->bind_result(
         $this->id,
+        $this->userId,
         $this->changed,
         $this->created,
         $this->deleted,
@@ -284,17 +274,6 @@ SQL
     ]);
 
     return $this->init();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getRevisionInfo() {
-    return new Revision(
-      $this->name,
-      $this->route,
-      $this->intl->t("Genre")
-    );
   }
 
 }

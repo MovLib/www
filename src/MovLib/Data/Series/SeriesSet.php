@@ -80,7 +80,7 @@ SQL;
   /**
    * {@inheritdoc}
    */
-  protected function init() {
+  public function init() {
     $this->pluralKey   = "series";
     $this->singularKey = "series";
     return parent::init();

@@ -31,7 +31,7 @@ use \MovLib\Partial\Sex;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Job extends \MovLib\Data\AbstractEntity implements \MovLib\Data\RevisionInterface {
+class Job extends \MovLib\Data\AbstractEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -335,18 +335,7 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function getRevisionInfo() {
-    return new Revision(
-      $this->titles[Sex::UNKNOWN],
-      $this->route,
-      $this->intl->t("Job")
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function init() {
+  public function init() {
     $this->titles[Sex::UNKNOWN] && $this->title = $this->titles[Sex::UNKNOWN];
     return parent::init();
   }

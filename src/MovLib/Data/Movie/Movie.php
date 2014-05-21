@@ -32,7 +32,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity implements \MovLib\Data\RatingInterface, \MovLib\Data\RevisionInterface {
+final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity implements \MovLib\Data\RatingInterface {
   use \MovLib\Data\RatingTrait;
 
 
@@ -459,17 +459,6 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function getRevisionInfo() {
-    return new Revision(
-      $this->displayTitleAndYear,
-      $this->route,
-      $this->intl->t("Movie")
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   protected function imageSaveStyles() {
     $styles = serialize($this->imageStyles);
     $stmt   = $this->getMySQLi()->prepare("UPDATE `posters` SET `styles` = ? WHERE `id` = ? AND `movie_id` = ?");
@@ -482,7 +471,7 @@ SQL
   /**
    * {@inheritdoc}
    */
-  protected function init() {
+  public function init() {
     if (isset($this->year) && !$this->year instanceof \stdClass) {
       $this->year = new Date($this->year);
     }

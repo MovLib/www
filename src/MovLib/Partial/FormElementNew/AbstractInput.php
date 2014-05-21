@@ -15,24 +15,21 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Partial\FormElementNew;
 
 /**
- * Defines the revision interface.
+ * Defines the base object for <code><input></code> form element's.
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-interface RevisionInterface {
+abstract class AbstractInput extends AbstractFormElement {
 
-  /**
-   * Get the revision object.
-   * 
-   * @return \MovLib\Data\Revision
-   */
-  public function getRevisionInfo();
+  public function __construct($name, $label, &$value, array $settings, array $defaults) {
+    parent::__construct($name, $label, $value, $settings, $defaults);
+  }
 
 }

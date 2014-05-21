@@ -26,7 +26,7 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractSet extends \MovLib\Data\AbstractConfig implements \Iterator {
+abstract class AbstractSet extends \MovLib\Data\AbstractConfig implements \Countable, \Iterator, \MovLib\Data\PaginationInterface {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -105,16 +105,10 @@ abstract class AbstractSet extends \MovLib\Data\AbstractConfig implements \Itera
 
 
   /**
-   * Get the total count of available (not deleted) entities.
-   *
-   * @return integer
-   *   The total count of available (not deleted) entities.
+   * @deprecated
    */
   public function getCount() {
-    $result = $this->getMySQLi()->query("SELECT COUNT(*) FROM `{$this->tableName}` WHERE `{$this->tableName}`.`deleted` = false LIMIT 1");
-    $count  = $result->fetch_row()[0];
-    $result->free();
-    return $count;
+    return count($this);
   }
 
   /**
@@ -141,7 +135,7 @@ abstract class AbstractSet extends \MovLib\Data\AbstractConfig implements \Itera
    *
    * @return this
    */
-  protected function init() {
+  public function init() {
     // @devStart
     // @codeCoverageIgnoreStart
     assert(!empty($this->singularKey), "You must set the \$singularKey property in your class " . static::class);
@@ -236,15 +230,12 @@ abstract class AbstractSet extends \MovLib\Data\AbstractConfig implements \Itera
   public function loadIdentifiers(array $ids, $orderBy = null) {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (empty($ids)) {
-      throw new \RuntimeException("\$ids cannot be empty, perform empty() check and only call this method if you have identifiers to load.");
-    }
+    assert(!empty($ids), "The identifiers cannot be empty (check yourself before calling this method).");
     // @codeCoverageIgnoreEnd
     // @devEnd
+
     $ids = implode(",", $ids);
-    if ($orderBy) {
-      $orderBy = "ORDER BY {$orderBy}";
-    }
+    $orderBy && ($orderBy = "ORDER BY {$orderBy}");
     return $this->loadEntities("WHERE `{$this->tableName}`.`id` IN({$ids})", $orderBy);
   }
 
@@ -323,6 +314,22 @@ abstract class AbstractSet extends \MovLib\Data\AbstractConfig implements \Itera
    */
   public function valid() {
     return key($this->entities) !== null;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Countable Methods
+
+
+  /**
+   * Implements <code>\Countable::count()</code>
+   *
+   * @return integer
+   *   The total count of available entities.
+   */
+  public function count() {
+    return (integer) $this->getMySQLi()->query(
+      "SELECT COUNT(*) FROM `{$this->tableName}` WHERE `deleted` = false LIMIT 1"
+    )->fetch_all()[0][0];
   }
 
 }
