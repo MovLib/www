@@ -117,7 +117,7 @@ final class AccountSettings extends \MovLib\Presentation\Profile\AbstractProfile
       ->addElement((new Country($this->diContainerHTTP))->getSelectFormElement($this->user->countryCode, [
         "#help-popup" => $this->intl->t("Your country will be displayed on your profile page and is used to create demographic evaluations."),
       ]))
-      ->addElement(new Select($this->diContainerHTTP, "tzid", $this->intl->t("Time Zone"), $this->intl->getTranslations("timezones"), $this->user->timezone, [
+      ->addElement(new Select($this->diContainerHTTP, "tzid", $this->intl->t("Time Zone"), $this->intl->getTranslations("timezones"), $this->user->timezoneId, [
         "#help-popup" => $this->intl->t("Your time zone will be used to display any time related information correctly."),
       ]))
       ->addElement((new Currency())->getSelectFormElement($this->diContainerHTTP, $this->user->currencyCode, [

@@ -460,7 +460,7 @@ SQL
     $this->private              = (boolean) $this->private;
     $this->routeArgs            = [ $this->imageFilename ];
     $this->singularKey          = "user";
-    $this->timezoneId           && ($this->timezone = new DateTimeZone($this->timezoneId));
+    $this->timezoneId           && ($this->timezone = new \DateTimeZone($this->timezoneId));
     return parent::init();
   }
 

@@ -80,7 +80,7 @@ class Select extends \MovLib\Partial\FormElement\AbstractFormElement {
     if (empty($options)) {
       throw new \LogicException("The options array of a select element cannot be empty.");
     }
-    if (isset($value) && !isset($options[$value])) {
+    if (isset($value) && empty($options[$value])) {
       throw new \LogicException("The value ({$value}) passed to a select form element must be present in the available options array.");
     }
     // @devEnd
