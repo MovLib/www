@@ -87,30 +87,25 @@ abstract class AbstractImageSet extends \MovLib\Data\AbstractSet {
   /**
    * {@inheritdoc}
    */
-  public function getCount() {
-    $result = $this->getMySQLi()->query(<<<SQL
-SELECT COUNT(*) FROM `{$this->tableName}` WHERE `deleted` = false AND `{$this->entityKey}_id` = {$this->entityId} LIMIT 1
-SQL
-    );
-    $count  = $result->fetch_row()[0];
-    $result->free();
-    return $count;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function getRandom() {
     $id     = null;
-    $result = $this->getMySQLi()->query(<<<SQL
-SELECT `id` FROM `{$this->tableName}` WHERE `deleted` = false AND `{$this->entityKey}_id` = {$this->entityId} ORDER BY RAND() LIMIT 1
-SQL
+    $result = $this->getMySQLi()->query(
+      "SELECT `id` FROM `{$this->tableName}` WHERE `deleted` = false AND `{$this->entityKey}_id` = {$this->entityId} ORDER BY RAND() LIMIT 1"
     );
     if ($result) {
       $id = $result->fetch_row()[0];
     }
     $result->free();
     return $id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTotalCount() {
+    return $this->getMySQLi()->query(
+      "SELECT COUNT(*) FROM `{$this->tableName}` WHERE `deleted` = false AND `{$this->entityKey}_id` = {$this->entityId} LIMIT 1"
+    )->fetch_all()[0][0];
   }
 
   /**

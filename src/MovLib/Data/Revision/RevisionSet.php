@@ -28,7 +28,7 @@ use \MovLib\Data\User\UserSet;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class RevisionSet extends \MovLib\Core\AbstractDatabase implements \Countable, \Iterator {
+final class RevisionSet extends \MovLib\Core\AbstractDatabase implements \Iterator, \MovLib\Data\PaginationInterface {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -55,6 +55,15 @@ final class RevisionSet extends \MovLib\Core\AbstractDatabase implements \Counta
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTotalCount() {
+    return (integer) $this->getMySQLi()->query(
+      "SELECT COUNT(*) FROM `revisions` WHERE `revision_entity_id` = {$this->revisionEntityTypeId} AND `entity_id` = {$this->entityId} LIMIT 1"
+    )->fetch_all()[0][0];
+  }
 
   public function load($offset, $limit, \MovLib\Core\DIContainer $diContainer) {
     $result = $this->getMySQLi()->query(<<<SQL
@@ -138,22 +147,6 @@ SQL
    */
   public function valid() {
     return key($this->revisions) !== null;
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Countable Methods
-
-
-  /**
-   * Implements <code>\Countable::count()</code>
-   *
-   * @return integer
-   *   The total count.
-   */
-  public function count() {
-    return (integer) $this->getMySQLi()->query(
-      "SELECT COUNT(*) FROM `revisions` WHERE `revision_entity_id` = {$this->revisionEntityTypeId} AND `entity_id` = {$this->entityId} LIMIT 1"
-    )->fetch_all()[0][0];
   }
 
 }

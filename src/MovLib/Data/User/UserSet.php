@@ -31,16 +31,6 @@ final class UserSet extends \MovLib\Data\AbstractSet {
   /**
    * {@inheritdoc}
    */
-  public function getCount() {
-    $result = $this->getMySQLi()->query("SELECT COUNT(*) FROM `users` WHERE `email` IS NOT NULL LIMIT 1");
-    $count  = $result->fetch_row()[0];
-    $result->free();
-    return $count;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   protected function getEntitiesQuery($where = null, $orderBy = null) {
     return <<<SQL
 SELECT
@@ -61,11 +51,10 @@ SQL;
   /**
    * {@inheritdoc}
    */
-  public function loadOrdered($by, $offset, $limit, $where = null) {
-    if ($where) {
-     $where = " AND {$where}";
-    }
-    return $this->loadEntities("WHERE `email` IS NOT NULL{$where}", "ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}");
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
+    return <<<SQL
+
+SQL;
   }
 
   /**
@@ -86,6 +75,13 @@ SQL;
   /**
    * {@inheritdoc}
    */
+  public function getTotalCount() {
+    return $this->getMySQLi()->query("SELECT COUNT(*) FROM `users` WHERE `email` IS NOT NULL LIMIT 1")->fetch_all()[0][0];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function init() {
     $this->pluralKey   = $this->tableName = "users";
     $this->route       = $this->intl->r("/users");
@@ -96,10 +92,11 @@ SQL;
   /**
    * {@inheritdoc}
    */
-  protected function getEntitySetsQuery(\MovLib\Data\AbstractSet $set, $in) {
-    return <<<SQL
-
-SQL;
+  public function loadOrdered($by, $offset, $limit, $where = null) {
+    if ($where) {
+     $where = " AND {$where}";
+    }
+    return $this->loadEntities("WHERE `email` IS NOT NULL{$where}", "ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}");
   }
 
 }

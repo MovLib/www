@@ -179,12 +179,10 @@ SQL
 
 
   /**
-   * Update the genre.
-   *
-   * @return this
-   * @throws \mysqli_sql_exception
+   * {@inheritdoc}
    */
-  public function commit() {
+  public function commit($userId, \MovLib\Data\DateTime $dateTime, \MovLib\Core\Log $logger) {
+    
     $mysqli = $this->getMySQLi();
     $name = $mysqli->real_escape_string($this->name);
     $query = "UPDATE `genres` SET `dyn_names` = COLUMN_ADD(`dyn_names`, '{$this->intl->languageCode}', '{$name}')";

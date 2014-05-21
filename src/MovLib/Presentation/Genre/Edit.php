@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Genre;
 
 use \MovLib\Data\Genre\Genre;
-use \MovLib\Data\Revision\Revision;
 use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputText;
@@ -79,9 +78,8 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    * @throws SeeOtherException
    */
   public function submit() {
-    $revision = new Revision($this->diContainerHTTP, "Genre", $this->entity->id);
-    $revision->save($this->entity);
-    $this->alertSuccess($this->intl->t("Update successful"));
+    $this->entity->commit($this->session->userId, $this->request->dateTime, $this->log);
+    $this->alertSuccess($this->intl->t("Update Successful"));
     throw new SeeOtherException($this->entity->route);
   }
 
