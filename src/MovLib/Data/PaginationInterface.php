@@ -34,6 +34,6 @@ interface PaginationInterface {
    * @return integer
    *   The total count of displayable entities.
    */
-  public function getCount();
+  public function getTotalCount();
 
 }

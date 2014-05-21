@@ -117,11 +117,11 @@ trait PaginationTrait {
   /**
    * Initialize the pagination.
    *
-   * @param \Countable $set
-   *   The set that provides the items to paginate.
+   * @param \MovLib\Data\PaginationInterface $paginationInterface
+   *   The instance that provides the items to paginate and implements the pagination interface.
    * @return this
    */
-  final protected function paginationInit(\Countable $set = null) {
+  final protected function paginationInit(\MovLib\Data\PaginationInterface $paginationInterface) {
     // @devStart
     // @codeCoverageIgnoreStart
     assert($this instanceof \MovLib\Presentation\AbstractPresenter, "You can only use the pagination trait within a presenter.");
@@ -131,14 +131,7 @@ trait PaginationTrait {
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-    // @todo Get rid of this dependency!
-    if (!$set && property_exists($this, "set")) {
-      $this->paginationTotalResults = $this->set->getCount();
-    }
-    else {
-      $this->paginationTotalResults = count($set);
-    }
-
+    $this->paginationTotalResults = $paginationInterface->getTotalCount();
     if ($this->paginationTotalResults === 1) {
       return $this;
     }
@@ -215,7 +208,7 @@ trait PaginationTrait {
       }
       else {
         $pages[] = "<span class='mute pager'>{$this->intl->t("…")}</span>";
-        $x--;
+        --$x;
       }
 
       $y = $this->paginationTotalPages - 6;

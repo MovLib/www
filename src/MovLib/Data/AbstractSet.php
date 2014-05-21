@@ -26,7 +26,7 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractSet extends \MovLib\Data\AbstractConfig implements \Countable, \Iterator, \MovLib\Data\PaginationInterface {
+abstract class AbstractSet extends \MovLib\Data\AbstractConfig implements \Iterator, \MovLib\Data\PaginationInterface {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -108,7 +108,7 @@ abstract class AbstractSet extends \MovLib\Data\AbstractConfig implements \Count
    * @deprecated
    */
   public function getCount() {
-    return count($this);
+    return $this->getTotalCount();
   }
 
   /**
@@ -125,6 +125,17 @@ abstract class AbstractSet extends \MovLib\Data\AbstractConfig implements \Count
     }
     $result->free();
     return $id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTotalCount() {
+    // We use fetch all at this point, because we'll always get at least a single result from the query and it consumes
+    // and closes the statement at once (lesser method calls).
+    return (integer) $this->getMySQLi()->query(
+      "SELECT COUNT(*) FROM `{$this->tableName}` WHERE `deleted` = false LIMIT 1"
+    )->fetch_all()[0][0];
   }
 
   /**
@@ -314,22 +325,6 @@ abstract class AbstractSet extends \MovLib\Data\AbstractConfig implements \Count
    */
   public function valid() {
     return key($this->entities) !== null;
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Countable Methods
-
-
-  /**
-   * Implements <code>\Countable::count()</code>
-   *
-   * @return integer
-   *   The total count of available entities.
-   */
-  public function count() {
-    return (integer) $this->getMySQLi()->query(
-      "SELECT COUNT(*) FROM `{$this->tableName}` WHERE `deleted` = false LIMIT 1"
-    )->fetch_all()[0][0];
   }
 
 }
