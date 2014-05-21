@@ -17,7 +17,7 @@
  */
 namespace MovLib\Data\Job;
 
-use \MovLib\Data\Revision;
+use \MovLib\Data\Person\PersonSet;
 use \MovLib\Exception\ClientException\NotFoundException;
 use \MovLib\Partial\Sex;
 
@@ -338,6 +338,41 @@ SQL
   public function init() {
     $this->titles[Sex::UNKNOWN] && $this->title = $this->titles[Sex::UNKNOWN];
     return parent::init();
+  }
+
+  /**
+   * Get the job's persons.
+   *
+   * @param integer $offset [optional]
+   *   The offset, usually provided by the {@see \MovLib\Presentation\PaginationTrait}.
+   * @param integer $limit [optional]
+   *   The limit (row count), usually provided by the {@see \MovLib\Presentation\PaginationTrait}.
+   *
+   * @return \MovLib\Data\Person\PersonSet
+   */
+  public function getPersons($offset = null, $limit = null) {
+    $personSet = new PersonSet($this->diContainer);
+    $result = $this->getMySQLi()->query(<<<SQL
+(
+SELECT `persons`.`id` FROM `persons`
+  INNER JOIN `movies_crew` ON `movies_crew`.`person_id` = `persons`.`id` AND `movies_crew`.`job_id` = {$this->id}
+) UNION ALL (
+SELECT `persons`.`id` FROM `persons`
+  INNER JOIN `episodes_crew` ON `episodes_crew`.`person_id` = `persons`.`id` AND `episodes_crew`.`job_id` = {$this->id}
+)
+LIMIT {$limit} OFFSET {$offset}
+SQL
+    );
+    $personIds = [];
+    while ($entity = $result->fetch_assoc()) {
+      $personIds[] = $entity["id"];
+    }
+    $result->free();
+    if(!empty($personIds)) {
+      $personSet->loadIdentifiers($personIds);
+    }
+
+    return $personSet;
   }
 
 }

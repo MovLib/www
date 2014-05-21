@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Job;
 
 use \MovLib\Data\Job\Job;
+use \MovLib\Partial\Helper\PersonHelper;
 
 /**
  * Persons with a certain job associated.
@@ -29,6 +30,7 @@ use \MovLib\Data\Job\Job;
  * @since 0.0.1-dev
  */
 class Persons extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\PaginationTrait;
   use \MovLib\Partial\SidebarTrait;
   use \MovLib\Presentation\Job\JobTrait;
 
@@ -69,7 +71,20 @@ class Persons extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater("job persons");
+    $personSet = $this->entity->getPersons($this->paginationOffset, $this->paginationLimit);
+    $this->paginationInit($personSet);
+    return (new PersonHelper($this->diContainerHTTP))->getListing($personSet);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getNoItemsContent() {
+    return $this->calloutInfo(
+      "<p>{$this->intl->t("We couldn’t find any person matching your filter criteria.")}</p>" .
+      "<p>{$this->intl->t("Would you like to {0}create an person{1}?", [ "<a href='{$this->intl->r("/person/create")}'>", "</a>" ])}</p>",
+      $this->intl->t("No Persons With This Job")
+    );
   }
 
 }
