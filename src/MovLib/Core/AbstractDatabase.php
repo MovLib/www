@@ -96,6 +96,13 @@ abstract class AbstractDatabase {
    */
   private static $mysqli;
 
+  /**
+   * The object's short class name.
+   *
+   * @var string
+   */
+  protected $shortName;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -127,11 +134,10 @@ abstract class AbstractDatabase {
    *   The string representation of this instance.
    */
   public function __toString() {
-    static $shortName = null;
-    if ($shortName === null) {
-      $shortName = basename(strtr(static::class, "\\", "/"));
+    if ($this->shortName === null) {
+      $this->shortName = basename(strtr(static::class, "\\", "/"));
     }
-    return $shortName;
+    return $this->shortName;
   }
 
 

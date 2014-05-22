@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\User;
 
-use \MovLib\Partial\Time;
+use \MovLib\Partial\DateTime;
 
 /**
  * Defines the user contribution presentation object.
@@ -35,39 +35,88 @@ final class Contributions extends \MovLib\Presentation\User\AbstractUserPresente
    * {@inheritdoc}
    */
   public function init(){
-    return $this->initPage($this->intl->t("{username}’s Contributions"), null, $this->intl->t("Contributions"));
+    return $this
+      ->initPage($this->intl->t("{username}’s Contributions"), null, $this->intl->t("Contributions"))
+      ->paginationInit($this->entity->getTotalContributionCount())
+    ;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getContent(){
-    $result = $this->entity->getContributions($this->paginationOffset, $this->paginationLimit);
-    if ($result->num_rows > 0) {
-      $contributions = "<ol class='hover-list no-list'>";
-      while ($row = $result->fetch_assoc()) {
-        $entity = new $row["entityClass"]($this->diContainerHTTP, $row["entityId"]);
-        $revisionInfo = $entity->getRevisionInfo();
-        $created = new Time($this->intl, $row["created"]);
-        $contributions .=
-          "<li class='hover-item r'>" .
-            "<div class='s s8'>" .
-              "<h2 class='para'>{$revisionInfo->type}: {$this->a($revisionInfo->route, $this->htmlDecode($revisionInfo->name))}</h2>" .
-              "<p>{$this->htmlDecode($row["commitMessage"])}</p>" .
-            "</div>" .
-            "<div class='s s2 tar'>" .
-              "<p>{$created->formatRelative()}</p>" .
-              "<p><a href='{$revisionInfo->route}/{$this->intl->r("history")}/{$row["revisionHash"]}'>{$this->intl->t("show diff")}</a></p>" .
-            "</div>" .
-          "</li>"
-        ;
-      }
-      $contributions .= "</ol>";
-      return $contributions;
+  public function getContent() {
+    $contributions = null;
+    $dateTime      = new DateTime($this->intl, $this, $this->session->userTimezone);
+
+    /* @var $contribution \MovLib\Stub\Data\User\Contribution */
+    foreach ($this->entity->getContributions($this->paginationOffset, $this->paginationLimit) as $contribution) {
+      $contributions .=
+        "<li class='hover-item r'>" .
+          $this->{"format{$contribution->entity}"}($contribution->entity) .
+          "<div class='s s2 tar'>" .
+            "<p>" .
+              $dateTime->formatRelative($contribution->dateTime) .
+              "<a href='{$contribution->entity->r("/history")}/{$contribution->revisionId}'>{$this->intl->t("diff")}</a> | " .
+              "<a href='{$contribution->entity->r("/history")}'>{$this->intl->t("history")}</a>" .
+            "</p>" .
+          "</div>" .
+        "</li>"
+      ;
     }
-    else {
-      return $this->getNoItemsContent();
-    }
+
+    return "<ol class='hover-list no-list'>{$contributions}</ol>";
+//    $result = $this->entity->getContributions($this->paginationOffset, $this->paginationLimit);
+//    if ($result->num_rows > 0) {
+//      $contributions = "<ol class='hover-list no-list'>";
+//      while ($row = $result->fetch_assoc()) {
+//        $entity = (new $row["entityClass"]($this->diContainerHTTP, $row["entityId"]));
+//        $this->log->debug("row:", $row);
+//        $this->log->debug($entity);
+//        $contributions .=
+//          "<li class='hover-item r'>" .
+//            $this->{"format{$entity}"}($entity) .
+//            "<div class='s s2 tar'>" .
+//              "<p>" .
+//                (new DateTimePartial($this->intl, $this))->format(new DateTime($row["created"])) .
+//                "<a href='{$this->intl->r("{$entity->routeKey}/history", $entity->routeArgs)}/{$row["revision"]}'>{$this->intl->t("diff")}</a> " .
+//                "<a href='{$this->intl->r("{$entity->routeKey}/history", $entity->routeArgs)}'>{$this->intl->t("history")}</a>" .
+//              "</p>" .
+//            "</div>" .
+//          "</li>"
+//        ;
+//      }
+//      $contributions .= "</ol>";
+//      return $contributions;
+//    }
+//    else {
+//      return $this->getNoItemsContent();
+//    }
+  }
+
+  /**
+   * Format a company.
+   *
+   * @param \MovLib\Data\AbstractEntity $company
+   * @return string
+   */
+  public function formatCompany(\MovLib\Data\AbstractEntity $company) {
+    return
+      "<div class='s s8 tar'>" .
+        "<h2 class='para'>{$this->intl->t("Company")}: {$this->a($company->route, $this->htmlDecode($company->name))}</h2>" .
+      "</div>"
+    ;
+  }
+
+  public function formatGenre(\MovLib\Data\AbstractEntity $genre) {
+    return "Genre";
+  }
+
+  public function formatMovie(\MovLib\Data\AbstractEntity $movie) {
+    return "Movie";
+  }
+
+  public function formatPerson(\MovLib\Data\AbstractEntity $person) {
+    return "Person";
   }
 
   /**

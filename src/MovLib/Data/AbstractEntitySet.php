@@ -26,7 +26,11 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
+<<<<<<< HEAD
 abstract class AbstractEntitySet extends \MovLib\Data\AbstractConfig implements \Iterator {
+=======
+abstract class AbstractEntitySet extends \MovLib\Data\AbstractConfig implements \ArrayAccess, \Countable, \Iterator {
+>>>>>>> Implemented efficient loading of contributions
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -37,7 +41,7 @@ abstract class AbstractEntitySet extends \MovLib\Data\AbstractConfig implements 
    *
    * @var array
    */
-  public $entities = [];
+  protected $entities = [];
 
   /**
    * The canonical absolute class name of the entity this set controls.
@@ -63,7 +67,6 @@ abstract class AbstractEntitySet extends \MovLib\Data\AbstractConfig implements 
   public function __construct(\MovLib\Core\DIContainer $diContainer) {
     parent::__construct($diContainer);
     $this->entityClassName = substr(static::class, 0, -3);
-    $this->shortName       = lcfirst(basename(strtr(static::class, "\\", "/")));
     $this->init();
   }
 
@@ -214,14 +217,16 @@ abstract class AbstractEntitySet extends \MovLib\Data\AbstractConfig implements 
     // Create a fresh instance of ourself that we can export to the entities of the given set in the upcoming loop.
     $reflector = new \ReflectionClass(static::class);
 
+    $entitySetPropertyName = (string) $this;
+
     // Instantiate and export an instance of ourself to each entity of the passed set and seed those set instances with
     // the entities that were returned by the above query.
     /* @var $entity \MovLib\Data\AbstractEntity */
     while ($entity = $result->fetch_object($this->entityClassName, [ $this->diContainer ])) {
-      if (empty($set->entities[$entity->entityId]->{$this->shortName})) {
-        $set->entities[$entity->entityId]->{$this->shortName} = $reflector->newInstance($this->diContainer);
+      if (empty($set[$entity->entityId]->{$entitySetPropertyName})) {
+        $set[$entity->entityId]->{$entitySetPropertyName} = $reflector->newInstance($this->diContainer);
       }
-      $set->entities[$entity->entityId]->{$this->shortName}->entities[$entity->id] = $entity;
+      $set[$entity->entityId]->{$entitySetPropertyName}[$entity->id] = $entity;
     }
 
     $result->free();
@@ -325,6 +330,50 @@ abstract class AbstractEntitySet extends \MovLib\Data\AbstractConfig implements 
    */
   public function valid() {
     return key($this->entities) !== null;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Countable Methods
+
+
+  /**
+   * Implements <code>count()</code> callback.
+   *
+   * @return integer
+   *   Total count of elements in the set.
+   */
+  public function count() {
+    return count($this->entities);
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Array Access Methods
+
+
+  /**
+   * @return boolean
+   */
+  public function offsetExists($offset) {
+    return isset($this->entities[$offset]);
+  }
+
+  /**
+   * @return mixed
+   */
+  public function offsetGet($offset) {
+    return $this->entities[$offset];
+  }
+
+  /**
+   */
+  public function offsetSet($offset, $value) {
+    $this->entities[$offset] = $value;
+  }
+
+  /**
+   */
+  public function offsetUnset($offset) {
+    throw new \RuntimeException("You cannot remove entities from a set.");
   }
 
 }

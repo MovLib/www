@@ -406,23 +406,55 @@ SQL
    * @throws \mysqli_sql_exception
    */
   public function getContributions($offset, $limit) {
-    return $this->getMySQLi()->query(<<<SQL
+    $contributions = $entities = [];
+
+    // Select all contributions from the database matching the filter criteria and offset + limit.
+    $result = $this->getMySQLi()->query(<<<SQL
 SELECT
-  `revisions`.`commit_msg` AS `commitMessage`,
-  `revisions`.`commit_msg_language_code` AS `commitMessageLanguageCode5`,
+  `revisions`.`id` + 0 AS `revisionId`,
   `revisions`.`entity_id` AS `entityId`,
-  `revisions`.`created` AS `created`,
-  md5(`revisions`.`created`) AS `revisionHash`,
-  `revision_entity_types`.`class` AS `entityClass`
+  `revision_entities`.`class` AS `entityClass`
 FROM `revisions`
-  INNER JOIN `revision_entity_types`
-    ON `revisions`.`entity_type_id` = `revision_entity_types`.`id`
+  INNER JOIN `revision_entities`
+    ON `revisions`.`revision_entity_id` = `revision_entities`.`id`
 WHERE `revisions`.`user_id` = {$this->id}
-ORDER BY `created` DESC
-LIMIT {$limit}
-OFFSET {$offset}
+ORDER BY `revisionId` DESC
+LIMIT {$limit} OFFSET {$offset}
 SQL
     );
+
+    // Create a \MovLib\Stub\Data\User\Contribution instance for each contribution.
+    while ($contribution = $result->fetch_object()) {
+      // We have to create a unique delta for each contribution to preserve the order that the above SQL query produced
+      // for us.
+      $contributions["{$contribution->entityId}_{$contribution->revisionId}"] = (object) [
+        "entity"          => null,
+        "entityClassName" => $contribution->entityClass,
+        "entityId"        => $contribution->entityId,
+        "dateTime"        => new DateTime($contribution->revisionId),
+        "revisionId"      => $contribution->revisionId,
+      ];
+
+      // We don't know anything about the actual entities the user contributed to. Therefore we have to collect the
+      // unique identifiers and load presentable instances of the entities.
+      $entities[$contribution->entityClass][] = $contribution->entityId;
+    }
+    $result->free();
+
+    // Go through all entity classes and identifiers that we collected in the previous loop and instantiate sets that
+    // will load the minimal entities for us. We lower the amount of queries if some entities share the same set.
+    foreach ($entities as $entityClassName => $entityIds) {
+      $setClassName = "{$entityClassName}Set";
+      $entities[$entityClassName] = (new $setClassName($this->diContainer))->loadIdentifiers($entityIds);
+    }
+
+    // Now we map the previously collected entities to their corresponding contribution (revision).
+    /* @var $contribution \MovLib\Stub\Data\User\Contribution */
+    foreach ($contributions as $contribution) {
+      $contribution->entity = $entities[$contribution->entityClassName][$contribution->entityId];
+    }
+
+    return $contributions;
   }
 
   /**
@@ -444,6 +476,21 @@ SQL
     $rating = $result->fetch_row()[0];
     $result->free();
     return $rating;
+  }
+
+  /**
+   * Get the total count of contributions this user has performed.
+   *
+   * @return integer
+   *   The total count of contributions this user has performed.
+   */
+  public function getTotalContributionCount() {
+    if (empty($this->edits)) {
+      $this->edits = (integer) $this->getMySQLi()->query(
+        "SELECT COUNT(*) FROM `revisions` WHERE `user_id` = {$this->id} LIMIT 1"
+      )->fetch_all()[0][0];
+    }
+    return $this->edits;
   }
 
   /**
@@ -550,10 +597,10 @@ SQL
     $c = count($ratedEntities);
     for ($i = 0; $i < $c; ++$i) {
       if ($ratedEntities[$i]->entity == "Movie") {
-        $ratedEntities[$i]->entity = $ratedMoviesSet->entities[$ratedEntities[$i]->id];
+        $ratedEntities[$i]->entity = $ratedMoviesSet[$ratedEntities[$i]->id];
       }
       elseif ($ratedEntities[$i]->entity == "Series") {
-        $ratedEntities[$i]->entity = $ratedSeriesSet->entities[$ratedEntities[$i]->id];
+        $ratedEntities[$i]->entity = $ratedSeriesSet[$ratedEntities[$i]->id];
       }
     }
     return $ratedEntities;
