@@ -19,6 +19,8 @@ namespace MovLib\Data\Company;
 
 use \MovLib\Data\Date;
 use \MovLib\Data\Revision;
+use \MovLib\Data\Movie\MovieSet;
+use \MovLib\Data\Series\SeriesSet;
 use \MovLib\Exception\ClientException\NotFoundException;
 use \MovLib\Data\Place\Place;
 
@@ -297,6 +299,96 @@ SQL
     $this->id = $stmt->insert_id;
 
     return $this->init();
+  }
+
+  /**
+   * Get all movies related to this company.
+   *
+   * @param integer $offset [optional]
+   *   The offset, usually provided by the {@see \MovLib\Presentation\PaginationTrait}.
+   * @param integer $limit [optional]
+   *   The limit (row count), usually provided by the {@see \MovLib\Presentation\PaginationTrait}.
+   *
+   * @return \MovLib\Data\Movie\MovieSet
+   */
+  public function getMovies($offset = null, $limit = null) {
+    $movieSet = new MovieSet($this->diContainer);
+    $result   = $this->getMySQLi()->query(<<<SQL
+SELECT `movies`.`id` FROM `movies`
+  INNER JOIN `movies_crew` ON `movies_crew`.`movie_id` = `movies`.`id` AND `movies_crew`.`company_id` = {$this->id}
+WHERE `movies`.`deleted` = false
+LIMIT {$limit}
+OFFSET {$offset}
+SQL
+    );
+    $movieIds = [];
+    while ($entity = $result->fetch_assoc()) {
+      $movieIds[] = $entity["id"];
+    }
+    $result->free();
+    if(!empty($movieIds)) {
+      $movieSet->loadIdentifiers($movieIds);
+    }
+
+    return $movieSet;
+  }
+
+  /**
+   * Get the total amount of movies related to a company.
+   */
+  public function getMovieTotalCount() {
+    return (integer) $this->getMySQLi()->query(<<<SQL
+SELECT count(*) FROM `movies`
+  INNER JOIN `movies_crew` ON `movies_crew`.`movie_id` = `movies`.`id` AND `movies_crew`.`company_id` = {$this->id}
+WHERE `movies`.`deleted` = false
+LIMIT 1
+SQL
+    )->fetch_all()[0][0];
+  }
+
+  /**
+   * Get all series related to this company.
+   *
+   * @param integer $offset [optional]
+   *   The offset, usually provided by the {@see \MovLib\Presentation\PaginationTrait}.
+   * @param integer $limit [optional]
+   *   The limit (row count), usually provided by the {@see \MovLib\Presentation\PaginationTrait}.
+   *
+   * @return \MovLib\Data\Series\SeriesSet
+   */
+  public function getSeries($offset = null, $limit = null) {
+    $seriesSet = new SeriesSet($this->diContainer);
+    $result   = $this->getMySQLi()->query(<<<SQL
+SELECT DISTINCT `series`.`id` FROM `series`
+  INNER JOIN `episodes_crew` ON `episodes_crew`.`series_id` = `series`.`id` AND `episodes_crew`.`company_id` = {$this->id}
+WHERE `series`.`deleted` = false
+LIMIT {$limit}
+OFFSET {$offset}
+SQL
+    );
+    $movieIds = [];
+    while ($entity = $result->fetch_assoc()) {
+      $movieIds[] = $entity["id"];
+    }
+    $result->free();
+    if(!empty($movieIds)) {
+      $seriesSet->loadIdentifiers($movieIds);
+    }
+
+    return $seriesSet;
+  }
+
+  /**
+   * Get the total amount of series related to a company.
+   */
+  public function getSeriesTotalCount() {
+    return (integer) $this->getMySQLi()->query(<<<SQL
+SELECT count(DISTINCT `episodes_crew`.`series_id`) FROM `series`
+  INNER JOIN `episodes_crew` ON `episodes_crew`.`series_id` = `series`.`id` AND `episodes_crew`.`company_id` = {$this->id}
+WHERE `series`.`deleted` = false
+LIMIT 1
+SQL
+    )->fetch_all()[0][0];
   }
 
   /**

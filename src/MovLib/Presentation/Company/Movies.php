@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Company;
 
 use \MovLib\Data\Company\Company;
+use \MovLib\Partial\Helper\MovieHelper;
 
 /**
  * Movies with a certain company associated.
@@ -29,6 +30,7 @@ use \MovLib\Data\Company\Company;
  * @since 0.0.1-dev
  */
 class Movies extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\PaginationTrait;
   use \MovLib\Partial\SidebarTrait;
   use \MovLib\Presentation\Company\CompanyTrait;
 
@@ -69,7 +71,20 @@ class Movies extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater("Company Movies");
+    $movieSet = $this->entity->getMovies($this->paginationOffset, $this->paginationLimit);
+    $this->paginationInit($this->entity->getMovieTotalCount());
+    return (new MovieHelper($this->diContainerHTTP))->getListing($movieSet);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getNoItemsContent() {
+    return $this->calloutInfo(
+      "<p>{$this->intl->t("We couldn’t find any movie matching your filter criteria.")}</p>" .
+      "<p>{$this->intl->t("Would you like to {0}create an movie{1}?", [ "<a href='{$this->intl->r("/movie/create")}'>", "</a>" ])}</p>",
+      $this->intl->t("No Movies Related To This Company")
+    );
   }
 
 }

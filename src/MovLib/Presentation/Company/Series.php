@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Company;
 
 use \MovLib\Data\Company\Company;
+use \MovLib\Partial\Helper\SeriesHelper;
 
 /**
  * Series with a certain company associated.
@@ -29,10 +30,11 @@ use \MovLib\Data\Company\Company;
  * @since 0.0.1-dev
  */
 class Series extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\PaginationTrait;
   use \MovLib\Partial\SidebarTrait;
   use \MovLib\Presentation\Company\CompanyTrait;
 
-
+  
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
@@ -69,7 +71,20 @@ class Series extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater("Company Series");
+    $seriesSet = $this->entity->getSeries($this->paginationOffset, $this->paginationLimit);
+    $this->paginationInit($this->entity->getSeriesTotalCount());
+    return (new SeriesHelper($this->diContainerHTTP))->getListing($seriesSet);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getNoItemsContent() {
+    return $this->calloutInfo(
+      "<p>{$this->intl->t("We couldn’t find any series matching your filter criteria.")}</p>" .
+      "<p>{$this->intl->t("Would you like to {0}create an series{1}?", [ "<a href='{$this->intl->r("/series/create")}'>", "</a>" ])}</p>",
+      $this->intl->t("No Series Related To This Company")
+    );
   }
 
 }
