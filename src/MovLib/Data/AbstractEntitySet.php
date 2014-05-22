@@ -26,11 +26,7 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-<<<<<<< HEAD
-abstract class AbstractEntitySet extends \MovLib\Data\AbstractConfig implements \Iterator {
-=======
 abstract class AbstractEntitySet extends \MovLib\Data\AbstractConfig implements \ArrayAccess, \Countable, \Iterator {
->>>>>>> Implemented efficient loading of contributions
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
