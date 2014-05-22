@@ -29,27 +29,27 @@ TRUNCATE TABLE `revisions`;
 -- START "Revisions"
 
 INSERT INTO `revisions` SET
-  `id`                  = CURRENT_TIMESTAMP,
-  `revision_entity_id`           = 1,
-  `entity_id`                = 2,
-  `user_id`                  = 3,
-  `data`                     = 'a:0:{}'
+  `id`                 = '2014-05-20 15:19:31',
+  `revision_entity_id` = 1,
+  `entity_id`          = 2,
+  `user_id`            = 3,
+  `data`               = 'a:0:{}'
 ;
 
 INSERT INTO `revisions` SET
-  `id`                  = CURRENT_TIMESTAMP,
-  `revision_entity_id`           = 4,
-  `entity_id`                = 6,
-  `user_id`                  = 3,
-  `data`                     = 'a:0:{}'
+  `id`                 = '2014-05-20 16:19:31',
+  `revision_entity_id` = 4,
+  `entity_id`          = 6,
+  `user_id`            = 3,
+  `data`               = 'a:0:{}'
 ;
 
 INSERT INTO `revisions` SET
-  `id`                  = CURRENT_TIMESTAMP,
-  `revision_entity_id`           = 5,
-  `entity_id`                = 3,
-  `user_id`                  = 3,
-  `data`                     = 'a:0:{}'
+  `id`                 = '2014-05-20 17:19:31',
+  `revision_entity_id` = 5,
+  `entity_id`          = 3,
+  `user_id`            = 3,
+  `data`               = 'a:0:{}'
 ;
 
 -- END "Revisions"

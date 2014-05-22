@@ -402,10 +402,12 @@ SQL
    *   The offset, usually provided by the {@see \MovLib\Presentation\PaginationTrait}, defaults to 0.
    * @param integer $limit
    *   The limit (row count), usually provided by the {@see \MovLib\Presentation\PaginationTrait}, defaults to 10.
+   * @param string $orderBy [optional]
+   *   The filtering <code>ORDER BY</code> clause without <code>ORDER BY</code>, defaults to <code>`revisionId` DESC</code>.
    * @return \mysqli_result
    * @throws \mysqli_sql_exception
    */
-  public function getContributions($offset, $limit) {
+  public function getContributions($offset, $limit, $orderBy = "`revisionId` DESC") {
     $contributions = $entities = [];
 
     // Select all contributions from the database matching the filter criteria and offset + limit.
@@ -418,7 +420,7 @@ FROM `revisions`
   INNER JOIN `revision_entities`
     ON `revisions`.`revision_entity_id` = `revision_entities`.`id`
 WHERE `revisions`.`user_id` = {$this->id}
-ORDER BY `revisionId` DESC
+ORDER BY {$orderBy}
 LIMIT {$limit} OFFSET {$offset}
 SQL
     );

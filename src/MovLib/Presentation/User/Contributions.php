@@ -115,8 +115,17 @@ final class Contributions extends \MovLib\Presentation\User\AbstractUserPresente
     $contributions = null;
     $dateTime      = new DateTime($this->intl, $this, $this->session->userTimezone);
 
+    $orderBy = "`revisionId` DESC";
+    $orderCaret = "<a class='btn btn-mini' href='{$this->request->path}?order=asc'>▾</a>";
+    if (isset($_GET["order"])) {
+      if ($this->request->filterInputString(INPUT_GET, "order") == "asc") {
+        $orderBy = "`revisionId` ASC";
+        $orderCaret = $orderCaret = "<a class='btn btn-mini' href='{$this->request->path}'>▴</a>";
+      }
+    }
+
     /* @var $contribution \MovLib\Stub\Data\User\Contribution */
-    foreach ($this->entity->getContributions($this->paginationOffset, $this->paginationLimit) as $contribution) {
+    foreach ($this->entity->getContributions($this->paginationOffset, $this->paginationLimit, $orderBy) as $contribution) {
       $contributions .=
         "<tr>" .
           $this->{"format{$contribution->entity}"}($contribution->entity) .
@@ -139,7 +148,7 @@ final class Contributions extends \MovLib\Presentation\User\AbstractUserPresente
         "<thead>" .
           "<tr>" .
             "<th colspan='2'>{$this->intl->t("Contribution")}</th>".
-            "<th>{$this->intl->t("Date")}</th>".
+            "<th>{$this->intl->t("Date")} &nbsp; {$orderCaret}</th>".
             "<th colspan='2'>{$this->intl->t("Actions")}</th>" .
           "</tr>" .
         "</thead>" .
