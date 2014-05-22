@@ -23,7 +23,7 @@ use \MovLib\Data\Event\EventSet;
 use \MovLib\Data\Movie\MovieSet;
 use \MovLib\Data\Series\SeriesSet;
 use \MovLib\Data\Date;
-use \MovLib\Data\Revision;
+use \MovLib\Data\Search\Search;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -273,9 +273,12 @@ UPDATE `persons` SET
   `birthdate`              = ?,
   `born_name`              = ?,
   `deathdate`              = ?,
-  `dyn_biographies`        = COLUMN_ADD(`dyn_biographies`, '{$this->intl->languageCode}', ?),
   `dyn_image_descriptions` = '',
-  `dyn_wikipedia`          = COLUMN_ADD(`dyn_wikipedia`, '{$this->intl->languageCode}', ?),
+  {$this->getDynamicColumnUpdateQuery(
+    $this->intl->languageCode,
+    "biographies", $this->biography,
+    "wikipedia", $this->wikipedia
+  )},
   `links`                  = ?,
   `name`                   = ?,
   `sex`                    = ?
@@ -283,18 +286,26 @@ WHERE `id` = {$this->id}
 SQL
     );
     $stmt->bind_param(
-      "sssssssi",
+      "sssssi",
       $this->birthDate,
       $this->bornName,
       $this->deathDate,
-      $this->biography,
-      $this->wikipedia,
       $this->links,
       $this->name,
       $this->sex
     );
     $stmt->execute();
     $stmt->close();
+
+    // Update the search index.
+    $names = [ $this->name, $this->bornName ];
+    (new Search($this))
+      ->indexSimple("name", $names)
+      ->indexSimpleSuggestion(array_merge($this->getAliases(), $names), true)
+      ->addSuggestionData("name", $this->name)
+      ->execute($this->kernel, $this->log, $this->deleted)
+    ;
+
     return $this;
   }
 
@@ -345,6 +356,15 @@ SQL
 
     $stmt->execute();
     $this->id = $stmt->insert_id;
+
+    // Add the person to the search index.
+    $names = [ $this->name, $this->bornName ];
+    (new Search($this))
+      ->indexSimple("name", [ $this->name, $this->bornName ])
+      ->indexSimpleSuggestion([ $this->name, $this->bornName ], true)
+      ->addSuggestionData("name", $this->name)
+      ->execute($this->kernel, $this->log, $this->deleted)
+    ;
 
     return $this->init();
   }

@@ -21,6 +21,7 @@ use \Elasticsearch\Client as ElasticClient;
 use \MovLib\Data\Image\AbstractImage;
 use \MovLib\Data\Movie\Movie;
 use \MovLib\Data\Person\Person;
+use \MovLib\Exception\ClientException\ClientExceptionInterface;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
@@ -41,11 +42,25 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
 
 
   /**
+   * The indexes to search in (e.g. persons).
+   *
+   * @var null|string
+   */
+  protected $indexes;
+
+  /**
    * The user's submitted search query.
    *
    * @var null|string
    */
   protected $query;
+
+  /**
+   * The types to search for (e.g. person).
+   *
+   * @var null|string
+   */
+  protected $types;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -60,13 +75,26 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
     $this->sidebarInit([]);
     $this->breadcrumb->ignoreQuery = true;
 
-    $query       = null;
-    $this->query = filter_input(INPUT_GET, "q", FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_NULL_ON_FAILURE);
+    $queries       = null;
+    $this->query   = $this->request->filterInputString(INPUT_GET, "q");
     if ($this->query) {
-      $query = rawurlencode($this->query);
-      $query = "?q={$query}";
+      $queries["q"] = rawurlencode($this->query);
     }
-    $this->initLanguageLinks("/search", null, false, $query);
+
+    $this->indexes = $this->request->filterInputString(INPUT_GET, "i");
+    if ($this->indexes) {
+      $queries["q"] = rawurlencode($this->indexes);
+    }
+
+    $this->types   = $this->request->filterInputString(INPUT_GET, "t");
+    if ($this->types) {
+      $queries["q"] = rawurlencode($this->types);
+    }
+    else {
+      $this->types = "";
+    }
+
+    $this->initLanguageLinks("/search", null, false, $queries);
   }
 
 
@@ -79,26 +107,28 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
   public function getContent() {
     // We're done if we have no search query.
     if (empty($this->query)) {
-      $this->alerts .= new Alert(
-        $this->intl->t("No search query submitted."),
-        $this->intl->t("Nothing to Search for…"),
-        Alert::SEVERITY_ERROR
-      );
+      $this->alertError($this->intl->t("No search query submitted."), $this->intl->t("Nothing to Search for…"));
       return;
     }
 
-    // If we have one ask Elastic.
+    if (empty($this->indexes)) {
+      http_response_code(ClientExceptionInterface::HTTP_BAD_REQUEST);
+      $this->alertError($this->intl->t("No search range submitted."), $this->intl->t("We don’t know what to search for…"));
+      return;
+    }
+
+    // If we have one, ask Elastic.
     $elasticClient = new ElasticClient();
     $result = $elasticClient->search([
-      "index" => "movlib",
-      "type"  => "movie,person",
+      "index" => $this->indexes,
+      "type"  => $this->types,
       "body"  => [
         "query" => [
           "fuzzy_like_this" => [
-            "fields"          => [ "titles", "names" ],
+            "fields"          => [ "titles", "name", "suggest.input" ],
             "like_text"       => $this->query,
             "max_query_terms" => 25,
-            "min_similarity"  => 0.3,
+            "min_similarity"  => 0.5,
           ],
         ],
       ],
@@ -106,10 +136,9 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
 
     // Elastic didn't return anything, we're done.
     if (!isset($result["hits"]) || !isset($result["hits"]["total"]) || $result["hits"]["total"] === 0) {
-      $this->alerts .= new Alert(
-        $this->intl->t("Your search “{query}” did not match any document.", [ "query" => $this->placeholder($this->query) ]),
-        $this->intl->t("No Results"),
-        Alert::SEVERITY_INFO
+      $this->alertError(
+        $this->intl->t("Your search {query} did not match any document.", [ "query" => $this->placeholder($this->query) ]),
+        $this->intl->t("No Results")
       );
       return;
     }
@@ -119,7 +148,7 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
     foreach ($result["hits"]["hits"] as $delta => $entity) {
       switch ($entity["_type"]) {
         case "movie":
-          $movie   = new Movie($entity["_id"]);
+          $movie   = new Movie($this->diContainerHTTP, $entity["_id"]);
           if ($movie->displayTitle != $movie->originalTitle) {
             $displayTitleItemprop = "alternateName";
             $movie->originalTitle = "<br><span class='small'>{$this->intl->t("{0} ({1})", [
@@ -134,17 +163,17 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
           $movie->displayTitle = "<span class='link-color' itemprop='{$displayTitleItemprop}'{$this->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}</span>";
           $movies .=
             "<li itemscope itemtype='http://schema.org/Movie'><a class='hover-item no-link r' href='{$movie->route}' itemprop='url'>" .
-              $this->getImage($movie->displayPoster->getStyle(AbstractImage::STYLE_SPAN_01), false, [ "class" => "s s1", "itemprop" => "image" ]) .
+              $this->img($movie->imageGetStyle("s1"), [ "class" => "s s1", "itemprop" => "image" ]) .
               "<span class='s s9'>{$movie->displayTitle}{$movie->originalTitle}</span>" .
             "</a></li>"
           ;
           break;
 
         case "person":
-          $person   = new Person($entity["_id"]);
+          $person   = new Person($this->diContainerHTTP, $entity["_id"]);
           $persons .=
             "<li itemscope itemtype='http://schema.org/Person'><a class='hover-item no-link r' href='{$person->route}' itemprop='url'>" .
-              $this->getImage($person->displayPhoto->getStyle(AbstractImage::STYLE_SPAN_01), false, [ "class" => "s s1", "itemprop" => "image" ]) .
+              $this->img($person->imageGetStyle("s1"), [ "class" => "s s1", "itemprop" => "image" ]) .
               "<span class='s s9'>{$person->name}</span>" .
             "</a></li>"
           ;
