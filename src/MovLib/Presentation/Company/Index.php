@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Company;
 
 use \MovLib\Data\Company\CompanySet;
-use \MovLib\Partial\Date;
 
 /**
  * Defines the company index presentation.
@@ -50,42 +49,6 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
       $this->intl->t("Companies"),
       $this->intl->t("Create New Company")
     );
-  }
-
-  /**
-   * {@inheritdoc}
-   * @param \MovLib\Data\Company\Company $company {@inheritdoc}
-   */
-  protected function formatListingItem(\MovLib\Data\AbstractEntity $company, $id) {
-    $companyDates = (new Date($this->intl, $this))->formatFromTo(
-      $company->foundingDate,
-      $company->defunctDate,
-      [ "property" => "foundingDate", "title" => $this->intl->t("Founding Date") ],
-      [ "property" => "defunctDate",  "title" => $this->intl->t("Defunct Date")  ],
-      true
-    );
-    if ($companyDates) {
-      $companyDates = "<small>{$companyDates}</small>";
-    }
-    $route = $company->route;
-    return
-      "<li class='hover-item r'>" .
-        "<article typeof='Company'>" .
-          "<a class='no-link s s1' href='{$route}'>" .
-            "<img alt='' src='{$this->fs->getExternalURL("asset://img/logo/vector.svg")}' width='60' height='60'>" .
-          "</a>" .
-          "<div class='s s9'>" .
-            "<div class='fr'>" .
-              "<a class='ico ico-movie label' href='{$this->intl->r("/company/{0}/movies", $id)}' title='{$this->intl->t("Movies")}'>{$company->movieCount}</a>" .
-              "<a class='ico ico-series label' href='{$this->intl->r("/company/{0}/series", $id)}' title='{$this->intl->tp(-1, "Series")}'>{$company->seriesCount}</a>" .
-              "<a class='ico ico-release label' href='{$this->intl->r("/company/{0}/releases", $id)}' title='{$this->intl->t("Releases")}'>{$company->releaseCount}</a>" .
-            "</div>" .
-            "<h2 class='para'><a href='{$route}' property='url'><span property='name'>{$company->name}</span></a></h2>" .
-            $companyDates .
-          "</div>" .
-        "</article>" .
-      "</li>"
-    ;
   }
 
   /**

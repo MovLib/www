@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\Job;
 
+use \MovLib\Data\Company\CompanySet;
 use \MovLib\Data\Person\PersonSet;
 use \MovLib\Exception\ClientException\NotFoundException;
 use \MovLib\Partial\Sex;
@@ -338,6 +339,61 @@ SQL
   public function init() {
     $this->titles[Sex::UNKNOWN] && $this->title = $this->titles[Sex::UNKNOWN];
     return parent::init();
+  }
+
+  /**
+   * Get all companies related to this job.
+   *
+   * @param integer $offset [optional]
+   *   The offset, usually provided by the {@see \MovLib\Presentation\PaginationTrait}.
+   * @param integer $limit [optional]
+   *   The limit (row count), usually provided by the {@see \MovLib\Presentation\PaginationTrait}.
+   *
+   * @return \MovLib\Data\Company\CompanySet
+   */
+  public function getCompanies($offset = null, $limit = null) {
+    $companySet = new CompanySet($this->diContainer);
+    $result     = $this->getMySQLi()->query(<<<SQL
+(
+SELECT `companies`.`id` FROM `companies`
+  INNER JOIN `movies_crew` ON `movies_crew`.`company_id` = `companies`.`id` AND `movies_crew`.`job_id` = {$this->id}
+  WHERE `companies`.`deleted` = false
+) UNION ALL (
+SELECT `companies`.`id` FROM `companies`
+  INNER JOIN `episodes_crew` ON `episodes_crew`.`company_id` = `companies`.`id` AND `episodes_crew`.`job_id` = {$this->id}
+  WHERE `companies`.`deleted` = false
+ )
+LIMIT {$limit}
+OFFSET {$offset}
+SQL
+    );
+    $companyIds = [];
+    while ($entity = $result->fetch_assoc()) {
+      $companyIds[] = $entity["id"];
+    }
+    $result->free();
+    if(!empty($companyIds)) {
+      $companySet->loadIdentifiers($companyIds);
+    }
+
+    return $companySet;
+  }
+
+  /**
+   * Get the total amount of companies related to a job.
+   */
+  public function getCompanyTotalCount() {
+    return (integer) $this->getMySQLi()->query(<<<SQL
+SELECT count(*) FROM `companies`
+  INNER JOIN `movies_crew` ON `movies_crew`.`company_id` = `companies`.`id` AND `movies_crew`.`job_id` = {$this->id}
+  WHERE `companies`.`deleted` = false
+UNION
+SELECT count(*) FROM `companies`
+  INNER JOIN `episodes_crew` ON `episodes_crew`.`company_id` = `companies`.`id` AND `episodes_crew`.`job_id` = {$this->id}
+  WHERE `companies`.`deleted` = false
+LIMIT 1
+SQL
+    )->fetch_all()[0][0];
   }
 
   /**

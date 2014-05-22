@@ -17,6 +17,7 @@
  */
 namespace MovLib\Partial;
 
+use \MovLib\Partial\Date;
 
 /**
  * Add various person formatting functions to presentation.
@@ -29,6 +30,51 @@ namespace MovLib\Partial;
  * @since 0.0.1-dev
  */
 trait PersonTrait {
+
+  /**
+   * Format a single listing's item.
+   *
+   * @param \MovLib\Data\AbstractEntity $person
+   *   The person to format.
+   * @param integer $id
+   *   The current loops delta.
+   * @return string
+   *   A formated list item.
+   */
+  public function formatListingItem(\MovLib\Data\AbstractEntity $person, $id) {
+    if (($bornName = $this->getPersonBornName($person))) {
+      $bornName = "<small>{$bornName}</small>";
+    }
+
+    $bioDates = (new Date($this->intl, isset($this->presenter) ? $this->presenter : $this))->formatFromTo(
+      $person->birthDate,
+      $person->deathDate,
+      [ "property" => "birthDate", "title" => $this->intl->t("Date of Birth") ],
+      [ "property" => "deathDate", "title" => $this->intl->t("Date of Death") ]
+    );
+    if ($bioDates) {
+      $bioDates = "<small>{$bioDates}</small>";
+    }
+    $route = $person->route;
+    return
+      "<li class='hover-item r'>" .
+        "<article typeof='Person'>" .
+          $this->img($person->imageGetStyle("s1"), [], $route, [ "class" => "s s1" ]) .
+          "<div class='s s9'>" .
+            "<div class='fr'>" .
+              "<a class='ico ico-movie label' href='{$this->intl->r("/person/{0}/movies", [ $id ])}' title='{$this->intl->t("Movies")}'>{$person->countMovies}</a>" .
+              "<a class='ico ico-series label' href='{$this->intl->r("/person/{0}/series", [ $id ])}' title='{$this->intl->tp(-1, "Series")}'>{$person->countSeries}</a>" .
+              "<a class='ico ico-release label' href='{$this->intl->r("/person/{0}/releases", [ $id ])}' title='{$this->intl->t("Releases")}'>{$person->countReleases}</a>" .
+              "<a class='ico ico-award label' href='{$this->intl->r("/person/{0}/awards", [ $id ])}' title='{$this->intl->t("Awards")}'>{$person->countAwards}</a>" .
+            "</div>" .
+            "<h2 class='para'>" .
+              "<a href='{$route}' property='url'><span property='name'>{$person->name}</span></a>" .
+            "</h2>" .
+          "{$bornName}{$bioDates}</div>" .
+        "</article>" .
+      "</li>"
+    ;
+  }
 
   /**
    * Get a person's born name.

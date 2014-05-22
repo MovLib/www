@@ -18,8 +18,6 @@
 namespace MovLib\Presentation\Person;
 
 use \MovLib\Data\Person\PersonSet;
-use \MovLib\Partial\Alert;
-use \MovLib\Partial\Date;
 
 /**
  * Defines the person index listing.
@@ -51,54 +49,11 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
 
   /**
    * {@inheritdoc}
-   * @param \MovLib\Data\Person\Person $person {@inheritdoc}
-   */
-  protected function formatListingItem(\MovLib\Data\AbstractEntity $person, $id) {
-    if (($bornName = $this->getPersonBornName($person))) {
-      $bornName = "<small>{$bornName}</small>";
-    }
-
-    $bioDates = (new Date($this->intl, $this))->formatFromTo(
-      $person->birthDate,
-      $person->deathDate,
-      [ "property" => "birthDate", "title" => $this->intl->t("Date of Birth") ],
-      [ "property" => "deathDate", "title" => $this->intl->t("Date of Death") ]
-    );
-    if ($bioDates) {
-      $bioDates = "<small>{$bioDates}</small>";
-    }
-    $route = $person->route;
-    return
-      "<li class='hover-item r'>" .
-        "<article typeof='Person'>" .
-          $this->img($person->imageGetStyle("s1"), [], $route, [ "class" => "s s1" ]) .
-          "<div class='s s9'>" .
-            "<div class='fr'>" .
-              "<a class='ico ico-movie label' href='{$this->intl->r("/person/{0}/movies", [ $id ])}' title='{$this->intl->t("Movies")}'>{$person->countMovies}</a>" .
-              "<a class='ico ico-series label' href='{$this->intl->r("/person/{0}/series", [ $id ])}' title='{$this->intl->tp(-1, "Series")}'>{$person->countSeries}</a>" .
-              "<a class='ico ico-release label' href='{$this->intl->r("/person/{0}/releases", [ $id ])}' title='{$this->intl->t("Releases")}'>{$person->countReleases}</a>" .
-              "<a class='ico ico-award label' href='{$this->intl->r("/person/{0}/awards", [ $id ])}' title='{$this->intl->t("Awards")}'>{$person->countAwards}</a>" .
-            "</div>" .
-            "<h2 class='para'>" .
-              "<a href='{$route}' property='url'><span property='name'>{$person->name}</span></a>" .
-            "</h2>" .
-          "{$bornName}{$bioDates}</div>" .
-        "</article>" .
-      "</li>"
-    ;
-  }
-
-  /**
-   * {@inheritdoc}
    */
   public function getNoItemsContent() {
-    return new Alert(
-      "<p>{$this->intl->t(
-        "We couldn’t find any persons matching your filter criteria, or there simply aren’t any persons available."
-      )}</p><p>{$this->intl->t(
-        "Would you like to {0}create a person{1}?",
-        [ "<a href='{$this->intl->r("/person/create")}'>", "</a>" ]
-      )}</p>",
+    return $this->calloutInfo(
+      "<p>{$this->intl->t("We couldn’t find any person matching your filter criteria, or there simply aren’t any persons available.")}</p>" .
+      "<p>{$this->intl->t("Would you like to {0}create an person{1}?", [ "<a href='{$this->intl->r("/person/create")}'>", "</a>" ])}</p>",
       $this->intl->t("No Persons")
     );
   }

@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Job;
 
 use \MovLib\Data\Job\Job;
+use \MovLib\Partial\Helper\CompanyHelper;
 
 /**
  * Companies with a certain job associated.
@@ -29,6 +30,7 @@ use \MovLib\Data\Job\Job;
  * @since 0.0.1-dev
  */
 class Companies extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\PaginationTrait;
   use \MovLib\Partial\SidebarTrait;
   use \MovLib\Presentation\Job\JobTrait;
 
@@ -69,7 +71,20 @@ class Companies extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater("job companies");
+    $companySet = $this->entity->getCompanies($this->paginationOffset, $this->paginationLimit);
+    $this->paginationInit($this->entity->getCompanyTotalCount());
+    return (new CompanyHelper($this->diContainerHTTP))->getListing($companySet);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getNoItemsContent() {
+    return $this->calloutInfo(
+      "<p>{$this->intl->t("We couldn’t find any company matching your filter criteria.")}</p>" .
+      "<p>{$this->intl->t("Would you like to {0}create an company{1}?", [ "<a href='{$this->intl->r("/company/create")}'>", "</a>" ])}</p>",
+      $this->intl->t("No Company With This Job Associated")
+    );
   }
 
 }

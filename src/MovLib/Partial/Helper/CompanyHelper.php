@@ -17,8 +17,10 @@
  */
 namespace MovLib\Partial\Helper;
 
+use \MovLib\Partial\Date;
+
 /**
- * Person Helper Methodes.
+ * Company Helper Methodes.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -26,21 +28,21 @@ namespace MovLib\Partial\Helper;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class PersonHelper extends \MovLib\Core\Presentation\DependencyInjectionBase {
-  use \MovLib\Partial\PersonTrait;
+final class CompanyHelper extends \MovLib\Core\Presentation\DependencyInjectionBase {
+  use \MovLib\Presentation\Company\CompanyTrait;
 
   /**
-   * Get a person listing.
+   * Get a company listing.
    *
-   * @param \MovLib\Data\Person\PersonSet $personSet
+   * @param \MovLib\Data\Company\CompanySet $companySet
    *
    * @return string
-   *   The person listing.
+   *   The company listing.
    */
-  public function getListing(\MovLib\Data\Person\PersonSet $personSet) {
+  public function getListing(\MovLib\Data\Company\CompanySet $companySet) {
     $items = null;
-    foreach ($personSet->entities as $delta => $person) {
-      $items .= $this->formatListingItem($person, $delta);
+    foreach ($companySet->entities as $delta => $company) {
+      $items .= $this->formatListingItem($company, $delta);
     }
     return "<ol class='hover-list no-list'>{$items}</ol>";
   }
