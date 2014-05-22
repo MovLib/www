@@ -72,7 +72,7 @@ class Persons extends \MovLib\Presentation\AbstractPresenter {
    */
   public function getContent() {
     $personSet = $this->entity->getPersons($this->paginationOffset, $this->paginationLimit);
-    $this->paginationInit($personSet);
+    $this->paginationInit($this->entity->getPersonTotalCount());
     return (new PersonHelper($this->diContainerHTTP))->getListing($personSet);
   }
 

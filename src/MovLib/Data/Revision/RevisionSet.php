@@ -28,7 +28,7 @@ use \MovLib\Data\User\UserSet;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class RevisionSet extends \MovLib\Core\AbstractDatabase implements \Iterator, \MovLib\Data\PaginationInterface {
+final class RevisionSet extends \MovLib\Core\AbstractDatabase implements \Iterator {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

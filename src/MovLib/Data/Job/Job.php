@@ -356,11 +356,14 @@ SQL
 (
 SELECT `persons`.`id` FROM `persons`
   INNER JOIN `movies_crew` ON `movies_crew`.`person_id` = `persons`.`id` AND `movies_crew`.`job_id` = {$this->id}
+  WHERE `persons`.`deleted` = false
 ) UNION ALL (
 SELECT `persons`.`id` FROM `persons`
   INNER JOIN `episodes_crew` ON `episodes_crew`.`person_id` = `persons`.`id` AND `episodes_crew`.`job_id` = {$this->id}
-)
-LIMIT {$limit} OFFSET {$offset}
+  WHERE `persons`.`deleted` = false
+ )
+LIMIT {$limit}
+OFFSET {$offset}
 SQL
     );
     $personIds = [];
@@ -373,6 +376,23 @@ SQL
     }
 
     return $personSet;
+  }
+
+  /**
+   * Get the total amount of persons related to a job.
+   */
+  public function getPersonTotalCount() {
+    return (integer) $this->getMySQLi()->query(<<<SQL
+SELECT count(*) FROM `persons`
+  INNER JOIN `movies_crew` ON `movies_crew`.`person_id` = `persons`.`id` AND `movies_crew`.`job_id` = {$this->id}
+  WHERE `persons`.`deleted` = false
+UNION
+SELECT count(*) FROM `persons`
+  INNER JOIN `episodes_crew` ON `episodes_crew`.`person_id` = `persons`.`id` AND `episodes_crew`.`job_id` = {$this->id}
+  WHERE `persons`.`deleted` = false
+LIMIT 1
+SQL
+    )->fetch_all()[0][0];
   }
 
 }

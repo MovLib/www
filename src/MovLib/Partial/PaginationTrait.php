@@ -117,11 +117,11 @@ trait PaginationTrait {
   /**
    * Initialize the pagination.
    *
-   * @param \MovLib\Data\PaginationInterface $paginationInterface
-   *   The instance that provides the items to paginate and implements the pagination interface.
+   * @param integer $totalCount
+   *   The total amount of entities to paginate.
    * @return this
    */
-  final protected function paginationInit(\MovLib\Data\PaginationInterface $paginationInterface) {
+  final protected function paginationInit($totalCount) {
     // @devStart
     // @codeCoverageIgnoreStart
     assert($this instanceof \MovLib\Presentation\AbstractPresenter, "You can only use the pagination trait within a presenter.");
@@ -131,7 +131,7 @@ trait PaginationTrait {
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-    $this->paginationTotalResults = $paginationInterface->getTotalCount();
+    $this->paginationTotalResults = $totalCount;
     if ($this->paginationTotalResults === 1) {
       return $this;
     }

@@ -66,7 +66,7 @@ class History extends \MovLib\Presentation\AbstractPresenter {
     $this->breadcrumb->addCrumb($this->intl->r("/genres"), $this->intl->t("Genres"));
     $this->breadcrumb->addCrumb($this->intl->r("/genre/{0}", $this->entity->id), $this->entity->name);
     $this->revisionSet = new RevisionSet($this->entity);
-    $this->paginationInit($this->revisionSet);
+    $this->paginationInit($this->revisionSet->getTotalCount());
     $this->revisionSet->load($this->paginationOffset, $this->paginationLimit, $this->diContainerHTTP);
   }
 

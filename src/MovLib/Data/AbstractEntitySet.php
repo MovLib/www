@@ -26,7 +26,7 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractEntitySet extends \MovLib\Data\AbstractConfig implements \Iterator, \MovLib\Data\PaginationInterface {
+abstract class AbstractEntitySet extends \MovLib\Data\AbstractConfig implements \Iterator {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -128,7 +128,7 @@ abstract class AbstractEntitySet extends \MovLib\Data\AbstractConfig implements 
   }
 
   /**
-   * {@inheritdoc}
+   * Get the total amount of entities in this set.
    */
   public function getTotalCount() {
     // We use fetch all at this point, because we'll always get at least a single result from the query and it consumes

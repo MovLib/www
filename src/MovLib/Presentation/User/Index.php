@@ -52,7 +52,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
         [ $this->request->path, $this->title, [ "class" => "ico ico-user" ] ],
         [ $this->intl->r("/user/random"), $this->intl->t("Random"), [ "class" => "ico ico-random" ] ],
       ])
-      ->paginationInit()
+      ->paginationInit($this->set->getTotalCount())
     ;
   }
 
