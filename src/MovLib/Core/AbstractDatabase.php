@@ -118,6 +118,22 @@ abstract class AbstractDatabase {
     }
   }
 
+  /**
+   * Get the string representation of this instance.
+   *
+   * @staticvar string $shortName
+   *   The instance's short class name.
+   * @return string
+   *   The string representation of this instance.
+   */
+  public function __toString() {
+    static $shortName = null;
+    if ($shortName === null) {
+      $shortName = basename(strtr(static::class, "\\", "/"));
+    }
+    return $shortName;
+  }
+
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
