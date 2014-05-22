@@ -31,13 +31,80 @@ use \MovLib\Partial\DateTime;
 final class Contributions extends \MovLib\Presentation\User\AbstractUserPresenter {
   use \MovLib\Partial\PaginationTrait;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function init(){
-    return $this
-      ->initPage($this->intl->t("{username}’s Contributions"), null, $this->intl->t("Contributions"))
-      ->paginationInit($this->entity->getTotalContributionCount())
+  public function formatArticle(\MovLib\Data\AbstractEntity $article) {
+    return
+      "<td class='tac'><span class='ico ico-help' title='{$this->intl->t("Help Article")}'></span></td>" .
+      "<td>{$this->a($article->route, $this->htmlDecode($article->title))}</td>"
+    ;
+  }
+
+  public function formatAward(\MovLib\Data\AbstractEntity $award) {
+    return
+      "<td class='tac'><span class='ico ico-award' title='{$this->intl->t("Award")}'></span></td>" .
+      "<td>{$this->a($award->route, $this->htmlDecode($award->name))}</td>"
+    ;
+  }
+
+  public function formatCategory(\MovLib\Data\AbstractEntity $category) {
+    return
+      "<td class='tac'><span class='ico ico-category' title='{$this->intl->t("Category")}'></span></td>" .
+      "<td>{$this->a($category->route, $this->htmlDecode($category->name))}</td>"
+    ;
+  }
+
+  public function formatCompany(\MovLib\Data\AbstractEntity $company) {
+    return
+      "<td class='tac'><span class='ico ico-company' title='{$this->intl->t("Company")}'></span></td>" .
+      "<td>{$this->a($company->route, $this->htmlDecode($company->name))}</td>"
+    ;
+  }
+
+  public function formatEvent(\MovLib\Data\AbstractEntity $event) {
+    return
+      "<td class='tac'><span class='ico ico-event' title='{$this->intl->t("Event")}'></span></td>" .
+      "<td>{$this->a($event->route, $this->htmlDecode($event->name))}</td>"
+    ;
+  }
+
+  public function formatGenre(\MovLib\Data\AbstractEntity $genre) {
+    return
+      "<td class='tac'><span class='ico ico-genre' title='{$this->intl->t("Genre")}'></span></td>" .
+      "<td>{$this->a($genre->route, $this->htmlDecode($genre->name))}</td>"
+    ;
+  }
+
+  public function formatJob(\MovLib\Data\AbstractEntity $job) {
+    return
+      "<td class='tac'><span class='ico ico-job' title='{$this->intl->t("Job")}'></span></td>" .
+      "<td>{$this->a($job->route, $this->htmlDecode($job->title))}</td>"
+    ;
+  }
+
+  public function formatMovie(\MovLib\Data\AbstractEntity $movie) {
+    return
+      "<td class='tac'><span class='ico ico-movie' title='{$this->intl->t("Movie")}'></span></td>" .
+      "<td>{$this->a($movie->route, $this->htmlDecode($movie->displayTitle))}</td>"
+    ;
+  }
+
+  public function formatPerson(\MovLib\Data\AbstractEntity $person) {
+    return
+      "<td class='tac'><span class='ico ico-person' title='{$this->intl->t("Person")}'></span></td>" .
+      "<td>{$this->a($person->route, $this->htmlDecode($person->name))}</td>"
+    ;
+  }
+
+  public function formatRelease(\MovLib\Data\AbstractEntity $release) {
+    return
+      "<td class='tac'><span class='ico ico-release' title='{$this->intl->t("Release")}'></span></td>" .
+      "<td>{$this->a($release->route, $this->htmlDecode($release->title))}</td>"
+    ;
+  }
+
+  public function formatSeries(\MovLib\Data\AbstractEntity $series) {
+    return
+      "<td class='tac'><span class='ico ico-series' title='{$this->intl->t("Series")}'></span></td>" .
+      "<td>{$this->a($series->route, $this->htmlDecode($series->displayTitle))}</td>"
     ;
   }
 
@@ -51,72 +118,34 @@ final class Contributions extends \MovLib\Presentation\User\AbstractUserPresente
     /* @var $contribution \MovLib\Stub\Data\User\Contribution */
     foreach ($this->entity->getContributions($this->paginationOffset, $this->paginationLimit) as $contribution) {
       $contributions .=
-        "<li class='hover-item r'>" .
+        "<tr>" .
           $this->{"format{$contribution->entity}"}($contribution->entity) .
-          "<div class='s s2 tar'>" .
-            "<p>" .
-              $dateTime->formatRelative($contribution->dateTime) .
-              "<a href='{$contribution->entity->r("/history")}/{$contribution->revisionId}'>{$this->intl->t("diff")}</a> | " .
-              "<a href='{$contribution->entity->r("/history")}'>{$this->intl->t("history")}</a>" .
-            "</p>" .
-          "</div>" .
-        "</li>"
+          "<td class='tac'>{$dateTime->format($contribution->dateTime)}</td>" .
+          "<td><a class='btn btn-info btn-small' href='{$contribution->entity->r("/history")}/{$contribution->revisionId}'>{$this->intl->t("diff")}</a></td>" .
+          "<td><a class='btn btn-success btn-small' href='{$contribution->entity->r("/history")}'>{$this->intl->t("history")}</a></td>" .
+        "</tr>"
       ;
     }
 
-    return "<ol class='hover-list no-list'>{$contributions}</ol>";
-//    $result = $this->entity->getContributions($this->paginationOffset, $this->paginationLimit);
-//    if ($result->num_rows > 0) {
-//      $contributions = "<ol class='hover-list no-list'>";
-//      while ($row = $result->fetch_assoc()) {
-//        $entity = (new $row["entityClass"]($this->diContainerHTTP, $row["entityId"]));
-//        $this->log->debug("row:", $row);
-//        $this->log->debug($entity);
-//        $contributions .=
-//          "<li class='hover-item r'>" .
-//            $this->{"format{$entity}"}($entity) .
-//            "<div class='s s2 tar'>" .
-//              "<p>" .
-//                (new DateTimePartial($this->intl, $this))->format(new DateTime($row["created"])) .
-//                "<a href='{$this->intl->r("{$entity->routeKey}/history", $entity->routeArgs)}/{$row["revision"]}'>{$this->intl->t("diff")}</a> " .
-//                "<a href='{$this->intl->r("{$entity->routeKey}/history", $entity->routeArgs)}'>{$this->intl->t("history")}</a>" .
-//              "</p>" .
-//            "</div>" .
-//          "</li>"
-//        ;
-//      }
-//      $contributions .= "</ol>";
-//      return $contributions;
-//    }
-//    else {
-//      return $this->getNoItemsContent();
-//    }
-  }
-
-  /**
-   * Format a company.
-   *
-   * @param \MovLib\Data\AbstractEntity $company
-   * @return string
-   */
-  public function formatCompany(\MovLib\Data\AbstractEntity $company) {
     return
-      "<div class='s s8 tar'>" .
-        "<h2 class='para'>{$this->intl->t("Company")}: {$this->a($company->route, $this->htmlDecode($company->name))}</h2>" .
-      "</div>"
+      "<table>" .
+        "<colgroup>" .
+          "<col class='s1'>" .
+          "<col class='s4'>" .
+          "<col class='s3'>" .
+          "<col class='s1'>" .
+          "<col class='s1'>" .
+        "</colgroup>" .
+        "<thead>" .
+          "<tr>" .
+            "<th colspan='2'>{$this->intl->t("Contribution")}</th>".
+            "<th>{$this->intl->t("Date")}</th>".
+            "<th colspan='2'>{$this->intl->t("Actions")}</th>" .
+          "</tr>" .
+        "</thead>" .
+        "<tbody>{$contributions}</tbody>" .
+      "</table>"
     ;
-  }
-
-  public function formatGenre(\MovLib\Data\AbstractEntity $genre) {
-    return "Genre";
-  }
-
-  public function formatMovie(\MovLib\Data\AbstractEntity $movie) {
-    return "Movie";
-  }
-
-  public function formatPerson(\MovLib\Data\AbstractEntity $person) {
-    return "Person";
   }
 
   /**
@@ -127,6 +156,16 @@ final class Contributions extends \MovLib\Presentation\User\AbstractUserPresente
       "<p>{$this->intl->t("We couldn’t find any contributions by this user")}</p>",
        $this->intl->t("No Contributions")
     );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function init(){
+    return $this
+      ->initPage($this->intl->t("{username}’s Contributions"), null, $this->intl->t("Contributions"))
+      ->paginationInit($this->entity->getTotalContributionCount())
+    ;
   }
 
 }
