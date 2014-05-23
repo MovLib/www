@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Partial\FormElementNew;
+namespace MovLib\Partial\Form\Element;
 
 /**
- * Defines the base object for <code><input></code> form element's.
+ * Defines the interface for form elements.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,10 +26,14 @@ namespace MovLib\Partial\FormElementNew;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractInput extends AbstractFormElement {
+interface FormElementInterface {
 
-  public function __construct($name, $label, &$value, array $settings, array $defaults) {
-    parent::__construct($name, $label, $value, $settings, $defaults);
-  }
+  /**
+   * Get the fully rendered form element.
+   *
+   * @return string
+   *   The fully rendered form element.
+   */
+  public function __toString();
 
 }

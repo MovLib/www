@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Partial\FormElementNew;
+namespace MovLib\Partial\Form\Element;
 
 /**
  * @todo Description of InputText
