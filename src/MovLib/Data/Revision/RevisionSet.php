@@ -46,7 +46,7 @@ final class RevisionSet extends \MovLib\Core\AbstractDatabase implements \Iterat
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
-  public function __construct(\MovLib\Data\Revision\RevisionInterface $entity) {
+  public function __construct(\MovLib\Data\Revision\EntityInterface $entity) {
     $this->entityId                = $entity->id;
     $this->revisionEntityClassName = get_class($entity) . "Revision";
     $this->revisionEntityTypeId    = constant("{$this->revisionEntityClassName}::ENTITY_ID");

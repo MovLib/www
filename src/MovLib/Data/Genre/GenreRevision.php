@@ -31,18 +31,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class GenreRevision extends \MovLib\Data\Revision\AbstractEntity {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
-  /**
-   * The genre entity type identifier.
-   *
-   * @var integer
-   */
-  const ENTITY_ID = 9;
+final class GenreRevision extends \MovLib\Data\Revision\AbstractRevisionEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -62,6 +51,11 @@ final class GenreRevision extends \MovLib\Data\Revision\AbstractEntity {
    */
   public $descriptions;
 
+  /**
+   * {@inheritdoc}
+   */
+  public $revisionEntityId = 9;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -78,15 +72,19 @@ final class GenreRevision extends \MovLib\Data\Revision\AbstractEntity {
     if ($genreId) {
       $stmt = $this->getMySQLi()->prepare(<<<SQL
 SELECT
-  `id`,
-  `user_id`,
-  `changed`,
-  `deleted`,
-  COLUMN_JSON(`dyn_descriptions`),
-  COLUMN_JSON(`dyn_names`),
-  COLUMN_JSON(`dyn_wikipedia`)
+  `genres`.`id`,
+  `revisions`.`user_id`,
+  `genres`.`changed` + 0,
+  `genres`.`deleted`,
+  COLUMN_JSON(`genres`.`dyn_descriptions`),
+  COLUMN_JSON(`genres`.`dyn_names`),
+  COLUMN_JSON(`genres`.`dyn_wikipedia`)
 FROM `genres`
-WHERE `id` = ?
+  INNER JOIN `revisions`
+    ON `revisions`.`entity_id` = `genres`.`id`
+    AND `revisions`.`id` = `genres`.`changed`
+    AND `revisions`.`revision_entity_id` = {$this->revisionEntityId}
+WHERE `genres`.`id` = ?
 LIMIT 1
 SQL
       );
@@ -109,8 +107,8 @@ SQL
       }
 
       $this->jsonDecode($this->descriptions, $this->names, $this->wikipediaLinks);
+      parent::__construct();
     }
-    parent::__construct();
   }
 
   /**
@@ -127,51 +125,50 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function indexSearch() {
+  public function commit(\MovLib\Data\Revision\RevisionEntityInterface $oldRevision, $languageCode) {
+    // Check if we should update the deletion status of the entity.
+    $deleted = $oldRevision->deleted === $this->deleted ? null : "`deleted`=" . (integer) $this->deleted;
 
-    $elasticClient = new \Elasticsearch\Client();
-    // Remove from index if the genre was deleted.
-    $params = [ "index" => "genres", "type" => "genre", "id" => $this->entityId, "refresh" => true ];
-    if ($this->deleted === true) {
-      try {
-        $elasticClient->delete($params);
-      }
-      catch (\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
-        // The document was already gone, just ignore this state.
-      }
-    }
-    else {
-      // @devStart
-      // @codeCoverageIgnoreStart
-      assert(!empty($this->names), "You cannot index a genre without names.");
-      assert(isset($this->entityId), "You cannot index a genre without an identifier.");
-      // @codeCoverageIgnoreEnd
-      // @devEnd
-      $params["body"] = $this->names;
-      $params["body"]["suggest"]["input"] = array_values($this->names);
-      $params["body"]["suggest"]["output"] = $this->names[$this->intl->defaultLanguageCode];
-      $params["body"]["suggest"]["payload"] = $this->names;
-      $params["body"]["suggest"]["payload"]["genreId"] = $this->entityId;
-      $elasticClient->index($params);
-    }
+    // Check all dynamic columns and build the query parts for those.
+    $dynCols = $this->getDynamicColumnUpdateQuery(
+      $languageCode,
+      "descriptions",
+      $this->descriptions,
+      $oldRevision->descriptions,
+      "names",
+      $this->names,
+      $oldRevision->names,
+      "wikipedia",
+      $this->wikipediaLinks,
+      $oldRevision->wikipediaLinks
+    );
 
+    // If we have both values, append comma to the deleted part to separate them.
+    if ($deleted && $dynCols) {
+      $deleted .= ",";
+    }
+    // If we don't have any of both parts nothing would be updated.
+    elseif (!$deleted && !$dynCols) {
+      throw new \BadMethodCallException("Nothing to commit.");
+    }
+    $this->getMySQLi()->query("UPDATE `genres` SET {$deleted}{$dynCols} WHERE `id` = {$this->entityId}");
     return $this;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setEntity(\MovLib\Data\AbstractEntity $entity, $languageCode, &...$dynamicProperties) {
-    return parent::setEntity(
-      $entity,
+  public function initialCommit($languageCode) {
+    $this->getMySQLi()->query("INSERT INTO `genres` SET {$this->getDynamicColumnUpdateQuery(
       $languageCode,
-      $entity->name,
-      $this->names,
-      $entity->description,
+      "descriptions",
       $this->descriptions,
-      $entity->wikipedia,
+      "names",
+      $this->names,
+      "wikipedia",
       $this->wikipediaLinks
-    );
+    )}");
+    return $this;
   }
 
 }

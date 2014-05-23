@@ -11,7 +11,7 @@
 -- of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
 --
 -- You should have received a copy of the GNU Affero General Public License along with MovLib.
--- If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
+-- If not, see {@link https://www.gnu.org/licenses/ gnu.org/licenses}.
 -- ---------------------------------------------------------------------------------------------------------------------
 
 -- ---------------------------------------------------------------------------------------------------------------------
@@ -19,14 +19,15 @@
 --
 -- @author Richard Fussenegger <richard@fussenegger.info>
 -- @copyright © 2013 MovLib
--- @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
+-- @license https://www.gnu.org/licenses/agpl.html AGPL-3.0
 -- @link https://movlib.org/
 -- @since 0.0.1-dev
 -- ---------------------------------------------------------------------------------------------------------------------
 
-INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia`) VALUES
+TRUNCATE `genres`;
+
+INSERT INTO `genres` (`dyn_names`, `dyn_descriptions`, `dyn_wikipedia`) VALUES
 (
-  1,
   COLUMN_CREATE(
     'en', 'Action',
     'de', 'Action'
@@ -36,12 +37,11 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
     'de', '&lt;p&gt;Der Actionfilm (von engl. action: Tat, Handlung, Bewegung) ist ein Filmgenre des Unterhaltungskinos, in welchem der Fortgang der äußeren Handlung von zumeist spektakulär inszenierten Kampf- und Gewaltszenen vorangetrieben und illustriert wird. Hauptbestandteile von Actionfilmen sind daher meist aufwendig gedrehte Stunts, Schlägereien, Schießereien, Explosionen und Verfolgungsjagden.&lt;/p&gt;'
   ),
   COLUMN_CREATE(
-    'en', 'http://en.wikipedia.org/wiki/Action_film',
-    'de', 'http://de.wikipedia.org/wiki/Actionfilm'
+    'en', 'https://en.wikipedia.org/wiki/Action_film',
+    'de', 'https://de.wikipedia.org/wiki/Actionfilm'
   )
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'Adventure',
     'de', 'Abenteuer'
@@ -51,12 +51,11 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
     'de', '&lt;p&gt;Als Abenteuerfilm bezeichnet man einen Film, in dem die Protagonisten in eine ereignisreiche Handlung, mitunter mit vielen Schauplatzwechseln, verstrickt sind. In der Regel sind die Erzählstränge auf eine Ebene reduziert, um dem Zuschauer die Identifikation mit der Hauptrolle zu vereinfachen. Im Vordergrund steht nicht die Entwicklung der Charaktere an sich, sondern die diese Entwicklung hervorrufenden Ereignisse. Mit Motiven wie dem Kampf des Helden gegen das Böse oder für die Liebe einer Frau, verbunden mit oft exotischen Schauplätzen, appelliert der Abenteuerfilm an die eskapistischen Bedürfnisse des Zuschauers und verfolgt als reines Illusionsprodukt weniger den Anspruch, realistisch zu sein.&lt;/p&gt;'
   ),
   COLUMN_CREATE(
-    'en', 'http://en.wikipedia.org/wiki/Adventure_film',
-    'de', 'http://de.wikipedia.org/wiki/Abenteuerfilm'
+    'en', 'https://en.wikipedia.org/wiki/Adventure_film',
+    'de', 'https://de.wikipedia.org/wiki/Abenteuerfilm'
   )
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'Animation',
     'de', 'Animation'
@@ -66,12 +65,11 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
     'de', '&lt;p&gt;Animation (von lat. animare, „zum Leben erwecken“; animus, „Geist, Seele“) ist im engeren Sinne jede Technik, bei der durch das Erstellen und Anzeigen von Einzelbildern für den Betrachter ein bewegtes Bild geschaffen wird. Ein Animationsfilm entsteht, wenn ein unbelebter und unbeweglicher Gegenstand mittels der Einzelbildschaltung zu scheinbarer Bewegung gebracht wird.&lt;/p&gt;&lt;p&gt;In der Anfangszeit des Animationsfilms wurden die Objekte für jedes Einzelbild in eine neue Lage gebracht, die fotografiert wird, so dass in der Projektion eine Scheinbewegung entsteht.&lt;/p&gt;&lt;p&gt;1906 gilt als Geburtsjahr des animierten Filmes.&lt;/p&gt;'
   ),
   COLUMN_CREATE(
-    'en', 'http://en.wikipedia.org/wiki/Animation',
-    'de', 'http://de.wikipedia.org/wiki/Animation'
+    'en', 'https://en.wikipedia.org/wiki/Animation',
+    'de', 'https://de.wikipedia.org/wiki/Animation'
   )
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'Biography',
     'de', 'Biografie'
@@ -83,7 +81,6 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
   ''
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'Comedy',
     'de', 'Komödie'
@@ -95,7 +92,6 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
   ''
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'Crime',
     'de', 'Krimi'
@@ -107,7 +103,6 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
   ''
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'Documentary',
     'de', 'Dokumentation'
@@ -119,7 +114,6 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
   ''
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'Drama',
     'de', 'Drama'
@@ -131,7 +125,6 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
   ''
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'Children',
     'de', 'Kinder'
@@ -143,7 +136,6 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
   ''
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'Fantasy',
     'de', 'Fantasy'
@@ -155,7 +147,6 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
   ''
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'Film Noir',
     'de', 'Film-Noir'
@@ -167,7 +158,6 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
   ''
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'History',
     'de', 'Historie'
@@ -179,7 +169,6 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
   ''
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'Horror',
     'de', 'Horror'
@@ -191,7 +180,6 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
   ''
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'Musical',
     'de', 'Musik'
@@ -203,7 +191,6 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
   ''
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'Mystery',
     'de', 'Mystery'
@@ -215,7 +202,6 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
   ''
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'Romance',
     'de', 'Liebe'
@@ -227,7 +213,6 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
   ''
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'Science Fiction',
     'de', 'Science-Fiction'
@@ -239,7 +224,6 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
   ''
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'Short Film',
     'de', 'Kurzfilm'
@@ -251,7 +235,6 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
   ''
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'Silent',
     'de', 'Stumm'
@@ -263,7 +246,6 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
   ''
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'Sport',
     'de', 'Sport'
@@ -275,7 +257,6 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
   ''
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'Thriller',
     'de', 'Thriller'
@@ -287,7 +268,6 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
   ''
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'War',
     'de', 'Krieg'
@@ -299,7 +279,6 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
   ''
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'Western',
     'de', 'Western'
@@ -311,7 +290,6 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
   ''
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'Erotic',
     'de', 'Erotik'
@@ -323,7 +301,6 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
   ''
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'Art House',
     'de', 'Arthaus'
@@ -332,7 +309,6 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
   ''
 ),
 (
-  1,
   COLUMN_CREATE(
     'en', 'Splatter',
     'de', 'Splatter'
@@ -343,7 +319,6 @@ INSERT INTO `genres` (`user_id`, `dyn_names`, `dyn_descriptions`, `dyn_wikipedia
 ;
 
 INSERT INTO `genres` SET
-  `user_id`          = 1,
   `deleted`          = true,
   `dyn_descriptions` = COLUMN_CREATE('en', '', 'de', ''),
   `dyn_names`        = COLUMN_CREATE('en', 'Random', 'de', 'Irgendwas'),

@@ -239,12 +239,12 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
   /**
    * Add revision control validation to the form.
    *
-   * @param \MovLib\Data\AbstractEntity $entity
-   *   The entity for revision control.
+   * @param \MovLib\Data\DateTime $entityChangedDateTime
+   *   The entity's changed date and time.
    * @return $this
    */
-  public function addRevisioning(\MovLib\Data\AbstractEntity $entity) {
-    $this->revision = $entity->changed->getTimestamp();
+  public function addRevisioning(\MovLib\Data\DateTime $entityChangedDateTime) {
+    $this->revision = $entityChangedDateTime->formatInteger();
     return $this;
   }
 
@@ -280,21 +280,37 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
     }
 
     // Validate the form if we're receiving it.
-    if (isset($this->request->post["form_id"]) && $this->request->post["form_id"] == $this->id) {
+    if ($this->request->filterInputString(INPUT_POST, "form_id") == $this->id) {
       // Validate the form's token if we have an active session.
       if ($this->session->active === true) {
-        $this->log->debug("SESSION", $_SESSION);
-
         // Assume that we don't have a form token stored in the user's session.
         $formToken = $this->session->storageGet("form_{$this->id}", false, true);
 
         // Check if we have a token for this form in session and submitted via HTTP plus compare both tokens.
-        if ($formToken === false || empty($this->request->post["form_token"]) || $this->request->post["form_token"] != $formToken) {
+        if ($formToken === false || $this->request->filterInputString(INPUT_POST, "form_token") != $formToken) {
           // Give the user the chance to re-submit this form.
           $this->presenter->alertError(
             $this->intl->t("Form Outdated"),
             "<p>{$this->intl->t(
               "The form has become outdated. Copy any unsaved work in the form below and then {0}reload this page{1}.",
+              [ "<a href='{$this->request->uri}'>", "</a>" ]
+            )}</p>"
+          );
+          return $this;
+        }
+      }
+
+      // Check the revision timestamp against session and database to make sure that nothing has changed and no
+      // form manipulation has been done.
+      if ($this->revision) {
+        $sessionRevisionId = $this->session->storageGet("form_revision_{$this->id}", false, true);
+        $inputRevisionId   = $this->request->filterInput(INPUT_POST, "form_revision_id", FILTER_VALIDATE_INT);
+
+        if ($sessionRevisionId === false || $inputRevisionId === false || $sessionRevisionId !== $this->revision || $inputRevisionId !== $this->revision) {
+          $this->presenter->alertError(
+            $this->intl->t("Conflicting Changes"),
+            "<p>{$this->intl->t(
+              "Someone else has already submitted changes before you. Copy any unsaved work in the form below and then {0}reload this page{1}.",
               [ "<a href='{$this->request->uri}'>", "</a>" ]
             )}</p>"
           );
@@ -354,19 +370,6 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
         return $this;
       }
 
-      // Check the revision timestamp against session and database to make sure that nothing has changed and no
-      // form manipulation has been done.
-      if ($this->revision && ($this->revision !== $this->session->storageGet("form_revision_{$this->id}") || $this->revision !== (integer) $this->request->post["form_revision"])) {
-        $this->presenter->alertError(
-          $this->intl->t("Conflicting Changes"),
-          "<p>{$this->intl->t(
-            "Someone else has already submitted changes before you. Copy any unsaved work in the form below and then {0}reload this page{1}.",
-            [ "<a href='{$this->request->uri}'>", "</a>" ]
-          )}</p>"
-        );
-        return $this;
-      }
-
       // If no errors were found continue processing.
       if ($submitCallback) {
         $submitCallback();
@@ -397,16 +400,10 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
       // Add the current entity timestamp to the form if we need revisioning.
       // This is done to ensure that noone has successfully changed the entity meanwhile.
       if ($this->revision) {
-        if ($this->request->methodPOST === true) {
-          $revision = $this->session->storageGet("form_revision_{$this->id}", -1);
-        }
-        else {
-          $revision = $this->session->storageSave(
-            "form_revision_{$this->id}",
-            $this->revision
-          );
-        }
-        $this->hiddenElements .= "<input name='form_revision' type='hidden' value='{$revision}'>";
+        $this->hiddenElements .= "<input name='form_revision_id' type='hidden' value='{$this->session->storageSave(
+          "form_revision_{$this->id}",
+          $this->revision
+        )}'>";
       }
     }
 

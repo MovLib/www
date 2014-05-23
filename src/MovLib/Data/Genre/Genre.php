@@ -17,7 +17,7 @@
  */
 namespace MovLib\Data\Genre;
 
-use \MovLib\Data\Revision\Revision;
+use \MovLib\Data\Genre\GenreRevision;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -29,25 +29,11 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Genre extends \MovLib\Data\AbstractEntity implements \MovLib\Data\Revision\RevisionInterface {
+final class Genre extends \MovLib\Data\AbstractEntity implements \MovLib\Data\Revision\EntityInterface {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   * The timestamp on which this genre was changed.
-   *
-   * @var integer
-   */
-  public $changed;
-
-  /**
-   * The timestamp on which this genre was created.
-   *
-   * @var integer
-   */
-  public $created;
 
   /**
    * The genre's name in default language.
@@ -57,25 +43,11 @@ final class Genre extends \MovLib\Data\AbstractEntity implements \MovLib\Data\Re
   public $defaultName;
 
   /**
-   * The genre's deletion state.
-   *
-   * @var boolean
-   */
-  public $deleted;
-
-  /**
    * The genre's description in the current locale.
    *
    * @var null|string
    */
   public $description;
-
-  /**
-   * The genre's unique identifier.
-   *
-   * @var integer
-   */
-  public $id;
 
   /**
    * The genre's movie count.
@@ -90,13 +62,6 @@ final class Genre extends \MovLib\Data\AbstractEntity implements \MovLib\Data\Re
    * @var string
    */
   public $name;
-
-  /**
-   * The translated route of this event.
-   *
-   * @var string
-   */
-  public $route;
 
   /**
    * The genre's series count.
@@ -134,7 +99,6 @@ final class Genre extends \MovLib\Data\AbstractEntity implements \MovLib\Data\Re
       $stmt = $this->getMySQLi()->prepare(<<<SQL
 SELECT
   `id`,
-  `user_id`,
   `changed`,
   `created`,
   `deleted`,
@@ -148,13 +112,13 @@ SELECT
   `count_series`
 FROM `genres`
 WHERE `id` = ?
+LIMIT 1
 SQL
       );
       $stmt->bind_param("d", $id);
       $stmt->execute();
       $stmt->bind_result(
         $this->id,
-        $this->userId,
         $this->changed,
         $this->created,
         $this->deleted,
@@ -182,106 +146,43 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function commit($userId, \MovLib\Data\DateTime $dateTime, $languageCode, \MovLib\Core\Log $logger) {
-    $revision = new Revision($this->diContainer, "Genre", $this->id);
-    $revision->save($this);
-    return $this;
+  public function createRevision($userId, $dateTime) {
+    // Now we can create the new revision of ourself. Note that our id property is NULL if we're a genre, so we don't
+    // have to take care of any not found exceptions that might occur while creating the revision.
+    $revision                                            = new GenreRevision($this->id);
+    $revision->id                                        = $dateTime->formatInteger();
+    $revision->created                                   = $dateTime;
+    $revision->deleted                                   = $this->deleted;
+    $revision->descriptions[$this->intl->languageCode]   = $this->description;
+    $revision->names[$this->intl->languageCode]          = $this->name;
+    $revision->userId                                    = $userId;
+    $revision->wikipediaLinks[$this->intl->languageCode] = $this->wikipedia;
+
+    // Don't forget that we might be a new genre and that we might have been created via a different system locale than
+    // the default one, in which case the user was required to enter a default name. Of course we have to export that
+    // as well to our revision.
+    if (isset($this->defaultName)) {
+      $revision->names[$this->intl->defaultLanguageCode] = $this->defaultName;
+    }
+
+    return $revision;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function update($userId, \MovLib\Data\DateTime $dateTime, $languageCode, \MovLib\Core\Log $logger) {
-    $this->getMySQLi()->query(<<<SQL
-UPDATE `genres` SET
-  `user_id` = {$userId},
-  `changed` = {$dateTime},
-  {$this->getDynamicColumnUpdateQuery(
-    $languageCode,
-    "names", $this->name,
-    "descriptions", $this->description,
-    "wikipedia", $this->wikipedia
-  )}
-WHERE `id` = {$this->id}
-SQL
-    );
-    return $this;
-  }
-
-  /**
-   * Create new genre.
-   *
-   * @return this
-   * @throws \mysqli_sql_exception
-   */
-  public function create() {
-    $mysqli = $this->getMySQLi();
-
-    $elasticFields["suggest"]["input"] = [];
-
-    if ($this->intl->languageCode === $this->intl->defaultLanguageCode) {
-      $stmt = $mysqli->prepare(<<<SQL
-INSERT INTO `genres` (
-  `dyn_descriptions`,
-  `dyn_names`,
-  `dyn_wikipedia`
-) VALUES (
-  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
-  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
-  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?)
-);
-SQL
-      );
-      $stmt->bind_param(
-        "sss",
-        $this->description,
-        $this->name,
-        $this->wikipedia
-      );
-      $elasticFields["suggest"]["input"][] = $elasticFields["suggest"]["payload"][$this->intl->defaultLanguageCode] = $elasticFields[$this->intl->defaultLanguageCode] = $this->name;
-      $elasticFields["suggest"]["output"]  = $this->name;
+  public function setRevision(\MovLib\Data\Revision\RevisionEntityInterface $revisionEntity, $languageCode, $defaultLanguageCode) {
+    $this->changed = $revisionEntity->created;
+    $this->deleted = $revisionEntity->deleted;
+    isset($revisionEntity->descriptions[$languageCode])   && ($this->description = $revisionEntity->descriptions[$languageCode]);
+    isset($revisionEntity->wikipediaLinks[$languageCode]) && ($this->wikipedia = $revisionEntity->wikipediaLinks[$languageCode]);
+    if (isset($revisionEntity->names[$languageCode])) {
+      $this->name = $revisionEntity->names[$languageCode];
     }
     else {
-      $stmt = $mysqli->prepare(<<<SQL
-INSERT INTO `genres` (
-  `dyn_descriptions`,
-  `dyn_names`,
-  `dyn_wikipedia`
-) VALUES (
-  COLUMN_CREATE('{$this->intl->languageCode}', ?),
-  COLUMN_CREATE(
-    '{$this->intl->defaultLanguageCode}', ?,
-    '{$this->intl->languageCode}', ?
-  ),
-  COLUMN_CREATE('{$this->intl->languageCode}', ?)
-);
-SQL
-      );
-      $stmt->bind_param(
-        "ssss",
-        $this->description,
-        $this->defaultName,
-        $this->name,
-        $this->wikipedia
-      );
-      $elasticFields["suggest"]["input"][] = $elasticFields["suggest"]["payload"][$this->intl->defaultLanguageCode] = $elasticFields[$this->intl->defaultLanguageCode] = $this->defaultName;
-      $elasticFields["suggest"]["output"]  = $this->defaultName;
-      $elasticFields["suggest"]["input"][] = $elasticFields["suggest"]["payload"][$this->intl->languageCode] = $elasticFields[$this->intl->languageCode]        = $this->name;
+      $this->name = $revisionEntity->names[$defaultLanguageCode];
     }
-
-    $stmt->execute();
-    $this->id = $stmt->insert_id;
-
-    // Index the newly created genre with ElasticSearch.
-    $elasticClient = new \Elasticsearch\Client();
-    $elasticClient->index([
-      "index" => "genres",
-      "type"  => "genre",
-      "id"    => $this->id,
-      "body"  => $elasticFields,
-    ]);
-
-    return $this->init();
+    return $this;
   }
 
 }

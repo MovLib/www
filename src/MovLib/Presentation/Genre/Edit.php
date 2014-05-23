@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Genre;
 
 use \MovLib\Data\Genre\Genre;
+use \MovLib\Data\Revision\Revision;
 use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputText;
@@ -66,7 +67,7 @@ final class Edit extends \MovLib\Presentation\AbstractEditPresenter {
       ]))
       ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia))
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
-      ->addRevisioning($this->entity)
+      ->addRevisioning($this->entity->changed)
       ->init([ $this, "submit" ])
     ;
   }
@@ -78,9 +79,32 @@ final class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    *   Always redirects the user back to the edited genre.
    */
   public function submit() {
-    $this->entity->commit($this->session->userId, $this->request->dateTime, $this->intl->languageCode, $this->log);
-    $this->alertSuccess($this->intl->t("Update Successful"));
-    throw new SeeOtherException($this->entity->route);
+    try {
+      // Create and commit new revision of this entity.
+      (new Revision($this->entity->createRevision($this->session->userId, $this->request->dateTime)))
+        ->commit($this->entity->changed->formatInteger(), $this->intl->languageCode);
+
+      // Inform the user that the update of the entity was successful.
+      $this->alertSuccess($this->intl->t("Update Successful"));
+
+      // Redirect the user to the updated entity's page.
+      throw new SeeOtherException($this->entity->route);
+    }
+    catch (\BadMethodCallException $e) {
+      $this->alertError(
+        $this->intl->t("Validation Error"),
+        $this->intl->t("Seems like you haven’t changed anything, please only submit forms with changes.")
+      );
+    }
+    catch (\UnexpectedValueException $e) {
+      $this->alertError(
+        $this->intl->t("Conflicting Changes"),
+        "<p>{$this->intl->t(
+          "Someone else has already submitted changes before you. Copy any unsaved work in the form below and then {0}reload this page{1}.",
+          [ "<a href='{$this->request->uri}'>", "</a>" ]
+        )}</p>"
+      );
+    }
   }
 
 }

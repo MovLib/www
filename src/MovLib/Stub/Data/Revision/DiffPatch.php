@@ -15,33 +15,46 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\Stub\Data\Revision;
 
 /**
- * Defines the order in which the SQL scripts are imported if all scripts are imported at once.
+ * Defines the stub object diff patch.
  *
+ * @see \MovLib\Data\Revision\Revision::restore()
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
+abstract class DiffPatch {
 
-// @codeCoverageIgnoreStart
-return [
-  "places" => "sql",
-  "awards" => "sql",
-  "companies" => "sql",
-  "genres" => "sql",
-  "help_categories" => "sql",
-  "help_subcategories" => "sql",
-  "jobs" => "sql",
-  "licenses" => "sql",
-  "movies" => "sql",
-  "movies_posters" => "sql",
-  "series" => "sql",
-  "system_pages" => "sql",
-  "revision_entity_types" => "sql",
-  "revisions" => "sql",
-  "users" => "sql",
-];
-// @codeCoverageIgnoreEnd
+  /**
+   * The diff patch itself.
+   *
+   * This string contains the instructions that are needed by {@see \MovLib\Data\Revision\Revision::patch()} to patch
+   * a newer revision to an older one.
+   *
+   * @var string
+   */
+  public $data;
+
+  /**
+   * The diff patch's unique revision identifier.
+   *
+   * Note that the revision identifier is only unique for the entity it was loaded for. The field for itself isn't
+   * unique at all. The value is an integer but actually represent a date and time and is only casted to an integer for
+   * performance and easy comparison.
+   *
+   * @var integer
+   */
+  public $revisionId;
+
+  /**
+   * The unique identifier of the user who created this diff patch.
+   *
+   * @var integer
+   */
+  public $userId;
+
+}

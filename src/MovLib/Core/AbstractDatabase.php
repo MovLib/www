@@ -160,11 +160,11 @@ abstract class AbstractDatabase {
    * @param string $languageCode
    *   The language code of the current request, used to determine which dynamic columns have to updated.
    * @param mixed $dynamicColumns
-   *   An array that contains the name of the dynamic column in the database (without the <code>"dyn_"</code> prefix)
-   *   and the property in alternating order, e.g.:
-   *   <code>"names", $this->names, "descriptions", $this->descriptions, ...</code>
-   * @return string
-   *   The dynamic column update query part.
+   *   An array that contains the name of the dynamic column in the database (without the <code>"dyn_"</code> prefix),
+   *   the property and the old property in alternating order, e.g.:
+   *   <code>"names", $this->names, $old->names, "descriptions", $this->descriptions, $old->descriptions, ...</code>
+   * @return string|null
+   *   The dynamic column update query part or <code>NULL</code> if nothing is to be done.
    */
   final protected function getDynamicColumnUpdateQuery($languageCode, ...$dynamicColumns) {
     $mysqli = $this->getMySQLi();
@@ -172,19 +172,24 @@ abstract class AbstractDatabase {
 
     // @devStart
     // @codeCoverageIgnoreStart
-    assert($c % 2 === 0, "Dynamic column count doesn't match property count.");
+    assert($c % 3 === 0, "Dynamic column count doesn't match property count.");
     // @codeCoverageIgnoreEnd
     // @devEnd
 
     $query = null;
-    for ($i = 0, $j = 1; $i < $c; $i += 2, $j += 2) {
+    for ($i = 0, $j = 1, $k = 2; $i < $c; $i += 3, $j += 3, $k += 3) {
+      // Check if the value stayed the same, if so, skip.
+      if (isset($dynamicColumns[$j][$languageCode]) && isset($dynamicColumns[$k][$languageCode]) && $dynamicColumns[$j][$languageCode] == $dynamicColumns[$k][$languageCode]) {
+        continue;
+      }
+
       if ($query) {
         $query .= ",";
       }
 
       // Note the comparison with two equal signs!
-      if ($dynamicColumns[$j] == true) {
-        $query .= "`dyn_{$dynamicColumns[$i]}`=COLUMN_ADD(`dyn_{$dynamicColumns[$i]}`,'{$languageCode}' '{$mysqli->real_escape_string($dynamicColumns[$j])}')";
+      if (isset($dynamicColumns[$j][$languageCode]) && $dynamicColumns[$j] == true) {
+        $query .= "`dyn_{$dynamicColumns[$i]}`=COLUMN_ADD(`dyn_{$dynamicColumns[$i]}`,'{$languageCode}','{$mysqli->real_escape_string($dynamicColumns[$j][$languageCode])}')";
       }
       else {
         $query .= "`dyn_{$dynamicColumns[$i]}`=COLUMN_DELETE(`dyn_{$dynamicColumns[$i]}`,'{$languageCode}')";
@@ -192,7 +197,9 @@ abstract class AbstractDatabase {
     }
 
     // Pad the created query with spaces to avoid incorrect embedding of it.
-    return " {$query} ";
+    if ($query) {
+      return " {$query} ";
+    }
   }
 
   /**
@@ -250,17 +257,17 @@ abstract class AbstractDatabase {
    *   The property containing the JSON response.
    * @return this
    */
-//  final protected function jsonDecode(&...$properties) {
-//    $c = count($properties);
-//    for ($i = 0; $i < $c; ++$i) {
-//      if (empty($properties[$i]) || $properties[$i] == "{}") {
-//        $properties[$i] = null;
-//      }
-//      else {
-//        $properties[$i] = json_decode($properties[$i], true);
-//      }
-//    }
-//    return $this;
-//  }
+  final protected function jsonDecode(&...$properties) {
+    $c = count($properties);
+    for ($i = 0; $i < $c; ++$i) {
+      if (empty($properties[$i]) || $properties[$i] == "{}") {
+        $properties[$i] = null;
+      }
+      else {
+        $properties[$i] = json_decode($properties[$i], true);
+      }
+    }
+    return $this;
+  }
 
 }
