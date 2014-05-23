@@ -22,7 +22,7 @@ use \MovLib\Data\Award\CategorySet;
 use \MovLib\Data\Event\EventSet;
 use \MovLib\Data\Movie\MovieSet;
 use \MovLib\Data\Series\SeriesSet;
-use \MovLib\Data\Date;
+use \MovLib\Component\Date;
 use \MovLib\Data\Search\Search;
 use \MovLib\Exception\ClientException\NotFoundException;
 
@@ -71,7 +71,7 @@ class Person extends \MovLib\Data\Image\AbstractImageEntity {
   /**
    * The person's date of birth in <code>"Y-m-d"</code> format.
    *
-   * @var \MovLib\Data\Date
+   * @var \MovLib\Component\Date
    */
   public $birthDate;
 
@@ -92,7 +92,7 @@ class Person extends \MovLib\Data\Image\AbstractImageEntity {
   /**
    * The person's date of death in <code>"Y-m-d"</code> format.
    *
-   * @var \MovLib\Data\Date
+   * @var \MovLib\Component\Date
    */
   public $deathDate;
 

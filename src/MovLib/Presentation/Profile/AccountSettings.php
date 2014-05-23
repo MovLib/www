@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \MovLib\Data\Date;
+use \MovLib\Component\Date;
 use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Country;
 use \MovLib\Partial\Currency;

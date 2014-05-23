@@ -17,8 +17,7 @@
  */
 namespace MovLib\Data\Movie;
 
-use \MovLib\Data\Date;
-use \MovLib\Data\Revision;
+use \MovLib\Component\Date;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -194,7 +193,7 @@ final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity impleme
   /**
    * The movie's year.
    *
-   * @var \MovLib\Data\Date
+   * @var integer
    */
   public $year;
 
@@ -472,9 +471,6 @@ SQL
    * {@inheritdoc}
    */
   public function init() {
-    if (isset($this->year) && !$this->year instanceof \stdClass) {
-      $this->year = new Date($this->year);
-    }
     if ($this->year) {
       $this->displayTitleAndYear = $this->intl->t("{0} ({1})", [ $this->displayTitle, $this->year->year ]);
     }

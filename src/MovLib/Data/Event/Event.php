@@ -17,8 +17,7 @@
  */
 namespace MovLib\Data\Event;
 
-use \MovLib\Data\Date;
-use \MovLib\Data\Revision;
+use \MovLib\Component\Date;
 use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Data\Place\Place;
 use \MovLib\Exception\ClientException\NotFoundException;

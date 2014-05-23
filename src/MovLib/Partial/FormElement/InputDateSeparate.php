@@ -17,12 +17,12 @@
  */
 namespace MovLib\Partial\FormElement;
 
-use \MovLib\Data\Date;
+use \MovLib\Component\Date;
 
 /**
  * Date input consisting of three number input elements for day, month and year.
  *
- * @property \MovLib\Data\Date $value
+ * @property \MovLib\Component\Date $value
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
@@ -92,7 +92,7 @@ class InputDateSeparate extends \MovLib\Partial\FormElement\AbstractFormElement 
    *     <li><code>"year_min</code> set this to the minimum year that can be entered, defaults to <code>0</code></li>
    *   </ul>
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, \MovLib\Data\Date &$value = null, array $attributes = null, array $options = null) {
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, \MovLib\Component\Date &$value = null, array $attributes = null, array $options = null) {
     parent::__construct($diContainerHTTP, $id, $label, $value, $attributes);
     if (isset($options["year_max"])) {
       // @devStart
@@ -224,7 +224,7 @@ class InputDateSeparate extends \MovLib\Partial\FormElement\AbstractFormElement 
    *   The user submitted date to validate.
    * @param null|array $errors
    *   Parameter to collect error messages.
-   * @return \MovLib\Data\Date|null
+   * @return \MovLib\Component\Date|null
    *   The valid date or null if there is no date.
    */
   protected function validateValue($value, &$errors) {

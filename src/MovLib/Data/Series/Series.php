@@ -17,8 +17,7 @@
  */
 namespace MovLib\Data\Series;
 
-use \MovLib\Data\Date;
-use \MovLib\Data\Revision;
+use \MovLib\Component\Date;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**

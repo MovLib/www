@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Component;
 
 /**
  * Defines the date object.
@@ -76,12 +76,12 @@ final class Date extends \DateTime {
   /**
    * Associative array containing date formats for missing days.
    *
-   * Structure: <code>[ "language_code" => [ "IntlDateFormatter_constant" => "format_string" ] ]</code>
+   * Structure: <code>[ "locale" => [ "IntlDateFormatter_constant" => "format_string" ] ]</code>
    *
    * @var array
    */
   private static $patterns = [
-    "de" => [
+    "de_AT" => [
       \IntlDateFormatter::NONE        => "yyyyMM hh:mm a",
       \IntlDateFormatter::SHORT       => "MM.yy",
       \IntlDateFormatter::MEDIUM      => "MM.y",
@@ -90,7 +90,7 @@ final class Date extends \DateTime {
       \IntlDateFormatter::TRADITIONAL => "MMMM y",
       \IntlDateFormatter::GREGORIAN   => "MMMM y",
     ],
-    "en" => [
+    "en_US" => [
       \IntlDateFormatter::NONE        => "yyyyMM hh:mm a",
       \IntlDateFormatter::SHORT       => "M/yy",
       \IntlDateFormatter::MEDIUM      => "MMM, y",
@@ -157,18 +157,18 @@ final class Date extends \DateTime {
   /**
    * Format the date according to the intl rules of the given locale.
    *
-   * @param \MovLib\Core\Intl $intl
-   *   The active Intl instance.
+   * @param string $locale
+   *   The locale that should be used to format the date.
    * @param integer $type [optional]
    *   Any of the {@see \IntlDateFormatter} constants, defaults to {@see \IntlDateFormatter::MEDIUM}.
    * @return string
    *   The date according to the intl rules of the given locale.
    */
-  public function formatIntl(\MovLib\Core\Intl $intl, $type = \IntlDateFormatter::MEDIUM) {
+  public function formatIntl($locale, $type = \IntlDateFormatter::MEDIUM) {
     if ($this->day || $this->month) {
-      $fmt = new \IntlDateFormatter($intl->locale, $type, \IntlDateFormatter::NONE);
+      $fmt = new \IntlDateFormatter($locale, $type, \IntlDateFormatter::NONE);
       if (!$this->day) {
-        $fmt->setPattern(self::$patterns[$intl->languageCode][$type]);
+        $fmt->setPattern(self::$patterns[$locale][$type]);
       }
       return $fmt->format($this);
     }

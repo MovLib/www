@@ -18,7 +18,7 @@
 namespace MovLib\Core\HTTP;
 
 use \MovLib\Core\Intl;
-use \MovLib\Data\DateTime;
+use \MovLib\Component\DateTime;
 use \MovLib\Presentation\Error\Forbidden;
 
 /**
@@ -46,7 +46,7 @@ final class Request {
   /**
    * The request's date and time.
    *
-   * @var \MovLib\Data\DateTime
+   * @var \MovLib\Component\DateTime
    */
   public $dateTime;
 

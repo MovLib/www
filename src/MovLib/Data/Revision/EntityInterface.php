@@ -40,7 +40,7 @@ interface EntityInterface {
    *
    * @param integer $userId
    *   The user's unique identifier who created/edited the entity.
-   * @param \MovLib\Data\DateTime $dateTime
+   * @param \MovLib\Component\DateTime $dateTime
    *   The date and time the user created/edited the entity, should be the request time.
    * @return \MovLib\Data\Revision\RevisionEntityInterface
    *   A revision based on the current state of the entity.

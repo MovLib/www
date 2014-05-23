@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\User;
 
-use \MovLib\Data\Date;
+use \MovLib\Component\Date;
 use \MovLib\Data\Movie\Movie;
 use \MovLib\Data\Series\Series;
 use \MovLib\Partial\Date as DatePartial;

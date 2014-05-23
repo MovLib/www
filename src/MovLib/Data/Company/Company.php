@@ -17,8 +17,7 @@
  */
 namespace MovLib\Data\Company;
 
-use \MovLib\Data\Date;
-use \MovLib\Data\Revision;
+use \MovLib\Component\Date;
 use \MovLib\Data\Movie\MovieSet;
 use \MovLib\Data\Series\SeriesSet;
 use \MovLib\Exception\ClientException\NotFoundException;
@@ -61,7 +60,7 @@ final class Company extends \MovLib\Data\Image\AbstractImageEntity {
   /**
    * The company's defunct date.
    *
-   * @var null|\MovLib\Data\Date
+   * @var null|\MovLib\Component\Date
    */
   public $defunctDate;
 
@@ -75,7 +74,7 @@ final class Company extends \MovLib\Data\Image\AbstractImageEntity {
   /**
    * The company's founding date.
    *
-   * @var null|\MovLib\Data\Date
+   * @var null|\MovLib\Component\Date
    */
   public $foundingDate;
 

@@ -17,7 +17,7 @@
  */
 namespace MovLib\Core\HTTP;
 
-use \MovLib\Data\DateTime;
+use \MovLib\Component\DateTime;
 use \MovLib\Data\Image\ImageStyle;
 use \MovLib\Data\Image\ImageStylePlaceholder;
 use \MovLib\Exception\ClientException\ForbiddenException;

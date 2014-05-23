@@ -18,7 +18,7 @@
 namespace MovLib\Presentation;
 
 use \MovLib\Data\RevisionEntitySet;
-use \MovLib\Data\DateTime;
+use \MovLib\Component\DateTime;
 use \MovLib\Exception\RedirectException\TemporaryRedirectException;
 use \MovLib\Partial\DateTime as DateTimePartial;
 

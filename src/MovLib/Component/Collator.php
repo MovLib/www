@@ -26,7 +26,7 @@ namespace MovLib\Component;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Collator extends \Collator {
+final class Collator extends \Collator {
 
   /**
    * Sorts an array by key, maintaining key to data correlations. This is useful for associative arrays.

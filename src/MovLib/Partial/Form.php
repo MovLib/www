@@ -239,11 +239,11 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
   /**
    * Add revision control validation to the form.
    *
-   * @param \MovLib\Data\DateTime $entityChangedDateTime
+   * @param \MovLib\Component\DateTime $entityChangedDateTime
    *   The entity's changed date and time.
    * @return $this
    */
-  public function addRevisioning(\MovLib\Data\DateTime $entityChangedDateTime) {
+  public function addRevisioning(\MovLib\Component\DateTime $entityChangedDateTime) {
     $this->revision = $entityChangedDateTime->formatInteger();
     return $this;
   }

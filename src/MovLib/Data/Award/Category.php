@@ -17,9 +17,8 @@
  */
 namespace MovLib\Data\Award;
 
+use \MovLib\Component\Date;
 use \MovLib\Data\Award\Award;
-use \MovLib\Data\Date;
-use \MovLib\Data\Revision;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -93,7 +92,7 @@ final class Category extends \MovLib\Data\AbstractEntity {
   /**
    * The category's first year.
    *
-   * @var null|\MovLib\Data\Date
+   * @var null|\MovLib\Component\Date
    */
   public $firstYear;
 
@@ -108,7 +107,7 @@ final class Category extends \MovLib\Data\AbstractEntity {
   /**
    * The category's last year.
    *
-   * @var null|\MovLib\Data\Date
+   * @var null|\MovLib\Component\Date
    */
   public $lastYear;
 

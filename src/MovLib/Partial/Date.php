@@ -20,7 +20,7 @@ namespace MovLib\Partial;
 /**
  * Defines the date partial object.
  *
- * The date partial works with {@see \MovLib\Data\Date} objects and has methods that allow automated formatting with the
+ * The date partial works with {@see \MovLib\Component\Date} objects and has methods that allow automated formatting with the
  * appropriate structured data attributes and HTML tags.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
@@ -74,7 +74,7 @@ final class Date {
   /**
    * Get the formatted date.
    *
-   * @param \MovLib\Data\Date $date
+   * @param \MovLib\Component\Date $date
    *   The date to format.
    * @param array $attributes [optional]
    *   Additional attributes for the <code><time></code> element.
@@ -83,17 +83,17 @@ final class Date {
    * @return string
    *   The formatted date.
    */
-  public function format(\MovLib\Data\Date $date, array $attributes = [], $type = \IntlDateFormatter::MEDIUM) {
+  public function format(\MovLib\Component\Date $date, array $attributes = [], $type = \IntlDateFormatter::MEDIUM) {
     $attributes["datetime"] = $this->formatISO8601($date);
-    return "<time{$this->presenter->expandTagAttributes($attributes)}>{$date->formatIntl($this->intl, $type)}</time>";
+    return "<time{$this->presenter->expandTagAttributes($attributes)}>{$date->formatIntl($this->intl->locale, $type)}</time>";
   }
 
   /**
    * Format given dates in a generic <code>"{from}-{to}"</code> form.
    *
-   * @param \MovLib\Data\Date|null $dateFrom
+   * @param \MovLib\Component\Date|null $dateFrom
    *   The from date or <code>NULL</code>.
-   * @param \MovLib\Data\Date|null $dateTo
+   * @param \MovLib\Component\Date|null $dateTo
    *   The to date or <code>NULL</code>.
    * @param array $fromAttributes [optional]
    *   Additional attributes for the from <code><time></code> element. Note that any <code>"datetime"</code> key will be
@@ -106,7 +106,7 @@ final class Date {
    * @return null|string
    *   The formatted dates or <code>NULL</code> if no dates where found for formatting.
    */
-  public function formatFromTo(\MovLib\Data\Date $dateFrom = null, \MovLib\Data\Date $dateTo = null, array $fromAttributes = [], array $toAttributes = [], $yearsOnly = false) {
+  public function formatFromTo(\MovLib\Component\Date $dateFrom = null, \MovLib\Component\Date $dateTo = null, array $fromAttributes = [], array $toAttributes = [], $yearsOnly = false) {
     if ($dateFrom || $dateTo) {
       $format = $yearsOnly ? "formatYear" : "format";
       if ($dateFrom) {
@@ -128,7 +128,7 @@ final class Date {
    * @return string
    *   The ISO 8601 formatted date.
    */
-  public function formatISO8601(\MovLib\Data\Date $date) {
+  public function formatISO8601(\MovLib\Component\Date $date) {
     if ($date->day) {
       return (string) $date;
     }
@@ -141,7 +141,7 @@ final class Date {
   /**
    * Format the year of the given string.
    *
-   * @param \MovLib\Data\Date $date
+   * @param \MovLib\Component\Date $date
    *   The date to format.
    * @param array $attributes [optional]
    *   Additional attributes for the <code><time></code> element. Note that any <code>"datetime"</code> key will be
@@ -152,7 +152,7 @@ final class Date {
    * @return string
    *   The formatted year.
    */
-  public function formatYear(\MovLib\Data\Date $date, array $attributes = [], array $route = null) {
+  public function formatYear(\MovLib\Component\Date $date, array $attributes = [], array $route = null) {
     $year = $attributes["datetime"] = $date->year;
     if ($route) {
       // @devStart
@@ -168,18 +168,18 @@ final class Date {
   /**
    * Get the age of the date in years with approximation if dates are not complete.
    *
-   * @param \MovLib\Data\Date $dateFrom
+   * @param \MovLib\Component\Date $dateFrom
    *   The date when the entity started.
-   * @param \MovLib\Data\Date $dateTo [optional]
+   * @param \MovLib\Component\Date $dateTo [optional]
    *   The date when the entity ended, defaults to <code>NULL</code> and the current date is used.
    * @return string
    *   The age of the date in years (with approximation when dates are not complete) or <code>NULL</code> if year part
    *   is missing.
    */
-  public function getAge(\MovLib\Data\Date $dateFrom, \MovLib\Data\Date $dateTo = null) {
+  public function getAge(\MovLib\Component\Date $dateFrom, \MovLib\Component\Date $dateTo = null) {
     $format = "%Y";
     if (!$dateTo) {
-      $dateTo = new \MovLib\Data\Date();
+      $dateTo = new \MovLib\Component\Date();
     }
     // We can only calculate the exact date if both dates have all date parts.
     if (empty($dateFrom->month) || empty($dateFrom->day) || empty($dateTo->month) || empty($dateTo->day)) {

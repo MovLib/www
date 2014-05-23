@@ -80,7 +80,7 @@ final class DateTime {
   /**
    * Get the date and time formatted in the current locale.
    *
-   * @param \MovLib\Data\DateTime $dateTime
+   * @param \MovLib\Component\DateTime $dateTime
    *   The date and time to format.
    * @param array $attributes [optional]
    *   Additional attributes that should be applied to the <code><time></code> element, default to <code>NULL</code>.
@@ -98,7 +98,7 @@ final class DateTime {
    * @return string
    *   The date and time formatted in the current locale.
    */
-  public function format(\MovLib\Data\DateTime $dateTime, array $attributes = null, $dateType = \IntlDateFormatter::MEDIUM, $timeType = \IntlDateFormatter::MEDIUM, $timezone = null, $locale = null) {
+  public function format(\MovLib\Component\DateTime $dateTime, array $attributes = null, $dateType = \IntlDateFormatter::MEDIUM, $timeType = \IntlDateFormatter::MEDIUM, $timezone = null, $locale = null) {
     if (!$timezone) {
       $timezone = $this->timezone;
     }
@@ -116,7 +116,7 @@ final class DateTime {
    * The usage of magic numbers is intended, these calculations will never change!
    *
    * @link http://stackoverflow.com/questions/11
-   * @param \MovLib\Data\DateTime $dateTime
+   * @param \MovLib\Component\DateTime $dateTime
    *   The date and time to format.
    * @param string $timezone [optional]
    *   The timezone to use for calculation, defaults to the timezone passed to the constructor (if any) and than to the
@@ -124,7 +124,7 @@ final class DateTime {
    * @return string
    *   Relative string representation of the date and time.
    */
-  public function formatRelative(\MovLib\Data\DateTime $dateTime, $timezone = null) {
+  public function formatRelative(\MovLib\Component\DateTime $dateTime, $timezone = null) {
     // @todo Change to use interval.
     //$interval = (new \DateTime("now", $timezone ?: $this->timezone))->diff($dateTime);
     $delta = $_SERVER["REQUEST_TIME"] - $dateTime->getTimestamp();

@@ -17,7 +17,7 @@
  */
 namespace MovLib\Data;
 
-use \MovLib\Data\DateTime;
+use \MovLib\Component\DateTime;
 
 /**
  * Defines the base class for database entity objects.
@@ -44,14 +44,14 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
   /**
    * The entity's changed date and time.
    *
-   * @var \MovLib\Data\DateTime
+   * @var \MovLib\Component\DateTime
    */
   public $changed;
 
   /**
    * The entity's creation date and time.
    *
-   * @var \MovLib\Data\DateTime
+   * @var \MovLib\Component\DateTime
    */
   public $created;
 

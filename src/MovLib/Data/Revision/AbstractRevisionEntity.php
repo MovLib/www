@@ -17,7 +17,7 @@
  */
 namespace MovLib\Data\Revision;
 
-use \MovLib\Data\DateTime;
+use \MovLib\Component\DateTime;
 
 /**
  * Defines the base object for revisioned database entities.
@@ -37,7 +37,7 @@ abstract class AbstractRevisionEntity extends \MovLib\Core\AbstractDatabase impl
   /**
    * The revision entity's creation date and time.
    *
-   * @var \MovLib\Data\DateTime
+   * @var \MovLib\Component\DateTime
    */
   public $created;
 

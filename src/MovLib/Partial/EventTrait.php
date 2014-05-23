@@ -17,7 +17,7 @@
  */
 namespace MovLib\Partial;
 
-use \MovLib\Data\Date;
+use \MovLib\Component\Date;
 use \MovLib\Partial\Date as DatePartial;
 
 /**

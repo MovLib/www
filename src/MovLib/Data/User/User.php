@@ -18,8 +18,8 @@
 namespace MovLib\Data\User;
 
 use \MovLib\Core\HTTP\Session;
-use \MovLib\Data\Date;
-use \MovLib\Data\DateTime;
+use \MovLib\Component\Date;
+use \MovLib\Component\DateTime;
 use \MovLib\Data\Image\ImageResizeEffect;
 use \MovLib\Data\Movie\MovieSet;
 use \MovLib\Data\Series\SeriesSet;

@@ -53,7 +53,7 @@ abstract class Contribution {
   /**
    * The contribution's date and time.
    *
-   * @var \MovLib\Data\DateTime
+   * @var \MovLib\Component\DateTime
    */
   public $dateTime;
 

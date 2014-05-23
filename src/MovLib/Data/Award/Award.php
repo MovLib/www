@@ -17,8 +17,7 @@
  */
 namespace MovLib\Data\Award;
 
-use \MovLib\Data\Date;
-use \MovLib\Data\Revision;
+use \MovLib\Component\Date;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -94,14 +93,14 @@ final class Award extends \MovLib\Data\AbstractEntity {
   /**
    * The award's first event year.
    *
-   * @var null|\MovLib\Data\Date
+   * @var null|\MovLib\Component\Date
    */
   public $firstEventYear;
 
   /**
    * The award's last event year.
    *
-   * @var null|\MovLib\Data\Date
+   * @var null|\MovLib\Component\Date
    */
   public $lastEventYear;
 

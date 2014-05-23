@@ -33,7 +33,7 @@ abstract class ActiveSessionSet {
   /**
    * The active session's authentication time.
    *
-   * @var \MovLib\Data\DateTime
+   * @var \MovLib\Component\DateTime
    */
   public $authentication;
 
