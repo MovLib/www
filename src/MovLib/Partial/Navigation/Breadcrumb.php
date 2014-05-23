@@ -35,9 +35,9 @@ final class Breadcrumb extends \MovLib\Core\Presentation\DependencyInjectionBase
   /**
    * The title for the current page's crumb.
    *
-   * @var string
+   * @var boolean|string
    */
-  protected $title;
+  public $title;
 
   /**
    * The breadcrumb's trail.

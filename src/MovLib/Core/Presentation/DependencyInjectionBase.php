@@ -179,7 +179,7 @@ class DependencyInjectionBase extends \MovLib\Core\Presentation\Base {
       }
 
       // Add the route to the anchor element.
-      $attributes["href"] = $route{0} == "#" ? $route : url_encode_path($route);
+      $attributes["href"] = $route;
     }
 
     // Put it all together.

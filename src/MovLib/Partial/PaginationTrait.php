@@ -156,9 +156,9 @@ trait PaginationTrait {
       $this->paginationOffset = ($this->paginationCurrentPage - 1) * $this->paginationLimit;
 
       // Extend the page's breadcrumb and title with information about the current pagination page.
-      $title = $this->intl->t("Page {0,number,integer}", [ $this->paginationCurrentPage ]);
-      $this->breadcrumb->menuitems[] = [ $this->request->uri, $title ];
-      $this->title .= " {$title}";
+      $titleSuffix = $this->intl->t("Page {0,number,integer}", $this->paginationCurrentPage);
+      $this->title = $this->intl->t("{0} ({1})", [ $this->title, $titleSuffix ]);
+      $this->breadcrumb->title = $this->intl->t("{0} ({1})", [ $this->breadcrumb->title, $titleSuffix ]);
     }
 
     // @todo Better documentation of the code below and we should get rid of all the magic numbers in there!
@@ -201,8 +201,9 @@ trait PaginationTrait {
         $x = 2;
       }
 
-      // The second pagination item is special and if we have a pagination it always exists, see above if.
-      if ($x < 5) {
+      // The second pagination item is special and if we have a pagination it always exists, see above if. We always
+      // want to include the second pager if we have less than eight pages, because we have 7 pagers in total.
+      if ($this->paginationTotalPages < 7 || $x < 5) {
         $pages[] = [ "{$route}2", "2" ];
         $x = 3;
       }
@@ -211,29 +212,36 @@ trait PaginationTrait {
         --$x;
       }
 
+      // We have to check if we're at the end of the pagination with the current page. Remember that we always want to
+      // fill at least 9 pagers.
       $y = $this->paginationTotalPages - 6;
-      if ($y > 2) {
-        if ($x > $y) {
-          $x = $y;
-        }
 
-        // We can generate the next points in a loop, as they always have the same formatting.
-        $secondLast = $this->paginationTotalPages - 1;
-        for ($i = 0; $i < 5 && $x < $secondLast; ++$i, ++$x) {
-          $pages[] = [ "{$route}{$x}", $x ];
-        }
-
-        // The second last pagination item is special again.
-        if ($x === $secondLast) {
-          $pages[] = [ "{$route}{$secondLast}", $secondLast ];
-        }
-        else {
-          $pages[] = "<span class='mute pager'>{$this->intl->t("…")}</span>";
-        }
-
-        // Always add the last page to the pagination for fast traveling.
-        $pages[] = [ "{$route}{$this->paginationTotalPages}", $this->paginationTotalPages, [ "class" => "pager", "rel" => "last" ] ];
+      // We already added the first two items, so we can only continue from position 3 and not less.
+      if ($y < 3) {
+        $y = 3;
       }
+
+      // If the current page is less than the amount of pagers we'd like to fill, adjust it.
+      if ($x > $y) {
+        $x = $y;
+      }
+
+      // We can generate the next points in a loop, as they always have the same formatting.
+      $secondLast = $this->paginationTotalPages - 1;
+      for ($i = 0; $i < 5 && $x < $secondLast; ++$i, ++$x) {
+        $pages[] = [ "{$route}{$x}", $x ];
+      }
+
+      // The second last pagination item is special again.
+      if ($x === $secondLast) {
+        $pages[] = [ "{$route}{$secondLast}", $secondLast ];
+      }
+      else {
+        $pages[] = "<span class='mute pager'>{$this->intl->t("…")}</span>";
+      }
+
+      // Always add the last page to the pagination for fast traveling.
+      $pages[] = [ "{$route}{$this->paginationTotalPages}", $this->paginationTotalPages, [ "class" => "pager", "rel" => "last" ] ];
 
       // Check if we have a next page and perform the same logic as we used for the previous link.
       if ($this->paginationCurrentPage < $this->paginationTotalPages) {
