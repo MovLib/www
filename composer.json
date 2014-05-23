@@ -37,6 +37,7 @@
     "symfony/console": "~2"
   },
   "require-dev": {
+    "firephp/firephp-core": "~0",
     "jan-swiecki/simple-annotations": "~0",
     "oodle/krumo": "~0",
     "phpunit/phpunit": "~4"
