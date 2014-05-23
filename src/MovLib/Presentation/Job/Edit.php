@@ -18,6 +18,8 @@
 namespace MovLib\Presentation\Job;
 
 use \MovLib\Data\Job\Job;
+use \MovLib\Data\Revision\Revision;
+use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputWikipedia;
 use \MovLib\Partial\FormElement\TextareaHTMLExtended;
@@ -59,8 +61,44 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
       ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description))
       ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia))
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
-      ->init([ $this, "valid" ])
+      ->addRevisioning($this->entity->changed)
+      ->init([ $this, "submit" ])
     ;
+  }
+
+  /**
+   * Submit callback for the job edit form.
+   *
+   * @throws \MovLib\Exception\RedirectException\SeeOtherException
+   *   Always redirects the user back to the edited job.
+   */
+  public function submit() {
+    try {
+      // Create and commit new revision of this entity.
+      (new Revision($this->entity->createRevision($this->session->userId, $this->request->dateTime)))
+        ->commit($this->entity->changed->formatInteger(), $this->intl->languageCode);
+
+      // Inform the user that the update of the entity was successful.
+      $this->alertSuccess($this->intl->t("Update Successful"));
+
+      // Redirect the user to the updated entity's page.
+      throw new SeeOtherException($this->entity->route);
+    }
+    catch (\BadMethodCallException $e) {
+      $this->alertError(
+        $this->intl->t("Validation Error"),
+        $this->intl->t("Seems like you haven’t changed anything, please only submit forms with changes.")
+      );
+    }
+    catch (\UnexpectedValueException $e) {
+      $this->alertError(
+        $this->intl->t("Conflicting Changes"),
+        "<p>{$this->intl->t(
+          "Someone else has already submitted changes before you. Copy any unsaved work in the form below and then {0}reload this page{1}.",
+          [ "<a href='{$this->request->uri}'>", "</a>" ]
+        )}</p>"
+      );
+    }
   }
 
 }

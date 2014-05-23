@@ -31,6 +31,9 @@ TRUNCATE TABLE `revisions`;
 INSERT INTO `revisions` (`id`, `revision_entity_id`, `entity_id`, `user_id`)
   SELECT `genres`.`changed`, 9, `genres`.`id`, 1 FROM `genres`;
 
+INSERT INTO `revisions` (`id`, `revision_entity_id`, `entity_id`, `user_id`)
+  SELECT `jobs`.`changed`,10, `jobs`.`id`, 3 FROM `jobs`;
+
 INSERT INTO `revisions` SET
   `id`                 = '2014-05-20 17:19:31',
   `revision_entity_id` = 1,
@@ -76,13 +79,6 @@ INSERT INTO `revisions` SET
 INSERT INTO `revisions` SET
   `id`                 = '2014-05-20 10:19:31',
   `revision_entity_id` = 8,
-  `entity_id`          = 1,
-  `user_id`            = 3
-;
-
-INSERT INTO `revisions` SET
-  `id`                 = '2014-05-20 08:19:31',
-  `revision_entity_id` = 10,
   `entity_id`          = 1,
   `user_id`            = 3
 ;

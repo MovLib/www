@@ -147,7 +147,7 @@ SQL
    * {@inheritdoc}
    */
   public function createRevision($userId, $dateTime) {
-    // Now we can create the new revision of ourself. Note that our id property is NULL if we're a genre, so we don't
+    // Now we can create the new revision of ourself. Note that our id property is NULL if we're a new genre, so we don't
     // have to take care of any not found exceptions that might occur while creating the revision.
     $revision                                            = new GenreRevision($this->id);
     $revision->id                                        = $dateTime->formatInteger();

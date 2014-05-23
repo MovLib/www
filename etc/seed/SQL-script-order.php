@@ -28,6 +28,7 @@
 
 // @codeCoverageIgnoreStart
 return [
+  "users" => "sql",
   "places" => "sql",
   "awards" => "sql",
   "companies" => "sql",
@@ -42,6 +43,5 @@ return [
   "system_pages" => "sql",
   "revision_entities" => "sql",
   "revisions" => "sql",
-  "users" => "sql",
 ];
 // @codeCoverageIgnoreEnd

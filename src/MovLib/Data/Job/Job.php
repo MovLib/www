@@ -18,6 +18,7 @@
 namespace MovLib\Data\Job;
 
 use \MovLib\Data\Company\CompanySet;
+use \MovLib\Data\Job\JobRevision;
 use \MovLib\Data\Person\PersonSet;
 use \MovLib\Exception\ClientException\NotFoundException;
 use \MovLib\Partial\Sex;
@@ -32,18 +33,7 @@ use \MovLib\Partial\Sex;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Job extends \MovLib\Data\AbstractEntity {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
-  /**
-   * The entity type used to store revisions.
-   *
-   * @var int
-   */
-  const REVISION_ENTITY_TYPE = 10;
+class Job extends \MovLib\Data\AbstractEntity implements \MovLib\Data\Revision\EntityInterface {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -130,38 +120,39 @@ class Job extends \MovLib\Data\AbstractEntity {
     if ($id) {
       $stmt = $this->getMySQLi()->prepare(<<<SQL
 SELECT
-  `jobs`.`changed` AS `changed`,
-  `jobs`.`created` AS `created`,
-  `jobs`.`deleted` AS `deleted`,
-  COLUMN_GET(`jobs`.`dyn_descriptions`, ? AS CHAR) AS `description`,
-  `jobs`.`id` AS `id`,
-  IFNULL(COLUMN_GET(`jobs`.`dyn_titles_sex0`, ? AS CHAR), COLUMN_GET(`dyn_titles_sex0`, '{$this->intl->defaultLanguageCode}' AS CHAR)),
-  IFNULL(COLUMN_GET(`jobs`.`dyn_titles_sex1`, ? AS CHAR), COLUMN_GET(`dyn_titles_sex1`, '{$this->intl->defaultLanguageCode}' AS CHAR)),
-  IFNULL(COLUMN_GET(`jobs`.`dyn_titles_sex2`, ? AS CHAR), COLUMN_GET(`dyn_titles_sex2`, '{$this->intl->defaultLanguageCode}' AS CHAR)),
-  IFNULL(COLUMN_GET(`jobs`.`dyn_wikipedia`, ? AS CHAR), COLUMN_GET(`dyn_wikipedia`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `wikipedia`,
-  `jobs`.`count_companies` AS `companyCount`,
-  `jobs`.`count_persons` AS `personCount`
+  `id`,
+  `changed`,
+  `created`,
+  `deleted`,
+  COLUMN_GET(`dyn_descriptions`, '{$this->intl->languageCode}' AS CHAR),
+  IFNULL(
+    COLUMN_GET(`dyn_titles_sex0`, '{$this->intl->languageCode}' AS CHAR),
+    COLUMN_GET(`dyn_titles_sex0`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+  ),
+  IFNULL(
+    COLUMN_GET(`dyn_titles_sex1`, '{$this->intl->languageCode}' AS CHAR),
+    COLUMN_GET(`dyn_titles_sex1`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+  ),
+  IFNULL(
+    COLUMN_GET(`dyn_titles_sex2`, '{$this->intl->languageCode}' AS CHAR),
+    COLUMN_GET(`dyn_titles_sex2`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+  ),
+  COLUMN_GET(`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR),
+  `count_companies` AS `companyCount`,
+  `count_persons` AS `personCount`
 FROM `jobs`
 WHERE `id` = ?
 LIMIT 1
 SQL
       );
-      $stmt->bind_param(
-        "sssssd",
-        $this->intl->languageCode,
-        $this->intl->languageCode,
-        $this->intl->languageCode,
-        $this->intl->languageCode,
-        $this->intl->languageCode,
-        $id
-      );
+      $stmt->bind_param("d", $id);
       $stmt->execute();
       $stmt->bind_result(
+        $this->id,
         $this->changed,
         $this->created,
         $this->deleted,
         $this->description,
-        $this->id,
         $this->titles[Sex::UNKNOWN],
         $this->titles[Sex::MALE],
         $this->titles[Sex::FEMALE],
@@ -183,155 +174,6 @@ SQL
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-
-  /**
-   * Update the job.
-   *
-   * @return this
-   * @throws \mysqli_sql_exception
-   */
-  public function commit() {
-    $stmt = $this->getMySQLi()->prepare(<<<SQL
-UPDATE `jobs` SET
-  `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, '{$this->intl->languageCode}', ?),
-  `dyn_titles_sex0`  = COLUMN_ADD(`dyn_titles_sex0`, '{$this->intl->languageCode}', ?),
-  `dyn_titles_sex1`  = COLUMN_ADD(`dyn_titles_sex1`, '{$this->intl->languageCode}', ?),
-  `dyn_titles_sex2`  = COLUMN_ADD(`dyn_titles_sex2`, '{$this->intl->languageCode}', ?),
-  `dyn_wikipedia`    = COLUMN_ADD(`dyn_wikipedia`, '{$this->intl->languageCode}', ?)
-WHERE `id` = {$this->id}
-SQL
-    );
-    $stmt->bind_param(
-      "sssss",
-      $this->description,
-      $this->titles[Sex::UNKNOWN],
-      $this->titles[Sex::MALE],
-      $this->titles[Sex::FEMALE],
-      $this->wikipedia
-    );
-    $stmt->execute();
-    $stmt->close();
-    return $this;
-  }
-
-  /**
-   * Create new job.
-   *
-   * @return this
-   * @throws \mysqli_sql_exception
-   */
-  public function create() {
-    $mysqli = $this->getMySQLi();
-
-    if ($this->intl->languageCode === $this->intl->defaultLanguageCode) {
-      $stmt = $mysqli->prepare(<<<SQL
-INSERT INTO `jobs` (
-  `dyn_descriptions`,
-  `dyn_titles_sex0`,
-  `dyn_titles_sex1`,
-  `dyn_titles_sex2`,
-  `dyn_wikipedia`
-) VALUES (
-  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
-  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
-  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
-  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
-  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?)
-);
-SQL
-      );
-      $stmt->bind_param(
-        "sssss",
-        $this->description,
-        $this->titles[Sex::UNKNOWN],
-        $this->titles[Sex::MALE],
-        $this->titles[Sex::FEMALE],
-        $this->wikipedia
-      );
-    }
-    else {
-      $stmt = $mysqli->prepare(<<<SQL
-INSERT INTO `jobs` (
-  `dyn_descriptions`,
-  `dyn_titles_sex0`,
-  `dyn_titles_sex1`,
-  `dyn_titles_sex2`,
-  `dyn_wikipedia`
-) VALUES (
-  COLUMN_CREATE('{$this->intl->languageCode}', ?),
-  COLUMN_CREATE(
-    '{$this->intl->defaultLanguageCode}', ?,
-    '{$this->intl->languageCode}', ?
-  ),
-  COLUMN_CREATE(
-    '{$this->intl->defaultLanguageCode}', ?,
-    '{$this->intl->languageCode}', ?
-  ),
-  COLUMN_CREATE(
-    '{$this->intl->defaultLanguageCode}', ?,
-    '{$this->intl->languageCode}', ?
-  ),
-  COLUMN_CREATE('{$this->intl->languageCode}', ?)
-);
-SQL
-      );
-      $stmt->bind_param(
-        "ssssssss",
-        $this->description,
-        $this->defaultTitles[Sex::UNKNOWN],
-        $this->titles[Sex::UNKNOWN],
-        $this->defaultTitles[Sex::MALE],
-        $this->titles[Sex::MALE],
-        $this->defaultTitles[Sex::FEMALE],
-        $this->titles[Sex::FEMALE],
-        $this->wikipedia
-      );
-    }
-
-    $stmt->execute();
-    $this->id = $stmt->insert_id;
-
-    return $this->init();
-  }
-
-  /**
-   * Get the mysqli result for all movies connected to this job.
-   *
-   * @return \mysqli_result
-   *   The mysqli result for all movies connected to this job.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getMoviesResult() {
-    return $this->query(
-      "SELECT
-        `movies`.`id` AS `id`,
-        `movies`.`year` AS `year`,
-        IFNULL(`dt`.`title`, `ot`.`title`) AS `displayTitle`,
-        IFNULL(`dt`.`language_code`, `ot`.`language_code`) AS `displayTitleLanguageCode`,
-        `ot`.`title` AS `originalTitle`,
-        `ot`.`language_code` AS `originalTitleLanguageCode`,
-        `p`.`poster_id` AS `displayPoster`
-      FROM `movies`
-        LEFT JOIN `movies_crew`
-          ON `movies`.`id` = `movies_crew`.`movie_id`
-        LEFT JOIN `movies_display_titles` AS `mdt`
-          ON `mdt`.`movie_id` = `movies`.`id`
-          AND `mdt`.`language_code` = ?
-        LEFT JOIN `movies_titles` AS `dt`
-          ON `dt`.`id` = `mdt`.`title_id`
-        LEFT JOIN `movies_original_titles` AS `mot`
-          ON `mot`.`movie_id` = `movies`.`id`
-        LEFT JOIN `movies_titles` AS `ot`
-          ON `ot`.`id` = `mot`.`title_id`
-        LEFT JOIN `display_posters` AS `p`
-          ON `p`.`movie_id` = `movies`.`id`
-          AND `p`.`language_code` = ?
-      WHERE `movies_crew`.`job_id` = ?
-      ORDER BY `displayTitle` DESC",
-      "ssd",
-      [ $this->intl->languageCode, $this->intl->languageCode, $this->id ]
-    )->get_result();
-  }
 
   /**
    * {@inheritdoc}
@@ -449,6 +291,56 @@ SELECT count(*) FROM `persons`
 LIMIT 1
 SQL
     )->fetch_all()[0][0];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function createRevision($userId, $dateTime) {
+    // Now we can create the new revision of ourself. Note that our id property is NULL if we're a new job, so we don't
+    // have to take care of any not found exceptions that might occur while creating the revision.
+    $revision                                            = new JobRevision($this->id);
+    $revision->id                                        = $dateTime->formatInteger();
+    $revision->created                                   = $dateTime;
+    $revision->deleted                                   = $this->deleted;
+    $revision->descriptions[$this->intl->languageCode]   = $this->description;
+    $revision->titlesSex0[$this->intl->languageCode]     = $this->titles[Sex::UNKNOWN];
+    $revision->titlesSex1[$this->intl->languageCode]     = $this->titles[Sex::MALE];
+    $revision->titlesSex2[$this->intl->languageCode]     = $this->titles[Sex::FEMALE];
+    $revision->userId                                    = $userId;
+    $revision->wikipediaLinks[$this->intl->languageCode] = $this->wikipedia;
+
+    // Don't forget that we might be a new job and that we might have been created via a different system locale than
+    // the default one, in which case the user was required to enter a default title. Of course we have to export that
+    // as well to our revision.
+    if (isset($this->defaultTitles[Sex::UNKNOWN])) {
+      $revision->titlesSex0[$this->intl->defaultLanguageCode] = $this->defaultTitles[Sex::UNKNOWN];
+    }
+    if (isset($this->defaultTitles[Sex::MALE])) {
+      $revision->titlesSex1[$this->intl->defaultLanguageCode] = $this->defaultTitles[Sex::MALE];
+    }
+    if (isset($this->defaultTitles[Sex::FEMALE])) {
+      $revision->titlesSex2[$this->intl->defaultLanguageCode] = $this->defaultTitles[Sex::FEMALE];
+    }
+
+    return $revision;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setRevision(\MovLib\Data\Revision\RevisionEntityInterface $revisionEntity, $languageCode, $defaultLanguageCode) {
+    $this->changed = $revisionEntity->created;
+    $this->deleted = $revisionEntity->deleted;
+    isset($revisionEntity->descriptions[$languageCode])   && ($this->description = $revisionEntity->descriptions[$languageCode]);
+    isset($revisionEntity->wikipediaLinks[$languageCode]) && ($this->wikipedia = $revisionEntity->wikipediaLinks[$languageCode]);
+    if (isset($revisionEntity->titlesSex0[$languageCode])) {
+      $this->title = $revisionEntity->titlesSex0[$languageCode];
+    }
+    else {
+      $this->title = $revisionEntity->titlesSex0[$defaultLanguageCode];
+    }
+    return $this;
   }
 
 }
