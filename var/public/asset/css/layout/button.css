@@ -38,6 +38,7 @@
   transition: 0.3s ease-out;
   transition-property: background-color, box-shadow, color;
   -webkit-appearance: none;
+  white-space: nowrap;
 }
 
 .btn.focus,
