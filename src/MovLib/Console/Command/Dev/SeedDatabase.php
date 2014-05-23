@@ -95,7 +95,7 @@ final class SeedDatabase extends \MovLib\Console\Command\AbstractCommand {
       $scriptsClone = $scripts;
       $scripts      = [];
       $position     = 1;
-      foreach ($order as $script) {
+      foreach ($order as $script => $type) {
         if (in_array($script, $scriptsClone)) {
           $this->writeDebug("<comment>{$script}</comment> will be <info>{$position}</info>");
           $scripts[] = $script;
