@@ -40,7 +40,7 @@ return [
   "movies_posters" => "sql",
   "series" => "sql",
   "system_pages" => "sql",
-  "revision_entity_types" => "sql",
+  "revision_entities" => "sql",
   "revisions" => "sql",
   "users" => "sql",
 ];

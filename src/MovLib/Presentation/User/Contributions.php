@@ -116,11 +116,26 @@ final class Contributions extends \MovLib\Presentation\User\AbstractUserPresente
     $dateTime      = new DateTime($this->intl, $this, $this->session->userTimezone);
 
     $orderBy = "`revisionId` DESC";
-    $orderCaret = "<a class='btn btn-mini' href='{$this->request->path}?order=asc'>▾</a>";
-    if (isset($_GET["order"])) {
-      if ($this->request->filterInputString(INPUT_GET, "order") == "asc") {
+    $this->request->query["field"] = "date";
+    $this->request->query["sort"] = "asc";
+    if ($this->paginationCurrentPage === 1) {
+      unset($this->request->query["page"]);
+    }
+    else {
+      $this->request->query["page"] = $this->paginationCurrentPage;
+    }
+    $queryString = http_build_query($this->request->query);
+    $orderCaret = "<a class='btn btn-mini ico ico-chevron-down' href='{$this->request->path}?{$queryString}'>▾</a>";
+    if (isset($_GET["sort"]) && isset($_GET["field"])) {
+      if ($this->request->filterInputString(INPUT_GET, "field") == "date" && $this->request->filterInputString(INPUT_GET, "sort") == "asc") {
         $orderBy = "`revisionId` ASC";
-        $orderCaret = $orderCaret = "<a class='btn btn-mini' href='{$this->request->path}'>▴</a>";
+        unset($this->request->query["field"]);
+        unset($this->request->query["sort"]);
+        $queryString = null;
+        if (!empty($this->request->query)) {
+          $queryString = "?" . http_build_query($this->request->query);
+        }
+        $orderCaret = "<a class='btn btn-mini ico ico-chevron-up' href='{$this->request->path}{$queryString}'>▴</a>";
       }
     }
 

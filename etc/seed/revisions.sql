@@ -32,27 +32,59 @@ INSERT INTO `revisions` (`id`, `revision_entity_id`, `entity_id`, `user_id`)
   SELECT `genres`.`changed`, 9, `genres`.`id`, 1 FROM `genres`;
 
 INSERT INTO `revisions` SET
-  `id`                 = CURRENT_TIMESTAMP,
+  `id`                 = '2014-05-20 17:19:31',
   `revision_entity_id` = 1,
-  `entity_id`          = 2,
-  `user_id`            = 3,
-  `data`               = 'a:0:{}'
+  `entity_id`          = 1,
+  `user_id`            = 3
 ;
 
 INSERT INTO `revisions` SET
-  `id`                 = CURRENT_TIMESTAMP,
+  `id`                 = '2014-05-20 16:19:31',
+  `revision_entity_id` = 2,
+  `entity_id`          = 1,
+  `user_id`            = 3
+;
+
+INSERT INTO `revisions` SET
+  `id`                 = '2014-05-20 14:19:31',
   `revision_entity_id` = 4,
-  `entity_id`          = 6,
-  `user_id`            = 3,
-  `data`               = 'a:0:{}'
+  `entity_id`          = 1,
+  `user_id`            = 3
 ;
 
 INSERT INTO `revisions` SET
-  `id`                 = CURRENT_TIMESTAMP,
+  `id`                 = '2014-05-20 13:19:31',
   `revision_entity_id` = 5,
-  `entity_id`          = 3,
-  `user_id`            = 3,
-  `data`               = 'a:0:{}'
+  `entity_id`          = 1,
+  `user_id`            = 3
+;
+
+INSERT INTO `revisions` SET
+  `id`                 = '2014-05-20 12:19:31',
+  `revision_entity_id` = 6,
+  `entity_id`          = 1,
+  `user_id`            = 3
+;
+
+INSERT INTO `revisions` SET
+  `id`                 = '2014-05-20 11:19:31',
+  `revision_entity_id` = 7,
+  `entity_id`          = 1,
+  `user_id`            = 3
+;
+
+INSERT INTO `revisions` SET
+  `id`                 = '2014-05-20 10:19:31',
+  `revision_entity_id` = 8,
+  `entity_id`          = 1,
+  `user_id`            = 3
+;
+
+INSERT INTO `revisions` SET
+  `id`                 = '2014-05-20 08:19:31',
+  `revision_entity_id` = 10,
+  `entity_id`          = 1,
+  `user_id`            = 3
 ;
 
 -- END "Revisions"

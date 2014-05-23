@@ -36,14 +36,14 @@ final class ReleaseSet extends \MovLib\Data\AbstractEntitySet {
   protected function getEntitiesQuery($where = null, $orderBy = null) {
     return <<<SQL
 SELECT
-  `release`.`changed`,
-  `release`.`created`,
-  `release`.`country_code`,
-  `release`.`title`,
-  `release`.`publishing_date_rental`,
-  `release`.`publishing_date_sale`,
-  `release`.`edition`
-FROM `release`
+  `releases`.`changed`,
+  `releases`.`created`,
+  `releases`.`country_code`,
+  `releases`.`title`,
+  `releases`.`publishing_date_rental`,
+  `releases`.`publishing_date_sale`,
+  `releases`.`edition`
+FROM `releases`
 {$where}
 {$orderBy}
 SQL;

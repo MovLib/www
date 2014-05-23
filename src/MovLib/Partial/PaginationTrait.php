@@ -176,15 +176,23 @@ trait PaginationTrait {
 
       // Create the complete route string with the translated page query once. Initialize the page array and substract
       // one from the current page's index.
-      $route = "{$this->request->path}?{$this->intl->r("page")}=";
+      $route = "{$this->request->path}?";
       $pages = [];
       $x     = $this->paginationCurrentPage - 1;
+
+      $query = null;
+      unset($this->request->query["page"]);
+      if (!empty($this->request->query)) {
+        $query = "?" . http_build_query($this->request->query);
+      }
 
       // Generate the previous link if it isn't the first page.
       if ($x >= 1) {
         // Only include the query string if we aren't linking to the very first page.
+        $this->request->query["page"] = $x;
+        $queryString = http_build_query($this->request->query);
         $pages[] = [
-          ($x > 1 ? "{$route}{$x}" : $this->request->path),
+          ($x > 1 ? "{$route}{$queryString}" : "{$this->request->path}{$query}"),
           "<span class='ico ico-chevron-left small'></span> {$this->intl->t("previous")}",
           [ "class" => "pager", "rel" => "previous" ],
         ];
@@ -196,7 +204,7 @@ trait PaginationTrait {
       }
 
       // Always add the first page to the pagination for fast jumps to the beginning.
-      $pages[] = [ $this->request->path, "1", [ "rel" => "first" ] ];
+      $pages[] = [ "{$this->request->path}{$query}", "1", [ "rel" => "first" ] ];
       if ($x <= 1) {
         $x = 2;
       }
@@ -205,7 +213,9 @@ trait PaginationTrait {
         // The second pagination item is special and if we have a pagination it always exists, see above if. We always
         // want to include the second pager if we have less than eight pages, because we have 7 pagers in total.
         if ($this->paginationTotalPages < 7 || $x < 5) {
-          $pages[] = [ "{$route}2", "2" ];
+          $this->request->query["page"] = 2;
+          $queryString = http_build_query($this->request->query);
+          $pages[] = [ "{$route}{$queryString}", "2" ];
           $x = 3;
         }
         else {
@@ -230,12 +240,16 @@ trait PaginationTrait {
         // We can generate the next points in a loop, as they always have the same formatting.
         $secondLast = $this->paginationTotalPages - 1;
         for ($i = 0; $i < 5 && $x < $secondLast; ++$i, ++$x) {
-          $pages[] = [ "{$route}{$x}", $x ];
+          $this->request->query["page"] = $x;
+          $queryString = http_build_query($this->request->query);
+          $pages[] = [ "{$route}{$queryString}", $x ];
         }
 
         // The second last pagination item is special again.
         if ($x === $secondLast) {
-          $pages[] = [ "{$route}{$secondLast}", $secondLast ];
+          $this->request->query["page"] = $secondLast;
+          $queryString = http_build_query($this->request->query);
+          $pages[] = [ "{$route}{$queryString}", $secondLast ];
         }
         else {
           $pages[] = "<span class='mute pager'>{$this->intl->t("…")}</span>";
@@ -243,15 +257,30 @@ trait PaginationTrait {
       }
 
       // Always add the last page to the pagination for fast traveling.
-      $pages[] = [ "{$route}{$this->paginationTotalPages}", $this->paginationTotalPages, [ "class" => "pager", "rel" => "last" ] ];
+      $this->request->query["page"] = $this->paginationTotalPages;
+      $queryString = http_build_query($this->request->query);
+      $pages[] = [ "{$route}{$queryString}", $this->paginationTotalPages, [ "class" => "pager", "rel" => "last" ] ];
 
       // Check if we have a next page and perform the same logic as we used for the previous link.
       if ($this->paginationCurrentPage < $this->paginationTotalPages) {
         $next    = $this->paginationCurrentPage + 1;
-        $pages[] = [ "{$route}{$next}", "{$this->intl->t("next")} <span class='ico ico-chevron-right small'></span>", [ "class" => "pager", "rel" => "next" ] ];
+        $this->request->query["page"] = $next;
+        $queryString = http_build_query($this->request->query);
+        $pages[] = [ "{$route}{$queryString}", "{$this->intl->t("next")} <span class='ico ico-chevron-right small'></span>", [ "class" => "pager", "rel" => "next" ] ];
       }
       else {
         $pages[] = "<span class='mute pager' aria-hidden='true'>{$this->intl->t("next")} <span class='ico ico-chevron-right small'></span></span>";
+      }
+
+      // set the right uri to add active class
+      if ($this->paginationCurrentPage === 1) {
+        unset($this->request->query["page"]);
+      }
+      else {
+        $this->request->query["page"] = $this->paginationCurrentPage;
+      }
+      if(!empty($this->request->query)) {
+        $this->request->uri = "{$this->request->path}?" . http_build_query($this->request->query);
       }
 
       $pagination = new Navigation($this, $this->intl->t("Pagination"), $pages, [ "id" => "pagination-nav" ]);
