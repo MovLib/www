@@ -141,8 +141,8 @@ final class Date {
   /**
    * Format the year of the given string.
    *
-   * @param \MovLib\Component\Date $date
-   *   The date to format.
+   * @param integer|string $year
+   *   The year to format.
    * @param array $attributes [optional]
    *   Additional attributes for the <code><time></code> element. Note that any <code>"datetime"</code> key will be
    *   overwritten.
@@ -152,8 +152,8 @@ final class Date {
    * @return string
    *   The formatted year.
    */
-  public function formatYear(\MovLib\Component\Date $date, array $attributes = [], array $route = null) {
-    $year = $attributes["datetime"] = $date->year;
+  public function formatYear($year, array $attributes = [], array $route = null) {
+    $attributes["datetime"] = $year;
     if ($route) {
       // @devStart
       // @codeCoverageIgnoreStart

@@ -472,7 +472,7 @@ SQL
    */
   public function init() {
     if ($this->year) {
-      $this->displayTitleAndYear = $this->intl->t("{0} ({1})", [ $this->displayTitle, $this->year->year ]);
+      $this->displayTitleAndYear = $this->intl->t("{0} ({1})", [ $this->displayTitle, $this->year ]);
     }
     else {
       $this->displayTitleAndYear = $this->displayTitle;
