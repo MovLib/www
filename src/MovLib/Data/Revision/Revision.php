@@ -128,7 +128,7 @@ final class Revision extends \MovLib\Core\AbstractDatabase {
 
 
   /**
-   * Commit a new entity revision.
+   * Commit a new revision of an existing entity.
    *
    * @param integer $inputRevisionId
    *   The user submitted revision identifier. You had to create a revision form that contains a hidden form field with
@@ -228,8 +228,20 @@ final class Revision extends \MovLib\Core\AbstractDatabase {
     return $diffPatches;
   }
 
+  /**
+   * Commit a new entity.
+   *
+   * @return integer
+   *   The unique identifier of the newly created entity.
+   */
   public function initialCommit() {
+    try {
+      
+    }
+    catch (\Exception $e) {
 
+    }
+    return $entityId;
   }
 
   /**

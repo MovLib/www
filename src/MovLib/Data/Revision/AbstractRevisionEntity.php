@@ -114,10 +114,17 @@ abstract class AbstractRevisionEntity extends \MovLib\Core\AbstractDatabase impl
   public function __construct() {
     // @devStart
     // @codeCoverageIgnoreStart
-    assert(isset($this->revisionEntityId), "You must set the revision entity identifier in your concrete class.");
+    // The fact that a class has to include both, the constant and the property, might be annoying while implementing
+    // but is very good for performance. Any class that has to work with the revision entity can either access the
+    // constant without having an instance or the property for easy embedding within strings.
+    //
+    // NOTE for the future: We can dump this as soon as accessors are available.
+    assert(defined("static::REVISION_ENTITY_ID"), "You have to set the REVISION_ENTITY_ID in your class.");
+    assert(isset($this->revisionEntityId), "You have to set the \$revisionEntityId property in your class.");
     // @codeCoverageIgnoreEnd
     // @devEnd
     if ($this->id) {
+      $this->id      = (integer) $this->id;
       $this->created = new DateTime($this->id);
       $this->deleted = (boolean) $this->deleted;
     }

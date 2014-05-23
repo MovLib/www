@@ -38,6 +38,17 @@ final class GenreRevision extends \MovLib\Data\Revision\AbstractRevisionEntity {
 
 
   /**
+   * The revision entity's unique identifier.
+   *
+   * @var integer
+   */
+  const REVISION_ENTITY_ID = 9;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
    * Associative array containing all the genre's localized names, keyed by language code.
    *
    * @var array
@@ -105,7 +116,8 @@ SQL
       if (!$found) {
         throw new NotFoundException("Couldn't find Genre {$genreId}");
       }
-
+    }
+    if ($this->id) {
       $this->jsonDecode($this->descriptions, $this->names, $this->wikipediaLinks);
       parent::__construct();
     }
@@ -142,6 +154,8 @@ SQL
       $this->wikipediaLinks,
       $oldRevision->wikipediaLinks
     );
+
+    \MovLib\Component\Debug::dump([ $this, $oldRevision ]);
 
     // If we have both values, append comma to the deleted part to separate them.
     if ($deleted && $dynCols) {

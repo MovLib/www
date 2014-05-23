@@ -28,28 +28,56 @@ use \MovLib\Data\User\UserSet;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class RevisionSet extends \MovLib\Core\AbstractDatabase implements \Iterator {
+final class RevisionSet extends \MovLib\Core\AbstractDatabase implements \ArrayAccess, \Countable, \Iterator {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
+  /**
+   * The entity's unique identifier.
+   *
+   * @var integer
+   */
   protected $entityId;
 
-  public $revisions = [];
+  /**
+   * Array containing all loaded revisions.
+   *
+   * @var array
+   */
+  protected $revisions = [];
 
+  /**
+   * The revision entity's canonical absolute class name this set is working with.
+   *
+   * @var string
+   */
   protected $revisionEntityClassName;
 
+  /**
+   * The revision entity's unique identifier this set is working with.
+   *
+   * @var integer
+   */
   protected $revisionEntityTypeId;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
-  public function __construct(\MovLib\Data\Revision\EntityInterface $entity) {
-    $this->entityId                = $entity->id;
-    $this->revisionEntityClassName = get_class($entity) . "Revision";
-    $this->revisionEntityTypeId    = constant("{$this->revisionEntityClassName}::ENTITY_ID");
+  /**
+   * Instantiate new revision set.
+   *
+   * @param string $entityName
+   *   The entity's short class name to load revisions for.
+   * @param integer $entityId
+   *   The entity's unique identifier to load revisions for.
+   */
+  public function __construct($entityName, $entityId) {
+    $this->entityId                = $entityId;
+    $this->revisionEntityClassName = "\\MovLib\\Data\\{$entityName}\\{$entityName}Revision";
+    $this->revisionEntityTypeId    = constant("{$this->revisionEntityClassName}::REVISION_ENTITY_ID");
   }
 
 
@@ -65,6 +93,10 @@ final class RevisionSet extends \MovLib\Core\AbstractDatabase implements \Iterat
     )->fetch_all()[0][0];
   }
 
+  /**
+   * @todo Unify method name to work for pagination, recreate pagination interface?
+   * @todo Can we get rid of the dependency injection container dependency? Intl should suffice.
+   */
   public function load($offset, $limit, \MovLib\Core\DIContainer $diContainer) {
     $result = $this->getMySQLi()->query(<<<SQL
 SELECT
@@ -79,7 +111,7 @@ SQL
     );
 
     $userIds = null;
-    /* @var $revisionEntity \MovLib\Data\Revision\AbstractEntity */
+    /* @var $revisionEntity \MovLib\Data\Revision\AbstractRevisionEntity */
     while ($revisionEntity = $result->fetch_object($this->revisionEntityClassName)) {
       $this->revisions[$revisionEntity->id] = $revisionEntity;
       $userIds[] = $revisionEntity->userId;
@@ -89,9 +121,77 @@ SQL
     if ($userIds) {
       $userSet = (new UserSet($diContainer))->loadIdentifiers($userIds);
       foreach ($this->revisions as $key => $value) {
-        $this->revisions[$key]->user = $userSet->entities[$value->userId];
+        $this->revisions[$key]->user = $userSet[$value->userId];
       }
     }
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Iterator Methods
+
+
+  /**
+   * Check if given revision identifier is part of available revisions.
+   *
+   * @param integer $revisionId
+   *   The revision identifier to check.
+   * @return boolean
+   *   <code>TRUE</code> if it exists, <code>FALSE</code> otherwise.
+   */
+  public function offsetExists($revisionId) {
+    return isset($this->revisions[$revisionId]);
+  }
+
+  /**
+   * Get revision identified by identifier.
+   *
+   * @param integer $revisionId
+   *   The revision identifier to get.
+   * @return \MovLib\Data\Revision\RevisionEntityInterface
+   *   The revision identifier by identifier.
+   */
+  public function offsetGet($revisionId) {
+    return $this->revisions[$revisionId];
+  }
+
+  /**
+   * Set revision in set.
+   *
+   * @param integer $revisionId [unused]
+   *   The revision's unique identifier for this entity.
+   * @param \MovLib\Data\Revision\RevisionEntityInterface $revision [unused]
+   *   The revision to set.
+   * @throws \LogicException
+   *   Always throws a logic exception because setting a revision isn't allowed.
+   */
+  public function offsetSet($revisionId, $revision) {
+    throw new \LogicException("You cannot set revisions in a set.");
+  }
+
+  /**
+   * Unset revision in set.
+   *
+   * @param integer $revisionId
+   *   The revision's unique identifier for this entity to unset.
+   * @throws \LogicException
+   *   Always throws a logic exception because unsetting a revision isn't allowed.
+   */
+  public function offsetUnset($revisionId) {
+    throw new \LogicException("You cannot unset revisions in a set.");
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Iterator Methods
+
+
+  /**
+   * Implements <code>count()</code> callback.
+   *
+   * @return integer
+   *   Count of available revisions in this set.
+   */
+  public function count() {
+    return count($this->revisions);
   }
 
 

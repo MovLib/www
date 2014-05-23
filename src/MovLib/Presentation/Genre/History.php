@@ -65,7 +65,7 @@ class History extends \MovLib\Presentation\AbstractPresenter {
     $this->sidebarInitToolbox($this->entity);
     $this->breadcrumb->addCrumb($this->intl->r("/genres"), $this->intl->t("Genres"));
     $this->breadcrumb->addCrumb($this->intl->r("/genre/{0}", $this->entity->id), $this->entity->name);
-    $this->revisionSet = new RevisionSet($this->entity);
+    $this->revisionSet = new RevisionSet("Genre", $this->entity->id);
     $this->paginationInit($this->revisionSet->getTotalCount());
     $this->revisionSet->load($this->paginationOffset, $this->paginationLimit, $this->diContainerHTTP);
   }
@@ -74,25 +74,40 @@ class History extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    // @todo Format the sticky current revision!
-    $listItems = $this->calloutError("<i>@todo</i> Fränk: sticky current revision on all pages of the paginated history!");
+    $listItems = null;
 
     if ($this->paginationTotalResults > 1) {
       $button = "";
     }
 
+    $created  = $this->entity->created->formatInteger();
+    $current  = $this->entity->changed->formatInteger();
     $dateTime = new DateTime($this->intl, $this, $this->session->userTimezone);
 
-    /* @var $revision \MovLib\Data\Revision\AbstractEntity */
+    /* @var $revision \MovLib\Data\Revision\AbstractRevisionEntity */
     foreach ($this->revisionSet as $revision) {
+      $createdInfo = null;
+      if ($revision->id === $created) {
+        $createdInfo = "<br><span class='small'>{$this->intl->t("Created")}</span>";
+      }
+      if ($revision->id === $current) {
+        $diffToCurrentVersion = $this->intl->t("Current revision.");
+      }
+      else {
+        $diffToCurrentVersion =
+          "<a href='{$this->intl->r("/genre/{0}/history/{1}", [ $this->entity->id, $revision->id ])}'>" .
+            $this->intl->t("Compare to current revision.") .
+          "</a>"
+        ;
+      }
       $listItems .=
         "<li><div class='hover-item r'>" .
           $this->img($revision->user->imageGetStyle("s1"), [ "class" => "s s1", "property" => "image" ], false) .
           "<div class='s s5'>" .
-            "<a href='{$revision->user->route}'><h2 class='para'>{$revision->user->name}</h2></a>" .
-            "<small><a href='{$this->entity->route}/{$revision->id}'>{$this->intl->t("Compare to current revision.")}</a></small>" .
+            "<h2 class='para'><a href='{$revision->user->route}'>{$revision->user->name}</a></h2>" .
+            "<small>{$diffToCurrentVersion}</small>" .
           "</div>" .
-          "<p class='s s4 tar'>{$dateTime->formatRelative($revision->created)}</p>" .
+          "<p class='s s4 tar'>{$dateTime->formatRelative($revision->created)}{$createdInfo}</p>" .
         "</div></li>"
       ;
     }

@@ -18,21 +18,26 @@
 namespace MovLib\Presentation\Genre;
 
 use \MovLib\Data\Genre\Genre;
+use \MovLib\Data\Revision\Revision;
+use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Partial\FormElement\InputWikipedia;
 use \MovLib\Partial\FormElement\TextareaHTMLExtended;
 
 /**
- * Allows creating of a new a genre.
+ * Defines the genre create presentation.
  *
+ * @property \MovLib\Data\Genre\Genre $entity
+ *
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Create extends \MovLib\Presentation\AbstractCreatePresenter {
+final class Create extends \MovLib\Presentation\AbstractCreatePresenter {
 
   /**
    * {@inheritdoc}
@@ -88,8 +93,17 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
       ;
     }
     else {
-      return $form->init([ $this, "valid" ]);
+      return $form->init([ $this, "submit" ]);
     }
+  }
+
+  /**
+   * Form submit callback.
+   */
+  public function submit() {
+    $this->entity->id = (new Revision($this->entity->createRevision($this->session->userId, $this->request->dateTime)))
+      ->initialCommit();
+    throw new SeeOtherException($this->intl->r("/genre/{0}", $this->entity->id));
   }
 
 }
