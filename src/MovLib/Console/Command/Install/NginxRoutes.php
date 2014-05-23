@@ -20,7 +20,7 @@ namespace MovLib\Console\Command\Install;
 use \DocBlockReader\Reader as DocReader;
 use \MovLib\Console\Command\Install\Nginx;
 use \MovLib\Core\Intl;
-use \MovLib\Data\Collator;
+use \MovLib\Component\Collator;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -168,7 +168,7 @@ final class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
    *
    * @param \MovLib\Core\Intl $intl
    *   The Intl instance.
-   * @param \MovLib\Data\Collator $collator
+   * @param \MovLib\Component\Collator $collator
    *   A collator for correct sorting of sub routes.
    * @param string $locations
    *   The variable used to collect all locations.

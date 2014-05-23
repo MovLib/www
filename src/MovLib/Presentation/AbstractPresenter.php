@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation;
 
-use \MovLib\Data\Collator;
+use \MovLib\Component\Collator;
 use \MovLib\Partial\Navigation\Breadcrumb;
 
 /**
