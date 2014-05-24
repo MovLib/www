@@ -96,13 +96,6 @@ abstract class AbstractDatabase {
    */
   private static $mysqli;
 
-  /**
-   * The object's short class name.
-   *
-   * @var string
-   */
-  protected $shortName;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -125,21 +118,6 @@ abstract class AbstractDatabase {
     }
   }
 
-  /**
-   * Get the string representation of this instance.
-   *
-   * @staticvar string $shortName
-   *   The instance's short class name.
-   * @return string
-   *   The string representation of this instance.
-   */
-  public function __toString() {
-    if ($this->shortName === null) {
-      $this->shortName = basename(strtr(static::class, "\\", "/"));
-    }
-    return $this->shortName;
-  }
-
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
@@ -148,7 +126,7 @@ abstract class AbstractDatabase {
    * Get dynamic column update query part.
    *
    * Dynamic columns have to be either added (updated) or deleted. Which action is necessary depends on the value of
-   * an entity's property. This method takes care of creating the correct string for the update query that is needed to
+   * the entity's property. This method takes care of creating the correct string for the update query that is needed to
    * perform the correct actions. Of course it will escape all data correctly for the query.
    *
    * The returned string might look like the following:
