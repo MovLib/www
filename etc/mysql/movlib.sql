@@ -42,8 +42,8 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`genres` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The genre’s unique identifier.',
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the genre was created.',
-  `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the genre was last changed.',
+  `created` DATETIME NOT NULL COMMENT 'The date and time the genre was created.',
+  `changed` DATETIME NOT NULL COMMENT 'The date and time the genre was last changed.',
   `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The genre’s total number of movie occurrences.',
   `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The genre’s total number of series occurences.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the genre was deleted or not.',
