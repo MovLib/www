@@ -35,7 +35,7 @@ class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Genre($this->diContainerHTTP, $_SERVER["GENRE_ID"]);
+    $this->entity = Genre::createFromId($this->intl, $_SERVER["GENRE_ID"]);
     $this
       ->initPage($this->entity->name)
       ->initShow($this->entity, $this->intl->t("Genres"), "Genre", null, $this->getSidebarItems())

@@ -18,7 +18,6 @@
 namespace MovLib\Presentation;
 
 use \MovLib\Exception\RedirectException\SeeOtherException;
-use \MovLib\Presentation\Partial\Alert;
 
 /**
  * Defines the base class for all random presenters.
@@ -31,6 +30,15 @@ use \MovLib\Presentation\Partial\Alert;
  */
 abstract class AbstractRandomPresenter extends \MovLib\Presentation\AbstractPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Random";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */
@@ -42,12 +50,21 @@ abstract class AbstractRandomPresenter extends \MovLib\Presentation\AbstractPres
    * {@inheritdoc}
    */
   public function getContent() {
-    $set = basename(dirname(strtr(static::class, "\\", "/")));
-    $set = "\\MovLib\\Data\\{$set}\\{$set}Set";
-    $set = new $set($this->diContainerHTTP);
+    // Extract the entity class name from the namespace of the concrete presentation class.
+    $entityName = explode("\\", static::class);
+    array_pop($entityName); // Last element is the name of the concrete class.
+    $entityName = end($entityName);
+
+    // Build absolute class name of the set and instantiate it.
+    $setClass = "\\MovLib\\Data\\{$entityName}\\{$entityName}Set";
+    $set = new $setClass($this->diContainerHTTP);
+
+    // Try to fetch a random entity identifier.
     if (($id = $set->getRandom())) {
       throw new SeeOtherException($this->intl->r("/{$set->singularKey}/{0}", $id));
     }
+
+    // We couldn't find one ...
     $this->alertInfo($this->intl->t("Check back later"), $this->intl->t("We couldn’t find a single random page for you…"));
     throw new SeeOtherException($set->route);
   }

@@ -43,6 +43,19 @@ use \MovLib\Presentation\Error\InternalServerError;
 final class Kernel {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Kernel";
+  // @codingStandardsIgnoreEnd
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
@@ -193,7 +206,7 @@ final class Kernel {
 
     // Try to initialize the session and presentation and send it to the client.
     try {
-      $this->diContainer->session->resume();
+      $this->diContainer->session->resume($this, $this->diContainer->request);
       $presenterClass = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
       $this->diContainer->presenter = new $presenterClass($this->diContainer);
       $this->diContainer->presenter->init();
@@ -219,16 +232,22 @@ final class Kernel {
       $response = $this->diContainer->presenter->getPresentation($this->diContainer->presenter->getContent());
     }
 
-//    if (fastcgi_finish_request() === false) {
-//      $this->diContainer->log->error("FastCGI finish request failed.");
-//    }
+    if ($this->diContainer->config->production === true) {
+      echo $response;
+      if (fastcgi_finish_request() === false) {
+        $this->diContainer->log->error("FastCGI finish request failed.");
+      }
+    }
+
     $this->diContainer->session->shutdown();
     $this->bench("response", 0.75);
 //    $this->diContainer->response->cache($presentation);
     $this->shutdown();
     $this->bench("shutdown", 0.5);
 
-    echo $response;
+    if ($this->diContainer->config->production === false) {
+      echo $response;
+    }
 
     return $this;
   }
@@ -261,21 +280,28 @@ final class Kernel {
   }
 
   /**
-   * Execute given callable after response was sent to the client.
+   * Execute given method on shutdown of kernel.
    *
-   * @param callable $callable
-   *   The callable to execute delayed.
+   * Note that you cannot control at which point your method will be executed, as they are all simply executed in the
+   * order they were stacked.
+   *
+   * @todo Should we add the possibility to add a weight to a delayed method?
+   * @param string $name
+   *   A globally unique name for the delayed method. This name allows you and others to identify the method within the
+   *   stack and remove them if necessary.
+   * @param mixed $object
+   *   The object implementing the method.
+   * @param string $method
+   *   The name of the method that should be called, visibility doesn't matter. The kernel acts as simple mediator and
+   *   doesn't change the state of anything. We use reflection to make the methods accessible, performance is not an
+   *   issue at that point because the response has already been sent to the client.
    * @param array $params [optional]
-   *   Parameters that should be passed to <var>$callable</var>.
+   *   Additional parameters that should be passed to the delayed method. Parameters won't be changed by the kernel and
+   *   are passed as is.
    * @return this
    */
-  public function delayMethodCall(callable $callable, array $params = null) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    $this->diContainer->log->debug("Delaying method call.", [ "callable" => $callable, "params" => $params ]);
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    $this->delayedMethods[] = [ $callable, $params ];
+  public function delayMethodCall($name, $object, $method, array $params = []) {
+    $this->delayedMethods[$name] = [ $object, $method, $params ];
     return $this;
   }
 
@@ -370,23 +396,6 @@ EOT;
   }
 
   /**
-   * Execute all delayed methods.
-   *
-   * @return this
-   */
-  protected function executeDelayedMethods() {
-    foreach ($this->delayedMethods as list($callable, $params)) {
-      try {
-        call_user_func_array($callable, (array) $params);
-      }
-      catch (Exception $e) {
-        $this->error($e);
-      }
-    }
-    return $this;
-  }
-
-  /**
    * Transform fatal errors to exceptions.
    *
    * This has nothing to do with recovering from a fatal error. The purpose is to ensure that a nice presentation is
@@ -428,16 +437,42 @@ EOT;
   }
 
   /**
+   * Remove a previously delayed method from the stack.
+   *
+   * @param string $name
+   *   The globally unique name of the delayed method that should be removed.
+   * @return this
+   */
+  public function removeDelayedMethod($name) {
+    if (isset($this->delayedMethods[$name])) {
+      unset($this->delayedMethods[$name]);
+    }
+    return $this;
+  }
+
+  /**
    * Shut the kernel down.
    *
    * @return this
    */
   protected function shutdown() {
-    $this->executeDelayedMethods();
+    // You'll notice that we're setting all methods to be accessible. Although this might seem like it's breaking the
+    // encapsulation of the objects. But the object is actually calling itself, the kernel is only used as a collector
+    // for the delayed methods. I also thought about using the observer pattern, but re-implementing the management of
+    // the various methods seemed to be more work than this little hack. I might revisit this at a later stage and
+    // change it.
+    foreach ($this->delayedMethods as list($object, $method, $params)) {
+      $method = new \ReflectionMethod($object, $method);
+      $method->setAccessible(true);
+      $method->invokeArgs($object, $params);
+    }
+
     if ($this->http === true) {
       (new Mailer())->sendEmailStack($this->diContainer);
     }
+
     $this->diContainer->fs->deleteRegisteredFiles($this->diContainer->log);
+
     return $this;
   }
 

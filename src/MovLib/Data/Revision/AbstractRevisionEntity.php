@@ -28,7 +28,7 @@ use \MovLib\Component\DateTime;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractRevisionEntity extends \MovLib\Core\AbstractDatabase implements \MovLib\Data\Revision\RevisionEntityInterface {
+abstract class AbstractRevisionEntity implements \MovLib\Data\Revision\RevisionEntityInterface {
 
 
   //-------------------------------------------------------------------------------------------------------------------- Properties
@@ -124,9 +124,12 @@ abstract class AbstractRevisionEntity extends \MovLib\Core\AbstractDatabase impl
     // @codeCoverageIgnoreEnd
     // @devEnd
     if ($this->id) {
-      $this->id      = (integer) $this->id;
-      $this->created = new DateTime($this->id);
-      $this->deleted = (boolean) $this->deleted;
+      $this->entityId       = (integer) $this->entityId;
+      $this->id             = (integer) $this->id;
+      $this->created        = new DateTime($this->id);
+      $this->deleted        = (boolean) $this->deleted;
+      $this->userId         = (integer) $this->userId;
+      $this->wikipediaLinks = json_decode($this->wikipediaLinks, true);
     }
   }
 
@@ -134,7 +137,8 @@ abstract class AbstractRevisionEntity extends \MovLib\Core\AbstractDatabase impl
    * {@inheritdoc}
    */
   public function __sleep() {
-    return [ "deleted", "entityId", "id", "userId" ];
+    static $properties = [ "deleted", "entityId", "id", "userId" ];
+    return $properties;
   }
 
   /**

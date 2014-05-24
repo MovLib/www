@@ -48,6 +48,14 @@ interface EntityInterface {
   public function createRevision($userId, $dateTime);
 
   /**
+   * Get the current revision of the entity.
+   *
+   * @return \MovLib\Data\Revision\RevisionEntityInterface
+   *   The current revision of the entity.
+   */
+  public function getRevision();
+
+  /**
    * Set the state of the instance based on the given revision.
    *
    * @param \MovLib\Data\Revision\RevisionEntityInterface $revisionEntity

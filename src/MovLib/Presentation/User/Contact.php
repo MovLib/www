@@ -28,6 +28,15 @@ namespace MovLib\Presentation\User;
  */
 final class Contact extends \MovLib\Presentation\User\AbstractUserPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Contact";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

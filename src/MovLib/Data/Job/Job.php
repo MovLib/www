@@ -343,4 +343,8 @@ SQL
     return $this;
   }
 
+  public function getRevision() {
+    
+  }
+
 }

@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data\Revision;
 
+use \MovLib\Core\Database\Database;
+
 /**
  * Defines the revision object.
  *
@@ -45,7 +47,7 @@ namespace MovLib\Data\Revision;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Revision extends \MovLib\Core\AbstractDatabase {
+final class Revision {
 
 
   //-------------------------------------------------------------------------------------------------------------------- Properties
@@ -147,15 +149,16 @@ final class Revision extends \MovLib\Core\AbstractDatabase {
    *   user.
    */
   public function commit($inputRevisionId, $languageCode) {
-    $mysqli = $this->getMySQLi();
+    $connection = Database::getConnection();
     try {
-      // Start a transaction for the commit process.
-      $mysqli->autocommit(false);
+      // Disable autocommit and begin transaction process.
+      $connection->autocommit(false);
+      $connection->begin_transaction(MYSQLI_TRANS_START_WITH_CONSISTENT_SNAPSHOT | MYSQLI_TRANS_START_READ_WRITE);
 
       // Load the currently stored revision from the database, this will be the new old revision for this entity.
       /* @var $old \MovLib\Data\Revision\AbstractRevisionEntity */
       $class = get_class($this->cur);
-      $old   = new $class($this->cur->entityId);
+      $old   = $class::createFromId($this->cur->entityId);
 
       // We just loaded the old current revision, make sure that this old current revision is the same revision the
       // user just edited.
@@ -164,36 +167,43 @@ final class Revision extends \MovLib\Core\AbstractDatabase {
       }
 
       // Create a diff between both revisions, we have to pass the result per reference to bind_param() below and thus
-      // store the diff in a local variable.
+      // store the diff in a local variable. This is going to take some time...
       $diff = $this->diff(serialize($this->cur), serialize($old));
 
       // Let the current revision update its database record to the newly created revision.
       $this->cur->commit($old, $languageCode);
 
       // Store the diff patch that we just created in the revisions table for later reconstruction.
-      $stmt = $mysqli->prepare("UPDATE `revisions` SET `data` = ? WHERE `id` = CAST(? AS DATETIME) AND `entity_id` = ? AND `revision_entity_id` = ?");
-      $stmt->bind_param("sddd", $diff, $old->id, $old->entityId, $old->revisionEntityId);
-      $stmt->execute();
-      $stmt->close();
+      $connection->real_query(<<<SQL
+UPDATE `revisions`
+  SET `data` = '{$connection->real_escape_string($diff)}'
+WHERE `id` = CAST({$old->id} AS DATETIME)
+  AND `entity_id` = {$old->entityId}
+  AND `revision_entity_id` = {$old->revisionEntityId}
+SQL
+      );
 
       // Insert new revision into database, we need this entry for displaying the contributions of a user.
-      $stmt = $mysqli->prepare("INSERT INTO `revisions` (`id`, `entity_id`, `revision_entity_id`, `user_id`) VALUES (CAST(? AS DATETIME), ?, ?, ?)");
-      $stmt->bind_param("dddd", $this->cur->id, $this->cur->entityId, $this->cur->revisionEntityId, $this->cur->userId);
-      $stmt->execute();
-      $stmt->close();
+      $connection->real_query(<<<SQL
+INSERT INTO `revisions` (`id`, `entity_id`, `revision_entity_id`, `user_id`)
+  VALUES (CAST({$this->cur->id} AS DATETIME), {$this->cur->entityId}, {$this->cur->revisionEntityId}, {$this->cur->userId})
+SQL
+      );
 
-      $mysqli->commit();
+      // That's it, commit and we're done.
+      $connection->commit();
     }
-    // Catch any kind of exception at this point and be sure to close the prepared statement and rollback all staged
-    // changes.
+    // Catch any kind of exception at this point and be sure to close the prepared statements and rollback all staged
+    // changes that weren't already commited.
     catch (\Exception $e) {
-      isset($stmt) && $stmt->close();
-      $mysqli->rollback();
+      isset($update) && $update->close();
+      isset($insert) && $insert->close();
+      $connection->rollback();
       throw $e;
     }
-    // Always end the transaction.
+    // Always reactivate autocommits.
     finally {
-      $mysqli->autocommit(true);
+      $connection->autocommit(true);
     }
 
     return $this;
@@ -218,7 +228,7 @@ final class Revision extends \MovLib\Core\AbstractDatabase {
    *   values in the returned array.
    */
   public function getDiffPatches($revisionId) {
-    $result = $this->getMySQLi()->query($this->getDiffPatchQuery((integer) $revisionId));
+    $result = Database::getConnection()->query($this->getDiffPatchQuery((integer) $revisionId));
     $diffPatches = null;
     /* @var $diffPatch \MovLib\Stub\Data\Revision\DiffPatch */
     while ($diffPatch = $result->fetch_object()) {
@@ -236,7 +246,7 @@ final class Revision extends \MovLib\Core\AbstractDatabase {
    */
   public function initialCommit() {
     try {
-      
+
     }
     catch (\Exception $e) {
 
@@ -325,7 +335,7 @@ final class Revision extends \MovLib\Core\AbstractDatabase {
     // the actual search and it uses the correct datatype for comparison, which in turn increases performance further.
     // We also add zero to each returned revision identifier, this will transform the DATETIME to the desired integer,
     // something that we can't do as efficient in PHP as we can do it with the database.
-    $result = $this->getMySQLi()->query($this->getDiffPatchQuery($oldRevisionId));
+    $result = Database::getConnection()->query($this->getDiffPatchQuery($oldRevisionId));
 
     try {
       /* @var $diffPatch \MovLib\Stub\Data\Revision\DiffPatch */
@@ -354,6 +364,11 @@ final class Revision extends \MovLib\Core\AbstractDatabase {
       $result->free();
     }
 
+    // If we have no new revision at this point, use the current.
+    if (!$this->new) {
+      $this->new = clone $this->cur;
+    }
+
     return $this;
   }
 
@@ -373,6 +388,10 @@ final class Revision extends \MovLib\Core\AbstractDatabase {
    *   The SQL query to fetch diff patches from the revisions table.
    */
   protected function getDiffPatchQuery($oldRevisionId) {
+    // We want to skip the first result, because it will always contain an empty diff patch and is actually already
+    // loaded (it's required in the constructor of the class). The problem is, we can't have an OFFSET without a LIMIT
+    // and the solution to this problem looks like a hack, but seems to be only way:
+    // https://stackoverflow.com/questions/255517
     return <<<SQL
 SELECT
   `id` + 0 AS `revisionId`,
@@ -381,8 +400,9 @@ SELECT
 FROM `revisions`
 WHERE `id` >= CAST({$oldRevisionId} AS DATETIME)
   AND `entity_id` = {$this->cur->entityId}
-  AND `revision_entity_id` = {$this->revisionEntityId}
+  AND `revision_entity_id` = {$this->cur->revisionEntityId}
 ORDER BY `id` DESC
+LIMIT 18446744073709551615 OFFSET 1
 SQL;
   }
 

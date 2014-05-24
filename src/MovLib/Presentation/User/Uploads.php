@@ -28,6 +28,15 @@ namespace MovLib\Presentation\User;
  */
 final class Uploads extends \MovLib\Presentation\User\AbstractUserPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Uploads";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

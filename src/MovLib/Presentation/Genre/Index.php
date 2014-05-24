@@ -47,7 +47,6 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
 
   /**
    * {@inheritdoc}
-   * @param \MovLib\Data\Event\Event $event {@inheritdoc}
    */
   protected function formatListingItem(\MovLib\Data\AbstractEntity $genre, $delta) {
     return

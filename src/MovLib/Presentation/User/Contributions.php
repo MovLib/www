@@ -31,6 +31,15 @@ use \MovLib\Partial\DateTime;
 final class Contributions extends \MovLib\Presentation\User\AbstractUserPresenter {
   use \MovLib\Partial\PaginationTrait;
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Contributions";
+  // @codingStandardsIgnoreEnd
+
   public function formatArticle(\MovLib\Data\AbstractEntity $article) {
     return
       "<td class='tac'><span class='ico ico-help' title='{$this->intl->t("Help Article")}'></span></td>" .

@@ -117,7 +117,7 @@ final class Search {
    * @return this
    */
   public function execute(\MovLib\Core\Kernel $kernel, \MovLib\Core\Log $log, $deleted) {
-    $kernel->delayMethodCall([ $this, "executeIndexing" ], [ $log, $deleted ]);
+    $kernel->delayMethodCall($this, "executeIndexing", [ $log, $deleted ]);
     return $this;
   }
 

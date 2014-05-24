@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data\Movie;
 
-use \MovLib\Component\Date;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -36,6 +35,15 @@ final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity impleme
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Movie";
+  // @codingStandardsIgnoreEnd
 
 
   /**
@@ -335,16 +343,6 @@ SQL
     if ($this->id) {
       $this->init();
     }
-  }
-
-  /**
-   * @link http://php.net/language.oop5.overloading#object.get
-   */
-  public function __get($name) {
-    if (isset($this->$name)) {
-      return $this->$name;
-    }
-    return $this->{"get{$name}"}();
   }
 
 

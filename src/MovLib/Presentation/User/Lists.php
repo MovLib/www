@@ -28,6 +28,15 @@ namespace MovLib\Presentation\User;
  */
 final class Lists extends \MovLib\Presentation\User\AbstractUserPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Lists";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

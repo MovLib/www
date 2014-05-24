@@ -46,7 +46,7 @@ final class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Genre($this->diContainerHTTP, $_SERVER["GENRE_ID"]);
+    $this->entity = Genre::createFromId($this->intl, $_SERVER["GENRE_ID"]);
     return $this
       ->initPage($this->intl->t("Edit {0}", [ $this->entity->name ]), null, $this->intl->t("Edit"))
       ->initEdit($this->entity, $this->intl->t("Genres"))
@@ -80,9 +80,11 @@ final class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    */
   public function submit() {
     try {
-      // Create and commit new revision of this entity.
-      (new Revision($this->entity->createRevision($this->session->userId, $this->request->dateTime)))
-        ->commit($this->entity->changed->formatInteger(), $this->intl->languageCode);
+      // Create new revision from the data the user has supplied.
+      $newRevision = $this->entity->createRevision($this->session->userId, $this->request->dateTime);
+
+      // Commit this new revision to the persistent storage.
+      (new Revision($newRevision))->commit($this->entity->changed->formatInteger(), $this->intl->languageCode);
 
       // Inform the user that the update of the entity was successful.
       $this->alertSuccess($this->intl->t("Update Successful"));

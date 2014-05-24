@@ -38,16 +38,21 @@ use \MovLib\Partial\Time;
  */
 class Show extends \MovLib\Presentation\User\AbstractUserPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Show";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Instantiate new user presentation.
    */
   public function init() {
     return $this->initPage(null);
   }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
 
   /**
    * {@inheritdoc}

@@ -46,13 +46,6 @@ abstract class AbstractEntitySet extends \MovLib\Data\AbstractConfig implements 
    */
   protected $entityClassName;
 
-  /**
-   * The short name of this set to access set properties in other entities to export itself.
-   *
-   * @var string
-   */
-  protected $shortName;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -64,6 +57,20 @@ abstract class AbstractEntitySet extends \MovLib\Data\AbstractConfig implements 
     parent::__construct($diContainer);
     $this->entityClassName = substr(static::class, 0, -3);
     $this->init();
+  }
+
+  /**
+   * Get the class's short name.
+   *
+   * @return string
+   *   The class's short name.
+   */
+  public function __toString() {
+    if (defined("static::name")) {
+      return static::name;
+    }
+    $shortName = explode("\\", static::class);
+    return end($shortName);
   }
 
 

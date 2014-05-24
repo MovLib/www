@@ -17,7 +17,7 @@
  */
 namespace MovLib\Data\Genre;
 
-use \MovLib\Exception\ClientException\NotFoundException;
+use \MovLib\Core\Database\Database;
 
 /**
  * Defines the revision entity object for genre entities.
@@ -37,6 +37,15 @@ final class GenreRevision extends \MovLib\Data\Revision\AbstractRevisionEntity {
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "GenreRevision";
+  // @codingStandardsIgnoreEnd
+
   /**
    * The revision entity's unique identifier.
    *
@@ -49,14 +58,14 @@ final class GenreRevision extends \MovLib\Data\Revision\AbstractRevisionEntity {
 
 
   /**
-   * Associative array containing all the genre's localized names, keyed by language code.
+   * Associative array containing all the genre's localized names, keyed by ISO 639-1 language code.
    *
    * @var array
    */
   public $names;
 
   /**
-   * Associative array containing all the genre's localized descriptions, keyed by language code.
+   * Associative array containing all the genre's localized descriptions, keyed by ISO 639-1 language code.
    *
    * @var array
    */
@@ -73,52 +82,11 @@ final class GenreRevision extends \MovLib\Data\Revision\AbstractRevisionEntity {
 
   /**
    * Instantiate new genre revision.
-   *
-   * @param integer $genreId [optional]
-   *   The genre's unique identifier, defaults to <code>NULL</code>.
-   * @throws \MovLib\Exception\ClientException\NotFoundException
-   *   If no genre exists for the given genre identifier.
    */
-  public function __construct($genreId = null) {
-    if ($genreId) {
-      $stmt = $this->getMySQLi()->prepare(<<<SQL
-SELECT
-  `genres`.`id`,
-  `revisions`.`user_id`,
-  `genres`.`changed` + 0,
-  `genres`.`deleted`,
-  COLUMN_JSON(`genres`.`dyn_descriptions`),
-  COLUMN_JSON(`genres`.`dyn_names`),
-  COLUMN_JSON(`genres`.`dyn_wikipedia`)
-FROM `genres`
-  INNER JOIN `revisions`
-    ON `revisions`.`entity_id` = `genres`.`id`
-    AND `revisions`.`id` = `genres`.`changed`
-    AND `revisions`.`revision_entity_id` = {$this->revisionEntityId}
-WHERE `genres`.`id` = ?
-LIMIT 1
-SQL
-      );
-      $stmt->bind_param("d", $genreId);
-      $stmt->execute();
-      $stmt->bind_result(
-        $this->entityId,
-        $this->userId,
-        $this->id,
-        $this->deleted,
-        $this->descriptions,
-        $this->names,
-        $this->wikipediaLinks
-      );
-      $found = $stmt->fetch();
-      $stmt->close();
-
-      if (!$found) {
-        throw new NotFoundException("Couldn't find Genre {$genreId}");
-      }
-    }
+  public function __construct() {
     if ($this->id) {
-      $this->jsonDecode($this->descriptions, $this->names, $this->wikipediaLinks);
+      $this->descriptions = json_decode($this->descriptions, true);
+      $this->names        = json_decode($this->names, true);
       parent::__construct();
     }
   }
@@ -127,7 +95,49 @@ SQL
    * {@inheritdoc}
    */
   public function __sleep() {
-    return array_merge(parent::__sleep(), [ "descriptions", "names", "wikipediaLinks" ]);
+    static $properties = null;
+    if (!$properties) {
+      $properties = array_merge(parent::__sleep(), [ "descriptions", "names", "wikipediaLinks" ]);
+    }
+    return $properties;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Static Methods
+
+
+  /**
+   * Create new genre revision from id.
+   *
+   * @param integer $id
+   *   The genre's unique identifier.
+   * @return this
+   * @throws \MovLib\Exception\ClientException\NotFoundException
+   *   If no genre was found for <var>$id</var>.
+   */
+  public static function createFromId($id) {
+    // Answer with an empty instance if id is NULL.
+    if (!$id) {
+      return new static();
+    }
+    $query = <<<SQL
+SELECT
+  `genres`.`id` AS `entityId`,
+  `revisions`.`user_id` AS `userId`,
+  `genres`.`changed` + 0 AS `id`,
+  `genres`.`deleted` AS `deleted`,
+  COLUMN_JSON(`genres`.`dyn_descriptions`) AS `descriptions`,
+  COLUMN_JSON(`genres`.`dyn_names`) AS `names`,
+  COLUMN_JSON(`genres`.`dyn_wikipedia`) AS `wikipediaLinks`
+FROM `genres`
+  INNER JOIN `revisions`
+    ON `revisions`.`entity_id` = `genres`.`id`
+    AND `revisions`.`id` = `genres`.`changed`
+    AND `revisions`.`revision_entity_id` = 9
+WHERE `genres`.`id` = {$id}
+LIMIT 1
+SQL;
+    return Database::getConnection()->fetchObject($query, static::class);
   }
 
 
@@ -137,35 +147,38 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function commit(\MovLib\Data\Revision\RevisionEntityInterface $oldRevision, $languageCode) {
-    // Check if we should update the deletion status of the entity.
-    $deleted = $oldRevision->deleted === $this->deleted ? null : "`deleted`=" . (integer) $this->deleted;
+  public function commit(\MovLib\Data\Revision\RevisionEntityInterface $old, $languageCode) {
+    $connection = Database::getConnection();
+
+    // Check if we should update the deletion status of the entity. Usually that's performed by a deletion request, but
+    // we might be commiting a previous revision that was recreated and the deletion status might have been set to
+    // deleted. In that case we want it to be deleted again.
+    //
+    // @todo Is this really true? Do we want to reset the deletion status just because an old revision was deleted?
+    $deleted = $old->deleted === $this->deleted ? null : "`deleted`=" . (integer) $this->deleted;
 
     // Check all dynamic columns and build the query parts for those.
-    $dynCols = $this->getDynamicColumnUpdateQuery(
-      $languageCode,
-      "descriptions",
-      $this->descriptions,
-      $oldRevision->descriptions,
-      "names",
-      $this->names,
-      $oldRevision->names,
-      "wikipedia",
-      $this->wikipediaLinks,
-      $oldRevision->wikipediaLinks
-    );
-
-    \MovLib\Component\Debug::dump([ $this, $oldRevision ]);
+    $dynCols = $connection->dynColBuildUpdate($languageCode, [
+      [ "descriptions", $this->descriptions, $old->descriptions ],
+      [ "names", $this->names, $old->names ],
+      [ "wikipedia", $this->wikipediaLinks, $old->wikipediaLinks ],
+    ]);
 
     // If we have both values, append comma to the deleted part to separate them.
     if ($deleted && $dynCols) {
       $deleted .= ",";
     }
-    // If we don't have any of both parts nothing would be updated.
+    // Nothing to commit if both values are NULL.
     elseif (!$deleted && !$dynCols) {
       throw new \BadMethodCallException("Nothing to commit.");
     }
-    $this->getMySQLi()->query("UPDATE `genres` SET {$deleted}{$dynCols} WHERE `id` = {$this->entityId}");
+
+    // Update the genres table with the new data, remember that we are the newest revision and that we have to update
+    // the changed datetime of the genre with our creation datetime.
+    $connection->real_query(
+      "UPDATE `genres` SET `changed` = CAST('{$this->created}' AS DATETIME), {$deleted}{$dynCols} WHERE `id` = {$this->entityId}"
+    );
+
     return $this;
   }
 
@@ -173,16 +186,24 @@ SQL
    * {@inheritdoc}
    */
   public function initialCommit($languageCode) {
-    $this->getMySQLi()->query("INSERT INTO `genres` SET {$this->getDynamicColumnUpdateQuery(
-      $languageCode,
-      "descriptions",
-      $this->descriptions,
-      "names",
-      $this->names,
-      "wikipedia",
-      $this->wikipediaLinks
-    )}");
-    return $this;
+    $connection = Database::getConnection();
+
+    // Insert the new genre into the genres table, remember that we are the newest revision and that we have to insert
+    // the datetime for changed and created because the value has to match the value that will be inserted into the
+    // revisions table.
+    $connection->real_query(<<<SQL
+INSERT INTO `genres` SET
+  `changed` = CAST('{$this->created}' AS DATETIME),
+  `created` = CAST('{$this->created}' AS DATETIME),
+  {$connection->dynColBuildUpdate($languageCode, [
+    [ "descriptions", $this->descriptions ],
+    [ "names", $this->names ],
+    [ "wikipedia", $this->wikipediaLinks ],
+  ])}
+SQL
+    );
+
+    return $connection->insert_id;
   }
 
 }

@@ -27,6 +27,7 @@ namespace MovLib\Core\Presentation;
  * @since 0.0.1-dev
  */
 class Base {
+  use \MovLib\Component\ShortNameTrait;
 
   /**
    * Add CSS class(es) to attributes array of an element.
@@ -259,16 +260,6 @@ class Base {
     // @codeCoverageIgnoreEnd
     // @devEnd
     return "<em class='placeholder'>{$this->htmlEncode($text)}</em>";
-  }
-
-  /**
-   * Get the short name of this instance.
-   *
-   * @return string
-   *   The short name of this instance.
-   */
-  final public function shortName() {
-    return basename(strtr(static::class, "\\", "/"));
   }
 
 }

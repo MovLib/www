@@ -102,6 +102,24 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
   public $userId;
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Get the class's short name.
+   *
+   * @return string
+   *   The class's short name.
+   */
+  public function __toString() {
+    if (defined("static::name")) {
+      return static::name;
+    }
+    $shortName = explode("\\", static::class);
+    return end($shortName);
+  }
+
+
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 

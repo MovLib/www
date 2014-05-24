@@ -18,6 +18,7 @@
 namespace MovLib\Core\HTTP;
 
 use \MovLib\Component\DateTime;
+use \MovLib\Core\Database\Database;
 use \MovLib\Data\Image\ImageStyle;
 use \MovLib\Data\Image\ImageStylePlaceholder;
 use \MovLib\Exception\ClientException\ForbiddenException;
@@ -44,6 +45,16 @@ final class Session extends \MovLib\Core\AbstractDatabase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Session";
+  // @codingStandardsIgnoreEnd
 
 
   /**
@@ -164,6 +175,15 @@ final class Session extends \MovLib\Core\AbstractDatabase {
   protected $response;
 
   /**
+   * The session's name.
+   *
+   * The session's name is configured in the global <code>php.ini</code> configuration file.
+   *
+   * @var string
+   */
+  protected $sessionName;
+
+  /**
    * The session user's unique identifier.
    *
    * @var integer
@@ -209,13 +229,13 @@ final class Session extends \MovLib\Core\AbstractDatabase {
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
-  // @devStart
-  // @codeCoverageIgnoreStart
+  /**
+   * Instantiate new HTTP session.
+   */
   public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
     parent::__construct($diContainerHTTP);
+    $this->sessionName = session_name();
   }
-  // @codeCoverageIgnoreEnd
-  // @devEnd
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -234,7 +254,7 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function authenticate($email, $rawPassword) {
-    $stmt = $this->getMySQLi()->prepare(<<<SQL
+    $stmt = Database::getConnection()->prepare(<<<SQL
 SELECT `id`, HEX(`image_cache_buster`), `image_extension`, `language_code`, `name`, `password`, `timezone` FROM `users` WHERE `email` = ? LIMIT 1
 SQL
     );
@@ -266,7 +286,7 @@ SQL
     }
     else {
       $this->start();
-      $this->kernel->delayMethodCall([ $this, "insert" ]);
+      $this->kernel->delayMethodCall("session.insert", $this, "insert");
     }
 
     // Set cookie for preferred system language for nginx. We set the cookie expire time to January 2038. This is the
@@ -276,7 +296,7 @@ SQL
     // @todo Is this unnecessary overhead or a good protection? If PHP updates the default password this would be the
     //       only way to update the password's of all users. We execute it delayed, so there's only the server load we
     //       have to worry about. Maybe introduce a configuration option for this?
-    $this->kernel->delayMethodCall([ $this, "rehashPassword" ], [ $this->userId, $rawPassword, $passwordHash ]);
+    $this->kernel->delayMethodCall("session.rehash", $this, "rehashPassword", [ $this->userId, $rawPassword, $passwordHash ]);
 
     return true;
   }
@@ -338,7 +358,7 @@ SQL
    * @throws \MemcachedException
    */
   public function delete(array $ssids = null) {
-    $mysqli = $this->getMySQLi();
+    $mysqli = Database::getConnection();
 
     // Delete all session identifiers, including the current one, if none was passed.
     if (!$ssids) {
@@ -402,7 +422,7 @@ SQL
     }
 
     // Remove the session and language cookie.
-    $this->response->deleteCookie([ $this->config->sessionName, "lang" ]);
+    $this->response->deleteCookie([ $this->sessionName, "lang" ]);
 
     // Delete all sessions if the flag is set.
     if ($deleteAllSessions) {
@@ -436,7 +456,7 @@ SQL
    */
   public function getActiveSessions() {
     $activeSessions = [];
-    $result = $this->getMySQLi()->query("SELECT `authentication`, `ssid`, `remote_address` AS `remoteAddress`, `user_agent` AS `userAgent` FROM `sessions` WHERE `user_id` = {$this->userId}");
+    $result = Database::getConnection()->query("SELECT `authentication`, `ssid`, `remote_address` AS `remoteAddress`, `user_agent` AS `userAgent` FROM `sessions` WHERE `user_id` = {$this->userId}");
     /* @var $activeSession \MovLib\Stub\Core\HTTP\ActiveSessionSet */
     while ($activeSession = $result->fetch_object()) {
       $activeSession->authentication = new DateTime($activeSession->authentication);
@@ -478,7 +498,7 @@ SQL
   public function insert() {
     if ($this->ssid && $this->userId) {
       $remoteAddress = inet_pton($this->request->remoteAddress);
-      $stmt          = $this->getMySQLi()->prepare(<<<SQL
+      $stmt          = Database::getConnection()->prepare(<<<SQL
 INSERT INTO `sessions` (`authentication`, `ssid`, `remote_address`, `user_id`, `user_agent`)
 VALUES (FROM_UNIXTIME(?), ?, ?, ?, ?)
 ON DUPLICATE KEY UPDATE
@@ -506,7 +526,7 @@ SQL
     static $isAdmin = null;
     if ($this->isAuthenticated) {
       if ($isAdmin === null) {
-        $result  = $this->getMySQLi()->query("SELECT `admin` FROM `users` WHERE `id` = {$this->userId} LIMIT 1");
+        $result  = Database::getConnection()->query("SELECT `admin` FROM `users` WHERE `id` = {$this->userId} LIMIT 1");
         $isAdmin = $result && $result->fetch_row()[0] == 1;
         $result->free();
       }
@@ -537,7 +557,7 @@ SQL
 
         // Update persistent storage with the new session identifier.
         if ($this->isAuthenticated === true) {
-          $this->kernel->delayMethodCall([ $this, "updateSecureIdentifier" ], [ $this->userId, $this->ssid, $ssid ]);
+          $this->kernel->delayMethodCall("session.update", $this, "updateSecureIdentifier", [ $this->userId, $this->ssid, $ssid ]);
         }
 
         // Export new values to class scope and set flag that we regenerated the session identifier.
@@ -569,7 +589,7 @@ SQL
   public function rehashPassword($userId, $rawPassword, $passwordHash) {
     if (password_needs_rehash($passwordHash, $this->config->passwordAlgorithm, $this->config->passwordOptions)) {
       $passwordHash = password_hash($rawPassword, $this->config->passwordAlgorithm, $this->config->passwordOptions);
-      $stmt = $this->getMySQLi()->prepare("UPDATE `users` SET `password` = ? WHERE `id` = ?");
+      $stmt = Database::getConnection()->prepare("UPDATE `users` SET `password` = ? WHERE `id` = ?");
       $stmt->bind_param("sd", $passwordHash, $userId);
       $stmt->execute();
       $stmt->close();
@@ -580,26 +600,30 @@ SQL
   /**
    * Resume existing HTTP session from client submitted cookies.
    *
+   * @param \MovLib\Core\Kernel $kernel
+   *   A kernel to delay certain method calls.
+   * @param \MovLib\Core\HTTP\Request $request
+   *   The current HTTP request.
    * @return this
    * @throws \MemcachedException
    * @throws \mysqli_sql_exception
    */
-  public function resume() {
+  public function resume(\MovLib\Core\Kernel $kernel, \MovLib\Core\HTTP\Request $request) {
     // Only attempt to load the session if a non-empty session ID is present. Anonymous user's don't get any session to
     // ensure that HTTP proxies are able to cache anonymous pageviews.
-    if (empty($this->request->cookies[$this->config->sessionName])) {
-      $this->userName       = $this->request->remoteAddress;
+    if (empty($request->cookies[$this->sessionName])) {
+      $this->userName       = $request->remoteAddress;
       $this->userTimezoneId = date_default_timezone_get();
       $this->userTimezone   = new \DateTimeZone($this->userTimezoneId);
     }
+    // Try to resume the session with the ID from the cookie.
     else {
-      // Try to resume the session with the ID from the cookie.
       $this->start();
 
       // Try to load the session from the persistent session storage for known users if we just generated a new
       // session ID and have no data stored for it.
       if (empty($_SESSION)) {
-        $mysqli = $this->getMySQLi();
+        $mysqli = Database::getConnection();
         $stmt = $mysqli->prepare(<<<SQL
 SELECT
   `users`.`id`,
@@ -613,7 +637,7 @@ FROM `sessions`
 WHERE `sessions`.`ssid` = ? LIMIT 1
 SQL
         );
-        $stmt->bind_param("s", $this->request->cookies[$this->config->sessionName]);
+        $stmt->bind_param("s", $request->cookies[$this->sessionName]);
         $stmt->execute();
         $stmt->bind_result($this->userId, $this->userImageCacheBuster, $this->userImageExtension, $this->userName, $this->userTimezoneId, $this->authentication);
         $found = $stmt->fetch();
@@ -649,12 +673,12 @@ SQL
         $this->isAuthenticated      = true;
 
         // Regenerate the sesson's identifier if the grace time is over.
-        if (($this->initTime + self::REGENERATION_GRACE_TIME) < $this->request->time) {
+        if (($this->initTime + self::REGENERATION_GRACE_TIME) < $request->time) {
           $this->regenerate();
         }
         // Otherwise make sure that the persistent storage contains this session.
         else {
-          $this->kernel->delayMethodCall([ $this, "insert" ]);
+          $kernel->delayMethodCall("session.insert", $this, "insert");
         }
       }
     }
@@ -680,7 +704,7 @@ SQL
     elseif (session_status() === PHP_SESSION_ACTIVE) {
       // If this session belongs to an authenticated user, update the last access time.
       if ($this->isAuthenticated === true) {
-        $this->kernel->delayMethodCall([ $this, "updateUserAccess" ]);
+        $this->kernel->delayMethodCall("session.access", $this, "updateUserAccess");
       }
 
       // Commit session to memcached and release session lock.
@@ -805,7 +829,7 @@ SQL
    * @throws \mysqli_sql_exception
    */
   public function updateSecureIdentifier($userId, $old, $new) {
-    $stmt = $this->getMySQLi()->prepare("UPDATE `sessions` SET `ssid` = ? WHERE `user_id` = ? AND `ssid` = ?");
+    $stmt = Database::getConnection()->prepare("UPDATE `sessions` SET `ssid` = ? WHERE `user_id` = ? AND `ssid` = ?");
     $stmt->bind_param("sds", $new, $userId, $old);
     $stmt->execute();
     $stmt->close();
@@ -818,7 +842,7 @@ SQL
    * @return this
    */
   public function updateUserAccess() {
-    $this->getMySQLi()->query("UPDATE `users` SET `access` = CURRENT_TIMESTAMP WHERE `id` = {$this->userId}");
+    Database::getConnection()->query("UPDATE `users` SET `access` = CURRENT_TIMESTAMP WHERE `id` = {$this->userId}");
     return $this;
   }
 

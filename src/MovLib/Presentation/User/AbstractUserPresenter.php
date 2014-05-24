@@ -78,7 +78,7 @@ abstract class AbstractUserPresenter extends \MovLib\Presentation\AbstractPresen
     }
 
     $langKey = $this->entity->routeKey;
-    if (($shortName = strtolower($this->shortName())) != "show") {
+    if (($shortName = strtolower(static::name)) != "show") {
       $langKey .= "/{$shortName}";
       $this->headingBefore .= "<div class='r'><div class='s s11'>";
       $this->headingAfter  .= "</div><div class='s s1'>{$this->img($this->entity->imageGetStyle("s1"))}</div></div>";

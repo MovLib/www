@@ -37,6 +37,8 @@ interface RevisionEntityInterface {
   /**
    * Implements <code>serialize()</code> callback.
    *
+   * @staticvar array $properties
+   *   Should be used internally to cache the property names.
    * @return array
    *   Array containing the names of the properties that should be serialized.
    */
@@ -68,6 +70,10 @@ interface RevisionEntityInterface {
    * @param string $languageCode
    *   The current ISO 639-1 language code.
    * @return this
+   * @throws \mysqli_sql_exception
+   * @throws \BadMethodCallException
+   *   If nothing is to be commited a BadMethodCallException is thrown because it should be checked long before calling
+   *   this method that there is actually something to commit.
    */
   public function commit(\MovLib\Data\Revision\RevisionEntityInterface $oldRevision, $languageCode);
 
