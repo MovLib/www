@@ -2,7 +2,7 @@
 <#assign licenseFirst="/*!">
 <#assign licensePrefix=" *">
 <#assign licenseLast=" */">
-<#import "../${project.license}.ftl" as prj>
+<#import "../Licenses/${project.license}.ftl" as prj>
 <#include "../Licenses/license-${project.license}.txt">
 <#if namespace?? && namespace?length &gt; 0>
 namespace ${namespace};
@@ -19,11 +19,32 @@ namespace ${namespace};
  */
 class ${name} {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "${name}";
+  // @codingStandardsIgnoreEnd
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
   /**
    *
    */
   public function __construct() {
 
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
 }
