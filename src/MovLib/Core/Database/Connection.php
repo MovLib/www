@@ -44,6 +44,17 @@ final class Connection extends \mysqli {
   // @codingStandardsIgnoreEnd
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * Array used to keep track of all transactions.
+   *
+   * @var array
+   */
+  public $transactions = [];
+
+
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
@@ -128,58 +139,75 @@ final class Connection extends \mysqli {
   }
 
   /**
-   * Build dyanmic column update query part.
+   * Build dynamic column create statement.
    *
-   * Dynamic columns have to be either added (updated) or deleted. Which action is necessary depends on the value of
-   * the entity's property. This method takes care of creating the correct string for the update query that is needed to
-   * perform the correct actions. Of course it will escape all data correctly for the query.
+   * The create statement should be used if you have all values that you want to store in the database present in an
+   * array. The values are inserted if the evaluate to <code>TRUE</code> and omitted otherwise. Any value currently
+   * present in the dynamic column will be overwritten and is lost.
    *
-   * The returned string might look like the following:
-   * <code>" `dyn_names` = COLUMN_ADD(`dyn_names`, 'de', 'Foobar'), `dyn_descriptions` = COLUMN_DELETE(`dyn_descriptions`, 'de')"</code>
+   * @param array $definition
+   *   The dynamic column definition that will be used to create the query part. The definition has to have the
+   *   following format:
    *
-   * A dynamic column is added (updated) if the related property's value evaluates to <code>TRUE</code> and deleted
-   * if <code>FALSE</code> ({@link http://php.net/language.types.boolean.php#language.types.boolean.casting}).
-   *
-   * @param string $name
-   *   The name of the dynamic column and at the same time the key in the given arrays.
-   * @param array $values
-   *   Keyed array that has to have the following structure:
    *   <pre>[
-   *     [ "table_column_name", $newValues, $oldValues ],
-   *     [ "table_column_name", $newValues ], // It's possible to leave the old value blank.
-   *     [ "table_column_...
+   *     "dyn_col_name" => [ "key1" => "value", "key2" => "value" ],
+   *     ...
    *   ]</pre>
-   *   Note that you don't have to include the <code>"dyn_"</code> prefix that every dynamic column has to have per
-   *   convention, it will be added automatically.
    * @return string
-   *   The dynamic column update query part or <code>NULL</code> if nothing is to be done.
+   *   String containing the <code>"COLUMN_CREATE()"</code> query part based on <var>$definition</var>.
    */
-  public function dynColBuildUpdate($name, array $values) {
-    $count = count($values);
+  public function dynColBuildCreate(array $definition) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert(!empty($definition), "The dynamic column definition cannot be empty.");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    // This will contain the final query part with the dynamic column create statements.
     $query = null;
 
-    for ($i = 0; $i < $count; ++$i) {
-      // Check if both values stayed the same and skip this dynamic column if they did.
-      if (isset($values[$i][1][$name]) && isset($values[$i][2][$name]) && $values[$i][1][$name] == $values[$i][2][$name]) {
-        continue;
-      }
-
-      // Insert separator if we already built one part of the final query.
+    // The definition's first level is the mapping between the actual dynamic column in the table and their values.
+    foreach ($definition as $name => $values) {
+      // Insert separator if not in first loop.
       $query && ($query .= ",");
 
-      // Note the comparison with two equal signs, if the value evaluates to true we want it included.
-      if (isset($values[$i][1][$name]) && $values[$i][1][$name] == true) {
-        $query .= "`dyn_{$values[$i][0]}`=COLUMN_ADD(`dyn_{$values[$i][0]}`,'{$name}','{$this->real_escape_string($values[$i][1][$name])}')";
+      // We insert an empty string into the dynamic column BLOB column if the values are empty. This allows us to SELECT
+      // and UPDATE the from the column without any errors. An empty string is considered valid in the context of
+      // dynamic columns, whereas NULL wouldn't be. Sadly BLOB columns don't allow for default values, that's why we
+      // have to insert the empty string manually.
+      if (empty($values)) {
+        $part = "''";
       }
+      // We have to expand all values and create the key value mapping for the creation statement of the dynamic column.
       else {
-        $query .= "`dyn_{$values[$i][0]}`=COLUMN_DELETE(`dyn_{$values[$i][0]}`,'{$name}')";
+        // Initialize with NULL for easy separator decision within the loop.
+        $part = null;
+
+        // We assume that the key is valid, as it was defined by a developer, of course we have to properly escape the
+        // value for insertion.
+        foreach ($values as $key => $value) {
+          if ($value == true) {
+            $part && ($part .= ",");
+            $part .= "'{$key}','{$this->real_escape_string($value)}'";
+          }
+        }
+
+        // Now we can put the column create function call and the key-value-pairs together if we had any, otherwise we
+        // have to fall back to an empty string.
+        if ($part) {
+          $part = "COLUMN_CREATE({$part})";
+        }
+        else {
+          $part = "''";
+        }
       }
+
+      // Prefix the built part with the name of the dynamic column and the proper assignment operator.
+      $query .= "`dyn_{$name}`={$part}";
     }
 
-    if ($query) {
-      // Pad the created query with spaces to avoid incorrect embedding.
-      return " {$query} ";
-    }
+    // Pad the built query part with spaces to avoid incorrect embedding errors.
+    return " {$query} ";
   }
 
   /**
