@@ -271,4 +271,19 @@ abstract class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
     return str_replace("upload://", "dr://var/lib/uploads/", "{$this->imageDirectory}/{$this->imageFilename}.{$this->imageExtension}");
   }
 
+  /**
+   * Set file system instance.
+   *
+   * The entity needs a file system instance to interact with the local file system, but only if it's desired to display
+   * the image of an entity. Therefore it's an optional dependency and only injected if needed.
+   *
+   * @param \MovLib\Core\FileSystem $fileSystem
+   *   The file system instance to set.
+   * @return this
+   */
+  final public function setFileSystem(\MovLib\Core\FileSystem $fileSystem) {
+    $this->fs = $fileSystem;
+    return $this;
+  }
+
 }
