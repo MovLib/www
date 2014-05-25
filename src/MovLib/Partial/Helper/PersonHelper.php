@@ -39,8 +39,8 @@ final class PersonHelper extends \MovLib\Core\Presentation\DependencyInjectionBa
    */
   public function getListing(\MovLib\Data\Person\PersonSet $personSet) {
     $items = null;
-    foreach ($personSet->entities as $delta => $person) {
-      $items .= $this->formatListingItem($person, $delta);
+    foreach ($personSet as $personId => $person) {
+      $items .= $this->formatListingItem($person, $personId);
     }
     return "<ol class='hover-list no-list'>{$items}</ol>";
   }

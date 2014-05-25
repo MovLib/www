@@ -28,6 +28,15 @@ namespace MovLib\Presentation\Person;
  */
 class Series extends \MovLib\Presentation\Person\AbstractPersonPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Series";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Initialize person series presentation.
    *

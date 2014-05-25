@@ -28,6 +28,15 @@ namespace MovLib\Presentation\Person;
  */
 class Releases extends \MovLib\Presentation\Person\AbstractPersonPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Releases";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Initialize person releases presentation.
    *

@@ -28,6 +28,15 @@ namespace MovLib\Presentation\Movie;
  */
 class Discussion extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Discussion";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Initialize movie discussion presentation.
    */

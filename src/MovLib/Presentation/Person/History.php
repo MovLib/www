@@ -28,6 +28,15 @@ namespace MovLib\Presentation\Person;
  */
 class History extends \MovLib\Presentation\Person\AbstractPersonPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "History";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Initialize person history presentation.
    */

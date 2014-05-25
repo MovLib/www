@@ -28,6 +28,15 @@ namespace MovLib\Presentation\Movie;
  */
 class Releases extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Releases";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Initialize the movie releases presentation.
    */

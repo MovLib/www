@@ -28,6 +28,15 @@ namespace MovLib\Presentation\Movie;
  */
 class Awards extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Awards";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Initialize the movie awards presentation.
    */

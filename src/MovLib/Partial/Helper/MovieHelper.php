@@ -39,10 +39,10 @@ final class MovieHelper extends \MovLib\Core\Presentation\DependencyInjectionBas
    */
   public function getListing(\MovLib\Data\Movie\MovieSet $movieSet) {
     $items = null;
-    foreach ($movieSet->entities as $delta => $movie) {
-      $items .= $this->formatListingItem($movie, $delta);
+    foreach ($movieSet as $movieId => $movie) {
+      $items .= $this->formatListingItem($movie, $movieId);
     }
     return "<ol class='hover-list no-list'>{$items}</ol>";
   }
-  
+
 }

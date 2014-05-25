@@ -39,6 +39,15 @@ use \MovLib\Data\Movie\MovieSet;
 final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
   use \MovLib\Presentation\Movie\MovieTrait;
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Index";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

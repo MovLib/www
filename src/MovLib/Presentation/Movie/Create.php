@@ -37,6 +37,15 @@ use \MovLib\Exception\RedirectException\SeeOtherException;
  */
 class Create extends \MovLib\Presentation\AbstractCreatePresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Create";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

@@ -29,6 +29,15 @@ namespace MovLib\Presentation\Movie;
 class History extends \MovLib\Presentation\AbstractHistoryPresenter {
   use \MovLib\Presentation\Movie\MovieTrait;
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "History";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

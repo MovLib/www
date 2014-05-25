@@ -28,6 +28,15 @@ namespace MovLib\Presentation\Person;
  */
 class Delete extends \MovLib\Presentation\Person\AbstractPersonPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Delete";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Initialize person delete presentation.
    */

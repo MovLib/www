@@ -15,44 +15,19 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Person;
+namespace MovLib\Core\Event;
 
 /**
- * A person's discussion.
+ * Defines the event dispatcher interface.
  *
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @author Richard Fussenegger <richard@fussenegger.info>
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Discussion extends \MovLib\Presentation\Person\AbstractPersonPresenter {
+interface Dispatcher {
 
-  // @codingStandardsIgnoreStart
-  /**
-   * Short class name.
-   *
-   * @var string
-   */
-  const name = "Discussion";
-  // @codingStandardsIgnoreEnd
-
-  /**
-   * Initialize person discussion presentation.
-   */
-  public function init() {
-    $this->initPersonPresentation(
-      $this->intl->t("Discussion of {name}"),
-      $this->intl->t("Discussion of {name}"),
-      $this->intl->t("Discussion")
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getContent() {
-    return $this->checkBackLater("discuss person");
-  }
+  public function dispatch();
 
 }

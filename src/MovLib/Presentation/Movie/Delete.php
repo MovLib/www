@@ -28,6 +28,15 @@ namespace MovLib\Presentation\Movie;
  */
 class Delete extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Delete";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 

@@ -39,8 +39,8 @@ final class SeriesHelper extends \MovLib\Core\Presentation\DependencyInjectionBa
    */
   public function getListing(\MovLib\Data\Series\SeriesSet $seriesSet) {
     $items = null;
-    foreach ($seriesSet->entities as $delta => $series) {
-      $items .= $this->formatListingItem($series, $delta);
+    foreach ($seriesSet as $seriesId => $series) {
+      $items .= $this->formatListingItem($series, $seriesId);
     }
     return "<ol class='hover-list no-list'>{$items}</ol>";
   }

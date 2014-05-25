@@ -35,6 +35,15 @@ use \MovLib\Partial\FormElement\TextareaHTMLExtended;
 class Edit extends \MovLib\Presentation\AbstractEditPresenter {
   use \MovLib\Presentation\Movie\MovieTrait;
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Edit";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

@@ -31,6 +31,15 @@ use \MovLib\Partial\Sex;
  */
 class Crew extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Crew";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Initialize new movie crew presentation.
    *

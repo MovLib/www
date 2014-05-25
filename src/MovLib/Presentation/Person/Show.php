@@ -43,6 +43,15 @@ class Show extends \MovLib\Presentation\Person\AbstractPersonPresenter {
   use \MovLib\Partial\InfoboxTrait;
   use \MovLib\Partial\SectionTrait;
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Show";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Initialization Methods.
 

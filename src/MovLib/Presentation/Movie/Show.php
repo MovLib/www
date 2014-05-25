@@ -49,6 +49,15 @@ final class Show extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
   use \MovLib\Partial\InfoboxTrait;
   use \MovLib\Partial\SectionTrait;
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Show";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

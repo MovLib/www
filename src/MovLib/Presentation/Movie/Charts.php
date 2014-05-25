@@ -31,6 +31,15 @@ use \MovLib\Data\Movie\MovieSet;
 class Charts extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Partial\SidebarTrait;
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Charts";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Initialize the releases charts presentation.
    */

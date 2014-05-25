@@ -37,6 +37,15 @@ use \MovLib\Partial\FormElement\TextareaLineURLArray;
  */
 class Edit extends \MovLib\Presentation\AbstractEditPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Edit";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

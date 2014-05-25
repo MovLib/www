@@ -40,6 +40,15 @@ use \MovLib\Data\Person\PersonSet;
 final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
   use \MovLib\Partial\PersonTrait;
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Index";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

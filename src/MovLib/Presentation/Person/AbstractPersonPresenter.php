@@ -74,7 +74,7 @@ abstract class AbstractPersonPresenter extends \MovLib\Presentation\AbstractPres
     // Construct the breadcrumbs and route key.
     $this->breadcrumb->addCrumb($this->intl->r("/persons"), $this->intl->tp(-1, "Persons", "Person"));
     $routeKey = $this->entity->routeKey;
-    if (($shortName = strtolower($this->shortName())) != "show") {
+    if (($shortName = strtolower(static::name)) != "show") {
       $routeKey .= "/{$shortName}";
       $this->breadcrumb->addCrumb($this->entity->route, $this->entity->name);
     }

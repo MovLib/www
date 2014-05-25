@@ -27,7 +27,6 @@ namespace MovLib\Core\Presentation;
  * @since 0.0.1-dev
  */
 class Base {
-  use \MovLib\Component\ShortNameTrait;
 
   /**
    * Add CSS class(es) to attributes array of an element.

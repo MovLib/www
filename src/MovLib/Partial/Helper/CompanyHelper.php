@@ -41,8 +41,8 @@ final class CompanyHelper extends \MovLib\Core\Presentation\DependencyInjectionB
    */
   public function getListing(\MovLib\Data\Company\CompanySet $companySet) {
     $items = null;
-    foreach ($companySet->entities as $delta => $company) {
-      $items .= $this->formatListingItem($company, $delta);
+    foreach ($companySet as $companyId => $company) {
+      $items .= $this->formatListingItem($company, $companyId);
     }
     return "<ol class='hover-list no-list'>{$items}</ol>";
   }

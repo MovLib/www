@@ -30,6 +30,15 @@ use \MovLib\Data\Cast\CastSet;
  */
 class Cast extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Cast";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Initialize new movie cast presentation.
    *

@@ -33,6 +33,15 @@ use \MovLib\Data\Movie\MovieJobSet;
 class Movies extends \MovLib\Presentation\Person\AbstractPersonPresenter {
   use \MovLib\Presentation\Movie\MovieTrait;
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Movies";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Initialize person movies presentation.
    *
