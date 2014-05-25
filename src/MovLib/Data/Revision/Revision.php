@@ -50,6 +50,34 @@ use \MovLib\Core\Database\Database;
 final class Revision {
 
 
+  //-------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Revision";
+  // @codingStandardsIgnoreEnd
+
+
+  /**
+   * Exception code identifying that new revision wasn't found.
+   *
+   * @var integer
+   */
+  const RANGE_EXCEPTION_NEW = 2;
+
+  /**
+   * Exception code identifying that old revision wasn't found.
+   *
+   * @var integer
+   */
+  const RANGE_EXCEPTION_OLD = 1;
+
+
   //-------------------------------------------------------------------------------------------------------------------- Properties
 
 
@@ -183,21 +211,13 @@ WHERE `id` = CAST({$old->id} AS DATETIME)
 SQL
       );
 
-      // Insert new revision into database, we need this entry for displaying the contributions of a user.
-      $connection->real_query(<<<SQL
-INSERT INTO `revisions` (`id`, `entity_id`, `revision_entity_id`, `user_id`)
-  VALUES (CAST({$this->cur->id} AS DATETIME), {$this->cur->entityId}, {$this->cur->revisionEntityId}, {$this->cur->userId})
-SQL
-      );
-
-      // That's it, commit and we're done.
+      $this->insert($connection, $this->cur);
       $connection->commit();
     }
     // Catch any kind of exception at this point and be sure to close the prepared statements and rollback all staged
     // changes that weren't already commited.
     catch (\Exception $e) {
       isset($update) && $update->close();
-      isset($insert) && $insert->close();
       $connection->rollback();
       throw $e;
     }
@@ -245,13 +265,22 @@ SQL
    *   The unique identifier of the newly created entity.
    */
   public function initialCommit() {
+    $connection = Database::getConnection();
     try {
-
+      $connection->autocommit(false);
+      $connection->begin_transaction(MYSQLI_TRANS_START_READ_WRITE);
+      $this->cur->initialCommit();
+      $this->insert($connection, $this->cur);
+      $connection->commit();
     }
     catch (\Exception $e) {
-
+      $connection->rollback();
+      throw $e;
     }
-    return $entityId;
+    finally {
+      $connection->autocommit(true);
+    }
+    return $this->cur->entityId;
   }
 
   /**
@@ -288,7 +317,7 @@ SQL
    *
    * @param integer|string $oldRevisionId
    *   The older revision to retrieve, will be exported to the <var>Revision::$oldRevision</var> property.
-   * @param integer $newRevisionId [optional]
+   * @param integer|string $newRevisionId [optional]
    *   The newer revision to retrieve, will be exported to the <var>Revision::$newRevision</var> property. The property
    *   isn't overwritten if no value is passed (default) and thus contains the real current revision that is stored in
    *   the database.
@@ -320,12 +349,6 @@ SQL
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-    // Ensure both requested revision identifiers are actual integer values for faster comparison during the patch
-    // processing. It doesn't matter at this point that we cast the NULL value to an integer, because it can't match any
-    // revision identifier, as they're always full date-time-integers (YYYYMMDDHHMMSS).
-    $oldRevisionId = (integer) $oldRevisionId;
-    $newRevisionId = (integer) $newRevisionId;
-
     // Serialize the current revision entity, patching starts from here.
     $revision = serialize($this->cur);
 
@@ -349,13 +372,10 @@ SQL
         $revision = $this->patch($revision, $patch->data);
 
         // Check if this patch matches the newer requested revision and recreate the instance if it does.
-        if ($patch->revisionId === $newRevisionId) {
+        if ($patch->revisionId == $newRevisionId) {
           $this->new = unserialize($revision);
         }
       }
-
-      // The last patch returned by the database query always matches the requested old revision.
-      $this->old = unserialize($revision);
     }
     // Always free the result handle, even if an exception occurred during the patching process. This is important to
     // ensure that subsequent database calls won't fail with "commands out of sync". We don't catch the exception, the
@@ -364,8 +384,20 @@ SQL
       $result->free();
     }
 
-    // If we have no new revision at this point, use the current.
-    if (!$this->new) {
+    // The last patch returned by the database query is always the oldest revision.
+    if ($patch->revisionId == $oldRevisionId) {
+      $this->old = unserialize($revision);
+    }
+    else {
+      throw new \RangeException("Couldn't find old revision {$oldRevisionId}.", static::RANGE_EXCEPTION_OLD);
+    }
+
+    // We should have a new revision if a new revision identifier was passed, if not something is wrong.
+    if ($newRevisionId && !$this->new) {
+      throw new \RangeException("Couldn't find new revision {$newRevisionId}.", static::RANGE_EXCEPTION_NEW);
+    }
+    // Use the current revision if no new revision was requested.
+    else {
       $this->new = clone $this->cur;
     }
 
@@ -375,6 +407,30 @@ SQL
 
   //-------------------------------------------------------------------------------------------------------------------- Protected Methods
 
+
+  /**
+   * Insert revision entity into revisions table without settings the diff patch data.
+   *
+   * @param \MovLib\Core\Database\Connection $connection
+   *   Active database connection.
+   * @param \MovLib\Data\Revision\AbstractRevisionEntity $revisionEntity
+   *   The revision entity to insert.
+   * @return this
+   * @throws \mysqli_sql_exception
+   */
+  protected function insert(\MovLib\Core\Database\Connection $connection, \MovLib\Data\Revision\AbstractRevisionEntity $revisionEntity) {
+    try {
+      $insert = $connection->prepare(
+        "INSERT INTO `revisions` (`id`, `entity_id`, `revision_entity_id`, `user_id`) VALUES (CAST(? AS DATETIME), ?, ?, ?)"
+      );
+      $insert->bind_param("sdid", $revisionEntity->id, $revisionEntity->entityId, $revisionEntity->revisionEntityId, $revisionEntity->userId);
+      $insert->execute();
+    }
+    finally {
+      $insert && $insert->close();
+    }
+    return $this;
+  }
 
   /**
    * Get the SQL query to fetch diff patches from the revisions table.

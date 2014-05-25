@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Genre;
 
 use \MovLib\Data\Genre\Genre;
-use \MovLib\Data\Revision\Revision;
+use \MovLib\Data\Revision\RevisionCommitConflictException;
 use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputText;
@@ -46,7 +46,7 @@ final class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = Genre::createFromId($this->intl, $_SERVER["GENRE_ID"]);
+    $this->entity = new Genre($this->diContainerHTTP, $_SERVER["GENRE_ID"]);
     return $this
       ->initPage($this->intl->t("Edit {0}", [ $this->entity->name ]), null, $this->intl->t("Edit"))
       ->initEdit($this->entity, $this->intl->t("Genres"))
@@ -58,6 +58,7 @@ final class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    */
   public function getContent() {
     return (new Form($this->diContainerHTTP))
+      ->addHiddenElement("revision_id", $this->entity->changed)
       ->addElement(new InputText($this->diContainerHTTP, "name", $this->intl->t("Name"), $this->entity->name, [
         "autofocus"   => true,
         "required"    => true,
@@ -67,7 +68,6 @@ final class Edit extends \MovLib\Presentation\AbstractEditPresenter {
       ]))
       ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia))
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
-      ->addRevisioning($this->entity->changed)
       ->init([ $this, "submit" ])
     ;
   }
@@ -80,16 +80,8 @@ final class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    */
   public function submit() {
     try {
-      // Create new revision from the data the user has supplied.
-      $newRevision = $this->entity->createRevision($this->session->userId, $this->request->dateTime);
-
-      // Commit this new revision to the persistent storage.
-      (new Revision($newRevision))->commit($this->entity->changed->formatInteger(), $this->intl->languageCode);
-
-      // Inform the user that the update of the entity was successful.
-      $this->alertSuccess($this->intl->t("Update Successful"));
-
-      // Redirect the user to the updated entity's page.
+      $this->entity->commit($this->session->userId, $this->request->dateTime, $this->request->filterInput(INPUT_POST, "revision_id", FILTER_VALIDATE_INT));
+      $this->alertSuccess($this->intl->t("Successfully Updated"));
       throw new SeeOtherException($this->entity->route);
     }
     catch (\BadMethodCallException $e) {
@@ -98,7 +90,7 @@ final class Edit extends \MovLib\Presentation\AbstractEditPresenter {
         $this->intl->t("Seems like you haven’t changed anything, please only submit forms with changes.")
       );
     }
-    catch (\UnexpectedValueException $e) {
+    catch (RevisionCommitConflictException $e) {
       $this->alertError(
         $this->intl->t("Conflicting Changes"),
         "<p>{$this->intl->t(

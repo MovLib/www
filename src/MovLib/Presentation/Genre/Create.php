@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Genre;
 
 use \MovLib\Data\Genre\Genre;
-use \MovLib\Data\Revision\Revision;
 use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputText;
@@ -45,7 +44,7 @@ final class Create extends \MovLib\Presentation\AbstractCreatePresenter {
   public function init() {
     return $this
       ->initPage($this->intl->t("Create"))
-      ->initCreate(new Genre($this->intl), $this->intl->t("Genres"))
+      ->initCreate(new Genre($this->diContainerHTTP), $this->intl->t("Genres"))
     ;
   }
 
@@ -53,33 +52,30 @@ final class Create extends \MovLib\Presentation\AbstractCreatePresenter {
    * {@inheritdoc}
    */
   public function getContent() {
+    $nameLabel = $this->intl->t("Name");
     $form = (new Form($this->diContainerHTTP))
-      ->addElement(new InputText($this->diContainerHTTP, "name", $this->intl->t("Name"), $this->entity->name, [
-        "placeholder" => $this->intl->t("Enter the genre’s name."),
+      ->addElement(new InputText($this->diContainerHTTP, "name", $nameLabel, $this->entity->name, [
         "autofocus"   => true,
         "required"    => true,
       ]))
       ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
         "data-allow-external" => "true",
-        "placeholder"         => $this->intl->t("Describe the genre."),
       ]))
-      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
-        "placeholder"         => $this->intl->t("Enter the genre’s corresponding Wikipedia link."),
-        "data-allow-external" => "true",
-      ]))
+      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia))
       ->addAction($this->intl->t("Create"), [ "class" => "btn btn-large btn-success" ])
     ;
 
     if ($this->intl->languageCode !== $this->intl->defaultLanguageCode) {
-      $defaultLanguageArg = [ "default_language" =>  $this->intl->getTranslations("languages")[$this->intl->defaultLanguageCode]->name];
+      $nameLabel = $this->intl->t("{0} ({1})", [
+        $nameLabel,
+        $this->intl->getTranslations("languages")[$this->intl->defaultLanguageCode]->name,
+      ]);
       $form
-        ->addElement(new InputText($this->diContainerHTTP, "default-name", $this->intl->t("Name"), $this->entity->defaultName, [
-          "#help-popup" => $this->intl->t("We always need this information in our main Language ({default_language}).", $defaultLanguageArg),
-          "placeholder" => $this->intl->t("Enter the genre’s name."),
+        ->addElement(new InputText($this->diContainerHTTP, "default-name", $nameLabel, $this->entity->defaultName, [
           "autofocus"   => true,
           "required"    => true,
         ]))
-        ->init([ $this, "valid" ])
+        ->init([ $this, "submit" ])
       ;
       return
         $form->open() .
@@ -101,8 +97,8 @@ final class Create extends \MovLib\Presentation\AbstractCreatePresenter {
    * Form submit callback.
    */
   public function submit() {
-    $this->entity->id = (new Revision($this->entity->createRevision($this->session->userId, $this->request->dateTime)))
-      ->initialCommit();
+    $this->entity->create($this->session->userId, $this->request->dateTime);
+    $this->alertSuccess($this->intl->t("Successfully Created"));
     throw new SeeOtherException($this->intl->r("/genre/{0}", $this->entity->id));
   }
 

@@ -55,7 +55,7 @@ abstract class AbstractMoviePresenter extends \MovLib\Presentation\AbstractPrese
    */
   final protected function initMoviePresenation($title = null, $pageTitle = null, $breadcrumbTitle = null) {
     if (!$this->entity) {
-      $this->entity = new Movie($this->diContainerHTTP, (integer) $_SERVER["MOVIE_ID"]);
+      $this->entity = new Movie($this->diContainerHTTP, $_SERVER["MOVIE_ID"]);
     }
     $this->schemaType            = "Movie";
     $this->headingSchemaProperty = null;

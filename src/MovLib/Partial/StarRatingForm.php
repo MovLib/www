@@ -84,7 +84,7 @@ final class StarRatingForm extends \MovLib\Core\Presentation\DependencyInjection
    * @param array $attributes [optional]
    *   Additional attributes that should be applied to the <code><form></code> tag.
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, \MovLib\Data\RatingInterface $entity, array $attributes = []) {
+  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, \MovLib\Data\Rating\RatingInterface $entity, array $attributes = []) {
     parent::__construct($diContainerHTTP);
     // @devStart
     // @codeCoverageIgnoreStart

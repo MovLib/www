@@ -33,7 +33,7 @@ use \MovLib\Partial\Sex;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Job extends \MovLib\Data\AbstractEntity implements \MovLib\Data\Revision\EntityInterface {
+class Job extends \MovLib\Data\AbstractEntity implements \MovLib\Data\Revision\EntityRevisionInterface {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

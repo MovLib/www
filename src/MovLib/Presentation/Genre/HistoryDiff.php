@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Genre;
 
 use \MovLib\Data\Genre\Genre;
+use \MovLib\Data\Genre\GenreRevision;
 use \MovLib\Data\Revision\Revision;
 use \MovLib\Exception\RedirectException\TemporaryRedirectException;
 
@@ -83,7 +84,7 @@ final class HistoryDiff extends \MovLib\Presentation\AbstractPresenter {
 
     // Now we try to instantiate the actual genre for presentation purposes. This will throw the not found exception if
     // the genre doesn't exist at all.
-    $this->entity = Genre::createFromId($this->intl, $_SERVER["GENRE_ID"]);
+    $this->entity = new Genre($this->diContainerHTTP, $_SERVER["GENRE_ID"]);
 
     // No exception, let's start configuring the presentation.
     $this->initPage(
@@ -95,16 +96,21 @@ final class HistoryDiff extends \MovLib\Presentation\AbstractPresenter {
     $this->breadcrumb->addCrumb($this->intl->r("/genres"), $this->intl->t("Genres"));
     $this->breadcrumb->addCrumb($this->intl->r("/genre/{0}"), $this->entity->name);
     $this->breadcrumb->addCrumb($historyRoute, $this->intl->t("History"));
-
-    // Now we can restore the old the revisions of the entity. Note that REVISION_OLD is always present, as it is a
-    // validated by nginx via a regular expression in the location block and the REVISION_NEW is validated at the top
-    // and either contains a revision identifier or is NULL, in which case we load the current revision of the entity.
-    $this->revision = new Revision($this->entity->getRevision());
-    $this->revision->restore($_SERVER["REVISION_OLD"], $_SERVER["REVISION_NEW"]);
   }
 
   public function getContent() {
     ob_start();
+    try {
+      // Now we can restore the old revisions of the entity. Note that REVISION_OLD is always present, as it is
+      // validated by nginx via a regular expression in the location block and the REVISION_NEW is validated in our init
+      // method and either contains a revision identifier or is NULL, in which case we automatically load the current
+      // revision of the entity.
+      $this->revision = new Revision(new GenreRevision($this->entity->id));
+      $this->revision->restore($_SERVER["REVISION_OLD"], $_SERVER["REVISION_NEW"]);
+    }
+    catch (\RangeException $e) {
+      \Krumo::dump($e);
+    }
     \Krumo::dump($this->revision);
     return ob_get_clean();
   }

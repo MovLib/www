@@ -19,8 +19,6 @@ namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Cast\CastSet;
 use \MovLib\Data\Director\DirectorSet;
-use \MovLib\Data\Movie\MovieTitleSet;
-use \MovLib\Data\Movie\MovieTaglineSet;
 use \MovLib\Partial\Country;
 use \MovLib\Partial\Duration;
 use \MovLib\Partial\Genre;

@@ -65,25 +65,27 @@ interface RevisionEntityInterface {
    * about every entity, in fact it doesn't know anything about any entity (just like in the original memento pattern,
    * the revision entity [memento] is opaque to the revision [care taker]).
    *
-   * @param \MovLib\Data\Revision\RevisionEntityInterface $oldRevision
-   *   The old revision that is being overwritten for comparison of the values and building of an efficient query.
-   * @param string $languageCode
-   *   The current ISO 639-1 language code.
+   * @param \MovLib\Core\Database\Connection $connection
+   *   The transaction connection.
+   * @param integer $oldRevisionId
+   *   The identifier of the old revision for validation, this will be compared to the identifier of the revision that
+   *   is loaded from the persistent storage.
    * @return this
    * @throws \mysqli_sql_exception
    * @throws \BadMethodCallException
    *   If nothing is to be commited a BadMethodCallException is thrown because it should be checked long before calling
    *   this method that there is actually something to commit.
    */
-  public function commit(\MovLib\Data\Revision\RevisionEntityInterface $oldRevision, $languageCode);
+  public function commit(\MovLib\Core\Database\Connection $connection, $oldRevisionId);
 
   /**
    * Initial commit of a new entity.
    *
-   * @param string $languageCode
-   *   The current ISO 639-1 language code.
-   * @return this
+   * @param \MovLib\Core\Database\Connection $connection
+   *   The transaction connection.
+   * @return integer
+   *   The unique identifier that was given by the database to the newly inserted entity.
    */
-  public function initialCommit($languageCode);
+  public function initialCommit(\MovLib\Core\Database\Connection $connection);
 
 }

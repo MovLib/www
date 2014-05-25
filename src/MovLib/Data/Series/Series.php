@@ -30,8 +30,8 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Data\RatingInterface {
-  use \MovLib\Data\RatingTrait;
+class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Data\Rating\RatingInterface {
+  use \MovLib\Data\Rating\RatingTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants

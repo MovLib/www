@@ -33,7 +33,31 @@ namespace MovLib\Data\Revision;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-interface EntityInterface {
+interface EntityRevisionInterface {
+
+  /**
+   * Commit the edited revisioned entity.
+   *
+   * @param integer $userId
+   *   The user's unique identifier who edited the entity.
+   * @param \MovLib\Component\DateTime $dateTime
+   *   The date and time the user edited the entity.
+   * @param integer $oldRevisionId
+   *   The old revision's identifier that was sent along the form when the user started editing the entity.
+   * @return this
+   */
+  public function commit($userId, \MovLib\Component\DateTime $dateTime, $oldRevisionId);
+
+  /**
+   * Create new revisioned entity.
+   *
+   * @param integer $userId
+   *   The user's unique identifier who created the entity.
+   * @param \MovLib\Component\DateTime $dateTime
+   *   The date and time the user created the entity.
+   * @return this
+   */
+  public function create($userId, \MovLib\Component\DateTime $dateTime);
 
   /**
    * Create a revision based on the current state of the entity.
@@ -45,27 +69,15 @@ interface EntityInterface {
    * @return \MovLib\Data\Revision\RevisionEntityInterface
    *   A revision based on the current state of the entity.
    */
-  public function createRevision($userId, $dateTime);
-
-  /**
-   * Get the current revision of the entity.
-   *
-   * @return \MovLib\Data\Revision\RevisionEntityInterface
-   *   The current revision of the entity.
-   */
-  public function getRevision();
+  public function createRevision($userId, \MovLib\Component\DateTime $dateTime);
 
   /**
    * Set the state of the instance based on the given revision.
    *
    * @param \MovLib\Data\Revision\RevisionEntityInterface $revisionEntity
    *   The revision containing the state that should be recreated.
-   * @param string $languageCode
-   *   The current ISO 639-1 language code.
-   * @param string $defaultLanguageCode
-   *   The default ISO 639-1 language code.
    * @return this
    */
-  public function setRevision(\MovLib\Data\Revision\RevisionEntityInterface $revisionEntity, $languageCode, $defaultLanguageCode);
+  public function setRevision(\MovLib\Data\Revision\RevisionEntityInterface $revisionEntity);
 
 }

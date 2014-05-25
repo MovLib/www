@@ -18,7 +18,6 @@
 namespace MovLib\Data\Genre;
 
 use \MovLib\Core\Database\Database;
-use \MovLib\Data\Genre\GenreRevision;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -30,7 +29,21 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Genre extends \MovLib\Data\AbstractEntity implements \MovLib\Data\Revision\EntityInterface {
+final class Genre extends \MovLib\Data\AbstractEntity implements \MovLib\Data\Revision\EntityRevisionInterface {
+  use \MovLib\Data\Revision\EntityRevisionTrait;
+
+
+  //-------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Genre";
+  // @codingStandardsIgnoreEnd
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -94,15 +107,11 @@ final class Genre extends \MovLib\Data\AbstractEntity implements \MovLib\Data\Re
    *   The genre's unique identifier to instantiate, defaults to <code>NULL</code> (no genre will be loaded).
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct($diContainer, $id = null) {
-    if ($diContainer instanceof \MovLib\Core\DIContainer) {
-      parent::__construct($diContainer);
-    }
-    else {
-      $this->intl = $diContainer;
-    }
+  public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null) {
+    parent::__construct($diContainer);
     if ($id) {
-      $stmt = $this->getMySQLi()->prepare(<<<SQL
+      $connection = Database::getConnection();
+      $stmt = $connection->prepare(<<<SQL
 SELECT
   `id`,
   `changed`,
@@ -146,55 +155,17 @@ SQL
   }
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Static Methods
-
-
-  public static function createFromId(\MovLib\Core\Intl $intl, $id) {
-    // Guard against wrong usage and return empty instance.
-    if (!$id) {
-      return new static($intl);
-    }
-    $query = <<<SQL
-SELECT
-  `id`,
-  `changed`,
-  `created`,
-  `deleted`,
-  IFNULL(
-    COLUMN_GET(`dyn_names`, '{$intl->languageCode}' AS CHAR),
-    COLUMN_GET(`dyn_names`, '{$intl->defaultLanguageCode}' AS CHAR)
-  ) AS `name`,
-  COLUMN_GET(`dyn_descriptions`, '{$intl->languageCode}' AS CHAR) AS `description`,
-  COLUMN_GET(`dyn_wikipedia`, '{$intl->languageCode}' AS CHAR) AS `wikipedia`,
-  `count_movies` AS `movieCount`,
-  `count_series` AS `seriesCount`
-FROM `genres`
-WHERE `id` = {$id}
-LIMIT 1
-SQL;
-    return Database::getConnection()->fetchObject($query, static::class, [ $intl ]);
-  }
-
-
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
    * {@inheritdoc}
+   * @param \MovLib\Data\Genre\GenreRevision $revision {@inheritdoc}
+   * @return \MovLib\Data\Genre\GenreRevision {@inheritdoc}
    */
-  public function createRevision($userId, $dateTime) {
-    // Now we can create the new revision of ourself. Note that our id property is NULL if we're a new genre, so we don't
-    // have to take care of any not found exceptions that might occur while creating the revision.
-    $revision = GenreRevision::createFromId($this->id);
-
-    // Update the just loaded revision with the new values.
-    $revision->id                                        = $dateTime->formatInteger();
-    $revision->created                                   = $dateTime;
-    $revision->deleted                                   = $this->deleted;
-    $revision->descriptions[$this->intl->languageCode]   = $this->description;
-    $revision->names[$this->intl->languageCode]          = $this->name;
-    $revision->userId                                    = $userId;
-    $revision->wikipediaLinks[$this->intl->languageCode] = $this->wikipedia;
+  protected function doCreateRevision(\MovLib\Data\Revision\RevisionEntityInterface $revision) {
+    $revision->descriptions[$this->intl->languageCode] = $this->description;
+    $revision->names[$this->intl->languageCode]        = $this->name;
 
     // Don't forget that we might be a new genre and that we might have been created via a different system locale than
     // the default one, in which case the user was required to enter a default name. Of course we have to export that
@@ -208,24 +179,18 @@ SQL;
 
   /**
    * {@inheritdoc}
+   * @param \MovLib\Data\Genre\GenreRevision $revision {@inheritdoc}
+   * @return this {@inheritdoc}
    */
-  public function getRevision() {
-    return GenreRevision::createFromId($this->id);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setRevision(\MovLib\Data\Revision\RevisionEntityInterface $revisionEntity, $languageCode, $defaultLanguageCode) {
-    $this->changed = $revisionEntity->created;
-    $this->deleted = $revisionEntity->deleted;
-    isset($revisionEntity->descriptions[$languageCode])   && ($this->description = $revisionEntity->descriptions[$languageCode]);
-    isset($revisionEntity->wikipediaLinks[$languageCode]) && ($this->wikipedia = $revisionEntity->wikipediaLinks[$languageCode]);
-    if (isset($revisionEntity->names[$languageCode])) {
-      $this->name = $revisionEntity->names[$languageCode];
+  protected function doSetRevision(\MovLib\Data\Revision\RevisionEntityInterface $revision) {
+    if (isset($revision->descriptions[$this->intl->languageCode])) {
+      $this->description = $revision->descriptions[$this->intl->languageCode];
+    }
+    if (empty($revision->names[$this->intl->languageCode])) {
+      $this->name = $revision->names[$this->intl->defaultLanguageCode];
     }
     else {
-      $this->name = $revisionEntity->names[$defaultLanguageCode];
+      $this->name = $revision->names[$this->intl->languageCode];
     }
     return $this;
   }

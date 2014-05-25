@@ -52,7 +52,7 @@ class Series extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = Genre::createFromId($this->intl, $_SERVER["GENRE_ID"]);
+    $this->entity = new Genre($this->diContainerHTTP, $_SERVER["GENRE_ID"]);
     $pageTitle    = $this->intl->t("Series related to {0}", [ $this->entity->name ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->tp(-1, "Series"))

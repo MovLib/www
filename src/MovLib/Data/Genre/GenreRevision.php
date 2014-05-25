@@ -18,6 +18,7 @@
 namespace MovLib\Data\Genre;
 
 use \MovLib\Core\Database\Database;
+use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
  * Defines the revision entity object for genre entities.
@@ -82,8 +83,51 @@ final class GenreRevision extends \MovLib\Data\Revision\AbstractRevisionEntity {
 
   /**
    * Instantiate new genre revision.
+   *
+   * @param integer $id
+   *   The genre's unique identifier to load the revision for. The default value (<code>NULL</code>) is only used for
+   *   internal purposes when loaded via <code>fetch_object()</code>.
+   * @throws \MovLib\Exception\ClientException\NotFoundException
+   *   If no genre was found for the given unique identifier.
    */
-  public function __construct() {
+  public function __construct($id = null) {
+    if ($id) {
+      $connection = Database::getConnection();
+      $stmt = $connection->prepare(<<<SQL
+SELECT
+  `genres`.`id`,
+  `revisions`.`user_id`,
+  `genres`.`changed` + 0,
+  `genres`.`deleted`,
+  COLUMN_JSON(`genres`.`dyn_descriptions`),
+  COLUMN_JSON(`genres`.`dyn_names`),
+  COLUMN_JSON(`genres`.`dyn_wikipedia`)
+FROM `genres`
+  INNER JOIN `revisions`
+    ON `revisions`.`entity_id` = `genres`.`id`
+    AND `revisions`.`id` = `genres`.`changed`
+    AND `revisions`.`revision_entity_id` = 9
+WHERE `genres`.`id` = ?
+LIMIT 1
+SQL
+      );
+      $stmt->bind_param("d", $id);
+      $stmt->execute();
+      $stmt->bind_result(
+        $this->entityId,
+        $this->userId,
+        $this->id,
+        $this->deleted,
+        $this->descriptions,
+        $this->names,
+        $this->wikipediaLinks
+      );
+      $found = $stmt->fetch();
+      $stmt->close();
+      if ($found === false) {
+        throw new NotFoundException("Couldn't find genre for {$id}.");
+      }
+    }
     if ($this->id) {
       $this->descriptions = json_decode($this->descriptions, true);
       $this->names        = json_decode($this->names, true);
@@ -103,107 +147,65 @@ final class GenreRevision extends \MovLib\Data\Revision\AbstractRevisionEntity {
   }
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Static Methods
-
-
-  /**
-   * Create new genre revision from id.
-   *
-   * @param integer $id
-   *   The genre's unique identifier.
-   * @return this
-   * @throws \MovLib\Exception\ClientException\NotFoundException
-   *   If no genre was found for <var>$id</var>.
-   */
-  public static function createFromId($id) {
-    // Answer with an empty instance if id is NULL.
-    if (!$id) {
-      return new static();
-    }
-    $query = <<<SQL
-SELECT
-  `genres`.`id` AS `entityId`,
-  `revisions`.`user_id` AS `userId`,
-  `genres`.`changed` + 0 AS `id`,
-  `genres`.`deleted` AS `deleted`,
-  COLUMN_JSON(`genres`.`dyn_descriptions`) AS `descriptions`,
-  COLUMN_JSON(`genres`.`dyn_names`) AS `names`,
-  COLUMN_JSON(`genres`.`dyn_wikipedia`) AS `wikipediaLinks`
-FROM `genres`
-  INNER JOIN `revisions`
-    ON `revisions`.`entity_id` = `genres`.`id`
-    AND `revisions`.`id` = `genres`.`changed`
-    AND `revisions`.`revision_entity_id` = 9
-WHERE `genres`.`id` = {$id}
-LIMIT 1
-SQL;
-    return Database::getConnection()->fetchObject($query, static::class);
-  }
-
-
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
    * {@inheritdoc}
    */
-  public function commit(\MovLib\Data\Revision\RevisionEntityInterface $old, $languageCode) {
-    $connection = Database::getConnection();
-
-    // Check if we should update the deletion status of the entity. Usually that's performed by a deletion request, but
-    // we might be commiting a previous revision that was recreated and the deletion status might have been set to
-    // deleted. In that case we want it to be deleted again.
-    //
-    // @todo Is this really true? Do we want to reset the deletion status just because an old revision was deleted?
-    $deleted = $old->deleted === $this->deleted ? null : "`deleted`=" . (integer) $this->deleted;
-
-    // Check all dynamic columns and build the query parts for those.
-    $dynCols = $connection->dynColBuildUpdate($languageCode, [
-      [ "descriptions", $this->descriptions, $old->descriptions ],
-      [ "names", $this->names, $old->names ],
-      [ "wikipedia", $this->wikipediaLinks, $old->wikipediaLinks ],
-    ]);
-
-    // If we have both values, append comma to the deleted part to separate them.
-    if ($deleted && $dynCols) {
-      $deleted .= ",";
-    }
-    // Nothing to commit if both values are NULL.
-    elseif (!$deleted && !$dynCols) {
-      throw new \BadMethodCallException("Nothing to commit.");
-    }
-
-    // Update the genres table with the new data, remember that we are the newest revision and that we have to update
-    // the changed datetime of the genre with our creation datetime.
-    $connection->real_query(
-      "UPDATE `genres` SET `changed` = CAST('{$this->created}' AS DATETIME), {$deleted}{$dynCols} WHERE `id` = {$this->entityId}"
-    );
-
-    return $this;
+  protected function getCommitQuery(\MovLib\Core\Database\Connection $connection) {
+    return "";
   }
 
   /**
    * {@inheritdoc}
    */
-  public function initialCommit($languageCode) {
-    $connection = Database::getConnection();
-
-    // Insert the new genre into the genres table, remember that we are the newest revision and that we have to insert
-    // the datetime for changed and created because the value has to match the value that will be inserted into the
-    // revisions table.
-    $connection->real_query(<<<SQL
-INSERT INTO `genres` SET
-  `changed` = CAST('{$this->created}' AS DATETIME),
-  `created` = CAST('{$this->created}' AS DATETIME),
-  {$connection->dynColBuildUpdate($languageCode, [
-    [ "descriptions", $this->descriptions ],
-    [ "names", $this->names ],
-    [ "wikipedia", $this->wikipediaLinks ],
-  ])}
-SQL
-    );
-
-    return $connection->insert_id;
+  protected function addInitialCommitColumns(\MovLib\Core\Database\Insert $insert) {
+    return $insert
+      ->table("genres")
+      ->dynamicColumn("descriptions", $this->descriptions)
+      ->dynamicColumn("names", $this->names)
+    ;
   }
+
+  /**
+   * {@inheritdoc}
+   */
+//  public function commit(\MovLib\Core\Database\Connection $connection, $oldRevisionId) {
+//    // We have to create an instance of the revision that is currently stored in the database.
+//    $old = new static($this->entityId);
+//
+//    // We have
+//    // Check if we should update the deletion status of the entity. Usually that's performed by a deletion request, but
+//    // we might be commiting a previous revision that was recreated and the deletion status might have been set to
+//    // deleted. In that case we want it to be deleted again.
+//    //
+//    // @todo Is this really true? Do we want to reset the deletion status just because an old revision was deleted?
+//    $deleted = $old->deleted === $this->deleted ? null : "`deleted`=" . (integer) $this->deleted;
+//
+//    // Check all dynamic columns and build the query parts for those.
+//    $dynCols = $connection->dynColBuildUpdate($languageCode, [
+//      "descriptions" => [ $this->descriptions, $old->descriptions ],
+//      "names"        => [ $this->names, $old->names ],
+//      "wikipedia"    => [ $this->wikipediaLinks, $old->wikipediaLinks ],
+//    ]);
+//
+//    // If we have both values, append comma to the deleted part to separate them.
+//    if ($deleted && $dynCols) {
+//      $deleted .= ",";
+//    }
+//    // Nothing to commit if both values are NULL.
+//    elseif (!$deleted && !$dynCols) {
+//      throw new \BadMethodCallException("Nothing to commit.");
+//    }
+//
+//    // Update the genres table with the new data, remember that we are the newest revision and that we have to update
+//    // the changed datetime of the genre with our creation datetime.
+//    $connection->real_query(
+//      "UPDATE `genres` SET `changed` = CAST('{$this->created}' AS DATETIME), {$deleted}{$dynCols} WHERE `id` = {$this->entityId}"
+//    );
+//
+//    return $this;
+//  }
 
 }

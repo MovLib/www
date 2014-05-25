@@ -60,7 +60,7 @@ final class History extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = Genre::createFromId($this->intl, $_SERVER["GENRE_ID"]);
+    $this->entity = new Genre($this->diContainerHTTP, $_SERVER["GENRE_ID"]);
     $this->initPage($this->intl->t("History of {0}", $this->entity->name), null, $this->intl->t("History"));
     $this->sidebarInitToolbox($this->entity);
     $this->breadcrumb->addCrumb($this->intl->r("/genres"), $this->intl->t("Genres"));

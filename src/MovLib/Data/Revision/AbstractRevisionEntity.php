@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\Revision;
 
+use \MovLib\Core\Database\Insert;
 use \MovLib\Component\DateTime;
 
 /**
@@ -146,6 +147,71 @@ abstract class AbstractRevisionEntity implements \MovLib\Data\Revision\RevisionE
    */
   public function __wakeup() {
     $this->created = new DateTime($this->id);
+  }
+
+
+  //-------------------------------------------------------------------------------------------------------------------- Abstract Methods
+
+
+  /**
+   *
+   */
+  abstract protected function getCommitQuery(\MovLib\Core\Database\Connection $connection);
+
+  /**
+   * Set the table and add additional columns for the inital commit.
+   *
+   * @param \MovLib\Core\Database\Insert $insert
+   *   The insert statement to set the table and add additional columns.
+   * @return \MovLib\Core\Database\Insert
+   *   The final insert statement ready for execution.
+   */
+  abstract protected function addInitialCommitColumns(\MovLib\Core\Database\Insert $insert);
+
+
+  //-------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * {@inheritdoc}
+   */
+  final public function commit(\MovLib\Core\Database\Connection $connection, $oldRevisionId) {
+    return $this->addCommitColumns((new Update($connection))
+      ->columnDateTime("changed", $this->changed)
+      ->dynamicColumn("wikipedia", $this->wikipediaLinks)
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  final public function initialCommit(\MovLib\Core\Database\Connection $connection) {
+    // Insert the entity itself first.
+    $this->entityId = $this->addInitialCommitColumns((new Insert($connection))
+      ->columnDateTime("created", $this->created)
+      ->columnDateTime("changed", $this->changed)
+      ->dynamicColumn("wikipedia", $this->wikipediaLinks)
+    )->execute();
+
+    // Create entry in the revisions table, otherwise we aren't able to list initial commits in the history nor on the
+    // user's contribution page.
+    (new Insert($connection))
+      ->table("revisions")
+      ->columnDateTime("id", $this->created)
+      ->columnNumber("entity_id", $this->entityId)
+      ->columnNumber("revision_entity_id", static::REVISION_ENTITY_ID)
+      ->columnNumber("user_id", $this->userId)
+      ->execute()
+    ;
+
+    // We have to update the user's edit count.
+    (new Update($connection))
+      ->table("users")
+      ->increment("edits")
+      ->where("id", $this->userId)
+    ;
+
+    return $this->entityId;
   }
 
 }
