@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data\Help;
 
-use \MovLib\Data\Revision;
 use \MovLib\Data\Help\Category;
 use \MovLib\Data\Help\SubCategory;
 use \MovLib\Exception\ClientException\NotFoundException;
@@ -31,18 +30,21 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Article extends \MovLib\Data\AbstractEntity {
+final class Article extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\EntityRevisionInterface {
+  use \MovLib\Core\Revision\EntityRevisionTrait;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Constants
+  //-------------------------------------------------------------------------------------------------------------------- Constants
 
 
+  // @codingStandardsIgnoreStart
   /**
-   * The entity type used to store revisions.
+   * Short class name.
    *
-   * @var int
+   * @var string
    */
-  const REVISION_ENTITY_TYPE = 11;
+  const name = "Article";
+  // @codingStandardsIgnoreEnd
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -113,30 +115,31 @@ final class Article extends \MovLib\Data\AbstractEntity {
   public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null) {
     parent::__construct($diContainer);
     if ($id) {
-      $stmt = $this->getMySQLi()->prepare(<<<SQL
+      $connection = Database::getConnection();
+      $stmt = $connection->prepare(<<<SQL
 SELECT
-  `help_articles`.`id` AS `id`,
-  `help_articles`.`help_category_id` AS `category`,
-  `help_articles`.`help_subcategory_id` AS `subCategory`,
-  `help_articles`.`changed` AS `changed`,
-  `help_articles`.`created` AS `created`,
-  `help_articles`.`deleted` AS `deleted`,
+  `id`,
+  `help_category_id`,
+  `help_subcategory_id`,
+  `changed`,
+  `created`,
+  `deleted`,
   IFNULL(
-    COLUMN_GET(`help_articles`.`dyn_texts`, ? AS CHAR),
-    COLUMN_GET(`help_articles`.`dyn_texts`, '{$this->intl->defaultLanguageCode}' AS CHAR)
-  ) AS `text`,
-  COLUMN_GET(`help_articles`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR) AS `defaultTitle`,
+    COLUMN_GET(`dyn_texts`, '{$this->intl->languageCode}' AS CHAR),
+    COLUMN_GET(`dyn_texts`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+  ),
+  COLUMN_GET(`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR),
   IFNULL(
-    COLUMN_GET(`help_articles`.`dyn_titles`, ? AS CHAR),
-    COLUMN_GET(`help_articles`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)
-  ) AS `title`,
-  `help_articles`.`view_count` as `viewCount`
+    COLUMN_GET(`dyn_titles`, '{$this->intl->languageCode}' AS CHAR),
+    COLUMN_GET(`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+  ),
+  `view_count` as `viewCount`
 FROM `help_articles`
 WHERE `id` = ?
 LIMIT 1
 SQL
       );
-      $stmt->bind_param("ssd", $this->intl->languageCode, $this->intl->languageCode, $id);
+      $stmt->bind_param("d", $id);
       $stmt->execute();
       $stmt->bind_result(
         $this->id,
@@ -166,95 +169,40 @@ SQL
 
 
   /**
-   * Update the article.
-   *
-   * @return this
-   * @throws \mysqli_sql_exception
+   * {@inheritdoc}
+   * @param \MovLib\Data\History\ArticleRevision $revision {@inheritdoc}
+   * @return \MovLib\Data\History\ArticleRevision {@inheritdoc}
    */
-  public function commit() {
-    $stmt = $this->getMySQLi()->prepare(<<<SQL
-UPDATE `help_articles` SET
-  `dyn_texts`  = COLUMN_ADD(`dyn_texts`, '{$this->intl->languageCode}', ?),
-  `dyn_titles` = COLUMN_ADD(`dyn_titles`, '{$this->intl->languageCode}', ?)
-WHERE `id` = {$this->id}
-SQL
-    );
-    $stmt->bind_param(
-      "ss",
-      $this->text,
-      $this->title
-    );
-    $stmt->execute();
-    $stmt->close();
-    return $this;
+  protected function doCreateRevision(\MovLib\Data\Revision\RevisionEntityInterface $revision) {
+    $revision->texts[$this->intl->languageCode]  = $this->text;
+    $revision->titles[$this->intl->languageCode] = $this->title;
+
+    // Don't forget that we might be a new genre and that we might have been created via a different system locale than
+    // the default one, in which case the user was required to enter a default name. Of course we have to export that
+    // as well to our revision.
+    if (isset($this->defaultTitle)) {
+      $revision->titles[$this->intl->defaultLanguageCode] = $this->defaultTitle;
+    }
+
+    return $revision;
   }
 
   /**
-   * Create new help article.
-   *
-   * @return this
-   * @throws \mysqli_sql_exception
+   * {@inheritdoc}
+   * @param \MovLib\Data\Genre\GenreRevision $revision {@inheritdoc}
+   * @return this {@inheritdoc}
    */
-  public function create() {
-    $subCategory = isset($this->subCategory)? $this->subCategory->id : null;
-
-    $mysqli = $this->getMySQLi();
-
-    if ($this->intl->languageCode === $this->intl->defaultLanguageCode) {
-      $stmt = $mysqli->prepare(<<<SQL
-INSERT INTO `help_articles` (
-  `help_category_id`,
-  `help_subcategory_id`,
-  `dyn_titles`,
-  `dyn_texts`
-) VALUES (
-  ?,
-  ?,
-  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
-  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?)
-);
-SQL
-      );
-      $stmt->bind_param(
-        "ddss",
-        $this->category->id,
-        $subCategory,
-        $this->title,
-        $this->text
-      );
+  protected function doSetRevision(\MovLib\Data\Revision\RevisionEntityInterface $revision) {
+    if (isset($revision->texts[$this->intl->languageCode])) {
+      $this->text = $revision->texts[$this->intl->languageCode];
+    }
+    if (empty($revision->titles[$this->intl->languageCode])) {
+      $this->title = $revision->titles[$this->intl->defaultLanguageCode];
     }
     else {
-      $stmt = $mysqli->prepare(<<<SQL
-INSERT INTO `help_articles` (
-  `help_category_id`,
-  `help_subcategory_id`,
-  `dyn_titles`,
-  `dyn_texts`
-) VALUES (
-  ?,
-  ?,
-  COLUMN_CREATE(
-    '{$this->intl->defaultLanguageCode}', ?,
-    '{$this->intl->languageCode}', ?
-  ),
-  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?)
-);
-SQL
-      );
-      $stmt->bind_param(
-        "ddsss",
-        $this->category->id,
-        $subCategory,
-        $this->defaultTitle,
-        $this->title,
-        $this->text
-      );
+      $this->title = $revision->titles[$this->intl->languageCode];
     }
-
-    $stmt->execute();
-    $this->id = $stmt->insert_id;
-
-    return $this->init();
+    return $this;
   }
 
   /**
