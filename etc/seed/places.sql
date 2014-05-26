@@ -41,6 +41,8 @@ TRUNCATE TABLE `places`;
 INSERT INTO `places` SET
   `id`           = 97967307,
   `country_code` = 'FR',
+  `changed`      = CURRENT_TIMESTAMP,
+  `created`      = CURRENT_TIMESTAMP,
   `dyn_names`    = '',
   `name`         = 'Montbéliard (Free County)',
   `latitude`     = 47.5102368,
@@ -50,6 +52,8 @@ INSERT INTO `places` SET
 INSERT IGNORE INTO `places` SET
   `id`           = 97981472,
   `country_code` = 'US',
+  `changed`      = CURRENT_TIMESTAMP,
+  `created`      = CURRENT_TIMESTAMP,
   `dyn_names`    = '',
   `name`         = 'Novi (Michigan)',
   `latitude`     = -83.4754913,
@@ -59,6 +63,8 @@ INSERT IGNORE INTO `places` SET
 INSERT INTO `places` SET
   `id`           = 2489342526,
   `country_code` = 'US',
+  `changed`      = CURRENT_TIMESTAMP,
+  `created`      = CURRENT_TIMESTAMP,
   `dyn_names`    = '',
   `name`         = 'Los Angeles (California)',
   `latitude`     = 89,

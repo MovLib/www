@@ -28,6 +28,8 @@ TRUNCATE TABLE `posters`;
 TRUNCATE TABLE `display_posters`;
 
 INSERT INTO `posters` SET
+  `created`          = CURRENT_TIMESTAMP,
+  `changed`          = CURRENT_TIMESTAMP,
   `movie_id`         = 2,
   `uploader_id`      = 1,
   `cache_buster`     = UNHEX('6895875de2743ece69cdb0572fa81cab'),

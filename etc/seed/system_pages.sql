@@ -31,6 +31,8 @@ TRUNCATE TABLE `system_pages`;
 -- Contact
 
 INSERT INTO `system_pages` SET
+  `created`    = CURRENT_TIMESTAMP,
+  `changed`    = CURRENT_TIMESTAMP,
   `dyn_titles` = COLUMN_CREATE(
     'en', 'Contact',
     'de', 'Kontakt'
@@ -44,6 +46,8 @@ INSERT INTO `system_pages` SET
 -- About Us
 
 INSERT INTO `system_pages` SET
+  `created`    = CURRENT_TIMESTAMP,
+  `changed`    = CURRENT_TIMESTAMP,
   `dyn_titles` = COLUMN_CREATE(
     'en', 'About MovLib',
     'de', 'Über MovLib'
@@ -57,6 +61,8 @@ INSERT INTO `system_pages` SET
 -- Team
 
 INSERT INTO `system_pages` SET
+  `created`    = CURRENT_TIMESTAMP,
+  `changed`    = CURRENT_TIMESTAMP,
   `dyn_titles` = COLUMN_CREATE(
     'en', 'Team',
     'de', 'Team'
@@ -70,6 +76,8 @@ INSERT INTO `system_pages` SET
 -- Privacy Policy
 
 INSERT INTO `system_pages` SET
+  `created`    = CURRENT_TIMESTAMP,
+  `changed`    = CURRENT_TIMESTAMP,
   `dyn_titles` = COLUMN_CREATE(
     'en', 'Privacy Policy',
     'de', 'Datenschutzerklärung'
@@ -83,6 +91,8 @@ INSERT INTO `system_pages` SET
 -- Terms of Use
 
 INSERT INTO `system_pages` SET
+  `created`    = CURRENT_TIMESTAMP,
+  `changed`    = CURRENT_TIMESTAMP,
   `dyn_titles` = COLUMN_CREATE(
     'en', 'Terms of Use',
     'de', 'Nutzungsbedingungen'
@@ -96,6 +106,8 @@ INSERT INTO `system_pages` SET
 -- Impressum
 
 INSERT INTO `system_pages` SET
+  `created`    = CURRENT_TIMESTAMP,
+  `changed`    = CURRENT_TIMESTAMP,
   `dyn_titles` = COLUMN_CREATE(
     'en', 'Impressum',
     'de', 'Impressum'
@@ -109,6 +121,8 @@ INSERT INTO `system_pages` SET
 -- Articles of Association
 
 INSERT INTO `system_pages` SET
+  `created`    = CURRENT_TIMESTAMP,
+  `changed`    = CURRENT_TIMESTAMP,
   `dyn_titles` = COLUMN_CREATE(
     'en', 'Articles of Association',
     'de', 'Vereinsstatuten'

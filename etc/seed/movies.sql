@@ -33,6 +33,7 @@ TRUNCATE TABLE `persons`;
 
 INSERT INTO `movies` SET
   `created`       = '2013-11-28 15:13:42',
+  `changed`       = '2013-11-28 15:13:42',
   `year`          = 1888,
   `runtime`       = 60, -- 1 minute
   `dyn_synopses`  = COLUMN_CREATE(
@@ -64,6 +65,8 @@ INSERT INTO `movies_languages` SET `movie_id` = @roundhay_garden_scene_id, `lang
 INSERT INTO `movies_genres` SET `movie_id` = @roundhay_garden_scene_id, `genre_id` = (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Short Film' LIMIT 1);
 
 INSERT INTO `persons` SET
+  `created`                = CURRENT_TIMESTAMP,
+  `changed`                = CURRENT_TIMESTAMP,
   `name`                   = 'Louis Le Prince',
   `born_name`              = 'Louis Aimé Augustin Le Prince',
   `birthdate`              = '1841-08-28',
@@ -88,6 +91,8 @@ SET @louis_le_prince_id = LAST_INSERT_ID();
 INSERT INTO `movies_crew` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @louis_le_prince_id, `job_id` = 2, `dyn_role` = '';
 
 INSERT INTO `persons` SET
+  `created`                = CURRENT_TIMESTAMP,
+  `changed`                = CURRENT_TIMESTAMP,
   `name`                   = 'Harriet Hartley',
   `dyn_biographies`        = '',
   `dyn_wikipedia`          = '',
@@ -97,6 +102,8 @@ SET @harriet_hartley_id = LAST_INSERT_ID();
 INSERT INTO `movies_crew` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @harriet_hartley_id, `job_id` = 1, `dyn_role` = '';
 
 INSERT INTO `persons` SET
+  `created`                = CURRENT_TIMESTAMP,
+  `changed`                = CURRENT_TIMESTAMP,
   `name`                   = 'Adolphe Le Prince',
   `dyn_biographies`        = '',
   `dyn_wikipedia`          = '',
@@ -106,6 +113,8 @@ SET @adolphe_le_prince_id = LAST_INSERT_ID();
 INSERT INTO `movies_crew` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @adolphe_le_prince_id, `job_id` = 1, `dyn_role` = '', `role_id` = @adolphe_le_prince_id;
 
 INSERT INTO `persons` SET
+  `created`                = CURRENT_TIMESTAMP,
+  `changed`                = CURRENT_TIMESTAMP,
   `name`                   = 'Joseph Whitley',
   `dyn_biographies`        = '',
   `dyn_wikipedia`          = '',
@@ -115,6 +124,8 @@ SET @joseph_whitley_id = LAST_INSERT_ID();
 INSERT INTO `movies_crew` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @joseph_whitley_id, `job_id` = 1, `dyn_role` = '', `role_id` = @joseph_whitley_id;
 
 INSERT INTO `persons` SET
+  `created`                = CURRENT_TIMESTAMP,
+  `changed`                = CURRENT_TIMESTAMP,
   `name`                   = 'Sarah Whitley',
   `born_name`              = 'Sarah Robinson',
   /*`birthdate`       = '1816-00-00',*/
@@ -134,6 +145,7 @@ INSERT INTO `movies_crew` SET `movie_id` = @roundhay_garden_scene_id, `person_id
 
 INSERT INTO `movies` SET
   `created`       = '2013-11-29 14:01:56',
+  `changed`       = '2013-11-29 14:01:56',
   `year`          = 2008,
   `runtime`       = 600, -- 10 minutes
   `dyn_synopses`  = COLUMN_CREATE(
@@ -174,6 +186,8 @@ INSERT INTO `movies_display_taglines` (`movie_id`, `tagline_id`, `language_code`
 ;
 
 INSERT INTO `persons` SET
+  `created`                = CURRENT_TIMESTAMP,
+  `changed`                = CURRENT_TIMESTAMP,
   `name`                   = 'Sacha Goedegebure',
   `dyn_biographies`        = '',
   `dyn_wikipedia`          = '',
@@ -184,7 +198,7 @@ INSERT INTO `persons` SET
   `image_extension`        = 'jpg',
   `dyn_image_descriptions` = '',
   `image_styles`           = 'a:2:{s:2:"s1";O:28:"MovLib\\Data\\Image\\ImageStyle":3:{s:6:"height";i:60;s:6:"effect";O:29:"MovLib\\Data\\Image\\ImageEffect":5:{s:4:"crop";b:0;s:6:"filter";s:7:"Lanczos";s:6:"height";N;s:7:"quality";i:80;s:5:"width";i:60;}s:5:"width";i:60;}s:2:"s2";O:28:"MovLib\\Data\\Image\\ImageStyle":3:{s:6:"height";i:140;s:6:"effect";O:29:"MovLib\\Data\\Image\\ImageEffect":5:{s:4:"crop";b:0;s:6:"filter";s:7:"Lanczos";s:6:"height";N;s:7:"quality";i:80;s:5:"width";i:140;}s:5:"width";i:140;}}',
-  `image_uploader_id`          = 1
+  `image_uploader_id`      = 1
 ;
 
 SET @sacha_goedegebure_id = LAST_INSERT_ID();
@@ -203,6 +217,8 @@ INSERT INTO `movies_genres` SET `movie_id` = @big_buck_bunny_id, `genre_id` = (S
 -- START "The Shawshank Redemption"
 
 INSERT INTO `movies` SET
+  `created`       = CURRENT_TIMESTAMP,
+  `changed`       = CURRENT_TIMESTAMP,
   `runtime`       = 8520, -- 142 minutes
   `year`          = 1994,
   `dyn_synopses`  = '',
@@ -255,6 +271,8 @@ INSERT INTO `movies_display_taglines` SET
 ;
 
 INSERT INTO `persons` SET
+  `created`                = CURRENT_TIMESTAMP,
+  `changed`                = CURRENT_TIMESTAMP,
   `name`                   = 'Frank Darabont',
   `birthdate`              = '1959-01-28',
   `birthplace_id`          = 97967307,
@@ -273,6 +291,8 @@ INSERT INTO `movies_crew` SET
 ;
 
 INSERT INTO `persons` SET
+  `created`                = CURRENT_TIMESTAMP,
+  `changed`                = CURRENT_TIMESTAMP,
   `name`                   = 'Morgan Freeman',
   `birthdate`              = '1937-06-01',
   `sex`                    = 1,
@@ -321,6 +341,8 @@ INSERT INTO `movies_genres` SET `movie_id` = @the_shawshank_redemption_id, `genr
 -- START "Ichi the Killer"
 
 INSERT INTO `movies` SET
+  `created`       = CURRENT_TIMESTAMP,
+  `changed`       = CURRENT_TIMESTAMP,
   `runtime`       = 7740, -- 192 minutes
   `year`          = 2001,
   `dyn_synopses`  = '',

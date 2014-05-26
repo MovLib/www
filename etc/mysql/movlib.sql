@@ -12,10 +12,10 @@ USE `movlib` ;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The movie’s unique ID.',
-  `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the movie was last changed.',
+  `changed` DATETIME NOT NULL COMMENT 'The date and time the movie was last changed.',
   `count_awards` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s total number of awards.',
   `count_releases` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s total number of releases.',
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the movie was created.',
+  `created` DATETIME NOT NULL COMMENT 'The date and time the movie was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether the movie is marked as deleted (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_synopses` BLOB NOT NULL COMMENT 'The synopsis of the movie in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_wikipedia` BLOB NOT NULL COMMENT 'The movie’s translated Wikipedia links.',
@@ -129,8 +129,8 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`places` (
   `id` BIGINT UNSIGNED NOT NULL COMMENT 'The place’s unique OpenStreetMap node ID.',
-  `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the place was last changed.',
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `changed` DATETIME NOT NULL COMMENT 'The date and time the place was last changed.',
+  `created` DATETIME NOT NULL,
   `country_code` CHAR(2) NOT NULL COMMENT 'The place’s ISO alpha-2 country code.',
   `dyn_names` BLOB NOT NULL COMMENT 'The place’s translated name.',
   `latitude` FLOAT NOT NULL COMMENT 'The place’s latitude.',
@@ -159,12 +159,12 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`persons` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The person’s unique ID.',
-  `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the person was last changed.',
+  `changed` DATETIME NOT NULL COMMENT 'The date and time the person was last changed.',
   `count_awards` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The person’s total number of awards.',
   `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The person’s total number of movie participations.',
   `count_releases` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The person’s total number of release participations.',
   `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The person’s total number of series participations.',
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the person was created.',
+  `created` DATETIME NOT NULL COMMENT 'The date and time the person was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this person is marked as deleted (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_biographies` BLOB NOT NULL COMMENT 'The person’s biography in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_wikipedia` BLOB NOT NULL COMMENT 'The person\'s Wikipedia link in various languages. The language code serves as key.',
@@ -224,10 +224,10 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`jobs` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The job’s unique ID.',
-  `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the job was last changed.',
+  `changed` DATETIME NOT NULL COMMENT 'The date and time the job was last changed.',
   `count_companies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The job’s total number of companies.',
   `count_persons` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The job’s total number of persons.',
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the job was created.',
+  `created` DATETIME NOT NULL COMMENT 'The date and time the job was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the job was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The job’s description in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_titles_sex0` BLOB NOT NULL COMMENT 'The job’s unisex title in various languages. Keys are ISO alpha-2 language codes.',
@@ -247,12 +247,12 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`companies` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The company’s unique ID.',
-  `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the company was last changed.',
+  `changed` DATETIME NOT NULL COMMENT 'The date and time the company was last changed.',
   `count_awards` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The company’s total number of awards.',
   `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The company’s total number of movie participations.',
   `count_releases` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The company’s total number of release participations.',
   `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The company’s total number of series participations.',
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the company was created.',
+  `created` DATETIME NOT NULL COMMENT 'The date and time the company was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the company was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The company’s translated descriptions.',
   `dyn_wikipedia` BLOB NOT NULL COMMENT 'The company’s translated Wikipedia links.',
@@ -315,8 +315,6 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_crew` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The crew’s unique ID within the movie.',
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `job_id` BIGINT UNSIGNED NOT NULL COMMENT 'The job’s unique identifier. Several important jobs have fixed identifiers.\n1: Acting\n2: Direction\n3: Production\n4: Screenwriting',
-  `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the movie crew entry was last changed.',
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the movie crew entry was created.',
   `dyn_role` BLOB NOT NULL COMMENT 'The translated role names (if role_id is null) for cast jobs.',
   `weight` SMALLINT NOT NULL DEFAULT 0 COMMENT 'The weight (display order) of the movie’s crew. Default is 0.',
   `alias_id` BIGINT NULL COMMENT 'The person’s alias identifier.',
@@ -441,14 +439,14 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`awards` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The award’s unique ID.',
-  `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the award was last changed.',
+  `changed` DATETIME NOT NULL COMMENT 'The date and time the award was last changed.',
   `count_companies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of companies.',
   `count_categories` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of categories.',
   `count_events` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of events.',
   `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of movie participations.',
   `count_persons` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of persons.',
   `count_series` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The award’s total number of series participations.',
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the award was created.',
+  `created` DATETIME NOT NULL COMMENT 'The date and time the award was created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the award was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The award’s description in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_image_descriptions` BLOB NOT NULL COMMENT 'The award’s translated logo description.',
@@ -479,8 +477,8 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`awards_categories` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The award category’s unique ID.',
   `award_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award’s unique ID.',
-  `changed` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The timestamp on which this category was changed.',
-  `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The timestamp on which this category was created.',
+  `changed` TIMESTAMP NOT NULL COMMENT 'The timestamp on which this category was changed.',
+  `created` TIMESTAMP NOT NULL COMMENT 'The timestamp on which this category was created.',
   `count_companies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The category’s total number of companies.',
   `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The category’s total number of movie participations.',
   `count_persons` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The category’s total number of persons.',
@@ -511,8 +509,8 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`events` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The event’s unique ID.',
   `award_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award’s unique ID.',
-  `changed` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The timestamp on which this event was changed.',
-  `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The timestamp on which this event was created.',
+  `changed` TIMESTAMP NOT NULL COMMENT 'The timestamp on which this event was changed.',
+  `created` TIMESTAMP NOT NULL COMMENT 'The timestamp on which this event was created.',
   `count_companies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The event’s total number of companies.',
   `count_movies` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The event’s total number of movie participations.',
   `count_persons` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The event’s total number of persons.',
@@ -557,8 +555,6 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_awards` (
   `event_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award event’s unique ID.',
   `company_id` BIGINT UNSIGNED NULL COMMENT 'The company’s unique ID (who received the award).',
   `person_id` BIGINT UNSIGNED NULL COMMENT 'The person’s unique ID (who received the award).',
-  `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the movie award entry was last changed.',
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the movie award entry was created.',
   `won` TINYINT NOT NULL DEFAULT 0 COMMENT 'The flag that determines whether this award has been won (TRUE(1)) or not (FALSE(0), default is FALSE (0).',
   PRIMARY KEY (`id`),
   INDEX `fk_movies_awards_movies` (`movie_id` ASC),
@@ -688,8 +684,8 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`series` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The unique ID of the series.',
-  `changed` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The timestamp on which this series was changed.',
-  `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The timestamp on which this series was created.',
+  `changed` DATETIME NOT NULL COMMENT 'The timestamp on which this series was changed.',
+  `created` DATETIME NOT NULL COMMENT 'The timestamp on which this series was created.',
   `count_awards` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The series’ total number of awards.',
   `count_releases` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The series’ total number of releases.',
   `count_seasons` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The series’ total number of seasons.',
@@ -743,7 +739,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`series_episodes` (
   `season_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season’s number this episode belongs to.',
   `position` SMALLINT UNSIGNED NOT NULL COMMENT 'The episode’s chronological position within the season.',
   `count_releases` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The episode’s total number of releases.',
-  `created` TIMESTAMP NOT NULL COMMENT 'The creation date of the episode as timestamp.',
+  `created` DATETIME NOT NULL COMMENT 'The creation date of the episode as timestamp.',
+  `changed` DATETIME NOT NULL,
   `original_title` BLOB NOT NULL COMMENT 'The episode’s original title.',
   `original_title_language_code` CHAR(2) NOT NULL COMMENT 'The episode’s original title ISO alpha-2 language code.',
   `episode_number` TINYTEXT NULL COMMENT 'The episodes number within the season (e.g. 01, but also 0102 if it contains two episodes).',
@@ -836,8 +833,8 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`releases` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The release’s unique identifier.',
-  `changed` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The release’s last update date and time.',
-  `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The release’s insert date and time.',
+  `changed` TIMESTAMP NOT NULL COMMENT 'The release’s last update date and time.',
+  `created` TIMESTAMP NOT NULL COMMENT 'The release’s insert date and time.',
   `country_code` CHAR(2) NOT NULL COMMENT 'The release’s ISO alpha-2 country code.',
   `deleted` TINYINT(1) NOT NULL DEFAULT FALSE COMMENT 'The release’s deleted flag.',
   `dyn_notes` BLOB NOT NULL COMMENT 'The release’s notes in various languages. Keys are ISO alpha-2 language codes.',
@@ -1202,8 +1199,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`help_articles` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The help’s unique identifier.',
   `help_category_id` TINYINT UNSIGNED NOT NULL COMMENT 'The help category’s unique identifier.',
   `help_subcategory_id` INT UNSIGNED NULL COMMENT 'The help subcategory’s unique identifier.',
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The timestamp on which this help article was created.',
-  `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The timestamp on which this help article was changed.',
+  `created` DATETIME NOT NULL COMMENT 'The timestamp on which this help article was created.',
+  `changed` DATETIME NOT NULL COMMENT 'The timestamp on which this help article was changed.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the help article was deleted or not.',
   `dyn_texts` BLOB NOT NULL COMMENT 'The help article’s text in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_titles` BLOB NOT NULL COMMENT 'The help article’s title in various languages. Keys are ISO alpha-2 language codes.',
@@ -1233,8 +1230,8 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`system_pages` (
   `id` SMALLINT NOT NULL AUTO_INCREMENT COMMENT 'The page’s unique identifier.',
-  `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The creation date of the page as timestamp.',
+  `changed` DATETIME NOT NULL,
+  `created` DATETIME NOT NULL COMMENT 'The creation date of the page as timestamp.',
   `dyn_titles` BLOB NOT NULL COMMENT 'Thepage’s text in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_texts` BLOB NOT NULL COMMENT 'The help’s title in various languages. Keys are ISO alpha-2 language codes.',
   PRIMARY KEY (`id`))
@@ -1278,8 +1275,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`posters` (
   `uploader_id` BIGINT UNSIGNED NOT NULL COMMENT 'The poster’s unique uploader’s identifier.',
   `deletion_request_id` BIGINT UNSIGNED NULL COMMENT 'The poster’s deletion request identifier.',
   `cache_buster` BINARY(16) NOT NULL COMMENT 'The poster’s MD5 cache buster.',
-  `changed` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The date and time the poster was last changed.',
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The date and time the poster was last created.',
+  `changed` DATETIME NOT NULL COMMENT 'The date and time the poster was last changed.',
+  `created` DATETIME NOT NULL COMMENT 'The date and time the poster was last created.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The poster’s deletion flag.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The poster’s translated descriptions.',
   `extension` CHAR(3) CHARACTER SET 'ascii' NOT NULL DEFAULT 'jpg' COMMENT 'The poster’s image extension.',
