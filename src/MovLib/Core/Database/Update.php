@@ -26,7 +26,7 @@ namespace MovLib\Core\Database;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Update extends AbstractCondition {
+final class Update extends AbstractQuery {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -60,8 +60,7 @@ final class Update extends AbstractCondition {
    * {@inheritdoc}
    */
   public function __toString() {
-    $alias = $this->tableAlias ? " AS `{$this->tableAlias}`" : null;
-    return "UPDATE `{$this->table}`{$alias} SET {$this->setClause}{$this->conditions}";
+    return "UPDATE `{$this->tableName}`{$this->tableAlias} SET {$this->setClause}{$this->conditions}";
   }
 
 
@@ -81,7 +80,7 @@ final class Update extends AbstractCondition {
    *   The column's placeholder, defaults to <code>"?"</code>.
    * @return this
    */
-  public function addField($name, $type, $value, $placeholder = "?") {
+  public function set($name, $type, $value, $placeholder = "?") {
     $this->setClause && ($this->setClause .= ", ");
     $this->setClause .= "{$this->sanitizeFieldName($name)} = {$placeholder}";
     $this->types     .= $type;
@@ -98,7 +97,7 @@ final class Update extends AbstractCondition {
    *   The amount to substract, defaults to <code>1</code>.
    * @return this
    */
-  public function decrementField($name, $substract = 1) {
+  public function decrement($name, $substract = 1) {
     return $this->addField($name, "i", $substract, "({$this->sanitizeFieldName($name)} - ?)");
   }
 
@@ -111,7 +110,7 @@ final class Update extends AbstractCondition {
    *   The amount to add, defaults to <code>1</code>.
    * @return this
    */
-  public function incrementField($name, $add = 1) {
+  public function increment($name, $add = 1) {
     return $this->addField($name, "i", $add, "({$this->sanitizeFieldName($name)} + ?)");
   }
 
@@ -124,7 +123,7 @@ final class Update extends AbstractCondition {
   public function execute() {
     $stmt = $this->connection->prepare($this);
     // @codingStandardsIgnoreStart
-    $stmt->bind_param($this->types, ...$this->values);
+    $this->values && $stmt->bind_param($this->types, ...$this->values);
     // @codingStandardsIgnoreEnd
     $stmt->execute();
     // @codingStandardsIgnoreStart
@@ -132,6 +131,13 @@ final class Update extends AbstractCondition {
     // @codingStandardsIgnoreEnd
     $stmt->close();
     return $affectedRows;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function table($name, $alias = null) {
+    return parent::table($name, $alias);
   }
 
 }

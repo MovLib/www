@@ -26,7 +26,7 @@ namespace MovLib\Core\Database;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractCondition extends AbstractQuery {
+class Condition {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -38,7 +38,7 @@ abstract class AbstractCondition extends AbstractQuery {
    *
    * @var string
    */
-  const name = "AbstractCondition";
+  const name = "Condition";
   // @codingStandardsIgnoreEnd
 
 
@@ -70,13 +70,17 @@ abstract class AbstractCondition extends AbstractQuery {
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
-  public function where($fieldName, $value, $operator = null, $conjunction = "AND") {
+  protected function buildCondition($fieldName, $operator, $conjunction, $clause) {
+
+  }
+
+  public function condition($fieldName, $value, $operator = null, $conjunction = "AND") {
+    $placeholder = null;
     if (is_array($value)) {
       !$operator && ($operator = "IN");
-      $placeholder = null;
       foreach ($value as $v) {
         $placeholder && ($placeholder .= ", ");
-        $placeholder .= $this->setValue($value);
+        $placeholder .= $this->setValue($v);
       }
       $placeholder = "({$placeholder})";
     }
@@ -104,7 +108,7 @@ abstract class AbstractCondition extends AbstractQuery {
    *   The field values.
    * @return this
    */
-  public function whereCustom($snippet, $types, array $values) {
+  public function customCondition($snippet, $types, array $values) {
     // We have to empty any previously set conditions.
     $this->conditions = " WHERE {$snippet}";
     $this->types      = $types;

@@ -17,9 +17,10 @@
  */
 namespace MovLib\Core\Revision;
 
+use \MovLib\Component\DateTime;
 use \MovLib\Core\Database\Database;
 use \MovLib\Core\Database\Insert;
-use \MovLib\Component\DateTime;
+use \MovLib\Core\Database\Update;
 
 /**
  * Defines the base object for revisioned database entities.
@@ -31,6 +32,19 @@ use \MovLib\Component\DateTime;
  * @since 0.0.1-dev
  */
 abstract class AbstractRevision implements RevisionInterface {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractRevision";
+  // @codingStandardsIgnoreEnd
 
 
   //-------------------------------------------------------------------------------------------------------------------- Properties
@@ -111,7 +125,7 @@ abstract class AbstractRevision implements RevisionInterface {
    *
    * @var array
    */
-  public $wikipediaLinks;
+  public $wikipediaLinks = [];
 
 
   //-------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -139,7 +153,7 @@ abstract class AbstractRevision implements RevisionInterface {
       $this->created        = new DateTime($this->id);
       $this->deleted        = (boolean) $this->deleted;
       $this->userId         = (integer) $this->userId;
-      $this->wikipediaLinks = json_decode($this->wikipediaLinks, true);
+      $this->wikipediaLinks === (array) $this->wikipediaLinks || ($this->wikipediaLinks = json_decode($this->wikipediaLinks, true));
     }
   }
 
@@ -242,9 +256,9 @@ abstract class AbstractRevision implements RevisionInterface {
    * {@inheritdoc}
    */
   final public function commit(\MovLib\Core\Database\Connection $connection, $oldRevisionId) {
-    return $this->addCommitColumns((new Update($connection))
-      ->dateTimeField("changed", $this->changed)
-      ->dynamicField("wikipedia", $this->wikipediaLinks)
+    return $this->addCommitFields((new Update($connection))
+      ->set("changed", $this->changed)
+      ->set("wikipedia", $this->wikipediaLinks)
     );
   }
 
@@ -256,11 +270,10 @@ abstract class AbstractRevision implements RevisionInterface {
     $this->preCreate($connection);
 
     // Insert the entity itself and be sure to store the unique identifier that was assigned to it.
-    $this->entityId = $this->addCreateFields((new Insert($connection))
-      ->table($this->tableName)
-      ->dateTimeField("created", $this->created)
-      ->dateTimeField("changed", $this->changed)
-      ->dynamicField("wikipedia", $this->wikipediaLinks)
+    $this->entityId = $this->addCreateFields((new Insert($connection, $this->tableName))
+      ->set("created", $this->created)
+      ->set("changed", $this->created)
+      ->set("wikipedia", $this->wikipediaLinks)
     )->execute();
 
     // Allow the concrete revision entity to perform work after the actual revision was created.
@@ -268,21 +281,19 @@ abstract class AbstractRevision implements RevisionInterface {
 
     // Create entry in the revisions table, otherwise we aren't able to list initial commits in the history nor on the
     // user's contribution page.
-    (new Insert($connection))
-      ->table("revisions")
-      ->columnDateTime("id", $this->created)
-      ->numberField("entity_id", $this->entityId)
-      ->numberField("revision_entity_id", static::REVISION_ENTITY_ID)
-      ->numberField("user_id", $this->userId)
+    (new Insert($connection, "revisions"))
+      ->set("id", $this->created)
+      ->set("entity_id", $this->entityId)
+      ->set("revision_entity_id", static::REVISION_ENTITY_ID)
+      ->set("user_id", $this->userId)
       ->execute()
     ;
 
     // We have to update the user's edit count.
-    (new Update($connection))
-      ->table("users")
-      ->incrementField("edits")
-      ->condition("id", $this->userId)
-    ;
+//    (new Update($connection, "users"))
+//      ->increment("edits")
+//      ->condition("id", $this->userId)
+//    ;
 
     // We have to return the entity's new unique identifier because the concrete entity doesn't know it's identifier
     // yet, remember that the identifier is assigned by the database table's auto increment field.

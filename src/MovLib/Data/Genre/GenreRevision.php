@@ -63,14 +63,14 @@ final class GenreRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $names;
+  public $names = [];
 
   /**
    * Associative array containing all the genre's localized descriptions, keyed by ISO 639-1 language code.
    *
    * @var array
    */
-  public $descriptions;
+  public $descriptions = [];
 
   /**
    * {@inheritdoc}
@@ -134,10 +134,10 @@ SQL
       }
     }
     if ($this->id) {
-      $this->descriptions = json_decode($this->descriptions, true);
-      $this->names        = json_decode($this->names, true);
+      $this->descriptions === (array) $this->descriptions || ($this->descriptions = json_decode($this->descriptions, true));
+      $this->names === (array) $this->names || ($this->names = json_decode($this->names, true));
       parent::__construct();
-    }
+    }als
   }
 
   /**
@@ -160,8 +160,8 @@ SQL
    */
   protected function addCommitFields(\MovLib\Core\Database\Update $update) {
     return $update
-      ->dynamicField("descriptions", $this->descriptions)
-      ->dynamicField("names", $this->names)
+      ->set("descriptions", $this->descriptions)
+      ->set("names", $this->names)
     ;
   }
 
@@ -170,8 +170,8 @@ SQL
    */
   protected function addCreateFields(\MovLib\Core\Database\Insert $insert) {
     return $insert
-      ->dynamicField("descriptions", $this->descriptions)
-      ->dynamicField("names", $this->names)
+      ->set("descriptions", $this->descriptions)
+      ->set("names", $this->names)
     ;
   }
 

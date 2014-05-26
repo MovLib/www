@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Genre;
 
 use \MovLib\Data\Genre\Genre;
-use \MovLib\Data\Revision\RevisionCommitConflictException;
+use \MovLib\Core\Revision\CommitConflictException;
 use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputText;
@@ -90,7 +90,7 @@ final class Edit extends \MovLib\Presentation\AbstractEditPresenter {
         $this->intl->t("Seems like you haven’t changed anything, please only submit forms with changes.")
       );
     }
-    catch (RevisionCommitConflictException $e) {
+    catch (CommitConflictException $e) {
       $this->alertError(
         $this->intl->t("Conflicting Changes"),
         "<p>{$this->intl->t(

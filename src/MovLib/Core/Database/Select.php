@@ -17,8 +17,10 @@
  */
 namespace MovLib\Core\Database;
 
+use \MovLib\Exception\ClientException\NotFoundException;
+
 /**
- * @todo Description of Select
+ * Defines the select statement object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,9 +28,12 @@ namespace MovLib\Core\Database;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Select {
+final class Select extends Condition {
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
   // @codingStandardsIgnoreStart
   /**
    * Short class name.
@@ -36,17 +41,122 @@ class Select {
    * @var string
    */
   const name = "Select";
-
   // @codingStandardsIgnoreEnd
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  protected static $collations = [
+    null    => null, // Used for performance reasons.
+    "en_US" => null,
+    "de_AT" => " COLLATE utf8mb4_german2_ci",
+  ];
+
+  protected $group;
+
+  protected $limit;
+
+  protected $order;
+
+  protected $projection;
+
+  protected $results;
+
+
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
-  /**
-   *
-   */
-  public function __construct() {
 
+  /**
+   * Create new select statement.
+   *
+   * @param \MovLib\Core\Database\Connection $connection
+   *   The active database connection.
+   * @param string $tableName [optional]
+   *   The name of the table to select from, defaults to <code>NULL</code> in which case you'll have to call
+   *   {@see Select::from()}.
+   * @param string $tableAlias [optional]
+   *   The alias of the table to select from.
+   */
+  public function __construct(\MovLib\Core\Database\Connection $connection, $tableName = null, $tableAlias = null) {
+    $this->connection = $connection;
+    $tableName && $this->table($tableName, $tableAlias);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function __toString() {
+    $projection = $this->projection ?: "*";
+    return "SELECT {$projection} FROM `{$this->table}`{$this->tableAlias}{$this->conditions}{$this->group}{$this->order}{$this->limit}";
+  }
+
+
   // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Set the table to select from.
+   *
+   * @param string $tableName
+   *   The name of the table to select from.
+   * @param string $tableAlias [optional]
+   *   The alias of the table to select from, defaults to <code>NULL</code> in which case you'll have to use the full
+   *   table name or make all fields unambigous.
+   * @return this
+   */
+  public function from($tableName, $tableAlias = null) {
+    return $this->table($tableName, $tableAlias);
+  }
+
+  public function limit($offset, $limit = PHP_INT_MAX) {
+
+    return $this;
+  }
+
+  public function groupBy($field) {
+
+    return $this;
+  }
+
+  public function orderBy($fieldName, $order = "ASC", $locale = null) {
+    $this->order .= $this->order ? ", " : " ORDER BY ";
+    $this->order .= "{$this->sanitizeFieldName($fieldName)} {$order}{$this::$collations[$locale]}";
+    return $this;
+  }
+
+  public function select($fieldName, &$variable) {
+    $this->projection && ($this->projection .= ", ");
+    $this->projection .= $this->sanitizeFieldName($fieldName);
+    $this->results[] =& $variable;
+    return $this;
+  }
+
+  /**
+   * Fetch the result from the select statement.
+   *
+   * <b>NOTE</b><br>
+   * A <code>"LIMIT 1"</code> is always appended to the statement of this method.
+   *
+   * @return this
+   * @throws \MovLib\Exception\ClientException\NotFoundException
+   *   If the statement didn't return any results.
+   */
+  public function fetch() {
+    $stmt = $this->connection->prepare("{$this} LIMIT 1");
+    // @codingStandardsIgnoreStart
+    $this->values && $stmt->bind_param($this->types, ...$this->values);
+    // @codingStandardsIgnoreEnd
+    $stmt->execute();
+    // @codingStandardsIgnoreStart
+    $this->results && $stmt->bind_result(...$this->results);
+    // @codingStandardsIgnoreEnd
+    $found = $stmt->fetch();
+    $stmt->close();
+    if ($found === false) {
+      throw new NotFoundException();
+    }
+    return $this;
+  }
 
 }

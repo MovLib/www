@@ -80,6 +80,6 @@ interface OriginatorInterface {
    *   The revision containing the state that should be recreated.
    * @return this
    */
-  public function setRevision(\MovLib\Data\Revision\RevisionEntityInterface $revisionEntity);
+  public function setRevision(RevisionInterface $revisionEntity);
 
 }

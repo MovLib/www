@@ -842,7 +842,7 @@ SQL
    * @return this
    */
   public function updateUserAccess() {
-    Database::getConnection()->query("UPDATE `users` SET `access` = CURRENT_TIMESTAMP WHERE `id` = {$this->userId}");
+    Database::getConnection()->real_query("UPDATE `users` SET `access` = CURRENT_TIMESTAMP WHERE `id` = {$this->userId}");
     return $this;
   }
 

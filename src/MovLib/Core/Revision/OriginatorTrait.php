@@ -24,6 +24,11 @@ use \MovLib\Core\Database\Database;
  *
  * The trait provides default implementations for the methods required by the {@see OriginatorInterface}.
  *
+ * <b>WARNING</b><br>
+ * Do not overwrite the methods that are marked with final in this trait. Although the final keyword makes sure that the
+ * childs of your concrete class cannot overwrite them, it doesn't make sure that you cannot overwrite them. Remember
+ * that this is a trait and the methods are simply copied into your class.
+ *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -47,7 +52,7 @@ trait OriginatorTrait {
    * @return \MovLib\Data\Revision\RevisionEntityInterface
    *   The new revision with the complete state set.
    */
-  abstract protected function doCreateRevision(\MovLib\Data\Revision\RevisionEntityInterface $revision);
+  abstract protected function doCreateRevision(RevisionInterface $revision);
 
   /**
    * Continue revision setting.
@@ -59,7 +64,7 @@ trait OriginatorTrait {
    *   The revision to set with default properties already exported.
    * @return this
    */
-  abstract protected function doSetRevision(\MovLib\Data\Revision\RevisionEntityInterface $revision);
+  abstract protected function doSetRevision(RevisionInterface $revision);
 
 
   // ------------------------------------------------------------------------------------------------------------------- Hooks
@@ -76,7 +81,7 @@ trait OriginatorTrait {
    *   The old revision's identifier that was sent along the form when the user started editing the entity.
    * @return this
    */
-  protected function preCommit(\MovLib\Core\Database\Connection $connection, \MovLib\Data\Revision\RevisionEntityInterface $revision, $oldRevisionId) {
+  protected function preCommit(\MovLib\Core\Database\Connection $connection, RevisionInterface $revision, $oldRevisionId) {
     return $this;
   }
 
@@ -91,7 +96,7 @@ trait OriginatorTrait {
    *   The old revision's identifier that was sent along the form when the user started editing the entity.
    * @return this
    */
-  protected function postCommit(\MovLib\Core\Database\Connection $connection, \MovLib\Data\Revision\RevisionEntityInterface $revision, $oldRevisionId) {
+  protected function postCommit(\MovLib\Core\Database\Connection $connection, RevisionInterface $revision, $oldRevisionId) {
     return $this;
   }
 
@@ -107,7 +112,7 @@ trait OriginatorTrait {
    *   The revision entity that will be created.
    * @return this
    */
-  protected function preCreate(\MovLib\Core\Database\Connection $connection, \MovLib\Data\Revision\RevisionEntityInterface $revision) {
+  protected function preCreate(\MovLib\Core\Database\Connection $connection, RevisionInterface $revision) {
     return $this;
   }
 
@@ -120,7 +125,7 @@ trait OriginatorTrait {
    *   The revision entity that was created.
    * @return this
    */
-  protected function postCreate(\MovLib\Core\Database\Connection $connection, \MovLib\Data\Revision\RevisionEntityInterface $revision) {
+  protected function postCreate(\MovLib\Core\Database\Connection $connection, RevisionInterface $revision) {
     return $this;
   }
 
@@ -129,7 +134,7 @@ trait OriginatorTrait {
 
 
   /**
-   * @see \MovLib\Data\Revision\EntityRevisionInterface::commit()
+   * @see \MovLib\Data\Revision\EntityInterface::commit()
    */
   final public function commit($userId, \MovLib\Component\DateTime $changed, $oldRevisionId) {
     $connection = Database::getConnection();
@@ -139,8 +144,8 @@ trait OriginatorTrait {
       $revision = $this->createRevision($userId, $changed);
       $this->preCommit($connection, $revision, $oldRevisionId);
       $revision->commit($connection, $oldRevisionId);
-      $connection->commit();
       $this->postCommit($connection, $revision, $oldRevisionId);
+      $connection->commit();
     }
     catch (\Exception $e) {
       $connection->rollback();
@@ -153,7 +158,7 @@ trait OriginatorTrait {
   }
 
   /**
-   * @see \MovLib\Data\Revision\EntityRevisionInterface::create()
+   * @see \MovLib\Data\Revision\EntityInterface::create()
    */
   final public function create($userId, \MovLib\Component\DateTime $created) {
     $connection = Database::getConnection();
@@ -163,8 +168,8 @@ trait OriginatorTrait {
       $revision = $this->createRevision($userId, $created);
       $this->preCreate($connection, $revision);
       $this->id = $revision->create($connection);
-      $connection->commit();
       $this->postCreate($connection, $revision);
+      $connection->commit();
     }
     catch (\Exception $e) {
       $connection->rollback();
@@ -177,7 +182,7 @@ trait OriginatorTrait {
   }
 
   /**
-   * @see \MovLib\Data\Revision\EntityRevisionInterface::createRevision()
+   * @see \MovLib\Data\Revision\EntityInterface::createRevision()
    */
   final public function createRevision($userId, \MovLib\Component\DateTime $created) {
     // We are always able to create a revision instance from the concrete class by simply appending Revision. Also note
@@ -207,9 +212,9 @@ trait OriginatorTrait {
   }
 
   /**
-   * @see \MovLib\Data\Revision\EntityRevisionInterface::setRevision()
+   * @see \MovLib\Data\Revision\EntityInterface::setRevision()
    */
-  final public function setRevision(\MovLib\Data\Revision\RevisionEntityInterface $revision) {
+  final public function setRevision(RevisionInterface $revision) {
     // @devStart
     // @codeCoverageIgnoreStart
     $class = static::class . "Revision";
