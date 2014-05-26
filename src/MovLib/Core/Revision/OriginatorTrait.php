@@ -20,9 +20,9 @@ namespace MovLib\Core\Revision;
 use \MovLib\Core\Database\Database;
 
 /**
- * Defines the entity revision trait.
+ * Defines the originator trait.
  *
- * The trait provides default implementations for the methods required by the {@see EntityRevisionInterface}.
+ * The trait provides default implementations for the methods required by the {@see OriginatorInterface}.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -30,7 +30,7 @@ use \MovLib\Core\Database\Database;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-trait EntityRevisionTrait {
+trait OriginatorTrait {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
@@ -186,17 +186,23 @@ trait EntityRevisionTrait {
     $class    = static::class . "Revision";
     $revision = new $class($this->id);
 
-    // Update the just loaded revision with the new values that we have in absolutely every entity.
+    // Update the just loaded revision with the new values that we have in absolutely every originator.
     $revision->id      = $created->formatInteger();
     $revision->created = $created;
-    $revision->deleted = $this->deleted;
     $revision->userId  = $userId;
 
-    // The following properties are language dependent, an entity instance always contains only one language in contrast
-    // to the revision, which contains all languages.
-    $revision->wikipediaLinks[$this->intl->languageCode] = $this->wikipedia;
+    // Not all originators implement the deleted property, we still want this in this unified place for later changes
+    // because we're unsure if we really want to recreate the deletion state of an originator.
+    if (property_exists($this, "deleted")) {
+      $revision->deleted = $this->deleted;
+    }
 
-    // Let the concrete class perform more export work and the revision.
+    // Not all originators implement the wikipedia links, but 90% do, lets keep this here for ease of use.
+    if (property_exists($this, "wikipedia")) {
+      $revision->wikipediaLink[$this->intl->languageCode] = $this->wikipedia;
+    }
+
+    // Let the concrete class perform more export work on the revision.
     return $this->doCreateRevision($revision);
   }
 
@@ -208,17 +214,21 @@ trait EntityRevisionTrait {
     // @codeCoverageIgnoreStart
     $class = static::class . "Revision";
     assert($revision instanceof $class, "You can only set a revision that is of the correct type.");
-    assert($revision->entityId === $this->id, "You can only set a revision of the same entity.");
+    assert($revision->entityId === $this->id, "You can only set a revision of the same originator.");
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-    // Export all values that we have in absolutely every entity.
+    // Export all values that we have in absolutely every originator.
     $this->changed = $revision->created;
-    $this->deleted = $revision->deleted;
 
-    // The following properties are language dependent, an entity instance always contains only one language in contrast
-    // to the revision, which contains all languages.
-    if (isset($revision->wikipediaLinks[$this->intl->languageCode])) {
+    // Some originators don't have the deleted property.
+    if (property_exists($this, "deleted")) {
+      $this->deleted = $revision->deleted;
+    }
+
+    // The following properties are language dependent, an originator instance always contains only one language in
+    // contrast to the revision, which contains all languages. Not all originators implement the wikipedia links.
+    if (property_exists($this, "wikipedia") && isset($revision->wikipediaLinks[$this->intl->languageCode])) {
       $this->wikipedia = $revision->wikipediaLinks[$this->intl->languageCode];
     }
 

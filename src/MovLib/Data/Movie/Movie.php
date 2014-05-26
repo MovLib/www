@@ -31,8 +31,8 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity implements \MovLib\Data\Rating\RatingInterface, \MovLib\Core\Revision\EntityRevisionInterface {
-  use \MovLib\Core\Revision\EntityRevisionTrait;
+final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity implements \MovLib\Data\Rating\RatingInterface, \MovLib\Core\Revision\OriginatorInterface {
+  use \MovLib\Core\Revision\OriginatorTrait;
   use \MovLib\Data\Rating\RatingTrait;
 
 

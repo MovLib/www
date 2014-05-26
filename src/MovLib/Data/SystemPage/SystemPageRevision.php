@@ -31,7 +31,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class GenreRevision extends \MovLib\Core\Revision\AbstractRevisionEntity {
+final class GenreRevision extends \MovLib\Core\Revision\AbstractRevision {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

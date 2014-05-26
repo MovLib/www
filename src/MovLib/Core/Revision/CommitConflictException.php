@@ -30,4 +30,4 @@ namespace MovLib\Core\Revision;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class RevisionCommitConflictException extends \RuntimeException {}
+final class CommitConflictException extends \RuntimeException {}

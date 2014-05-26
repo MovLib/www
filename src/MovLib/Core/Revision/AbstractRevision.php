@@ -30,7 +30,7 @@ use \MovLib\Component\DateTime;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractRevisionEntity implements RevisionEntityInterface {
+abstract class AbstractRevision implements RevisionInterface {
 
 
   //-------------------------------------------------------------------------------------------------------------------- Properties

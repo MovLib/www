@@ -30,8 +30,8 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Article extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\EntityRevisionInterface {
-  use \MovLib\Core\Revision\EntityRevisionTrait;
+final class Article extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\OriginatorInterface {
+  use \MovLib\Core\Revision\OriginatorTrait;
 
 
   //-------------------------------------------------------------------------------------------------------------------- Constants

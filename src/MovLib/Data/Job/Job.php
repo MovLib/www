@@ -32,8 +32,8 @@ use \MovLib\Partial\Sex;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Job extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\EntityRevisionInterface {
-  use \MovLib\Core\Revision\EntityRevisionTrait;
+class Job extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\OriginatorInterface {
+  use \MovLib\Core\Revision\OriginatorTrait;
 
 
   //-------------------------------------------------------------------------------------------------------------------- Constants

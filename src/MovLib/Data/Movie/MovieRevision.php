@@ -26,7 +26,7 @@ namespace MovLib\Data\Movie;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class MovieRevision extends \MovLib\Data\Revision\AbstractRevisionEntity {
+final class MovieRevision extends \MovLib\Core\Revision\AbstractRevision {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -57,6 +57,11 @@ final class MovieRevision extends \MovLib\Data\Revision\AbstractRevisionEntity {
    */
   public $revisionEntityId = 1;
 
+  /**
+   * {@inheritdoc}
+   */
+  protected $tableName = "movies";
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -83,6 +88,24 @@ final class MovieRevision extends \MovLib\Data\Revision\AbstractRevisionEntity {
       $properties = array_merge(parent::__sleep(), [ "year", "titles" ]);
     }
     return $properties;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function addCommitFields(\MovLib\Core\Database\Update $update) {
+    return $update;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function addCreateFields(\MovLib\Core\Database\Insert $insert) {
+    return $insert;
   }
 
 }

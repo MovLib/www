@@ -33,7 +33,7 @@ namespace MovLib\Core\Revision;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-interface EntityRevisionInterface {
+interface OriginatorInterface {
 
   /**
    * Commit the edited revisioned entity.
