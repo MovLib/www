@@ -32,7 +32,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class GenreRevision extends \MovLib\Data\Revision\AbstractRevisionEntity {
+final class GenreRevision extends \MovLib\Core\Revision\AbstractRevisionEntity {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -164,7 +164,7 @@ SQL
     return $insert
       ->table("genres")
       ->dynamicColumn("descriptions", $this->descriptions)
-      ->dynamicColumn("names", $this->names)
+      ->dynamicField("names", $this->names)
     ;
   }
 

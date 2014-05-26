@@ -42,8 +42,8 @@ SELECT
     COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->languageCode}' AS CHAR),
     COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR)
   ) AS `name`,
-  `genres`.`count_movies` AS `movieCount`,
-  `genres`.`count_series` AS `seriesCount`
+  `genres`.`count_movies` AS `countMovies`,
+  `genres`.`count_series` AS `countSeries`
 FROM `genres`
 {$where}
 {$orderBy}

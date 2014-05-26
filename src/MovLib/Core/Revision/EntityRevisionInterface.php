@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Revision;
+namespace MovLib\Core\Revision;
 
 /**
  * Defines the interface for entities that support revisioning.

@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\Revision;
 
+use \MovLib\Core\Database\Database;
 use \MovLib\Data\User\UserSet;
 
 /**
@@ -28,7 +29,7 @@ use \MovLib\Data\User\UserSet;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class RevisionSet extends \MovLib\Core\AbstractDatabase implements \ArrayAccess, \Countable, \Iterator {
+final class RevisionSet implements \ArrayAccess, \Countable, \Iterator {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -88,7 +89,7 @@ final class RevisionSet extends \MovLib\Core\AbstractDatabase implements \ArrayA
    * {@inheritdoc}
    */
   public function getTotalCount() {
-    return (integer) $this->getMySQLi()->query(
+    return (integer) Database::getConnection()->query(
       "SELECT COUNT(*) FROM `revisions` WHERE `revision_entity_id` = {$this->revisionEntityTypeId} AND `entity_id` = {$this->entityId} LIMIT 1"
     )->fetch_all()[0][0];
   }
@@ -98,7 +99,7 @@ final class RevisionSet extends \MovLib\Core\AbstractDatabase implements \ArrayA
    * @todo Can we get rid of the dependency injection container dependency? Intl should suffice.
    */
   public function load($offset, $limit, \MovLib\Core\DIContainer $diContainer) {
-    $result = $this->getMySQLi()->query(<<<SQL
+    $result = Database::getConnection()->query(<<<SQL
 SELECT
   `id` + 0 AS `id`,
   `user_id` AS `userId`
@@ -124,6 +125,8 @@ SQL
         $this->revisions[$key]->user = $userSet[$value->userId];
       }
     }
+
+    return $this;
   }
 
 

@@ -29,8 +29,8 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Genre extends \MovLib\Data\AbstractEntity implements \MovLib\Data\Revision\EntityRevisionInterface {
-  use \MovLib\Data\Revision\EntityRevisionTrait;
+final class Genre extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\EntityRevisionInterface {
+  use \MovLib\Core\Revision\EntityRevisionTrait;
 
 
   //-------------------------------------------------------------------------------------------------------------------- Constants
@@ -50,6 +50,20 @@ final class Genre extends \MovLib\Data\AbstractEntity implements \MovLib\Data\Re
 
 
   /**
+   * The genre's movie count.
+   *
+   * @var null|integer
+   */
+  public $countMovies;
+
+  /**
+   * The genre's series count.
+   *
+   * @var null|integer
+   */
+  public $countSeries;
+
+  /**
    * The genre's name in default language.
    *
    * @var string
@@ -64,25 +78,11 @@ final class Genre extends \MovLib\Data\AbstractEntity implements \MovLib\Data\Re
   public $description;
 
   /**
-   * The genre's movie count.
-   *
-   * @var null|integer
-   */
-  public $movieCount;
-
-  /**
    * The genre's name in the current locale (default locale as fallback).
    *
    * @var string
    */
   public $name;
-
-  /**
-   * The genre's series count.
-   *
-   * @var null|integer
-   */
-  public $seriesCount;
 
   /**
    * {@inheritdoc}
@@ -140,8 +140,8 @@ SQL
         $this->name,
         $this->description,
         $this->wikipedia,
-        $this->movieCount,
-        $this->seriesCount
+        $this->countMovies,
+        $this->countSeries
       );
       $found = $stmt->fetch();
       $stmt->close();

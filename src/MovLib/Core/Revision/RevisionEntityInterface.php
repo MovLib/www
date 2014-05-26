@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Revision;
+namespace MovLib\Core\Revision;
 
 /**
  * Defines the interface for revision entities that represent a (previous or current) state of an entity.

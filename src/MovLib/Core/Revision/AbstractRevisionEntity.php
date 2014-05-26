@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Revision;
+namespace MovLib\Core\Revision;
 
 use \MovLib\Core\Database\Insert;
 use \MovLib\Component\DateTime;
@@ -29,7 +29,7 @@ use \MovLib\Component\DateTime;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractRevisionEntity implements \MovLib\Data\Revision\RevisionEntityInterface {
+abstract class AbstractRevisionEntity implements RevisionEntityInterface {
 
 
   //-------------------------------------------------------------------------------------------------------------------- Properties
@@ -177,8 +177,8 @@ abstract class AbstractRevisionEntity implements \MovLib\Data\Revision\RevisionE
    */
   final public function commit(\MovLib\Core\Database\Connection $connection, $oldRevisionId) {
     return $this->addCommitColumns((new Update($connection))
-      ->columnDateTime("changed", $this->changed)
-      ->dynamicColumn("wikipedia", $this->wikipediaLinks)
+      ->dateTimeField("changed", $this->changed)
+      ->dynamicField("wikipedia", $this->wikipediaLinks)
     );
   }
 
@@ -188,9 +188,9 @@ abstract class AbstractRevisionEntity implements \MovLib\Data\Revision\RevisionE
   final public function initialCommit(\MovLib\Core\Database\Connection $connection) {
     // Insert the entity itself first.
     $this->entityId = $this->addInitialCommitColumns((new Insert($connection))
-      ->columnDateTime("created", $this->created)
-      ->columnDateTime("changed", $this->changed)
-      ->dynamicColumn("wikipedia", $this->wikipediaLinks)
+      ->dateTimeField("created", $this->created)
+      ->dateTimeField("changed", $this->changed)
+      ->dynamicField("wikipedia", $this->wikipediaLinks)
     )->execute();
 
     // Create entry in the revisions table, otherwise we aren't able to list initial commits in the history nor on the
@@ -198,9 +198,9 @@ abstract class AbstractRevisionEntity implements \MovLib\Data\Revision\RevisionE
     (new Insert($connection))
       ->table("revisions")
       ->columnDateTime("id", $this->created)
-      ->columnNumber("entity_id", $this->entityId)
-      ->columnNumber("revision_entity_id", static::REVISION_ENTITY_ID)
-      ->columnNumber("user_id", $this->userId)
+      ->numberField("entity_id", $this->entityId)
+      ->numberField("revision_entity_id", static::REVISION_ENTITY_ID)
+      ->numberField("user_id", $this->userId)
       ->execute()
     ;
 

@@ -92,8 +92,9 @@ abstract class AbstractIndexPresenter extends \MovLib\Presentation\AbstractPrese
    */
   public function getContent() {
     $items = null;
-    foreach ($this->set->loadOrdered("`created` DESC", $this->paginationOffset, $this->paginationLimit) as $id => $entity) {
-      $items .= $this->formatListingItem($entity, $id);
+    $delta = 0;
+    foreach ($this->set->loadOrdered("`created` DESC", $this->paginationOffset, $this->paginationLimit) as $entity) {
+      $items .= $this->formatListingItem($entity, $delta++);
     }
     return $this->getListing($items);
   }

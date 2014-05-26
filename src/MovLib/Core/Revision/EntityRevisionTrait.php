@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Revision;
+namespace MovLib\Core\Revision;
 
 use \MovLib\Core\Database\Database;
 
@@ -42,6 +42,8 @@ trait EntityRevisionTrait {
    * The trait will take care of instantiating the revision and setting the default properties that are the same for
    * any entity. After that the concrete class has to take over and export the rest.
    *
+   * @param \MovLib\Data\Revision\RevisionEntityInterface $revision
+   *   Prepared revision with default properties already set.
    * @return \MovLib\Data\Revision\RevisionEntityInterface
    *   The new revision with the complete state set.
    */
@@ -53,9 +55,11 @@ trait EntityRevisionTrait {
    * The trait will take care of setting the default properties that are the same for any entity. After that the
    * concrete class has to take over and set the rest.
    *
+   * @param \MovLib\Data\Revision\RevisionEntityInterface $revision
+   *   The revision to set with default properties already exported.
    * @return this
    */
-  abstract protected function doSetRevision(\MovLib\Data\Revision\RevisionEntityInterface $revision, $languageCode, $defaultLanguageCode);
+  abstract protected function doSetRevision(\MovLib\Data\Revision\RevisionEntityInterface $revision);
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods

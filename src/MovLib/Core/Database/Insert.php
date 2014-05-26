@@ -46,11 +46,11 @@ final class Insert extends AbstractQuery {
 
 
   /**
-   * String containing the columns to insert into.
+   * String containing the fields to insert into.
    *
    * @var string
    */
-  protected $columns;
+  protected $fields;
 
   /**
    * String containing the placeholders.
@@ -81,7 +81,7 @@ final class Insert extends AbstractQuery {
    * {@inheritdoc}
    */
   public function __toString() {
-    return "INSERT INTO `{$this->table}` ({$this->columns}) VALUES ({$this->placeholders})";
+    return "INSERT INTO `{$this->table}` ({$this->fields}) VALUES ({$this->placeholders})";
   }
 
 
@@ -101,9 +101,9 @@ final class Insert extends AbstractQuery {
    *   The column's placeholder, defaults to <code>"?"</code>.
    * @return this
    */
-  protected function addColumn($name, $type, $value, $placeholder = "?") {
-    $this->columns && ($this->columns .= ",");
-    $this->columns .= "`{$name}`";
+  protected function addField($name, $type, $value, $placeholder = "?") {
+    $this->fields && ($this->fields .= ",");
+    $this->fields .= "`{$name}`";
     $this->types .= $type;
     $this->values[] = $value;
     $this->placeholders && ($this->placeholders .= ",");
@@ -120,8 +120,8 @@ final class Insert extends AbstractQuery {
    *   The column's value.
    * @return this
    */
-  public function columnBoolean($name, $value) {
-    return $this->addColumn($name, "i", $value);
+  public function booleanField($name, $value) {
+    return $this->addField($name, "i", $value);
   }
 
   /**
@@ -133,34 +133,8 @@ final class Insert extends AbstractQuery {
    *   The column's value.
    * @return this
    */
-  public function columnDateTime($name, \MovLib\Component\DateTime $value) {
-    return $this->addColumn($name, "s", (string) $value, "CAST(? AS DATETIME)");
-  }
-
-  /**
-   * Add number.
-   *
-   * @param string $name
-   *   The column's name.
-   * @param float|integer $value
-   *   The column's value.
-   * @return this
-   */
-  public function columnNumber($name, $value) {
-    return $this->addColumn($name, "d", $value);
-  }
-
-  /**
-   * Add string.
-   *
-   * @param string $name
-   *   The column's name.
-   * @param string $value
-   *   The column's value.
-   * @return this
-   */
-  public function columnString($name, $value) {
-    return $this->addColumn($name, "s", $value);
+  public function dateTimeField($name, \MovLib\Component\DateTime $value) {
+    return $this->addField($name, "s", (string) $value, "CAST(? AS DATETIME)");
   }
 
   /**
@@ -172,9 +146,9 @@ final class Insert extends AbstractQuery {
    *   The dynamic column's values as key-value pairs.
    * @return this
    */
-  public function dynamicColumn($name, array $keyValues) {
-    $this->columns && ($this->columns .= ",");
-    $this->columns .= "`dyn_{$name}`";
+  public function dynamicField($name, array $keyValues) {
+    $this->fields && ($this->fields .= ",");
+    $this->fields .= "`dyn_{$name}`";
 
     $values = null;
     foreach ($keyValues as $key => $value) {
@@ -194,6 +168,32 @@ final class Insert extends AbstractQuery {
     $this->placeholders .= $values ? "COLUMN_CREATE({$values})" : "''";
 
     return $this;
+  }
+
+  /**
+   * Add number.
+   *
+   * @param string $name
+   *   The column's name.
+   * @param float|integer $value
+   *   The column's value.
+   * @return this
+   */
+  public function numberField($name, $value) {
+    return $this->addField($name, "d", $value);
+  }
+
+  /**
+   * Add string.
+   *
+   * @param string $name
+   *   The column's name.
+   * @param string $value
+   *   The column's value.
+   * @return this
+   */
+  public function stringField($name, $value) {
+    return $this->addField($name, "s", $value);
   }
 
   /**

@@ -37,8 +37,8 @@ trait GenreTrait {
       return $items;
     }
     $navItems = [
-      [ "movie", "movies", $this->intl->t("Movies"), $this->entity->movieCount ],
-      [ "series separator", "series", $this->intl->tp(-1, "Series"), $this->entity->seriesCount ],
+      [ "movie", "movies", $this->intl->t("Movies"), $this->entity->countMovies ],
+      [ "series separator", "series", $this->intl->tp(-1, "Series"), $this->entity->countSeries ],
     ];
     foreach ($navItems as list($icon, $plural, $title, $count)) {
       $items[] = [

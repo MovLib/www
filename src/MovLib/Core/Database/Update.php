@@ -46,11 +46,11 @@ final class Update extends AbstractQuery {
 
 
   /**
-   * String containing all column (including their placeholders) to set.
+   * String containing all fields (including their placeholders) to set.
    *
    * @var string
    */
-  protected $columns;
+  protected $query;
 
   /**
    * String containing the types of the values for auto-sanitization by the prepared statement.
@@ -60,7 +60,7 @@ final class Update extends AbstractQuery {
   protected $types;
 
   /**
-   * Numeric array containing the values to insert.
+   * Numeric array containing the values for the fields.
    *
    * @var array
    */
@@ -71,10 +71,10 @@ final class Update extends AbstractQuery {
 
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function __toString() {
-    return "UPDATE `{$this->table}`";
+    return "UPDATE `{$this->table}` {$this->query}";
   }
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -93,9 +93,9 @@ final class Update extends AbstractQuery {
    *   The column's placeholder, defaults to <code>"?"</code>.
    * @return this
    */
-  public function addColumn($name, $type, $value, $placeholder = "?") {
-    $this->columns && ($this->columns .= ",");
-    $this->columns .= "`{$name}`={$placeholder}";
+  public function addField($name, $type, $value, $placeholder = "?") {
+    $this->query && ($this->query .= ",");
+    $this->query .= "`{$name}`={$placeholder}";
     $this->types .= $type;
     $this->values[] = $value;
     return $this;
@@ -110,7 +110,7 @@ final class Update extends AbstractQuery {
    *   The amount to substract, defaults to <code>1</code>.
    * @return this
    */
-  public function columnDecrement($name, $substract = 1) {
+  public function fieldDecrement($name, $substract = 1) {
     return $this->expression($name, "i", $substract, "(`{$name}`-?)");
   }
 
@@ -123,7 +123,7 @@ final class Update extends AbstractQuery {
    *   The amount to add, defaults to <code>1</code>.
    * @return this
    */
-  public function columnIncrement($name, $add = 1) {
+  public function fieldIncrement($name, $add = 1) {
     return $this->expression($name, "i", $add, "(`{$name}`+?)");
   }
 
