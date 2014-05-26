@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\SystemPage;
 
-use \MovLib\Data\SystemPage;
+use \MovLib\Data\SystemPage\SystemPage;
 
 /**
  * Defines the base class for all system page presenters.

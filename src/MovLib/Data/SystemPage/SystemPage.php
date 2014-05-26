@@ -15,20 +15,36 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Data\SystemPage;
 
-use \MovLib\Presentation\Error\NotFound;
+use \MovLib\Core\Database\Database;
+use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
  * Handling of one system page.
  *
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class SystemPage extends \MovLib\Data\AbstractEntity {
+class SystemPage extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\EntityRevisionInterface {
+  use \MovLib\Core\Revision\EntityRevisionTrait;
+
+
+  //-------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "SystemPage";
+  // @codingStandardsIgnoreEnd
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -40,13 +56,6 @@ class SystemPage extends \MovLib\Data\AbstractEntity {
    * @var integer
    */
   public $id;
-
-  /**
-   * The page's route key.
-   *
-   * @var string
-   */
-  public $route;
 
   /**
    * The page's localized title.
@@ -77,20 +86,26 @@ class SystemPage extends \MovLib\Data\AbstractEntity {
    */
   public function __construct(\MovLib\Core\DIContainer $diContainer, $id) {
     parent::__construct($diContainer);
-    $stmt = $this->getMySQLi()->prepare(<<<SQL
+    $connection = Database::getConnection();
+    $stmt = $connection->prepare(<<<SQL
 SELECT
   `id`,
-  COLUMN_GET(`dyn_titles`, ? AS CHAR(255)) AS `title`,
-  COLUMN_GET(`dyn_texts`, ? AS BINARY) AS `text`,
-  COLUMN_GET(`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR(255)) AS `routeKey`
+  COLUMN_GET(`dyn_titles`, '{$this->intl->languageCode}' AS CHAR(255)),
+  COLUMN_GET(`dyn_texts`, '{$this->intl->languageCode}' AS BINARY),
+  COLUMN_GET(`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR(255))
 FROM `system_pages`
 WHERE `id` = ?
 LIMIT 1
 SQL
     );
-    $stmt->bind_param("ssd", $this->intl->languageCode, $this->intl->languageCode, $id);
+    $stmt->bind_param("d", $id);
     $stmt->execute();
-    $stmt->bind_result($this->id, $this->title, $this->text, $this->routeKey);
+    $stmt->bind_result(
+      $this->id,
+      $this->title,
+      $this->text,
+      $this->routeKey
+    );
     $found = $stmt->fetch();
     $stmt->close();
     if (!$found) {
