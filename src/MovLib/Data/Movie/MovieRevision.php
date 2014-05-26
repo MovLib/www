@@ -64,8 +64,12 @@ final class MovieRevision extends \MovLib\Data\Revision\AbstractRevisionEntity {
   /**
    * Instantiate new movie revision.
    */
-  public function __construct() {
+  public function __construct($id = null) {
+    if ($id) {
+      $connection = Database::getConnection();
+    }
     if ($this->id) {
+      $this->year && ($this->year = (integer) $this->year);
       parent::__construct();
     }
   }
@@ -76,40 +80,9 @@ final class MovieRevision extends \MovLib\Data\Revision\AbstractRevisionEntity {
   public function __sleep() {
     static $properties = null;
     if (!$properties) {
-      $properties = array_merge(parent::__sleep(), []);
+      $properties = array_merge(parent::__sleep(), [ "year", "titles" ]);
     }
     return $properties;
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Static Methods
-
-
-  /**
-   * {@inheritdoc}
-   * @return \MovLib\Data\Movie\MovieRevision
-   *   {@inheritdoc}
-   */
-  public static function createFromId($id) {
-    throw new \LogicException("Not implemented");
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * {@inheritdoc}
-   */
-  public function commit(\MovLib\Data\Revision\RevisionEntityInterface $oldRevision, $languageCode) {
-    throw new \LogicException("Not implemented");
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function initialCommit($languageCode) {
-    throw new \LogicException("Not implemented");
   }
 
 }

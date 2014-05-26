@@ -46,12 +46,70 @@ abstract class AbstractCondition extends AbstractQuery {
 
 
   /**
+   * String containing the compiled conditions.
    *
+   * @var string
    */
-  public function __toString() {
+  protected $conditions;
 
-  }
+  /**
+   * String containing the types of the values for auto-sanitization by the prepared statement.
+   *
+   * @var string
+   */
+  protected $types;
+
+  /**
+   * Numeric array containing the values for the fields.
+   *
+   * @var array
+   */
+  protected $values;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  public function where($fieldName, $value, $operator = null, $conjunction = "AND") {
+    if (is_array($value)) {
+      !$operator && ($operator = "IN");
+      $placeholder = null;
+      foreach ($value as $v) {
+        $placeholder && ($placeholder .= ", ");
+        $placeholder .= $this->setValue($value);
+      }
+      $placeholder = "({$placeholder})";
+    }
+    else {
+      !$operator && ($operator = "=");
+      $placeholder .= $this->setValue($value);
+    }
+    $this->conditions .= $this->conditions ? " {$conjunction} " : " WHERE ";
+    $this->conditions .= "{$this->sanitizeFieldName($fieldName)} {$operator} {$placeholder}";
+    return $this;
+  }
+
+  /**
+   * Add custom where condition to query.
+   *
+   * <b>NOTE</b><br>
+   * This will overwrite any previously set conditions. You have to take care that you use the correct aliases, escape
+   * field names and insert propert placeholders.
+   *
+   * @param string $snippet
+   *   The where condition without the <code>"WHERE "</code> prefix.
+   * @param string $types
+   *   The types of the values.
+   * @param array $values
+   *   The field values.
+   * @return this
+   */
+  public function whereCustom($snippet, $types, array $values) {
+    // We have to empty any previously set conditions.
+    $this->conditions = " WHERE {$snippet}";
+    $this->types      = $types;
+    $this->values     = $values;
+    return $this;
+  }
 
 }

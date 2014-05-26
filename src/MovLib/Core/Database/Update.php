@@ -26,7 +26,7 @@ namespace MovLib\Core\Database;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Update extends AbstractQuery {
+final class Update extends AbstractCondition {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -50,21 +50,7 @@ final class Update extends AbstractQuery {
    *
    * @var string
    */
-  protected $query;
-
-  /**
-   * String containing the types of the values for auto-sanitization by the prepared statement.
-   *
-   * @var string
-   */
-  protected $types;
-
-  /**
-   * Numeric array containing the values for the fields.
-   *
-   * @var array
-   */
-  protected $values;
+  protected $setClause;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -74,8 +60,10 @@ final class Update extends AbstractQuery {
    * {@inheritdoc}
    */
   public function __toString() {
-    return "UPDATE `{$this->table}` {$this->query}";
+    $alias = $this->tableAlias ? " AS `{$this->tableAlias}`" : null;
+    return "UPDATE `{$this->table}`{$alias} SET {$this->setClause}{$this->conditions}";
   }
+
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
@@ -94,10 +82,10 @@ final class Update extends AbstractQuery {
    * @return this
    */
   public function addField($name, $type, $value, $placeholder = "?") {
-    $this->query && ($this->query .= ",");
-    $this->query .= "`{$name}`={$placeholder}";
-    $this->types .= $type;
-    $this->values[] = $value;
+    $this->setClause && ($this->setClause .= ", ");
+    $this->setClause .= "{$this->sanitizeFieldName($name)} = {$placeholder}";
+    $this->types     .= $type;
+    $this->values[]   = $value;
     return $this;
   }
 
@@ -110,8 +98,8 @@ final class Update extends AbstractQuery {
    *   The amount to substract, defaults to <code>1</code>.
    * @return this
    */
-  public function fieldDecrement($name, $substract = 1) {
-    return $this->expression($name, "i", $substract, "(`{$name}`-?)");
+  public function decrementField($name, $substract = 1) {
+    return $this->addField($name, "i", $substract, "({$this->sanitizeFieldName($name)} - ?)");
   }
 
   /**
@@ -123,8 +111,8 @@ final class Update extends AbstractQuery {
    *   The amount to add, defaults to <code>1</code>.
    * @return this
    */
-  public function fieldIncrement($name, $add = 1) {
-    return $this->expression($name, "i", $add, "(`{$name}`+?)");
+  public function incrementField($name, $add = 1) {
+    return $this->addField($name, "i", $add, "({$this->sanitizeFieldName($name)} + ?)");
   }
 
   /**

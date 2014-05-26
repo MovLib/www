@@ -86,6 +86,6 @@ interface RevisionEntityInterface {
    * @return integer
    *   The unique identifier that was given by the database to the newly inserted entity.
    */
-  public function initialCommit(\MovLib\Core\Database\Connection $connection);
+  public function create(\MovLib\Core\Database\Connection $connection);
 
 }

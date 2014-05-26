@@ -40,36 +40,38 @@ interface EntityRevisionInterface {
    *
    * @param integer $userId
    *   The user's unique identifier who edited the entity.
-   * @param \MovLib\Component\DateTime $dateTime
+   * @param \MovLib\Component\DateTime $changed
    *   The date and time the user edited the entity.
    * @param integer $oldRevisionId
    *   The old revision's identifier that was sent along the form when the user started editing the entity.
    * @return this
    */
-  public function commit($userId, \MovLib\Component\DateTime $dateTime, $oldRevisionId);
+  public function commit($userId, \MovLib\Component\DateTime $changed, $oldRevisionId);
 
   /**
    * Create new revisioned entity.
    *
    * @param integer $userId
    *   The user's unique identifier who created the entity.
-   * @param \MovLib\Component\DateTime $dateTime
-   *   The date and time the user created the entity.
+   * @param \MovLib\Component\DateTime $created
+   *   The date and time the revision entity should use as its identifier within the history of the entity. This is
+   *   usually the request date and time and should match the creation date and time if you create a new entity or the
+   *   changed date and time if you edit an entity.
    * @return this
    */
-  public function create($userId, \MovLib\Component\DateTime $dateTime);
+  public function create($userId, \MovLib\Component\DateTime $created);
 
   /**
    * Create a revision based on the current state of the entity.
    *
    * @param integer $userId
    *   The user's unique identifier who created/edited the entity.
-   * @param \MovLib\Component\DateTime $dateTime
+   * @param \MovLib\Component\DateTime $created
    *   The date and time the user created/edited the entity, should be the request time.
    * @return \MovLib\Data\Revision\RevisionEntityInterface
    *   A revision based on the current state of the entity.
    */
-  public function createRevision($userId, \MovLib\Component\DateTime $dateTime);
+  public function createRevision($userId, \MovLib\Component\DateTime $created);
 
   /**
    * Set the state of the instance based on the given revision.

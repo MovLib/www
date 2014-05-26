@@ -269,7 +269,7 @@ SQL
     try {
       $connection->autocommit(false);
       $connection->begin_transaction(MYSQLI_TRANS_START_READ_WRITE);
-      $this->cur->initialCommit();
+      $this->cur->create();
       $this->insert($connection, $this->cur);
       $connection->commit();
     }

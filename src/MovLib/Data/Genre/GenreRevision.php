@@ -77,6 +77,11 @@ final class GenreRevision extends \MovLib\Core\Revision\AbstractRevisionEntity {
    */
   public $revisionEntityId = 9;
 
+  /**
+   * {@inheritdoc}
+   */
+  protected $tableName = "genres";
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -153,17 +158,9 @@ SQL
   /**
    * {@inheritdoc}
    */
-  protected function getCommitQuery(\MovLib\Core\Database\Connection $connection) {
-    return "";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function addInitialCommitColumns(\MovLib\Core\Database\Insert $insert) {
-    return $insert
-      ->table("genres")
-      ->dynamicColumn("descriptions", $this->descriptions)
+  protected function addCommitFields(\MovLib\Core\Database\Update $update) {
+    return $update
+      ->dynamicField("descriptions", $this->descriptions)
       ->dynamicField("names", $this->names)
     ;
   }
@@ -171,41 +168,11 @@ SQL
   /**
    * {@inheritdoc}
    */
-//  public function commit(\MovLib\Core\Database\Connection $connection, $oldRevisionId) {
-//    // We have to create an instance of the revision that is currently stored in the database.
-//    $old = new static($this->entityId);
-//
-//    // We have
-//    // Check if we should update the deletion status of the entity. Usually that's performed by a deletion request, but
-//    // we might be commiting a previous revision that was recreated and the deletion status might have been set to
-//    // deleted. In that case we want it to be deleted again.
-//    //
-//    // @todo Is this really true? Do we want to reset the deletion status just because an old revision was deleted?
-//    $deleted = $old->deleted === $this->deleted ? null : "`deleted`=" . (integer) $this->deleted;
-//
-//    // Check all dynamic columns and build the query parts for those.
-//    $dynCols = $connection->dynColBuildUpdate($languageCode, [
-//      "descriptions" => [ $this->descriptions, $old->descriptions ],
-//      "names"        => [ $this->names, $old->names ],
-//      "wikipedia"    => [ $this->wikipediaLinks, $old->wikipediaLinks ],
-//    ]);
-//
-//    // If we have both values, append comma to the deleted part to separate them.
-//    if ($deleted && $dynCols) {
-//      $deleted .= ",";
-//    }
-//    // Nothing to commit if both values are NULL.
-//    elseif (!$deleted && !$dynCols) {
-//      throw new \BadMethodCallException("Nothing to commit.");
-//    }
-//
-//    // Update the genres table with the new data, remember that we are the newest revision and that we have to update
-//    // the changed datetime of the genre with our creation datetime.
-//    $connection->real_query(
-//      "UPDATE `genres` SET `changed` = CAST('{$this->created}' AS DATETIME), {$deleted}{$dynCols} WHERE `id` = {$this->entityId}"
-//    );
-//
-//    return $this;
-//  }
+  protected function addCreateFields(\MovLib\Core\Database\Insert $insert) {
+    return $insert
+      ->dynamicField("descriptions", $this->descriptions)
+      ->dynamicField("names", $this->names)
+    ;
+  }
 
 }

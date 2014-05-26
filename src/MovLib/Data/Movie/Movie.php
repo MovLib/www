@@ -31,7 +31,8 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity implements \MovLib\Data\Rating\RatingInterface, \MovLib\Data\Revision\EntityRevisionInterface {
+final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity implements \MovLib\Data\Rating\RatingInterface, \MovLib\Core\Revision\EntityRevisionInterface {
+  use \MovLib\Core\Revision\EntityRevisionTrait;
   use \MovLib\Data\Rating\RatingTrait;
 
 
@@ -329,7 +330,7 @@ WHERE `movies_genres`.`movie_id` = {$this->id}
 ORDER BY `name` {$this->collations[$this->intl->languageCode]} DESC
 SQL
       );
-      while ($genre = $result->fetch_object("\\MovLib\\Data\\Genre\Genre", [ $this->intl ])) {
+      while ($genre = $result->fetch_object("\\MovLib\\Data\\Genre\Genre", [ $this->diContainer ])) {
         $this->genreSet[] = $genre;
       }
       $result->free();
@@ -463,35 +464,33 @@ SQL
     return $this->titles;
   }
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Revision Methods
+  // ------------------------------------------------------------------------------------------------------------------- Entity Revision Methods
 
 
   /**
    * {@inheritdoc}
+   * @param \MovLib\Data\Movie\MovieRevision $revision {@inheritdoc}
+   * @return \MovLib\Data\Movie\MovieRevision {@inheritdoc}
    */
-  public function createRevision($userId, $dateTime) {
-    $revision                                            = MovieRevision::createFromId($this->id);
-    $revision->id                                        = $dateTime->formatInteger();
-    $revision->created                                   = $dateTime;
-    $revision->deleted                                   = $this->deleted;
-    $revision->userId                                    = $userId;
-    $revision->wikipediaLinks[$this->intl->languageCode] = $this->wikipedia;
+  protected function doCreateRevision(\MovLib\Data\Revision\RevisionEntityInterface $revision) {
+    $revision->year = $this->year;
+
+    // Only overwrite the titles if we have them, note that it's impossible to delete all titles, you always have at
+    // least the original title. Therefore any check with isset() or empty() would be pointless. The revision has
+    // already loaded all existing titles from the database, so no need to do anything if we have no update for them.
+    $this->titles && ($revision->titles = $this->titles);
+
     return $revision;
   }
 
   /**
    * {@inheritdoc}
+   * @param \MovLib\Data\Movie\MovieRevision $revision {@inheritdoc}
+   * @return this {@inheritdoc}
    */
-  public function getRevision() {
-    return MovieRevision::createFromId($this->id);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setRevision(\MovLib\Data\Revision\RevisionEntityInterface $revisionEntity, $languageCode, $defaultLanguageCode) {
-
+  protected function doSetRevision(\MovLib\Data\Revision\RevisionEntityInterface $revision) {
+    // @todo Implement me!
+    return $this;
   }
 
 }

@@ -59,6 +59,27 @@ abstract class AbstractQuery {
    */
   protected $table;
 
+  /**
+   * The query's table alias to operate on.
+   *
+   * @var string
+   */
+  protected $tableAlias;
+
+  /**
+   * String containing the types of the values for auto-sanitization by the prepared statement.
+   *
+   * @var string
+   */
+  protected $types;
+
+  /**
+   * Numeric array containing the values to insert.
+   *
+   * @var array
+   */
+  protected $values;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -97,15 +118,66 @@ abstract class AbstractQuery {
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
+  protected function sanitizeFieldName($name) {
+    $name = str_replace(".", "`.`", $name);
+    return "`{$name}`";
+  }
+
+  protected function sanitizeDynamicFieldName($name) {
+    $name = str_replace(".", "`.`dyn_", $name);
+    return "`{$name}`";
+  }
+
+  protected function setValue($value) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert(
+      !is_array($value),
+      "This method is only for atomic values because you have to perform additional work if it's an array, loop once " .
+      "and call this method with each value in your loop, this is more efficient than a recursive handling of the " .
+      "values with an additional loop to build the placeholders."
+    );
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    $placeholder = "?";
+    switch (gettype($value)) {
+      case "boolean":
+        $this->types .= "i";
+        $this->values[] = $value;
+        break;
+
+      case "double":
+      case "integer":
+        $this->types .= "d";
+        $this->values[] = $value;
+        break;
+
+      default:
+        $this->types .= "s";
+        // This object might have a custom placeholder attached to ti.
+        isset($value->sqlPlaceholder) && ($placeholder = $value->sqlPlaceholder);
+        // Directly cast to string in case this is an object, we want it to fail as early as possible and we don't want
+        // to store a reference to the complete object.
+        $this->values[] = (string) $value;
+        break;
+    }
+
+    return $placeholder;
+  }
+
   /**
    * Set the table to operate on.
    *
-   * @param string $table
+   * @param string $name
    *   The table's name.
+   * @param string $alias [optional]
+   *   An aliad for the table for referencing, defaults to <code>NULL</code> and no alias will be assigned.
    * @return this
    */
-  public function table($table) {
-    $this->table = $table;
+  public function table($name, $alias = null) {
+    $this->table      = $name;
+    $this->tableAlias = $alias;
     return $this;
   }
 

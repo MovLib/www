@@ -17,6 +17,7 @@
  */
 namespace MovLib\Core\Revision;
 
+use \MovLib\Core\Database\Database;
 use \MovLib\Core\Database\Insert;
 use \MovLib\Component\DateTime;
 
@@ -82,6 +83,13 @@ abstract class AbstractRevisionEntity implements RevisionEntityInterface {
   public $revisionEntityId;
 
   /**
+   * The revision entity's table name.
+   *
+   * @var string
+   */
+  protected $tableName;
+
+  /**
    * The revision entity's user who created this revision.
    *
    * <b>NOTE</b><br>
@@ -121,7 +129,8 @@ abstract class AbstractRevisionEntity implements RevisionEntityInterface {
     //
     // NOTE for the future: We can dump this as soon as accessors are available.
     assert(defined("static::REVISION_ENTITY_ID"), "You have to set the REVISION_ENTITY_ID in your class.");
-    assert(isset($this->revisionEntityId), "You have to set the \$revisionEntityId property in your class.");
+    assert(!empty($this->revisionEntityId), "You have to set the \$revisionEntityId property in your class.");
+    assert(!empty($this->tableName), "You have to set the \$tableName property in your class.");
     // @codeCoverageIgnoreEnd
     // @devEnd
     if ($this->id) {
@@ -154,19 +163,76 @@ abstract class AbstractRevisionEntity implements RevisionEntityInterface {
 
 
   /**
+   * Add fields to the commit's update statement.
    *
+   * @param \MovLib\Core\Database\Update $update
+   *   The update statement to add fields.
+   * @return \MovLib\Core\Database\Update
+   *   The final update statement ready for execution.
    */
-  abstract protected function getCommitQuery(\MovLib\Core\Database\Connection $connection);
+  abstract protected function addCommitFields(\MovLib\Core\Database\Update $update);
 
   /**
-   * Set the table and add additional columns for the inital commit.
+   * Add fields to the create's insert statement.
    *
    * @param \MovLib\Core\Database\Insert $insert
-   *   The insert statement to set the table and add additional columns.
+   *   The insert statement to add fields.
    * @return \MovLib\Core\Database\Insert
    *   The final insert statement ready for execution.
    */
-  abstract protected function addInitialCommitColumns(\MovLib\Core\Database\Insert $insert);
+  abstract protected function addCreateFields(\MovLib\Core\Database\Insert $insert);
+
+
+  //-------------------------------------------------------------------------------------------------------------------- Hooks
+
+
+  /**
+   * Hook called before the revision entity is going to be commited.
+   *
+   * @param \MovLib\Core\Database\Connection $connection
+   *   Active database transaction connection.
+   * @param integer $oldRevisionId
+   *   The old revision's identifier that was sent along the form when the user started editing the entity.
+   * @return this
+   */
+  protected function preCommit(\MovLib\Core\Database\Connection $connection, $oldRevisionId) {
+    return $this;
+  }
+
+  /**
+   * Hook called after the revision entity has been commited.
+   *
+   * @param \MovLib\Core\Database\Connection $connection
+   *   Active database transaction connection.
+   * @param integer $oldRevisionId
+   *   The old revisions's identifier that was sent along the form when the user started editing the entity.
+   * @return this
+   */
+  protected function postCommit(\MovLib\Core\Database\Connection $connection, $oldRevisionId) {
+    return $this;
+  }
+
+  /**
+   * Hook called before the revision entity is going to be created.
+   *
+   * @param \MovLib\Core\Database\Connection $connection
+   *   Active database transaction connection.
+   * @return this
+   */
+  protected function preCreate(\MovLib\Core\Database\Connection $connection) {
+    return $this;
+  }
+
+  /**
+   * Hook called after the revision entity has been created.
+   *
+   * @param \MovLib\Core\Database\Connection $connection
+   *   Active database transaction connection.
+   * @return this
+   */
+  protected function postCreate(\MovLib\Core\Database\Connection $connection) {
+    return $this;
+  }
 
 
   //-------------------------------------------------------------------------------------------------------------------- Methods
@@ -185,13 +251,20 @@ abstract class AbstractRevisionEntity implements RevisionEntityInterface {
   /**
    * {@inheritdoc}
    */
-  final public function initialCommit(\MovLib\Core\Database\Connection $connection) {
-    // Insert the entity itself first.
-    $this->entityId = $this->addInitialCommitColumns((new Insert($connection))
+  final public function create(\MovLib\Core\Database\Connection $connection) {
+    // Allow the concrete revision entity to perform work before the actual revision is created.
+    $this->preCreate($connection);
+
+    // Insert the entity itself and be sure to store the unique identifier that was assigned to it.
+    $this->entityId = $this->addCreateFields((new Insert($connection))
+      ->table($this->tableName)
       ->dateTimeField("created", $this->created)
       ->dateTimeField("changed", $this->changed)
       ->dynamicField("wikipedia", $this->wikipediaLinks)
     )->execute();
+
+    // Allow the concrete revision entity to perform work after the actual revision was created.
+    $this->postCreate($connection);
 
     // Create entry in the revisions table, otherwise we aren't able to list initial commits in the history nor on the
     // user's contribution page.
@@ -207,10 +280,12 @@ abstract class AbstractRevisionEntity implements RevisionEntityInterface {
     // We have to update the user's edit count.
     (new Update($connection))
       ->table("users")
-      ->increment("edits")
-      ->where("id", $this->userId)
+      ->incrementField("edits")
+      ->condition("id", $this->userId)
     ;
 
+    // We have to return the entity's new unique identifier because the concrete entity doesn't know it's identifier
+    // yet, remember that the identifier is assigned by the database table's auto increment field.
     return $this->entityId;
   }
 

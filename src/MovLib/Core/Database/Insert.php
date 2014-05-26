@@ -59,20 +59,6 @@ final class Insert extends AbstractQuery {
    */
   protected $placeholders;
 
-  /**
-   * String containing the types of the values for auto-sanitization by the prepared statement.
-   *
-   * @var string
-   */
-  protected $types;
-
-  /**
-   * Numeric array containing the values to insert.
-   *
-   * @var array
-   */
-  protected $values;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -102,11 +88,11 @@ final class Insert extends AbstractQuery {
    * @return this
    */
   protected function addField($name, $type, $value, $placeholder = "?") {
-    $this->fields && ($this->fields .= ",");
-    $this->fields .= "`{$name}`";
-    $this->types .= $type;
+    $this->fields && ($this->fields .= ", ");
+    $this->fields  .= $this->sanitizeFieldName($name);
+    $this->types   .= $type;
     $this->values[] = $value;
-    $this->placeholders && ($this->placeholders .= ",");
+    $this->placeholders && ($this->placeholders .= ", ");
     $this->placeholders .= $placeholder;
     return $this;
   }
@@ -147,8 +133,8 @@ final class Insert extends AbstractQuery {
    * @return this
    */
   public function dynamicField($name, array $keyValues) {
-    $this->fields && ($this->fields .= ",");
-    $this->fields .= "`dyn_{$name}`";
+    $this->fields && ($this->fields .= ", ");
+    $this->fields .= $this->sanitizeDynamicFieldName($name);
 
     $values = null;
     foreach ($keyValues as $key => $value) {
@@ -156,8 +142,8 @@ final class Insert extends AbstractQuery {
         continue;
       }
 
-      $values && ($values .= ",");
-      $values .= "?,?";
+      $values && ($values .= ", ");
+      $values .= "?, ?";
 
       $this->types   .= "ss";
       $this->values[] = $key;

@@ -96,7 +96,10 @@ trait EntityRevisionTrait {
   }
 
   /**
-   * Hook called before the  entity is going to be created.
+   * Hook called before the entity is going to be created.
+   *
+   * <b>NOTE</b><br>
+   * The entity has no unique identifier at this point because it wasn't commited to the database at this point.
    *
    * @param \MovLib\Core\Database\Connection $connection
    *   Active database transaction connection.
@@ -128,12 +131,12 @@ trait EntityRevisionTrait {
   /**
    * @see \MovLib\Data\Revision\EntityRevisionInterface::commit()
    */
-  final public function commit($userId, \MovLib\Component\DateTime $dateTime, $oldRevisionId) {
+  final public function commit($userId, \MovLib\Component\DateTime $changed, $oldRevisionId) {
     $connection = Database::getConnection();
     try {
       $connection->autocommit(false);
       $connection->begin_transaction(MYSQLI_TRANS_START_WITH_CONSISTENT_SNAPSHOT | MYSQLI_TRANS_START_READ_WRITE);
-      $revision = $this->createRevision($userId, $dateTime);
+      $revision = $this->createRevision($userId, $changed);
       $this->preCommit($connection, $revision, $oldRevisionId);
       $revision->commit($connection, $oldRevisionId);
       $connection->commit();
@@ -152,14 +155,14 @@ trait EntityRevisionTrait {
   /**
    * @see \MovLib\Data\Revision\EntityRevisionInterface::create()
    */
-  final public function create($userId, \MovLib\Component\DateTime $dateTime) {
+  final public function create($userId, \MovLib\Component\DateTime $created) {
     $connection = Database::getConnection();
     try {
       $connection->autocommit(true);
       $connection->begin_transaction(MYSQLI_TRANS_START_READ_WRITE);
-      $revision = $this->createRevision($userId, $dateTime);
+      $revision = $this->createRevision($userId, $created);
       $this->preCreate($connection, $revision);
-      $this->id = $revision->initialCommit($connection);
+      $this->id = $revision->create($connection);
       $connection->commit();
       $this->postCreate($connection, $revision);
     }
@@ -176,7 +179,7 @@ trait EntityRevisionTrait {
   /**
    * @see \MovLib\Data\Revision\EntityRevisionInterface::createRevision()
    */
-  final public function createRevision($userId, \MovLib\Component\DateTime $dateTime) {
+  final public function createRevision($userId, \MovLib\Component\DateTime $created) {
     // We are always able to create a revision instance from the concrete class by simply appending Revision. Also note
     // that we are always able to instantiate the revision without checking for our own id property's value, because it
     // will be NULL if we're a new instance and not commited yet, thus, no query will be executed by the revision class.
@@ -184,8 +187,8 @@ trait EntityRevisionTrait {
     $revision = new $class($this->id);
 
     // Update the just loaded revision with the new values that we have in absolutely every entity.
-    $revision->id      = $dateTime->formatInteger();
-    $revision->created = $dateTime;
+    $revision->id      = $created->formatInteger();
+    $revision->created = $created;
     $revision->deleted = $this->deleted;
     $revision->userId  = $userId;
 
