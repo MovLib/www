@@ -715,7 +715,7 @@ SQL
       $this->realName,
       $this->sex,
       $this->languageCode,
-      $this->timezone,
+      $this->timezoneId,
       $this->website
     );
     $stmt->execute();
