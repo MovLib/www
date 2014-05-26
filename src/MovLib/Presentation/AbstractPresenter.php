@@ -625,6 +625,7 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
             "<input name='q' required tabindex='1' title='{$this->intl->t(
               "Enter the search term you wish to search for and hit enter."
             )}' type='search' value='{$searchQuery}'>" .
+            "<input name='i' type='hidden' value='movies,series,releases,persons'>" .
           "</form>" .
           "<nav aria-expanded='false' aria-haspopup='true' class='expander main-nav' id='user-nav' role='navigation' tabindex='0'>" .
             "<h2 class='vh'>{$this->intl->t("User Navigation")}</h2>{$userIcon}" .
