@@ -691,6 +691,7 @@ UPDATE `users` SET
   `dyn_about_me`       = COLUMN_ADD(`dyn_about_me`, '{$this->intl->languageCode}', ?),
   `birthdate`          = ?,
   `country_code`       = ?,
+  `currency_code`      = ?,
   `image_cache_buster` = UNHEX(?),
   `image_extension`    = ?,
   `image_styles`       = ?,
@@ -704,10 +705,11 @@ WHERE `id` = {$this->id}
 SQL
     );
     $stmt->bind_param(
-      "ssssssisisss",
+      "sssssssisisss",
       $this->aboutMe,
       $this->birthdate,
       $this->countryCode,
+      $this->currencyCode,
       $this->imageCacheBuster,
       $this->imageExtension,
       $styles,
