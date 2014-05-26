@@ -62,6 +62,66 @@ trait EntityRevisionTrait {
   abstract protected function doSetRevision(\MovLib\Data\Revision\RevisionEntityInterface $revision);
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Hooks
+
+
+  /**
+   * Hook called before the entity is going to be commited.
+   *
+   * @param \MovLib\Core\Database\Connection $connection
+   *   Active database transaction connection.
+   * @param \MovLib\Data\Revision\RevisionEntityInterface $revision
+   *   The revision entity that will be commited.
+   * @param integer $oldRevisionId
+   *   The old revision's identifier that was sent along the form when the user started editing the entity.
+   * @return this
+   */
+  protected function preCommit(\MovLib\Core\Database\Connection $connection, \MovLib\Data\Revision\RevisionEntityInterface $revision, $oldRevisionId) {
+    return $this;
+  }
+
+  /**
+   * Hook called after the entity has been commited.
+   *
+   * @param \MovLib\Core\Database\Connection $connection
+   *   Active database transaction connection.
+   * @param \MovLib\Data\Revision\RevisionEntityInterface $revision
+   *   The revision entity that was commited.
+   * @param integer $oldRevisionId
+   *   The old revision's identifier that was sent along the form when the user started editing the entity.
+   * @return this
+   */
+  protected function postCommit(\MovLib\Core\Database\Connection $connection, \MovLib\Data\Revision\RevisionEntityInterface $revision, $oldRevisionId) {
+    return $this;
+  }
+
+  /**
+   * Hook called before the  entity is going to be created.
+   *
+   * @param \MovLib\Core\Database\Connection $connection
+   *   Active database transaction connection.
+   * @param \MovLib\Data\Revision\RevisionEntityInterface $revision
+   *   The revision entity that will be created.
+   * @return this
+   */
+  protected function preCreate(\MovLib\Core\Database\Connection $connection, \MovLib\Data\Revision\RevisionEntityInterface $revision) {
+    return $this;
+  }
+
+  /**
+   * Hook called after the entity has been created.
+   *
+   * @param \MovLib\Core\Database\Connection $connection
+   *   Active database transaction connection.
+   * @param \MovLib\Data\Revision\RevisionEntityInterface $revision
+   *   The revision entity that was created.
+   * @return this
+   */
+  protected function postCreate(\MovLib\Core\Database\Connection $connection, \MovLib\Data\Revision\RevisionEntityInterface $revision) {
+    return $this;
+  }
+
+
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
@@ -73,8 +133,11 @@ trait EntityRevisionTrait {
     try {
       $connection->autocommit(false);
       $connection->begin_transaction(MYSQLI_TRANS_START_WITH_CONSISTENT_SNAPSHOT | MYSQLI_TRANS_START_READ_WRITE);
-      $this->createRevision($userId, $dateTime)->commit($connection, $oldRevisionId);
+      $revision = $this->createRevision($userId, $dateTime);
+      $this->preCommit($connection, $revision, $oldRevisionId);
+      $revision->commit($connection, $oldRevisionId);
       $connection->commit();
+      $this->postCommit($connection, $revision, $oldRevisionId);
     }
     catch (\Exception $e) {
       $connection->rollback();
@@ -94,8 +157,11 @@ trait EntityRevisionTrait {
     try {
       $connection->autocommit(true);
       $connection->begin_transaction(MYSQLI_TRANS_START_READ_WRITE);
-      $this->id = $this->createRevision($userId, $dateTime)->initialCommit($connection);
+      $revision = $this->createRevision($userId, $dateTime);
+      $this->preCreate($connection, $revision);
+      $this->id = $revision->initialCommit($connection);
       $connection->commit();
+      $this->postCreate($connection, $revision);
     }
     catch (\Exception $e) {
       $connection->rollback();
