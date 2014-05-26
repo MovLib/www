@@ -119,7 +119,7 @@ FROM `jobs`
   INNER JOIN `revisions`
     ON `revisions`.`entity_id` = `jobs`.`id`
     AND `revisions`.`id` = `jobs`.`changed`
-    AND `revisions`.`revision_entity_id` = {$this->revisionEntityId}
+    AND `revisions`.`revision_entity_id` = 10
 WHERE `jobs`.`id` = ?
 LIMIT 1
 SQL

@@ -131,7 +131,8 @@ class Job extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\E
   public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null) {
     parent::__construct($diContainer);
     if ($id) {
-      $stmt = $this->getMySQLi()->prepare(<<<SQL
+      $connection = Database::getConnection();
+      $stmt = $connection->prepare(<<<SQL
 SELECT
   `id`,
   `changed`,
