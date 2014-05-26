@@ -18,6 +18,8 @@
 namespace MovLib\Presentation\Job;
 
 use \MovLib\Data\Job\Job;
+use \MovLib\Data\Revision\RevisionSet;
+use \MovLib\Partial\DateTime;
 
 /**
  * A job's history.
@@ -28,24 +30,96 @@ use \MovLib\Data\Job\Job;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\AbstractHistoryPresenter {
-  use \MovLib\Presentation\Job\JobTrait;
+class History extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Partial\PaginationTrait;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * The entity to present.
+   *
+   * @var \MovLib\Data\AbstractEntity
+   */
+  protected $entity;
+
+  /**
+   * The revision set containing the entity's revisions to present.
+   *
+   * @var \MovLib\Data\Revision\RevisionSet
+   */
+  protected $revisionSet;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * {@inheritdoc}
    */
   public function init() {
-    return $this->initHistory(
-      new Job($this->diContainerHTTP, $_SERVER["JOB_ID"]),
-      $this->intl->t("Jobs")
-    );
+    $this->entity = new Job($this->diContainerHTTP, $_SERVER["JOB_ID"]);
+    $this->initPage($this->intl->t("History of {0}", $this->entity->title), null, $this->intl->t("History"));
+    $this->sidebarInitToolbox($this->entity);
+    $this->breadcrumb->addCrumb($this->intl->r("/jobs"), $this->intl->t("Jobs"));
+    $this->breadcrumb->addCrumb($this->intl->r("/jobs/{0}", $this->entity->id), $this->entity->title);
+    $this->revisionSet = new RevisionSet("Job", $this->entity->id);
+    $this->paginationInit($this->revisionSet->getTotalCount());
+    $this->revisionSet->load($this->paginationOffset, $this->paginationLimit, $this->diContainerHTTP);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->getIndexContent("Job");
+    $listItems = null;
+
+    if ($this->paginationTotalResults > 1) {
+      $button = "";
+    }
+
+    $created  = $this->entity->created->formatInteger();
+    $current  = $this->entity->changed->formatInteger();
+    $dateTime = new DateTime($this->intl, $this, $this->session->userTimezone);
+
+    /* @var $revision \MovLib\Data\Revision\AbstractRevisionEntity */
+    foreach ($this->revisionSet as $revision) {
+//      $createdInfo = null;
+//      if ($revision->id === $created) {
+//        $createdInfo = "<br><span class='small'>{$this->intl->t("Created")}</span>";
+//      }
+//      if ($revision->id === $current) {
+//        $diffToCurrentVersion = $this->intl->t("Current revision.");
+//      }
+//      else {
+//        $diffToCurrentVersion =
+//          "<a href='{$this->intl->r("/job/{0}/history/{1}", [ $this->entity->id, $revision->id ])}'>" .
+//            $this->intl->t("Compare to current revision.") .
+//          "</a>"
+//        ;
+//      }
+//      $listItems .=
+//        "<li><div class='hover-item r'>" .
+//          $this->img($revision->user->imageGetStyle("s1"), [ "class" => "s s1", "property" => "image" ], false) .
+//          "<div class='s s5'>" .
+//            "<h2 class='para'><a href='{$revision->user->route}'>{$revision->user->name}</a></h2>" .
+//            "<small>{$diffToCurrentVersion}</small>" .
+//          "</div>" .
+//          "<p class='s s4 tar'>{$dateTime->formatRelative($revision->created)}{$createdInfo}</p>" .
+//        "</div></li>"
+//      ;
+    }
+
+    return "<form action='{$this->request->uri}'><ol class='hover-list no-list'>{$listItems}</ol></form>";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getNoItemsContent() {
+    return $this->calloutWarning($this->intl->t("We couldn’t find any revisions."), $this->intl->t("No Revisions"));
   }
 
 }

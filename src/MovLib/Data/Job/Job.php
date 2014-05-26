@@ -18,7 +18,6 @@
 namespace MovLib\Data\Job;
 
 use \MovLib\Data\Company\CompanySet;
-use \MovLib\Data\Job\JobRevision;
 use \MovLib\Data\Person\PersonSet;
 use \MovLib\Exception\ClientException\NotFoundException;
 use \MovLib\Partial\Sex;
@@ -33,7 +32,21 @@ use \MovLib\Partial\Sex;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Job extends \MovLib\Data\AbstractEntity implements \MovLib\Data\Revision\EntityRevisionInterface {
+class Job extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\EntityRevisionInterface {
+  use \MovLib\Core\Revision\EntityRevisionTrait;
+
+
+  //-------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Job";
+  // @codingStandardsIgnoreEnd
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -163,7 +176,7 @@ SQL
       $found = $stmt->fetch();
       $stmt->close();
       if (!$found) {
-        throw new NotFoundException("Couldn't find Award {$id}");
+        throw new NotFoundException("Couldn't find Job {$id}");
       }
     }
     if ($this->id) {
@@ -225,7 +238,8 @@ SQL
    * Get the total amount of companies related to a job.
    */
   public function getCompanyTotalCount() {
-    return (integer) $this->getMySQLi()->query(<<<SQL
+    if (empty($this->companyCount)) {
+      $this->companyCount = (integer) $this->getMySQLi()->query(<<<SQL
 SELECT count(*) FROM `companies`
   INNER JOIN `movies_crew` ON `movies_crew`.`company_id` = `companies`.`id` AND `movies_crew`.`job_id` = {$this->id}
   WHERE `companies`.`deleted` = false
@@ -235,7 +249,9 @@ SELECT count(*) FROM `companies`
   WHERE `companies`.`deleted` = false
 LIMIT 1
 SQL
-    )->fetch_all()[0][0];
+      )->fetch_all()[0][0];
+    }
+    return $this->companyCount;
   }
 
   /**
@@ -280,7 +296,8 @@ SQL
    * Get the total amount of persons related to a job.
    */
   public function getPersonTotalCount() {
-    return (integer) $this->getMySQLi()->query(<<<SQL
+    if (empty($this->personCount)) {
+      $this->personCount = (integer) $this->getMySQLi()->query(<<<SQL
 SELECT count(*) FROM `persons`
   INNER JOIN `movies_crew` ON `movies_crew`.`person_id` = `persons`.`id` AND `movies_crew`.`job_id` = {$this->id}
   WHERE `persons`.`deleted` = false
@@ -290,25 +307,21 @@ SELECT count(*) FROM `persons`
   WHERE `persons`.`deleted` = false
 LIMIT 1
 SQL
-    )->fetch_all()[0][0];
+      )->fetch_all()[0][0];
+    }
+    return $this->personCount;
   }
 
   /**
    * {@inheritdoc}
+   * @param \MovLib\Data\Job\JobRevision $revision {@inheritdoc}
+   * @return \MovLib\Data\Job\JobRevision {@inheritdoc}
    */
-  public function createRevision($userId, $dateTime) {
-    // Now we can create the new revision of ourself. Note that our id property is NULL if we're a new job, so we don't
-    // have to take care of any not found exceptions that might occur while creating the revision.
-    $revision                                            = new JobRevision($this->id);
-    $revision->id                                        = $dateTime->formatInteger();
-    $revision->created                                   = $dateTime;
-    $revision->deleted                                   = $this->deleted;
-    $revision->descriptions[$this->intl->languageCode]   = $this->description;
-    $revision->titlesSex0[$this->intl->languageCode]     = $this->titles[Sex::UNKNOWN];
-    $revision->titlesSex1[$this->intl->languageCode]     = $this->titles[Sex::MALE];
-    $revision->titlesSex2[$this->intl->languageCode]     = $this->titles[Sex::FEMALE];
-    $revision->userId                                    = $userId;
-    $revision->wikipediaLinks[$this->intl->languageCode] = $this->wikipedia;
+  public function doCreateRevision(\MovLib\Data\Revision\RevisionEntityInterface $revision) {
+    $revision->descriptions[$this->intl->languageCode] = $this->description;
+    $revision->titlesSex0[$this->intl->languageCode]   = $this->titles[Sex::UNKNOWN];
+    $revision->titlesSex1[$this->intl->languageCode]   = $this->titles[Sex::MALE];
+    $revision->titlesSex2[$this->intl->languageCode]   = $this->titles[Sex::FEMALE];
 
     // Don't forget that we might be a new job and that we might have been created via a different system locale than
     // the default one, in which case the user was required to enter a default title. Of course we have to export that
@@ -328,23 +341,20 @@ SQL
 
   /**
    * {@inheritdoc}
+   * @param \MovLib\Data\Job\JobRevision $revision {@inheritdoc}
+   * @return this {@inheritdoc}
    */
-  public function setRevision(\MovLib\Data\Revision\RevisionEntityInterface $revisionEntity, $languageCode, $defaultLanguageCode) {
-    $this->changed = $revisionEntity->created;
-    $this->deleted = $revisionEntity->deleted;
-    isset($revisionEntity->descriptions[$languageCode])   && ($this->description = $revisionEntity->descriptions[$languageCode]);
-    isset($revisionEntity->wikipediaLinks[$languageCode]) && ($this->wikipedia = $revisionEntity->wikipediaLinks[$languageCode]);
-    if (isset($revisionEntity->titlesSex0[$languageCode])) {
-      $this->title = $revisionEntity->titlesSex0[$languageCode];
+  protected function doSetRevision(\MovLib\Data\Revision\RevisionEntityInterface $revision) {
+    if (isset($revision->descriptions[$this->intl->languageCode])) {
+      $this->description = $revision->descriptions[$this->intl->languageCode];
+    }
+     if (empty($revision->titlesSex0[$this->intl->languageCode])) {
+      $this->title = $revision->titlesSex0[$this->intl->defaultLanguageCode];
     }
     else {
-      $this->title = $revisionEntity->titlesSex0[$defaultLanguageCode];
+      $this->title = $revision->titlesSex0[$this->intl->languageCode];
     }
     return $this;
-  }
-
-  public function getRevision() {
-    
   }
 
 }

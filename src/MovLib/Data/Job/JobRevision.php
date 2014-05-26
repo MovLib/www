@@ -30,7 +30,27 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class JobRevision extends \MovLib\Data\Revision\AbstractRevisionEntity {
+final class JobRevision extends \MovLib\Core\Revision\AbstractRevisionEntity {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "JobRevision";
+  // @codingStandardsIgnoreEnd
+
+  /**
+   * The revision entity's unique identifier.
+   *
+   * @var integer
+   */
+  const REVISION_ENTITY_ID = 10;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -76,13 +96,14 @@ final class JobRevision extends \MovLib\Data\Revision\AbstractRevisionEntity {
   /**
    * Instantiate new job revision.
    *
-   * @param integer $jobId [optional]
-   *   The job's unique identifier, defaults to <code>NULL</code>.
+   * @param integer $id
+   *   The job's unique identifier to load the revision for. The default value (<code>NULL</code>) is only used for
+   *   internal purposes when loaded via <code>fetch_object()</code>.
    * @throws \MovLib\Exception\ClientException\NotFoundException
-   *   If no job exists for the given job identifier.
+   *   If no job was found for the given unique identifier.
    */
-  public function __construct($jobId = null) {
-if ($jobId) {
+  public function __construct($id = null) {
+    if ($id) {
       $stmt = $this->getMySQLi()->prepare(<<<SQL
 SELECT
   `jobs`.`id`,
@@ -103,7 +124,7 @@ WHERE `jobs`.`id` = ?
 LIMIT 1
 SQL
       );
-      $stmt->bind_param("d", $jobId);
+      $stmt->bind_param("d", $id);
       $stmt->execute();
       $stmt->bind_result(
         $this->entityId,
@@ -120,16 +141,15 @@ SQL
       $stmt->close();
 
       if (!$found) {
-        throw new NotFoundException("Couldn't find Job {$jobId}");
+        throw new NotFoundException("Couldn't find Job {$id}");
       }
+    }
 
-      $this->jsonDecode(
-        $this->descriptions,
-        $this->titlesSex0,
-        $this->titlesSex1,
-        $this->titlesSex2,
-        $this->wikipediaLinks
-      );
+    if ($this->id) {
+      $this->descriptions = json_decode($this->descriptions, true);
+      $this->titlesSex0   = json_decode($this->titlesSex0, true);
+      $this->titlesSex1   = json_decode($this->titlesSex1, true);
+      $this->titlesSex2   = json_decode($this->titlesSex2, true);
       parent::__construct();
     }
   }
@@ -138,13 +158,17 @@ SQL
    * {@inheritdoc}
    */
   public function __sleep() {
-    return array_merge(parent::__sleep(), [
-      "descriptions",
-      "titlesSex0",
-      "titlesSex1",
-      "titlesSex2",
-      "wikipediaLinks"
-    ]);
+    static $properties = null;
+    if (!$properties) {
+      $properties = array_merge(parent::__sleep(), [
+        "descriptions",
+        "titlesSex0",
+        "titlesSex1",
+        "titlesSex2",
+        "wikipediaLinks",
+      ]);
+    }
+    return $properties;
   }
 
 
@@ -154,60 +178,21 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function commit(\MovLib\Data\Revision\RevisionEntityInterface $oldRevision, $languageCode) {
-    // Check if we should update the deletion status of the entity.
-    $deleted = $oldRevision->deleted === $this->deleted ? null : "`deleted`=" . (integer) $this->deleted;
-
-    // Check all dynamic columns and build the query parts for those.
-    $dynCols = $this->getDynamicColumnUpdateQuery(
-      $languageCode,
-      "descriptions",
-      $this->descriptions,
-      $oldRevision->descriptions,
-      "titlesSex0",
-      $this->titlesSex0,
-      $oldRevision->titlesSex0,
-      "titlesSex1",
-      $this->titlesSex1,
-      $oldRevision->titlesSex1,
-      "titlesSex2",
-      $this->titlesSex2,
-      $oldRevision->titlesSex2,
-      "wikipedia",
-      $this->wikipediaLinks,
-      $oldRevision->wikipediaLinks
-    );
-
-    // If we have both values, append comma to the deleted part to separate them.
-    if ($deleted && $dynCols) {
-      $deleted .= ",";
-    }
-    // If we don't have any of both parts nothing would be updated.
-    elseif (!$deleted && !$dynCols) {
-      throw new \BadMethodCallException("Nothing to commit.");
-    }
-    $this->getMySQLi()->query("UPDATE `jobs` SET {$deleted}{$dynCols} WHERE `id` = {$this->entityId}");
-    return $this;
+  protected function getCommitQuery(\MovLib\Core\Database\Connection $connection) {
+    return "";
   }
 
   /**
    * {@inheritdoc}
    */
-  public function initialCommit($languageCode) {
-    $this->getMySQLi()->query("INSERT INTO `jobs` SET {$this->getDynamicColumnUpdateQuery(
-      $languageCode,
-      "descriptions",
-      $this->descriptions,
-      "titlesSex0",
-      $this->titlesSex0,
-      "titlesSex1",
-      $this->titlesSex1,
-      "titlesSex2",
-      $this->titlesSex2,
-      "wikipedia",
-      $this->wikipediaLinks
-    )}");
-    return $this;
+  protected function addInitialCommitColumns(\MovLib\Core\Database\Insert $insert) {
+    return $insert
+      ->table("jobs")
+      ->dynamicColumn("descriptions", $this->descriptions)
+      ->dynamicField("titles_sex0", $this->titlesSex0)
+      ->dynamicField("titles_sex1", $this->titlesSex1)
+      ->dynamicField("titles_sex2", $this->titlesSex2)
+    ;
   }
 
 }

@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Job;
 
 use \MovLib\Data\Job\Job;
-use \MovLib\Data\Revision\Revision;
+use \MovLib\Data\Revision\RevisionCommitConflictException;
 use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputWikipedia;
@@ -74,14 +74,8 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    */
   public function submit() {
     try {
-      // Create and commit new revision of this entity.
-      (new Revision($this->entity->createRevision($this->session->userId, $this->request->dateTime)))
-        ->commit($this->entity->changed->formatInteger(), $this->intl->languageCode);
-
-      // Inform the user that the update of the entity was successful.
-      $this->alertSuccess($this->intl->t("Update Successful"));
-
-      // Redirect the user to the updated entity's page.
+      $this->entity->commit($this->session->userId, $this->request->dateTime, $this->request->filterInput(INPUT_POST, "revision_id", FILTER_VALIDATE_INT));
+      $this->alertSuccess($this->intl->t("Successfully Updated"));
       throw new SeeOtherException($this->entity->route);
     }
     catch (\BadMethodCallException $e) {
@@ -90,7 +84,7 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
         $this->intl->t("Seems like you haven’t changed anything, please only submit forms with changes.")
       );
     }
-    catch (\UnexpectedValueException $e) {
+    catch (RevisionCommitConflictException $e) {
       $this->alertError(
         $this->intl->t("Conflicting Changes"),
         "<p>{$this->intl->t(
