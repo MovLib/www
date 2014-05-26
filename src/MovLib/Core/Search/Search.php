@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Search;
+namespace MovLib\Core\Search;
 
 use \Elasticsearch\Client as ElasticClient;
 
@@ -62,15 +62,22 @@ final class Search {
   /**
    * Instantiate new search manager.
    *
-   * @param \MovLib\Data\AbstractEntity $entity [optional]
-   *   The entity to index. Leave empty to create and empty search object (No indexing possible!).
+   * You can leave all parameters empty to instantiate an empty search manager, but if you do so, no indexing will
+   * be possible!
+   *
+   * @param string $index [optional]
+   *   The index to use for the operation, will mostly be the entity's plural key.
+   * @param string $type [optional]
+   *   The type of the document, will mostly be the entity's singular key.
+   * @param integer $id [optional]
+   *   The entity's identifier.
    */
-  public function __construct(\MovLib\Data\AbstractEntity $entity = null) {
-    if (isset($entity)) {
+  public function __construct($index = null, $type = null, $id = null) {
+    if (isset($id)) {
       $this->params = [
-        "index" => $entity->pluralKey,
-        "type"  => $entity->singularKey,
-        "id"    => $entity->id,
+        "index" => $index,
+        "type"  => $type,
+        "id"    => $id,
       ];
     }
   }
@@ -117,7 +124,14 @@ final class Search {
    * @return this
    */
   public function execute(\MovLib\Core\Kernel $kernel, \MovLib\Core\Log $log, $deleted) {
-    $kernel->delayMethodCall($this, "executeIndexing", [ $log, $deleted ]);
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert(!empty($this->params["index"]), "The index name must be set to index a document");
+    assert(!empty($this->params["type"]), "The type name must be set to index a document");
+    assert(!empty($this->params["id"]), "The id must be set to index a document");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    $kernel->delayMethodCall("search.execute_indexing", $this, "executeIndexing", [ $log, $deleted ]);
     return $this;
   }
 
@@ -245,7 +259,7 @@ final class Search {
    */
   protected function analyzeLanguageField(&$body, $field) {
     foreach ($field->value as $languageCode => $text) {
-      if ($text instanceof \MovLib\Data\Search\SearchLanguageAnalyzerInterface) {
+      if ($text instanceof \MovLib\Data\Search\LanguageAnalyzerInterface) {
         $languageCode = $text->getLanguageCode();
         $text         = $text->getText();
       }

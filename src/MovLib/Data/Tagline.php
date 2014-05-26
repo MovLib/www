@@ -26,7 +26,7 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Tagline implements Search\SearchLanguageAnalyzerInterface {
+final class Tagline implements \MovLib\Core\Search\LanguageAnalyzerInterface {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

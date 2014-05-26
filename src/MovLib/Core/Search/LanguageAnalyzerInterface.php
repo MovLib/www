@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Search;
+namespace MovLib\Core\Search;
 
 /**
- * Interface for all entities with language dependent text (e.g. movie titles).
+ * Defines the search language analyzer interface.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -26,21 +26,21 @@ namespace MovLib\Data\Search;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-interface SearchLanguageAnalyzerInterface {
+interface LanguageAnalyzerInterface {
 
   /**
-   * Get the entity's language code.
+   * Get the object's ISO 639-1 language code.
    *
    * @return string
-   *   The language code.
+   *   The object's ISO 639-1 language code.
    */
   public function getLanguageCode();
 
   /**
-   * Get the entity's language dependent text.
+   * Get the object's language dependent text.
    *
    * @return string
-   *   The language dependent text.
+   *   The object's language dependent text.
    */
   public function getText();
 
