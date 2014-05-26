@@ -117,6 +117,13 @@ final class Contributions extends \MovLib\Presentation\User\AbstractUserPresente
     ;
   }
 
+  public function formatSystemPage(\MovLib\Data\AbstractEntity $systemPage) {
+    return
+      "<td class='tac'><span class='ico ico-view' title='{$this->intl->t("Movlib")}'></span></td>" .
+      "<td>{$this->a($systemPage->route, $this->htmlDecode($systemPage->title))}</td>"
+    ;
+  }
+
   /**
    * {@inheritdoc}
    */

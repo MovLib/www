@@ -29,9 +29,43 @@ TRUNCATE TABLE `revisions`;
 -- START "Revisions"
 
 INSERT INTO `revisions` (`id`, `revision_entity_id`, `entity_id`, `user_id`)
+  SELECT `movies`.`changed`, 1, `movies`.`id`, 3 FROM `movies`;
+
+INSERT INTO `revisions` (`id`, `revision_entity_id`, `entity_id`, `user_id`)
+  SELECT `series`.`changed`, 2, `series`.`id`, 3 FROM `series`;
+
+INSERT INTO `revisions` (`id`, `revision_entity_id`, `entity_id`, `user_id`)
+  SELECT `releases`.`changed`, 3, `releases`.`id`, 3 FROM `releases`;
+
+INSERT INTO `revisions` (`id`, `revision_entity_id`, `entity_id`, `user_id`)
+  SELECT `persons`.`changed`, 4, `persons`.`id`, 2 FROM `persons`;
+
+INSERT INTO `revisions` (`id`, `revision_entity_id`, `entity_id`, `user_id`)
+  SELECT `companies`.`changed`, 5, `companies`.`id`, 3 FROM `companies`;
+
+INSERT INTO `revisions` (`id`, `revision_entity_id`, `entity_id`, `user_id`)
+  SELECT `awards`.`changed`, 6, `awards`.`id`, 3 FROM `awards`;
+
+INSERT INTO `revisions` (`id`, `revision_entity_id`, `entity_id`, `user_id`)
+  SELECT `awards_categories`.`changed`, 7, `awards_categories`.`id`, 3 FROM `awards_categories`;
+
+INSERT INTO `revisions` (`id`, `revision_entity_id`, `entity_id`, `user_id`)
+  SELECT `events`.`changed`, 8, `events`.`id`, 3 FROM `events`;
+
+INSERT INTO `revisions` (`id`, `revision_entity_id`, `entity_id`, `user_id`)
   SELECT `genres`.`changed`, 9, `genres`.`id`, 1 FROM `genres`;
 
 INSERT INTO `revisions` (`id`, `revision_entity_id`, `entity_id`, `user_id`)
-  SELECT `jobs`.`changed`,10, `jobs`.`id`, 3 FROM `jobs`;
+  SELECT `jobs`.`changed`, 10, `jobs`.`id`, 3 FROM `jobs`;
+
+INSERT INTO `revisions` (`id`, `revision_entity_id`, `entity_id`, `user_id`)
+  SELECT `help_articles`.`changed`, 11, `help_articles`.`id`, 3 FROM `help_articles`;
+
+-- Movie Poster
+-- INSERT INTO `revisions` (`id`, `revision_entity_id`, `entity_id`, `user_id`)
+--   SELECT `movies`.`changed`, 12, `movies`.`id`, 3 FROM `movies`;
+
+INSERT INTO `revisions` (`id`, `revision_entity_id`, `entity_id`, `user_id`)
+  SELECT `system_pages`.`changed`, 13, `system_pages`.`id`, 3 FROM `system_pages`;
 
 -- END "Revisions"

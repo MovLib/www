@@ -415,7 +415,8 @@ SQL
 SELECT
   `revisions`.`id` + 0 AS `revisionId`,
   `revisions`.`entity_id` AS `entityId`,
-  `revision_entities`.`class` AS `entityClass`
+  `revision_entities`.`class` AS `entityClass`,
+  `revision_entities`.`id` AS `entityTypeId`
 FROM `revisions`
   INNER JOIN `revision_entities`
     ON `revisions`.`revision_entity_id` = `revision_entities`.`id`
@@ -429,7 +430,7 @@ SQL
     while ($contribution = $result->fetch_object()) {
       // We have to create a unique delta for each contribution to preserve the order that the above SQL query produced
       // for us.
-      $contributions["{$contribution->entityId}_{$contribution->revisionId}"] = (object) [
+      $contributions["{$contribution->entityTypeId}_{$contribution->entityId}_{$contribution->revisionId}"] = (object) [
         "entity"          => null,
         "entityClassName" => $contribution->entityClass,
         "entityId"        => $contribution->entityId,

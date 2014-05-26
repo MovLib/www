@@ -80,14 +80,15 @@ class SystemPage extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Rev
    *
    * @param \MovLib\Core\DIContainer $diContainer
    *   {@inheritdoc}
-   * @param integer $id
-   *   The system page's unique identifier to instantiate.
+   * @param integer $id [optional]
+   *   The system page's unique identifier to instantiate, defaults to <code>NULL</code> (no system page will be loaded).
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $id) {
+  public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null) {
     parent::__construct($diContainer);
-    $connection = Database::getConnection();
-    $stmt = $connection->prepare(<<<SQL
+    if ($id) {
+      $connection = Database::getConnection();
+      $stmt = $connection->prepare(<<<SQL
 SELECT
   `id`,
   IFNULL(
@@ -103,22 +104,24 @@ FROM `system_pages`
 WHERE `id` = ?
 LIMIT 1
 SQL
-    );
-    $stmt->bind_param("d", $id);
-    $stmt->execute();
-    $stmt->bind_result(
-      $this->id,
-      $this->title,
-      $this->text,
-      $this->routeKey
-    );
-    $found = $stmt->fetch();
-    $stmt->close();
-    if (!$found) {
-      throw new NotFoundException("Couldn't find Systempage {$id}");
+      );
+      $stmt->bind_param("d", $id);
+      $stmt->execute();
+      $stmt->bind_result(
+        $this->id,
+        $this->title,
+        $this->text,
+        $this->routeKey
+      );
+      $found = $stmt->fetch();
+      $stmt->close();
+      if (!$found) {
+        throw new NotFoundException("Couldn't find Systempage {$id}");
+      }
     }
-
-    $this->init();
+    if ($this->id) {
+      $this->init();
+    }
   }
 
   /**
