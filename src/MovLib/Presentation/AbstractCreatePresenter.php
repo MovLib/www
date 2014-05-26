@@ -81,7 +81,7 @@ abstract class AbstractCreatePresenter extends \MovLib\Presentation\AbstractPres
    * @return this
    */
   public function valid() {
-    $this->entity->create();
+    $this->entity->create($this->session->userId, $this->request->dateTime);
     $this->alertSuccess($this->intl->t("Successfully created"));
     throw new SeeOtherException($this->entity->route);
   }

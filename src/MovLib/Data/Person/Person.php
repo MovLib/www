@@ -23,7 +23,7 @@ use \MovLib\Data\Event\EventSet;
 use \MovLib\Data\Movie\MovieSet;
 use \MovLib\Data\Series\SeriesSet;
 use \MovLib\Component\Date;
-use \MovLib\Data\Search\Search;
+use \MovLib\Core\Search\Search;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -37,11 +37,21 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Person extends \MovLib\Data\Image\AbstractImageEntity {
+class Person extends \MovLib\Data\Image\AbstractImageEntity implements \MovLib\Core\Revision\OriginatorInterface {
+  use \MovLib\Core\Revision\OriginatorTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Person";
+  // @codingStandardsIgnoreEnd
 
   /**
    * The entity type used to store revisions.
@@ -109,6 +119,13 @@ class Person extends \MovLib\Data\Image\AbstractImageEntity {
    * @var string
    */
   protected $directory = "person";
+
+  /**
+   * The person image's localized description.
+   *
+   * @var string
+   */
+  public $imageDescription;
 
   /**
    * The person’s weblinks.
@@ -265,109 +282,99 @@ SQL
    * @return this
    * @throws \mysqli_sql_exception
    */
-  public function commit() {
-    $this->links = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
-
-    $stmt = $this->getMySQLi()->prepare(<<<SQL
-UPDATE `persons` SET
-  `birthdate`              = ?,
-  `born_name`              = ?,
-  `deathdate`              = ?,
-  `dyn_image_descriptions` = '',
-  {$this->getDynamicColumnUpdateQuery(
-    $this->intl->languageCode,
-    "biographies", $this->biography,
-    "wikipedia", $this->wikipedia
-  )},
-  `links`                  = ?,
-  `name`                   = ?,
-  `sex`                    = ?
-WHERE `id` = {$this->id}
-SQL
-    );
-    $stmt->bind_param(
-      "sssssi",
-      $this->birthDate,
-      $this->bornName,
-      $this->deathDate,
-      $this->links,
-      $this->name,
-      $this->sex
-    );
-    $stmt->execute();
-    $stmt->close();
-
-    // Update the search index.
-    $names = [ $this->name, $this->bornName ];
-    (new Search($this))
-      ->indexSimple("name", $names)
-      ->indexSimpleSuggestion(array_merge($this->getAliases(), $names), true)
-      ->addSuggestionData("name", $this->name)
-      ->execute($this->kernel, $this->log, $this->deleted)
-    ;
-
-    return $this;
-  }
-
-  /**
-   * Create a new person.
-   *
-   * @return this
-   * @throws \mysqli_sql_exception
-   */
-  public function create() {
-    $this->links   = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
-
-    $stmt = $this->getMySQLi()->prepare(<<<SQL
-INSERT INTO `persons` (
-  `birthdate`,
-  `born_name`,
-  `deathdate`,
-  `dyn_biographies`,
-  `dyn_image_descriptions`,
-  `dyn_wikipedia`,
-  `links`,
-  `name`,
-  `sex`
-) VALUES (
-  ?,
-  ?,
-  ?,
-  COLUMN_CREATE('{$this->intl->languageCode}', ?),
-  '',
-  COLUMN_CREATE('{$this->intl->languageCode}', ?),
-  ?,
-  ?,
-  ?
-);
-SQL
-    );
-    $stmt->bind_param(
-      "sssssssi",
-      $this->birthDate,
-      $this->bornName,
-      $this->deathDate,
-      $this->biography,
-      $this->wikipedia,
-      $this->links,
-      $this->name,
-      $this->sex
-    );
-
-    $stmt->execute();
-    $this->id = $stmt->insert_id;
-
-    // Add the person to the search index.
-    $names = [ $this->name, $this->bornName ];
-    (new Search($this))
-      ->indexSimple("name", [ $this->name, $this->bornName ])
-      ->indexSimpleSuggestion([ $this->name, $this->bornName ], true)
-      ->addSuggestionData("name", $this->name)
-      ->execute($this->kernel, $this->log, $this->deleted)
-    ;
-
-    return $this->init();
-  }
+//  public function commit($userId, \MovLib\Component\DateTime $changed, $oldRevisionId) {
+//    $this->links = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
+//
+//    $stmt = $this->getMySQLi()->prepare(<<<SQL
+//UPDATE `persons` SET
+//  `birthdate`              = ?,
+//  `born_name`              = ?,
+//  `changed`                = ?,
+//  `deathdate`              = ?,
+//  `dyn_image_descriptions` = '',
+//  {$this->getDynamicColumnUpdateQuery(
+//    $this->intl->languageCode,
+//    "biographies", $this->biography,
+//    "wikipedia", $this->wikipedia
+//  )},
+//  `links`                  = ?,
+//  `name`                   = ?,
+//  `sex`                    = ?
+//WHERE `id` = {$this->id}
+//SQL
+//    );
+//    $stmt->bind_param(
+//      "ssssssi",
+//      $this->birthDate,
+//      $this->bornName,
+//      $changed,
+//      $this->deathDate,
+//      $this->links,
+//      $this->name,
+//      $this->sex
+//    );
+//    $stmt->execute();
+//    $stmt->close();
+//
+//    return $this;
+//  }
+//
+//  /**
+//   * Create a new person.
+//   *
+//   * @return this
+//   * @throws \mysqli_sql_exception
+//   */
+//  public function create($userId, \MovLib\Component\DateTime $created) {
+//    $this->links   = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
+//
+//    $stmt = $this->getMySQLi()->prepare(<<<SQL
+//INSERT INTO `persons` (
+//  `birthdate`,
+//  `born_name`,
+//  `created`,
+//  `changed`,
+//  `deathdate`,
+//  `dyn_biographies`,
+//  `dyn_image_descriptions`,
+//  `dyn_wikipedia`,
+//  `links`,
+//  `name`,
+//  `sex`
+//) VALUES (
+//  ?,
+//  ?,
+//  ?,
+//  ?,
+//  ?,
+//  COLUMN_CREATE('{$this->intl->languageCode}', ?),
+//  '',
+//  COLUMN_CREATE('{$this->intl->languageCode}', ?),
+//  ?,
+//  ?,
+//  ?
+//);
+//SQL
+//    );
+//    $stmt->bind_param(
+//      "sssssssssi",
+//      $this->birthDate,
+//      $this->bornName,
+//      $created,
+//      $created,
+//      $this->deathDate,
+//      $this->biography,
+//      $this->wikipedia,
+//      $this->links,
+//      $this->name,
+//      $this->sex
+//    );
+//
+//    $stmt->execute();
+//    $this->id = $stmt->insert_id;
+//
+//    return $this->init();
+//  }
 
   /**
    * Get the person's aliases.
@@ -552,6 +559,73 @@ SQL
     $stmt->bind_param("sd", $styles, $this->id);
     $stmt->execute();
     $stmt->close();
+    return $this;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Originator Methods
+
+
+  /**
+   * {@inheritdoc}
+   *
+   * @param \MovLib\Data\Person\PersonRevision $revision {@inheritdoc}
+   * @return \MovLib\Data\Person\PersonRevision {@inheritdoc}
+   */
+  protected function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
+    // @todo: set aliases and awards once they can be retrieved correctly.
+//    $revision->aliases = $this->getAliases();
+//    $revision->awards  = $this->getAwards();
+    $revision->biographies[$this->intl->languageCode] = $this->biography;
+    $revision->birthDate = $this->birthDate;
+    $revision->birthPlaceId = $this->birthPlaceId;
+    $revision->bornName = $this->bornName;
+    $revision->causeOfDeathId = null;
+    $revision->deathDate = $this->deathDate;
+    $revision->deathPlaceId = $this->deathPlaceId;
+    $revision->imageDescriptions[$this->intl->languageCode] = $this->imageDescription;
+    $revision->links = $this->links;
+    $revision->name = $this->name;
+    $revision->sex = $this->sex;
+    return $revision;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * @param \MovLib\Data\Person\PersonRevision $revision {@inheritdoc}
+   * @return this {@inheritdoc}
+   */
+  protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function postCommit(\MovLib\Core\Database\Connection $connection, \MovLib\Core\Revision\RevisionInterface $revision, $oldRevisionId) {
+    return $this->indexSearch($revision);
+  }
+
+  protected function postCreate(\MovLib\Core\Database\Connection $connection, \MovLib\Core\Revision\RevisionInterface $revision) {
+    return $this->indexSearch($revision);
+  }
+
+  /**
+   * Index a revision for the search.
+   *
+   * @param \MovLib\Core\Revision\RevisionInterface $revision
+   *   The revision to index.
+   */
+  protected function indexSearch(\MovLib\Core\Revision\RevisionInterface $revision) {
+    $names = [ $revision->name, $revision->bornName ];
+    (new Search("persons", "person", $revision->entityId))
+      ->indexSimple("name", $names)
+      ->addSuggestionData("name", $revision->name)
+      ->addSuggestionData("bornName", $revision->bornName)
+      ->indexSimpleSuggestion(array_merge((array) $revision->aliases, $names), true)
+      ->execute($this->kernel, $this->log, $this->deleted)
+    ;
     return $this;
   }
 
