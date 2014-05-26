@@ -44,7 +44,7 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Job($this->diContainerHTTP, $_SERVER["JOB_ID"]);
+    $this->entity = new Job($this->container, $_SERVER["JOB_ID"]);
     return $this
       ->initPage($this->intl->t("Edit {0}", [ $this->entity->title ]), null, $this->intl->t("Edit"))
       ->initEdit($this->entity, $this->intl->t("Jobs"), $this->getSidebarItems())
@@ -55,12 +55,12 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    $form = new Form($this->diContainerHTTP);
-    (new Sex())->addInputTextElements($this->diContainerHTTP, $form, "title", $this->entity->titles, [ "required" => true ]);
+    $form = new Form($this->container);
+    (new Sex())->addInputTextElements($this->container, $form, "title", $this->entity->titles, [ "required" => true ]);
     return $form
       ->addHiddenElement("revision_id", $this->entity->changed)
-      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description))
-      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia))
+      ->addElement(new TextareaHTMLExtended($this->container, "description", $this->intl->t("Description"), $this->entity->description))
+      ->addElement(new InputWikipedia($this->container, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia))
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
       ->init([ $this, "submit" ])
     ;

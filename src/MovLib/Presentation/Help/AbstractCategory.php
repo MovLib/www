@@ -60,8 +60,8 @@ abstract class AbstractCategory extends \MovLib\Presentation\AbstractIndexPresen
    */
   public function initCategory(\MovLib\Data\Help\Category $category) {
     $this->category    = $category;
-    $this->articleSet  = new ArticleSet($this->diContainerHTTP);
-    $this->set         = new SubCategorySet($this->diContainerHTTP);
+    $this->articleSet  = new ArticleSet($this->container);
+    $this->set         = new SubCategorySet($this->container);
 
     $this->initPage($this->category->title);
     $this->initBreadcrumb([

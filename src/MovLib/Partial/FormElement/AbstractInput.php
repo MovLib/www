@@ -31,7 +31,7 @@ abstract class AbstractInput extends \MovLib\Partial\FormElement\AbstractFormEle
   /**
    * Instantiate new input form element.
    *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   * @param \MovLib\Core\HTTP\Container $container
    *   HTTP dependency injection container.
    * @param string $id
    *   The input text's unique global identifier.
@@ -48,7 +48,7 @@ abstract class AbstractInput extends \MovLib\Partial\FormElement\AbstractFormEle
    *     <li><code>"value"</code> is set to <code>$value</code></li>
    *   </ul>
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, &$value, array $attributes = null) {
+  public function __construct(\MovLib\Core\HTTP\Container $container, $id, $label, &$value, array $attributes = null) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (!defined("static::TYPE")) {
@@ -62,7 +62,7 @@ abstract class AbstractInput extends \MovLib\Partial\FormElement\AbstractFormEle
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    parent::__construct($diContainerHTTP, $id, $label, $value, $attributes);
+    parent::__construct($container, $id, $label, $value, $attributes);
     $this->attributes["id"]    = $this->attributes["name"] = $this->id;
     $this->attributes["value"] =& $this->value;
     $this->attributes["type"]  = static::TYPE;

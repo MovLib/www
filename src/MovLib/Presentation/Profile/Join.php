@@ -77,7 +77,7 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
     $this->initPage($this->intl->t("Join"));
     $this->initLanguageLinks("/profile/join");
     $this->breadcrumb->addCrumb($this->intl->r("/users"), $this->intl->t("Users"));
-    $this->user = new User($this->diContainerHTTP);
+    $this->user = new User($this->container);
     if ($this->request->methodGET && ($token = $this->request->filterInputString(INPUT_GET, "token"))) {
       $this->validateToken($token);
     }
@@ -95,8 +95,8 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
     $this->headingBefore = "<a class='btn btn-large btn-info fr' href='{$this->intl->r("/profile/sign-in")}'>{$this->intl->t("Sign In")}</a>";
 
     $terms = false; // We don't care about the value, the checkbox is required!
-    $form  = (new Form($this->diContainerHTTP, [ "autocomplete" => "off", "class" => "s s6 o3" ]))
-      ->addElement(new InputText($this->diContainerHTTP, "username", $this->intl->t("Username"), $this->user->name, [
+    $form  = (new Form($this->container, [ "autocomplete" => "off", "class" => "s s6 o3" ]))
+      ->addElement(new InputText($this->container, "username", $this->intl->t("Username"), $this->user->name, [
         "autofocus"   => true,
         "maxlength"   => User::NAME_MAXIMUM_LENGTH,
         "pattern"     => "^(?!^[ ]+)(?![ ]+$)(?!^.*[ ]{2,}.*$)(?!^.*[" . preg_quote(User::NAME_ILLEGAL_CHARACTERS, "/") . "].*$).*$",
@@ -108,15 +108,15 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
           [ User::NAME_ILLEGAL_CHARACTERS, User::NAME_MAXIMUM_LENGTH ]
         ),
       ]))
-      ->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email Address"), $this->user->email, [
+      ->addElement(new InputEmail($this->container, "email", $this->intl->t("Email Address"), $this->user->email, [
         "placeholder" => $this->intl->t("Enter your email address"),
         "required"    => true,
       ]))
-      ->addElement(new InputPassword($this->diContainerHTTP, "password", $this->intl->t("Password"), $this->user->passwordHash, [
+      ->addElement(new InputPassword($this->container, "password", $this->intl->t("Password"), $this->user->passwordHash, [
         "placeholder" => $this->intl->t("Enter your desired password"),
         "required"    => true,
       ]))
-      ->addElement(new InputCheckbox($this->diContainerHTTP, "terms", $this->intl->t(
+      ->addElement(new InputCheckbox($this->container, "terms", $this->intl->t(
         "I accept the {a1}privacy policy{a} and the {a2}terms of use{a}.",
         [ "a" => "</a>", "a1" => "<a href='{$this->intl->r("/privacy-policy")}'>", "a2" => "<a href='{$this->intl->r("/terms-of-use")}'>" ]
       ), $terms, [ "required" => true ]))
@@ -266,7 +266,7 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
       //
       // The temporary storage data is created in \MovLib\Mail\Profile\JoinEmail::init() because there's no need to
       // create this entry in the database while the user is waiting for the response.
-      $tmp  = new TemporaryStorage($this->diContainerHTTP);
+      $tmp  = new TemporaryStorage($this->container);
       $data = $tmp->get($token);
 
       // Abort if we have not data at all for the token.

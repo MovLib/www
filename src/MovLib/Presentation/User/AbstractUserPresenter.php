@@ -46,7 +46,7 @@ abstract class AbstractUserPresenter extends \MovLib\Presentation\AbstractPresen
   final protected function initPage($headTitle, $pageTitle = null, $breadcrumbTitle = null) {
     $this->stylesheets[] = "user";
 
-    $this->entity = new User($this->diContainerHTTP, $_SERVER["USER_NAME"]);
+    $this->entity = new User($this->container, $_SERVER["USER_NAME"]);
 
     $headTitle = $headTitle ? str_replace("{username}", $this->entity->name, $headTitle) : $this->entity->name;
     $pageTitle && ($pageTitle = str_replace("{username}", $this->entity->name, $pageTitle));

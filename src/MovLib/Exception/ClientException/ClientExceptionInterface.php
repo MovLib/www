@@ -102,11 +102,11 @@ interface ClientExceptionInterface {
   /**
    * Get the exception's presentation.
    *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   * @param \MovLib\Core\HTTP\Container $container
    *   The HTTP dependency injection container.
    * @return string
    *   The exception's presentation.
    */
-  public function getPresentation(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP);
+  public function getPresentation(\MovLib\Core\HTTP\Container $container);
 
 }

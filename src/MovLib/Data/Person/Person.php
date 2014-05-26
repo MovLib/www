@@ -17,13 +17,15 @@
  */
 namespace MovLib\Data\Person;
 
+use \MovLib\Component\Date;
+use \MovLib\Core\Revision\OriginatorTrait;
+use \MovLib\Core\Search\RevisionTrait;
+use \MovLib\Core\Search\SearchIndexer;
 use \MovLib\Data\Award\AwardSet;
 use \MovLib\Data\Award\CategorySet;
 use \MovLib\Data\Event\EventSet;
 use \MovLib\Data\Movie\MovieSet;
 use \MovLib\Data\Series\SeriesSet;
-use \MovLib\Component\Date;
-use \MovLib\Core\Search\Search;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -37,8 +39,11 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Person extends \MovLib\Data\Image\AbstractImageEntity implements \MovLib\Core\Revision\OriginatorInterface {
-  use \MovLib\Core\Revision\OriginatorTrait;
+final class Person extends \MovLib\Data\Image\AbstractImageEntity implements \MovLib\Core\Revision\OriginatorInterface {
+  use OriginatorTrait, RevisionTrait {
+    RevisionTrait::postCommit insteadof OriginatorTrait;
+    RevisionTrait::postCreate insteadof OriginatorTrait;
+  }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -186,14 +191,14 @@ class Person extends \MovLib\Data\Image\AbstractImageEntity implements \MovLib\C
   /**
    * Instantiate new person object.
    *
-   * @param \MovLib\Core\DIContainer $diContainer
+   * @param \MovLib\Core\Container $container
    *   {@inheritdoc}
    * @param integer $id [optional]
    *   The person's unique identifier to instantiate, defaults to <code>NULL</code> (no person will be loaded).
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null) {
-    parent::__construct($diContainer);
+  public function __construct(\MovLib\Core\Container $container, $id = null) {
+    parent::__construct($container);
     if ($id) {
       $stmt = $this->getMySQLi()->prepare(<<<SQL
 SELECT
@@ -400,7 +405,7 @@ SQL
    * @return \MovLib\Data\Award\AwardSet
    */
   public function getAwards() {
-    $awards = new AwardSet($this->diContainer);
+    $awards = new AwardSet($this->container);
 
     $result = $this->getMySQLi()->query(<<<SQL
 (
@@ -473,11 +478,11 @@ SQL
     $awards->loadIdentifiers(array_keys($awardIds), "`name`{$this->collations[$this->intl->languageCode]} ASC");
 
     // Load all events, regardless of the award.
-    $events = new EventSet($this->diContainer);
+    $events = new EventSet($this->container);
     $events->loadIdentifiers(array_keys($eventIds), "`start_date` DESC");
 
     // Load all award categories regardless of the event.
-    $categories = new CategorySet($this->diContainer);
+    $categories = new CategorySet($this->container);
     $categoryOrder = <<<SQL
 IFNULL(
   COLUMN_GET(`dyn_names`, '{$this->intl->languageCode}' AS CHAR(255)),
@@ -488,13 +493,13 @@ SQL
     $categories->loadIdentifiers(array_keys($awardCategoryIds), $categoryOrder);
 
     // Load all movies, if any.
-    $movies = new MovieSet($this->diContainer);
+    $movies = new MovieSet($this->container);
     if (isset($movieIds)) {
       $movies->loadIdentifiers(array_keys($movieIds));
     }
 
     // Load all series, if any.
-    $series = new SeriesSet($this->diContainer);
+    $series = new SeriesSet($this->container);
     if (isset($seriesIds)) {
       $series->loadIdentifiers(array_keys($seriesIds));
     }
@@ -504,11 +509,11 @@ SQL
     foreach ($events as $eventId => $event) {
       // Events are pretty straight forward.
       if (empty($awards->entities[$event->award]->events)) {
-        $awards->entities[$event->award]->events = new EventSet($this->diContainer);
+        $awards->entities[$event->award]->events = new EventSet($this->container);
       }
       $awards->entities[$event->award]->events->entities[$eventId] = $event;
 
-      $awards->entities[$event->award]->events->entities[$eventId]->categories = new CategorySet($this->diContainer);
+      $awards->entities[$event->award]->events->entities[$eventId]->categories = new CategorySet($this->container);
 
       // Get the event -> category association from the array constructed above.
       foreach ($eventCategorywins[$eventId] as $categoryId => $categoryProperties) {
@@ -534,7 +539,7 @@ SQL
    */
   public function getBirthPlace() {
     if ($this->birthPlaceId) {
-      return new \MovLib\Data\Place\Place($this->diContainer, $this->birthPlaceId);
+      return new \MovLib\Data\Place\Place($this->container, $this->birthPlaceId);
     }
   }
 
@@ -546,7 +551,7 @@ SQL
    */
   public function getDeathPlace() {
     if ($this->deathPlaceId) {
-      return new \MovLib\Data\Place\Place($this->diContainer, $this->deathPlaceId);
+      return new \MovLib\Data\Place\Place($this->container, $this->deathPlaceId);
     }
   }
 
@@ -562,13 +567,21 @@ SQL
     return $this;
   }
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Originator Methods
-
+  /**
+   * {@inheritdoc}
+   */
+  protected function defineSearchIndex(SearchIndexer $search, \MovLib\Core\Revision\RevisionInterface $revision) {
+    $names = [ $revision->name, $revision->bornName ];
+    return $search
+      ->indexSimple("name", $names)
+      ->addSuggestionData("name", $revision->name)
+      ->addSuggestionData("bornName", $revision->bornName)
+      ->indexSimpleSuggestion(array_merge((array) $revision->aliases, $names), true)
+    ;
+  }
 
   /**
    * {@inheritdoc}
-   *
    * @param \MovLib\Data\Person\PersonRevision $revision {@inheritdoc}
    * @return \MovLib\Data\Person\PersonRevision {@inheritdoc}
    */
@@ -592,40 +605,10 @@ SQL
 
   /**
    * {@inheritdoc}
-   *
    * @param \MovLib\Data\Person\PersonRevision $revision {@inheritdoc}
    * @return this {@inheritdoc}
    */
   protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function postCommit(\MovLib\Core\Database\Connection $connection, \MovLib\Core\Revision\RevisionInterface $revision, $oldRevisionId) {
-    return $this->indexSearch($revision);
-  }
-
-  protected function postCreate(\MovLib\Core\Database\Connection $connection, \MovLib\Core\Revision\RevisionInterface $revision) {
-    return $this->indexSearch($revision);
-  }
-
-  /**
-   * Index a revision for the search.
-   *
-   * @param \MovLib\Core\Revision\RevisionInterface $revision
-   *   The revision to index.
-   */
-  protected function indexSearch(\MovLib\Core\Revision\RevisionInterface $revision) {
-    $names = [ $revision->name, $revision->bornName ];
-    (new Search("persons", "person", $revision->entityId))
-      ->indexSimple("name", $names)
-      ->addSuggestionData("name", $revision->name)
-      ->addSuggestionData("bornName", $revision->bornName)
-      ->indexSimpleSuggestion(array_merge((array) $revision->aliases, $names), true)
-      ->execute($this->kernel, $this->log, $this->deleted)
-    ;
     return $this;
   }
 

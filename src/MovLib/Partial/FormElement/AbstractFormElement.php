@@ -116,7 +116,7 @@ abstract class AbstractFormElement extends \MovLib\Core\Presentation\DependencyI
   /**
    * Instantiate new form element.
    *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   * @param \MovLib\Core\HTTP\Container $container
    *   The HTTP dependency injection container.
    * @param string $id
    *   The form element's unique global identifier.
@@ -127,9 +127,9 @@ abstract class AbstractFormElement extends \MovLib\Core\Presentation\DependencyI
    * @param array $attributes [optional]
    *   The form element's attributes array, defaults to <code>NULL</code> (no additional attributes).
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, &$value, array $attributes = null) {
-    parent::__construct($diContainerHTTP);
-    $this->presenter = $diContainerHTTP->presenter;
+  public function __construct(\MovLib\Core\HTTP\Container $container, $id, $label, &$value, array $attributes = null) {
+    parent::__construct($container);
+    $this->presenter = $container->presenter;
 
     // @devStart
     // @codeCoverageIgnoreStart

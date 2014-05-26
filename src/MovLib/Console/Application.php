@@ -17,7 +17,7 @@
  */
 namespace MovLib\Console;
 
-use \MovLib\Core\DIContainer;
+use \MovLib\Core\Container;
 
 /**
  * MovLib Command Line Interface Application.
@@ -37,13 +37,13 @@ final class Application extends \Symfony\Component\Console\Application {
   /**
    * Instantiate new MovLib CLI application.
    *
-   * @param \MovLib\Core\DIContainer $diContainer
+   * @param \MovLib\Core\Container $container
    *   The dependency injection container.
    * @param string $basename
    *   The basename of the executed binary (without extension).
    */
-  public function __construct(DIContainer $diContainer, $basename) {
-    parent::__construct($basename, $diContainer->config->version);
+  public function __construct(Container $container, $basename) {
+    parent::__construct($basename, $container->config->version);
     cli_set_process_title($basename);
 
     // Guess the directory containing the commands, if the result is "Lig" then the "movlib.php" binary was invoked
@@ -54,12 +54,12 @@ final class Application extends \Symfony\Component\Console\Application {
     }
 
     /* @var $fileinfo \SplFileInfo */
-    foreach ($diContainer->fs->getRecursiveIterator("dr://src/MovLib/Console/Command/{$commandDirectory}", \RecursiveIteratorIterator::SELF_FIRST) as $fileinfo) {
+    foreach ($container->fs->getRecursiveIterator("dr://src/MovLib/Console/Command/{$commandDirectory}", \RecursiveIteratorIterator::SELF_FIRST) as $fileinfo) {
       if ($fileinfo->isFile() && $fileinfo->getExtension() == "php") {
         $command   = strtr(str_replace([ "dr://src/", ".php" ], "", $fileinfo->getPathname()), "/", "\\");
         $reflector = new \ReflectionClass($command);
         if ($reflector->isInstantiable() && $reflector->isSubclassOf("\\Symfony\\Component\\Console\\Command\\Command")) {
-          $this->add(new $command($diContainer));
+          $this->add(new $command($container));
         }
       }
     }

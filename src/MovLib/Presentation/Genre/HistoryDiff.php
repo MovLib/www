@@ -84,7 +84,7 @@ final class HistoryDiff extends \MovLib\Presentation\AbstractPresenter {
 
     // Now we try to instantiate the actual genre for presentation purposes. This will throw the not found exception if
     // the genre doesn't exist at all.
-    $this->entity = new Genre($this->diContainerHTTP, $_SERVER["GENRE_ID"]);
+    $this->entity = new Genre($this->container, $_SERVER["GENRE_ID"]);
 
     // No exception, let's start configuring the presentation.
     $this->initPage(

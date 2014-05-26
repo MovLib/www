@@ -42,7 +42,7 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Category($this->diContainerHTTP, $_SERVER["CATEGORY_ID"]);
+    $this->entity = new Category($this->container, $_SERVER["CATEGORY_ID"]);
     $pageTitle    = $this->intl->t("Edit {0}", [ $this->entity->name ]);
     $this->initPage($pageTitle, $pageTitle, $this->intl->t("Edit"));
     $this->breadcrumb->addCrumbs([
@@ -58,33 +58,33 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    $awardOptions = (new AwardSet($this->diContainerHTTP))->loadSelectOptions();
-    $form = (new Form($this->diContainerHTTP))
-      ->addElement(new Select($this->diContainerHTTP, "award", $this->intl->t("Award"), $awardOptions, $this->entity->award->id, [
+    $awardOptions = (new AwardSet($this->container))->loadSelectOptions();
+    $form = (new Form($this->container))
+      ->addElement(new Select($this->container, "award", $this->intl->t("Award"), $awardOptions, $this->entity->award->id, [
         "placeholder" => $this->intl->t("Select the category’s Award."),
         "autofocus"   => true,
         "required"    => true,
       ]))
-      ->addElement(new InputText($this->diContainerHTTP, "name", $this->intl->t("Name"), $this->entity->name, [
+      ->addElement(new InputText($this->container, "name", $this->intl->t("Name"), $this->entity->name, [
         "placeholder" => $this->intl->t("Enter the category’s name."),
         "required"    => true,
       ]))
-      ->addElement(new InputInteger($this->diContainerHTTP, "first-year", $this->intl->t("First Year"), $this->entity->firstYear->year, [
+      ->addElement(new InputInteger($this->container, "first-year", $this->intl->t("First Year"), $this->entity->firstYear->year, [
         "placeholder" => $this->intl->t("yyyy"),
         "required"    => true,
         "min"         => 1000,
         "max"         => 9999
       ]))
-      ->addElement(new InputInteger($this->diContainerHTTP, "last-year", $this->intl->t("Last Year"), $this->entity->lastYear->year, [
+      ->addElement(new InputInteger($this->container, "last-year", $this->intl->t("Last Year"), $this->entity->lastYear->year, [
         "placeholder" => $this->intl->t("yyyy"),
         "min"         => 1000,
         "max"         => 9999
       ]))
-      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
+      ->addElement(new TextareaHTMLExtended($this->container, "description", $this->intl->t("Description"), $this->entity->description, [
         "data-allow-external" => "true",
         "placeholder"         => $this->intl->t("Describe the category."),
       ]))
-      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
+      ->addElement(new InputWikipedia($this->container, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
         "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/…",
         "data-allow-external" => "true",
       ]))

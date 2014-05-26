@@ -52,8 +52,8 @@ class EmailExists extends \MovLib\Mail\AbstractEmail {
    * @param string $email
    *   The valid email address of the existing user.
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $email) {
-    parent::__construct($diContainerHTTP, $email, $this->intl->t("Forgot Your Password?"));
+  public function __construct(\MovLib\Core\HTTP\Container $container, $email) {
+    parent::__construct($container, $email, $this->intl->t("Forgot Your Password?"));
   }
 
 
@@ -63,9 +63,9 @@ class EmailExists extends \MovLib\Mail\AbstractEmail {
   /**
    * {@inheritdoc}
    */
-  public function init(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    parent::init($diContainerHTTP);
-    $this->name = (new User($this->diContainerHTTP, $this->recipient, User::FROM_EMAIL))->name;
+  public function init(\MovLib\Core\HTTP\Container $container) {
+    parent::init($container);
+    $this->name = (new User($this->container, $this->recipient, User::FROM_EMAIL))->name;
     return true;
   }
 
@@ -76,7 +76,7 @@ class EmailExists extends \MovLib\Mail\AbstractEmail {
     return
       "<p>{$this->intl->t("Hi {0}!", [ $this->name ])}</p>" .
       "<p>{$this->intl->t("You (or someone else) tried to sign up a new account with this email address. If you forgot your password go to the {0}reset password{1} page to request a new one.", [
-        "<a href='{$this->diContainerHTTP->request->scheme}://{$this->diContainerHTTP->request->hostname}{$this->intl->r("/user/reset-password")}'>", "</a>"
+        "<a href='{$this->container->request->scheme}://{$this->container->request->hostname}{$this->intl->r("/user/reset-password")}'>", "</a>"
       ])}</p>" .
       "<p>{$this->intl->t("If it wasn’t you who requested this action simply ignore this message.")}</p>"
     ;
@@ -91,7 +91,7 @@ class EmailExists extends \MovLib\Mail\AbstractEmail {
 
 {$this->intl->t("You (or someone else) tried to sign up a new account with this email address. If you forgot your password go to the reset password page to request a new one.")}
 
-{$this->diContainerHTTP->request->scheme}://{$this->diContainerHTTP->request->hostname}{$this->intl->r("/user/reset-password")}
+{$this->container->request->scheme}://{$this->container->request->hostname}{$this->intl->r("/user/reset-password")}
 
 {$this->intl->t("If it wasn’t you who requested this action simply ignore this message.")}
 EOT;

@@ -60,14 +60,14 @@ class History extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Job($this->diContainerHTTP, $_SERVER["JOB_ID"]);
+    $this->entity = new Job($this->container, $_SERVER["JOB_ID"]);
     $this->initPage($this->intl->t("History of {0}", $this->entity->title), null, $this->intl->t("History"));
     $this->sidebarInitToolbox($this->entity);
     $this->breadcrumb->addCrumb($this->intl->r("/jobs"), $this->intl->t("Jobs"));
     $this->breadcrumb->addCrumb($this->intl->r("/jobs/{0}", $this->entity->id), $this->entity->title);
     $this->revisionSet = new RevisionSet("Job", $this->entity->id);
     $this->paginationInit($this->revisionSet->getTotalCount());
-    $this->revisionSet->load($this->paginationOffset, $this->paginationLimit, $this->diContainerHTTP);
+    $this->revisionSet->load($this->paginationOffset, $this->paginationLimit, $this->container);
   }
 
   /**

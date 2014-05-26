@@ -53,7 +53,7 @@ class Persons extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Job($this->diContainerHTTP, $_SERVER["JOB_ID"]);
+    $this->entity = new Job($this->container, $_SERVER["JOB_ID"]);
     $pageTitle    = $this->intl->t("Persons related to {0}", [ $this->entity->title ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Persons"))
@@ -73,7 +73,7 @@ class Persons extends \MovLib\Presentation\AbstractPresenter {
   public function getContent() {
     $personSet = $this->entity->getPersons($this->paginationOffset, $this->paginationLimit);
     $this->paginationInit($this->entity->getPersonTotalCount());
-    return (new PersonHelper($this->diContainerHTTP))->getListing($personSet);
+    return (new PersonHelper($this->container))->getListing($personSet);
   }
 
   /**

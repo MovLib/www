@@ -191,14 +191,14 @@ class Event extends \MovLib\Data\AbstractEntity {
   /**
    * Instantiate new event object.
    *
-   * @param \MovLib\Core\DIContainer $diContainer
+   * @param \MovLib\Core\Container $container
    *   {@inheritdoc}
    * @param integer $id [optional]
    *   The event's unique identifier to instantiate, defaults to <code>NULL</code> (no event will be loaded).
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null) {
-    parent::__construct($diContainer);
+  public function __construct(\MovLib\Core\Container $container, $id = null) {
+    parent::__construct($container);
     if ($id) {
       $stmt = $this->getMySQLi()->prepare(<<<SQL
 SELECT
@@ -358,7 +358,7 @@ SQL
    * {@inheritdoc}
    */
   public function init() {
-    $this->place     && $this->place = new Place($this->diContainer, $this->place);
+    $this->place     && $this->place = new Place($this->container, $this->place);
     $this->aliases   && ($this->aliases = unserialize(($this->aliases)));
     $this->links     && ($this->links = unserialize($this->links));
     $this->startDate && ($this->startDate = new Date($this->startDate));

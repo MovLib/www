@@ -39,8 +39,8 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity        = new Award($this->diContainerHTTP, $_SERVER["AWARD_ID"]);
-    $this->set           = new CategorySet($this->diContainerHTTP);
+    $this->entity        = new Award($this->container, $_SERVER["AWARD_ID"]);
+    $this->set           = new CategorySet($this->container);
     $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/award/{0}/category/create", [ $this->entity->id ])}'>{$this->intl->t("Create Category")}</a>";
     $pageTitle    = $this->intl->t("Categories of {0}", [ $this->entity->name ]);
     return $this

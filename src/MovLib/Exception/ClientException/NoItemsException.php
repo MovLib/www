@@ -31,8 +31,8 @@ final class NoItemsException extends \RuntimeException implements \MovLib\Except
   /**
    * {@inheritdoc}
    */
-  public function getPresentation(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    return $diContainerHTTP->presenter->getPresentation($diContainerHTTP->presenter->getNoItemsContent());
+  public function getPresentation(\MovLib\Core\HTTP\Container $container) {
+    return $container->presenter->getPresentation($container->presenter->getNoItemsContent());
   }
 
 }

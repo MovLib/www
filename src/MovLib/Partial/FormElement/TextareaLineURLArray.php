@@ -32,8 +32,8 @@ class TextareaLineURLArray extends \MovLib\Partial\FormElement\InputURL {
   /**
    * @inheritdoc
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, &$value, array $attributes = null) {
-    parent::__construct($diContainerHTTP, $id, $label, $value, $attributes);
+  public function __construct(\MovLib\Core\HTTP\Container $container, $id, $label, &$value, array $attributes = null) {
+    parent::__construct($container, $id, $label, $value, $attributes);
     unset($this->attributes["type"]);
     if (is_array($this->value)) {
       $this->value = implode("\n", array_values($this->value));

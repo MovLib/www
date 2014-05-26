@@ -51,7 +51,7 @@ class Delete extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Award($this->diContainerHTTP, $_SERVER["AWARD_ID"]);
+    $this->entity = new Award($this->container, $_SERVER["AWARD_ID"]);
     $pageTitle    = $this->intl->t("Delete {0}", [ $this->entity->name ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Delete"))

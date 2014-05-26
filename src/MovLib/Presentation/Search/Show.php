@@ -184,32 +184,32 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
     if ($movieIds) {
       $resultsToRender[$this->intl->t("Movies")] = [
         "helper" => "MovieHelper",
-        "set"    => (new MovieSet($this->diContainerHTTP))->loadIdentifiers($movieIds),
+        "set"    => (new MovieSet($this->container))->loadIdentifiers($movieIds),
       ];
     }
     if ($seriesIds) {
       $resultsToRender[$this->intl->tp(-1, "Series")] = [
         "helper" => "SeriesHelper",
-        "set"    => (new SeriesSet($this->diContainerHTTP))->loadIdentifiers($seriesIds),
+        "set"    => (new SeriesSet($this->container))->loadIdentifiers($seriesIds),
       ];
     }
     if ($releaseIds) {
       $resultsToRender[$this->intl->t("Releases")] = [
         "helper" => "ReleaseHelper",
-        "set"    => (new ReleaseSet($this->diContainerHTTP))->loadIdentifiers($releaseIds),
+        "set"    => (new ReleaseSet($this->container))->loadIdentifiers($releaseIds),
       ];
     }
     if ($personIds) {
       $resultsToRender[$this->intl->t("Persons")] = [
         "helper" => "PersonHelper",
-        "set"    => (new PersonSet($this->diContainerHTTP))->loadIdentifiers($personIds),
+        "set"    => (new PersonSet($this->container))->loadIdentifiers($personIds),
       ];
     }
 
     // Utilize the helper classes and add sections for every entity type.
     foreach ($resultsToRender as $name => $config) {
       $helperClass = "\\MovLib\\Partial\\Helper\\{$config["helper"]}";
-      $helper = new $helperClass($this->diContainerHTTP);
+      $helper = new $helperClass($this->container);
       $this->sectionAdd($name, $helper->getListing($config["set"]), false);
     }
 

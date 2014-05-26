@@ -123,14 +123,14 @@ class Job extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\O
   /**
    * Instantiate new job object.
    *
-   * @param \MovLib\Core\DIContainer $diContainer
+   * @param \MovLib\Core\Container $container
    *   {@inheritdoc}
    * @param integer $id [optional]
    *   The job's unique identifier to instantiate, defaults to <code>NULL</code> (no job will be loaded).
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null) {
-    parent::__construct($diContainer);
+  public function __construct(\MovLib\Core\Container $container, $id = null) {
+    parent::__construct($container);
     if ($id) {
       $connection = Database::getConnection();
       $stmt = $connection->prepare(<<<SQL
@@ -209,7 +209,7 @@ SQL
    * @return \MovLib\Data\Company\CompanySet
    */
   public function getCompanies($offset = null, $limit = null) {
-    $companySet = new CompanySet($this->diContainer);
+    $companySet = new CompanySet($this->container);
     $result     = $this->getMySQLi()->query(<<<SQL
 (
 SELECT `companies`.`id` FROM `companies`
@@ -267,7 +267,7 @@ SQL
    * @return \MovLib\Data\Person\PersonSet
    */
   public function getPersons($offset = null, $limit = null) {
-    $personSet = new PersonSet($this->diContainer);
+    $personSet = new PersonSet($this->container);
     $result = $this->getMySQLi()->query(<<<SQL
 (
 SELECT `persons`.`id` FROM `persons`

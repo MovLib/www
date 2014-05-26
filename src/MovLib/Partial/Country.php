@@ -48,8 +48,8 @@ final class Country extends \MovLib\Core\Presentation\DependencyInjectionBase {
   /**
    * {@inheritdoc}
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    parent::__construct($diContainerHTTP);
+  public function __construct(\MovLib\Core\HTTP\Container $container) {
+    parent::__construct($container);
     $this->countries = $this->intl->getTranslations("countries");
   }
 
@@ -168,7 +168,7 @@ final class Country extends \MovLib\Core\Presentation\DependencyInjectionBase {
     foreach ($this->countries as $country) {
       $options[$country->code] = $country->name;
     }
-    return new Select($this->diContainerHTTP, $id, $label ?: $this->intl->t("Country"), $options, $value, $attributes);
+    return new Select($this->container, $id, $label ?: $this->intl->t("Country"), $options, $value, $attributes);
   }
 
 }

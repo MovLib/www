@@ -87,11 +87,11 @@ final class Director extends \MovLib\Data\Job\Job {
   /**
    * Instantiate new director object.
    *
-   * @param \MovLib\Core\DIContainer $diContainer
+   * @param \MovLib\Core\Container $container
    *   {{@inheritdoc}}
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer) {
-    parent::__construct($diContainer);
+  public function __construct(\MovLib\Core\Container $container) {
+    parent::__construct($container);
   }
 
 }

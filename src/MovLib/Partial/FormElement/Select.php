@@ -60,7 +60,7 @@ class Select extends \MovLib\Partial\FormElement\AbstractFormElement {
   /**
    * Instantiate new select single option form element.
    *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   * @param \MovLib\Core\HTTP\Container $container
    *   The HTTP dependency injection container.
    * @param string $id
    *   The select's global identifier.
@@ -74,7 +74,7 @@ class Select extends \MovLib\Partial\FormElement\AbstractFormElement {
    * @param array $attributes [optional]
    *   Additional attributes for the textarea, defaults to <code>NULL</code> (no additional attributes).
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, array $options, &$value = null, array $attributes = null) {
+  public function __construct(\MovLib\Core\HTTP\Container $container, $id, $label, array $options, &$value = null, array $attributes = null) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($options)) {
@@ -85,7 +85,7 @@ class Select extends \MovLib\Partial\FormElement\AbstractFormElement {
     }
     // @devEnd
     // @codeCoverageIgnoreEnd
-    parent::__construct($diContainerHTTP, $id, $label, $value, $attributes);
+    parent::__construct($container, $id, $label, $value, $attributes);
     $this->options = $options;
   }
 

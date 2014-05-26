@@ -53,7 +53,7 @@ trait MovieTrait {
           "<div class='s s8'>" .
             "<h2 class='para'>{$this->getStructuredDisplayTitle($movie)}</h2>" .
             $this->getStructuredOriginalTitle($movie, "small") .
-            (new Genre($this->diContainerHTTP))->getLabels($movie->genreSet, [ "class" => "small" ]) .
+            (new Genre($this->container))->getLabels($movie->genreSet, [ "class" => "small" ]) .
           "</div>" .
           "<div class='s s1 rating-mean tac'>{$this->intl->format("{0,number}", $movie->meanRating)}</div>" .
         "</article>" .

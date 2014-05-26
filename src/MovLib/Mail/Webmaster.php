@@ -66,8 +66,8 @@ final class Webmaster extends \MovLib\Mail\AbstractEmail {
   /**
    * {@inheritdoc}
    */
-  public function init(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    parent::init($diContainerHTTP);
+  public function init(\MovLib\Core\HTTP\Container $container) {
+    parent::init($container);
     $this->recipient = $this->config->emailWebmaster;
     return $this;
   }

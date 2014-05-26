@@ -109,6 +109,13 @@ final class User extends \MovLib\Data\Image\AbstractImageEntity {
   public $birthdate;
 
   /**
+   * The active config instance.
+   *
+   * @var \MovLib\Core\Config
+   */
+  protected $config;
+
+  /**
    * The user's contribution count.
    *
    * @var null|integer
@@ -261,7 +268,7 @@ final class User extends \MovLib\Data\Image\AbstractImageEntity {
   /**
    * Instantiate new user object.
    *
-   * @param \MovLib\Core\DIContainer $diContainer
+   * @param \MovLib\Core\Container $container
    *   {@inheritdoc}
    * @param mixed $value [optional]
    *   The value the column has.
@@ -269,8 +276,8 @@ final class User extends \MovLib\Data\Image\AbstractImageEntity {
    *   From what column the user object should be created, defaults to <var>User::FROM_NAME</var>.
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $value = null, $from = self::FROM_NAME) {
-    parent::__construct($diContainer);
+  public function __construct(\MovLib\Core\Container $container, $value = null, $from = self::FROM_NAME) {
+    parent::__construct($container);
     if ($value && $from) {
       $stmt = $this->getMySQLi()->prepare(<<<SQL
 SELECT
@@ -448,7 +455,7 @@ SQL
     // will load the minimal entities for us. We lower the amount of queries if some entities share the same set.
     foreach ($entities as $entityClassName => $entityIds) {
       $setClassName = "{$entityClassName}Set";
-      $entities[$entityClassName] = (new $setClassName($this->diContainer))->loadIdentifiers($entityIds);
+      $entities[$entityClassName] = (new $setClassName($this->container))->loadIdentifiers($entityIds);
     }
 
     // Now we map the previously collected entities to their corresponding contribution (revision).
@@ -594,8 +601,8 @@ SQL
       }
     }
     $result->free();
-    $ratedMoviesSet = empty($ratedMovieIds) ? [] : (new MovieSet($this->diContainer))->loadIdentifiers($ratedMovieIds);
-    $ratedSeriesSet = empty($ratedSeriesIds) ? [] : (new SeriesSet($this->diContainer))->loadIdentifiers($ratedSeriesIds);
+    $ratedMoviesSet = empty($ratedMovieIds) ? [] : (new MovieSet($this->container))->loadIdentifiers($ratedMovieIds);
+    $ratedSeriesSet = empty($ratedSeriesIds) ? [] : (new SeriesSet($this->container))->loadIdentifiers($ratedSeriesIds);
 
     $c = count($ratedEntities);
     for ($i = 0; $i < $c; ++$i) {
@@ -640,12 +647,12 @@ SQL
    * @return this
    */
   protected function imageUpdateSession() {
-    if ($this->kernel->http) {
+    if ($this->container->kernel->http) {
       $_SESSION[Session::USER_IMAGE_CACHE_BUSTER] = $this->imageCacheBuster;
       $_SESSION[Session::USER_IMAGE_EXTENSION]    = $this->imageExtension;
-      if (isset($this->diContainer->session)) {
-        $this->diContainer->session->userImageCacheBuster = $this->imageCacheBuster;
-        $this->diContainer->session->userImageExtension   = $this->imageExtension;
+      if (isset($this->container->session)) {
+        $this->container->session->userImageCacheBuster = $this->imageCacheBuster;
+        $this->container->session->userImageExtension   = $this->imageExtension;
       }
     }
     return $this;

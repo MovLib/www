@@ -35,7 +35,7 @@ class Charts extends \MovLib\Presentation\AbstractPresenter {
    * Initialize the releases charts presentation.
    */
   public function init() {
-    $this->set = new ReleaseSet($this->diContainerHTTP);
+    $this->set = new ReleaseSet($this->container);
     $this->initPage($this->intl->t("Release Charts"), null, $this->intl->t("Charts"));
     $this->initBreadcrumb([ [ $this->intl->r("/releases"), $this->intl->t("Releases") ] ]);
     $this->initLanguageLinks("/release/charts");

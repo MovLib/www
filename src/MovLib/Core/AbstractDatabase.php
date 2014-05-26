@@ -17,6 +17,8 @@
  */
 namespace MovLib\Core;
 
+use \MovLib\Core\Database\Database;
+
 /**
  * Defines the base for all classes that need a database connection.
  *
@@ -31,13 +33,6 @@ abstract class AbstractDatabase {
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   * The active config instance.
-   *
-   * @var \MovLib\Core\Config
-   */
-  protected $config;
 
   /**
    * Associative array containing language specific collation strings.
@@ -57,9 +52,9 @@ abstract class AbstractDatabase {
   /**
    * The dependency injection container.
    *
-   * @var \MovLib\Core\DIContainer
+   * @var \MovLib\Core\Container
    */
-  protected $diContainer;
+  protected $container;
 
   /**
    * The active file system instance.
@@ -89,13 +84,6 @@ abstract class AbstractDatabase {
    */
   protected $log;
 
-  /**
-   * The shared MySQLi connection.
-   *
-   * @var null|\mysqli
-   */
-  private static $mysqli;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -104,13 +92,13 @@ abstract class AbstractDatabase {
    * Instantiate new database object.
    *
    * @todo Get rid of dependency injection container!
-   * @param \MovLib\Core\DIContainer $diContainer [optional]
+   * @param \MovLib\Core\Container $container [optional]
    *   The dependency injection container.
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer = null) {
-    if ($diContainer) {
-      $this->diContainer = $diContainer;
-      foreach (get_object_vars($diContainer) as $property => $value) {
+  public function __construct(\MovLib\Core\Container $container = null) {
+    if ($container) {
+      $this->container = $container;
+      foreach (get_object_vars($container) as $property => $value) {
         if (property_exists($this, $property)) {
           $this->$property = $value;
         }
@@ -123,66 +111,9 @@ abstract class AbstractDatabase {
 
 
   /**
-   * Get dynamic column update query part.
-   *
-   * Dynamic columns have to be either added (updated) or deleted. Which action is necessary depends on the value of
-   * the entity's property. This method takes care of creating the correct string for the update query that is needed to
-   * perform the correct actions. Of course it will escape all data correctly for the query.
-   *
-   * The returned string might look like the following:
-   * <code>" `dyn_names` = COLUMN_ADD(`dyn_names`, 'de', 'Foobar'), `dyn_descriptions` = COLUMN_DELETE(`dyn_descriptions`, 'de')"</code>
-   *
-   * A dynamic column is added (updated) if the accompanion property value evaluates to <code>TRUE</code> and deleted
-   * if <code>FALSE</code> ({@link http://php.net/language.types.boolean.php#language.types.boolean.casting}).
-   *
-   * @param string $languageCode
-   *   The language code of the current request, used to determine which dynamic columns have to updated.
-   * @param mixed $dynamicColumns
-   *   An array that contains the name of the dynamic column in the database (without the <code>"dyn_"</code> prefix),
-   *   the property and the old property in alternating order, e.g.:
-   *   <code>"names", $this->names, $old->names, "descriptions", $this->descriptions, $old->descriptions, ...</code>
-   * @return string|null
-   *   The dynamic column update query part or <code>NULL</code> if nothing is to be done.
-   */
-  final protected function getDynamicColumnUpdateQuery($languageCode, ...$dynamicColumns) {
-    $mysqli = $this->getMySQLi();
-    $c      = count($dynamicColumns);
-
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert($c % 3 === 0, "Dynamic column count doesn't match property count.");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
-    $query = null;
-    for ($i = 0, $j = 1, $k = 2; $i < $c; $i += 3, $j += 3, $k += 3) {
-      // Check if the value stayed the same, if so, skip.
-      if (isset($dynamicColumns[$j][$languageCode]) && isset($dynamicColumns[$k][$languageCode]) && $dynamicColumns[$j][$languageCode] == $dynamicColumns[$k][$languageCode]) {
-        continue;
-      }
-
-      if ($query) {
-        $query .= ",";
-      }
-
-      // Note the comparison with two equal signs!
-      if (isset($dynamicColumns[$j][$languageCode]) && $dynamicColumns[$j] == true) {
-        $query .= "`dyn_{$dynamicColumns[$i]}`=COLUMN_ADD(`dyn_{$dynamicColumns[$i]}`,'{$languageCode}','{$mysqli->real_escape_string($dynamicColumns[$j][$languageCode])}')";
-      }
-      else {
-        $query .= "`dyn_{$dynamicColumns[$i]}`=COLUMN_DELETE(`dyn_{$dynamicColumns[$i]}`,'{$languageCode}')";
-      }
-    }
-
-    // Pad the created query with spaces to avoid incorrect embedding of it.
-    if ($query) {
-      return " {$query} ";
-    }
-  }
-
-  /**
    * Get the MySQLi instance.
    *
+   * @deprecated
    * @param string $database
    *   The name of the database to connect to, defaults to <code>"movlib"</code>.
    * @return \mysqli
@@ -190,62 +121,7 @@ abstract class AbstractDatabase {
    * @throws \mysqli_sql_exception
    */
   final protected function getMySQLi($database = "movlib") {
-    // Check if we already have a cached instance.
-    if (isset(self::$mysqli[$database])) {
-      return self::$mysqli[$database];
-    }
-
-    // As per recommendation in the PHP documentation, always explicitely close the connection.
-    if (empty(self::$mysqli)) {
-      register_shutdown_function(function () {
-        foreach (self::$mysqli as $connection) {
-          $connection->close();
-        }
-      });
-    }
-
-    // We don't want to check all over the place if anything returned FALSE, exceptions are much better.
-    $driver = new \mysqli_driver();
-    $driver->report_mode = MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT;
-
-    try {
-      // Instantiate, connect, and select database. Note that the complete configuration is done in PHPs global ini
-      // configuration file.
-      self::$mysqli[$database] = new \mysqli(null, null, null, $database);
-    }
-    catch (\ErrorException $e) {
-      if (isset(self::$mysqli[$database]->thread_id)) {
-        self::$mysqli[$database]->kill(self::$mysqli[$database]->thread_id);
-      }
-      return $this->getMySQLi($database);
-    }
-
-    return self::$mysqli[$database];
-  }
-
-  /**
-   * Decode JSON response from dynamic column.
-   *
-   * We store an empty string in every dynamic column when we insert into a table that contains a dynamic column. This
-   * has the huge advantage that we can simply call column add later on, but if we need all the content from the column
-   * an empty object is returned by the database. This utility method was made to ease the handling of this special
-   * case that's contraproductive for us.
-   *
-   * @param string $property
-   *   The property containing the JSON response.
-   * @return this
-   */
-  final protected function jsonDecode(&...$properties) {
-    $c = count($properties);
-    for ($i = 0; $i < $c; ++$i) {
-      if (empty($properties[$i]) || $properties[$i] == "{}") {
-        $properties[$i] = null;
-      }
-      else {
-        $properties[$i] = json_decode($properties[$i], true);
-      }
-    }
-    return $this;
+    return Database::getConnection($database);
   }
 
 }

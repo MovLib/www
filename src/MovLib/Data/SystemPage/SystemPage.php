@@ -78,14 +78,14 @@ class SystemPage extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Rev
   /**
    * Instantiate new company object.
    *
-   * @param \MovLib\Core\DIContainer $diContainer
+   * @param \MovLib\Core\Container $container
    *   {@inheritdoc}
    * @param integer $id [optional]
    *   The system page's unique identifier to instantiate, defaults to <code>NULL</code> (no system page will be loaded).
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null) {
-    parent::__construct($diContainer);
+  public function __construct(\MovLib\Core\Container $container, $id = null) {
+    parent::__construct($container);
     if ($id) {
       $connection = Database::getConnection();
       $stmt = $connection->prepare(<<<SQL

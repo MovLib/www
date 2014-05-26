@@ -51,7 +51,7 @@ class Discussion extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Category($this->diContainerHTTP, $_SERVER["CATEGORY_ID"]);
+    $this->entity = new Category($this->container, $_SERVER["CATEGORY_ID"]);
     $pageTitle    = $this->intl->t("Discuss {0}", [ $this->entity->name ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Discussion"))

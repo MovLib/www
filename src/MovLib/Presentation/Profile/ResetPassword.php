@@ -103,18 +103,18 @@ final class ResetPassword extends \MovLib\Presentation\AbstractPresenter {
     // Note that we aren't checking against GET request method at this point, because we have to validate the token
     // before the user enters the new passwords and afterwards.
     if (($token = $this->request->filterInputString(INPUT_GET, "token"))) {
-      $this->temporaryStorage = new TemporaryStorage($this->diContainerHTTP);
+      $this->temporaryStorage = new TemporaryStorage($this->container);
       $this->userId = $this->temporaryStorage->get($token);
       if ($this->userId === false || empty($this->userId)) {
         $this->invalidToken();
       }
-      $form = (new Form($this->diContainerHTTP, [ "autocomplete" => "off", "class" => "s s6 o3" ]))
-        ->addElement(new InputPassword($this->diContainerHTTP, "password_new", $this->intl->t("New Password"), $this->rawPasswordNew, [
+      $form = (new Form($this->container, [ "autocomplete" => "off", "class" => "s s6 o3" ]))
+        ->addElement(new InputPassword($this->container, "password_new", $this->intl->t("New Password"), $this->rawPasswordNew, [
           "autofocus"   => true,
           "placeholder" => $this->intl->t("Enter your new password"),
           "required"    => true,
         ]))
-        ->addElement(new InputPassword($this->diContainerHTTP, "password_confirm", $this->intl->t("Confirm Password"), $this->rawPasswordConfirm, [
+        ->addElement(new InputPassword($this->container, "password_confirm", $this->intl->t("Confirm Password"), $this->rawPasswordConfirm, [
           "placeholder" => $this->intl->t("Enter your new password again"),
           "required"    => true,
         ]))
@@ -122,8 +122,8 @@ final class ResetPassword extends \MovLib\Presentation\AbstractPresenter {
       ;
     }
     else {
-      $form = (new Form($this->diContainerHTTP, [ "class" => "s s6 o3" ]))
-        ->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email Address"), $this->email, [
+      $form = (new Form($this->container, [ "class" => "s s6 o3" ]))
+        ->addElement(new InputEmail($this->container, "email", $this->intl->t("Email Address"), $this->email, [
           "#help-popup" => $this->intl->t(
             "Enter the email address associated with your {sitename} account. Password reset instructions will be " .
             "sent to you via email.",
@@ -190,7 +190,7 @@ final class ResetPassword extends \MovLib\Presentation\AbstractPresenter {
    */
   public function submitReset() {
     try {
-      $user = new User($this->diContainerHTTP, $this->userId, User::FROM_ID);
+      $user = new User($this->container, $this->userId, User::FROM_ID);
     }
     catch (NotFoundException $e) {
       $this->invalidToken();

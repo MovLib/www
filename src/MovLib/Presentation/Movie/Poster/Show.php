@@ -33,7 +33,7 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    */
   public function init() {
     $this->initPage($this->intl->t("Poster"));
-    $this->initShow(new \MovLib\Stub\Data\Dummy\Dummy($this->diContainerHTTP, $_SERVER["IMAGE_ID"], "poster", "posters"), $this->intl->t("Posters"), "ImageObject");
+    $this->initShow(new \MovLib\Stub\Data\Dummy\Dummy($this->container, $_SERVER["IMAGE_ID"], "poster", "posters"), $this->intl->t("Posters"), "ImageObject");
   }
 
   /**

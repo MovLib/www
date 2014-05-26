@@ -31,7 +31,7 @@ class TextareaHTMLExtendedImage extends \MovLib\Partial\FormElement\TextareaHTML
   /**
    * Instantiate new HTML form element.
    *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   * @param \MovLib\Core\HTTP\Container $container
    *   HTTP dependency injection container.
    * @param string $id
    *   The text's global identifier.
@@ -42,10 +42,10 @@ class TextareaHTMLExtendedImage extends \MovLib\Partial\FormElement\TextareaHTML
    * @param array $attributes [optional]
    *   Additional attributes for the text, defaults to <code>NULL</code> (no additional attributes).
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, &$value, array $attributes = null) {
+  public function __construct(\MovLib\Core\HTTP\Container $container, $id, $label, &$value, array $attributes = null) {
     // Allow images.
     $this->allowedTags["figure"] = "&lt;figure&gt;";
-    parent::__construct($diContainerHTTP, $id, $label, $value, $attributes);
+    parent::__construct($container, $id, $label, $value, $attributes);
   }
 
 }

@@ -51,7 +51,7 @@ class Persons extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Event($this->diContainerHTTP, $_SERVER["EVENT_ID"]);
+    $this->entity = new Event($this->container, $_SERVER["EVENT_ID"]);
     $pageTitle    = $this->intl->t("Persons related to {0}", [ $this->entity->name ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Persons"))

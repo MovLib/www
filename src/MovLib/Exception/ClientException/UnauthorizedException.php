@@ -78,34 +78,34 @@ final class UnauthorizedException extends \RuntimeException implements \MovLib\E
   /**
    * {@inheritdoc}
    */
-  public function getPresentation(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    header("WWW-Authenticate: {$diContainerHTTP->config->sitename} location='{$diContainerHTTP->intl->r("/profile/sign-in")}'", true, 401);
+  public function getPresentation(\MovLib\Core\HTTP\Container $container) {
+    header("WWW-Authenticate: {$container->config->sitename} location='{$container->intl->r("/profile/sign-in")}'", true, 401);
 
     // Never cache an unauthorized response.
-    $diContainerHTTP->response->cacheable = false;
+    $container->response->cacheable = false;
 
     // Trick the sign in presentation.
-    $diContainerHTTP->request->method    = "GET";
-    $diContainerHTTP->request->methodGET = true;
+    $container->request->method    = "GET";
+    $container->request->methodGET = true;
 
     // Use default message if no message was passed.
     if (empty($this->alert)) {
-      $this->alert = $diContainerHTTP->intl->t(
+      $this->alert = $container->intl->t(
         "You must be signed in to access this content. Please use the form below to sign in or {0}join {sitename}{1}.",
-        [ "<a href='{$diContainerHTTP->intl->r("/profile/join")}'>", "</a>", "sitename" => $diContainerHTTP->config->sitename ]
+        [ "<a href='{$container->intl->r("/profile/join")}'>", "</a>", "sitename" => $container->config->sitename ]
       );
     }
 
     // Allow classes to define custom alert messages.
     if (!($this->alert instanceof Alert)) {
-      $this->alert = new Alert($this->alert, $diContainerHTTP->intl->t("Unauthorized"), Alert::SEVERITY_ERROR);
+      $this->alert = new Alert($this->alert, $container->intl->t("Unauthorized"), Alert::SEVERITY_ERROR);
     }
 
-    $languageLinks                             = $diContainerHTTP->presenter->languageLinks;
-    $diContainerHTTP->presenter                = (new SignIn($diContainerHTTP))->init();
-    $diContainerHTTP->presenter->alerts       .= $this->alert;
-    $diContainerHTTP->presenter->languageLinks = $languageLinks;
-      return $diContainerHTTP->presenter->getPresentation($diContainerHTTP->presenter->getContent());
+    $languageLinks                             = $container->presenter->languageLinks;
+    $container->presenter                = (new SignIn($container))->init();
+    $container->presenter->alerts       .= $this->alert;
+    $container->presenter->languageLinks = $languageLinks;
+      return $container->presenter->getPresentation($container->presenter->getContent());
     }
 
 }

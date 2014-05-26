@@ -40,7 +40,7 @@ class CompanyListing {
    *
    * @var \MovLib\Data\diContainer
    */
-  protected $diContainer;
+  protected $container;
 
   /**
    * The active intl instance.
@@ -84,18 +84,18 @@ class CompanyListing {
   /**
    * Instantiate new company listing.
    *
-   * @param \MovLib\Data\DIContiner $diContainer
+   * @param \MovLib\Data\DIContiner $container
    *   The Dependency Injection Container
    * @param mixed $listItems
    *   The items to build the company listing.
    * @param mixed $noItemsText [optional]
    *   The text to display if there are no items, defaults to a generic {@see \MovLib\Presentation\Partial\Alert}.
    */
-  public function __construct(\MovLib\Core\diContainer $diContainer, $listItems, $noItemsText = null) {
-    $this->diContainer = $diContainer;
-    $this->intl        = $this->diContainer->intl;
-    $this->response    = $this->diContainer->response;
-    $this->presenter   = $this->diContainer->presenter;
+  public function __construct(\MovLib\Core\Container $container, $listItems, $noItemsText = null) {
+    $this->container = $container;
+    $this->intl        = $this->container->intl;
+    $this->response    = $this->container->response;
+    $this->presenter   = $this->container->presenter;
     $this->listItems   = $listItems;
     $this->noItemsText = $noItemsText;
   }
@@ -115,7 +115,7 @@ class CompanyListing {
     // @devEnd
       $list = null;
       /* @var $company \MovLib\Data\Company\Company */
-      while ($company = $this->listItems->fetch_object("\\MovLib\\Data\\Company", [ $this->diContainer ])) {
+      while ($company = $this->listItems->fetch_object("\\MovLib\\Data\\Company", [ $this->container ])) {
         // @devStart
         // @codeCoverageIgnoreStart
         if (!($company instanceof \MovLib\Data\Company)) {

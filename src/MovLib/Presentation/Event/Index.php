@@ -40,7 +40,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    */
   public function init() {
     return $this->initIndex(
-      new EventSet($this->diContainerHTTP),
+      new EventSet($this->container),
       $this->intl->t("Events"),
       $this->intl->t("Create New Event")
     );

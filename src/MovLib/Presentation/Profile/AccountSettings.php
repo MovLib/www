@@ -87,16 +87,16 @@ final class AccountSettings extends \MovLib\Presentation\Profile\AbstractProfile
     }
     (new \Collator($this->intl->locale))->asort($languageOptions);
 
-    return (new Form($this->diContainerHTTP))
-      ->addElement(new InputImage($this->diContainerHTTP, "avatar", $this->intl->t("Avatar"), $this->user, null, $inputFileAfter))
-      ->addElement(new InputText($this->diContainerHTTP, "real_name", $this->intl->t("Real Name"), $this->user->realName, [
+    return (new Form($this->container))
+      ->addElement(new InputImage($this->container, "avatar", $this->intl->t("Avatar"), $this->user, null, $inputFileAfter))
+      ->addElement(new InputText($this->container, "real_name", $this->intl->t("Real Name"), $this->user->realName, [
         "#help-popup" => $this->intl->t("Your real name will be displayed on your profile page."),
         "placeholder" => $this->intl->t("Enter our real name"),
       ]))
-      ->addElement(new InputSex($this->diContainerHTTP, "sex", $this->intl->t("Sex"), $this->user->sex, [
+      ->addElement(new InputSex($this->container, "sex", $this->intl->t("Sex"), $this->user->sex, [
         "#help-popup" => $this->intl->t("Your sex will be displayed on your profile page and is used to create demographic evaluations."),
       ]))
-      ->addElement(new InputDateSeparate($this->diContainerHTTP, "birthdate", $this->intl->t("Date of Birth"), $this->user->birthdate, [
+      ->addElement(new InputDateSeparate($this->container, "birthdate", $this->intl->t("Date of Birth"), $this->user->birthdate, [
         "#help-popup" => $this->intl->t("Your birthday will be displayed on your profile page and is used to create demographic evaluations."),
         "title"       => $this->intl->t(
           "A birth date must be between {min} (120 years) and {max} (6 years)",
@@ -106,31 +106,31 @@ final class AccountSettings extends \MovLib\Presentation\Profile\AbstractProfile
         "year_max"    => $birthYearMax,
         "year_min"    => $birthYearMin,
       ]))
-      ->addElement(new InputURL($this->diContainerHTTP, "website", $this->intl->t("Website"), $this->user->website, [
+      ->addElement(new InputURL($this->container, "website", $this->intl->t("Website"), $this->user->website, [
         "#help-popup"         => $this->intl->t("Your website will be display on your profile page."),
         "data-allow-external" => "true",
       ]))
-      ->addElement(new TextareaHTMLExtendedImage($this->diContainerHTTP, "about_me", $this->intl->t("About Me"), $this->user->aboutMe, [
+      ->addElement(new TextareaHTMLExtendedImage($this->container, "about_me", $this->intl->t("About Me"), $this->user->aboutMe, [
         "data-allow-external" => "true",
         "placeholder"         => $this->intl->t("Tell others about yourself, what do you do, what do you like, …"),
       ]))
-      ->addElement((new Country($this->diContainerHTTP))->getSelectFormElement($this->user->countryCode, [
+      ->addElement((new Country($this->container))->getSelectFormElement($this->user->countryCode, [
         "#help-popup" => $this->intl->t("Your country will be displayed on your profile page and is used to create demographic evaluations."),
       ]))
-      ->addElement(new Select($this->diContainerHTTP, "tzid", $this->intl->t("Time Zone"), $this->intl->getTranslations("timezones"), $this->user->timezoneId, [
+      ->addElement(new Select($this->container, "tzid", $this->intl->t("Time Zone"), $this->intl->getTranslations("timezones"), $this->user->timezoneId, [
         "#help-popup" => $this->intl->t("Your time zone will be used to display any time related information correctly."),
       ]))
-      ->addElement((new Currency())->getSelectFormElement($this->diContainerHTTP, $this->user->currencyCode, [
+      ->addElement((new Currency())->getSelectFormElement($this->container, $this->user->currencyCode, [
         "#help-popup" => $this->intl->t("Your currency will be used to display any money related information correctly."),
       ]))
-      ->addElement(new RadioGroup($this->diContainerHTTP, "language", $this->intl->t("System Language"), $languageOptions, $this->user->languageCode, [
+      ->addElement(new RadioGroup($this->container, "language", $this->intl->t("System Language"), $languageOptions, $this->user->languageCode, [
         "#help-popup" => $this->intl->t(
           "Select your preferred system language, this will be used to redirect you if you visit {sitename} without a " .
           "subdomain and may be from other use in the future.",
           [ "sitename" => $this->config->sitename ]
         ),
       ]))
-      ->addElement(new InputCheckbox($this->diContainerHTTP, "private", $this->intl->t("Keep my data private!"), $this->user->private, [
+      ->addElement(new InputCheckbox($this->container, "private", $this->intl->t("Keep my data private!"), $this->user->private, [
         "#help-popup" => $this->intl->t(
           "Check the following box if you’d like to hide your private data on your profile page. Your data will only be " .
           "used by {sitename} for anonymous demographical evaluation of usage statistics and ratings. By providing basic " .

@@ -42,9 +42,9 @@ class DependencyInjectionBase extends \MovLib\Core\Presentation\Base {
   /**
    * The active dependency injection container.
    *
-   * @var \MovLib\Core\HTTP\DIContainerHTTP
+   * @var \MovLib\Core\HTTP\Container
    */
-  protected $diContainerHTTP;
+  protected $container;
 
   /**
    * Active file system instance.
@@ -109,21 +109,21 @@ class DependencyInjectionBase extends \MovLib\Core\Presentation\Base {
   /**
    * Instantiate new presentation object.
    *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   * @param \MovLib\Core\HTTP\Container $container
    *   HTTP dependency injection container.
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    $this->diContainerHTTP = $diContainerHTTP;
-    $this->config          = $diContainerHTTP->config;
-    $this->fs              = $diContainerHTTP->fs;
-    $this->intl            = $diContainerHTTP->intl;
-    $this->kernel          = $diContainerHTTP->kernel;
-    $this->log             = $diContainerHTTP->log;
-    $this->request         = $diContainerHTTP->request;
-    $this->response        = $diContainerHTTP->response;
-    $this->session         = $diContainerHTTP->session;
-    if (isset($diContainerHTTP->presenter)) {
-      $this->presenter = $diContainerHTTP->presenter;
+  public function __construct(\MovLib\Core\HTTP\Container $container) {
+    $this->container = $container;
+    $this->config    = $container->config;
+    $this->fs        = $container->fs;
+    $this->intl      = $container->intl;
+    $this->kernel    = $container->kernel;
+    $this->log       = $container->log;
+    $this->request   = $container->request;
+    $this->response  = $container->response;
+    $this->session   = $container->session;
+    if (isset($container->presenter)) {
+      $this->presenter = $container->presenter;
     }
   }
 

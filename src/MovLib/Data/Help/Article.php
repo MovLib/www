@@ -107,14 +107,14 @@ final class Article extends \MovLib\Data\AbstractEntity implements \MovLib\Core\
   /**
    * Instantiate new help article object.
    *
-   * @param \MovLib\Core\DIContainer $diContainer
+   * @param \MovLib\Core\Container $container
    *   {@inheritdoc}
    * @param integer $id [optional]
    *   The helb article's unique identifier to instantiate, defaults to <code>NULL</code> (no helb article will be loaded).
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null) {
-    parent::__construct($diContainer);
+  public function __construct(\MovLib\Core\Container $container, $id = null) {
+    parent::__construct($container);
     if ($id) {
       $connection = Database::getConnection();
       $stmt = $connection->prepare(<<<SQL
@@ -211,14 +211,14 @@ SQL
    */
   public function init() {
     if (isset($this->category) && !$this->category instanceof \MovLib\Data\Help\Category) {
-      $this->category = new Category($this->diContainer, $this->category);
+      $this->category = new Category($this->container, $this->category);
     }
     $this->pluralKey     = $this->tableName = "help_articles";
     $this->routeArgs     = [ $this->id ];
 
     if (isset($this->subCategory)) {
       if (isset($this->subCategory) && !$this->subCategory instanceof \MovLib\Data\Help\SubCategory) {
-        $this->subCategory = new SubCategory($this->diContainer, $this->subCategory);
+        $this->subCategory = new SubCategory($this->container, $this->subCategory);
       }
       $this->routeKey = "{$this->subCategory->routeKey}/{0}";
     }

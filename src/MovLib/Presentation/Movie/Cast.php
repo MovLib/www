@@ -52,7 +52,7 @@ class Cast extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
   }
 
   public function getContent() {
-    $set     = new CastSet($this->diContainerHTTP);
+    $set     = new CastSet($this->container);
     $listing = null;
 
     /* @var $moviePerson \MovLib\Stub\Data\Movie\MoviePerson */

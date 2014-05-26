@@ -60,14 +60,14 @@ final class History extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Genre($this->diContainerHTTP, $_SERVER["GENRE_ID"]);
+    $this->entity = new Genre($this->container, $_SERVER["GENRE_ID"]);
     $this->initPage($this->intl->t("History of {0}", $this->entity->name), null, $this->intl->t("History"));
     $this->sidebarInitToolbox($this->entity);
     $this->breadcrumb->addCrumb($this->intl->r("/genres"), $this->intl->t("Genres"));
     $this->breadcrumb->addCrumb($this->intl->r("/genre/{0}", $this->entity->id), $this->entity->name);
     $this->revisionSet = new RevisionSet("Genre", $this->entity->id);
     $this->paginationInit($this->revisionSet->getTotalCount());
-    $this->revisionSet->load($this->paginationOffset, $this->paginationLimit, $this->diContainerHTTP);
+    $this->revisionSet->load($this->paginationOffset, $this->paginationLimit, $this->container);
   }
 
   /**

@@ -196,13 +196,16 @@ abstract class AbstractQuery {
       case "object":
         // This object might have a custom placeholder attached.
         isset($value::$sqlPlaceholder) && ($placeholder = $value::$sqlPlaceholder);
+        // Directly cast to string in case this is an object, we want it to fail as early as possible and we don't want
+        // to store a reference to the complete object.
+        $value = (string) $value;
         // no break
 
       default:
         $this->types .= "s";
         // Directly cast to string in case this is an object, we want it to fail as early as possible and we don't want
         // to store a reference to the complete object.
-        $this->values[] = (string) $value;
+        $this->values[] = $value;
         break;
     }
 

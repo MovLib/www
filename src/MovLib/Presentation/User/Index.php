@@ -45,7 +45,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->set = new UserSet($this->diContainerHTTP);
+    $this->set = new UserSet($this->container);
     if ($this->session->isAuthenticated === false) {
       $this->headingBefore =
         "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/profile/join")}'>{$this->intl->t(

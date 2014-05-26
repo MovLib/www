@@ -50,7 +50,7 @@ class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->initIndex(new \MovLib\Stub\Data\Dummy\DummySet($this->diContainerHTTP), $this->intl->t("Backdrops"), null);
+    $this->initIndex(new \MovLib\Stub\Data\Dummy\DummySet($this->container), $this->intl->t("Backdrops"), null);
   }
 
 }

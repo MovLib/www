@@ -33,7 +33,7 @@ final class Currency extends \MovLib\Core\Presentation\Base {
   /**
    * Get select form element to select a currency.
    *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   * @param \MovLib\Core\HTTP\Container $container
    *   The HTTP dependency injection container.
    * @param string $value
    *   The form element's value.
@@ -46,13 +46,13 @@ final class Currency extends \MovLib\Core\Presentation\Base {
    * @return \MovLib\Presentation\Partial\FormElement\Select
    *   The select form element to select a currency.
    */
-  public function getSelectFormElement(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, &$value, array $attributes = null, $id = "currency", $label = null) {
+  public function getSelectFormElement(\MovLib\Core\HTTP\Container $container, &$value, array $attributes = null, $id = "currency", $label = null) {
     $options = [];
     /* @var $currency \MovLib\Stub\Data\Currency */
-    foreach ($diContainerHTTP->intl->getTranslations("currencies") as $currency) {
-      $options[$currency->code] = $diContainerHTTP->intl->t("{0} ({1})", [ $currency->symbol, $currency->name ]);
+    foreach ($container->intl->getTranslations("currencies") as $currency) {
+      $options[$currency->code] = $container->intl->t("{0} ({1})", [ $currency->symbol, $currency->name ]);
     }
-    return new Select($diContainerHTTP, $id, $label ?: $diContainerHTTP->intl->t("Currency"), $options, $value, $attributes);
+    return new Select($container, $id, $label ?: $container->intl->t("Currency"), $options, $value, $attributes);
   }
 
 }

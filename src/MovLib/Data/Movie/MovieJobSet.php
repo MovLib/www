@@ -109,12 +109,12 @@ SQL
       // Initialize the movie id offset if not present yet.
       if (empty($this->entities[$row->movieId])) {
         $this->entities[$row->movieId] = (object) [
-          "movie"    => new Movie($this->diContainer),
-          "cast"     => new CastSet($this->diContainer),
-          "crew"     => new CrewSet($this->diContainer),
+          "movie"    => new Movie($this->container),
+          "cast"     => new CastSet($this->container),
+          "crew"     => new CrewSet($this->container),
         ];
         /* @var $this->entities[$row->movieId] \MovLib\Stub\Data\Movie\MovieJob */
-        $this->entities[$row->movieId]->movie                            = new Movie($this->diContainer);
+        $this->entities[$row->movieId]->movie                            = new Movie($this->container);
         $this->entities[$row->movieId]->movie->id                        = $row->movieId;
         $this->entities[$row->movieId]->movie->created                   = $row->movieCreated;
         $this->entities[$row->movieId]->movie->changed                   = $row->movieChanged;
@@ -139,7 +139,7 @@ SQL
       if (empty($this->entities[$row->movieId]->cast->entities[$row->crewId]) && empty($this->entities[$row->movieId]->crew->entities[$row->crewId])) {
         // Add a cast entry.
         if ((integer) $row->crewJobId === Cast::JOB_ID) {
-          $this->entities[$row->movieId]->cast->entities[$row->crewId]                      = new Cast($this->diContainer, $person);
+          $this->entities[$row->movieId]->cast->entities[$row->crewId]                      = new Cast($this->container, $person);
           $this->entities[$row->movieId]->cast->entities[$row->crewId]->id                  = $row->crewId;
           $this->entities[$row->movieId]->cast->entities[$row->crewId]->created             = $row->crewCreated;
           $this->entities[$row->movieId]->cast->entities[$row->crewId]->changed             = $row->crewChanged;
@@ -158,7 +158,7 @@ SQL
         }
         // Add a crew entry.
         else {
-          $this->entities[$row->movieId]->crew->entities[$row->crewId]                      = new Crew($this->diContainer);
+          $this->entities[$row->movieId]->crew->entities[$row->crewId]                      = new Crew($this->container);
           $this->entities[$row->movieId]->crew->entities[$row->crewId]->id                  = $row->crewId;
           $this->entities[$row->movieId]->crew->entities[$row->crewId]->created             = $row->crewCreated;
           $this->entities[$row->movieId]->crew->entities[$row->crewId]->changed             = $row->crewChanged;
@@ -177,7 +177,7 @@ SQL
     }
     $result->free();
 
-    (new \MovLib\Data\Genre\GenreSet($this->diContainer))->loadEntitySets($this);
+    (new \MovLib\Data\Genre\GenreSet($this->container))->loadEntitySets($this);
 
     return $this;
   }

@@ -126,6 +126,13 @@ final class Session extends \MovLib\Core\AbstractDatabase {
 
 
   /**
+   * The active config instance.
+   *
+   * @var \MovLib\Core\Config
+   */
+  protected $config;
+
+  /**
    * Whether this session is active or not.
    *
    * @var boolean
@@ -140,11 +147,11 @@ final class Session extends \MovLib\Core\AbstractDatabase {
   public $authentication;
 
   /**
-   * The session's ID.
+   * The active file system instance.
    *
-   * @var string
+   * @var \MovLib\Core\FileSystem
    */
-  public $ssid;
+  protected $fs;
 
   /**
    * The time this session's identifier was last regenerated.
@@ -152,6 +159,13 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    * @var integer
    */
   protected $initTime;
+
+  /**
+   * The active intl instance.
+   *
+   * @var \MovLib\Core\Intl
+   */
+  protected $intl;
 
   /**
    * The user's authentication status.
@@ -182,6 +196,13 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    * @var string
    */
   protected $sessionName;
+
+  /**
+   * The session's ID.
+   *
+   * @var string
+   */
+  public $ssid;
 
   /**
    * The session user's unique identifier.
@@ -232,8 +253,8 @@ final class Session extends \MovLib\Core\AbstractDatabase {
   /**
    * Instantiate new HTTP session.
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    parent::__construct($diContainerHTTP);
+  public function __construct(\MovLib\Core\HTTP\Container $container) {
+    parent::__construct($container);
     $this->sessionName = session_name();
   }
 

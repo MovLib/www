@@ -104,8 +104,8 @@ SQL
 
       if (empty($this->entities[$row->jobId])) {
         $this->entities[$row->jobId] = (object) [
-          "job"     => new Job($this->diContainer),
-          "crewSet" => new CrewSet($this->diContainer),
+          "job"     => new Job($this->container),
+          "crewSet" => new CrewSet($this->container),
         ];
         $this->entities[$row->jobId]->job->id = $row->jobId;
         $this->entities[$row->jobId]->job->names[Sex::UNKNOWN] = $row->jobTitle;
@@ -116,7 +116,7 @@ SQL
 
       if (empty($this->entities[$row->jobId]->crewSet->entities[$row->id])) {
         $this->log->debug(print_r($row, true));
-        $this->entities[$row->jobId]->crewSet->entities[$row->id]            = new Crew($this->diContainer);
+        $this->entities[$row->jobId]->crewSet->entities[$row->id]            = new Crew($this->container);
         $this->entities[$row->jobId]->crewSet->entities[$row->id]->id        = $row->id;
         $this->entities[$row->jobId]->crewSet->entities[$row->id]->movieId   = $movie->id;
         $this->entities[$row->jobId]->crewSet->entities[$row->id]->personId  = $row->personId;
@@ -125,7 +125,7 @@ SQL
         $this->entities[$row->jobId]->crewSet->entities[$row->id]->alias     = $row->alias;
 
         if (isset($row->personId)) {
-          $this->entities[$row->jobId]->crewSet->entities[$row->id]->person       = new Person($this->diContainer);
+          $this->entities[$row->jobId]->crewSet->entities[$row->id]->person       = new Person($this->container);
           $this->entities[$row->jobId]->crewSet->entities[$row->id]->person->id   = $row->personId;
           $this->entities[$row->jobId]->crewSet->entities[$row->id]->person->name = $row->entityName;
           $reflector = new \ReflectionMethod($this->entities[$row->jobId]->crewSet->entities[$row->id]->person, "init");
@@ -133,7 +133,7 @@ SQL
           $reflector->invoke($this->entities[$row->jobId]->crewSet->entities[$row->id]->person);
         }
         elseif (isset($row->companyId)) {
-          $this->entities[$row->jobId]->crewSet->entities[$row->id]->company       = new Company($this->diContainer);
+          $this->entities[$row->jobId]->crewSet->entities[$row->id]->company       = new Company($this->container);
           $this->entities[$row->jobId]->crewSet->entities[$row->id]->company->id   = $row->companyId;
           $this->entities[$row->jobId]->crewSet->entities[$row->id]->company->name = $row->entityName;
           $reflector = new \ReflectionMethod($this->entities[$row->jobId]->crewSet->entities[$row->id]->company, "init");

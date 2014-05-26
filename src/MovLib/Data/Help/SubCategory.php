@@ -77,14 +77,14 @@ final class SubCategory extends \MovLib\Data\AbstractEntity {
   /**
    * Instantiate new help subcategory object.
    *
-   * @param \MovLib\Core\DIContainer $diContainer
+   * @param \MovLib\Core\Container $container
    *   {@inheritdoc}
    * @param integer $id [optional]
    *   The help subcategory's unique identifier to instantiate, defaults to <code>NULL</code> (no help subcategory will be loaded).
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null) {
-    parent::__construct($diContainer);
+  public function __construct(\MovLib\Core\Container $container, $id = null) {
+    parent::__construct($container);
     if ($id) {
       $stmt = $this->getMySQLi()->prepare(<<<SQL
 SELECT
@@ -132,7 +132,7 @@ SQL
   public function init() {
     $this->articleCount = $this->getCount("help_articles", "`deleted` = false AND `help_subcategory_id` = {$this->id}");
     if (isset($this->category) && !$this->category instanceof \stdClass) {
-      $this->category = new Category($this->diContainer, $this->category);
+      $this->category = new Category($this->container, $this->category);
     }
     $this->tableName    = "help_subcategories";
     $this->pluralKey    = "categories";

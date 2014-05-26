@@ -34,27 +34,27 @@ abstract class AbstractRedirectException extends \RuntimeException implements \M
   /**
    * {@inheritdoc}
    */
-  public function getPresentation(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    $diContainerHTTP->response->cacheable = false;
+  public function getPresentation(\MovLib\Core\HTTP\Container $container) {
+    $container->response->cacheable = false;
     $route = rawurldecode($this->message);
-    $code  = $this->getHttpStatusCode($diContainerHTTP->request->protocol == "HTTP/1.0");
-    $title = $diContainerHTTP->intl->translate($code, null, "http-status-codes", null);
+    $code  = $this->getHttpStatusCode($container->request->protocol == "HTTP/1.0");
+    $title = $container->intl->translate($code, null, "http-status-codes", null);
 
     if (strpos($route, "//") === false) {
-      $route = "{$diContainerHTTP->request->scheme}://{$diContainerHTTP->request->hostname}{$route}";
+      $route = "{$container->request->scheme}://{$container->request->hostname}{$route}";
     }
     else {
-      if (strpos($route, $diContainerHTTP->config->hostname) === false) {
+      if (strpos($route, $container->config->hostname) === false) {
         throw new \RuntimeException("Invalid redirect to external host '{$route}'");
       }
       if (strpos($route, "http") === false && strpos($route, "https") === false) {
-        $route = "{$diContainerHTTP->request->scheme}{$route}";
+        $route = "{$container->request->scheme}{$route}";
       }
     }
 
     // Send any alert messages as a cookie to the client, this allows us to display them on the next page view.
-    if (!empty($diContainerHTTP->presenter->alerts)) {
-      $diContainerHTTP->response->createCookie("alerts", $diContainerHTTP->presenter->alerts);
+    if (!empty($container->presenter->alerts)) {
+      $container->response->createCookie("alerts", $container->presenter->alerts);
     }
 
     // The body is a direct copy of what nginx would serve the client, note that payload is required per RFC.

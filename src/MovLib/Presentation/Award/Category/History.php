@@ -37,7 +37,7 @@ class History extends \MovLib\Presentation\AbstractHistoryPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Category($this->diContainerHTTP, $_SERVER["CATEGORY_ID"]);
+    $this->entity = new Category($this->container, $_SERVER["CATEGORY_ID"]);
     $pageTitle = $this->intl->t("History of {0}", [ $this->entity->name ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("History"))

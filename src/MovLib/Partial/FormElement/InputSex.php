@@ -32,10 +32,10 @@ final class InputSex extends \MovLib\Partial\FormElement\RadioGroup {
   /**
    * {@inheritdoc}
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, &$value, $help = null, $helpPopup = false) {
-    $options = $diContainerHTTP->intl->getTranslations("sex");
+  public function __construct(\MovLib\Core\HTTP\Container $container, $id, $label, &$value, $help = null, $helpPopup = false) {
+    $options = $container->intl->getTranslations("sex");
     unset($options[9]); // We remove the "not applicable" option from this input element.
-    parent::__construct($diContainerHTTP, $id, $label, $options, $value);
+    parent::__construct($container, $id, $label, $options, $value);
     if ($helpPopup) {
       $this->attributes["#help-popup"] = $help;
     }

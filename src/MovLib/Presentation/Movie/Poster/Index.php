@@ -35,7 +35,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    */
   public function init() {
     $this->initIndex(
-      new PosterSet($this->diContainerHTTP, $_SERVER["MOVIE_ID"]),
+      new PosterSet($this->container, $_SERVER["MOVIE_ID"]),
       $this->intl->t("Posters"),
       $this->intl->t("Upload New Poster")
     );

@@ -101,7 +101,7 @@ final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
   /**
    * Instantiate new input form element of type file.
    *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   * @param \MovLib\Core\HTTP\Container $container
    *   The HTTP dependency injection container.
    * @param string $id
    *   The form element's global unique identifier.
@@ -115,9 +115,9 @@ final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
    *   Any content that should be included in the rendered input image form element, defaults to <code>NULL</code>.
    * @throws \MovLib\Presentation\Error\Unauthorized
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, \MovLib\Data\Image\AbstractImageEntity &$image, array $attributes = null, $inputFileAfter = null) {
+  public function __construct(\MovLib\Core\HTTP\Container $container, $id, $label, \MovLib\Data\Image\AbstractImageEntity &$image, array $attributes = null, $inputFileAfter = null) {
     // Only authenticated users are allowed to upload images.
-    if ($diContainerHTTP->session->isAuthenticated === false) {
+    if ($container->session->isAuthenticated === false) {
       throw new UnauthorizedException($this->intl->t(
         "You must be signed in to upload images. If you don’t have an account yet why not {0}join {sitename}{1}?.",
         [ "<a href='{$this->intl->r("/profile/join")}'>", "</a>", "sitename" => $this->config->sitename ]
@@ -125,22 +125,22 @@ final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
     }
 
     // We need some JavaScript to make our input element more awesome.
-    $diContainerHTTP->presenter->javascripts[] = "InputImage";
+    $container->presenter->javascripts[] = "InputImage";
 
     // Initialize attributes and properties.
     $this->inputFileAfter       = $inputFileAfter;
     $this->maxFilesize          = ini_get("upload_max_filesize");
     $this->minHeight            = $image->imageHeight ?: AbstractImageEntity::IMAGE_MIN_HEIGHT;
     $this->minWidth             = $image->imageWidth  ?: AbstractImageEntity::IMAGE_MIN_WIDTH;
-    $this->maxFilesizeFormatted = $diContainerHTTP->intl->formatBytes($this->maxFilesize);
+    $this->maxFilesizeFormatted = $container->intl->formatBytes($this->maxFilesize);
 
-    $attributes["#help-popup"] = $diContainerHTTP->intl->t("Image must be larger than {width} × {height} pixels and less than {size}. Allowed image types: JPG and PNG", [
+    $attributes["#help-popup"] = $container->intl->t("Image must be larger than {width} × {height} pixels and less than {size}. Allowed image types: JPG and PNG", [
       "width"  => $this->minWidth,
       "height" => $this->minHeight,
       "size"   => $this->maxFilesizeFormatted,
     ]);
 
-    parent::__construct($diContainerHTTP, $id, $label, $image, $attributes);
+    parent::__construct($container, $id, $label, $image, $attributes);
 
     // Translate some error messages right away, we need them in render() and in validate()
     $this->errorMessages = [

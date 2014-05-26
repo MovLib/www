@@ -69,11 +69,11 @@ class JoinEmail extends \MovLib\Mail\AbstractEmail {
   /**
    * {@inheritdoc}
    */
-  public function init(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    parent::init($diContainerHTTP);
+  public function init(\MovLib\Core\HTTP\Container $container) {
+    parent::init($container);
 
     $this->recipient = $this->user->email;
-    $this->subject = $this->intl->t("Welcome to {0}!", [ $diContainerHTTP->config->sitename ]);
+    $this->subject = $this->intl->t("Welcome to {0}!", [ $container->config->sitename ]);
 
     // The token is the user's email address, but because it's kind a ackward to see your own email address as part of
     // a URL we hex encode it. Not that a hex encoded string might be longer than a base64 encoded string, but it only
@@ -89,7 +89,7 @@ class JoinEmail extends \MovLib\Mail\AbstractEmail {
     ];
 
     // Check if we already have some data stored for this email address.
-    $tmp = new TemporaryStorage($diContainerHTTP);
+    $tmp = new TemporaryStorage($container);
     $user = $tmp->get($token);
 
     // We have no data stored for this email address, create a new record.

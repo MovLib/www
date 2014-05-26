@@ -90,7 +90,7 @@ final class Place {
   /**
    * Instantiate new place partial.
    *
-   * @param \MovLib\Presentation\AbstractPresenter $diContainer
+   * @param \MovLib\Presentation\AbstractPresenter $container
    *   The presenting presenter.
    * @param \MovLib\Core\Intl $intl
    *   The active intl instance.
@@ -101,14 +101,14 @@ final class Place {
    * @param string $tag [optional]
    *   The HTML tag to wrap the place.
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainer, \MovLib\Data\Place\Place $place, array $attributes = [], $tag = "span") {
+  public function __construct(\MovLib\Core\HTTP\Container $container, \MovLib\Data\Place\Place $place, array $attributes = [], $tag = "span") {
     $attributes["typeof"] = "Place";
     $this->attributes     = $attributes;
-    $this->country        = new Country($diContainer);
+    $this->country        = new Country($container);
     $this->countryCode    = $place->countryCode;
-    $this->intl           = $diContainer->intl;
+    $this->intl           = $container->intl;
     $this->place          = $place;
-    $this->presenter      = $diContainer->presenter;
+    $this->presenter      = $container->presenter;
     $this->tag            = $tag;
   }
 

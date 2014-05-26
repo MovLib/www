@@ -39,7 +39,7 @@ final class InputCheckbox extends \MovLib\Partial\FormElement\AbstractFormElemen
    * behavior. A single checkbox is meant for boolean rows in the database or other decisions that are solely based on
    * a yes or not question.
    *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   * @param \MovLib\Core\HTTP\Container $container
    *   HTTP dependency injection container.
    * @param string $id
    *   The checkbox's unique global identifier.
@@ -50,7 +50,7 @@ final class InputCheckbox extends \MovLib\Partial\FormElement\AbstractFormElemen
    * @param array $attributes [optional]
    *   The checkbox's attributes array, defaults to <code>NULL</code> (no additional attributes).
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, &$value, array $attributes = null) {
+  public function __construct(\MovLib\Core\HTTP\Container $container, $id, $label, &$value, array $attributes = null) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (isset($attributes["checked"])) {
@@ -58,7 +58,7 @@ final class InputCheckbox extends \MovLib\Partial\FormElement\AbstractFormElemen
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    parent::__construct($diContainerHTTP, $id, $label, $value, $attributes);
+    parent::__construct($container, $id, $label, $value, $attributes);
     $this->attributes["checked"] =& $this->value;
   }
 

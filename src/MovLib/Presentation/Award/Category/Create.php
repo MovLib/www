@@ -40,8 +40,8 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $category             = new Category($this->diContainerHTTP);
-    $category->award      = new Award($this->diContainerHTTP, $_SERVER["AWARD_ID"]);
+    $category             = new Category($this->container);
+    $category->award      = new Award($this->container, $_SERVER["AWARD_ID"]);
     $category->routeIndex = $this->intl->r("/award/{0}/categories", $category->award->id);
 
     $this->initPage($this->intl->t("Create"), $this->intl->t("Create Category for {0}", [ $category->award->name ]));
@@ -58,28 +58,28 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    $form = (new Form($this->diContainerHTTP))
-      ->addElement(new InputText($this->diContainerHTTP, "name", $this->intl->t("Name"), $this->entity->name, [
+    $form = (new Form($this->container))
+      ->addElement(new InputText($this->container, "name", $this->intl->t("Name"), $this->entity->name, [
         "placeholder" => $this->intl->t("Enter the category’s name."),
         "autofocus"   => true,
         "required"    => true,
       ]))
-      ->addElement(new InputInteger($this->diContainerHTTP, "first-year", $this->intl->t("First Year"), $this->entity->firstYear->year, [
+      ->addElement(new InputInteger($this->container, "first-year", $this->intl->t("First Year"), $this->entity->firstYear->year, [
         "placeholder" => $this->intl->t("yyyy"),
         "required"    => true,
         "min"         => 1000,
         "max"         => 9999
       ]))
-      ->addElement(new InputInteger($this->diContainerHTTP, "last-year", $this->intl->t("Last Year"), $this->entity->lastYear->year, [
+      ->addElement(new InputInteger($this->container, "last-year", $this->intl->t("Last Year"), $this->entity->lastYear->year, [
         "placeholder" => $this->intl->t("yyyy"),
         "min"         => 1000,
         "max"         => 9999
       ]))
-      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
+      ->addElement(new TextareaHTMLExtended($this->container, "description", $this->intl->t("Description"), $this->entity->description, [
         "data-allow-external" => "true",
         "placeholder"         => $this->intl->t("Describe the category."),
       ]))
-      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
+      ->addElement(new InputWikipedia($this->container, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
         "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/…",
         "data-allow-external" => "true",
       ]))
@@ -89,7 +89,7 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
     if ($this->intl->languageCode !== $this->intl->defaultLanguageCode) {
       $defaultLanguageArg = [ "default_language" =>  $this->intl->getTranslations("languages")[$this->intl->defaultLanguageCode]->name];
       $form
-        ->addElement(new InputText($this->diContainerHTTP, "default-name", $this->intl->t(
+        ->addElement(new InputText($this->container, "default-name", $this->intl->t(
             "Name ({default_language})", $defaultLanguageArg
           ), $this->entity->defaultName, [
           "#help-popup" => $this->intl->t("We always need this information in our main Language ({default_language}).", $defaultLanguageArg),

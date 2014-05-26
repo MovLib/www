@@ -61,13 +61,13 @@ final class Breadcrumb extends \MovLib\Core\Presentation\DependencyInjectionBase
   /**
    * Instantiate new breadcrumb navigation object.
    *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   * @param \MovLib\Core\HTTP\Container $container
    *   {@inheritdoc}
    * @param string $title
    *   The title for the current page's crumb.
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $title) {
-    parent::__construct($diContainerHTTP);
+  public function __construct(\MovLib\Core\HTTP\Container $container, $title) {
+    parent::__construct($container);
     $this->addCrumb("/", $this->intl->t("Home"), [ "title" => $this->intl->t("Go back to the home page.") ]);
     $this->title = $title;
   }

@@ -36,7 +36,7 @@ class History extends \MovLib\Presentation\AbstractHistoryPresenter {
    */
   public function init() {
     return $this->initHistory(
-      new Award($this->diContainerHTTP, $_SERVER["AWARD_ID"]),
+      new Award($this->container, $_SERVER["AWARD_ID"]),
       $this->intl->t("Awards")
     );
   }

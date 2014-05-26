@@ -64,7 +64,7 @@ SQL
       $row->personId = (integer) $row->personId;
       $row->jobId    = (integer) $row->jobId;
       if (empty($this->entities[$row->id])) {
-        $this->entities[$row->id] = new Director($this->diContainer);
+        $this->entities[$row->id] = new Director($this->container);
         $this->entities[$row->id]->id = $row->id;
         $this->entities[$row->id]->personId = $row->personId;
         $this->entities[$row->id]->personName = $row->personName;

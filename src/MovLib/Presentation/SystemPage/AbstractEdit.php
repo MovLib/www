@@ -65,14 +65,14 @@ abstract class AbstractEdit extends \MovLib\Presentation\SystemPage\AbstractShow
    * {@inheritdoc}
    */
   public function getContent() {
-    $form = (new Form($this->diContainerHTTP))
+    $form = (new Form($this->container))
       ->addHiddenElement("revision_id", $this->systemPage->changed)
-      ->addElement(new InputText($this->diContainerHTTP, "title", $this->intl->t("Title"), $this->systemPage->title, [
+      ->addElement(new InputText($this->container, "title", $this->intl->t("Title"), $this->systemPage->title, [
         "autofocus"   => true,
         "placeholder" => $this->intl->t("Enter the system page title"),
         "required"    => true,
       ]))
-      ->addElement(new TextareaHTMLRaw($this->diContainerHTTP,"content", $this->intl->t("Content"), $this->systemPage->text, [
+      ->addElement(new TextareaHTMLRaw($this->container,"content", $this->intl->t("Content"), $this->systemPage->text, [
         "placeholder" => $this->intl->t("Enter the system page content"),
         "required"    => true,
         "rows"        => 25,

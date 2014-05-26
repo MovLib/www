@@ -28,7 +28,7 @@ use \Elasticsearch\Client as ElasticClient;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Search {
+final class SearchIndexer {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -131,7 +131,14 @@ final class Search {
     assert(!empty($this->params["id"]), "The id must be set to index a document");
     // @codeCoverageIgnoreEnd
     // @devEnd
-    $kernel->delayMethodCall("search.execute_indexing", $this, "executeIndexing", [ $log, $deleted ]);
+
+    // We can delay the actual indexing until the request was sent to the user because it doesn't matter for the user
+    // how fast the created/edited/deleted entity is available in our search.
+    $kernel->delayMethodCall("search.execute_indexing", $this, "executeIndexing", [ $log, $deleted, $this->params ]);
+
+    // We've stacked this indexing job and now the caller can start a new one.
+    $this->params = null;
+
     return $this;
   }
 
@@ -210,6 +217,42 @@ final class Search {
     if (!empty($values)) {
       $this->addIndexField("analyzeLanguageField", $name, $values, true, false);
     }
+    return $this;
+  }
+
+  /**
+   * Set the search document's index.
+   *
+   * @param string $index
+   *   The search document's index to set.
+   * @return this
+   */
+  public function setIndex($index) {
+    $this->params["index"] = $index;
+    return $this;
+  }
+
+  /**
+   * Set the search document's type.
+   *
+   * @param string $type
+   *   The search document's type to set.
+   * @return this
+   */
+  public function setType($type) {
+    $this->params["type"] = $type;
+    return $this;
+  }
+
+  /**
+   * Set the search document's unique identifier.
+   *
+   * @param mixed $id
+   *   The search document's unique identifier.
+   * @return this
+   */
+  public function setIdentifier($id) {
+    $this->params["id"] = $id;
     return $this;
   }
 
@@ -360,33 +403,40 @@ final class Search {
    *   The current logger instance.
    * @param boolean $deleted
    *   The entity's deleted state. Determines whether the entity will be indexed or removed from the index.
+   * @param array $definition
+   *   Definition of the entity that should be indexed.
    * @return this
    */
-  public function executeIndexing(\MovLib\Core\Log $log, $deleted) {
-    $elasticClient = new ElasticClient();
+  protected function executeIndexing(\MovLib\Core\Log $log, $deleted, array $definition) {
+    static $elasticClient = null;
+    if (!$elasticClient) {
+      $elasticClient = new ElasticClient();
+    }
+
     // Remove the element from the index.
     if ($deleted === true) {
       try {
-        $elasticClient->delete($this->params);
+        $elasticClient->delete($definition);
       }
-      // The element wasn't in the index in the first place, just log the error.
+      // The element wasn't in the index in the first place, log as info.
       catch (\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
         $log->info($e);
       }
     }
     // Insert or update the element in the index.
     else {
-      $this->params["body"] = [];
+      $definition["body"] = [];
       // Build the request body with the analyzers.
       foreach ($this->data as $analyzer => $fields) {
-        foreach ($fields as $name => $fieldConfig) {
-          $this->{$analyzer}($this->params["body"], $fieldConfig);
+        foreach ($fields as $fieldConfig) {
+          $this->{$analyzer}($definition["body"], $fieldConfig);
         }
       }
 
       // Finally index the document.
-      $elasticClient->index($this->params);
+      $elasticClient->index($definition);
     }
+
     return $this;
   }
 

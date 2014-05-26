@@ -53,7 +53,7 @@ abstract class AbstractPersonPresenter extends \MovLib\Presentation\AbstractPres
    */
   final protected function initPersonPresentation($title = null, $pageTitle = null, $breadcrumbTitle = null) {
     if (!$this->entity) {
-      $this->entity = new Person($this->diContainerHTTP, (integer) $_SERVER["PERSON_ID"]);
+      $this->entity = new Person($this->container, (integer) $_SERVER["PERSON_ID"]);
     }
     $this->schemaType            = "Person";
     $this->headingSchemaProperty = "name";

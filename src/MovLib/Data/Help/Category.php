@@ -76,14 +76,14 @@ final class Category extends \MovLib\Data\AbstractEntity {
   /**
    * Instantiate new help category object.
    *
-   * @param \MovLib\Core\DIContainer $diContainer
+   * @param \MovLib\Core\Container $container
    *   {@inheritdoc}
    * @param integer $id [optional]
    *   The helb category's unique identifier to instantiate, defaults to <code>NULL</code> (no helb category will be loaded).
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null) {
-    parent::__construct($diContainer);
+  public function __construct(\MovLib\Core\Container $container, $id = null) {
+    parent::__construct($container);
     if ($id) {
       $stmt = $this->getMySQLi()->prepare(<<<SQL
 SELECT

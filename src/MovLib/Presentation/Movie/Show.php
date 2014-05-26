@@ -70,8 +70,8 @@ final class Show extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    $movieHelper = new MovieHelper($this->diContainerHTTP);
-    $starRating  = new StarRatingForm($this->diContainerHTTP, $this->entity);
+    $movieHelper = new MovieHelper($this->container);
+    $starRating  = new StarRatingForm($this->container, $this->entity);
     $this->infoboxBefore =
       "{$movieHelper->getStructuredOriginalTitle($this->entity, "p")}{$movieHelper->getStructuredTagline($this->entity)}{$starRating}"
     ;
@@ -79,7 +79,7 @@ final class Show extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
 
     $directorsInfo = null;
     $directorJob   = null;
-    $directors     = new DirectorSet($this->diContainerHTTP);
+    $directors     = new DirectorSet($this->container);
     /* @var $director \MovLib\Data\Director\Director */
     foreach ($directors->loadMovieDirectorsLimited($this->entity) as $director) {
       if (!$directorJob) {
@@ -95,7 +95,7 @@ final class Show extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
     }
 
     $castInfo = null;
-    $cast     = new CastSet($this->diContainerHTTP);
+    $cast     = new CastSet($this->container);
     foreach ($cast->loadMovieCastLimited($this->entity) as $castMember) {
       if ($castInfo) {
         $castInfo .= ", ";
@@ -106,9 +106,9 @@ final class Show extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
       $this->infoboxAdd($this->intl->t("Cast"), $castInfo);
     }
 
-    $this->entity->runtime   && $this->infoboxAdd($this->intl->t("Runtime"), (new Duration($this->diContainerHTTP))->formatMinutes($this->entity->runtime, [ "property" => "runtime" ]));
-    $this->entity->genreSet  && $this->infoboxAdd($this->intl->t("Genres"), (new Genre($this->diContainerHTTP))->getList($this->entity->genreSet));
-    $this->entity->countries && $this->infoboxAdd($this->intl->t("Countries"), (new Country($this->diContainerHTTP))->getList($this->entity->countries, "contentLocation"));
+    $this->entity->runtime   && $this->infoboxAdd($this->intl->t("Runtime"), (new Duration($this->container))->formatMinutes($this->entity->runtime, [ "property" => "runtime" ]));
+    $this->entity->genreSet  && $this->infoboxAdd($this->intl->t("Genres"), (new Genre($this->container))->getList($this->entity->genreSet));
+    $this->entity->countries && $this->infoboxAdd($this->intl->t("Countries"), (new Country($this->container))->getList($this->entity->countries, "contentLocation"));
 
     if ($this->entity->synopsis) {
       $synopsis = $this->entity->synopsis;

@@ -45,7 +45,7 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Company($this->diContainerHTTP, $_SERVER["COMPANY_ID"]);
+    $this->entity = new Company($this->container, $_SERVER["COMPANY_ID"]);
     $this
       ->initPage($this->entity->name)
       ->initShow($this->entity, $this->intl->t("Companies"), "Company", null, $this->getSidebarItems())

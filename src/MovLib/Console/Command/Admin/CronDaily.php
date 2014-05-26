@@ -104,7 +104,7 @@ class CronDaily extends \MovLib\Console\Command\AbstractCommand {
       $reflector = new \ReflectionClass($command);
       if ($reflector->isInstantiable() && $reflector->isSubclassOf("\\MovLib\\Console\\Command\\Install\\Count\\AbstractEntityCountCommand")) {
         /* @var $countCommand \MovLib\Console\Command\Install\Count\AbstractEntityCountCommand */
-        $countCommand = new $command($this->diContainer);
+        $countCommand = new $command($this->container);
         $this->writeDebug("Verifying <comment>{$countCommand->entityName}</comment> counts...");
         try {
           $countCommand->run($input, $output);

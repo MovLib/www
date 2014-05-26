@@ -40,7 +40,7 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Series($this->diContainerHTTP, $_SERVER["SERIES_ID"]);
+    $this->entity = new Series($this->container, $_SERVER["SERIES_ID"]);
     $pageTitle    = $this->intl->t("Edit {0}", [ $this->entity->displayTitle ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Edit"))
@@ -52,26 +52,26 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    * {@inheritdoc}
    */
    public function getContent() {
-    $form = (new Form($this->diContainerHTTP))
-      ->addElement(new InputInteger($this->diContainerHTTP, "start-year", $this->intl->t("Start Year"), $this->entity->startYear->year, [
+    $form = (new Form($this->container))
+      ->addElement(new InputInteger($this->container, "start-year", $this->intl->t("Start Year"), $this->entity->startYear->year, [
         "placeholder" => $this->intl->t("yyyy"),
         "required"    => true,
         "min"         => 1000,
         "max"         => 9999
       ]))
-      ->addElement(new InputInteger($this->diContainerHTTP, "end-year", $this->intl->t("End Year"), $this->entity->endYear->year, [
+      ->addElement(new InputInteger($this->container, "end-year", $this->intl->t("End Year"), $this->entity->endYear->year, [
         "placeholder" => $this->intl->t("yyyy"),
         "min"         => 1000,
         "max"         => 9999
       ]))
-      ->addElement(new Select($this->diContainerHTTP, "status", $this->intl->t("Status"), $this->getStatusArray(), $this->entity->status, [
+      ->addElement(new Select($this->container, "status", $this->intl->t("Status"), $this->getStatusArray(), $this->entity->status, [
         "required"    => true,
       ]))
-      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "synopsis", $this->intl->t("Synopsis"), $this->entity->synopsis, [
+      ->addElement(new TextareaHTMLExtended($this->container, "synopsis", $this->intl->t("Synopsis"), $this->entity->synopsis, [
         "data-allow-external" => "true",
         "placeholder"         => $this->intl->t("Write a synopsis."),
       ]))
-      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
+      ->addElement(new InputWikipedia($this->container, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
         "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/...",
         "data-allow-external" => "true",
       ]))

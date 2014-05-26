@@ -40,9 +40,9 @@ final class NotFoundException extends \RuntimeException implements \MovLib\Excep
   /**
    * {@inheritdoc}
    */
-  public function getPresentation(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    $diContainerHTTP->presenter = (new NotFound($diContainerHTTP))->init();
-    return $diContainerHTTP->presenter->getPresentation($diContainerHTTP->presenter->getContent());
+  public function getPresentation(\MovLib\Core\HTTP\Container $container) {
+    $container->presenter = (new NotFound($container))->init();
+    return $container->presenter->getPresentation($container->presenter->getContent());
   }
 
 }

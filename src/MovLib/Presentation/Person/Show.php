@@ -101,7 +101,7 @@ class Show extends \MovLib\Presentation\Person\AbstractPersonPresenter {
       }
     }
     if (($birthPlace = $this->entity->getBirthPlace())) {
-      $birthInfo = $this->intl->t("{date} in {place}", [ "date" => $birthInfo, "place" => new Place($this->diContainerHTTP, $birthPlace) ]);
+      $birthInfo = $this->intl->t("{date} in {place}", [ "date" => $birthInfo, "place" => new Place($this->container, $birthPlace) ]);
     }
     if ($birthInfo && $age) {
       $birthInfo = $this->intl->t("{0} ({1})", [ $birthInfo, $age ]);
@@ -116,7 +116,7 @@ class Show extends \MovLib\Presentation\Person\AbstractPersonPresenter {
       $deathInfo = $date->format($this->entity->deathDate, [ "property" => "deathDate" ]);
     }
     if (($deathPlace = $this->entity->getDeathPlace())) {
-      $deathInfo = $this->intl->t("{date} in {place}", [ "date" => $deathInfo, "place" => new Place($this->diContainerHTTP, $deathPlace) ]);
+      $deathInfo = $this->intl->t("{date} in {place}", [ "date" => $deathInfo, "place" => new Place($this->container, $deathPlace) ]);
     }
     if ($deathAge) {
       $deathInfo = $this->intl->t("{0} ({1})", [ $deathInfo, $this->intl->t("aged {0}", [ $deathAge ]) ]);

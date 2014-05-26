@@ -81,13 +81,13 @@ abstract class AbstractCreate extends \MovLib\Presentation\AbstractCreatePresent
    * {@inheritdoc}
    */
   public function getContent() {
-    $form = (new Form($this->diContainerHTTP))
-      ->addElement(new InputText($this->diContainerHTTP, "title", $this->intl->t("Title"), $this->entity->title, [
+    $form = (new Form($this->container))
+      ->addElement(new InputText($this->container, "title", $this->intl->t("Title"), $this->entity->title, [
         "placeholder" => $this->intl->t("Enter the help article’s title."),
         "autofocus"   => true,
         "required"    => true,
       ]))
-      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "text", $this->intl->t("Text"), $this->entity->text, [
+      ->addElement(new TextareaHTMLExtended($this->container, "text", $this->intl->t("Text"), $this->entity->text, [
         "data-allow-external" => "true",
         "placeholder"         => $this->intl->t("The help article."),
         "required"            => true,
@@ -97,7 +97,7 @@ abstract class AbstractCreate extends \MovLib\Presentation\AbstractCreatePresent
     if ($this->intl->languageCode !== $this->intl->defaultLanguageCode) {
       $defaultLanguageArg = [ "default_language" =>  $this->intl->getTranslations("languages")[$this->intl->defaultLanguageCode]->name];
       $form
-        ->addElement(new InputText($this->diContainerHTTP, "default-title", $this->intl->t("Title ({default_language})", $defaultLanguageArg), $this->entity->defaultTitle, [
+        ->addElement(new InputText($this->container, "default-title", $this->intl->t("Title ({default_language})", $defaultLanguageArg), $this->entity->defaultTitle, [
           "#help-popup" => $this->intl->t("We always need this information in our main Language ({default_language}).", $defaultLanguageArg),
           "placeholder" => $this->intl->t("Enter the help article’s title."),
           "autofocus"   => true,

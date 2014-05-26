@@ -53,7 +53,7 @@ class Movies extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Company($this->diContainerHTTP, $_SERVER["COMPANY_ID"]);
+    $this->entity = new Company($this->container, $_SERVER["COMPANY_ID"]);
     $pageTitle    = $this->intl->t("Movies related to {0}", [ $this->entity->name ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Movies"))
@@ -73,7 +73,7 @@ class Movies extends \MovLib\Presentation\AbstractPresenter {
   public function getContent() {
     $movieSet = $this->entity->getMovies($this->paginationOffset, $this->paginationLimit);
     $this->paginationInit($this->entity->getMovieTotalCount());
-    return (new MovieHelper($this->diContainerHTTP))->getListing($movieSet);
+    return (new MovieHelper($this->container))->getListing($movieSet);
   }
 
   /**

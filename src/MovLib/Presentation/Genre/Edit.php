@@ -46,7 +46,7 @@ final class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Genre($this->diContainerHTTP, $_SERVER["GENRE_ID"]);
+    $this->entity = new Genre($this->container, $_SERVER["GENRE_ID"]);
     return $this
       ->initPage($this->intl->t("Edit {0}", [ $this->entity->name ]), null, $this->intl->t("Edit"))
       ->initEdit($this->entity, $this->intl->t("Genres"))
@@ -57,16 +57,16 @@ final class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return (new Form($this->diContainerHTTP))
+    return (new Form($this->container))
       ->addHiddenElement("revision_id", $this->entity->changed)
-      ->addElement(new InputText($this->diContainerHTTP, "name", $this->intl->t("Name"), $this->entity->name, [
+      ->addElement(new InputText($this->container, "name", $this->intl->t("Name"), $this->entity->name, [
         "autofocus"   => true,
         "required"    => true,
       ]))
-      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
+      ->addElement(new TextareaHTMLExtended($this->container, "description", $this->intl->t("Description"), $this->entity->description, [
         "data-allow-external" => "true",
       ]))
-      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia))
+      ->addElement(new InputWikipedia($this->container, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia))
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
       ->init([ $this, "submit" ])
     ;

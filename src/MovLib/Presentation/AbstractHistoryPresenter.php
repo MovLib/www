@@ -116,7 +116,7 @@ abstract class AbstractHistoryPresenter extends \MovLib\Presentation\AbstractPre
    *   The entity's class name without namespace.
    */
   protected function getIndexContent($entityClassName) {
-    $revisions = (new RevisionEntitySet($this->diContainerHTTP))
+    $revisions = (new RevisionEntitySet($this->container))
       ->loadRevisions($entityClassName, $this->entity->id, $this->paginationOffset, $this->paginationLimit)->entities;
 
     if (empty($revisions)) {

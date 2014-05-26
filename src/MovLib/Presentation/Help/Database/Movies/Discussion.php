@@ -36,7 +36,7 @@ final class Discussion extends \MovLib\Presentation\Help\AbstractDiscussion {
    * {@inheritdoc}
    */
   public function init() {
-    return $this->initArticle(new Article($this->diContainerHTTP, $_SERVER["HELP_ID"]));
+    return $this->initArticle(new Article($this->container, $_SERVER["HELP_ID"]));
   }
 
 }

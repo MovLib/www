@@ -17,7 +17,7 @@
  */
 namespace MovLib\Console\Command\Install;
 
-use \MovLib\Core\DIContainer;
+use \MovLib\Core\Container;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -66,8 +66,8 @@ abstract class AbstractIntlCommand extends \MovLib\Console\Command\AbstractComma
   /**
    * {@inheritdoc}
    */
-  public function __construct(DIContainer $diContainer) {
-    parent::__construct($diContainer);
+  public function __construct(Container $container) {
+    parent::__construct($container);
     $this->addArgument(
       "locale",
       InputArgument::IS_ARRAY | InputArgument::OPTIONAL,

@@ -47,8 +47,8 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->seriesHelper = new SeriesHelper($this->diContainerHTTP);
-    $this->entity = new Series($this->diContainerHTTP, $_SERVER["SERIES_ID"]);
+    $this->seriesHelper = new SeriesHelper($this->container);
+    $this->entity = new Series($this->container, $_SERVER["SERIES_ID"]);
     $this
       ->initPage($this->entity->displayTitle, $this->seriesHelper->getStructuredDisplayTitle($this->entity, false, true))
       ->initShow($this->entity, $this->intl->tp(-1, "Series"), "Series", null, $this->getSidebarItems())
@@ -60,7 +60,7 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    $starRating = new StarRatingForm($this->diContainerHTTP, $this->entity);
+    $starRating = new StarRatingForm($this->container, $this->entity);
     $this->infoboxBefore =
       "{$this->seriesHelper->getStructuredOriginalTitle($this->entity, "p")}{$starRating}"
     ;
@@ -85,7 +85,7 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
 
   protected function getTitleSection() {
     $items = null;
-    foreach ((new TitleSet($this->diContainerHTTP))->loadEntitiesBySeries($this->entity)->entities as $entity) {
+    foreach ((new TitleSet($this->container))->loadEntitiesBySeries($this->entity)->entities as $entity) {
       $original = $entity["isOriginalTitle"]? " ({$this->intl->t("Originaltitel")})" : null;
       $items .=
         "<tr>" .

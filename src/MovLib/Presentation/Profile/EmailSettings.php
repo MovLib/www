@@ -78,8 +78,8 @@ final class EmailSettings extends \MovLib\Presentation\Profile\AbstractProfilePr
    * {@inheritdoc}
    */
   public function getContent() {
-    $form = (new Form($this->diContainerHTTP))
-      ->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email Address"), $this->email, [ "autofocus" => true, "required" => true ]))
+    $form = (new Form($this->container))
+      ->addElement(new InputEmail($this->container, "email", $this->intl->t("Email Address"), $this->email, [ "autofocus" => true, "required" => true ]))
       ->addAction($this->intl->t("Change"), [ "class" => "btn btn-large btn-success" ])
       ->init([ $this, "valid" ], null, [ $this, "validate" ])
     ;
@@ -155,7 +155,7 @@ final class EmailSettings extends \MovLib\Presentation\Profile\AbstractProfilePr
    * @return this
    */
   protected function validateToken($token) {
-    $tmp = new TemporaryStorage($this->diContainerHTTP);
+    $tmp = new TemporaryStorage($this->container);
     /* @var $data \MovLib\Stub\Mail\Profile\EmailAddressChange */
     $data = $tmp->get($token);
 

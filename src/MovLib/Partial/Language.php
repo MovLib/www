@@ -49,8 +49,8 @@ final class Language extends \MovLib\Core\Presentation\DependencyInjectionBase {
   /**
    * {@inheritdoc}
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    parent::__construct($diContainerHTTP);
+  public function __construct(\MovLib\Core\HTTP\Container $container) {
+    parent::__construct($container);
     $this->languages = $this->intl->getTranslations("languages");
   }
 
@@ -99,7 +99,7 @@ final class Language extends \MovLib\Core\Presentation\DependencyInjectionBase {
     foreach ($this->languages as $language) {
       $options[$language->code] = $language->name;
     }
-    return new Select($this->diContainerHTTP, $id, $label ?: $this->intl->t("Language"), $options, $value, $attributes);
+    return new Select($this->container, $id, $label ?: $this->intl->t("Language"), $options, $value, $attributes);
   }
 
 }

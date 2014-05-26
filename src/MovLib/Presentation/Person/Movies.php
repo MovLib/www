@@ -56,8 +56,8 @@ class Movies extends \MovLib\Presentation\Person\AbstractPersonPresenter {
   }
 
   public function getContent() {
-    $helper = new MovieHelper($this->diContainerHTTP);
-    $set = new MovieJobSet($this->diContainerHTTP);
+    $helper = new MovieHelper($this->container);
+    $set = new MovieJobSet($this->container);
     /* @var $jobs \MovLib\Stub\Data\Movie\MoviePersonJobs */
     $listing = null;
     foreach ($set->loadEntitiesByPerson($this->entity) as $movieId => $jobs) {
@@ -110,7 +110,7 @@ class Movies extends \MovLib\Presentation\Person\AbstractPersonPresenter {
             "<div class='s s8'>" .
               "<h2 class='para'>{$helper->getStructuredDisplayTitle($jobs->movie)}</h2>" .
               $helper->getStructuredOriginalTitle($jobs->movie, "small") .
-              (new Genre($this->diContainerHTTP))->getLabels($jobs->genreSet, [ "class" => "small cf mb10" ]) .
+              (new Genre($this->container))->getLabels($jobs->genreSet, [ "class" => "small cf mb10" ]) .
               $jobList .
             "</div>" .
             "<div class='s s1 rating-mean tac'>{$this->intl->format("{0,number}", $jobs->movie->meanRating)}</div>" .

@@ -61,7 +61,7 @@ final class DangerZone extends \MovLib\Presentation\Profile\AbstractProfilePrese
   public function getContent() {
     // We must initialize the form before we create the sessions table, otherwise deletions would happen after the table
     // containing the sessions listing was built. Deleted sessions would still be displayed!
-    $sessions       = (new Form($this->diContainerHTTP, [], "sessions"))->init([ $this, "deleteSession" ]);
+    $sessions       = (new Form($this->container, [], "sessions"))->init([ $this, "deleteSession" ]);
     $sessionsTable  = "";
     $buttonText     = $this->intl->t("Terminate");
     $buttonTitle    = $this->intl->t("Terminate this session, the associated user agent will be signed out immediately.");
@@ -107,7 +107,7 @@ final class DangerZone extends \MovLib\Presentation\Profile\AbstractProfilePrese
       )}</th><th></th></tr></thead><tbody>{$sessionsTable}</tbody></table>{$sessions->close()}"
     ;
 
-    $deletion = (new Form($this->diContainerHTTP))
+    $deletion = (new Form($this->container))
       ->addAction($this->intl->t("Delete"), [ "class" => "btn btn-error" ])
       ->init([ $this, "deleteAccount" ])
     ;
@@ -186,7 +186,7 @@ final class DangerZone extends \MovLib\Presentation\Profile\AbstractProfilePrese
    * @return this
    */
   protected function validateToken($token) {
-    $tmp = new TemporaryStorage($this->diContainerHTTP);
+    $tmp = new TemporaryStorage($this->container);
     $userId = $tmp->get($token);
 
     if ($userId === false || empty($userId)) {

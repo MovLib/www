@@ -33,7 +33,7 @@ class RevisionTest extends \MovLib\TestCase {
   /**
    * The dependency injection container.
    *
-   * @var \MovLib\Core\HTTP\DIContainerHTTP
+   * @var \MovLib\Core\HTTP\Container
    */
   protected $diContainerHTTP;
 
@@ -44,7 +44,7 @@ class RevisionTest extends \MovLib\TestCase {
   protected function getDIContainer() {
     static $diContainer = null;
     if (!$diContainer) {
-      $diContainer = new \MovLib\Core\HTTP\DIContainerHTTP;
+      $diContainer = new \MovLib\Core\HTTP\Container;
       $diContainer->config = new \MovLib\Core\Config();
       $diContainer->log = new \MovLib\Core\Log($diContainer->config, $diContainer->config->hostname, true);
   //    $diContainer->fs = new MovLib\Core\FileSystem("/var/www", diContainer->config->hostnameStatic);

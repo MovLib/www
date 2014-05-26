@@ -38,7 +38,7 @@ class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Job($this->diContainerHTTP, $_SERVER["JOB_ID"]);
+    $this->entity = new Job($this->container, $_SERVER["JOB_ID"]);
     $this
       ->initPage($this->entity->title)
       ->initShow($this->entity, $this->intl->t("Jobs"), "Job", null, $this->getSidebarItems())

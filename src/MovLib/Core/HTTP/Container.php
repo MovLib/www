@@ -26,7 +26,7 @@ namespace MovLib\Core\HTTP;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class DIContainerHTTP extends \MovLib\Core\DIContainer {
+class Container extends \MovLib\Core\Container {
 
   /**
    * The presenting presenter.

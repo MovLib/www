@@ -94,7 +94,7 @@ SQL;
    * @throws \mysqli_sql_exception
    */
   public function loadGenres() {
-    (new GenreSet($this->diContainer))->loadEntitySets($this);
+    (new GenreSet($this->container))->loadEntitySets($this);
     return $this;
   }
 

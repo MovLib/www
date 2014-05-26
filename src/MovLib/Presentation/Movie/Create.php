@@ -52,7 +52,7 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
   public function init() {
     return $this
       ->initPage($this->intl->t("Create New Movie"))
-      ->initCreate(new Movie($this->diContainerHTTP), $this->intl->t("Movies"))
+      ->initCreate(new Movie($this->container), $this->intl->t("Movies"))
     ;
   }
 
@@ -60,32 +60,32 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
    * {@inheritdoc}
    */
    public function getContent() {
-    return (new Form($this->diContainerHTTP))
-      ->addElement(new InputText($this->diContainerHTTP, "original-title", $this->intl->t("Original Title"), $this->entity->originalTitle, [
+    return (new Form($this->container))
+      ->addElement(new InputText($this->container, "original-title", $this->intl->t("Original Title"), $this->entity->originalTitle, [
         "#prefix"   => "<div class='r'><div class='s s7'>",
         "#suffix"   => "</div>",
         "autofocus" => true,
         "required"  => true,
       ]))
-      ->addElement((new Language($this->diContainerHTTP))->getSelectFormElement($this->entity->originalTitleLanguageCode, [
+      ->addElement((new Language($this->container))->getSelectFormElement($this->entity->originalTitleLanguageCode, [
         "#prefix"     => "<div class='s s3'>",
         "#suffix"     => "</div></div>",
         "#help-popup" => $this->intl->t("The original title’s language."),
         "required"    => true,
       ]))
-      ->addElement(new InputInteger($this->diContainerHTTP, "year", $this->intl->t("Release Year"), $this->entity->year->year, [
+      ->addElement(new InputInteger($this->container, "year", $this->intl->t("Release Year"), $this->entity->year->year, [
         "class" => "s2",
         "min"   => 1890,
         "max"   => date("Y") + 5
       ]))
-      ->addElement(new InputInteger($this->diContainerHTTP, "runtime", $this->intl->t("Approximate Runtime"), $this->entity->runtime, [
+      ->addElement(new InputInteger($this->container, "runtime", $this->intl->t("Approximate Runtime"), $this->entity->runtime, [
         "#field_suffix" => " {$this->intl->t("Minutes")}",
         "class"         => "s2",
         "min"           => 0,
         "max"           => 279620, /* 16777215 seconds */
       ]))
-      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "synopsis", $this->intl->t("Synopsis"), $this->entity->synopsis))
-      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
+      ->addElement(new TextareaHTMLExtended($this->container, "synopsis", $this->intl->t("Synopsis"), $this->entity->synopsis))
+      ->addElement(new InputWikipedia($this->container, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
         "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/…",
         "data-allow-external" => "true",
       ]))

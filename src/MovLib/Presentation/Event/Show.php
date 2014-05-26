@@ -45,8 +45,8 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Event($this->diContainerHTTP, $_SERVER["EVENT_ID"]);
-    $this->entity->award && $this->entity->award = new Award($this->diContainerHTTP, $this->entity->award);
+    $this->entity = new Event($this->container, $_SERVER["EVENT_ID"]);
+    $this->entity->award && $this->entity->award = new Award($this->container, $this->entity->award);
     $this
       ->initPage($this->entity->name)
       ->initShow($this->entity, $this->intl->t("Events"), "Event", null, $this->getSidebarItems())

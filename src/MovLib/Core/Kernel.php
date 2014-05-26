@@ -19,9 +19,9 @@ namespace MovLib\Core;
 
 use \MovLib\Console\Application;
 use \MovLib\Core\Config;
-use \MovLib\Core\DIContainer;
+use \MovLib\Core\Container;
 use \MovLib\Core\FileSystem;
-use \MovLib\Core\HTTP\DIContainerHTTP;
+use \MovLib\Core\HTTP\Container as HTTPContainer;
 use \MovLib\Core\HTTP\Request;
 use \MovLib\Core\HTTP\Response;
 use \MovLib\Core\HTTP\Session;
@@ -89,9 +89,9 @@ final class Kernel {
   /**
    * Dependency injection container.
    *
-   * @var \MovLib\Core\DIContainer|\MovLib\Core\HTTP\DIContainerHTTP
+   * @var \MovLib\Core\Container|\MovLib\Core\HTTP\Container
    */
-  protected $diContainer;
+  protected $container;
 
   /**
    * Whether this kernel is in HTTP context or not.
@@ -134,23 +134,23 @@ final class Kernel {
     // Build absolute path to the serialized config file and use it if present, if not fall back to the default config.
     $serializedConfig = $documentRoot . Config::PATH;
     if (file_exists($serializedConfig)) {
-      $this->diContainer->config = unserialize(file_get_contents($serializedConfig));
+      $this->container->config = unserialize(file_get_contents($serializedConfig));
     }
     else {
-      $this->diContainer->config = new Config();
+      $this->container->config = new Config();
     }
 
     // @devStart
     // @codeCoverageIgnoreStart
     // @todo REMOVE ME as soon as we have no coming soon page!
-    $this->diContainer->config->hostname = "alpha.movlib.org";
+    $this->container->config->hostname = "alpha.movlib.org";
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-    $this->diContainer->kernel = $this;
-    $this->diContainer->log    = new Log($this->diContainer->config, $logName, $this->http);
-    $this->diContainer->fs     = new FileSystem($documentRoot, $this->diContainer->config->hostnameStatic);
-    $this->diContainer->intl   = new Intl($this->diContainer->config, $language);
+    $this->container->kernel = $this;
+    $this->container->log    = new Log($this->container->config, $logName, $this->http);
+    $this->container->fs     = new FileSystem($documentRoot, $this->container->config->hostnameStatic);
+    $this->container->intl   = new Intl($this->container->config, $language);
 
     return $this;
   }
@@ -171,10 +171,10 @@ final class Kernel {
     // @codeCoverageIgnoreEnd
     // @devEnd
     $this->cli         = true;
-    $this->diContainer = new DIContainer();
+    $this->container = new Container();
     $this->boot($documentRoot, "{$basename}-cli");
-    $this->diContainer->fs->setProcessOwner($this->diContainer->config->user, $this->diContainer->config->group);
-    $application = new Application($this->diContainer, $basename);
+    $this->container->fs->setProcessOwner($this->container->config->user, $this->container->config->group);
+    $application = new Application($this->container, $basename);
     $application->setAutoExit(false);
     $application->run();
     $this->shutdown();
@@ -197,29 +197,29 @@ final class Kernel {
     register_shutdown_function([ $this, "fatalErrorHandler" ]);
     ini_set("display_errors", false);
 
-    $this->http                  = true;
-    $this->diContainer           = new DIContainerHTTP();
+    $this->http                = true;
+    $this->container           = new HTTPContainer();
     $this->boot($documentRoot, $_SERVER["SERVER_NAME"], $_SERVER["LANGUAGE_CODE"]);
-    $this->diContainer->request  = new Request($this->diContainer->intl);
-    $this->diContainer->response = new Response($this->diContainer->request, $this->diContainer->config->hostname);
-    $this->diContainer->session  = new Session($this->diContainer);
+    $this->container->request  = new Request($this->container->intl);
+    $this->container->response = new Response($this->container->request, $this->container->config->hostname);
+    $this->container->session  = new Session($this->container);
 
     // Try to initialize the session and presentation and send it to the client.
     try {
-      $this->diContainer->session->resume($this, $this->diContainer->request);
+      $this->container->session->resume($this, $this->container->request);
       $presenterClass = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
-      $this->diContainer->presenter = new $presenterClass($this->diContainer);
-      $this->diContainer->presenter->init();
-      $response = $this->diContainer->presenter->getPresentation($this->diContainer->presenter->getContent());
+      $this->container->presenter = new $presenterClass($this->container);
+      $this->container->presenter->init();
+      $response = $this->container->presenter->getPresentation($this->container->presenter->getContent());
     }
     // Client exception's are exception's that display a fully rendered page in HTTP context, catch them separately.
     catch (ClientExceptionInterface $clientException) {
       // A client exception might throw another client exception (redirects) that we have to catch.
       try {
-        $response = $clientException->getPresentation($this->diContainer);
+        $response = $clientException->getPresentation($this->container);
       }
       catch (ClientExceptionInterface $clientException) {
-        $response = $clientException->getPresentation($this->diContainer);
+        $response = $clientException->getPresentation($this->container);
       }
     }
     // Any other exception is an error, but the base system booted nicely therefore we try to display a nice looking
@@ -227,25 +227,25 @@ final class Kernel {
     // don't have to keep the stacktrace a secret. Who knows, maybe someone can will directly create a pull request at
     // GitHub that fixes the issue (*dreaming*).
     catch (\Exception $exception) {
-      $this->diContainer->presenter = new InternalServerError($this->diContainer);
-      $this->diContainer->presenter->init()->setException($exception);
-      $response = $this->diContainer->presenter->getPresentation($this->diContainer->presenter->getContent());
+      $this->container->presenter = new InternalServerError($this->container);
+      $this->container->presenter->init()->setException($exception);
+      $response = $this->container->presenter->getPresentation($this->container->presenter->getContent());
     }
 
-    if ($this->diContainer->config->production === true) {
+    if ($this->container->config->production === true) {
       echo $response;
       if (fastcgi_finish_request() === false) {
-        $this->diContainer->log->error("FastCGI finish request failed.");
+        $this->container->log->error("FastCGI finish request failed.");
       }
     }
 
-    $this->diContainer->session->shutdown();
+    $this->container->session->shutdown();
     $this->bench("response", 0.75);
-//    $this->diContainer->response->cache($presentation);
+//    $this->container->response->cache($presentation);
     $this->shutdown();
     $this->bench("shutdown", 0.5);
 
-    if ($this->diContainer->config->production === false) {
+    if ($this->container->config->production === false) {
       echo $response;
     }
 
@@ -270,10 +270,10 @@ final class Kernel {
     assert($target > 0, "Target time has to be greater than zero.");
     // @codeCoverageIgnoreEnd
     // @devEnd
-    if (($time = microtime(true) - $this->diContainer->request->timeFloat) > $target) {
-      $this->diContainer->log->info("SLOW {$what}", [
+    if (($time = microtime(true) - $this->container->request->timeFloat) > $target) {
+      $this->container->log->info("SLOW {$what}", [
         "time" => $time,
-        "uri"  => $this->diContainer->request->uri,
+        "uri"  => $this->container->request->uri,
       ]);
     }
     return $this;
@@ -350,8 +350,8 @@ final class Kernel {
     }
 
     // Make sure we actually have a logger available.
-    if (isset($this->diContainer->log) && $this->diContainer->log instanceof Log) {
-      $this->diContainer->log->emergency($exception);
+    if (isset($this->container->log) && $this->container->log instanceof Log) {
+      $this->container->log->emergency($exception);
     }
     // If not things use PHP native functions, the root user of this server should have email forwarding set up.
     else {
@@ -468,10 +468,10 @@ EOT;
     }
 
     if ($this->http === true) {
-      (new Mailer())->sendEmailStack($this->diContainer);
+      (new Mailer())->sendEmailStack($this->container);
     }
 
-    $this->diContainer->fs->deleteRegisteredFiles($this->diContainer->log);
+    $this->container->fs->deleteRegisteredFiles($this->container->log);
 
     return $this;
   }

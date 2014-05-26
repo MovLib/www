@@ -217,13 +217,13 @@ final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity impleme
   /**
    * Instantiate new movie object.
    *
-   * @param \MovLib\Core\DIContainer $diContainer
+   * @param \MovLib\Core\Container $container
    *   {@inheritdoc}
    * @param integer $id [optional]
    *   The movie's unique identifier to instantiate, defaults to <code>NULL</code> (no movie will be loaded).
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null) {
-    parent::__construct($diContainer);
+  public function __construct(\MovLib\Core\Container $container, $id = null) {
+    parent::__construct($container);
     if ($id) {
       $connection = Database::getConnection();
       $stmt = $connection->prepare(<<<SQL
@@ -330,7 +330,7 @@ WHERE `movies_genres`.`movie_id` = {$this->id}
 ORDER BY `name` {$this->collations[$this->intl->languageCode]} DESC
 SQL
       );
-      while ($genre = $result->fetch_object("\\MovLib\\Data\\Genre\Genre", [ $this->diContainer ])) {
+      while ($genre = $result->fetch_object("\\MovLib\\Data\\Genre\Genre", [ $this->container ])) {
         $this->genreSet[] = $genre;
       }
       $result->free();

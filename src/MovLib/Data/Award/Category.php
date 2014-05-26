@@ -172,7 +172,7 @@ final class Category extends \MovLib\Data\AbstractEntity {
   /**
    * Instantiate new award category object.
    *
-   * @param \MovLib\Core\DIContainer $diContainer
+   * @param \MovLib\Core\Container $container
    *   {@inheritdoc}
    * @param integer $id [optional]
    *   The category's unique identifier to instantiate, defaults to <code>NULL</code> (no category will be loaded).
@@ -180,8 +180,8 @@ final class Category extends \MovLib\Data\AbstractEntity {
    *   Whether to instantiate an award object or not, defaults to <code>TRUE</code>
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null, $initAward = true) {
-    parent::__construct($diContainer);
+  public function __construct(\MovLib\Core\Container $container, $id = null, $initAward = true) {
+    parent::__construct($container);
     $this->initAward = $initAward;
     if ($id) {
       $stmt = $this->getMySQLi()->prepare(<<<SQL
@@ -358,7 +358,7 @@ SQL
    */
   public function init() {
     if ($this->initAward === true && isset($this->awardId)) {
-      $this->award = new Award($this->diContainer, $this->awardId);
+      $this->award = new Award($this->container, $this->awardId);
     }
     if (isset($this->firstYear) && !$this->firstYear instanceof \stdClass) {
       $this->firstYear = new Date($this->firstYear);

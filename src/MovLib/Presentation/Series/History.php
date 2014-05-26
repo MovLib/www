@@ -37,7 +37,7 @@ class History extends \MovLib\Presentation\AbstractHistoryPresenter {
    */
   public function init() {
     return $this->initHistory(
-      new Series($this->diContainerHTTP, $_SERVER["SERIES_ID"]),
+      new Series($this->container, $_SERVER["SERIES_ID"]),
       $this->intl->tp(-1, "Series")
     );
   }

@@ -95,7 +95,7 @@ abstract class AbstractProfilePresenter extends \MovLib\Presentation\AbstractPre
     ]);
 
     if ($initUser) {
-      $this->user = new User($this->diContainerHTTP, $this->session->userId, User::FROM_ID);
+      $this->user = new User($this->container, $this->session->userId, User::FROM_ID);
     }
 
     if ($authTimeMessage) {

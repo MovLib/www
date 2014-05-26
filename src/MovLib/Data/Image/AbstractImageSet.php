@@ -56,13 +56,13 @@ abstract class AbstractImageSet extends \MovLib\Data\AbstractEntitySet {
   /**
    * Instantiate new image set.
    *
-   * @param \MovLib\Core\DIContainer $diContainer
+   * @param \MovLib\Core\Container $container
    *   {@inheritdoc}
    * @param mixed $entityId
    *   The unique identifier of the entity the images of this set belong to.
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $entityId) {
-    parent::__construct($diContainer);
+  public function __construct(\MovLib\Core\Container $container, $entityId) {
+    parent::__construct($container);
     // @devStart
     // @codeCoverageIgnoreStart
     assert(is_numeric($entityId), "An image set's unique entity identifier has to be numeric.");
@@ -122,7 +122,7 @@ abstract class AbstractImageSet extends \MovLib\Data\AbstractEntitySet {
     $where .= (empty($where) ? " WHERE " : " AND ") . "`{$this->entityKey}_id` = {$this->entityId}";
     $result = $this->getMySQLi()->query($this->getEntitiesQuery($where, $orderBy));
     /* @var $entity \MovLib\Data\AbstractEntity */
-    while ($entity = $result->fetch_object($this->entityClassName, [ $this->diContainer, $this->entityId ])) {
+    while ($entity = $result->fetch_object($this->entityClassName, [ $this->container, $this->entityId ])) {
       $this->entities[$entity->id] = $entity;
     }
     $result->free();

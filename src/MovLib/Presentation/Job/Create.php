@@ -41,7 +41,7 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
   public function init() {
     return $this
       ->initPage($this->intl->t("Create"))
-      ->initCreate(new Job($this->diContainerHTTP), $this->intl->t("Jobs"))
+      ->initCreate(new Job($this->container), $this->intl->t("Jobs"))
     ;
   }
 
@@ -51,20 +51,20 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
   public function getContent() {
     $translations = $this->intl->languageCode != $this->intl->defaultLanguageCode;
     $attributes   = [ "aria-describedby" => [ "job-title-description" ], "required" => true ];
-    $form         = new Form($this->diContainerHTTP);
+    $form         = new Form($this->container);
     $sex          = new Sex();
 
-    $sex->addInputTextElements($this->diContainerHTTP, $form, "title", $this->entity->titles, $attributes);
+    $sex->addInputTextElements($this->container, $form, "title", $this->entity->titles, $attributes);
     if ($translations) {
-      $sex->addInputTextElements($this->diContainerHTTP, $form, "title-{$this->intl->defaultLanguageCode}", $this->entity->defaultTitles, $attributes, $this->intl->t(
+      $sex->addInputTextElements($this->container, $form, "title-{$this->intl->defaultLanguageCode}", $this->entity->defaultTitles, $attributes, $this->intl->t(
         "{0} ({1})",
         [ 1 => $this->intl->getTranslations("languages")[$this->intl->defaultLanguageCode]->name ]
       ));
     }
 
     $form
-      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description))
-      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia))
+      ->addElement(new TextareaHTMLExtended($this->container, "description", $this->intl->t("Description"), $this->entity->description))
+      ->addElement(new InputWikipedia($this->container, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia))
       ->addAction($this->intl->t("Create"), [ "class" => "btn btn-large btn-success" ])
     ;
 

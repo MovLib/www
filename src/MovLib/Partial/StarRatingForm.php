@@ -77,15 +77,15 @@ final class StarRatingForm extends \MovLib\Core\Presentation\DependencyInjection
   /**
    * Instantiate new rating form.
    *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   * @param \MovLib\Core\HTTP\Container $container
    *   The HTTP dependency injection container.
    * @param \MovLib\Data\AbstractEntity $entity
    *   The entity for which the rating form should be created.
    * @param array $attributes [optional]
    *   Additional attributes that should be applied to the <code><form></code> tag.
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, \MovLib\Data\Rating\RatingInterface $entity, array $attributes = []) {
-    parent::__construct($diContainerHTTP);
+  public function __construct(\MovLib\Core\HTTP\Container $container, \MovLib\Data\Rating\RatingInterface $entity, array $attributes = []) {
+    parent::__construct($container);
     // @devStart
     // @codeCoverageIgnoreStart
     // Yes, we could create an interface with getters, but you know, we don't like those slow getters...
@@ -97,14 +97,14 @@ final class StarRatingForm extends \MovLib\Core\Presentation\DependencyInjection
 
     // Get the currently signed in user's rating for this entity.
     if ($this->session->isAuthenticated) {
-      $this->userRating = (new User($this->diContainerHTTP))->getRating($entity, $this->session->userId);
+      $this->userRating = (new User($this->container))->getRating($entity, $this->session->userId);
     }
     else {
       $this->userRating = round($this->entity->ratingMean);
     }
 
-    $this->diContainerHTTP->presenter->addClass("star-rating", $attributes);
-    $this->form   = new Form($diContainerHTTP, $attributes, "stars-rating-{$entity->id}");
+    $this->container->presenter->addClass("star-rating", $attributes);
+    $this->form   = new Form($container, $attributes, "stars-rating-{$entity->id}");
     $this->form->init(null, [ $this, "validate" ]);
 
     // Build the buttons for the form.

@@ -85,7 +85,7 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
   /**
    * Instantiate new form.
    *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   * @param \MovLib\Core\HTTP\Container $container
    *   HTTP dependency injection container.
    * @param array $attributes [optional]
    *   The form's additional attributes, the following attributes are always set:
@@ -97,8 +97,8 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
    * @param string $id [optional]
    *   Set the form's global unique identifier, defaults to the presenting presenter's identifier.
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, array $attributes = [], $id = null) {
-    parent::__construct($diContainerHTTP);
+  public function __construct(\MovLib\Core\HTTP\Container $container, array $attributes = [], $id = null) {
+    parent::__construct($container);
     // @devStart
     // @codeCoverageIgnoreStart
     foreach ([ "accept-charset", "method" ] as $attribute) {
@@ -106,7 +106,7 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    $this->presenter  = $diContainerHTTP->presenter;
+    $this->presenter  = $container->presenter;
     $this->attributes = $attributes;
     $this->id         = $id ? $id : $this->presenter->id;
   }

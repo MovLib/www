@@ -36,7 +36,7 @@ final class Index extends \MovLib\Presentation\Help\AbstractCategory {
    * {@inheritdoc}
    */
   public function init() {
-    return $this->initCategory(new Category($this->diContainerHTTP, 3));
+    return $this->initCategory(new Category($this->container, 3));
   }
 
 }

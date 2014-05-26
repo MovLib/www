@@ -53,8 +53,8 @@ abstract class AbstractEntitySet extends \MovLib\Data\AbstractConfig implements 
   /**
    * {@inheritdoc}
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer) {
-    parent::__construct($diContainer);
+  public function __construct(\MovLib\Core\Container $container) {
+    parent::__construct($container);
     $this->entityClassName = substr(static::class, 0, -3);
     $this->init();
   }
@@ -181,7 +181,7 @@ abstract class AbstractEntitySet extends \MovLib\Data\AbstractConfig implements 
   protected function loadEntities($where = null, $orderBy = null) {
     $result = $this->getMySQLi()->query($this->getEntitiesQuery($where, $orderBy));
     /* @var $entity \MovLib\Data\AbstractEntity */
-    while ($entity = $result->fetch_object($this->entityClassName, [ $this->diContainer, null, false ])) {
+    while ($entity = $result->fetch_object($this->entityClassName, [ $this->container, null, false ])) {
       $this->entities[$entity->id] = $entity;
     }
     $result->free();
@@ -225,9 +225,9 @@ abstract class AbstractEntitySet extends \MovLib\Data\AbstractConfig implements 
     // Instantiate and export an instance of ourself to each entity of the passed set and seed those set instances with
     // the entities that were returned by the above query.
     /* @var $entity \MovLib\Data\AbstractEntity */
-    while ($entity = $result->fetch_object($this->entityClassName, [ $this->diContainer ])) {
+    while ($entity = $result->fetch_object($this->entityClassName, [ $this->container ])) {
       if (empty($set[$entity->entityId]->{$entitySetPropertyName})) {
-        $set[$entity->entityId]->{$entitySetPropertyName} = $reflector->newInstance($this->diContainer);
+        $set[$entity->entityId]->{$entitySetPropertyName} = $reflector->newInstance($this->container);
       }
       $set[$entity->entityId]->{$entitySetPropertyName}[$entity->id] = $entity;
     }

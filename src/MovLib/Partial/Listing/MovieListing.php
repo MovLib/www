@@ -39,9 +39,9 @@ class MovieListing {
   /**
    * The dependency injection container.
    *
-   * @var \MovLib\Core\HTTP\DIContainerHTTP
+   * @var \MovLib\Core\HTTP\Container
    */
-  protected $diContainerHTTP;
+  protected $container;
 
   /**
    * The active intl instance.
@@ -78,17 +78,17 @@ class MovieListing {
   /**
    * Instantiate new movie listing.
    *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   * @param \MovLib\Core\HTTP\Container $container
    *   The dependency injection container.
    * @param mixed $listItems
    *   The items to build the movie listing.
    * @param mixed $noItemsText [optional]
    *   The text to display if there are no items, defaults to a generic {@see \MovLib\Presentation\Partial\Alert}.
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $listItems, $noItemsText = null) {
-    $this->diContainerHTTP = $diContainerHTTP;
-    $this->intl            = $this->diContainerHTTP->intl;
-    $this->presenter       = $this->diContainerHTTP->presenter;
+  public function __construct(\MovLib\Core\HTTP\Container $container, $listItems, $noItemsText = null) {
+    $this->container = $container;
+    $this->intl            = $this->container->intl;
+    $this->presenter       = $this->container->presenter;
     // @devStart
     // @codeCoverageIgnoreStart
     if (isset($noItemsText) && (empty($noItemsText) || !method_exists($noItemsText, "__toString"))) {
@@ -116,7 +116,7 @@ class MovieListing {
     // @devEnd
       $list = null;
       /* @var $movie \MovLib\Data\Movie\FullMovie */
-      while ($movie = $this->listItems->fetch_object("\\MovLib\\Data\\Movie\\FullMovie", [ $this->diContainerHTTP ])) {
+      while ($movie = $this->listItems->fetch_object("\\MovLib\\Data\\Movie\\FullMovie", [ $this->container ])) {
         $list .= $this->formatListItem($movie->initFetchObject());
       }
 

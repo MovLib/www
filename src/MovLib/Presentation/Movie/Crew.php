@@ -57,7 +57,7 @@ class Crew extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    $set     = new CrewSet($this->diContainerHTTP);
+    $set     = new CrewSet($this->container);
     $listing = null;
 
     /* @var $movieCrew \MovLib\Stub\Data\Movie\MovieCrew */

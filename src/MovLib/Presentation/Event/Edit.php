@@ -45,8 +45,8 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Event($this->diContainerHTTP, $_SERVER["EVENT_ID"]);
-    $this->entity->award = new Award($this->diContainerHTTP, $this->entity->award);
+    $this->entity = new Event($this->container, $_SERVER["EVENT_ID"]);
+    $this->entity->award = new Award($this->container, $this->entity->award);
     $pageTitle    = $this->intl->t("Edit {0}", [ $this->entity->name ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Edit"))
@@ -58,33 +58,33 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    $awardOptions = (new AwardSet($this->diContainerHTTP))->loadSelectOptions();
-    $form = (new Form($this->diContainerHTTP))
-      ->addElement(new Select($this->diContainerHTTP, "award", $this->intl->t("Award"), $awardOptions, $this->entity->award->id, [
+    $awardOptions = (new AwardSet($this->container))->loadSelectOptions();
+    $form = (new Form($this->container))
+      ->addElement(new Select($this->container, "award", $this->intl->t("Award"), $awardOptions, $this->entity->award->id, [
         "placeholder" => $this->intl->t("Select the event’s Award."),
         "autofocus"   => true,
         "required"    => true,
       ]))
-      ->addElement(new InputText($this->diContainerHTTP, "name", $this->intl->t("Name"), $this->entity->name, [
+      ->addElement(new InputText($this->container, "name", $this->intl->t("Name"), $this->entity->name, [
         "placeholder" => $this->intl->t("Enter the event’s name."),
         "required"    => true,
       ]))
-      ->addElement(new TextareaLineArray($this->diContainerHTTP, "aliases", $this->intl->t("Alternative Names (line by line)"), $this->entity->aliases, [
+      ->addElement(new TextareaLineArray($this->container, "aliases", $this->intl->t("Alternative Names (line by line)"), $this->entity->aliases, [
         "placeholder" => $this->intl->t("Enter the event’s alternative names here, line by line."),
       ]))
-      ->addElement(new InputDateSeparate($this->diContainerHTTP, "start-date", $this->intl->t("Start Date"), $this->entity->startDate, [
+      ->addElement(new InputDateSeparate($this->container, "start-date", $this->intl->t("Start Date"), $this->entity->startDate, [
         "required"    => true,
       ]))
-      ->addElement(new InputDateSeparate($this->diContainerHTTP, "end-date", $this->intl->t("End Date"), $this->entity->endDate))
-      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
+      ->addElement(new InputDateSeparate($this->container, "end-date", $this->intl->t("End Date"), $this->entity->endDate))
+      ->addElement(new TextareaHTMLExtended($this->container, "description", $this->intl->t("Description"), $this->entity->description, [
         "data-allow-external" => "true",
         "placeholder"         => $this->intl->t("Describe the event."),
       ]))
-      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
+      ->addElement(new InputWikipedia($this->container, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
         "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/..",
         "data-allow-external" => "true",
       ]))
-      ->addElement(new TextareaLineURLArray($this->diContainerHTTP, "links", $this->intl->t("Weblinks (line by line)"), $this->entity->links, [
+      ->addElement(new TextareaLineURLArray($this->container, "links", $this->intl->t("Weblinks (line by line)"), $this->entity->links, [
         "placeholder" => $this->intl->t("Enter the event’s related weblinks, line by line."),
       ]))
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])

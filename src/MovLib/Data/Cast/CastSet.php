@@ -107,8 +107,8 @@ SQL
 
       if (empty($this->entities[$row->personId])) {
         $this->entities[$row->personId] = (object) [
-          "person"  => new Person($this->diContainer),
-          "castSet" => new CastSet($this->diContainer),
+          "person"  => new Person($this->container),
+          "castSet" => new CastSet($this->container),
         ];
         foreach ([
                     "id", "name", "sex", "birthDate", "bornName",
@@ -124,7 +124,7 @@ SQL
       }
 
       if (empty($this->entities[$row->personId]->castSet->entities[$row->id])) {
-        $this->entities[$row->personId]->castSet->entities[$row->id] = new Cast($this->diContainer, $movie);
+        $this->entities[$row->personId]->castSet->entities[$row->id] = new Cast($this->container, $movie);
         foreach ([ "id", "created", "changed", "jobId", "alias", "role", "roleId", "roleName" ] as $property) {
           $this->entities[$row->personId]->castSet->entities[$row->id]->$property = $row->$property;
         }
@@ -171,7 +171,7 @@ SQL
       $row->personId = (integer) $row->personId;
       $row->jobId    = (integer) $row->jobId;
       if (empty($this->entities[$row->id])) {
-        $this->entities[$row->id] = new Cast($this->diContainer);
+        $this->entities[$row->id] = new Cast($this->container);
         $this->entities[$row->id]->id = $row->id;
         $this->entities[$row->id]->personId = $row->personId;
         $this->entities[$row->id]->personName = $row->personName;

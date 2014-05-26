@@ -17,7 +17,7 @@
  */
 namespace MovLib\Console\Command;
 
-use \MovLib\Core\DIContainer;
+use \MovLib\Core\Container;
 use \MovLib\Core\Shell;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\Output;
@@ -94,9 +94,9 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
   /**
    * The dependency injection container.
    *
-   * @var \MovLib\Core\DIContainer
+   * @var \MovLib\Core\Container
    */
-  protected $diContainer;
+  protected $container;
 
   /**
    * Active file system instance.
@@ -162,17 +162,17 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
   /**
    * Instantiate new CLI command.
    *
-   * @param \MovLib\Core\DIContainer $diContainer
+   * @param \MovLib\Core\Container $container
    *   The dependency injection container.
    */
-  public function __construct(DIContainer $diContainer) {
-    $this->diContainer = $diContainer;
-    $this->config      = $diContainer->config;
-    $this->fs          = $diContainer->fs;
-    $this->intl        = $diContainer->intl;
-    $this->kernel      = $diContainer->kernel;
-    $this->log         = $diContainer->log;
-    $this->privileged  = posix_getuid() === 0;
+  public function __construct(Container $container) {
+    $this->container  = $container;
+    $this->config     = $container->config;
+    $this->fs         = $container->fs;
+    $this->intl       = $container->intl;
+    $this->kernel     = $container->kernel;
+    $this->log        = $container->log;
+    $this->privileged = posix_getuid() === 0;
     parent::__construct();
   }
 

@@ -39,9 +39,9 @@ final class ForbiddenException extends \RuntimeException implements \MovLib\Exce
   /**
    * {@inheritdoc}
    */
-  public function getPresentation(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    $diContainerHTTP->presenter = (new Forbidden($diContainerHTTP))->init($this->message);
-    return $diContainerHTTP->presenter->getPresentation($diContainerHTTP->presenter->getContent());
+  public function getPresentation(\MovLib\Core\HTTP\Container $container) {
+    $container->presenter = (new Forbidden($container))->init($this->message);
+    return $container->presenter->getPresentation($container->presenter->getContent());
   }
 
 }

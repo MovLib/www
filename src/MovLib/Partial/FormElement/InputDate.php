@@ -48,14 +48,14 @@ class InputDate extends \MovLib\Partial\FormElement\AbstractInput {
 
   // @devStart
   // @codeCoverageIgnoreStart
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, \MovLib\Component\Date &$value, array $attributes = null) {
+  public function __construct(\MovLib\Core\HTTP\Container $container, $id, $label, \MovLib\Component\Date &$value, array $attributes = null) {
     assert(empty($attributes["placeholder"]), "Date input's aren't allowed to have a placeholder attribute");
     foreach ([ "max", "min", "value" ] as $attribute) {
       if (isset($attribute[$attribute])) {
         assert($attribute[$attribute] instanceof Date, "The attributes max, min, and value must be an instance of \\MovLib\\Component\\Date.");
       }
     }
-    parent::__construct($diContainerHTTP, $id, $label, $value, $attributes);
+    parent::__construct($container, $id, $label, $value, $attributes);
   }
   // @codeCoverageIgnoreEnd
   // @devEnd

@@ -53,7 +53,7 @@ class Series extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Company($this->diContainerHTTP, $_SERVER["COMPANY_ID"]);
+    $this->entity = new Company($this->container, $_SERVER["COMPANY_ID"]);
     $pageTitle    = $this->intl->t("Series related to {0}", [ $this->entity->name ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->tp(-1, "Series"))
@@ -73,7 +73,7 @@ class Series extends \MovLib\Presentation\AbstractPresenter {
   public function getContent() {
     $seriesSet = $this->entity->getSeries($this->paginationOffset, $this->paginationLimit);
     $this->paginationInit($this->entity->getSeriesTotalCount());
-    return (new SeriesHelper($this->diContainerHTTP))->getListing($seriesSet);
+    return (new SeriesHelper($this->container))->getListing($seriesSet);
   }
 
   /**

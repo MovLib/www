@@ -34,8 +34,8 @@ final class Poster extends \MovLib\Data\Image\AbstractImageEntity {
   /**
    * {@inheritdoc}
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $entityId, $id = null) {
-    parent::__construct($diContainer);
+  public function __construct(\MovLib\Core\Container $container, $entityId, $id = null) {
+    parent::__construct($container);
     $this->entityId = $entityId;
     if ($id) {
       // @todo Load poster!

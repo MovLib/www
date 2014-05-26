@@ -178,6 +178,10 @@ trait OriginatorTrait {
     finally {
       $connection->autocommit(true);
     }
+
+    // Make sure that we're working with fully loaded entity from here on now.
+    $this->init();
+
     return $this;
   }
 

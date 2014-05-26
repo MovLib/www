@@ -53,7 +53,7 @@ class Companies extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Job($this->diContainerHTTP, $_SERVER["JOB_ID"]);
+    $this->entity = new Job($this->container, $_SERVER["JOB_ID"]);
     $pageTitle    = $this->intl->t("Companies related to {0}", [ $this->entity->title ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Companies"))
@@ -73,7 +73,7 @@ class Companies extends \MovLib\Presentation\AbstractPresenter {
   public function getContent() {
     $companySet = $this->entity->getCompanies($this->paginationOffset, $this->paginationLimit);
     $this->paginationInit($this->entity->getCompanyTotalCount());
-    return (new CompanyHelper($this->diContainerHTTP))->getListing($companySet);
+    return (new CompanyHelper($this->container))->getListing($companySet);
   }
 
   /**

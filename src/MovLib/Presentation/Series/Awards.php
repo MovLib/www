@@ -51,7 +51,7 @@ class Awards extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Series($this->diContainerHTTP, $_SERVER["SERIES_ID"]);
+    $this->entity = new Series($this->container, $_SERVER["SERIES_ID"]);
     $pageTitle    = $this->intl->t("Awards of {0}", [ $this->entity->displayTitle ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Awards"))

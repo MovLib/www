@@ -85,7 +85,7 @@ class Show extends \MovLib\Presentation\User\AbstractUserPresenter {
         $personalData[] = "<span property='gender'>{$gender}</span>";
       }
       if ($this->entity->countryCode) {
-        $country        = (new Country($this->diContainerHTTP))->format($this->entity->countryCode);
+        $country        = (new Country($this->container))->format($this->entity->countryCode);
         $personalData[] = "<span property='nationality'>{$country}</span>";
       }
 
@@ -108,7 +108,7 @@ class Show extends \MovLib\Presentation\User\AbstractUserPresenter {
     $this->headingAfter =
         $personalData .
         "<small>{$this->intl->t("Joined {date} and was last seen {time}.", [
-          "date" => (new DatePartial($this->intl, $this->diContainerHTTP->presenter))->format(new Date($this->entity->created->format('Y-m-d'))),
+          "date" => (new DatePartial($this->intl, $this->container->presenter))->format(new Date($this->entity->created->format('Y-m-d'))),
           "time" => (new Time($this->intl, $this->entity->access))->formatRelative(),
         ])}</small>" .
       "</div>" .
@@ -138,8 +138,8 @@ class Show extends \MovLib\Presentation\User\AbstractUserPresenter {
       }
     }
     else {
-      $movieHelper  = new MovieHelper($this->diContainerHTTP);
-      $seriesHelper = new SeriesHelper($this->diContainerHTTP);
+      $movieHelper  = new MovieHelper($this->container);
+      $seriesHelper = new SeriesHelper($this->container);
 
       $ratingStream = "<ol class='hover-list no-list'>";
       $c = count($ratedEntities);

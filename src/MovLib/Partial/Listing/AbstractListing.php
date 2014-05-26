@@ -35,9 +35,9 @@ abstract class AbstractListing {
   /**
    * The dependency injection container that has to be passed to each data class.
    *
-   * @var \MovLib\Core\HTTP\DIContainerHTTP
+   * @var \MovLib\Core\HTTP\Container
    */
-  protected $diContainerHTTP;
+  protected $container;
 
   /**
    * The listing's items.
@@ -61,15 +61,15 @@ abstract class AbstractListing {
    * Instantiate new generic array listing, the listing uses a <code>foreach</code> to iterate over the items and can
    * handle any kind of (native) array.
    *
-   * @param \MovLib\Core\DIContainerHTTP $diContainerHTTP
+   * @param \MovLib\Core\HTTP\Container $container
    *   The HTTP dependency injection container.
    * @param array $items
    *   The items to list.
    * @param callable $noItemsCallback
    *   The callback to call if there were no items.
    */
-  public function __construct(\MovLib\Core\DIContainerHTTP $diContainerHTTP, array $items, callable $noItemsCallback) {
-    $this->diContainerHTTP = $diContainerHTTP;
+  public function __construct(\MovLib\Core\HTTP\Container $container, array $items, callable $noItemsCallback) {
+    $this->container       = $container;
     $this->items           = $items;
     $this->noItemsCallback = $noItemsCallback;
   }

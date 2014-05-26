@@ -144,14 +144,14 @@ final class Company extends \MovLib\Data\Image\AbstractImageEntity {
   /**
    * Instantiate new company object.
    *
-   * @param \MovLib\Core\DIContainer $diContainer
+   * @param \MovLib\Core\Container $container
    *   {@inheritdoc}
    * @param integer $id [optional]
    *   The company's unique identifier to instantiate, defaults to <code>NULL</code> (no company will be loaded).
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null) {
-    parent::__construct($diContainer);
+  public function __construct(\MovLib\Core\Container $container, $id = null) {
+    parent::__construct($container);
     if ($id) {
       $stmt = $this->getMySQLi()->prepare(<<<SQL
 SELECT
@@ -311,7 +311,7 @@ SQL
    * @return \MovLib\Data\Movie\MovieSet
    */
   public function getMovies($offset = null, $limit = null) {
-    $movieSet = new MovieSet($this->diContainer);
+    $movieSet = new MovieSet($this->container);
     $result   = $this->getMySQLi()->query(<<<SQL
 SELECT `movies`.`id` FROM `movies`
   INNER JOIN `movies_crew` ON `movies_crew`.`movie_id` = `movies`.`id` AND `movies_crew`.`company_id` = {$this->id}
@@ -356,7 +356,7 @@ SQL
    * @return \MovLib\Data\Series\SeriesSet
    */
   public function getSeries($offset = null, $limit = null) {
-    $seriesSet = new SeriesSet($this->diContainer);
+    $seriesSet = new SeriesSet($this->container);
     $result   = $this->getMySQLi()->query(<<<SQL
 SELECT DISTINCT `series`.`id` FROM `series`
   INNER JOIN `episodes_crew` ON `episodes_crew`.`series_id` = `series`.`id` AND `episodes_crew`.`company_id` = {$this->id}
@@ -398,7 +398,7 @@ SQL
     $this->links        && ($this->links        = unserialize($this->links));
     $this->foundingDate && ($this->foundingDate = new Date($this->foundingDate));
     $this->defunctDate  && ($this->defunctDate  = new Date($this->defunctDate));
-    $this->placeId      && ($this->place        = new Place($this->diContainer, $this->placeId));
+    $this->placeId      && ($this->place        = new Place($this->container, $this->placeId));
     $this->imageAlternativeText = $this->intl->t("{company_name} logo.", $this->name);
     $this->imageDirectory       = "upload://company";
     return parent::init();

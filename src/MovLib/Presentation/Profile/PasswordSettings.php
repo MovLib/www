@@ -109,13 +109,13 @@ final class PasswordSettings extends \MovLib\Presentation\Profile\AbstractProfil
     }
 
     // First field to enter the new password.
-    $form = (new Form($this->diContainerHTTP, [ "autocomplete" => "off" ]))
-      ->addElement(new InputPassword($this->diContainerHTTP, "password_new", $this->intl->t("New Password"), $this->newPassword, [
+    $form = (new Form($this->container, [ "autocomplete" => "off" ]))
+      ->addElement(new InputPassword($this->container, "password_new", $this->intl->t("New Password"), $this->newPassword, [
         "autofocus"   => true,
         "placeholder" => $this->intl->t("Enter your new password"),
         "required"    => true,
       ]))
-      ->addElement(new InputPassword($this->diContainerHTTP, "password_confirm", $this->intl->t("Confirm Password"), $this->confirmPassword, [
+      ->addElement(new InputPassword($this->container, "password_confirm", $this->intl->t("Confirm Password"), $this->confirmPassword, [
         "placeholder" => $this->intl->t("Enter your new password again"),
         "required"    => true,
       ]))
@@ -182,7 +182,7 @@ final class PasswordSettings extends \MovLib\Presentation\Profile\AbstractProfil
    * @return this
    */
   protected function validateToken($token) {
-    $tmp = new TemporaryStorage($this->diContainerHTTP);
+    $tmp = new TemporaryStorage($this->container);
     /* @var $data \MovLib\Stub\Mail\Profile\PasswordChange */
     $data = $tmp->get($token);
 

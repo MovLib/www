@@ -190,8 +190,8 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
   // @codeCoverageIgnoreStart
   //
   // The constructor is final for all presenters!
-  final public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    parent::__construct($diContainerHTTP);
+  final public function __construct(\MovLib\Core\HTTP\Container $container) {
+    parent::__construct($container);
   }
   // @codeCoverageIgnoreEnd
   // @devEnd
@@ -271,7 +271,7 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
     $this->id          = strtr($className, "\\", "-");
     $this->title       = $headTitle;
     $this->pageTitle   = $pageTitle ?: $headTitle;
-    $this->breadcrumb  = new Breadcrumb($this->diContainerHTTP, $breadcrumbTitle ?: $headTitle);
+    $this->breadcrumb  = new Breadcrumb($this->container, $breadcrumbTitle ?: $headTitle);
     return $this;
   }
 

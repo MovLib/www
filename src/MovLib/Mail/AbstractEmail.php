@@ -62,9 +62,9 @@ abstract class AbstractEmail {
   /**
    * The dependency injection container.
    *
-   * @var \MovLib\Core\DIContainer
+   * @var \MovLib\Core\Container
    */
-  protected $diContainerHTTP;
+  protected $container;
 
   /**
    * The active file system instance.
@@ -191,15 +191,15 @@ abstract class AbstractEmail {
   /**
    * Initialize email.
    *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   * @param \MovLib\Core\HTTP\Container $container
    *   The HTTP dependency injection container.
    * @return boolean
    *   <code>TRUE</code> if everything is fine and the email should be sent, <code>FALSE</code> if sending of the email
    *   should be aborted.
    */
-  public function init(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    $this->diContainerHTTP = $diContainerHTTP;
-    foreach (get_object_vars($diContainerHTTP) as $property => $value) {
+  public function init(\MovLib\Core\HTTP\Container $container) {
+    $this->container = $container;
+    foreach (get_object_vars($container) as $property => $value) {
       if (property_exists($this, $property)) {
         $this->$property = $value;
       }

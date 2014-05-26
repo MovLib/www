@@ -32,8 +32,8 @@ class TextareaLineArray extends \MovLib\Partial\FormElement\InputText {
   /**
    * @inheritdoc
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, &$value, array $attributes = null) {
-    parent::__construct($diContainerHTTP, $id, $label, $value, $attributes);
+  public function __construct(\MovLib\Core\HTTP\Container $container, $id, $label, &$value, array $attributes = null) {
+    parent::__construct($container, $id, $label, $value, $attributes);
     unset($this->attributes["type"]);
     $this->attributes["spellcheck"] = "true";
     if (is_array($this->value)) {

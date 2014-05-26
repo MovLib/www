@@ -41,7 +41,7 @@ final class Index extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->set = new CategorySet($this->diContainerHTTP);
+    $this->set = new CategorySet($this->container);
     $this->initPage("Help");
     $this->initBreadcrumb();
     $this->initLanguageLinks("/help");

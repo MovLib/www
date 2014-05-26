@@ -279,7 +279,7 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
   /**
    * Instantiate new HTML form element.
    *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   * @param \MovLib\Core\HTTP\Container $container
    *   HTTP dependency injection container.
    * @param string $id
    *   The text's global identifier.
@@ -290,8 +290,8 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
    * @param array $attributes [optional]
    *   Additional attributes for the text, defaults to <code>NULL</code> (no additional attributes).
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, &$value, array $attributes = null) {
-    parent::__construct($diContainerHTTP, $id, $label, $value, $attributes);
+  public function __construct(\MovLib\Core\HTTP\Container $container, $id, $label, &$value, array $attributes = null) {
+    parent::__construct($container, $id, $label, $value, $attributes);
     if (isset($attributes["data-allow-external"])) {
       $this->allowExternalLinks = true;
     }

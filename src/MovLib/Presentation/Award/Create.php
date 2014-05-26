@@ -42,7 +42,7 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
   public function init() {
     return $this
       ->initPage($this->intl->t("Create"))
-      ->initCreate(new Award($this->diContainerHTTP), $this->intl->t("Awards"))
+      ->initCreate(new Award($this->container), $this->intl->t("Awards"))
     ;
   }
 
@@ -50,24 +50,24 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return (new Form($this->diContainerHTTP))
-      ->addElement(new InputText($this->diContainerHTTP, "name", $this->intl->t("Name"), $this->entity->name, [
+    return (new Form($this->container))
+      ->addElement(new InputText($this->container, "name", $this->intl->t("Name"), $this->entity->name, [
         "placeholder" => $this->intl->t("Enter the award’s name."),
         "autofocus"   => true,
         "required"    => true,
       ]))
-      ->addElement(new TextareaLineArray($this->diContainerHTTP, "aliases", $this->intl->t("Alternative Names (line by line)"), $this->entity->aliases, [
+      ->addElement(new TextareaLineArray($this->container, "aliases", $this->intl->t("Alternative Names (line by line)"), $this->entity->aliases, [
         "placeholder" => $this->intl->t("Enter the award’s alternative names here, line by line."),
       ]))
-      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
+      ->addElement(new TextareaHTMLExtended($this->container, "description", $this->intl->t("Description"), $this->entity->description, [
         "data-allow-external" => "true",
           "placeholder"         => $this->intl->t("Describe the award."),
       ]))
-      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
+      ->addElement(new InputWikipedia($this->container, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
         "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/..",
         "data-allow-external" => "true",
       ]))
-      ->addElement(new TextareaLineURLArray($this->diContainerHTTP, "links", $this->intl->t("Weblinks (line by line)"), $this->entity->links, [
+      ->addElement(new TextareaLineURLArray($this->container, "links", $this->intl->t("Weblinks (line by line)"), $this->entity->links, [
         "placeholder" => $this->intl->t("Enter the award’s related weblinks, line by line."),
       ]))
       ->addAction($this->intl->t("Create"), [ "class" => "btn btn-large btn-success" ])

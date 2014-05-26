@@ -137,7 +137,7 @@ SQL
       $this->descriptions === (array) $this->descriptions || ($this->descriptions = json_decode($this->descriptions, true));
       $this->names === (array) $this->names || ($this->names = json_decode($this->names, true));
       parent::__construct();
-    }als
+    }
   }
 
   /**

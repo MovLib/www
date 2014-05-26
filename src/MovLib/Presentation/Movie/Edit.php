@@ -48,7 +48,7 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Movie($this->diContainerHTTP, $_SERVER["MOVIE_ID"]);
+    $this->entity = new Movie($this->container, $_SERVER["MOVIE_ID"]);
     $pageTitle    = $this->intl->t("Edit {0}", [ $this->entity->displayTitle ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Edit"))
@@ -60,21 +60,21 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    * {@inheritdoc}
    */
    public function getContent() {
-    $form = (new Form($this->diContainerHTTP))
-      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "synopsis", $this->intl->t("Synopsis"), $this->entity->synopsis, [
+    $form = (new Form($this->container))
+      ->addElement(new TextareaHTMLExtended($this->container, "synopsis", $this->intl->t("Synopsis"), $this->entity->synopsis, [
         "placeholder" => $this->intl->t("Write a synopsis."),
         "data-allow-external" => "true",
       ]))
-      ->addElement(new InputInteger($this->diContainerHTTP, "runtime", $this->intl->t("Runtime (in seconds)"), $this->entity->runtime, [
+      ->addElement(new InputInteger($this->container, "runtime", $this->intl->t("Runtime (in seconds)"), $this->entity->runtime, [
         "min"         => 0,
         "max"         => 16777215
       ]))
-      ->addElement(new InputInteger($this->diContainerHTTP, "year", $this->intl->t("Year"), $this->entity->year->year, [
+      ->addElement(new InputInteger($this->container, "year", $this->intl->t("Year"), $this->entity->year->year, [
         "placeholder" => $this->intl->t("yyyy"),
         "min"         => 1000,
         "max"         => 9999
       ]))
-      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
+      ->addElement(new InputWikipedia($this->container, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
         "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/…",
         "data-allow-external" => "true",
       ]))

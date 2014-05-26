@@ -71,7 +71,7 @@ final class Sex {
   /**
    * Add input text elements to the form for each valid sex.
    *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   * @param \MovLib\Core\HTTP\Container $container
    *   Active HTTP dependency injection container.
    * @param \MovLib\Partial\Form $form
    *   The form to which the sex input field should be added.
@@ -87,17 +87,17 @@ final class Sex {
    *   name. Defaults to <code>NULL</code>.
    * @return this
    */
-  public function addInputTextElements(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, \MovLib\Partial\Form &$form, $id, array &$values, array $attributes = null, $label = null) {
+  public function addInputTextElements(\MovLib\Core\HTTP\Container $container, \MovLib\Partial\Form &$form, $id, array &$values, array $attributes = null, $label = null) {
     $sexes = [
-      Sex::UNKNOWN => $diContainerHTTP->intl->t("Unisex"),
-      Sex::MALE    => $diContainerHTTP->intl->t("Male"),
-      Sex::FEMALE  => $diContainerHTTP->intl->t("Female"),
+      Sex::UNKNOWN => $container->intl->t("Unisex"),
+      Sex::MALE    => $container->intl->t("Male"),
+      Sex::FEMALE  => $container->intl->t("Female"),
     ];
     foreach ($sexes as $code => $name) {
       if ($label) {
         $name = str_replace([ "{0}", "{sex}" ], $name, $label);
       }
-      $form->addElement(new InputText($diContainerHTTP, "{$id}-{$code}", $name, $values[$code], $attributes));
+      $form->addElement(new InputText($container, "{$id}-{$code}", $name, $values[$code], $attributes));
     }
     return $this;
   }

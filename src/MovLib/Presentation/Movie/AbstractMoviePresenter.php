@@ -55,7 +55,7 @@ abstract class AbstractMoviePresenter extends \MovLib\Presentation\AbstractPrese
    */
   final protected function initMoviePresenation($title = null, $pageTitle = null, $breadcrumbTitle = null) {
     if (!$this->entity) {
-      $this->entity = new Movie($this->diContainerHTTP, $_SERVER["MOVIE_ID"]);
+      $this->entity = new Movie($this->container, $_SERVER["MOVIE_ID"]);
     }
     $this->schemaType            = "Movie";
     $this->headingSchemaProperty = null;
@@ -67,7 +67,7 @@ abstract class AbstractMoviePresenter extends \MovLib\Presentation\AbstractPrese
       $title = $this->entity->displayTitleAndYear;
     }
 
-    $movieHelper = new MovieHelper($this->diContainerHTTP);
+    $movieHelper = new MovieHelper($this->container);
     if ($pageTitle) {
       $pageTitle = str_replace("{0}", $movieHelper->getStructuredDisplayTitle($this->entity));
     }

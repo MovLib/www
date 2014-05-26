@@ -57,7 +57,7 @@ abstract class AbstractRandomPresenter extends \MovLib\Presentation\AbstractPres
 
     // Build absolute class name of the set and instantiate it.
     $setClass = "\\MovLib\\Data\\{$entityName}\\{$entityName}Set";
-    $set = new $setClass($this->diContainerHTTP);
+    $set = new $setClass($this->container);
 
     // Try to fetch a random entity identifier.
     if (($id = $set->getRandom())) {

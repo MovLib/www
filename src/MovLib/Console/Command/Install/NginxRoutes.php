@@ -18,7 +18,6 @@
 namespace MovLib\Console\Command\Install;
 
 use \DocBlockReader\Reader as DocReader;
-use \MovLib\Console\Command\Install\Nginx;
 use \MovLib\Core\Intl;
 use \MovLib\Component\Collator;
 use \Symfony\Component\Console\Input\InputInterface;
@@ -142,7 +141,7 @@ final class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
 
     // Only attempt to realod nginx if we have the needed privileges.
     if ($this->privileged) {
-      (new Nginx($this->diContainer))->importKeysAndCertificates($output);
+      (new Nginx($this->container))->importKeysAndCertificates($output);
       $this->exec("nginx -t");
       $this->exec("service nginx reload");
     }
@@ -313,7 +312,7 @@ NGX;
     // Image related classes always require an entity's unique identifier they belong to for loading, we fake this by
     // passing an invalid number, remember that we won't call any loading methods and that it doesn't matter for us at
     // this point, we only want access to the singular and plural key.
-    return new $setClassName($this->diContainer, -1);
+    return new $setClassName($this->container, -1);
   }
 
   /**

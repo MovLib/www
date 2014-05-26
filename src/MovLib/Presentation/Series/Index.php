@@ -41,7 +41,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    */
   public function init() {
     return $this->initIndex(
-      new SeriesSet($this->diContainerHTTP),
+      new SeriesSet($this->container),
       $this->intl->tp(-1, "Series"),
       $this->intl->t("Create New Series")
     );

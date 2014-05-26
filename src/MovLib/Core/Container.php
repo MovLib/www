@@ -26,7 +26,7 @@ namespace MovLib\Core;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class DIContainer {
+class Container {
 
   /**
    * Active global configuration instance.

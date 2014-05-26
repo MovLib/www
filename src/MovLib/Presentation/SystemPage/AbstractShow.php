@@ -51,7 +51,7 @@ abstract class AbstractShow extends \MovLib\Presentation\AbstractPresenter {
    *   The presenter's title for the breadcrumb's entry of the current presentation.
    */
   public function initSystemPage($id, $headTitle, $pageTitle = null, $breadcrumbTitle = null) {
-    $this->systemPage = new SystemPage($this->diContainerHTTP, $id);
+    $this->systemPage = new SystemPage($this->container, $id);
     return $this
       ->initPage($headTitle, $pageTitle, $breadcrumbTitle)
       ->initLanguageLinks($this->systemPage->routeKey)

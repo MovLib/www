@@ -44,7 +44,7 @@ final class GoneException extends \RuntimeException implements \MovLib\Exception
   /**
    * {@inheritdoc}
    */
-  public function getPresentation(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
+  public function getPresentation(\MovLib\Core\HTTP\Container $container) {
 
   }
 

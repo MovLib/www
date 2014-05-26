@@ -32,8 +32,8 @@ class Dummy extends \MovLib\Data\AbstractEntity {
   /**
    * {@inheritdoc}
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $id, $singular = null, $plural = null) {
-    parent::__construct($diContainer);
+  public function __construct(\MovLib\Core\Container $container, $id, $singular = null, $plural = null) {
+    parent::__construct($container);
     $this->id          = $id;
     $this->tableName   = "movies";
     $this->singularKey = $singular ? : "dummy";

@@ -50,7 +50,7 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Person($this->diContainerHTTP, $_SERVER["PERSON_ID"]);
+    $this->entity = new Person($this->container, $_SERVER["PERSON_ID"]);
     $pageTitle    = $this->intl->t("Edit {0}", [ $this->entity->name ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Edit"))
@@ -62,29 +62,29 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    $form = (new Form($this->diContainerHTTP))
-      ->addElement(new InputText($this->diContainerHTTP, "name", $this->intl->t("Name"), $this->entity->name, [
+    $form = (new Form($this->container))
+      ->addElement(new InputText($this->container, "name", $this->intl->t("Name"), $this->entity->name, [
         "placeholder" => $this->intl->t("Enter the persons’s name."),
         "autofocus"   => true,
         "required"    => true,
       ]))
-      ->addElement(new InputSex($this->diContainerHTTP, "sex", $this->intl->t("Sex"), $this->entity->sex))
-      ->addElement(new InputText($this->diContainerHTTP, "born-name", $this->intl->t("Birth Name"), $this->entity->bornName, [
+      ->addElement(new InputSex($this->container, "sex", $this->intl->t("Sex"), $this->entity->sex))
+      ->addElement(new InputText($this->container, "born-name", $this->intl->t("Birth Name"), $this->entity->bornName, [
         "placeholder" => $this->intl->t("Enter the persons’s birth name."),
       ]))
-      ->addElement(new InputDateSeparate($this->diContainerHTTP, "birth-date", $this->intl->t("Birthdate"), $this->entity->birthDate, [
+      ->addElement(new InputDateSeparate($this->container, "birth-date", $this->intl->t("Birthdate"), $this->entity->birthDate, [
         "required"    => true,
       ]))
-      ->addElement(new InputDateSeparate($this->diContainerHTTP, "death-date", $this->intl->t("Deathdate"), $this->entity->deathDate))
-      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "biography", $this->intl->t("Biography"), $this->entity->biography, [
+      ->addElement(new InputDateSeparate($this->container, "death-date", $this->intl->t("Deathdate"), $this->entity->deathDate))
+      ->addElement(new TextareaHTMLExtended($this->container, "biography", $this->intl->t("Biography"), $this->entity->biography, [
         "data-allow-external" => "true",
         "placeholder"         => $this->intl->t("Describe the person."),
       ]))
-      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
+      ->addElement(new InputWikipedia($this->container, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
         "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/…",
         "data-allow-external" => "true",
       ]))
-      ->addElement(new TextareaLineURLArray($this->diContainerHTTP, "links", $this->intl->t("Weblinks (line by line)"), $this->entity->links, [
+      ->addElement(new TextareaLineURLArray($this->container, "links", $this->intl->t("Weblinks (line by line)"), $this->entity->links, [
         "placeholder" => $this->intl->t("Enter the persons’s related weblinks, line by line."),
       ]))
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])

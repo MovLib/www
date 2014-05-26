@@ -71,12 +71,12 @@ class ResetPasswordEmail extends \MovLib\Mail\AbstractEmail {
   /**
    * {@inheritdoc}
    */
-  public function init(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP) {
-    parent::init($diContainerHTTP);
+  public function init(\MovLib\Core\HTTP\Container $container) {
+    parent::init($container);
     try {
-      $this->user    = new User($diContainerHTTP, $this->recipient, User::FROM_EMAIL);
+      $this->user    = new User($container, $this->recipient, User::FROM_EMAIL);
       $this->subject = $this->intl->t("Requested password reset");
-      $token         = (new TemporaryStorage($diContainerHTTP))->set($this->user->id);
+      $token         = (new TemporaryStorage($container))->set($this->user->id);
       $this->link    = $this->presenter->url($this->intl->r("/profile/reset-password"), [ "token" => $token ], null, true);
     }
     catch (NotFoundException $e) {

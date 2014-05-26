@@ -69,7 +69,7 @@ abstract class AbstractHistoryDiffPresenter extends \MovLib\Presentation\Abstrac
    * {@inheritdoc}
    */
   public function getContent() {
-    $userSet = (new UserSet($this->diContainerHTTP))->loadIdentifiers([
+    $userSet = (new UserSet($this->container))->loadIdentifiers([
       $this->revision->new->userId,
       $this->revision->old->userId,
     ]);
@@ -118,7 +118,7 @@ abstract class AbstractHistoryDiffPresenter extends \MovLib\Presentation\Abstrac
     $revisionNew = isset($_SERVER["REVISION_NEW"]) ? $_SERVER["REVISION_NEW"] : null;
 
     $this->revision = new Revision(
-      $this->diContainerHTTP,
+      $this->container,
       $entityClassName,
       $this->entity->id,
       $revisionOld,

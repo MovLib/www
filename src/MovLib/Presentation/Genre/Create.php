@@ -44,7 +44,7 @@ final class Create extends \MovLib\Presentation\AbstractCreatePresenter {
   public function init() {
     return $this
       ->initPage($this->intl->t("Create"))
-      ->initCreate(new Genre($this->diContainerHTTP), $this->intl->t("Genres"))
+      ->initCreate(new Genre($this->container), $this->intl->t("Genres"))
     ;
   }
 
@@ -53,15 +53,15 @@ final class Create extends \MovLib\Presentation\AbstractCreatePresenter {
    */
   public function getContent() {
     $nameLabel = $this->intl->t("Name");
-    $form = (new Form($this->diContainerHTTP))
-      ->addElement(new InputText($this->diContainerHTTP, "name", $nameLabel, $this->entity->name, [
+    $form = (new Form($this->container))
+      ->addElement(new InputText($this->container, "name", $nameLabel, $this->entity->name, [
         "autofocus"   => true,
         "required"    => true,
       ]))
-      ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description, [
+      ->addElement(new TextareaHTMLExtended($this->container, "description", $this->intl->t("Description"), $this->entity->description, [
         "data-allow-external" => "true",
       ]))
-      ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia))
+      ->addElement(new InputWikipedia($this->container, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia))
       ->addAction($this->intl->t("Create"), [ "class" => "btn btn-large btn-success" ])
     ;
 
@@ -71,7 +71,7 @@ final class Create extends \MovLib\Presentation\AbstractCreatePresenter {
         $this->intl->getTranslations("languages")[$this->intl->defaultLanguageCode]->name,
       ]);
       $form
-        ->addElement(new InputText($this->diContainerHTTP, "default-name", $nameLabel, $this->entity->defaultName, [
+        ->addElement(new InputText($this->container, "default-name", $nameLabel, $this->entity->defaultName, [
           "autofocus"   => true,
           "required"    => true,
         ]))

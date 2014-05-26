@@ -78,7 +78,7 @@ final class Show extends \MovLib\Presentation\SystemPage\AbstractShow {
     $this->schemaType = "ContactPage";
     $this->headingSchemaProperty = "name";
 
-    $form              = new Form($this->diContainerHTTP);
+    $form              = new Form($this->container);
     $subjectAttributes = [
       "placeholder" => $this->intl->t("This will appear as subject of your message"),
       "required"    => true,
@@ -89,7 +89,7 @@ final class Show extends \MovLib\Presentation\SystemPage\AbstractShow {
       $subjectAttributes["autofocus"] = true;
     }
     else {
-      $form->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email address"), $this->sender, [
+      $form->addElement(new InputEmail($this->container, "email", $this->intl->t("Email address"), $this->sender, [
         "autofocus"   => true,
         "placeholder" => $this->intl->t("Your email address"),
         "required"    => true,
@@ -97,8 +97,8 @@ final class Show extends \MovLib\Presentation\SystemPage\AbstractShow {
     }
 
     $form
-      ->addElement(new InputText($this->diContainerHTTP, "subject", $this->intl->t("Subject"), $this->subject, $subjectAttributes))
-      ->addElement(new TextareaHTML($this->diContainerHTTP, "message", $this->intl->t("Message"), $this->message, [
+      ->addElement(new InputText($this->container, "subject", $this->intl->t("Subject"), $this->subject, $subjectAttributes))
+      ->addElement(new TextareaHTML($this->container, "message", $this->intl->t("Message"), $this->message, [
         "placeholder" => $this->intl->t("Type your message here…"),
         "required"    => true,
       ]))

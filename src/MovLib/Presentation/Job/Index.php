@@ -39,7 +39,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    */
   public function init() {
     return $this->initIndex(
-      new JobSet($this->diContainerHTTP),
+      new JobSet($this->container),
       $this->intl->t("Jobs"),
       $this->intl->t("Create New Job")
     );

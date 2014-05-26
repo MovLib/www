@@ -92,8 +92,8 @@ class InputDateSeparate extends \MovLib\Partial\FormElement\AbstractFormElement 
    *     <li><code>"year_min</code> set this to the minimum year that can be entered, defaults to <code>0</code></li>
    *   </ul>
    */
-  public function __construct(\MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP, $id, $label, \MovLib\Component\Date &$value = null, array $attributes = null, array $options = null) {
-    parent::__construct($diContainerHTTP, $id, $label, $value, $attributes);
+  public function __construct(\MovLib\Core\HTTP\Container $container, $id, $label, \MovLib\Component\Date &$value = null, array $attributes = null, array $options = null) {
+    parent::__construct($container, $id, $label, $value, $attributes);
     if (isset($options["year_max"])) {
       // @devStart
       // @codeCoverageIgnoreStart

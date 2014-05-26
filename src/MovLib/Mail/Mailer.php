@@ -434,26 +434,26 @@ EOT;
   /**
    * Send all stacked emails.
    *
-   * @param \MovLib\Core\HTTP\DIContainerHTTP $diContainerHTTP
+   * @param \MovLib\Core\HTTP\Container $container
    *   The dependency injection container.
    * @return this
    */
-  public function sendEmailStack($diContainerHTTP) {
+  public function sendEmailStack($container) {
     if (empty(self::$emailStack)) {
       return $this;
     }
-    $this->config = $diContainerHTTP->config;
+    $this->config = $container->config;
     /* @var $email \MovLib\Mail\AbstractEmail */
     foreach (self::$emailStack as $email) {
       try {
         $this->email     = $email;
         $this->messageID = uniqid("movlib");
-        if ($email->init($diContainerHTTP) === true) {
+        if ($email->init($container) === true) {
           mail($this->getRecipient(), $this->getSubject(), $this->getMessage(), $this->getHeaders(), $this->getParameters());
         }
       }
       catch (\Exception $e) {
-        $diContainerHTTP->log->error($e);
+        $container->log->error($e);
       }
     }
     return $this;

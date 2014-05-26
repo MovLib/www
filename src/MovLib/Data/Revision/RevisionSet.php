@@ -98,7 +98,7 @@ final class RevisionSet implements \ArrayAccess, \Countable, \Iterator {
    * @todo Unify method name to work for pagination, recreate pagination interface?
    * @todo Can we get rid of the dependency injection container dependency? Intl should suffice.
    */
-  public function load($offset, $limit, \MovLib\Core\DIContainer $diContainer) {
+  public function load($offset, $limit, \MovLib\Core\Container $container) {
     $result = Database::getConnection()->query(<<<SQL
 SELECT
   `id` + 0 AS `id`,
@@ -120,7 +120,7 @@ SQL
     $result->free();
 
     if ($userIds) {
-      $userSet = (new UserSet($diContainer))->loadIdentifiers($userIds);
+      $userSet = (new UserSet($container))->loadIdentifiers($userIds);
       foreach ($this->revisions as $key => $value) {
         $this->revisions[$key]->user = $userSet[$value->userId];
       }

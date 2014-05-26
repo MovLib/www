@@ -43,14 +43,14 @@ trait EventTrait {
   protected function getEventDates(\MovLib\Data\Event\Event $event) {
     $dates = null;
     if (($event->startDate && $event->endDate) && ($event->startDate != $event->endDate)) {
-      $dates = (new DatePartial($this->intl, $this->diContainerHTTP->presenter))->formatFromTo(
+      $dates = (new DatePartial($this->intl, $this->container->presenter))->formatFromTo(
         new Date($event->startDate),
         new Date($event->endDate)
       );
     }
     else if ($event->startDate) {
       $dates = "{$this->intl->t("on {0}", [
-        (new DatePartial($this->intl, $this->diContainerHTTP->presenter))->format(new Date($event->startDate))
+        (new DatePartial($this->intl, $this->container->presenter))->format(new Date($event->startDate))
       ])} ";
     }
     return $dates;

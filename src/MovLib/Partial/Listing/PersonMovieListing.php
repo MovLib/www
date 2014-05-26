@@ -34,11 +34,11 @@ final class PersonMovieListing extends \MovLib\Partial\Listing\MovieListing {
 
   // @devStart
   // @codeCoverageIgnoreStart
-  public function __construct($diContainer, $listItems, $noItemsText = null) {
+  public function __construct($container, $listItems, $noItemsText = null) {
     if (isset($listItems) && $listItems !== (array) $listItems) {
       throw new \InvalidArgumentException("\$listItems must be an array");
     }
-    parent::__construct($diContainer, $listItems, $noItemsText);
+    parent::__construct($container, $listItems, $noItemsText);
   }
   // @codeCoverageIgnoreEnd
   // @devEnd

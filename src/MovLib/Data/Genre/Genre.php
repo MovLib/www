@@ -18,6 +18,8 @@
 namespace MovLib\Data\Genre;
 
 use \MovLib\Core\Database\Database;
+use \MovLib\Core\Revision\OriginatorTrait;
+use \MovLib\Core\Search\RevisionTrait;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -30,7 +32,10 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @since 0.0.1-dev
  */
 final class Genre extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\OriginatorInterface {
-  use \MovLib\Core\Revision\OriginatorTrait;
+  use OriginatorTrait, RevisionTrait {
+    RevisionTrait::postCommit insteadof OriginatorTrait;
+    RevisionTrait::postCreate insteadof OriginatorTrait;
+  }
 
 
   //-------------------------------------------------------------------------------------------------------------------- Constants
@@ -101,14 +106,14 @@ final class Genre extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Re
   /**
    * Instantiate new genre object.
    *
-   * @param \MovLib\Core\DIContainer $diContainer
+   * @param \MovLib\Core\Container $container
    *   {@inheritdoc}
    * @param integer $id [optional]
    *   The genre's unique identifier to instantiate, defaults to <code>NULL</code> (no genre will be loaded).
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\DIContainer $diContainer, $id = null) {
-    parent::__construct($diContainer);
+  public function __construct(\MovLib\Core\Container $container, $id = null) {
+    parent::__construct($container);
     if ($id) {
       $connection = Database::getConnection();
       $stmt = $connection->prepare(<<<SQL
@@ -157,6 +162,17 @@ SQL
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function defineSearchIndex(\MovLib\Core\Search\SearchIndexer $search, \MovLib\Core\Revision\RevisionInterface $revision) {
+    $search
+      ->indexSimpleSuggestion($revision->names)
+      ->execute($this->container->kernel, $this->container->log, $this->deleted)
+    ;
+    return $this;
+  }
 
   /**
    * {@inheritdoc}

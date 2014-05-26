@@ -34,7 +34,7 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
    * Initialize person photo presentation.
    */
   public function init() {
-    $this->person = new Person($this->diContainerHTTP, (integer) $_SERVER["PERSON_ID"]);
+    $this->person = new Person($this->container, (integer) $_SERVER["PERSON_ID"]);
     $this->initPage($this->intl->t("Photo of {0}", $this->person->name));
     $this->pageTitle        = $this->intl->t("Photo of {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
     $this->initLanguageLinks("/person/{0}/photo", [ $this->person->id ]);

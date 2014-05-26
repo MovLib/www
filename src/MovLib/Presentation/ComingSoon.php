@@ -68,8 +68,8 @@ final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
    */
   public function getContent() {
 
-    $form = new Form($this->diContainerHTTP);
-    $form->addElement(new InputEmail($this->diContainerHTTP, "email", $this->intl->t("Email Address"), $this->email, [
+    $form = new Form($this->container);
+    $form->addElement(new InputEmail($this->container, "email", $this->intl->t("Email Address"), $this->email, [
       "autofocus"   => true,
       "placeholder" => $this->intl->t("Sign up for the {sitename} beta!", [ "sitename" => $this->config->sitename ]),
       "required"    => true,
