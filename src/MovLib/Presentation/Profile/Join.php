@@ -307,7 +307,7 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
       // Register the new account (this can't be done delayed because the user needs to validate directly after the
       // redirect) and stack the deletion of the temporary database entry.
       $this->user->join();
-      $this->kernel->delayMethodCall([ $tmp, "delete" ], [ $token ]);
+      $this->kernel->delayMethodCall("delete.token.join", $tmp, "delete", [ $token ]);
 
       // The user has to sign in, this makes sure that the person is really who she or he claims to be. The password is
       // entered by the user while joining and never displayed anywhere to anyone (plus we hash it right away in the

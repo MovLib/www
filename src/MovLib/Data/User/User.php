@@ -750,6 +750,10 @@ SQL
    * @throws \mysqli_sql_exception
    */
   public function updatePassword($passwordHash) {
+    // check if the password is hashed with our configured algorithm, otherwise hash it.
+    if (password_get_info($passwordHash)["algo"] !== $this->config->passwordAlgorithm) {
+      $passwordHash = password_hash($passwordHash, $this->config->passwordAlgorithm, $this->config->passwordOptions);
+    }
     $stmt = $this->getMySQLi()->prepare("UPDATE `users` SET `password` = ? WHERE `id` = ?");
     $stmt->bind_param("sd", $passwordHash, $this->id);
     $stmt->execute();

@@ -194,7 +194,7 @@ final class PasswordSettings extends \MovLib\Presentation\Profile\AbstractProfil
       throw new SeeOtherException($this->request->path);
     }
 
-    $this->kernel->delayMethodCall([ $tmp, "delete" ], [ $token ]);
+    $this->kernel->delayMethodCall("delete.token.password", $tmp, "delete", [ $token ]);
 
     if ($data->userId !== $this->user->id) {
       throw new UnauthorizedException(new Alert(

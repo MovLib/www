@@ -197,7 +197,7 @@ final class DangerZone extends \MovLib\Presentation\Profile\AbstractProfilePrese
       throw new SeeOtherException($this->request->path);
     }
 
-    $this->kernel->delayMethodCall([ $tmp, "delete" ], [ $token ]);
+    $this->kernel->delayMethodCall("delete.token.dangerzone", $tmp, "delete", [ $token ]);
 
     if ($userId !== $this->session->userId) {
       throw new UnauthorizedException(new Alert(

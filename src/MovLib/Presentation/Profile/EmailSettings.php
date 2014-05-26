@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\TemporaryStorage;
+use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Exception\ClientException\UnauthorizedException;
 use \MovLib\Mail\Mailer;
 use \MovLib\Mail\Profile\EmailAddressChangeEmail;
@@ -164,10 +165,10 @@ final class EmailSettings extends \MovLib\Presentation\Profile\AbstractProfilePr
         $this->intl->t("Token Invalid"),
         Alert::SEVERITY_ERROR
       );
-      throw new SeeOtherRedirect($this->request->path);
+      throw new SeeOtherException($this->request->path);
     }
 
-    $this->kernel->delayMethodCall([ $tmp, "delete" ], [ $token ]);
+    $this->kernel->delayMethodCall("delete.token.emailsettings", $tmp, "delete", [ $token ]);
 
     if ($data->userId !== $this->user->id) {
       throw new UnauthorizedException(new Alert(
