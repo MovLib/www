@@ -40,6 +40,17 @@ final class DateTime extends \DateTime {
   const FORMAT = "Y-m-d H:i:s";
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * Custom SQL placeholder.
+   *
+   * @var string
+   */
+  public static $sqlPlaceholder = "CAST(? AS DATETIME)";
+
+
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 

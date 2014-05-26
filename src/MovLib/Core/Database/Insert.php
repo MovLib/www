@@ -46,28 +46,36 @@ final class Insert extends AbstractQuery {
 
 
   /**
-   * String containing the fields to insert into.
+   * String containing the set clause.
    *
    * @var string
    */
-  protected $fields;
-
-  /**
-   * String containing the placeholders.
-   *
-   * @var string
-   */
-  protected $placeholders;
+  protected $setClause;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
+   * Instantiate new insert statement object.
+   *
+   * @param \MovLib\Core\Database\Connection $connection
+   *   Active database connection.
+   * @param string $tableName [optional]
+   *   The name of the table to insert into, defaults to <code>NULL</code> in which case you'll have to call
+   *   {@see Insert::into()}.
+   */
+  public function __construct(Connection $connection, $tableName = null) {
+    $this->connection = $connection;
+    $this->tableName  = $tableName;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function __toString() {
-    return "INSERT INTO `{$this->table}` ({$this->fields}) VALUES ({$this->placeholders})";
+    // We use the MaraiDB (MySQL) specific set syntax for insert statements because it's easier to build and debug.
+    return "INSERT INTO `{$this->tableName}`{$this->setClause}";
   }
 
 
@@ -75,111 +83,58 @@ final class Insert extends AbstractQuery {
 
 
   /**
-   * Add column to insert statement.
+   * Set the table to insert into.
    *
    * @param string $name
-   *   The column's name.
-   * @param string $type
-   *   The column's type.
-   * @param mixed $value
-   *   The column's value.
-   * @param string $placeholder [optional]
-   *   The column's placeholder, defaults to <code>"?"</code>.
+   *   The table's name to insert into.
    * @return this
    */
-  protected function addField($name, $type, $value, $placeholder = "?") {
-    $this->fields && ($this->fields .= ", ");
-    $this->fields  .= $this->sanitizeFieldName($name);
-    $this->types   .= $type;
-    $this->values[] = $value;
-    $this->placeholders && ($this->placeholders .= ", ");
-    $this->placeholders .= $placeholder;
+  public function into($tableName) {
+    $this->tableName = $tableName;
     return $this;
   }
 
   /**
-   * Add boolean.
+   * Set field to value.
    *
-   * @param string $name
-   *   The column's name.
-   * @param boolean $value
-   *   The column's value.
+   * @param string $fieldName
+   *   The name of the field to set.
+   * @param mixed $value
+   *   The value to set. <b>NOTE</b> that arrays are considered dynamic columns.
    * @return this
    */
-  public function booleanField($name, $value) {
-    return $this->addField($name, "i", $value);
-  }
+  public function set($fieldName, $value) {
+    $placeholder = null;
 
-  /**
-   * Add date and time.
-   *
-   * @param string $name
-   *   The column's name.
-   * @param \MovLib\Component\DateTime $value
-   *   The column's value.
-   * @return this
-   */
-  public function dateTimeField($name, \MovLib\Component\DateTime $value) {
-    return $this->addField($name, "s", (string) $value, "CAST(? AS DATETIME)");
-  }
+    // We assume a dynamic column if the value is an array.
+    if (is_array($value)) {
+      $fieldName = $this->sanitizeDynamicFieldName($fieldName);
 
-  /**
-   * Add dynamic column.
-   *
-   * @param string $name
-   *   The dynamic column's name without the <code>"dyn_"</code> prefix.
-   * @param array $keyValues
-   *   The dynamic column's values as key-value pairs.
-   * @return this
-   */
-  public function dynamicField($name, array $keyValues) {
-    $this->fields && ($this->fields .= ", ");
-    $this->fields .= $this->sanitizeDynamicFieldName($name);
+      foreach ($value as $key => $dynValue) {
+        if (empty($dynValue)) {
+          continue;
+        }
 
-    $values = null;
-    foreach ($keyValues as $key => $value) {
-      if (empty($value)) {
-        continue;
+        $placeholder && ($placeholder .= self::$fieldSeparator);
+        $placeholder .= "{$this->getPlaceholder($key)}{$this::$fieldSeparator}{$this->getPlaceholder($dynValue)}";
       }
 
-      $values && ($values .= ", ");
-      $values .= "?, ?";
-
-      $this->types   .= "ss";
-      $this->values[] = $key;
-      $this->values[] = $value;
+      // We insert an empty string if we have no keys to insert. This allows us to call COLUMN_ADD() and COLUMN_DELETE()
+      // at any point later on because an empty string is considered valid in terms of dynamic columns. Sadly BLOB
+      // columns cannot have a default value.
+      $placeholder = $placeholder ? "COLUMN_CREATE({$placeholder})" : "''";
+    }
+    // Otherwise we have an atomic value and can include it directly.
+    else {
+      $fieldName = $this->sanitizeFieldName($fieldName);
+      $placeholder = $this->getPlaceholder($value);
     }
 
-    $this->placeholders && ($this->placeholders .= ",");
-    $this->placeholders .= $values ? "COLUMN_CREATE({$values})" : "''";
+    // Put the set clause together after compilation.
+    $this->setClause .= $this->setClause ? self::$fieldSeparator : " SET ";
+    $this->setClause .= "{$fieldName} = {$placeholder}";
 
     return $this;
-  }
-
-  /**
-   * Add number.
-   *
-   * @param string $name
-   *   The column's name.
-   * @param float|integer $value
-   *   The column's value.
-   * @return this
-   */
-  public function numberField($name, $value) {
-    return $this->addField($name, "d", $value);
-  }
-
-  /**
-   * Add string.
-   *
-   * @param string $name
-   *   The column's name.
-   * @param string $value
-   *   The column's value.
-   * @return this
-   */
-  public function stringField($name, $value) {
-    return $this->addField($name, "s", $value);
   }
 
   /**
@@ -192,7 +147,7 @@ final class Insert extends AbstractQuery {
   public function execute() {
     $stmt = $this->connection->prepare($this);
     // @codingStandardsIgnoreStart
-    $stmt->bind_param($this->types, ...$this->values);
+    $this->values && $stmt->bind_param($this->types, ...$this->values);
     // @codingStandardsIgnoreEnd
     $stmt->execute();
     // @codingStandardsIgnoreStart

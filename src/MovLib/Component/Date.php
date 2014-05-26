@@ -31,6 +31,7 @@ final class Date extends \DateTime {
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
+
   /**
    * Default SQL date format.
    *
@@ -50,6 +51,14 @@ final class Date extends \DateTime {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * Custom SQL placeholder.
+   *
+   * @var string
+   */
+  public static $sqlPlaceholder = "CAST(? AS DATE)";
 
 
   /**
