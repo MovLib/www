@@ -52,4 +52,6 @@ INSERT INTO `revision_entities` SET `class` = '\\MovLib\\Data\\Help\\Article';
 
 INSERT INTO `revision_entities` SET `class` = '\\MovLib\\Data\\Movie\\Poster';
 
+INSERT INTO `revision_entities` SET `class` = '\\MovLib\\Data\\SystemPage\\SystemPage';
+
 -- END "Revision Entity Types"

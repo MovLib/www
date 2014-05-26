@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Help;
 
+use \MovLib\Data\Revision\RevisionCommitConflictException;
+use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Partial\FormElement\TextareaHTMLExtended;
@@ -59,6 +61,7 @@ abstract class AbstractEdit extends \MovLib\Presentation\AbstractEditPresenter {
    */
   public function getContent() {
     return (new Form($this->diContainerHTTP))
+      ->addHiddenElement("revision_id", $this->entity->changed)
       ->addElement(new InputText($this->diContainerHTTP, "title", $this->intl->t("Title"), $this->entity->title, [
         "placeholder" => $this->intl->t("Enter the help article’s title."),
         "autofocus"   => true,
@@ -70,8 +73,37 @@ abstract class AbstractEdit extends \MovLib\Presentation\AbstractEditPresenter {
         "required"            => true,
       ]))
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
-      ->init([ $this, "valid" ])
+      ->init([ $this, "submit" ])
     ;
+  }
+
+  /**
+   * Submit callback for the help article edit form.
+   *
+   * @throws \MovLib\Exception\RedirectException\SeeOtherException
+   *   Always redirects the user back to the edited help article.
+   */
+  public function submit() {
+    try {
+      $this->entity->commit($this->session->userId, $this->request->dateTime, $this->request->filterInput(INPUT_POST, "revision_id", FILTER_VALIDATE_INT));
+      $this->alertSuccess($this->intl->t("Successfully Updated"));
+      throw new SeeOtherException($this->entity->route);
+    }
+    catch (\BadMethodCallException $e) {
+      $this->alertError(
+        $this->intl->t("Validation Error"),
+        $this->intl->t("Seems like you haven’t changed anything, please only submit forms with changes.")
+      );
+    }
+    catch (RevisionCommitConflictException $e) {
+      $this->alertError(
+        $this->intl->t("Conflicting Changes"),
+        "<p>{$this->intl->t(
+          "Someone else has already submitted changes before you. Copy any unsaved work in the form below and then {0}reload this page{1}.",
+          [ "<a href='{$this->request->uri}'>", "</a>" ]
+        )}</p>"
+      );
+    }
   }
 
 }

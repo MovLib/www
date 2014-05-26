@@ -90,8 +90,14 @@ class SystemPage extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Rev
     $stmt = $connection->prepare(<<<SQL
 SELECT
   `id`,
-  COLUMN_GET(`dyn_titles`, '{$this->intl->languageCode}' AS CHAR(255)),
-  COLUMN_GET(`dyn_texts`, '{$this->intl->languageCode}' AS BINARY),
+  IFNULL(
+    COLUMN_GET(`dyn_titles`, '{$this->intl->languageCode}' AS CHAR(255)),
+    COLUMN_GET(`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR(255))
+  ),
+  IFNULL(
+    COLUMN_GET(`dyn_texts`, '{$this->intl->languageCode}' AS BINARY),
+    COLUMN_GET(`dyn_texts`, '{$this->intl->defaultLanguageCode}' AS BINARY)
+  ),
   COLUMN_GET(`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR(255))
 FROM `system_pages`
 WHERE `id` = ?
@@ -109,7 +115,7 @@ SQL
     $found = $stmt->fetch();
     $stmt->close();
     if (!$found) {
-      throw new NotFound;
+      throw new NotFoundException("Couldn't find Systempage {$id}");
     }
 
     $this->init();
@@ -139,31 +145,32 @@ SQL
 
 
   /**
-   * Write changes to the system page to the database.
-   *
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
+   * {@inheritdoc}
+   * @param \MovLib\Data\SystemPage\SystemPageRevision $revision {@inheritdoc}
+   * @return \MovLib\Data\SystemPage\SystemPageRevision {@inheritdoc}
    */
-  public function commit() {
-    $stmt = $this->getMySQLi()->prepare(<<<SQL
-UPDATE `system_pages` SET
-  `dyn_titles` = COLUMN_ADD(`dyn_titles`, ?, ?),
-  `dyn_texts` = COLUMN_ADD(`dyn_texts`, ?, ?)
-WHERE `id` = ?
-LIMIT 1
-SQL
-    );
-    $stmt->bind_param(
-      "ssssi",
-      $this->intl->languageCode,
-      $this->title,
-      $this->intl->languageCode,
-      $this->text,
-      $this->id
-    );
-    $stmt->execute();
-    $stmt->close();
+  protected function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
+    $revision->texts[$this->intl->languageCode]  = $this->text;
+    $revision->titles[$this->intl->languageCode] = $this->title;
 
+    return $revision;
+  }
+
+  /**
+   * {@inheritdoc}
+   * @param \MovLib\Data\SystemPage\SystemPageRevision $revision {@inheritdoc}
+   * @return this {@inheritdoc}
+   */
+  protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
+    if (isset($revision->texts[$this->intl->languageCode])) {
+      $this->text = $revision->texts[$this->intl->languageCode];
+    }
+    if (empty($revision->titles[$this->intl->languageCode])) {
+      $this->title = $revision->titles[$this->intl->defaultLanguageCode];
+    }
+    else {
+      $this->title = $revision->titles[$this->intl->languageCode];
+    }
     return $this;
   }
 

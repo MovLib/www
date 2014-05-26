@@ -472,7 +472,7 @@ SQL
    * @param \MovLib\Data\Movie\MovieRevision $revision {@inheritdoc}
    * @return \MovLib\Data\Movie\MovieRevision {@inheritdoc}
    */
-  protected function doCreateRevision(\MovLib\Data\Revision\RevisionEntityInterface $revision) {
+  protected function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
     $revision->year = $this->year;
 
     // Only overwrite the titles if we have them, note that it's impossible to delete all titles, you always have at
@@ -488,7 +488,7 @@ SQL
    * @param \MovLib\Data\Movie\MovieRevision $revision {@inheritdoc}
    * @return this {@inheritdoc}
    */
-  protected function doSetRevision(\MovLib\Data\Revision\RevisionEntityInterface $revision) {
+  protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
     // @todo Implement me!
     return $this;
   }

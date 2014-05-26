@@ -58,10 +58,10 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
     $form = new Form($this->diContainerHTTP);
     (new Sex())->addInputTextElements($this->diContainerHTTP, $form, "title", $this->entity->titles, [ "required" => true ]);
     return $form
+      ->addHiddenElement("revision_id", $this->entity->changed)
       ->addElement(new TextareaHTMLExtended($this->diContainerHTTP, "description", $this->intl->t("Description"), $this->entity->description))
       ->addElement(new InputWikipedia($this->diContainerHTTP, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia))
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
-      ->addRevisioning($this->entity->changed)
       ->init([ $this, "submit" ])
     ;
   }

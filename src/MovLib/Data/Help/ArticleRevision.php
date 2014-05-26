@@ -76,6 +76,11 @@ final class ArticleRevision extends \MovLib\Core\Revision\AbstractRevision {
    */
   public $revisionEntityId = 11;
 
+  /**
+   * {@inheritdoc}
+   */
+  protected $tableName = "help_articles";
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -157,7 +162,18 @@ SQL
   /**
    * {@inheritdoc}
    */
-  protected function addInitialCommitColumns(\MovLib\Core\Database\Insert $insert) {
+  protected function addCommitFields(\MovLib\Core\Database\Update $update) {
+    return $update
+      ->table("help_articles")
+      ->dynamicColumn("texts", $this->texts)
+      ->dynamicField("titles", $this->titles)
+    ;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function addCreateFields(\MovLib\Core\Database\Insert $insert) {
     return $insert
       ->table("help_articles")
       ->dynamicColumn("texts", $this->texts)

@@ -150,7 +150,7 @@ SQL
    *
    * @param integer $revisionId
    *   The revision identifier to get.
-   * @return \MovLib\Data\Revision\RevisionEntityInterface
+   * @return \MovLib\Core\Revision\RevisionInterface
    *   The revision identifier by identifier.
    */
   public function offsetGet($revisionId) {
@@ -162,7 +162,7 @@ SQL
    *
    * @param integer $revisionId [unused]
    *   The revision's unique identifier for this entity.
-   * @param \MovLib\Data\Revision\RevisionEntityInterface $revision [unused]
+   * @param \MovLib\Core\Revision\RevisionInterface $revision [unused]
    *   The revision to set.
    * @throws \LogicException
    *   Always throws a logic exception because setting a revision isn't allowed.

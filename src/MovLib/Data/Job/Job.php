@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\Job;
 
+use \MovLib\Core\Database\Database;
 use \MovLib\Data\Company\CompanySet;
 use \MovLib\Data\Person\PersonSet;
 use \MovLib\Exception\ClientException\NotFoundException;
@@ -318,7 +319,7 @@ SQL
    * @param \MovLib\Data\Job\JobRevision $revision {@inheritdoc}
    * @return \MovLib\Data\Job\JobRevision {@inheritdoc}
    */
-  public function doCreateRevision(\MovLib\Data\Revision\RevisionEntityInterface $revision) {
+  public function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
     $revision->descriptions[$this->intl->languageCode] = $this->description;
     $revision->titlesSex0[$this->intl->languageCode]   = $this->titles[Sex::UNKNOWN];
     $revision->titlesSex1[$this->intl->languageCode]   = $this->titles[Sex::MALE];
@@ -345,7 +346,7 @@ SQL
    * @param \MovLib\Data\Job\JobRevision $revision {@inheritdoc}
    * @return this {@inheritdoc}
    */
-  protected function doSetRevision(\MovLib\Data\Revision\RevisionEntityInterface $revision) {
+  protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
     if (isset($revision->descriptions[$this->intl->languageCode])) {
       $this->description = $revision->descriptions[$this->intl->languageCode];
     }

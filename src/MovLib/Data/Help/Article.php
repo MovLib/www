@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\Help;
 
+use \MovLib\Core\Database\Database;
 use \MovLib\Data\Help\Category;
 use \MovLib\Data\Help\SubCategory;
 use \MovLib\Exception\ClientException\NotFoundException;
@@ -173,12 +174,12 @@ SQL
    * @param \MovLib\Data\History\ArticleRevision $revision {@inheritdoc}
    * @return \MovLib\Data\History\ArticleRevision {@inheritdoc}
    */
-  protected function doCreateRevision(\MovLib\Data\Revision\RevisionEntityInterface $revision) {
+  protected function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
     $revision->texts[$this->intl->languageCode]  = $this->text;
     $revision->titles[$this->intl->languageCode] = $this->title;
 
-    // Don't forget that we might be a new genre and that we might have been created via a different system locale than
-    // the default one, in which case the user was required to enter a default name. Of course we have to export that
+    // Don't forget that we might be a new help article and that we might have been created via a different system locale
+    // than the default one, in which case the user was required to enter a default name. Of course we have to export that
     // as well to our revision.
     if (isset($this->defaultTitle)) {
       $revision->titles[$this->intl->defaultLanguageCode] = $this->defaultTitle;
@@ -189,10 +190,10 @@ SQL
 
   /**
    * {@inheritdoc}
-   * @param \MovLib\Data\Genre\GenreRevision $revision {@inheritdoc}
+   * @param \MovLib\Data\Help\ArticleRevision $revision {@inheritdoc}
    * @return this {@inheritdoc}
    */
-  protected function doSetRevision(\MovLib\Data\Revision\RevisionEntityInterface $revision) {
+  protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
     if (isset($revision->texts[$this->intl->languageCode])) {
       $this->text = $revision->texts[$this->intl->languageCode];
     }

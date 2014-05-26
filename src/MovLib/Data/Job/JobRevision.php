@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\Job;
 
+use \MovLib\Core\Database\Database;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -89,6 +90,11 @@ final class JobRevision extends \MovLib\Core\Revision\AbstractRevision {
    */
   public $titlesSex2;
 
+  /**
+   * {@inheritdoc}
+   */
+  protected $tableName = "jobs";
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -104,7 +110,8 @@ final class JobRevision extends \MovLib\Core\Revision\AbstractRevision {
    */
   public function __construct($id = null) {
     if ($id) {
-      $stmt = $this->getMySQLi()->prepare(<<<SQL
+      $connection = Database::getConnection();
+      $stmt = $connection->prepare(<<<SQL
 SELECT
   `jobs`.`id`,
   `revisions`.`user_id`,
@@ -185,7 +192,20 @@ SQL
   /**
    * {@inheritdoc}
    */
-  protected function addInitialCommitColumns(\MovLib\Core\Database\Insert $insert) {
+  protected function addCommitFields(\MovLib\Core\Database\Update $update) {
+    return $update
+      ->table("jobs")
+      ->dynamicColumn("descriptions", $this->descriptions)
+      ->dynamicField("titles_sex0", $this->titlesSex0)
+      ->dynamicField("titles_sex1", $this->titlesSex1)
+      ->dynamicField("titles_sex2", $this->titlesSex2)
+    ;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function addCreateFields(\MovLib\Core\Database\Insert $insert) {
     return $insert
       ->table("jobs")
       ->dynamicColumn("descriptions", $this->descriptions)

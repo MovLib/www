@@ -31,10 +31,10 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class GenreRevision extends \MovLib\Core\Revision\AbstractRevision {
+final class SystemPageRevision extends \MovLib\Core\Revision\AbstractRevision {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
+  // ------------------------------------------------------------------------------------------------------------------- Constants
 
 
   // @codingStandardsIgnoreStart
@@ -43,7 +43,7 @@ final class GenreRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var string
    */
-  const name = "GenreRevision";
+  const name = "SystemPageRevision";
   // @codingStandardsIgnoreEnd
 
   /**
@@ -51,85 +51,83 @@ final class GenreRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var integer
    */
-  const REVISION_ENTITY_ID = 9;
+  const REVISION_ENTITY_ID = 13;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * Associative array containing all the genre's localized names, keyed by ISO 639-1 language code.
+   * Associative array containing all the system page's localized titles, keyed by ISO 639-1 language code.
    *
    * @var array
    */
-  public $names;
+  public $titles;
 
   /**
-   * Associative array containing all the genre's localized descriptions, keyed by ISO 639-1 language code.
+   * Associative array containing all the system page's localized texts, keyed by ISO 639-1 language code.
    *
    * @var array
    */
-  public $descriptions;
+  public $texts;
 
   /**
    * {@inheritdoc}
    */
-  public $revisionEntityId = 9;
+  public $revisionEntityId = 13;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $tableName = "system_pages";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new genre revision.
+   * Instantiate new system page revision.
    *
    * @param integer $id
-   *   The genre's unique identifier to load the revision for. The default value (<code>NULL</code>) is only used for
-   *   internal purposes when loaded via <code>fetch_object()</code>.
+   *   The system page's unique identifier to load the revision for.
    * @throws \MovLib\Exception\ClientException\NotFoundException
-   *   If no genre was found for the given unique identifier.
+   *   If no system page was found for the given unique identifier.
    */
-  public function __construct($id = null) {
-    if ($id) {
-      $connection = Database::getConnection();
-      $stmt = $connection->prepare(<<<SQL
+  public function __construct($id) {
+    $connection = Database::getConnection();
+    $stmt = $connection->prepare(<<<SQL
 SELECT
-  `genres`.`id`,
+  `system_pages`.`id`,
   `revisions`.`user_id`,
-  `genres`.`changed` + 0,
-  `genres`.`deleted`,
-  COLUMN_JSON(`genres`.`dyn_descriptions`),
-  COLUMN_JSON(`genres`.`dyn_names`),
-  COLUMN_JSON(`genres`.`dyn_wikipedia`)
-FROM `genres`
+  `system_pages`.`changed` + 0,
+  COLUMN_JSON(`system_pages`.`dyn_texts`),
+  COLUMN_JSON(`system_pages`.`dyn_titles`)
+FROM `system_pages`
   INNER JOIN `revisions`
-    ON `revisions`.`entity_id` = `genres`.`id`
-    AND `revisions`.`id` = `genres`.`changed`
-    AND `revisions`.`revision_entity_id` = 9
-WHERE `genres`.`id` = ?
+    ON `revisions`.`entity_id` = `system_pages`.`id`
+    AND `revisions`.`id` = `system_pages`.`changed`
+    AND `revisions`.`revision_entity_id` = 13
+WHERE `system_pages`.`id` = ?
 LIMIT 1
 SQL
-      );
-      $stmt->bind_param("d", $id);
-      $stmt->execute();
-      $stmt->bind_result(
-        $this->entityId,
-        $this->userId,
-        $this->id,
-        $this->deleted,
-        $this->descriptions,
-        $this->names,
-        $this->wikipediaLinks
-      );
-      $found = $stmt->fetch();
-      $stmt->close();
-      if ($found === false) {
-        throw new NotFoundException("Couldn't find genre for {$id}.");
-      }
+    );
+    $stmt->bind_param("d", $id);
+    $stmt->execute();
+    $stmt->bind_result(
+      $this->entityId,
+      $this->userId,
+      $this->id,
+      $this->texts,
+      $this->titles
+    );
+    $found = $stmt->fetch();
+    $stmt->close();
+    if ($found === false) {
+      throw new NotFoundException("Couldn't find system page for {$id}.");
     }
     if ($this->id) {
-      $this->descriptions = json_decode($this->descriptions, true);
-      $this->names        = json_decode($this->names, true);
+      $this->texts  = json_decode($this->texts, true);
+      $this->titles = json_decode($this->titles, true);
       parent::__construct();
     }
   }
@@ -140,7 +138,7 @@ SQL
   public function __sleep() {
     static $properties = null;
     if (!$properties) {
-      $properties = array_merge(parent::__sleep(), [ "descriptions", "names", "wikipediaLinks" ]);
+      $properties = array_merge(parent::__sleep(), [ "texts", "titles" ]);
     }
     return $properties;
   }
@@ -159,52 +157,23 @@ SQL
   /**
    * {@inheritdoc}
    */
-  protected function addInitialCommitColumns(\MovLib\Core\Database\Insert $insert) {
-    return $insert
-      ->table("genres")
-      ->dynamicColumn("descriptions", $this->descriptions)
-      ->dynamicField("names", $this->names)
+  protected function addCommitFields(\MovLib\Core\Database\Update $update) {
+    return $update
+      ->table("system_pages")
+      ->dynamicColumn("texts", $this->texts)
+      ->dynamicField("titles", $this->titles)
     ;
   }
 
   /**
    * {@inheritdoc}
    */
-//  public function commit(\MovLib\Core\Database\Connection $connection, $oldRevisionId) {
-//    // We have to create an instance of the revision that is currently stored in the database.
-//    $old = new static($this->entityId);
-//
-//    // We have
-//    // Check if we should update the deletion status of the entity. Usually that's performed by a deletion request, but
-//    // we might be commiting a previous revision that was recreated and the deletion status might have been set to
-//    // deleted. In that case we want it to be deleted again.
-//    //
-//    // @todo Is this really true? Do we want to reset the deletion status just because an old revision was deleted?
-//    $deleted = $old->deleted === $this->deleted ? null : "`deleted`=" . (integer) $this->deleted;
-//
-//    // Check all dynamic columns and build the query parts for those.
-//    $dynCols = $connection->dynColBuildUpdate($languageCode, [
-//      "descriptions" => [ $this->descriptions, $old->descriptions ],
-//      "names"        => [ $this->names, $old->names ],
-//      "wikipedia"    => [ $this->wikipediaLinks, $old->wikipediaLinks ],
-//    ]);
-//
-//    // If we have both values, append comma to the deleted part to separate them.
-//    if ($deleted && $dynCols) {
-//      $deleted .= ",";
-//    }
-//    // Nothing to commit if both values are NULL.
-//    elseif (!$deleted && !$dynCols) {
-//      throw new \BadMethodCallException("Nothing to commit.");
-//    }
-//
-//    // Update the genres table with the new data, remember that we are the newest revision and that we have to update
-//    // the changed datetime of the genre with our creation datetime.
-//    $connection->real_query(
-//      "UPDATE `genres` SET `changed` = CAST('{$this->created}' AS DATETIME), {$deleted}{$dynCols} WHERE `id` = {$this->entityId}"
-//    );
-//
-//    return $this;
-//  }
+  protected function addCreateFields(\MovLib\Core\Database\Insert $insert) {
+    return $insert
+      ->table("system_pages")
+      ->dynamicColumn("texts", $this->texts)
+      ->dynamicField("titles", $this->titles)
+    ;
+  }
 
 }

@@ -17,8 +17,9 @@
  */
 namespace MovLib\Presentation\SystemPage;
 
-use \MovLib\Partial\Form;
+use \MovLib\Data\Revision\RevisionCommitConflictException;
 use \MovLib\Exception\RedirectException\SeeOtherException;
+use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Partial\FormElement\TextareaHTMLRaw;
 
@@ -65,51 +66,62 @@ abstract class AbstractEdit extends \MovLib\Presentation\SystemPage\AbstractShow
    */
   public function getContent() {
     $form = (new Form($this->diContainerHTTP))
+      ->addHiddenElement("revision_id", $this->systemPage->changed)
       ->addElement(new InputText($this->diContainerHTTP, "title", $this->intl->t("Title"), $this->systemPage->title, [
-        "#help-popup" => $this->intl->t("A system page’s title cannot contain any HTML."),
         "autofocus"   => true,
         "placeholder" => $this->intl->t("Enter the system page title"),
         "required"    => true,
       ]))
       ->addElement(new TextareaHTMLRaw($this->diContainerHTTP,"content", $this->intl->t("Content"), $this->systemPage->text, [
-        "#help-popup" => $this->intl->t("A system page’s text content can contain any HTML."),
         "placeholder" => $this->intl->t("Enter the system page content"),
         "required"    => true,
         "rows"        => 25,
       ]))
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
-      ->init([ $this, "valid" ])
+      ->init([ $this, "submit" ])
     ;
 
     return "<div class='c'><div class='r'><div class='s s12'>{$form}</div></div></div>";
   }
 
   /**
-   * The form is valid.
+   * Submit callback for the system page edit form.
    *
    * @throws \MovLib\Exception\RedirectException\SeeOtherException
+   *   Always redirects the user back to the edited system page.
    */
-  public function valid() {
-    // Store the changes to the system page.
-    $this->systemPage->commit();
+  public function submit() {
+    try {
+      $this->entity->commit($this->session->userId, $this->request->dateTime, $this->request->filterInput(INPUT_POST, "revision_id", FILTER_VALIDATE_INT));
+      $this->alertSuccess($this->intl->t("Successfully Updated"));
 
-    // Let the user know that the system page was update.
-    $this->alertSuccess(
-      $this->intl->t("Successfully Updated"),
-      $this->intl->t("The {title} system page was successfully updated.", [ "title" => $this->placeholder($this->systemPage->title) ])
-    );
+      // Encourage the user to validate the page.
+      $this->alertInfo(
+        $this->intl->t("Valid?"),
+        $this->intl->t("Please {0}validate your HTML with the W3C Validator{1}.", [
+          "<a href='http://validator.w3.org/check?uri=" . rawurlencode("{$this->request->scheme}://{$this->request->hostname}{$this->systemPage->route}") . "'>",
+          "</a>"
+        ])
+      );
 
-    // Encourage the user to validate the page.
-    $this->alertInfo(
-      $this->intl->t("Valid?"),
-      $this->intl->t("Please {0}validate your HTML with the W3C Validator{1}.", [
-        "<a href='http://validator.w3.org/check?uri=" . rawurlencode("{$this->request->scheme}://{$this->request->hostname}{$this->systemPage->route}") . "'>",
-        "</a>"
-      ])
-    );
-
-    // Redirect to the just updated system page.
-    throw new SeeOtherException($this->systemPage->route);
+      throw new SeeOtherException($this->entity->route);
+    }
+    catch (\BadMethodCallException $e) {
+      $this->alertError(
+        $this->intl->t("Validation Error"),
+        $this->intl->t("Seems like you haven’t changed anything, please only submit forms with changes.")
+      );
+    }
+    catch (RevisionCommitConflictException $e) {
+      $this->alertError(
+        $this->intl->t("Conflicting Changes"),
+        "<p>{$this->intl->t(
+          "Someone else has already submitted changes before you. Copy any unsaved work in the form below and then {0}reload this page{1}.",
+          [ "<a href='{$this->request->uri}'>", "</a>" ]
+        )}</p>"
+      );
+    }
   }
 
 }
+

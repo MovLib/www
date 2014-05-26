@@ -163,7 +163,7 @@ SQL
    * @param \MovLib\Data\Genre\GenreRevision $revision {@inheritdoc}
    * @return \MovLib\Data\Genre\GenreRevision {@inheritdoc}
    */
-  protected function doCreateRevision(\MovLib\Data\Revision\RevisionEntityInterface $revision) {
+  protected function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
     $revision->descriptions[$this->intl->languageCode] = $this->description;
     $revision->names[$this->intl->languageCode]        = $this->name;
 
@@ -182,7 +182,7 @@ SQL
    * @param \MovLib\Data\Genre\GenreRevision $revision {@inheritdoc}
    * @return this {@inheritdoc}
    */
-  protected function doSetRevision(\MovLib\Data\Revision\RevisionEntityInterface $revision) {
+  protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
     if (isset($revision->descriptions[$this->intl->languageCode])) {
       $this->description = $revision->descriptions[$this->intl->languageCode];
     }
