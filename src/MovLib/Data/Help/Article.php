@@ -18,6 +18,8 @@
 namespace MovLib\Data\Help;
 
 use \MovLib\Core\Database\Database;
+use \MovLib\Core\Revision\OriginatorTrait;
+use \MovLib\Core\Search\RevisionTrait;
 use \MovLib\Data\Help\Category;
 use \MovLib\Data\Help\SubCategory;
 use \MovLib\Exception\ClientException\NotFoundException;
@@ -31,8 +33,11 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Article extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\OriginatorInterface {
-  use \MovLib\Core\Revision\OriginatorTrait;
+ final class Article extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\OriginatorInterface {
+  use OriginatorTrait, RevisionTrait {
+    RevisionTrait::postCommit insteadof OriginatorTrait;
+    RevisionTrait::postCreate insteadof OriginatorTrait;
+  }
 
 
   //-------------------------------------------------------------------------------------------------------------------- Constants
@@ -66,13 +71,6 @@ final class Article extends \MovLib\Data\AbstractEntity implements \MovLib\Core\
   public $defaultTitle;
 
   /**
-   * The help article's unique identifier.
-   *
-   * @var integer
-   */
-  public $id;
-
-  /**
    * The help article sub category.
    *
    * @var mixed
@@ -99,6 +97,16 @@ final class Article extends \MovLib\Data\AbstractEntity implements \MovLib\Core\
    * @var integer
    */
   public $viewCount;
+
+  /**
+   * {@inheritdoc}
+   */
+  public $pluralKey = "help_articles";
+
+  /**
+   * {@inheritdoc}
+   */
+  public $singularKey = "help_article";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -171,12 +179,21 @@ SQL
 
   /**
    * {@inheritdoc}
+   */
+  protected function defineSearchIndex(\MovLib\Core\Search\SearchIndexer $search, \MovLib\Core\Revision\RevisionInterface $revision) {
+    return $search->indexSimpleSuggestion($revision->titles);
+  }
+
+  /**
+   * {@inheritdoc}
    * @param \MovLib\Data\History\ArticleRevision $revision {@inheritdoc}
    * @return \MovLib\Data\History\ArticleRevision {@inheritdoc}
    */
   protected function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
     $revision->texts[$this->intl->languageCode]  = $this->text;
     $revision->titles[$this->intl->languageCode] = $this->title;
+    $revision->category                          = $this->category;
+    $revision->subCategory                       = $this->subCategory;
 
     // Don't forget that we might be a new help article and that we might have been created via a different system locale
     // than the default one, in which case the user was required to enter a default name. Of course we have to export that
@@ -197,6 +214,10 @@ SQL
     if (isset($revision->texts[$this->intl->languageCode])) {
       $this->text = $revision->texts[$this->intl->languageCode];
     }
+
+    $revision->category    && $this->category = $revision->category;
+    $revision->subCategory && $this->category = $revision->subCategory;
+
     if (empty($revision->titles[$this->intl->languageCode])) {
       $this->title = $revision->titles[$this->intl->defaultLanguageCode];
     }
@@ -213,7 +234,6 @@ SQL
     if (isset($this->category) && !$this->category instanceof \MovLib\Data\Help\Category) {
       $this->category = new Category($this->container, $this->category);
     }
-    $this->pluralKey     = $this->tableName = "help_articles";
     $this->routeArgs     = [ $this->id ];
 
     if (isset($this->subCategory)) {

@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Help;
 
+use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Partial\FormElement\TextareaHTMLExtended;
@@ -103,7 +104,7 @@ abstract class AbstractCreate extends \MovLib\Presentation\AbstractCreatePresent
           "autofocus"   => true,
           "required"    => true,
         ]))
-        ->init([ $this, "valid" ])
+        ->init([ $this, "submit" ])
       ;
       return
         $form->open() .
@@ -116,8 +117,17 @@ abstract class AbstractCreate extends \MovLib\Presentation\AbstractCreatePresent
       ;
     }
     else {
-      return $form->init([ $this, "valid" ]);
+      return $form->init([ $this, "submit" ]);
     }
+  }
+
+  /**
+   * Form submit callback.
+   */
+  public function submit() {
+    $this->entity->create($this->session->userId, $this->request->dateTime);
+    $this->alertSuccess($this->intl->t("Successfully Created"));
+    throw new SeeOtherException($this->entity->route);
   }
 
 }

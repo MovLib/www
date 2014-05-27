@@ -58,18 +58,32 @@ final class ArticleRevision extends \MovLib\Core\Revision\AbstractRevision {
 
 
   /**
+   * The help article category.
+   *
+   * @var integer
+   */
+  public $category;
+
+  /**
    * Associative array containing all the articles's localized titles, keyed by ISO 639-1 language code.
    *
    * @var array
    */
-  public $titles;
+  public $titles = [];
 
   /**
    * Associative array containing all the articles's localized texts, keyed by ISO 639-1 language code.
    *
    * @var array
    */
-  public $texts;
+  public $texts = [];
+
+  /**
+   * The help article sub category.
+   *
+   * @var mixed
+   */
+  public $subCategory;
 
   /**
    * {@inheritdoc}
@@ -100,6 +114,8 @@ final class ArticleRevision extends \MovLib\Core\Revision\AbstractRevision {
       $stmt = $connection->prepare(<<<SQL
 SELECT
   `help_articles`.`id`,
+  `help_articles`.`help_category_id`,
+  `help_articles`.`help_subcategory_id`,
   `revisions`.`user_id`,
   `help_articles`.`changed` + 0,
   `help_articles`.`deleted`,
@@ -118,6 +134,8 @@ SQL
       $stmt->execute();
       $stmt->bind_result(
         $this->entityId,
+        $this->category,
+        $this->subCategory,
         $this->userId,
         $this->id,
         $this->deleted,
@@ -131,8 +149,8 @@ SQL
       }
     }
     if ($this->id) {
-      $this->texts  = json_decode($this->texts, true);
-      $this->titles = json_decode($this->titles, true);
+      $this->texts  === (array) $this->texts  || ($this->texts  = json_decode($this->texts, true));
+      $this->titles === (array) $this->titles || ($this->titles = json_decode($this->titles, true));
       parent::__construct();
     }
   }
@@ -143,7 +161,7 @@ SQL
   public function __sleep() {
     static $properties = null;
     if (!$properties) {
-      $properties = array_merge(parent::__sleep(), [ "texts", "titles" ]);
+      $properties = array_merge(parent::__sleep(), [ "texts", "titles", "category", "subCategory" ]);
     }
     return $properties;
   }
@@ -155,18 +173,16 @@ SQL
   /**
    * {@inheritdoc}
    */
-  protected function getCommitQuery(\MovLib\Core\Database\Connection $connection) {
-    return "";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function addCommitFields(\MovLib\Core\Database\Query\Update $update) {
+  protected function addCommitFields(\MovLib\Core\Database\Query\Update $update, \MovLib\Core\Revision\RevisionInterface $oldRevision) {
+    // @todo The update statement must include the possibility for auto-comparison of old and new values on dynamic
+    //       column fields; or maybe for all fields and only update what's necessary? Might take more time to build the
+    //       query but execute faster. The query cache doesn't seem of much help because if the values changed it won't
+    //       match against any previously executed query.
     return $update
-      ->table("help_articles")
-      ->dynamicColumn("texts", $this->texts)
-      ->dynamicField("titles", $this->titles)
+      ->set("texts", $this->texts)
+      ->set("titles", $this->titles)
+      ->set("help_category_id", $this->category->id)
+      ->set("help_subcategory_id", isset($this->subCategory) ? $this->subCategory->id : null)
     ;
   }
 
@@ -175,9 +191,10 @@ SQL
    */
   protected function addCreateFields(\MovLib\Core\Database\Query\Insert $insert) {
     return $insert
-      ->table("help_articles")
-      ->dynamicColumn("texts", $this->texts)
-      ->dynamicField("titles", $this->titles)
+      ->set("texts", $this->texts)
+      ->set("titles", $this->titles)
+      ->set("help_category_id", $this->category->id)
+      ->set("help_subcategory_id", isset($this->subCategory) ? $this->subCategory->id : null)
     ;
   }
 

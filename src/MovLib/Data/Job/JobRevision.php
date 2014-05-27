@@ -160,10 +160,10 @@ SQL
     }
 
     if ($this->id) {
-      $this->descriptions = json_decode($this->descriptions, true);
-      $this->titlesSex0   = json_decode($this->titlesSex0, true);
-      $this->titlesSex1   = json_decode($this->titlesSex1, true);
-      $this->titlesSex2   = json_decode($this->titlesSex2, true);
+      $this->descriptions   === (array) $this->descriptions   || ($this->descriptions   = json_decode($this->descriptions, true));
+      $this->titlesSex0     === (array) $this->titlesSex0     || ($this->titlesSex0     = json_decode($this->titlesSex0, true));
+      $this->titlesSex1     === (array) $this->titlesSex1     || ($this->titlesSex1     = json_decode($this->titlesSex1, true));
+      $this->titlesSex2     === (array) $this->titlesSex2     || ($this->titlesSex2     = json_decode($this->titlesSex2, true));
       $this->wikipediaLinks === (array) $this->wikipediaLinks || ($this->wikipediaLinks = json_decode($this->wikipediaLinks, true));
       parent::__construct();
     }
