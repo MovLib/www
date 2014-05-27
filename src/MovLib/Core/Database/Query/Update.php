@@ -59,20 +59,6 @@ final class Update extends AbstractQuery {
    */
   protected $setClause;
 
-  /**
-   * The query's table alias to operate on.
-   *
-   * @var string
-   */
-  protected $tableAlias;
-
-  /**
-   * The query's table name to operate on.
-   *
-   * @var string
-   */
-  protected $tableName;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -81,7 +67,7 @@ final class Update extends AbstractQuery {
    * {@inheritdoc}
    */
   public function __toString() {
-    return "UPDATE `{$this->tableName}`{$this->tableAlias} SET {$this->setClause}{$this->conditions}";
+    return "UPDATE {$this->table}{$this->setClause}{$this->conditions}";
   }
 
 
@@ -89,50 +75,186 @@ final class Update extends AbstractQuery {
 
 
   /**
-   * Add column to update statement.
    *
-   * @param string $name
-   *   The column's name.
-   * @param string $type
-   *   The column's type.
-   * @param mixed $value
-   *   The column's value.
-   * @param string $placeholder [optional]
-   *   The column's placeholder, defaults to <code>"?"</code>.
-   * @return this
+   * @param type $name
+   * @param type $placeholder
+   * @param type $type
+   * @param type $value
+   * @return \MovLib\Core\Database\Query\Update
    */
-  public function set($name, $type, $value, $placeholder = "?") {
-    $this->setClause && ($this->setClause .= ", ");
-    $this->setClause .= "{$this->sanitizeFieldName($name)} = {$placeholder}";
-    $this->types     .= $type;
-    $this->values[]   = $value;
+  protected function addField($name, $placeholder, $type = null, $value = null) {
+    $this->setClause .= $this->setClause ? ", " : " SET ";
+    $this->setClause .= "{$name} = {$placeholder}";
+    if ($type && $value) {
+      $this->types   .= $type;
+      $this->values[] = $value;
+    }
     return $this;
   }
 
   /**
-   * Decrement a column.
+   * Set field to value.
    *
-   * @param string $name
-   *   The column's name to decrement.
+   * @param string $fieldName
+   *   The field's name.
+   * @param mixed $value
+   *   The field's value.
+   * @param string $expression [optional]
+   *   Any kind of expression, note that you'll have to escape field names yourself and that the placeholder
+   *   <code>"?"</code> must be included.
+   * @return this
+   */
+  public function set($fieldName, $value, $expression = null) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert(!is_array($value), "Use Update::setDynamic() method to set dynamic columns.");
+    assert(is_null($expression) || strpos($expression, "?") !== false, "Your expression must include the value placeholder (?).");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    // We always have to call this method because it also determines the type of the placeholder value.
+    $placeholder = $this->getPlaceholder($value);
+
+    return $this->addField($this->sanitizeFieldName($fieldName), $expression ?: $placeholder);
+  }
+
+  /**
+   * Set field to value if it differs to the old value.
+   *
+   * @param string $fieldName
+   *   The field's name.
+   * @param mixed $value
+   *   The field's value.
+   * @param mixed $oldValue
+   *   The field's old value.
+   * @param string $expression [optional]
+   *   Any kind of expression, note that you'll have to escape field names yourself and that the placeholder
+   *   <code>"?"</code> must be included.
+   * @return this
+   */
+  public function setConditional($fieldName, $value, $oldValue, $expression = null) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert(!is_array($value), "Use Update::setDynamicConditional() method to set dynamic columns.");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    if ($value == $oldValue) {
+      return $this;
+    }
+    return $this->set($fieldName, $value, $expression);
+  }
+
+  /**
+   * Set dynamic column.
+   *
+   * This will use the <code>"COLUMN_CREATE()"</code> function and overwrite any data previously stored in the dynamic
+   * column. This means that your <var>$values</var> must contain absolutely all values that you want to set.
+   *
+   * @param string $fieldName
+   *   The name of the dynamic field to set.
+   * @param array $values
+   *   The values of the dynamic field to set.
+   * @return this
+   */
+  public function setDynamic($fieldName, array $values) {
+    $placeholder = $this->dynamicColumnCreate($fieldName, $values);
+    return $this->addField($fieldName, $placeholder);
+  }
+
+  /**
+   * Set dynamic column key value if it differs from the old value.
+   *
+   * @param string $fieldName
+   *   The name of the dynamic field to set.
+   * @param array|string $keys
+   *   Either an array or a string, if an array is given all keys will be checked.
+   * @param array $values
+   *   The new values for the dynamic column.
+   * @param array $oldValues
+   *   The old values of the dynamic column.
+   * @return this
+   */
+  public function setDynamicConditional($fieldName, $keys, array $values, array $oldValues) {
+    $updates = null;
+    $deletes = null;
+
+    foreach ((array) $keys as $key) {
+      $new = array_key_exists($key, $values);
+      $old = array_key_exists($key, $oldValues);
+
+      // We want an update if we have a new value that differs from the old value, or if we have a new value but no old
+      // value. In any case, the new value must evaluate to true for an update.
+      if ((($new && $old && $values[$key] != $old[$key]) || ($new && !$old)) && ($values[$key] == true || $values[$key] == "0")) {
+        $updates && ($updates .= ", ");
+        $updates .= "{$this->getPlaceholder($key)}, {$this->getPlaceholder($values[$key])}";
+      }
+      // We want to delete if we have an old value but no new value or if the new value evaluates to false.
+      elseif ((!$new && $old) || ($new && $values[$key] == false)) {
+        $deletes && ($deletes .= ", ");
+        $deletes .= $this->getPlaceholder($key);
+      }
+    }
+
+    // There's only something to do for us if we have at least a single delete or a single update to perform.
+    if ($updates || $deletes) {
+      // Sanitize the field's name.
+      $fieldName = $this->sanitizeDynamicFieldName($fieldName);
+
+      // We execute deletes first, this will return a valid dynamic column blob for the udpates.
+      if ($deletes) {
+        $placeholder = "COLUMN_DELETE({$fieldName}, {$deletes})";
+      }
+      // If we have no deletions, use the field's name to get the valid dynamic column blob for the additions.
+      else {
+        $placeholder = $fieldName;
+      }
+
+      if ($updates) {
+        $placeholder = "COLUMN_ADD({$placeholder}, {$updates})";
+      }
+
+      $this->addField($fieldName, $placeholder);
+    }
+
+    return $this;
+  }
+
+  /**
+   * Decrement a field.
+   *
+   * @param string $fieldName
+   *   The field's name to decrement.
    * @param float|integer $substract [optional]
    *   The amount to substract, defaults to <code>1</code>.
    * @return this
    */
-  public function decrement($name, $substract = 1) {
-    return $this->addField($name, "i", $substract, "({$this->sanitizeFieldName($name)} - ?)");
+  public function decrement($fieldName, $substract = 1) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert(is_numeric($substract), "The value to substract must be numeric.");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    $fieldName = $this->sanitizeFieldName($fieldName);
+    return $this->addField($fieldName, "({$fieldName} - ?)", "d", $substract);
   }
 
   /**
-   * Increment a column.
+   * Increment a field.
    *
-   * @param string $name
-   *   The column's name to increment.
+   * @param string $fieldName
+   *   The field's name to increment.
    * @param float|integer $add [optional]
    *   The amount to add, defaults to <code>1</code>.
    * @return this
    */
-  public function increment($name, $add = 1) {
-    return $this->addField($name, "i", $add, "({$this->sanitizeFieldName($name)} + ?)");
+  public function increment($fieldName, $add = 1) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert(is_numeric($add), "The value to add must be numeric.");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    $fieldName = $this->sanitizeFieldName($fieldName);
+    return $this->addField($fieldName, "({$fieldName} + ?)", "d", $add);
   }
 
   /**
@@ -142,6 +264,13 @@ final class Update extends AbstractQuery {
    *   The number of affected rows.
    */
   public function execute() {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert(!empty($this->table), "You must set the table name in order to execute an INSERT query.");
+    // Note that the set clause is optional, one might want to insert only default values.
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
     $stmt = $this->connection->prepare($this);
     // @codingStandardsIgnoreStart
     $this->values && $stmt->bind_param($this->types, ...$this->values);
@@ -166,23 +295,29 @@ final class Update extends AbstractQuery {
    *   An aliad for the table for referencing, defaults to <code>NULL</code> and no alias will be assigned.
    * @return this
    */
-  protected function table($name, $alias = null) {
-    $this->tableName = $name;
-    $alias && ($this->tableAlias = " AS `{$alias}`");
+  public function table($name, $alias = null) {
+    $this->table = $this->getTable($name, $alias);
     return $this;
   }
 
   /**
+   * Add where condition to update query.
    *
-   * @param type $fieldName
-   * @param type $value
-   * @param type $operator
-   * @param type $conjunction
-   * @return \MovLib\Core\Database\Query\Update
+   * @param string $fieldName
+   *   The field's name to evaluate.
+   * @param mixed $value
+   *   The value the field should have.
+   * @param string $operator [optional]
+   *   The operator that should be used to compare the field's value against the given value. If no operator is passed
+   *   (<code>NULL</code> default) <code>"AND"</code> is used if the value is atomic and <code>"IN"</code> is used if
+   *   the value is an array.
+   * @param string $conjunction [optional]
+   *   The conjunction that should be used for this condition, defaults to <code>"AND"</code>.
+   * @return this
    */
   public function where($fieldName, $value, $operator = null, $conjunction = "AND") {
     if (!$this->conditions) {
-      $this->conditions = new Condition();
+      $this->conditions = new Condition($this->types, $this->values);
     }
     $this->conditions->condition($fieldName, $value, $operator, $conjunction);
     return $this;

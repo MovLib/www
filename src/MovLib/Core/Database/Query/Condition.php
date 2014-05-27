@@ -26,7 +26,7 @@ namespace MovLib\Core\Database\Query;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Condition extends AbstractQuery {
+final class Condition extends AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -53,24 +53,39 @@ final class Condition extends AbstractQuery {
   protected $conditions;
 
   /**
-   * String containing the types of the values for auto-sanitization by the prepared statement.
-   *
-   * @var string
+   * {@inheritdoc}
    */
-  protected $types;
+  public $types;
 
   /**
-   * Numeric array containing the values for the fields.
-   *
-   * @var array
+   * {@inheritdoc}
    */
-  protected $values;
+  public $values;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
+  /**
+   * Instantiate new conditions composition object.
+   *
+   * @param string $types
+   *   The variable used to collect the types of the values for the placeholders.
+   * @param array $values
+   *   The variable used to collect the values for the placeholders.
+   */
+  public function __construct(&$types, &$values) {
+    $this->types  =& $types;
+    $this->values =& $values;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function __toString() {
+    if ($this->conditions) {
+      return $this->conditions;
+    }
     return "";
   }
 
@@ -78,23 +93,32 @@ final class Condition extends AbstractQuery {
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
-  protected function buildCondition($fieldName, $operator, $conjunction, $clause) {
-
-  }
-
-  public function condition($fieldName, $value, $operator = null, $conjunction = "AND") {
+  /**
+   * Add condition.
+   *
+   * @param string $fieldName
+   *   The name of the field.
+   * @param mixed $value
+   *   The value of the field.
+   * @param string $operator
+   *   The operator to use.
+   * @param string $conjunction
+   *   The conjunction to use.
+   * @return this
+   */
+  public function condition($fieldName, $value, $operator, $conjunction) {
     $placeholder = null;
     if (is_array($value)) {
       !$operator && ($operator = "IN");
       foreach ($value as $v) {
         $placeholder && ($placeholder .= ", ");
-        $placeholder .= $this->setValue($v);
+        $placeholder .= $this->getPlaceholder($v);
       }
       $placeholder = "({$placeholder})";
     }
     else {
       !$operator && ($operator = "=");
-      $placeholder .= $this->setValue($value);
+      $placeholder .= $this->getPlaceholder($value);
     }
     $this->conditions .= $this->conditions ? " {$conjunction} " : " WHERE ";
     $this->conditions .= "{$this->sanitizeFieldName($fieldName)} {$operator} {$placeholder}";
@@ -102,14 +126,10 @@ final class Condition extends AbstractQuery {
   }
 
   /**
-   * Add custom where condition to query.
-   *
-   * <b>NOTE</b><br>
-   * This will overwrite any previously set conditions. You have to take care that you use the correct aliases, escape
-   * field names and insert propert placeholders.
+   * Add custom condition to query.
    *
    * @param string $snippet
-   *   The where condition without the <code>"WHERE "</code> prefix.
+   *   The custom condition.
    * @param string $types
    *   The types of the values.
    * @param array $values
@@ -117,10 +137,16 @@ final class Condition extends AbstractQuery {
    * @return this
    */
   public function customCondition($snippet, $types, array $values) {
-    // We have to empty any previously set conditions.
-    $this->conditions = " WHERE {$snippet}";
-    $this->types      = $types;
-    $this->values     = $values;
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert(empty($this->conditions), "You can only use one of both, custom condition or conditions set via methods.");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    $this->conditions = $snippet;
+    $this->types     .= $types;
+    $this->values     = array_merge((array) $this->values, $values);
+
     return $this;
   }
 

@@ -88,8 +88,7 @@ abstract class AbstractBase {
    */
   protected function sanitizeFieldName($name) {
     if (strpos($name, ".") !== false) {
-      // Field names may be surrounded by an expression and we must make sure that we don't escape those.
-      $name = preg_replace("/^([^\w]*)([\w]+)\.([\w]+)(.*)$/", "$1`$2`.`$3`$4", $name);
+      $name = str_replace(".", "`.`", $name);
     }
     return "`{$name}`";
   }

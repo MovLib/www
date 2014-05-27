@@ -57,7 +57,7 @@ final class Insert extends AbstractQuery {
    *
    * @var string
    */
-  protected $tableName;
+  protected $table;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -68,13 +68,13 @@ final class Insert extends AbstractQuery {
    *
    * @param \MovLib\Core\Database\Connection $connection
    *   Active database connection.
-   * @param string $tableName [optional]
+   * @param string $table [optional]
    *   The name of the table to insert into, defaults to <code>NULL</code> in which case you'll have to call
    *   {@see Insert::into()}.
    */
-  public function __construct(Connection $connection, $tableName = null) {
+  public function __construct(\MovLib\Core\Database\Connection $connection, $table = null) {
     $this->connection = $connection;
-    $this->tableName  = $tableName;
+    $this->table      = $table;
   }
 
   /**
@@ -82,7 +82,7 @@ final class Insert extends AbstractQuery {
    */
   public function __toString() {
     // We use the MariaDB (MySQL) specific set syntax for insert statements because it's easier to build and debug.
-    return "INSERT INTO `{$this->tableName}`{$this->setClause}";
+    return "INSERT INTO `{$this->table}`{$this->setClause}";
   }
 
 
@@ -92,12 +92,12 @@ final class Insert extends AbstractQuery {
   /**
    * Set the table to insert into.
    *
-   * @param string $tableName
+   * @param string $table
    *   The table's name to insert into.
    * @return this
    */
-  public function into($tableName) {
-    $this->tableName = $tableName;
+  public function into($table) {
+    $this->table = $table;
     return $this;
   }
 
@@ -115,21 +115,7 @@ final class Insert extends AbstractQuery {
 
     // We assume a dynamic column if the value is an array.
     if (is_array($value)) {
-      $fieldName = $this->sanitizeDynamicFieldName($fieldName);
-
-      foreach ($value as $key => $dynValue) {
-        if (empty($dynValue)) {
-          continue;
-        }
-
-        $placeholder && ($placeholder .= self::$fieldSeparator);
-        $placeholder .= "{$this->getPlaceholder($key)}{$this::$fieldSeparator}{$this->getPlaceholder($dynValue)}";
-      }
-
-      // We insert an empty string if we have no keys to insert. This allows us to call COLUMN_ADD() and COLUMN_DELETE()
-      // at any point later on because an empty string is considered valid in terms of dynamic columns. Sadly BLOB
-      // columns cannot have a default value.
-      $placeholder = $placeholder ? "COLUMN_CREATE({$placeholder})" : "''";
+      $placeholder = $this->dynamicColumnCreate($fieldName, $value);
     }
     // Otherwise we have an atomic value and can include it directly.
     else {
@@ -138,7 +124,7 @@ final class Insert extends AbstractQuery {
     }
 
     // Put the set clause together after compilation.
-    $this->setClause .= $this->setClause ? self::$fieldSeparator : " SET ";
+    $this->setClause .= $this->setClause ? ", " : " SET ";
     $this->setClause .= "{$fieldName} = {$placeholder}";
 
     return $this;
@@ -154,7 +140,7 @@ final class Insert extends AbstractQuery {
   public function execute() {
     // @devStart
     // @codeCoverageIgnoreStart
-    assert(!empty($this->tableName), "You must set the table name in order to execute an INSERT query.");
+    assert(!empty($this->table), "You must set the table name in order to execute an INSERT query.");
     // Note that the set clause is optional, one might want to insert only default values.
     // @codeCoverageIgnoreEnd
     // @devEnd
