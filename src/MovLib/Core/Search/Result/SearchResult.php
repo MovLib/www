@@ -47,11 +47,32 @@ final class SearchResult {
   public $id;
 
   /**
+   * The document's index.
+   *
+   * @var string
+   */
+  public $index;
+
+  /**
    * The document's type.
    *
    * @var string
    */
   public $type;
+
+  /**
+   * The document's available suggestions.
+   *
+   * @var array
+   */
+  public $suggestions;
+
+  /**
+   * The documen's additional data returned for suggestions (payload).
+   *
+   * @var array
+   */
+  public $suggestionData;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -67,12 +88,14 @@ final class SearchResult {
     // @devStart
     // @codeCoverageIgnoreStart
     assert(!empty($document["_id"]), "The _id field of the document must be present, this seems like a malformed ElasticSearch document");
+    assert(!empty($document["_index"]), "The _index field of the document must be present, this seems like a malformed ElasticSearch document");
     assert(!empty($document["_type"]), "The _type field of the document must be present, this seems like a malformed ElasticSearch document");
     assert(!empty($document["_source"]), "The _source field of the document must be present, this seems like a malformed ElasticSearch document");
     // @codeCoverageIgnoreEnd
     // @devEnd
 
     $this->id       = (integer) $document["_id"];
+    $this->index    = $document["_index"];
     $this->type     = $document["_type"];
     $this->contents = (object) $document["_source"];
 

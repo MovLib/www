@@ -85,7 +85,7 @@ final class Search {
     if (isset($searchResult["hits"]["total"]) && $searchResult["hits"]["total"] > 0) {
       foreach ($searchResult["hits"]["hits"] as $document) {
         $doc = new SearchResult($document);
-        $result[$doc->type][$doc->id] = $doc;
+        $result[$doc->index][$doc->type][$doc->id] = $doc;
       }
     }
 
