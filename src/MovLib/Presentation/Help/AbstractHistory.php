@@ -17,6 +17,9 @@
  */
 namespace MovLib\Presentation\Help;
 
+use \MovLib\Data\History\HistorySet;
+use \MovLib\Partial\DateTime;
+
 /**
  * Shows the history of an article.
  *
@@ -28,6 +31,7 @@ namespace MovLib\Presentation\Help;
  */
 abstract class AbstractHistory extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Partial\PaginationTrait;
   use \MovLib\Presentation\Help\HelpTrait;
 
 
@@ -41,11 +45,18 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractPresenter {
    */
   protected $entity;
 
+  /**
+   * The history set containing the entity's revisions to present.
+   *
+   * @var \MovLib\Data\History\HistorySet
+   */
+  protected $historySet;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
-    /**
+  /**
    * {@inheritdoc}
    * @param \MovLib\Data\Help\Article $article
    *   The help article to present.
@@ -53,19 +64,67 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractPresenter {
   public function initArticle(\MovLib\Data\Help\Article $article) {
     $this->entity = $article;
     $pageTitle    = $this->intl->t("History of {0}", [ $this->entity->title ]);
-    return $this
-      ->initPage($pageTitle, $pageTitle, $this->intl->t("History"))
-      ->sidebarInitToolbox($this->entity)
-      ->initLanguageLinks("{$this->entity->routeKey}/history", $this->entity->id)
-      ->breadcrumb->addCrumbs($this->getArticleBreadCrumbs());
-    ;
+    $this->initPage($pageTitle, $pageTitle, $this->intl->t("History"));
+    $this->sidebarInitToolbox($this->entity);
+    $this->initLanguageLinks("{$this->entity->routeKey}/history", $this->entity->id);
+    $this->breadcrumb->addCrumbs($this->getArticleBreadCrumbs());
+    $this->historySet = new HistorySet("Article", $this->entity->id, "\\MovLib\\Data\\Help");
+    $this->paginationInit($this->historySet->getTotalCount());
+    $this->historySet->load($this->paginationOffset, $this->paginationLimit, $this->container);
+
+    return $this;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    return $this->checkBackLater("history of article");
+    $listItems = null;
+
+    if ($this->paginationTotalResults > 1) {
+      $button = "";
+    }
+
+    $created  = $this->entity->created->formatInteger();
+    $current  = $this->entity->changed->formatInteger();
+    $dateTime = new DateTime($this->intl, $this, $this->session->userTimezone);
+
+    /* @var $revision \MovLib\Data\Revision\AbstractRevisionEntity */
+    foreach ($this->historySet as $revision) {
+      $createdInfo = null;
+      if ($revision->id === $created) {
+        $createdInfo = "<br><span class='small'>{$this->intl->t("Created")}</span>";
+      }
+      if ($revision->id === $current) {
+        $diffToCurrentVersion = $this->intl->t("Current revision.");
+      }
+      else {
+        $diffToCurrentVersion =
+          "<a href='{$this->intl->r("/job/{0}/history/{1}", [ $this->entity->id, $revision->id ])}'>" .
+            $this->intl->t("Compare to current revision.") .
+          "</a>"
+        ;
+      }
+      $listItems .=
+        "<li><div class='hover-item r'>" .
+          $this->img($revision->user->imageGetStyle("s1"), [ "class" => "s s1", "property" => "image" ], false) .
+          "<div class='s s5'>" .
+            "<h2 class='para'><a href='{$revision->user->route}'>{$revision->user->name}</a></h2>" .
+            "<small>{$diffToCurrentVersion}</small>" .
+          "</div>" .
+          "<p class='s s4 tar'>{$dateTime->formatRelative($revision->created)}{$createdInfo}</p>" .
+        "</div></li>"
+      ;
+    }
+
+    return "<form action='{$this->request->uri}'><ol class='hover-list no-list'>{$listItems}</ol></form>";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getNoItemsContent() {
+    return $this->calloutWarning($this->intl->t("We couldn’t find any revisions."), $this->intl->t("No Revisions"));
   }
 
 }

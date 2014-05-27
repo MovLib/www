@@ -190,10 +190,10 @@ SQL
    * @return \MovLib\Data\History\ArticleRevision {@inheritdoc}
    */
   protected function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
-    $revision->texts[$this->intl->languageCode]  = $this->text;
-    $revision->titles[$this->intl->languageCode] = $this->title;
-    $revision->category                          = $this->category;
-    $revision->subCategory                       = $this->subCategory;
+    $this->setRevisionArrayValue($revision->texts, $this->text);
+    $this->setRevisionArrayValue($revision->titles, $this->title);
+    $revision->category    = $this->category;
+    $revision->subCategory = $this->subCategory;
 
     // Don't forget that we might be a new help article and that we might have been created via a different system locale
     // than the default one, in which case the user was required to enter a default name. Of course we have to export that
@@ -211,19 +211,11 @@ SQL
    * @return this {@inheritdoc}
    */
   protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
-    if (isset($revision->texts[$this->intl->languageCode])) {
-      $this->text = $revision->texts[$this->intl->languageCode];
-    }
-
+    $this->text  = $this->getRevisionArrayValue($revision->texts);
+    $this->title = $this->getRevisionArrayValue($revision->titles, $revision->titles[$this->intl->languageCode]);
     $revision->category    && $this->category = $revision->category;
     $revision->subCategory && $this->category = $revision->subCategory;
 
-    if (empty($revision->titles[$this->intl->languageCode])) {
-      $this->title = $revision->titles[$this->intl->defaultLanguageCode];
-    }
-    else {
-      $this->title = $revision->titles[$this->intl->languageCode];
-    }
     return $this;
   }
 
@@ -246,6 +238,7 @@ SQL
       $this->routeKey = "{$this->category->routeKey}/{0}";
     }
     $this->route    = $this->intl->r($this->routeKey, $this->routeArgs);
+    return parent::init();
   }
 
 }

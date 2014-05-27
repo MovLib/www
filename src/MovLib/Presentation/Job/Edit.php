@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Job;
 
 use \MovLib\Data\Job\Job;
-use \MovLib\Data\Revision\RevisionCommitConflictException;
+use \MovLib\Data\Revision\CommitConflictException;
 use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputWikipedia;
@@ -58,7 +58,7 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
     $form = new Form($this->container);
     (new Sex())->addInputTextElements($this->container, $form, "title", $this->entity->titles, [ "required" => true ]);
     return $form
-      ->addHiddenElement("revision_id", $this->entity->changed)
+      ->addHiddenElement("revision_id", $this->entity->changed->formatInteger())
       ->addElement(new TextareaHTMLExtended($this->container, "description", $this->intl->t("Description"), $this->entity->description))
       ->addElement(new InputWikipedia($this->container, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia))
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
@@ -84,7 +84,7 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
         $this->intl->t("Seems like you haven’t changed anything, please only submit forms with changes.")
       );
     }
-    catch (RevisionCommitConflictException $e) {
+    catch (CommitConflictException $e) {
       $this->alertError(
         $this->intl->t("Conflicting Changes"),
         "<p>{$this->intl->t(

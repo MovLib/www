@@ -336,10 +336,10 @@ SQL
    * @return \MovLib\Data\Job\JobRevision {@inheritdoc}
    */
   public function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
-    $revision->descriptions[$this->intl->languageCode] = $this->description;
-    $revision->titlesSex0[$this->intl->languageCode]   = $this->titles[Sex::UNKNOWN];
-    $revision->titlesSex1[$this->intl->languageCode]   = $this->titles[Sex::MALE];
-    $revision->titlesSex2[$this->intl->languageCode]   = $this->titles[Sex::FEMALE];
+    $this->setRevisionArrayValue($revision->descriptions, $this->description);
+    $this->setRevisionArrayValue($revision->titlesSex0, $this->titles[Sex::UNKNOWN]);
+    $this->setRevisionArrayValue($revision->titlesSex1, $this->titles[Sex::MALE]);
+    $this->setRevisionArrayValue($revision->titlesSex2, $this->titles[Sex::FEMALE]);
 
     // Don't forget that we might be a new job and that we might have been created via a different system locale than
     // the default one, in which case the user was required to enter a default title. Of course we have to export that
@@ -363,15 +363,8 @@ SQL
    * @return this {@inheritdoc}
    */
   protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
-    if (isset($revision->descriptions[$this->intl->languageCode])) {
-      $this->description = $revision->descriptions[$this->intl->languageCode];
-    }
-     if (empty($revision->titlesSex0[$this->intl->languageCode])) {
-      $this->title = $revision->titlesSex0[$this->intl->defaultLanguageCode];
-    }
-    else {
-      $this->title = $revision->titlesSex0[$this->intl->languageCode];
-    }
+    $this->description = $this->getRevisionArrayValue($revision->descriptions);
+    $this->title       = $this->getRevisionArrayValue($revision->titlesSex0, $revision->titles[$this->intl->languageCode]);
     return $this;
   }
 

@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Help;
 
-use \MovLib\Data\Revision\RevisionCommitConflictException;
+use \MovLib\Data\Revision\CommitConflictException;
 use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputText;
@@ -61,7 +61,7 @@ abstract class AbstractEdit extends \MovLib\Presentation\AbstractEditPresenter {
    */
   public function getContent() {
     return (new Form($this->container))
-      ->addHiddenElement("revision_id", $this->entity->changed)
+      ->addHiddenElement("revision_id", $this->entity->changed->formatInteger())
       ->addElement(new InputText($this->container, "title", $this->intl->t("Title"), $this->entity->title, [
         "placeholder" => $this->intl->t("Enter the help article’s title."),
         "autofocus"   => true,
@@ -95,7 +95,7 @@ abstract class AbstractEdit extends \MovLib\Presentation\AbstractEditPresenter {
         $this->intl->t("Seems like you haven’t changed anything, please only submit forms with changes.")
       );
     }
-    catch (RevisionCommitConflictException $e) {
+    catch (CommitConflictException $e) {
       $this->alertError(
         $this->intl->t("Conflicting Changes"),
         "<p>{$this->intl->t(

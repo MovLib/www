@@ -366,6 +366,11 @@ SQL
     return parent::init();
   }
 
+  /**
+   * Update the award's first and last event year.
+   *
+   * @return this
+   */
   private function updateAwardYears() {
     $stmt = $this->getMySQLi()->prepare(<<<SQL
 UPDATE `awards` SET

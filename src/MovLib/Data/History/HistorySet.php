@@ -74,10 +74,15 @@ final class HistorySet implements \ArrayAccess, \Countable, \Iterator {
    *   The entity's short class name to load revisions for.
    * @param integer $entityId
    *   The entity's unique identifier to load revisions for.
+   * @param string $entityNamespace [optional]
+   *   The entity's namespace if it differs from <var>"\\MovLib\\Data\\{$entityName}"</var>.
    */
-  public function __construct($entityName, $entityId) {
+  public function __construct($entityName, $entityId, $entityNamespace = null) {
+    if (!isset($entityNamespace)) {
+      $entityNamespace = "\\MovLib\\Data\\{$entityName}";
+    }
     $this->entityId                = $entityId;
-    $this->revisionEntityClassName = "\\MovLib\\Data\\{$entityName}\\{$entityName}Revision";
+    $this->revisionEntityClassName = "{$entityNamespace}\\{$entityName}Revision";
     $this->revisionEntityTypeId    = constant("{$this->revisionEntityClassName}::REVISION_ENTITY_ID");
   }
 
