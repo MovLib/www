@@ -63,6 +63,7 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    */
   public function getContent() {
     $form = (new Form($this->container))
+      ->addHiddenElement("revision_id", $this->entity->changed->formatInteger())
       ->addElement(new InputText($this->container, "name", $this->intl->t("Name"), $this->entity->name, [
         "placeholder" => $this->intl->t("Enter the persons’s name."),
         "autofocus"   => true,

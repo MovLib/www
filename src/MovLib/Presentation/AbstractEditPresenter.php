@@ -93,7 +93,7 @@ abstract class AbstractEditPresenter extends \MovLib\Presentation\AbstractPresen
    * @return this
    */
   public function valid() {
-    $this->entity->commit();
+    $this->entity->commit($this->session->userId, $this->request->dateTime, $this->entity->changed->formatInteger());
     $this->alertSuccess($this->intl->t("Successfully updated"));
     throw new SeeOtherException($this->entity->route);
   }

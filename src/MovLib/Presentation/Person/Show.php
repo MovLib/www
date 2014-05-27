@@ -128,10 +128,9 @@ class Show extends \MovLib\Presentation\Person\AbstractPersonPresenter {
     $this->entity->biography && $this->sectionAdd($this->intl->t("Biography"), $this->entity->biography);
 
     if (($aliases = $this->entity->getAliases())) {
-      $c            = count($aliases);
       $aliasContent = null;
-      for ($i = 0; $i < $c; ++$i) {
-        $aliasContent .= "<li class='mb s s3' property='additionalName'>{$aliases[$i]}</li>";
+      foreach ($aliases as $alias) {
+        $aliasContent .= "<li class='mb s s3' property='additionalName'>{$alias}</li>";
       }
       $this->sectionAdd($this->intl->t("Also Known As"), "<ol class='no-list r'>{$aliasContent}</ol>");
     }

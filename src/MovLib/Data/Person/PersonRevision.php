@@ -322,8 +322,21 @@ SQL
   /**
    * {@inheritdoc}
    */
-  protected function addCommitFields(\MovLib\Core\Database\Query\Update $update, \MovLib\Core\Revision\RevisionInterface $oldRevision) {
-    return $update;
+  protected function addCommitFields(\MovLib\Core\Database\Query\Update $update, \MovLib\Core\Revision\RevisionInterface $oldRevision, $languageCode) {
+    return $update
+      ->setDynamicConditional("biographies", $languageCode, $this->biographies, $oldRevision->biographies)
+      ->setConditional("birthdate", $this->birthDate, $oldRevision->birthDate)
+      ->setConditional("birthplace_id", $this->birthPlaceId, $oldRevision->birthPlaceId)
+      ->setConditional("born_name", $this->bornName, $oldRevision->bornName)
+      ->setConditional("cause_of_death_id", $this->causeOfDeathId, $oldRevision->causeOfDeathId)
+      ->setConditional("deathdate", $this->deathDate, $oldRevision->deathDate)
+      ->setConditional("deathplace_id", $this->deathPlaceId, $oldRevision->deathPlaceId)
+      ->setDynamicConditional("image_descriptions", $languageCode, $this->imageDescriptions, $oldRevision->imageDescriptions)
+      ->setConditional("links", serialize($this->links), serialize($oldRevision->links))
+      ->setConditional("name", $this->name, $oldRevision->name)
+      ->setConditional("sex", $this->sex, $oldRevision->sex)
+      ->setDynamicConditional("wikipedia", $languageCode, $this->wikipediaLinks, $oldRevision->wikipediaLinks)
+    ;
   }
 
   /**
@@ -344,6 +357,36 @@ SQL
       ->set("sex", $this->sex)
       ->set("wikipedia", $this->wikipediaLinks)
     ;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function preCommit(\MovLib\Core\Database\Connection $connection, \MovLib\Core\Revision\RevisionInterface $oldRevision, $languageCode) {
+    $oldAliases = (array) $oldRevision->aliases;
+    $inserts    = null;
+
+    foreach ((array) $this->aliases as $id => $alias) {
+      $old = array_key_exists($id, $oldAliases);
+      if ((!$old && ($id = "NULL")) || $oldAliases[$id] != $alias) {
+        $inserts && ($inserts .= ", ");
+        $inserts .= "({$id}, {$this->entityId}, '{$connection->real_escape_string($alias)}')";
+      }
+      if ($old) {
+        unset($oldAliases[$id]);
+      }
+    }
+
+    if (!empty($oldAliases)) {
+      $deleteIds = implode(", ", array_keys($oldAliases));
+      $connection->real_query("DELETE FROM `persons_aliases` WHERE `id` IN ({$deleteIds})");
+    }
+
+    if ($inserts) {
+      $connection->real_query("INSERT INTO `persons_aliases` (`id`, `person_id`, `alias`) VALUES {$inserts} ON DUPLICATE KEY UPDATE `alias` = VALUES(`alias`)");
+    }
+
+    return parent::preCommit($connection, $oldRevision, $languageCode);
   }
 
 }
