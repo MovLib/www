@@ -283,11 +283,6 @@ abstract class AbstractRevision implements RevisionInterface {
     mkdir($dir, FileSystem::MODE_DIR, true);
     file_put_contents("{$dir}/{$oldRevision->id}.ser", $oldSerialized);
 
-    // @todo FIXME -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // Still problems with array properties during serialization. The offset "de" is created with a value of NULL but
-    // while it's needed for the update statement, it bloats or maybe even breaks (edge cases) unserialize() calls.
-    $this->wikipediaLinks = null;
-
     // Allow the concrete revision to perform work before we create the diff patch and start the commit.
     $this->preCommit($connection, $oldRevision, $languageCode);
 
@@ -295,7 +290,7 @@ abstract class AbstractRevision implements RevisionInterface {
     $diffPatch = (new Diff())->getPatch(serialize($this), $oldSerialized);
 
     // Prepare the update query and set the default properties.
-    $update = (new Update($connection, $this->tableName))->set("changed", $this->created);
+    $update = (new Update($connection, $this->tableName))->set("changed", $this->created)->where("id", $this->entityId);
 
     // Let the concrete revision add its custom fields.
     $this->addCommitFields($update, $oldRevision, $languageCode);

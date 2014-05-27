@@ -67,19 +67,6 @@ final class Condition extends AbstractBase {
 
 
   /**
-   * Instantiate new conditions composition object.
-   *
-   * @param string $types
-   *   The variable used to collect the types of the values for the placeholders.
-   * @param array $values
-   *   The variable used to collect the values for the placeholders.
-   */
-  public function __construct(&$types, &$values) {
-    $this->types  =& $types;
-    $this->values =& $values;
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function __toString() {

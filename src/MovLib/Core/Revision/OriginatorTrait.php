@@ -295,7 +295,7 @@ trait OriginatorTrait {
       $key = $this->intl->languageCode;
     }
 
-    if ($value == false && $value != "0" && array_key_exists($key, $revisionProperty)) {
+    if ($value == false && $value != "0" && array_key_exists($key, (array) $revisionProperty)) {
       unset($revisionProperty[$key]);
     }
     else {

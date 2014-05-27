@@ -138,6 +138,12 @@ final class SeedDatabase extends \MovLib\Console\Command\AbstractCommand {
     }
     $this->writeVerbose("Successfully imported individual SQL scripts!", self::MESSAGE_TYPE_INFO);
 
+    $revisionBackupsURI = "dr://var/backups/revisions";
+    if (is_dir($revisionBackupsURI)) {
+      $this->writeVerbose("Purging revision backups...", self::MESSAGE_TYPE_COMMENT);
+      $this->fs->registerFileForDeletion("dr://var/backups/revisions", true);
+    }
+
     return 0;
   }
 

@@ -294,7 +294,7 @@ final class Update extends AbstractQuery {
    */
   public function where($fieldName, $value, $operator = null, $conjunction = "AND") {
     if (!$this->conditions) {
-      $this->conditions = new Condition($this->types, $this->values);
+      $this->conditions = new Condition();
     }
     $this->conditions->condition($fieldName, $value, $operator, $conjunction);
     return $this;
@@ -317,6 +317,12 @@ final class Update extends AbstractQuery {
     // Note that the set clause is optional, one might want to insert only default values.
     // @codeCoverageIgnoreEnd
     // @devEnd
+
+    // Add the conditions types and values to our types and values if we have any.
+    if ($this->conditions) {
+      $this->types .= $this->conditions->types;
+      $this->values = array_merge((array) $this->values, (array) $this->conditions->values);
+    }
 
     $stmt = $this->connection->prepare($this);
     // @codingStandardsIgnoreStart
