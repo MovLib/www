@@ -176,8 +176,8 @@ SQL
    * @return \MovLib\Data\Genre\GenreRevision {@inheritdoc}
    */
   protected function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
-    $revision->descriptions[$this->intl->languageCode] = $this->description;
-    $revision->names[$this->intl->languageCode]        = $this->name;
+    $this->setRevisionArrayValue($revision->descriptions, $this->description);
+    $this->setRevisionArrayValue($revision->names, $this->name);
 
     // Don't forget that we might be a new genre and that we might have been created via a different system locale than
     // the default one, in which case the user was required to enter a default name. Of course we have to export that
@@ -195,15 +195,8 @@ SQL
    * @return this {@inheritdoc}
    */
   protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
-    if (isset($revision->descriptions[$this->intl->languageCode])) {
-      $this->description = $revision->descriptions[$this->intl->languageCode];
-    }
-    if (empty($revision->names[$this->intl->languageCode])) {
-      $this->name = $revision->names[$this->intl->defaultLanguageCode];
-    }
-    else {
-      $this->name = $revision->names[$this->intl->languageCode];
-    }
+    $this->description = $this->getRevisionArrayValue($revision->descriptions);
+    $this->name        = $this->getRevisionArrayValue($revision->names, $revision->names[$this->intl->languageCode]);
     return $this;
   }
 

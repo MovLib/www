@@ -176,10 +176,13 @@ abstract class AbstractRevision implements RevisionInterface {
    *   The update statement to add fields.
    * @param \MovLib\Core\Revision\RevisionInterface $oldRevision
    *   The old revision that is currently stored in the database for comparison.
+   * @param string $languageCode
+   *   The ISO 639-1 language code with which the user edited the originator. This is important for comparison of new
+   *   and old values.
    * @return \MovLib\Core\Database\Query\Update
    *   The final update statement ready for execution.
    */
-  abstract protected function addCommitFields(\MovLib\Core\Database\Query\Update $update, \MovLib\Core\Revision\RevisionInterface $oldRevision);
+  abstract protected function addCommitFields(\MovLib\Core\Database\Query\Update $update, \MovLib\Core\Revision\RevisionInterface $oldRevision, $languageCode);
 
   /**
    * Add fields to the create's insert statement.
@@ -200,11 +203,14 @@ abstract class AbstractRevision implements RevisionInterface {
    *
    * @param \MovLib\Core\Database\Connection $connection
    *   Active database transaction connection.
-   * @param , \MovLib\Core\Revision\RevisionInterface $oldRevision
+   * @param \MovLib\Core\Revision\RevisionInterface $oldRevision
    *   The old revision that is currently stored in the database for comparison.
+   * @param string $languageCode
+   *   The ISO 639-1 language code with which the user edited the originator. This is important for comparison of new
+   *   and old values.
    * @return this
    */
-  protected function preCommit(\MovLib\Core\Database\Connection $connection, RevisionInterface $oldRevision) {
+  protected function preCommit(\MovLib\Core\Database\Connection $connection, RevisionInterface $oldRevision, $languageCode) {
     return $this;
   }
 
@@ -213,11 +219,14 @@ abstract class AbstractRevision implements RevisionInterface {
    *
    * @param \MovLib\Core\Database\Connection $connection
    *   Active database transaction connection.
-   * @param , \MovLib\Core\Revision\RevisionInterface $oldRevision
+   * @param \MovLib\Core\Revision\RevisionInterface $oldRevision
    *   The old revision that was stored in the database for comparison.
+   * @param string $languageCode
+   *   The ISO 639-1 language code with which the user edited the originator. This is important for comparison of new
+   *   and old values.
    * @return this
    */
-  protected function postCommit(\MovLib\Core\Database\Connection $connection, RevisionInterface $oldRevision) {
+  protected function postCommit(\MovLib\Core\Database\Connection $connection, RevisionInterface $oldRevision, $languageCode) {
     return $this;
   }
 
@@ -250,7 +259,7 @@ abstract class AbstractRevision implements RevisionInterface {
   /**
    * {@inheritdoc}
    */
-  final public function commit(\MovLib\Core\Database\Connection $connection, $oldRevisionId) {
+  final public function commit(\MovLib\Core\Database\Connection $connection, $oldRevisionId, $languageCode) {
     // Load the currently stored revision from the database, this will be the new old revision for the commit.
     $oldRevision = new static($this->entityId);
 
@@ -274,19 +283,25 @@ abstract class AbstractRevision implements RevisionInterface {
     mkdir($dir, FileSystem::MODE_DIR, true);
     file_put_contents("{$dir}/{$oldRevision->id}.ser", $oldSerialized);
 
-    // @todo FIXME
+    // @todo FIXME -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // Still problems with array properties during serialization. The offset "de" is created with a value of NULL but
     // while it's needed for the update statement, it bloats or maybe even breaks (edge cases) unserialize() calls.
     $this->wikipediaLinks = null;
+
+    // Allow the concrete revision to perform work before we create the diff patch and start the commit.
+    $this->preCommit($connection, $oldRevision, $languageCode);
 
     // Now we can create the actual diff patch that we'll store in the revisions row of the old revision.
     $diffPatch = (new Diff())->getPatch(serialize($this), $oldSerialized);
 
     // Prepare the update query and set the default properties.
-    $update = (new Update($connection))->set("changed", $this->changed)->set("wikipedia", $this->wikipediaLinks);
+    $update = (new Update($connection, $this->tableName))->set("changed", $this->created);
 
     // Let the concrete revision add its custom fields.
-    $this->addCommitFields($update, $oldRevision);
+    $this->addCommitFields($update, $oldRevision, $languageCode);
+
+    // We don't trust the concrete revision to return the update statement.
+    $update->execute();
 
     // Now we can insert the previously generated diff patch into the data field of the old revision.
     (new Update($connection, "revisions"))
@@ -299,7 +314,7 @@ abstract class AbstractRevision implements RevisionInterface {
 
     // Insert revision, update the user and allow the concrete revision to perform work after the actual revision was
     // commited.
-    $this->insertRevisionUpdateUser($connection)->postCommit($connection);
+    $this->insertRevisionUpdateUser($connection)->postCommit($connection, $oldRevision, $languageCode);
 
     return $this;
   }

@@ -71,16 +71,21 @@ final class Update extends AbstractQuery {
   }
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Methods
+  // ------------------------------------------------------------------------------------------------------------------- Field Methods
 
 
   /**
+   * Used internally to add fields in a unified fashion.
    *
-   * @param type $name
-   * @param type $placeholder
-   * @param type $type
-   * @param type $value
-   * @return \MovLib\Core\Database\Query\Update
+   * @param string $name
+   *   The field's name.
+   * @param string $placeholder
+   *   The field values's placeholder.
+   * @param string $type [optional]
+   *   The field value's type.
+   * @param mixed $value [optional]
+   *   The field's value.
+   * @return this
    */
   protected function addField($name, $placeholder, $type = null, $value = null) {
     $this->setClause .= $this->setClause ? ", " : " SET ";
@@ -168,19 +173,26 @@ final class Update extends AbstractQuery {
    *   The name of the dynamic field to set.
    * @param array|string $keys
    *   Either an array or a string, if an array is given all keys will be checked.
-   * @param array $values
+   * @param array|null $values
    *   The new values for the dynamic column.
-   * @param array $oldValues
+   * @param array|null $oldValues
    *   The old values of the dynamic column.
    * @return this
    */
-  public function setDynamicConditional($fieldName, $keys, array $values, array $oldValues) {
-    $updates = null;
-    $deletes = null;
+  public function setDynamicConditional($fieldName, $keys, $values, $oldValues) {
+    // Nothing to do if we have no valus at all to compare.
+    if (!$values && !$oldValues) {
+      return $this;
+    }
 
+    // Prepare variables to collect the two actions that we can perform.
+    $updates = $deletes = null;
+
+    // Go through all keys and compare the values.
     foreach ((array) $keys as $key) {
-      $new = array_key_exists($key, $values);
-      $old = array_key_exists($key, $oldValues);
+      // array_key_exists() tells us if the key exists, even if it's value is NULL (in contrast to isset()).
+      $new = array_key_exists($key, (array) $values);
+      $old = array_key_exists($key, (array) $oldValues);
 
       // We want an update if we have a new value that differs from the old value, or if we have a new value but no old
       // value. In any case, the new value must evaluate to true for an update.
@@ -219,24 +231,9 @@ final class Update extends AbstractQuery {
     return $this;
   }
 
-  /**
-   * Decrement a field.
-   *
-   * @param string $fieldName
-   *   The field's name to decrement.
-   * @param float|integer $substract [optional]
-   *   The amount to substract, defaults to <code>1</code>.
-   * @return this
-   */
-  public function decrement($fieldName, $substract = 1) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert(is_numeric($substract), "The value to substract must be numeric.");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    $fieldName = $this->sanitizeFieldName($fieldName);
-    return $this->addField($fieldName, "({$fieldName} - ?)", "d", $substract);
-  }
+
+  // ------------------------------------------------------------------------------------------------------------------- Convenience Methods
+
 
   /**
    * Increment a field.
@@ -258,6 +255,56 @@ final class Update extends AbstractQuery {
   }
 
   /**
+   * Decrement a field.
+   *
+   * @param string $fieldName
+   *   The field's name to decrement.
+   * @param float|integer $substract [optional]
+   *   The amount to substract, defaults to <code>1</code>.
+   * @return this
+   */
+  public function decrement($fieldName, $substract = 1) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert(is_numeric($substract), "The value to substract must be numeric.");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    $fieldName = $this->sanitizeFieldName($fieldName);
+    return $this->addField($fieldName, "({$fieldName} - ?)", "d", $substract);
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Condition Methods
+
+
+  /**
+   * Add where condition to update query.
+   *
+   * @param string $fieldName
+   *   The field's name to evaluate.
+   * @param mixed $value
+   *   The value the field should have.
+   * @param string $operator [optional]
+   *   The operator that should be used to compare the field's value against the given value. If no operator is passed
+   *   (<code>NULL</code> default) <code>"AND"</code> is used if the value is atomic and <code>"IN"</code> is used if
+   *   the value is an array.
+   * @param string $conjunction [optional]
+   *   The conjunction that should be used for this condition, defaults to <code>"AND"</code>.
+   * @return this
+   */
+  public function where($fieldName, $value, $operator = null, $conjunction = "AND") {
+    if (!$this->conditions) {
+      $this->conditions = new Condition($this->types, $this->values);
+    }
+    $this->conditions->condition($fieldName, $value, $operator, $conjunction);
+    return $this;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
    * Execute the update against the database.
    *
    * @return integer
@@ -266,7 +313,7 @@ final class Update extends AbstractQuery {
   public function execute() {
     // @devStart
     // @codeCoverageIgnoreStart
-    assert(!empty($this->table), "You must set the table name in order to execute an INSERT query.");
+    assert(!empty($this->table), "You must set the table name in order to execute an UPDATE query.");
     // Note that the set clause is optional, one might want to insert only default values.
     // @codeCoverageIgnoreEnd
     // @devEnd
@@ -297,29 +344,6 @@ final class Update extends AbstractQuery {
    */
   public function table($name, $alias = null) {
     $this->table = $this->getTable($name, $alias);
-    return $this;
-  }
-
-  /**
-   * Add where condition to update query.
-   *
-   * @param string $fieldName
-   *   The field's name to evaluate.
-   * @param mixed $value
-   *   The value the field should have.
-   * @param string $operator [optional]
-   *   The operator that should be used to compare the field's value against the given value. If no operator is passed
-   *   (<code>NULL</code> default) <code>"AND"</code> is used if the value is atomic and <code>"IN"</code> is used if
-   *   the value is an array.
-   * @param string $conjunction [optional]
-   *   The conjunction that should be used for this condition, defaults to <code>"AND"</code>.
-   * @return this
-   */
-  public function where($fieldName, $value, $operator = null, $conjunction = "AND") {
-    if (!$this->conditions) {
-      $this->conditions = new Condition($this->types, $this->values);
-    }
-    $this->conditions->condition($fieldName, $value, $operator, $conjunction);
     return $this;
   }
 

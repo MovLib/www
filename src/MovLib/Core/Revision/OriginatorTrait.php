@@ -145,7 +145,7 @@ trait OriginatorTrait {
       $connection->real_query("START TRANSACTION WITH CONSISTENT SNAPSHOT, READ WRITE");
       $revision = $this->createRevision($userId, $changed);
       $this->preCommit($connection, $revision, $oldRevisionId);
-      $revision->commit($connection, $oldRevisionId);
+      $revision->commit($connection, $oldRevisionId, $this->intl->languageCode);
       $this->postCommit($connection, $revision, $oldRevisionId);
       $connection->commit();
     }
@@ -222,6 +222,31 @@ trait OriginatorTrait {
   }
 
   /**
+   * Get atomic value from revision array property.
+   *
+   * @param array|null $revisionProperty
+   *   The array property of the revision, can be <code>NULL</code>.
+   * @param mixed $defaultValue [optional]
+   *   An atomic default value that should be used in case the revision array property doesn't contain <var>$key</var>.
+   *   Defaults to <code>NULL</code>.
+   * @param mixed $key [optional]
+   *   The key that is used to decide if the value has to be set or not, defaults to <code>NULL</code> and the current
+   *   ISO 639-1 language code is used.
+   * @return this
+   */
+  final protected function getRevisionArrayValue($revisionProperty, $defaultValue = null, $key = null) {
+    if (!$key) {
+      $key = $this->intl->languageCode;
+    }
+
+    if (isset($revisionProperty[$key])) {
+      return $revisionProperty[$key];
+    }
+
+    return $defaultValue;
+  }
+
+  /**
    * @see \MovLib\Data\Revision\EntityInterface::setRevision()
    */
   final public function setRevision(RevisionInterface $revision) {
@@ -249,6 +274,35 @@ trait OriginatorTrait {
 
     // Let the concrete class export more properties.
     return $this->doSetRevision($revision);
+  }
+
+  /**
+   * Set atomic value to revision array property.
+   *
+   * @param array|null $revisionProperty
+   *   The array property of the revision, can be <code>NULL</code>.
+   * @param mixed $value
+   *   The originator's atomic value that should be set. <var>$key</var> will be removed from the revision's array
+   *   property if <var>$key</var> exists within the revision's array property and this value evaluates to
+   *   <code>FALSE</code> (note that <code>"0"</code> is treated as <code>TRUE</code>).
+   * @param mixed $key [optional]
+   *   The key that is used to decide if the value has to be set or not, defaults to <code>NULL</code> and the current
+   *   ISO 639-1 language code is used.
+   * @return this
+   */
+  final protected function setRevisionArrayValue(&$revisionProperty, $value, $key = null) {
+    if (!$key) {
+      $key = $this->intl->languageCode;
+    }
+
+    if ($value == false && $value != "0" && array_key_exists($key, $revisionProperty)) {
+      unset($revisionProperty[$key]);
+    }
+    else {
+      $revisionProperty[$key] = $value;
+    }
+
+    return $this;
   }
 
 }

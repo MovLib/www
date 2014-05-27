@@ -70,13 +70,16 @@ interface RevisionInterface {
    * @param integer $oldRevisionId
    *   The identifier of the old revision for validation, this will be compared to the identifier of the revision that
    *   is loaded from the persistent storage.
+   * @param string $languageCode
+   *   The ISO 639-1 language code with which the user edited the originator. This is important for comparison of new
+   *   and old values.
    * @return this
    * @throws \mysqli_sql_exception
    * @throws \BadMethodCallException
    *   If nothing is to be commited a BadMethodCallException is thrown because it should be checked long before calling
    *   this method that there is actually something to commit.
    */
-  public function commit(\MovLib\Core\Database\Connection $connection, $oldRevisionId);
+  public function commit(\MovLib\Core\Database\Connection $connection, $oldRevisionId, $languageCode);
 
   /**
    * Initial commit of a new entity.
