@@ -119,23 +119,11 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
       return;
     }
 
-    // If we have one, ask Elastic.
+    // If we have one, ask our Search object.
+    $search = new \MovLib\Core\Search\Search();
     $elasticClient = new ElasticClient();
     try {
-      $result = $elasticClient->search([
-        "index" => $this->indexes,
-        "type"  => $this->types,
-        "body"  => [
-          "query" => [
-            "fuzzy_like_this" => [
-  //            "fields"          => [ "titles", "name", "suggest.input" ],
-              "like_text"       => $this->query,
-              "max_query_terms" => 25,
-              "min_similarity"  => 0.5,
-            ],
-          ],
-        ],
-      ]);
+      $result = $search->fuzzySearch($this->query, $this->indexes);
     }
     // Missing index or type, assume the user typed invalid parameters.
     catch (\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
@@ -144,8 +132,8 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
       return;
     }
 
-    // Elastic didn't return anything, we're done.
-    if (!isset($result["hits"]) || !isset($result["hits"]["total"]) || $result["hits"]["total"] === 0) {
+    // No results returned, we are done.
+    if ($result->numberOfResults === 0) {
       $this->alertError(
         $this->intl->t("Your search {query} did not match any document.", [ "query" => $this->placeholder($this->query) ]),
         $this->intl->t("No Results")
@@ -158,22 +146,23 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
     $personIds = null;
     $releaseIds = null;
     $seriesIds = null;
-    foreach ($result["hits"]["hits"] as $delta => $entity) {
-      switch ($entity["_type"]) {
+    /* @var $entity \MovLib\Core\Search\Result\SearchResult */
+    foreach ($result->results as $delta => $entity) {
+      switch ($entity->type) {
         case "movie":
-          $movieIds[] = $entity["_id"];
+          $movieIds[] = $entity->id;
           break;
 
         case "person":
-          $personIds[] = $entity["_id"];
+          $personIds[] = $entity->id;
           break;
 
         case "release":
-          $releaseIds[] = $entity["_id"];
+          $releaseIds[] = $entity->id;
           break;
 
         case "series":
-          $seriesIds[] = $entity["_id"];
+          $seriesIds[] = $entity->id;
           break;
       }
     }
