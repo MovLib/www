@@ -182,86 +182,104 @@ final class PersonRevision extends \MovLib\Core\Revision\AbstractRevision {
   public function __construct($id = null) {
     if ($id) {
       $connection = Database::getConnection();
-      $result = $connection->query(<<<SQL
+      // Fetch basic person data.
+      $stmt = $connection->prepare(<<<SQL
 SELECT
-  `persons`.`id` AS `personId`,
-  `revisions`.`user_id` AS `userId`,
-  `persons`.`changed` + 0 AS `revisionId`,
+  `persons`.`id`,
+  `revisions`.`user_id`,
+  `persons`.`changed` + 0,
   `persons`.`deleted`,
-  COLUMN_JSON(`persons`.`dyn_biographies`) AS `biographies`,
-  COLUMN_JSON(`persons`.`dyn_wikipedia`) AS `wikipediaLinks`,
-  COLUMN_JSON(`persons`.`dyn_image_descriptions`) AS `imageDescriptions`,
+  COLUMN_JSON(`persons`.`dyn_biographies`),
+  COLUMN_JSON(`persons`.`dyn_wikipedia`),
+  COLUMN_JSON(`persons`.`dyn_image_descriptions`),
   `persons`.`name`,
   `persons`.`sex`,
-  `persons`.`birthdate` AS `birthDate`,
-  `persons`.`birthplace_id` AS `birthPlaceId`,
-  `persons`.`born_name` AS `bornName`,
-  `persons`.`cause_of_death_id` AS `causeOfDeathId`,
-  `persons`.`deathdate` AS `deathDate`,
-  `persons`.`deathplace_id` AS `deathPlaceId`,
-  `persons`.`links`,
-  `persons_awards`.`id` AS `personsAwardsId`,
-  `persons_awards`.`award_id` AS `personsAwardsAwardId`,
-  `persons_awards`.`award_category_id` AS `personsAwardsAwardCategoryId`,
-  `persons_awards`.`event_id` AS `personsAwardsEventId`,
-  `persons_awards`.`won` AS `personsAwardsWon`,
-  `persons_aliases`.`id` AS `personsAliasesId`,
-  `persons_aliases`.`alias` AS `personsAliasesAlias`
+  `persons`.`birthdate`,
+  `persons`.`birthplace_id`,
+  `persons`.`born_name`,
+  `persons`.`cause_of_death_id`,
+  `persons`.`deathdate`,
+  `persons`.`deathplace_id`,
+  `persons`.`links`
 FROM `persons`
   INNER JOIN `revisions`
     ON `revisions`.`entity_id` = `persons`.`id`
     AND `revisions`.`id` = `persons`.`changed`
-    AND `revisions`.`revision_entity_id` = 4
-  LEFT JOIN `persons_awards`
-    ON `persons_awards`.`person_id` = `persons`.`id`
-  LEFT JOIN `persons_aliases`
-    ON `persons_aliases`.`person_id` = `persons`.`id`
-WHERE `persons`.`id` = {$id}
+    AND `revisions`.`revision_entity_id` = ?
+WHERE `persons`.`id` = ?
+LIMIT 1
+SQL
+      );
+      $stmt->bind_param("id", $this->revisionEntityId, $id);
+      $stmt->bind_result(
+        $this->entityId,
+        $this->userId,
+        $this->id,
+        $this->deleted,
+        $this->biographies,
+        $this->wikipediaLinks,
+        $this->imageDescriptions,
+        $this->name,
+        $this->sex,
+        $this->birthDate,
+        $this->birthPlaceId,
+        $this->bornName,
+        $this->causeOfDeathId,
+        $this->deathDate,
+        $this->deathPlaceId,
+        $this->links
+      );
+      $stmt->execute();
+      $found = $stmt->fetch();
+      $stmt->close();
+
+      if ($found === false) {
+        throw new NotFoundException("Couldn't find person for {$id}.");
+      }
+
+      // Convert types, since bind_result() can't do that for us.
+      $this->sex = (boolean) $this->sex;
+      $this->birthDate && ($this->birthDate = new Date($this->birthDate));
+      $this->deathDate && ($this->deathDate = new Date($this->deathDate));
+
+      // Fetch the person's personal award wins and nominations.
+      // Awards for movies and series will be revisioned in those revision entities.
+      $result = $connection->query(<<<SQL
+SELECT
+  `id`,
+  `award_id` AS `awardId`,
+  `award_category_id` AS `awardCategoryId`,
+  `event_id` AS `eventId`,
+  `won`
+FROM `persons_awards`
+WHERE `person_id` = {$id}
 SQL
       );
 
-      // @todo FIXME
-      //   Endlessly inefficient because we might be transfering the person tens to hundreds of times over the socket
-      //   with all data attached (think only of the many COLUMN_JSON() calls on the maybe huge biography and image
-      //   description). The person might have won an unbelievable amount of awards, plus aliases...
-      //   Good to know that our self-proclaimed database guru did this... o_O
       while ($row = $result->fetch_object()) {
-        if (empty($this->id)) {
-          $this->entityId          = $row->personId;
-          $this->userId            = $row->userId;
-          $this->id                = $row->revisionId;
-          $this->deleted           = $row->deleted;
-          $this->biographies       = $row->biographies;
-          $this->wikipediaLinks    = $row->wikipediaLinks;
-          $this->imageDescriptions = $row->imageDescriptions;
-          $this->name              = $row->name;
-          $this->sex               = (integer) $row->sex;
-          $this->birthDate         = isset($row->birthDate) ? new Date($row->birthDate) : null;
-          $this->birthPlaceId      = (integer) $row->birthPlaceId;
-          $this->bornName          = $row->bornName;
-          $this->causeOfDeathId    = (integer) $row->causeOfDeathId;
-          $this->deathDate         = isset($row->deathDate) ? new Date($row->deathDate) : null;
-          $this->deathPlaceId      = (integer) $row->deathPlaceId;
-          $this->links             = $row->links;
-        }
-
-        if (isset($row->personsAwardsId)) {
-          $this->awards[(integer) $row->personsAwardsId] = [
-            "award_id"          => (integer) $row->personsAwardsAwardId,
-            "award_category_id" => (integer) $row->personsAwardsAwardCategoryId,
-            "event_id"          => (integer) $row->personsAwardsEventId,
-            "won"               => (boolean) $row->personsAwardsWon,
-          ];
-        }
-
-        if (isset($row->personsAliasesId)) {
-          $this->aliases[(integer) $row->personsAliasesId] = $row->personsAliasesAlias;
-        }
+        $this->awards[$row->id] = [
+          "award_id"          => $row->awardId,
+          "award_category_id" => $row->awardCategorId,
+          "event_id"          => $row->eventId,
+          "won"               => (boolean) $row->won,
+        ];
       }
+      $result->free();
 
-      if (empty($this->id)) {
-        throw new NotFoundException("Couldn't find person for {$id}.");
+      // Fetch the person's aliases.
+      $result = $connection->query(<<<SQL
+SELECT
+  `id`,
+  `alias`
+FROM `persons_aliases`
+WHERE `person_id` = {$id}
+SQL
+      );
+
+      while ($row = $result->fetch_object()) {
+        $this->aliases[$row->id] = $row->alias;
       }
+      $result->free();
     }
     if ($this->id) {
       $this->biographies       === (array) $this->biographies       || $this->biographies = json_decode($this->biographies, true);
@@ -304,14 +322,14 @@ SQL
   /**
    * {@inheritdoc}
    */
-  protected function addCommitFields(\MovLib\Core\Database\Update $update, \MovLib\Core\Revision\RevisionInterface $oldRevision) {
+  protected function addCommitFields(\MovLib\Core\Database\Query\Update $update, \MovLib\Core\Revision\RevisionInterface $oldRevision) {
     return $update;
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function addCreateFields(\MovLib\Core\Database\Insert $insert) {
+  protected function addCreateFields(\MovLib\Core\Database\Query\Insert $insert) {
     return $insert
       ->set("biographies", $this->biographies)
       ->set("birthdate", $this->birthDate)
@@ -324,6 +342,7 @@ SQL
       ->set("links", serialize($this->links))
       ->set("name", $this->name)
       ->set("sex", $this->sex)
+      ->set("wikipedia", $this->wikipediaLinks)
     ;
   }
 
