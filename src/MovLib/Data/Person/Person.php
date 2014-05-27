@@ -203,6 +203,8 @@ final class Person extends \MovLib\Data\Image\AbstractImageEntity implements \Mo
       $stmt = $this->getMySQLi()->prepare(<<<SQL
 SELECT
   `id`,
+  `created`,
+  `changed`,
   `deleted`,
   `name`,
   COLUMN_GET(`dyn_biographies`, '{$this->intl->languageCode}' AS CHAR),
@@ -231,6 +233,8 @@ SQL
       $stmt->execute();
       $stmt->bind_result(
         $this->id,
+        $this->created,
+        $this->changed,
         $this->deleted,
         $this->name,
         $this->biography,
@@ -388,15 +392,20 @@ SQL
    *   Numeric array containing the person's aliases.
    */
   public function getAliases() {
+    $aliases = null;
     $result = $this->getMySQLi()->query(<<<SQL
 SELECT
+  `id`,
   `alias`
 FROM `persons_aliases`
 WHERE `person_id` = {$this->id}
 ORDER BY `alias`{$this->collations[$this->intl->languageCode]} ASC
 SQL
     );
-    return array_column($result->fetch_all(), 0);
+    while ($row = $result->fetch_object()) {
+      $aliases[$row->id] = $row->alias;
+    }
+    return $aliases;
   }
 
   /**
@@ -587,19 +596,20 @@ SQL
    */
   protected function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
     // @todo: set aliases and awards once they can be retrieved correctly.
-//    $revision->aliases = $this->getAliases();
+    $revision->aliases = $this->getAliases();
 //    $revision->awards  = $this->getAwards();
-    $revision->biographies[$this->intl->languageCode] = $this->biography;
+    $this->setRevisionArrayValue($revision->biographies, $this->biography);
     $revision->birthDate = $this->birthDate;
     $revision->birthPlaceId = $this->birthPlaceId;
     $revision->bornName = $this->bornName;
     $revision->causeOfDeathId = null;
     $revision->deathDate = $this->deathDate;
     $revision->deathPlaceId = $this->deathPlaceId;
-    $revision->imageDescriptions[$this->intl->languageCode] = $this->imageDescription;
+    $this->setRevisionArrayValue($revision->imageDescriptions, $this->imageDescription);
     $revision->links = $this->links;
     $revision->name = $this->name;
     $revision->sex = $this->sex;
+    $this->setRevisionArrayValue($revision->wikipediaLinks, $this->wikipedia);
     return $revision;
   }
 

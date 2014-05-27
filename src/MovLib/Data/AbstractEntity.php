@@ -165,8 +165,9 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
   public function init() {
     // @devStart
     // @codeCoverageIgnoreStart
-    assert(!empty($this->singularKey), "You must set the \$singularKey property in your class " . static::class);
-    assert(!empty($this->pluralKey), "You must set the \$pluralKey property in your class " . static::class);
+    assert(!empty($this->singularKey), "You must set the \$singularKey property");
+    assert(!empty($this->pluralKey), "You must set the \$pluralKey property");
+    assert(!empty($this->created) && !empty($this->changed), "You have to load created and changed date");
     // @codeCoverageIgnoreEnd
     // @devEnd
     $this->routeKey   || ($this->routeKey   = "/{$this->singularKey}/{0}");
