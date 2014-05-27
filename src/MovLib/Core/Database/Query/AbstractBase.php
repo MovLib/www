@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Core\Database;
+namespace MovLib\Core\Database\Query;
 
 /**
- * @todo Description of AbstractQuery
+ * Defines the base class for all database query classes.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,7 +26,7 @@ namespace MovLib\Core\Database;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractQuery {
+abstract class AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -38,48 +38,12 @@ abstract class AbstractQuery {
    *
    * @var string
    */
-  const name = "AbstractQuery";
+  const name = "AbstractBase";
   // @codingStandardsIgnoreEnd
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   * Active database connection.
-   *
-   * @var \MovLib\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
-   * The separator character for fields as defined in the SQL standard.
-   *
-   * @internal We include a space to ease readability (debugging).
-   * @var string
-   */
-  protected static $fieldSeparator = ", ";
-
-  /**
-   * The query's table alias to operate on.
-   *
-   * @var string
-   */
-  protected $tableAlias;
-
-  /**
-   * The query's table name to operate on.
-   *
-   * @var string
-   */
-  protected $tableName;
-
-  /**
-   * Characters used to separate a table name or alias from a field name as defined in the SQL standard.
-   *
-   * @var string
-   */
-  protected static $tableFieldSeparator = ".";
 
   /**
    * String containing the types of the values for auto-sanitization by the prepared statement.
@@ -100,10 +64,10 @@ abstract class AbstractQuery {
 
 
   /**
-   * Get the SQL statement.
+   * Get the query.
    *
    * @return string
-   *   The SQL statement.
+   *   The query.
    */
   abstract public function __toString();
 
@@ -123,8 +87,9 @@ abstract class AbstractQuery {
    *   The sanitized field name.
    */
   protected function sanitizeFieldName($name) {
-    if (strpos($name, self::$tableFieldSeparator) !== false) {
-      $name = str_replace(self::$tableFieldSeparator, "`{$this::$tableFieldSeparator}`", $name);
+    if (strpos($name, ".") !== false) {
+      // Field names may be surrounded by an expression and we must make sure that we don't escape those.
+      $name = preg_replace("/^([^\w]*)([\w]+)\.([\w]+)(.*)$/", "$1`$2`.`$3`$4", $name);
     }
     return "`{$name}`";
   }
@@ -141,11 +106,11 @@ abstract class AbstractQuery {
    *   The sanitized dynamic field name prefixed with <code>"dyn_"</code>.
    */
   protected function sanitizeDynamicFieldName($name) {
-    if (strpos($name, self::$tableFieldSeparator) === false) {
+    if (strpos($name, ".") === false) {
       $name = "dyn_{$name}";
     }
     else {
-      $name = str_replace(self::$tableFieldSeparator, "`{$this::$tableFieldSeparator}`dyn_", $name);
+      $name = str_replace(".", "`.`dyn_", $name);
     }
     return "`{$name}`";
   }
@@ -184,50 +149,27 @@ abstract class AbstractQuery {
     switch (gettype($value)) {
       case "boolean":
         $this->types .= "i";
-        $this->values[] = $value;
         break;
 
       case "double":
       case "integer":
         $this->types .= "d";
-        $this->values[] = $value;
         break;
 
       case "object":
         // This object might have a custom placeholder attached.
         isset($value::$sqlPlaceholder) && ($placeholder = $value::$sqlPlaceholder);
-        // Directly cast to string in case this is an object, we want it to fail as early as possible and we don't want
-        // to store a reference to the complete object.
+        // Directly cast object's to string, we want it to fail as early as possible and we don't want to store a
+        // reference to the complete object.
         $value = (string) $value;
         // no break
 
       default:
         $this->types .= "s";
-        // Directly cast to string in case this is an object, we want it to fail as early as possible and we don't want
-        // to store a reference to the complete object.
-        $this->values[] = $value;
-        break;
     }
+    $this->values[] = $value;
 
     return $placeholder;
-  }
-
-  /**
-   * Set the table to operate on.
-   *
-   * @internal
-   *   This method is kept protected to allow concrete classes to redefine the name of it for their public interface.
-   *   The purpose of this is to create more human readable public interfaces and make development even more fluent.
-   * @param string $name
-   *   The table's name.
-   * @param string $alias [optional]
-   *   An aliad for the table for referencing, defaults to <code>NULL</code> and no alias will be assigned.
-   * @return this
-   */
-  protected function table($name, $alias = null) {
-    $this->tableName = $name;
-    $alias && ($this->tableAlias = " AS `{$alias}`");
-    return $this;
   }
 
 }

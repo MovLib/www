@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Core\Database;
+namespace MovLib\Core\Database\Query;
 
 /**
  * Defines the database update object.
@@ -46,11 +46,32 @@ final class Update extends AbstractQuery {
 
 
   /**
+   * The update's conditions instantiated on demand.
+   *
+   * @var \MovLib\Core\Database\Condition|null
+   */
+  protected $conditions;
+
+  /**
    * String containing all fields (including their placeholders) to set.
    *
    * @var string
    */
   protected $setClause;
+
+  /**
+   * The query's table alias to operate on.
+   *
+   * @var string
+   */
+  protected $tableAlias;
+
+  /**
+   * The query's table name to operate on.
+   *
+   * @var string
+   */
+  protected $tableName;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -134,10 +155,37 @@ final class Update extends AbstractQuery {
   }
 
   /**
-   * {@inheritdoc}
+   * Set the table to operate on.
+   *
+   * @internal
+   *   This method is kept protected to allow concrete classes to redefine the name of it for their public interface.
+   *   The purpose of this is to create more human readable public interfaces and make development even more fluent.
+   * @param string $name
+   *   The table's name.
+   * @param string $alias [optional]
+   *   An aliad for the table for referencing, defaults to <code>NULL</code> and no alias will be assigned.
+   * @return this
    */
-  public function table($name, $alias = null) {
-    return parent::table($name, $alias);
+  protected function table($name, $alias = null) {
+    $this->tableName = $name;
+    $alias && ($this->tableAlias = " AS `{$alias}`");
+    return $this;
+  }
+
+  /**
+   *
+   * @param type $fieldName
+   * @param type $value
+   * @param type $operator
+   * @param type $conjunction
+   * @return \MovLib\Core\Database\Query\Update
+   */
+  public function where($fieldName, $value, $operator = null, $conjunction = "AND") {
+    if (!$this->conditions) {
+      $this->conditions = new Condition();
+    }
+    $this->conditions->condition($fieldName, $value, $operator, $conjunction);
+    return $this;
   }
 
 }

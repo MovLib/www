@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Genre;
 
 use \MovLib\Data\Genre\Genre;
-use \MovLib\Data\Revision\RevisionSet;
+use \MovLib\Data\History\HistorySet;
 use \MovLib\Partial\DateTime;
 
 /**
@@ -46,11 +46,11 @@ final class History extends \MovLib\Presentation\AbstractPresenter {
   protected $entity;
 
   /**
-   * The revision set containing the entity's revisions to present.
+   * The history set containing the entity's revisions to present.
    *
-   * @var \MovLib\Data\Revision\RevisionSet
+   * @var \MovLib\Data\History\HistorySet
    */
-  protected $revisionSet;
+  protected $historySet;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -65,9 +65,9 @@ final class History extends \MovLib\Presentation\AbstractPresenter {
     $this->sidebarInitToolbox($this->entity);
     $this->breadcrumb->addCrumb($this->intl->r("/genres"), $this->intl->t("Genres"));
     $this->breadcrumb->addCrumb($this->intl->r("/genre/{0}", $this->entity->id), $this->entity->name);
-    $this->revisionSet = new RevisionSet("Genre", $this->entity->id);
-    $this->paginationInit($this->revisionSet->getTotalCount());
-    $this->revisionSet->load($this->paginationOffset, $this->paginationLimit, $this->container);
+    $this->historySet = new HistorySet("Genre", $this->entity->id);
+    $this->paginationInit($this->historySet->getTotalCount());
+    $this->historySet->load($this->paginationOffset, $this->paginationLimit, $this->container);
   }
 
   /**
@@ -85,7 +85,7 @@ final class History extends \MovLib\Presentation\AbstractPresenter {
     $dateTime = new DateTime($this->intl, $this, $this->session->userTimezone);
 
     /* @var $revision \MovLib\Data\Revision\AbstractRevisionEntity */
-    foreach ($this->revisionSet as $revision) {
+    foreach ($this->historySet as $revision) {
       $createdInfo = null;
       if ($revision->id === $created) {
         $createdInfo = "<br><span class='small'>{$this->intl->t("Created")}</span>";

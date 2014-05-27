@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Core\Database;
+namespace MovLib\Core\Database\Query;
 
 /**
  * Defines the database condition object.
@@ -26,7 +26,7 @@ namespace MovLib\Core\Database;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Condition {
+final class Condition extends AbstractQuery {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -65,6 +65,14 @@ class Condition {
    * @var array
    */
   protected $values;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  public function __toString() {
+    return "";
+  }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods

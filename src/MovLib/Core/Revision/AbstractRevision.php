@@ -18,8 +18,8 @@
 namespace MovLib\Core\Revision;
 
 use \MovLib\Component\DateTime;
-use \MovLib\Core\Database\Insert;
-use \MovLib\Core\Database\Update;
+use \MovLib\Core\Database\Query\Insert;
+use \MovLib\Core\Database\Query\Update;
 use \MovLib\Core\Diff\Diff;
 use \MovLib\Core\FileSystem;
 
@@ -172,24 +172,24 @@ abstract class AbstractRevision implements RevisionInterface {
   /**
    * Add fields to the commit's update statement.
    *
-   * @param \MovLib\Core\Database\Update $update
+   * @param \MovLib\Core\Database\Query\Update $update
    *   The update statement to add fields.
    * @param \MovLib\Core\Revision\RevisionInterface $oldRevision
    *   The old revision that is currently stored in the database for comparison.
-   * @return \MovLib\Core\Database\Update
+   * @return \MovLib\Core\Database\Query\Update
    *   The final update statement ready for execution.
    */
-  abstract protected function addCommitFields(\MovLib\Core\Database\Update $update, \MovLib\Core\Revision\RevisionInterface $oldRevision);
+  abstract protected function addCommitFields(\MovLib\Core\Database\Query\Update $update, \MovLib\Core\Revision\RevisionInterface $oldRevision);
 
   /**
    * Add fields to the create's insert statement.
    *
-   * @param \MovLib\Core\Database\Insert $insert
+   * @param \MovLib\Core\Database\Query\Insert $insert
    *   The insert statement to add fields.
-   * @return \MovLib\Core\Database\Insert
+   * @return \MovLib\Core\Database\Query\Insert
    *   The final insert statement ready for execution.
    */
-  abstract protected function addCreateFields(\MovLib\Core\Database\Insert $insert);
+  abstract protected function addCreateFields(\MovLib\Core\Database\Query\Insert $insert);
 
 
   //-------------------------------------------------------------------------------------------------------------------- Hooks
@@ -270,9 +270,9 @@ abstract class AbstractRevision implements RevisionInterface {
     // tables within a single database that have the same name) and combined with the entity's uniqu identifier nothing
     // bad can happen. We don't want to create any subdirectories within the backup directories. A direct listing of
     // all available backups with `ls -l` is what we want.
-//    $dir = "dr://var/backups/revisions/{$this->tableName}/{$this->entityId}";
-//    mkdir($dir, FileSystem::MODE_DIR, true);
-//    file_put_contents("{$dir}/{$oldRevision->id}.ser", $oldSerialized);
+    $dir = "dr://var/backups/revisions/{$this->tableName}/{$this->entityId}";
+    mkdir($dir, FileSystem::MODE_DIR, true);
+    file_put_contents("{$dir}/{$oldRevision->id}.ser", $oldSerialized);
 
     // @todo FIXME
     // Still problems with array properties during serialization. The offset "de" is created with a value of NULL but
@@ -283,33 +283,23 @@ abstract class AbstractRevision implements RevisionInterface {
     $diffPatch = (new Diff())->getPatch(serialize($this), $oldSerialized);
 
     // Prepare the update query and set the default properties.
-//    $update = (new Update($connection))->set("changed", $this->changed)->set("wikipedia", $this->wikipediaLinks);
+    $update = (new Update($connection))->set("changed", $this->changed)->set("wikipedia", $this->wikipediaLinks);
 
     // Let the concrete revision add its custom fields.
-//    $this->addCommitFields($update, $oldRevision);
+    $this->addCommitFields($update, $oldRevision);
 
     // Now we can insert the previously generated diff patch into the data field of the old revision.
-//    (new Update($connection, "revisions"))
-//      ->set("data", $diffPatch)
-//      ->where("id", $oldRevision->id)
-//      ->where("entity_id", $this->entityId)
-//      ->where("revision_entity_id", $this->revisionEntityId)
-//      ->execute()
-//    ;
-    \Krumo::dump(
-      $this,
-      $oldRevision,
-      'c98i4:6192c2d4c56di:5c17d2c100',
-      $diffPatch,
-      'c98i4:6192c2d4c56di:5c17d2c100' === $diffPatch,
-      /* Let's give it a try */
-      unserialize((new Diff())->applyPatch(serialize($this), $diffPatch))
-    );
-    exit();
+    (new Update($connection, "revisions"))
+      ->set("data", $diffPatch)
+      ->where("id", $oldRevision->id)
+      ->where("entity_id", $this->entityId)
+      ->where("revision_entity_id", $this->revisionEntityId)
+      ->execute()
+    ;
 
     // Insert revision, update the user and allow the concrete revision to perform work after the actual revision was
     // commited.
-//    $this->insertRevisionUpdateUser($connection)->postCommit($connection);
+    $this->insertRevisionUpdateUser($connection)->postCommit($connection);
 
     return $this;
   }
@@ -361,10 +351,10 @@ abstract class AbstractRevision implements RevisionInterface {
     // We have to update the user's edit count.
     //
     // @todo This should be unified, maybe in the session? An event system would be nice for this.
-//    (new Update($connection, "users"))
-//      ->increment("edits")
-//      ->condition("id", $this->userId)
-//    ;
+    (new Update($connection, "users"))
+      ->increment("edits")
+      ->where("id", $this->userId)
+    ;
 
     return $this;
   }

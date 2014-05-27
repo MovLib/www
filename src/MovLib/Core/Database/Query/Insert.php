@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Core\Database;
+namespace MovLib\Core\Database\Query;
 
 /**
  * Defines the database insert object.
@@ -52,6 +52,13 @@ final class Insert extends AbstractQuery {
    */
   protected $setClause;
 
+  /**
+   * The name of the table to insert into.
+   *
+   * @var string
+   */
+  protected $tableName;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -74,7 +81,7 @@ final class Insert extends AbstractQuery {
    * {@inheritdoc}
    */
   public function __toString() {
-    // We use the MaraiDB (MySQL) specific set syntax for insert statements because it's easier to build and debug.
+    // We use the MariaDB (MySQL) specific set syntax for insert statements because it's easier to build and debug.
     return "INSERT INTO `{$this->tableName}`{$this->setClause}";
   }
 
@@ -85,7 +92,7 @@ final class Insert extends AbstractQuery {
   /**
    * Set the table to insert into.
    *
-   * @param string $name
+   * @param string $tableName
    *   The table's name to insert into.
    * @return this
    */
@@ -126,7 +133,7 @@ final class Insert extends AbstractQuery {
     }
     // Otherwise we have an atomic value and can include it directly.
     else {
-      $fieldName = $this->sanitizeFieldName($fieldName);
+      $fieldName   = $this->sanitizeFieldName($fieldName);
       $placeholder = $this->getPlaceholder($value);
     }
 
@@ -145,6 +152,13 @@ final class Insert extends AbstractQuery {
    * @throws \mysqli_sql_exception
    */
   public function execute() {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert(!empty($this->tableName), "You must set the table name in order to execute an INSERT query.");
+    // Note that the set clause is optional, one might want to insert only default values.
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
     $stmt = $this->connection->prepare($this);
     // @codingStandardsIgnoreStart
     $this->values && $stmt->bind_param($this->types, ...$this->values);

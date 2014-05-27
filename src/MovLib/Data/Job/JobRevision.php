@@ -192,7 +192,7 @@ SQL
   /**
    * {@inheritdoc}
    */
-  protected function addCommitFields(\MovLib\Core\Database\Update $update) {
+  protected function addCommitFields(\MovLib\Core\Database\Query\Update $update) {
     return $update
       ->table("jobs")
       ->dynamicColumn("descriptions", $this->descriptions)
@@ -205,7 +205,7 @@ SQL
   /**
    * {@inheritdoc}
    */
-  protected function addCreateFields(\MovLib\Core\Database\Insert $insert) {
+  protected function addCreateFields(\MovLib\Core\Database\Query\Insert $insert) {
     return $insert
       ->table("jobs")
       ->dynamicColumn("descriptions", $this->descriptions)

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Revision;
+namespace MovLib\Data\History;
 
 use \MovLib\Core\Database\Database;
 use \MovLib\Data\User\UserSet;
@@ -29,7 +29,7 @@ use \MovLib\Data\User\UserSet;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class RevisionSet implements \ArrayAccess, \Countable, \Iterator {
+final class HistorySet implements \ArrayAccess, \Countable, \Iterator {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

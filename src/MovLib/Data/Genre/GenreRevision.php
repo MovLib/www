@@ -166,7 +166,7 @@ SQL
   /**
    * {@inheritdoc}
    */
-  protected function addCommitFields(\MovLib\Core\Database\Update $update, \MovLib\Core\Revision\RevisionInterface $oldRevision) {
+  protected function addCommitFields(\MovLib\Core\Database\Query\Update $update, \MovLib\Core\Revision\RevisionInterface $oldRevision) {
     // @todo The update statement must include the possibility for auto-comparison of old and new values on dynamic
     //       column fields; or maybe for all fields and only update what's necessary? Might take more time to build the
     //       query but execute faster. The query cache doesn't seem of much help because if the values changed it won't
@@ -181,7 +181,7 @@ SQL
   /**
    * {@inheritdoc}
    */
-  protected function addCreateFields(\MovLib\Core\Database\Insert $insert) {
+  protected function addCreateFields(\MovLib\Core\Database\Query\Insert $insert) {
     return $insert
       ->set("descriptions", $this->descriptions)
       ->set("names", $this->names)
