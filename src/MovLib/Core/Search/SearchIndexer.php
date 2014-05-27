@@ -20,7 +20,7 @@ namespace MovLib\Core\Search;
 use \Elasticsearch\Client as ElasticClient;
 
 /**
- * Defines the Search class in charge of searching and indexing.
+ * Defines the Search Indexer class in charge of indexing.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -60,7 +60,7 @@ final class SearchIndexer {
 
 
   /**
-   * Instantiate new search manager.
+   * Instantiate new search indexer.
    *
    * You can leave all parameters empty to instantiate an empty search manager, but if you do so, no indexing will
    * be possible!
@@ -426,6 +426,9 @@ final class SearchIndexer {
     // Insert or update the element in the index.
     else {
       $definition["body"] = [];
+      // Add the id to the suggestion payload.
+      $this->addSuggestionData("id", $definition["id"]);
+      $this->addSuggestionData("type", $definition["type"]);
       // Build the request body with the analyzers.
       foreach ($this->data as $analyzer => $fields) {
         foreach ($fields as $fieldConfig) {
