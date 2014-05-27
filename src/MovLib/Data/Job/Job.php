@@ -17,9 +17,11 @@
  */
 namespace MovLib\Data\Job;
 
-use \MovLib\Core\Database\Database;
 use \MovLib\Data\Company\CompanySet;
 use \MovLib\Data\Person\PersonSet;
+use \MovLib\Core\Database\Database;
+use \MovLib\Core\Revision\OriginatorTrait;
+use \MovLib\Core\Search\RevisionTrait;
 use \MovLib\Exception\ClientException\NotFoundException;
 use \MovLib\Partial\Sex;
 
@@ -34,7 +36,10 @@ use \MovLib\Partial\Sex;
  * @since 0.0.1-dev
  */
 class Job extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\OriginatorInterface {
-  use \MovLib\Core\Revision\OriginatorTrait;
+  use OriginatorTrait, RevisionTrait {
+    RevisionTrait::postCommit insteadof OriginatorTrait;
+    RevisionTrait::postCreate insteadof OriginatorTrait;
+  }
 
 
   //-------------------------------------------------------------------------------------------------------------------- Constants
@@ -196,6 +201,17 @@ SQL
   public function init() {
     $this->titles[Sex::UNKNOWN] && $this->title = $this->titles[Sex::UNKNOWN];
     return parent::init();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function defineSearchIndex(\MovLib\Core\Search\SearchIndexer $search, \MovLib\Core\Revision\RevisionInterface $revision) {
+    return $search->indexSimpleSuggestion(array_merge(
+      $revision->titlesSex0,
+      $revision->titlesSex1,
+      $revision->titlesSex2
+    ));
   }
 
   /**

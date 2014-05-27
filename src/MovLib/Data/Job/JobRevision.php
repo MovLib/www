@@ -62,7 +62,7 @@ final class JobRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $descriptions;
+  public $descriptions = [];
 
   /**
    * {@inheritdoc}
@@ -74,26 +74,33 @@ final class JobRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $titlesSex0;
+  public $titlesSex0 = [];
 
   /**
    * Associative array containing all the job's localized male titles, keyed by language code.
    *
    * @var array
    */
-  public $titlesSex1;
+  public $titlesSex1 = [];
 
   /**
    * Associative array containing all the job's localized female titles, keyed by language code.
    *
    * @var array
    */
-  public $titlesSex2;
+  public $titlesSex2 = [];
 
   /**
    * {@inheritdoc}
    */
   protected $tableName = "jobs";
+
+  /**
+   * Associative array containing all the genre's localized wikipedia links, keyed by language code.
+   *
+   * @var array
+   */
+  public $wikipediaLinks = [];
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -157,6 +164,7 @@ SQL
       $this->titlesSex0   = json_decode($this->titlesSex0, true);
       $this->titlesSex1   = json_decode($this->titlesSex1, true);
       $this->titlesSex2   = json_decode($this->titlesSex2, true);
+      $this->wikipediaLinks === (array) $this->wikipediaLinks || ($this->wikipediaLinks = json_decode($this->wikipediaLinks, true));
       parent::__construct();
     }
   }
@@ -185,20 +193,17 @@ SQL
   /**
    * {@inheritdoc}
    */
-  protected function getCommitQuery(\MovLib\Core\Database\Connection $connection) {
-    return "";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function addCommitFields(\MovLib\Core\Database\Query\Update $update) {
+  protected function addCommitFields(\MovLib\Core\Database\Query\Update $update, \MovLib\Core\Revision\RevisionInterface $oldRevision) {
+    // @todo The update statement must include the possibility for auto-comparison of old and new values on dynamic
+    //       column fields; or maybe for all fields and only update what's necessary? Might take more time to build the
+    //       query but execute faster. The query cache doesn't seem of much help because if the values changed it won't
+    //       match against any previously executed query.
     return $update
-      ->table("jobs")
-      ->dynamicColumn("descriptions", $this->descriptions)
-      ->dynamicField("titles_sex0", $this->titlesSex0)
-      ->dynamicField("titles_sex1", $this->titlesSex1)
-      ->dynamicField("titles_sex2", $this->titlesSex2)
+      ->set("descriptions", $this->descriptions)
+      ->set("titles_sex0", $this->titlesSex0)
+      ->set("titles_sex1", $this->titlesSex1)
+      ->set("titles_sex2", $this->titlesSex2)
+      ->set("wikipedia", $this->wikipediaLinks)
     ;
   }
 
@@ -207,11 +212,11 @@ SQL
    */
   protected function addCreateFields(\MovLib\Core\Database\Query\Insert $insert) {
     return $insert
-      ->table("jobs")
-      ->dynamicColumn("descriptions", $this->descriptions)
-      ->dynamicField("titles_sex0", $this->titlesSex0)
-      ->dynamicField("titles_sex1", $this->titlesSex1)
-      ->dynamicField("titles_sex2", $this->titlesSex2)
+      ->set("descriptions", $this->descriptions)
+      ->set("titles_sex0", $this->titlesSex0)
+      ->set("titles_sex1", $this->titlesSex1)
+      ->set("titles_sex2", $this->titlesSex2)
+      ->set("wikipedia", $this->wikipediaLinks)
     ;
   }
 

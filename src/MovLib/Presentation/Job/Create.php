@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Job;
 
 use \MovLib\Data\Job\Job;
+use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputWikipedia;
 use \MovLib\Partial\FormElement\TextareaHTMLExtended;
@@ -74,7 +75,7 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
       "require you to enter the same title into both fields. You acknowledge that the title is actually the same for " .
       "both by doing so."
     )}</p>";
-    $form->init([ $this, "valid" ]);
+    $form->init([ $this, "submit" ]);
 
     if ($translations) {
       $jobTitleDescription .= "<p>{$this->intl->t(
@@ -93,6 +94,15 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
     }
 
     return "{$this->calloutInfo($jobTitleDescription, null, [ "id" => "job-title-description" ])}{$form}";
+  }
+
+  /**
+   * Form submit callback.
+   */
+  public function submit() {
+    $this->entity->create($this->session->userId, $this->request->dateTime);
+    $this->alertSuccess($this->intl->t("Successfully Created"));
+    throw new SeeOtherException($this->intl->r("/job/{0}", $this->entity->id));
   }
 
 }

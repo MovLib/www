@@ -130,7 +130,7 @@ SQL
   public function init() {
     // The plural key isn't used anywhere.
     $this->pluralKey   = "system_pages";
-    if ($this->routeKey == "About {$this->config->sitename}") {
+    if ($this->routeKey == "About {$this->container->config->sitename}") {
       $this->singularKey = "about";
       $this->routeKey    = "/about";
     }
