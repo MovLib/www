@@ -338,10 +338,11 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
     $this->attributes["name"] = $this->id;
     $this->attributes["aria-multiline"] = "true";
     return
-      "<fieldset class='inputhtml'>" .
-        "<legend>{$this->label}{$this->required}{$this->helpPopup}{$this->helpText}</legend>" .
+      "{$this->required}{$this->helpPopup}{$this->helpText}" .
+      "<p class='inputhtml'>" .
+        "<label for='{$this->id}'>{$this->label}</label>" .
         "<textarea{$this->presenter->expandTagAttributes($this->attributes)}>{$this->htmlDecode($this->value)}</textarea>" .
-      "</fieldset>"
+      "</p>"
     ;
     // @devStart
     // @codeCoverageIgnoreStart
