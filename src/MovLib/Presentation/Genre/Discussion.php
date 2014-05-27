@@ -30,7 +30,6 @@ use \MovLib\Data\Genre\Genre;
  */
 class Discussion extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Partial\SidebarTrait;
-  use \MovLib\Presentation\Genre\GenreTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -55,7 +54,7 @@ class Discussion extends \MovLib\Presentation\AbstractPresenter {
     $pageTitle    = $this->intl->t("Discuss {0}", [ $this->entity->name ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Discussion"))
-      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
+      ->sidebarInitToolbox($this->entity)
       ->initLanguageLinks("/{$this->entity->singularKey}/{0}/discussion", $this->entity->id)
       ->breadcrumb->addCrumbs([
         [ $this->intl->r("/genres"), $this->intl->t("Genres") ],

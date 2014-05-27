@@ -18,9 +18,10 @@
 namespace MovLib\Core\Revision;
 
 use \MovLib\Component\DateTime;
-use \MovLib\Core\Database\Database;
 use \MovLib\Core\Database\Insert;
 use \MovLib\Core\Database\Update;
+use \MovLib\Core\Diff\Diff;
+use \MovLib\Core\FileSystem;
 
 /**
  * Defines the base object for revisioned database entities.
@@ -120,13 +121,6 @@ abstract class AbstractRevision implements RevisionInterface {
    */
   public $userId;
 
-  /**
-   * Associative array containing all the genre's localized wikipedia links, keyed by language code.
-   *
-   * @var array
-   */
-  public $wikipediaLinks = [];
-
 
   //-------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -148,12 +142,11 @@ abstract class AbstractRevision implements RevisionInterface {
     // @codeCoverageIgnoreEnd
     // @devEnd
     if ($this->id) {
-      $this->entityId       = (integer) $this->entityId;
-      $this->id             = (integer) $this->id;
-      $this->created        = new DateTime($this->id);
-      $this->deleted        = (boolean) $this->deleted;
-      $this->userId         = (integer) $this->userId;
-      $this->wikipediaLinks === (array) $this->wikipediaLinks || ($this->wikipediaLinks = json_decode($this->wikipediaLinks, true));
+      $this->entityId = (integer) $this->entityId;
+      $this->id       = (integer) $this->id;
+      $this->created  = new DateTime($this->id);
+      $this->deleted  = (boolean) $this->deleted;
+      $this->userId   = (integer) $this->userId;
     }
   }
 
@@ -181,10 +174,12 @@ abstract class AbstractRevision implements RevisionInterface {
    *
    * @param \MovLib\Core\Database\Update $update
    *   The update statement to add fields.
+   * @param \MovLib\Core\Revision\RevisionInterface $oldRevision
+   *   The old revision that is currently stored in the database for comparison.
    * @return \MovLib\Core\Database\Update
    *   The final update statement ready for execution.
    */
-  abstract protected function addCommitFields(\MovLib\Core\Database\Update $update);
+  abstract protected function addCommitFields(\MovLib\Core\Database\Update $update, \MovLib\Core\Revision\RevisionInterface $oldRevision);
 
   /**
    * Add fields to the create's insert statement.
@@ -205,11 +200,11 @@ abstract class AbstractRevision implements RevisionInterface {
    *
    * @param \MovLib\Core\Database\Connection $connection
    *   Active database transaction connection.
-   * @param integer $oldRevisionId
-   *   The old revision's identifier that was sent along the form when the user started editing the entity.
+   * @param , \MovLib\Core\Revision\RevisionInterface $oldRevision
+   *   The old revision that is currently stored in the database for comparison.
    * @return this
    */
-  protected function preCommit(\MovLib\Core\Database\Connection $connection, $oldRevisionId) {
+  protected function preCommit(\MovLib\Core\Database\Connection $connection, RevisionInterface $oldRevision) {
     return $this;
   }
 
@@ -218,11 +213,11 @@ abstract class AbstractRevision implements RevisionInterface {
    *
    * @param \MovLib\Core\Database\Connection $connection
    *   Active database transaction connection.
-   * @param integer $oldRevisionId
-   *   The old revisions's identifier that was sent along the form when the user started editing the entity.
+   * @param , \MovLib\Core\Revision\RevisionInterface $oldRevision
+   *   The old revision that was stored in the database for comparison.
    * @return this
    */
-  protected function postCommit(\MovLib\Core\Database\Connection $connection, $oldRevisionId) {
+  protected function postCommit(\MovLib\Core\Database\Connection $connection, RevisionInterface $oldRevision) {
     return $this;
   }
 
@@ -256,31 +251,105 @@ abstract class AbstractRevision implements RevisionInterface {
    * {@inheritdoc}
    */
   final public function commit(\MovLib\Core\Database\Connection $connection, $oldRevisionId) {
-    return $this->addCommitFields((new Update($connection))
-      ->set("changed", $this->changed)
-      ->set("wikipedia", $this->wikipediaLinks)
+    // Load the currently stored revision from the database, this will be the new old revision for the commit.
+    $oldRevision = new static($this->entityId);
+
+    // We have to make sure that the revision currently stored in the database is the same revision the user edited. We
+    // have an exclusive lock on all rows that we read during our transaction. If someone would have changed this row
+    // that belongs to our originator before the instantiation above, we'd know it after this comparison. But nobody is
+    // able to change the row of our originator after the above instantiation, because of that exclusive row lock.
+    if ($oldRevision->id !== $oldRevisionId) {
+      throw new CommitConflictException();
+    }
+
+    // Serialize the old revision before passing it to the concrete class, you'll never know...
+    $oldSerialized = serialize($oldRevision);
+
+    // We also create a backup of the serialized old revision to ensure that we are able to easily recreate patches and
+    // stuff in case something should ever go wrong. Note that the table name's are already unique (you can't have two
+    // tables within a single database that have the same name) and combined with the entity's uniqu identifier nothing
+    // bad can happen. We don't want to create any subdirectories within the backup directories. A direct listing of
+    // all available backups with `ls -l` is what we want.
+//    $dir = "dr://var/backups/revisions/{$this->tableName}/{$this->entityId}";
+//    mkdir($dir, FileSystem::MODE_DIR, true);
+//    file_put_contents("{$dir}/{$oldRevision->id}.ser", $oldSerialized);
+
+    // @todo FIXME
+    // Still problems with array properties during serialization. The offset "de" is created with a value of NULL but
+    // while it's needed for the update statement, it bloats or maybe even breaks (edge cases) unserialize() calls.
+    $this->wikipediaLinks = null;
+
+    // Now we can create the actual diff patch that we'll store in the revisions row of the old revision.
+    $diffPatch = (new Diff())->getPatch(serialize($this), $oldSerialized);
+
+    // Prepare the update query and set the default properties.
+//    $update = (new Update($connection))->set("changed", $this->changed)->set("wikipedia", $this->wikipediaLinks);
+
+    // Let the concrete revision add its custom fields.
+//    $this->addCommitFields($update, $oldRevision);
+
+    // Now we can insert the previously generated diff patch into the data field of the old revision.
+//    (new Update($connection, "revisions"))
+//      ->set("data", $diffPatch)
+//      ->where("id", $oldRevision->id)
+//      ->where("entity_id", $this->entityId)
+//      ->where("revision_entity_id", $this->revisionEntityId)
+//      ->execute()
+//    ;
+    \Krumo::dump(
+      $this,
+      $oldRevision,
+      'c98i4:6192c2d4c56di:5c17d2c100',
+      $diffPatch,
+      'c98i4:6192c2d4c56di:5c17d2c100' === $diffPatch,
+      /* Let's give it a try */
+      unserialize((new Diff())->applyPatch(serialize($this), $diffPatch))
     );
+    exit();
+
+    // Insert revision, update the user and allow the concrete revision to perform work after the actual revision was
+    // commited.
+//    $this->insertRevisionUpdateUser($connection)->postCommit($connection);
+
+    return $this;
   }
 
   /**
    * {@inheritdoc}
    */
   final public function create(\MovLib\Core\Database\Connection $connection) {
-    // Allow the concrete revision entity to perform work before the actual revision is created.
+    // Allow the concrete revision to perform work before the actual revision is created.
     $this->preCreate($connection);
 
-    // Insert the entity itself and be sure to store the unique identifier that was assigned to it.
-    $this->entityId = $this->addCreateFields((new Insert($connection, $this->tableName))
-      ->set("created", $this->created)
-      ->set("changed", $this->created)
-      ->set("wikipedia", $this->wikipediaLinks)
-    )->execute();
+    // Prepare insert statement and set default values.
+    $insert = (new Insert($connection, $this->tableName))->set("created", $this->created)->set("changed", $this->created);
 
-    // Allow the concrete revision entity to perform work after the actual revision was created.
-    $this->postCreate($connection);
+    // Let the concrete revision add its custom fields.
+    $this->addCreateFields($insert);
 
-    // Create entry in the revisions table, otherwise we aren't able to list initial commits in the history nor on the
-    // user's contribution page.
+    // Now insert the revision and be sure to store the unique identifier that was assigned to our originator.
+    $this->entityId = $insert->execute();
+
+    // Insert revision, update the user and allow the concrete revision entity to perform work after the actual revision
+    // was created.
+    $this->insertRevisionUpdateUser($connection)->postCreate($connection);
+
+    // We have to return the originator's new unique identifier because it doesn't know it's identifier yet, remember
+    // that the identifier is assigned by the database table's auto increment field.
+    return $this->entityId;
+  }
+
+  /**
+   * Create entry in the revisions table.
+   *
+   * We have to create an empty record in the revisions table, otherwise we wouldn't be able to list initial commits in
+   * the history tab nor on the user's contribution page.
+   *
+   * @param \MovLib\Core\Database\Connection $connection
+   *   Active database transaction connection.
+   * @return this
+   */
+  private function insertRevisionUpdateUser(\MovLib\Core\Database\Connection $connection) {
     (new Insert($connection, "revisions"))
       ->set("id", $this->created)
       ->set("entity_id", $this->entityId)
@@ -290,14 +359,14 @@ abstract class AbstractRevision implements RevisionInterface {
     ;
 
     // We have to update the user's edit count.
+    //
+    // @todo This should be unified, maybe in the session? An event system would be nice for this.
 //    (new Update($connection, "users"))
 //      ->increment("edits")
 //      ->condition("id", $this->userId)
 //    ;
 
-    // We have to return the entity's new unique identifier because the concrete entity doesn't know it's identifier
-    // yet, remember that the identifier is assigned by the database table's auto increment field.
-    return $this->entityId;
+    return $this;
   }
 
 }

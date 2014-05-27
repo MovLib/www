@@ -17,9 +17,8 @@
  */
 namespace MovLib\Data\Person;
 
-use \MovLib\Core\Database\Database;
 use \MovLib\Component\Date;
-use \MovLib\Data\Search\Search;
+use \MovLib\Core\Database\Database;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -160,6 +159,13 @@ final class PersonRevision extends \MovLib\Core\Revision\AbstractRevision {
    */
   protected $tableName = "persons";
 
+  /**
+   * Associative array containing all the genre's localized wikipedia links, keyed by language code.
+   *
+   * @var array
+   */
+  public $wikipediaLinks = [];
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -214,6 +220,11 @@ WHERE `persons`.`id` = {$id}
 SQL
       );
 
+      // @todo FIXME
+      //   Endlessly inefficient because we might be transfering the person tens to hundreds of times over the socket
+      //   with all data attached (think only of the many COLUMN_JSON() calls on the maybe huge biography and image
+      //   description). The person might have won an unbelievable amount of awards, plus aliases...
+      //   Good to know that our self-proclaimed database guru did this... o_O
       while ($row = $result->fetch_object()) {
         if (empty($this->id)) {
           $this->entityId          = $row->personId;
@@ -253,9 +264,11 @@ SQL
       }
     }
     if ($this->id) {
-      $this->biographies === (array) $this->biographies || $this->biographies = json_decode($this->biographies, true);
+      $this->biographies       === (array) $this->biographies       || $this->biographies = json_decode($this->biographies, true);
       $this->imageDescriptions === (array) $this->imageDescriptions || $this->imageDescriptions = json_decode($this->imageDescriptions, true);
-      $this->links === (array) $this->links || ($this->links = unserialize($this->links));
+      $this->links             === (array) $this->links             || ($this->links = unserialize($this->links));
+      $this->wikipediaLinks    === (array) $this->wikipediaLinks    || ($this->wikipediaLinks = json_decode($this->wikipediaLinks, true));
+
       parent::__construct();
     }
   }
@@ -291,7 +304,7 @@ SQL
   /**
    * {@inheritdoc}
    */
-  protected function addCommitFields(\MovLib\Core\Database\Update $update) {
+  protected function addCommitFields(\MovLib\Core\Database\Update $update, \MovLib\Core\Revision\RevisionInterface $oldRevision) {
     return $update;
   }
 

@@ -41,7 +41,7 @@ use \MovLib\Exception\ClientException\UnauthorizedException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Session extends \MovLib\Core\AbstractDatabase {
+final class Session {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -175,6 +175,13 @@ final class Session extends \MovLib\Core\AbstractDatabase {
   public $isAuthenticated = false;
 
   /**
+   * The active kernel instance.
+   *
+   * @var \MovLib\Core\Kernel
+   */
+  protected $kernel;
+
+  /**
    * The active request instance.
    *
    * @var \MovLib\Core\HTTP\Request
@@ -254,7 +261,12 @@ final class Session extends \MovLib\Core\AbstractDatabase {
    * Instantiate new HTTP session.
    */
   public function __construct(\MovLib\Core\HTTP\Container $container) {
-    parent::__construct($container);
+    $this->config      = $container->config;
+    $this->fs          = $container->fs;
+    $this->intl        = $container->intl;
+    $this->kernel      = $container->kernel;
+    $this->request     = $container->request;
+    $this->response    = $container->response;
     $this->sessionName = session_name();
   }
 
@@ -399,8 +411,8 @@ SQL
     $servers       = explode(",", ini_get("session.save_path"));
 
     // Build the array as expected by Memcached::addServers().
-    $c = count($servers);
-    for ($i = 0; $i < $c; ++$i) {
+    $serverCount = count($servers);
+    for ($i = 0; $i < $serverCount; ++$i) {
       $servers[$i] = explode(":", $servers[$i]);
       // The port is mandatory!
       if (empty($servers[$i][1])) {
@@ -411,8 +423,8 @@ SQL
     $memcached = new \Memcached();
     $memcached->addServers($servers);
     $stmt = $mysqli->prepare("DELETE FROM `sessions` WHERE `ssid` = ?");
-    $c = count($ssids);
-    for ($i = 0; $i < $c; ++$i) {
+    $ssidCount = count($ssids);
+    for ($i = 0; $i < $ssidCount; ++$i) {
       $stmt->bind_param("s", $ssids[$i]);
       $stmt->execute();
       $ssids[$i] = "{$sessionPrefix}{$ssids[$i]}";
@@ -621,19 +633,15 @@ SQL
   /**
    * Resume existing HTTP session from client submitted cookies.
    *
-   * @param \MovLib\Core\Kernel $kernel
-   *   A kernel to delay certain method calls.
-   * @param \MovLib\Core\HTTP\Request $request
-   *   The current HTTP request.
    * @return this
    * @throws \MemcachedException
    * @throws \mysqli_sql_exception
    */
-  public function resume(\MovLib\Core\Kernel $kernel, \MovLib\Core\HTTP\Request $request) {
+  public function resume() {
     // Only attempt to load the session if a non-empty session ID is present. Anonymous user's don't get any session to
     // ensure that HTTP proxies are able to cache anonymous pageviews.
-    if (empty($request->cookies[$this->sessionName])) {
-      $this->userName       = $request->remoteAddress;
+    if (empty($this->request->cookies[$this->sessionName])) {
+      $this->userName       = $this->request->remoteAddress;
       $this->userTimezoneId = date_default_timezone_get();
       $this->userTimezone   = new \DateTimeZone($this->userTimezoneId);
     }
@@ -658,7 +666,7 @@ FROM `sessions`
 WHERE `sessions`.`ssid` = ? LIMIT 1
 SQL
         );
-        $stmt->bind_param("s", $request->cookies[$this->sessionName]);
+        $stmt->bind_param("s", $this->request->cookies[$this->sessionName]);
         $stmt->execute();
         $stmt->bind_result($this->userId, $this->userImageCacheBuster, $this->userImageExtension, $this->userName, $this->userTimezoneId, $this->authentication);
         $found = $stmt->fetch();
@@ -694,12 +702,12 @@ SQL
         $this->isAuthenticated      = true;
 
         // Regenerate the sesson's identifier if the grace time is over.
-        if (($this->initTime + self::REGENERATION_GRACE_TIME) < $request->time) {
+        if (($this->initTime + self::REGENERATION_GRACE_TIME) < $this->request->time) {
           $this->regenerate();
         }
         // Otherwise make sure that the persistent storage contains this session.
         else {
-          $kernel->delayMethodCall("session.insert", $this, "insert");
+          $this->kernel->delayMethodCall("session.insert", $this, "insert");
         }
       }
     }

@@ -167,11 +167,7 @@ SQL
    * {@inheritdoc}
    */
   protected function defineSearchIndex(\MovLib\Core\Search\SearchIndexer $search, \MovLib\Core\Revision\RevisionInterface $revision) {
-    $search
-      ->indexSimpleSuggestion($revision->names)
-      ->execute($this->container->kernel, $this->container->log, $this->deleted)
-    ;
-    return $this;
+    return $search->indexSimpleSuggestion($revision->names);
   }
 
   /**

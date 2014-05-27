@@ -82,6 +82,13 @@ final class GenreRevision extends \MovLib\Core\Revision\AbstractRevision {
    */
   protected $tableName = "genres";
 
+  /**
+   * Associative array containing all the genre's localized wikipedia links, keyed by language code.
+   *
+   * @var array
+   */
+  public $wikipediaLinks = [];
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -134,8 +141,9 @@ SQL
       }
     }
     if ($this->id) {
-      $this->descriptions === (array) $this->descriptions || ($this->descriptions = json_decode($this->descriptions, true));
-      $this->names === (array) $this->names || ($this->names = json_decode($this->names, true));
+      $this->descriptions   === (array) $this->descriptions   || ($this->descriptions   = json_decode($this->descriptions, true));
+      $this->names          === (array) $this->names          || ($this->names          = json_decode($this->names, true));
+      $this->wikipediaLinks === (array) $this->wikipediaLinks || ($this->wikipediaLinks = json_decode($this->wikipediaLinks, true));
       parent::__construct();
     }
   }
@@ -158,10 +166,15 @@ SQL
   /**
    * {@inheritdoc}
    */
-  protected function addCommitFields(\MovLib\Core\Database\Update $update) {
+  protected function addCommitFields(\MovLib\Core\Database\Update $update, \MovLib\Core\Revision\RevisionInterface $oldRevision) {
+    // @todo The update statement must include the possibility for auto-comparison of old and new values on dynamic
+    //       column fields; or maybe for all fields and only update what's necessary? Might take more time to build the
+    //       query but execute faster. The query cache doesn't seem of much help because if the values changed it won't
+    //       match against any previously executed query.
     return $update
       ->set("descriptions", $this->descriptions)
       ->set("names", $this->names)
+      ->set("wikipedia", $this->wikipediaLinks)
     ;
   }
 
@@ -172,6 +185,7 @@ SQL
     return $insert
       ->set("descriptions", $this->descriptions)
       ->set("names", $this->names)
+      ->set("wikipedia", $this->wikipediaLinks)
     ;
   }
 

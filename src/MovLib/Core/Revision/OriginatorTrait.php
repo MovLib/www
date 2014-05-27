@@ -137,10 +137,12 @@ trait OriginatorTrait {
    * @see \MovLib\Data\Revision\EntityInterface::commit()
    */
   final public function commit($userId, \MovLib\Component\DateTime $changed, $oldRevisionId) {
+    // @todo Abstract transactions into their own object!
     $connection = Database::getConnection();
     try {
       $connection->autocommit(false);
-      $connection->begin_transaction(MYSQLI_TRANS_START_WITH_CONSISTENT_SNAPSHOT | MYSQLI_TRANS_START_READ_WRITE);
+      $connection->real_query("SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE");
+      $connection->real_query("START TRANSACTION WITH CONSISTENT SNAPSHOT, READ WRITE");
       $revision = $this->createRevision($userId, $changed);
       $this->preCommit($connection, $revision, $oldRevisionId);
       $revision->commit($connection, $oldRevisionId);
@@ -152,6 +154,7 @@ trait OriginatorTrait {
       throw $e;
     }
     finally {
+      $connection->real_query("SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ");
       $connection->autocommit(true);
     }
     return $this;
@@ -161,10 +164,12 @@ trait OriginatorTrait {
    * @see \MovLib\Data\Revision\EntityInterface::create()
    */
   final public function create($userId, \MovLib\Component\DateTime $created) {
+    // @todo Abstract transactions into their own object!
     $connection = Database::getConnection();
     try {
       $connection->autocommit(true);
-      $connection->begin_transaction(MYSQLI_TRANS_START_READ_WRITE);
+      $connection->real_query("SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE");
+      $connection->real_query("START TRANSACTION WITH CONSISTENT SNAPSHOT, READ WRITE");
       $revision = $this->createRevision($userId, $created);
       $this->preCreate($connection, $revision);
       $this->id = $revision->create($connection);
@@ -176,6 +181,7 @@ trait OriginatorTrait {
       throw $e;
     }
     finally {
+      $connection->real_query("SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ");
       $connection->autocommit(true);
     }
 
@@ -208,7 +214,7 @@ trait OriginatorTrait {
 
     // Not all originators implement the wikipedia links, but 90% do, lets keep this here for ease of use.
     if (property_exists($this, "wikipedia")) {
-      $revision->wikipediaLink[$this->intl->languageCode] = $this->wikipedia;
+      $revision->wikipediaLinks[$this->intl->languageCode] = $this->wikipedia;
     }
 
     // Let the concrete class perform more export work on the revision.
