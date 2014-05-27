@@ -18,13 +18,11 @@
 namespace MovLib\Core\Search;
 
 use \Elasticsearch\Client;
-
-use \MovLib\Core\Search\Result\ResultSet;
 use \MovLib\Core\Search\Result\SearchResult;
 use \MovLib\Core\Search\Result\SuggestResult;
 
 /**
- * Defines the Search class in charge of searching and making suggestions.
+ * Defines the search class in charge of searching and making suggestions.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -33,21 +31,6 @@ use \MovLib\Core\Search\Result\SuggestResult;
  * @since 0.0.1-dev
  */
 final class Search {
-
-  /**
-   * The ElasticSearch client for the search operations.
-   *
-   * @var \Elasticsearch\Client
-   */
-  protected $client;
-
-
-  /**
-   * Instantiate new search manager.
-   */
-  public function __construct() {
-    $this->client = new Client();
-  }
 
   /**
    * Execute a fuzzy search on one or more indexes.
@@ -60,13 +43,13 @@ final class Search {
    *   The document types to search for. Supply them as numeric array or comma separated string (without whitespace). Defaults to no type restrictions.
    * @param array $fields
    *   The document field names to search in, defaults to all fields (which might impact performance).
-   * @return \MovLib\Core\Search\Result\ResultSet
+   * @return array
    *   The search results.
    * @throws \Elasticsearch\Common\Exceptions\*Exception
    *   The most common is {@see \Elasticsearch\Common\Exceptions\Missing404Exception}, which might indicate missing indexes.
    */
   public function fuzzySearch($query, $indexes, $types = null, array $fields = null) {
-    $result = new ResultSet();
+    $result = [];
 
     // Convert indexes and types to ElasticSearch syntax if provided as array.
     if (is_array($indexes)) {
@@ -96,14 +79,13 @@ final class Search {
       $params["body"]["query"]["fuzzy_like_this"]["fields"] = $fields;
     }
 
-    $searchResult = $this->client->search($params);
+    $searchResult = (new Client())->search($params);
 
     // We have results, build the set.
     if (isset($searchResult["hits"]["total"]) && $searchResult["hits"]["total"] > 0) {
-      $result->numberOfResults = (integer) $searchResult["hits"]["total"];
       foreach ($searchResult["hits"]["hits"] as $document) {
         $doc = new SearchResult($document);
-        $result->results[$doc->id] = $doc;
+        $result[$doc->type][$doc->id] = $doc;
       }
     }
 
@@ -113,26 +95,28 @@ final class Search {
   /**
    * Execute a fuzzy suggestion search (e.g. autocompletion).
    *
-   * Please note that the field used for suggestion will always be "suggest" as indexed by {@see \MovLib\Core\Search\SearchIndexer}.
+   * Please note that the field used for suggestion will always be "suggest" as indexed by
+   * {@see \MovLib\Core\Search\SearchIndexer}.
    *
    * @param string $query
    *   The query string to search for.
    * @param string|array $indexes
    *   The index(es) to search in. Supply them as numeric array or comma separated string (without whitespace).
-   * @return \MovLib\Core\Search\Result\ResultSet
+   * @return array
    *   The suggestion results.
    * @throws \Elasticsearch\Common\Exceptions\*Exception
-   *   The most common is {@see \Elasticsearch\Common\Exceptions\Missing404Exception}, which might indicate missing indexes.
+   *   The most common is {@see \Elasticsearch\Common\Exceptions\Missing404Exception}, which might indicate missing
+   *   indexes.
    */
   public function fuzzySuggest($query, $indexes) {
-    $result = new ResultSet();
+    $result = [];
 
     // Convert indexes to ElasticSearch syntax if provided as array.
     if (is_array($indexes)) {
       $indexes = implode(",", $indexes);
     }
 
-    $suggestResult = $this->client->suggest([
+    $suggestResult = (new Client())->suggest([
       "index" => $indexes,
       "body"  => [
         "fuzzySuggest" => [
@@ -150,8 +134,8 @@ final class Search {
       foreach ($suggestResult["fuzzySuggest"][0]["options"] as $document) {
         $doc = new SuggestResult($document);
         // Prevent duplicated results, since there is no way in ElasticSearch to do so without losing the matched text.
-        if (empty($result->results[$doc->id])) {
-          $result->results[$doc->id] = $doc;
+        if (empty($result[$doc->type][$doc->id])) {
+          $result[$doc->type][$doc->id] = $doc;
         }
       }
     }

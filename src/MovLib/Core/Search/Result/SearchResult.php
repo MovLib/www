@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -28,6 +28,10 @@ namespace MovLib\Core\Search\Result;
  */
 final class SearchResult {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /**
    * The document's contents (fields) as associative array.
    *
@@ -49,6 +53,10 @@ final class SearchResult {
    */
   public $type;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
   /**
    * Instantiate new suggestion result.
    *
@@ -66,7 +74,11 @@ final class SearchResult {
 
     $this->id       = (integer) $document["_id"];
     $this->type     = $document["_type"];
-    $this->contents = $document["_source"];
+    $this->contents = (object) $document["_source"];
+
+    if (isset($this->contents->suggest)) {
+      // @todo Do something :P
+    }
   }
 
 }

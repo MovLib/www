@@ -28,6 +28,10 @@ namespace MovLib\Core\Search\Result;
  */
 final class SuggestResult {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /**
    * Additional fields (payload) returned by the suggester as associative array.
    *
@@ -55,6 +59,10 @@ final class SuggestResult {
    * @var string
    */
   public $type;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
    * Instantiate new suggestion result.
