@@ -173,14 +173,10 @@ SQL
   /**
    * {@inheritdoc}
    */
-  protected function addCommitFields(\MovLib\Core\Database\Query\Update $update, \MovLib\Core\Revision\RevisionInterface $oldRevision) {
-    // @todo The update statement must include the possibility for auto-comparison of old and new values on dynamic
-    //       column fields; or maybe for all fields and only update what's necessary? Might take more time to build the
-    //       query but execute faster. The query cache doesn't seem of much help because if the values changed it won't
-    //       match against any previously executed query.
+  protected function addCommitFields(\MovLib\Core\Database\Query\Update $update, \MovLib\Core\Revision\RevisionInterface $oldRevision, $languageCode) {
     return $update
-      ->set("texts", $this->texts)
-      ->set("titles", $this->titles)
+      ->setDynamicConditional("texts", $languageCode, $this->texts, $oldRevision->texts)
+      ->setDynamicConditional("titles", $languageCode, $this->titles, $oldRevision->titles)
       ->set("help_category_id", $this->category->id)
       ->set("help_subcategory_id", isset($this->subCategory) ? $this->subCategory->id : null)
     ;
