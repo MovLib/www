@@ -17,8 +17,10 @@
  */
 namespace MovLib\Data\Event;
 
+use \MovLib\Core\Database\Database;
+use \MovLib\Core\Revision\OriginatorTrait;
+use \MovLib\Core\Search\RevisionTrait;
 use \MovLib\Component\Date;
-use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Data\Place\Place;
 use \MovLib\Exception\ClientException\NotFoundException;
 
@@ -31,18 +33,24 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Event extends \MovLib\Data\AbstractEntity {
+final class Event extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\OriginatorInterface {
+  use OriginatorTrait, RevisionTrait {
+    RevisionTrait::postCommit insteadof OriginatorTrait;
+    RevisionTrait::postCreate insteadof OriginatorTrait;
+  }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
 
+  // @codingStandardsIgnoreStart
   /**
-   * The entity type used to store revisions.
+   * Short class name.
    *
-   * @var int
+   * @var string
    */
-  const REVISION_ENTITY_TYPE = 8;
+  const name = "Event";
+  // @codingStandardsIgnoreEnd
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -70,32 +78,11 @@ class Event extends \MovLib\Data\AbstractEntity {
   public $categories;
 
   /**
-   * The timestamp on which this event was changed.
-   *
-   * @var integer
-   */
-  public $changed;
-
-  /**
    * The count of companies connected to this event.
    *
    * @var integer
    */
   public $companyCount;
-
-  /**
-   * The timestamp on which this event was created.
-   *
-   * @var integer
-   */
-  public $created;
-
-  /**
-   * The event's deletion state.
-   *
-   * @var boolean
-   */
-  public $deleted;
 
   /**
    * The event's description in the current display language.
@@ -112,13 +99,6 @@ class Event extends \MovLib\Data\AbstractEntity {
   public $endDate;
 
   /**
-   * The event's unique identifier.
-   *
-   * @var integer
-   */
-  public $id;
-
-  /**
    * The event’s weblinks.
    *
    * @var array
@@ -126,7 +106,7 @@ class Event extends \MovLib\Data\AbstractEntity {
   public $links = [];
 
   /**
-   * The event's name in the current display language.
+   * The event's name.
    *
    * @var string
    */
@@ -152,13 +132,6 @@ class Event extends \MovLib\Data\AbstractEntity {
    * @var integer|object
    */
   public $place;
-
-  /**
-   * The translated route of this event.
-   *
-   * @var string
-   */
-  public $route;
 
   /**
    * The count of series connected to this event.
@@ -200,25 +173,26 @@ class Event extends \MovLib\Data\AbstractEntity {
   public function __construct(\MovLib\Core\Container $container, $id = null) {
     parent::__construct($container);
     if ($id) {
-      $stmt = $this->getMySQLi()->prepare(<<<SQL
+      $connection = Database::getConnection();
+      $stmt = $connection->prepare(<<<SQL
 SELECT
-  `events`.`aliases` AS `aliases`,
-  `events`.`award_id` AS `award`,
-  `events`.`changed` AS `changed`,
-  `events`.`created` AS `created`,
-  `events`.`deleted` AS `deleted`,
-   COLUMN_GET(`events`.`dyn_descriptions`, '{$this->intl->languageCode}' AS CHAR) AS `description`,
-  `events`.`end_date` AS `endDate`,
-  `events`.`id` AS `id`,
-  `events`.`links` AS `links`,
-  `events`.`name` AS `name`,
-  `events`.`place_id` AS `place`,
-  `events`.`start_date` AS `startDate`,
-  COLUMN_GET(`events`.`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR) AS `wikipedia`,
-  `events`.`count_movies` AS `movieCount`,
-  `events`.`count_series` AS `seriesCount`,
-  `events`.`count_persons` AS `personCount`,
-  `events`.`count_companies` AS `companyCount`
+  `aliases`,
+  `award_id`,
+  `changed`,
+  `created`,
+  `deleted`,
+   COLUMN_GET(`dyn_descriptions`, '{$this->intl->languageCode}' AS CHAR),
+  `end_date`,
+  `id`,
+  `links`,
+  `name`,
+  `place_id`,
+  `start_date`,
+  COLUMN_GET(`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR),
+  `count_movies`,
+  `count_series`,
+  `count_persons`,
+  `count_companies`
 FROM `events`
 WHERE `id` = ?
 LIMIT 1
@@ -261,97 +235,46 @@ SQL
 
 
   /**
-   * Update the event.
-   *
-   * @return this
-   * @throws \mysqli_sql_exception
+   * {@inheritdoc}
    */
-  public function commit() {
-    $this->aliases = empty($this->aliases)? serialize([]) : serialize(explode("\n", $this->aliases));
-    $this->links   = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
-
-    $stmt = $this->getMySQLi()->prepare(<<<SQL
-UPDATE `events` SET
-  `aliases`          = ?,
-  `award_id`         = ?,
-  `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, '{$this->intl->languageCode}', ?),
-  `dyn_wikipedia`    = COLUMN_ADD(`dyn_wikipedia`, '{$this->intl->languageCode}', ?),
-  `end_date`         = ?,
-  `links`            = ?,
-  `name`             = ?,
-  `start_date`       = ?
-WHERE `id` = {$this->id}
-SQL
-    );
-    $stmt->bind_param(
-      "sdssssss",
-      $this->aliases,
-      $this->award->id,
-      $this->description,
-      $this->wikipedia,
-      $this->endDate,
-      $this->links,
-      $this->name,
-      $this->startDate
-    );
-    $stmt->execute();
-
-    $this->updateAwardYears();
-
-    return $this;
+  protected function defineSearchIndex(\MovLib\Core\Search\SearchIndexer $search, \MovLib\Core\Revision\RevisionInterface $revision) {
+    return $search->indexSimpleSuggestion($revision->name);
   }
 
   /**
-   * Create new new event.
-   *
-   * @return this
-   * @throws \mysqli_sql_exception
+   * {@inheritdoc}
+   * @param \MovLib\Data\Event\EventRevision $revision {@inheritdoc}
+   * @return \MovLib\Data\Event\EventRevision {@inheritdoc}
    */
-  public function create() {
-    $this->aliases = empty($this->aliases)? serialize([]) : serialize(explode("\n", $this->aliases));
-    $this->links   = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
+  protected function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
+    $this->setRevisionArrayValue($revision->descriptions, $this->description);
+    $revision->aliases   = $this->aliases;
+    $revision->award     = $this->award;
+    $revision->endDate   = $this->endDate;
+    $revision->links     = $this->links;
+    $revision->name      = $this->name;
+    $revision->place     = $this->place;
+    $revision->startDate = $this->startDate;
 
-    $mysqli = $this->getMySQLi();
-    $stmt = $mysqli->prepare(<<<SQL
-INSERT INTO `events` (
-  `aliases`,
-  `award_id`,
-  `dyn_descriptions`,
-  `dyn_wikipedia`,
-  `end_date`,
-  `links`,
-  `name`,
-  `start_date`
-) VALUES (
-  ?,
-  ?,
-  COLUMN_CREATE('{$this->intl->languageCode}', ?),
-  COLUMN_CREATE('{$this->intl->languageCode}', ?),
-  ?,
-  ?,
-  ?,
-  ?
-);
-SQL
-    );
-    $stmt->bind_param(
-      "sdssssss",
-      $this->aliases,
-      $this->award->id,
-      $this->description,
-      $this->wikipedia,
-      $this->endDate,
-      $this->links,
-      $this->name,
-      $this->startDate
-    );
+    return $revision;
+  }
 
-    $stmt->execute();
-    $this->id = $stmt->insert_id;
+  /**
+   * {@inheritdoc}
+   * @param \MovLib\Data\Event\EventRevision $revision {@inheritdoc}
+   * @return this {@inheritdoc}
+   */
+  protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
+    $this->description  = $this->getRevisionArrayValue($revision->descriptions);
+    $revision->aliases   && $this->aliases   = $revision->aliases;
+    $revision->award     && $this->award     = $revision->award;
+    $revision->endDate   && $this->endDate   = $revision->endDate;
+    $revision->links     && $this->links     = $revision->links;
+    $revision->name      && $this->name      = $revision->name;
+    $revision->place     && $this->place     = $revision->place;
+    $revision->startDate && $this->startDate = $revision->startDate;
 
-    $this->updateAwardYears();
-
-    return $this->init();
+    return $this;
   }
 
   /**
@@ -390,82 +313,9 @@ SQL
       $this->award->id
     );
     $stmt->execute();
-  }
+    $stmt->close();
 
- /**
-   * Get the mysqli result for all movies connected to this event.
-   *
-   * @return \mysqli_result
-   *   The mysqli result for all movies connected to this event.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getMoviesResult() {
-    $result = $this->query(
-      "SELECT
-        `movies`.`id`,
-        `movies`.`deleted`,
-        `movies`.`year`,
-        `movies`.`mean_rating` AS `ratingMean`,
-        IFNULL(`dt`.`title`, `ot`.`title`) AS `displayTitle`,
-        IFNULL(`dt`.`language_code`, `ot`.`language_code`) AS `displayTitleLanguageCode`,
-        `ot`.`title` AS `originalTitle`,
-        `ot`.`language_code` AS `originalTitleLanguageCode`,
-        `p`.`poster_id` AS `displayPoster`,
-        `movies_awards`.`award_category_id` AS `awardCategoryId`,
-        `movies_awards`.`won` AS `awardCategoryWon`,
-        `movies_awards`.`person_id` AS `personId`,
-        `movies_awards`.`company_id` AS `companyId`
-      FROM `movies_awards`
-        LEFT JOIN `movies`
-          ON `movies`.`id` = `movies_awards`.`movie_id`
-        LEFT JOIN `movies_display_titles` AS `mdt`
-          ON `mdt`.`movie_id` = `movies`.`id`
-          AND `mdt`.`language_code` = ?
-        LEFT JOIN `movies_titles` AS `dt`
-          ON `dt`.`movie_id` = `movies`.`id`
-          AND `dt`.`id` = `mdt`.`title_id`
-        LEFT JOIN `movies_original_titles` AS `mot`
-          ON `mot`.`movie_id` = `movies`.`id`
-        LEFT JOIN `movies_titles` AS `ot`
-          ON `ot`.`movie_id` = `movies`.`id`
-          AND `ot`.`id` = `mot`.`title_id`
-        LEFT JOIN `display_posters` AS `p`
-          ON `p`.`movie_id` = `movies`.`id`
-          AND `p`.`language_code` = ?
-      WHERE `movies_awards`.`award_id` = ? AND `movies_awards`.`award_event_id` = ?
-      ORDER BY `displayTitle` DESC",
-      "ssdd",
-      [ $this->intl->languageCode, $this->intl->languageCode, $this->awardId, $this->id ]
-    )->get_result();
-
-    while ($row = $result->fetch_assoc()) {
-      // Instantiate and initialize a Movie if it is not present yet.
-      if (!isset($movies[$row["id"]])) {
-        $movies[$row["id"]] = (object) [
-          "movie" => new FullMovie()
-        ];
-        $movies[$row["id"]]->movie->id                        = $row["id"];
-        $movies[$row["id"]]->movie->deleted                   = $row["deleted"];
-        $movies[$row["id"]]->movie->year                      = $row["year"];
-        $movies[$row["id"]]->movie->ratingMean                = $row["ratingMean"];
-        $movies[$row["id"]]->movie->displayTitle              = $row["displayTitle"];
-        $movies[$row["id"]]->movie->displayTitleLanguageCode  = $row["displayTitleLanguageCode"];
-        $movies[$row["id"]]->movie->originalTitle             = $row["originalTitle"];
-        $movies[$row["id"]]->movie->originalTitleLanguageCode = $row["originalTitleLanguageCode"];
-        $movies[$row["id"]]->movie->displayPoster             = $row["displayPoster"];
-        $movies[$row["id"]]->movie->awardCategoryIds          = [];
-        $movies[$row["id"]]->movie->awardCategoryWon          = [];
-        $movies[$row["id"]]->movie->awardedCompanyIds         = [];
-        $movies[$row["id"]]->movie->awardedPersonIds          = [];
-        $movies[$row["id"]]->movie->init();
-      }
-      // We need all awarded companies and persions with the correct award category.
-      array_push($movies[$row["id"]]->movie->awardCategoryIds, $row["awardCategoryId"]);
-      array_push($movies[$row["id"]]->movie->awardCategoryWon, $row["awardCategoryWon"]);
-      array_push($movies[$row["id"]]->movie->awardedPersonIds, $row["personId"]);
-      array_push($movies[$row["id"]]->movie->awardedCompanyIds, $row["companyId"]);
-    }
-    return $movies;
+    return $this;
   }
 
 }

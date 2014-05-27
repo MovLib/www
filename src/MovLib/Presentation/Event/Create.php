@@ -19,6 +19,7 @@ namespace MovLib\Presentation\Event;
 
 use \MovLib\Data\Award\AwardSet;
 use \MovLib\Data\Event\Event;
+use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputDateSeparate;
 use \MovLib\Partial\FormElement\InputText;
@@ -84,7 +85,7 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
         "placeholder" => $this->intl->t("Enter the event’s related weblinks, line by line."),
       ]))
       ->addAction($this->intl->t("Create"), [ "class" => "btn btn-large btn-success" ])
-      ->init([ $this, "valid" ])
+      ->init([ $this, "submit" ])
     ;
     return
       $form->open() .
@@ -97,6 +98,15 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
       $form->elements["links"] .
       $form->close()
     ;
+  }
+
+  /**
+   * Form submit callback.
+   */
+  public function submit() {
+    $this->entity->create($this->session->userId, $this->request->dateTime);
+    $this->alertSuccess($this->intl->t("Successfully Created"));
+    throw new SeeOtherException($this->intl->r("/event/{0}", $this->entity->id));
   }
 
 }

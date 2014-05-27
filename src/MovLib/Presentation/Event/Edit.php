@@ -20,6 +20,8 @@ namespace MovLib\Presentation\Event;
 use \MovLib\Data\Award\Award;
 use \MovLib\Data\Award\AwardSet;
 use \MovLib\Data\Event\Event;
+use \MovLib\Core\Revision\CommitConflictException;
+use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputDateSeparate;
 use \MovLib\Partial\FormElement\InputText;
@@ -60,6 +62,7 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
   public function getContent() {
     $awardOptions = (new AwardSet($this->container))->loadSelectOptions();
     $form = (new Form($this->container))
+      ->addHiddenElement("revision_id", $this->entity->changed->formatInteger())
       ->addElement(new Select($this->container, "award", $this->intl->t("Award"), $awardOptions, $this->entity->award->id, [
         "placeholder" => $this->intl->t("Select the event’s Award."),
         "autofocus"   => true,
@@ -81,14 +84,14 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
         "placeholder"         => $this->intl->t("Describe the event."),
       ]))
       ->addElement(new InputWikipedia($this->container, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
-        "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/..",
+        "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/…",
         "data-allow-external" => "true",
       ]))
       ->addElement(new TextareaLineURLArray($this->container, "links", $this->intl->t("Weblinks (line by line)"), $this->entity->links, [
         "placeholder" => $this->intl->t("Enter the event’s related weblinks, line by line."),
       ]))
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
-      ->init([ $this, "valid" ])
+      ->init([ $this, "submit" ])
     ;
     return
       $form->open() .
@@ -101,6 +104,35 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
       $form->elements["links"] .
       $form->close()
     ;
+  }
+
+  /**
+   * Submit callback for the event edit form.
+   *
+   * @throws \MovLib\Exception\RedirectException\SeeOtherException
+   *   Always redirects the user back to the edited event.
+   */
+  public function submit() {
+    try {
+      $this->entity->commit($this->session->userId, $this->request->dateTime, $this->request->filterInput(INPUT_POST, "revision_id", FILTER_VALIDATE_INT));
+      $this->alertSuccess($this->intl->t("Successfully Updated"));
+      throw new SeeOtherException($this->entity->route);
+    }
+    catch (\BadMethodCallException $e) {
+      $this->alertError(
+        $this->intl->t("Validation Error"),
+        $this->intl->t("Seems like you haven’t changed anything, please only submit forms with changes.")
+      );
+    }
+    catch (CommitConflictException $e) {
+      $this->alertError(
+        $this->intl->t("Conflicting Changes"),
+        "<p>{$this->intl->t(
+          "Someone else has already submitted changes before you. Copy any unsaved work in the form below and then {0}reload this page{1}.",
+          [ "<a href='{$this->request->uri}'>", "</a>" ]
+        )}</p>"
+      );
+    }
   }
 
 }
