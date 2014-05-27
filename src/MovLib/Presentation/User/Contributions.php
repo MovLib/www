@@ -119,7 +119,7 @@ final class Contributions extends \MovLib\Presentation\User\AbstractUserPresente
 
   public function formatSystemPage(\MovLib\Data\AbstractEntity $systemPage) {
     return
-      "<td class='tac'><span class='ico ico-view' title='{$this->intl->t("Movlib")}'></span></td>" .
+      "<td class='tac'><span class='ico ico-star' title='{$this->intl->t("Movlib")}'></span></td>" .
       "<td>{$this->a($systemPage->route, $this->htmlDecode($systemPage->title))}</td>"
     ;
   }
@@ -141,7 +141,7 @@ final class Contributions extends \MovLib\Presentation\User\AbstractUserPresente
       $this->request->query["page"] = $this->paginationCurrentPage;
     }
     $queryString = http_build_query($this->request->query);
-    $orderCaret = "<a class='btn btn-mini ico ico-chevron-down' href='{$this->request->path}?{$queryString}'>▾</a>";
+    $orderCaret = "<a class='btn btn-mini ico ico-chevron-down' href='{$this->request->path}?{$queryString}'></a>";
     if (isset($_GET["sort"]) && isset($_GET["field"])) {
       if ($this->request->filterInputString(INPUT_GET, "field") == "date" && $this->request->filterInputString(INPUT_GET, "sort") == "asc") {
         $orderBy = "`revisionId` ASC";
@@ -151,7 +151,7 @@ final class Contributions extends \MovLib\Presentation\User\AbstractUserPresente
         if (!empty($this->request->query)) {
           $queryString = "?" . http_build_query($this->request->query);
         }
-        $orderCaret = "<a class='btn btn-mini ico ico-chevron-up' href='{$this->request->path}{$queryString}'>▴</a>";
+        $orderCaret = "<a class='btn btn-mini ico ico-chevron-up' href='{$this->request->path}{$queryString}'></a>";
       }
     }
 
