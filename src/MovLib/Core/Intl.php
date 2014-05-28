@@ -431,18 +431,6 @@ final class Intl {
    * @throws \IntlException
    */
   public function tp($count, $plural, $singular = null, $args = [], $locale = null) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert(!empty($plural));
-    assert(is_string($plural));
-    if (isset($singular)) {
-      assert(!empty($singular));
-      assert(is_string($singular));
-    }
-    assert(is_numeric($count));
-    assert(empty($args[0]));
-    // @codeCoverageIgnoreEnd
-    // @devEnd
     $singular || ($singular = $plural);
     $args && ($args = (array) $args);
     $args[0] = $count;

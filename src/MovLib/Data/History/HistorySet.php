@@ -103,7 +103,7 @@ final class HistorySet implements \ArrayAccess, \Countable, \Iterator {
    * @todo Unify method name to work for pagination, recreate pagination interface?
    * @todo Can we get rid of the dependency injection container dependency? Intl should suffice.
    */
-  public function load($offset, $limit, \MovLib\Core\Container $container) {
+  public function load(\MovLib\Core\Container $container, $offset, $limit) {
     $result = Database::getConnection()->query(<<<SQL
 SELECT
   `id` + 0 AS `id`,

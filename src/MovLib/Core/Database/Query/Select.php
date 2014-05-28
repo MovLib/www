@@ -109,7 +109,12 @@ final class Select extends Condition {
     return $this->table($tableName, $tableAlias);
   }
 
-  public function limit($offset, $limit = PHP_INT_MAX) {
+  public function limit($limit = 1) {
+
+    return $this;
+  }
+
+  public function offset($offset, $limit = PHP_INT_MAX) {
 
     return $this;
   }
@@ -143,6 +148,8 @@ final class Select extends Condition {
    *   If the statement didn't return any results.
    */
   public function fetch() {
+    return $this;
+
     $stmt = $this->connection->prepare("{$this} LIMIT 1");
     // @codingStandardsIgnoreStart
     $this->values && $stmt->bind_param($this->types, ...$this->values);
