@@ -67,7 +67,7 @@ class Persons extends \MovLib\Presentation\AbstractPresenter {
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Persons"))
       ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/persons", $this->entity->id)
+      ->initLanguageLinks("/{$this->entity->set->singularKey}/{0}/persons", $this->entity->id)
       ->breadcrumb->addCrumbs([
         [ $this->intl->r("/jobs"), $this->intl->t("Jobs") ],
         [ $this->entity->route, $this->entity->title ]

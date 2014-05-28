@@ -78,20 +78,11 @@ abstract class AbstractEditPresenter extends \MovLib\Presentation\AbstractPresen
     // @devEnd
     $this->entity = $entity;
     $this->sidebarInitToolbox($this->entity, $additionalSidebarItems);
-    $this->initLanguageLinks("/{$this->entity->singularKey}/{0}/edit", $this->entity->id);
-
-    if (!isset($this->entity->name)) {
-      if (isset($this->entity->displayTitle)) {
-        $this->entity->name = $this->entity->displayTitle;
-      }
-      elseif (isset($this->entity->title)) {
-        $this->entity->name = $this->entity->title;
-      }
-    }
+    $this->initLanguageLinks("/{$this->entity->set->singularKey}/{0}/edit", $this->entity->id);
 
     $this->breadcrumb->addCrumbs([
-      [ $this->entity->routeIndex, $breadcrumbIndexTitle ],
-      [ $this->entity->route, $this->entity->name ]
+      [ $this->entity->route, $breadcrumbIndexTitle ],
+      [ $this->entity->route, $this->entity->lemma($this->intl->languageCode) ]
     ]);
     return $this;
   }

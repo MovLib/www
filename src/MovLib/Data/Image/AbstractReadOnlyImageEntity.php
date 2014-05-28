@@ -233,7 +233,7 @@ abstract class AbstractReadOnlyImageEntity extends \MovLib\Core\Entity\AbstractE
     // Check if the image exists.
     if ($this->imageCacheBuster) {
       if (empty($this->imageStyles[$style]) || !is_file($this->imageGetStyleURI($style))) {
-        $this->log->warning("Generating all image styles because file is missing from storage!");
+        $this->container->log->warning("Generating all image styles because file is missing from storage!");
         $this->imageGenerateStyles()->imageSaveStyles();
       }
       $this->imageStylesCache[$style] = $this->imageStyles[$style];

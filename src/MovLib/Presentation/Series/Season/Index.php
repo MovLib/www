@@ -65,7 +65,7 @@ class Index extends \MovLib\Presentation\AbstractPresenter {
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Seasons"))
       ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/seasons", $this->entity->id)
+      ->initLanguageLinks("/{$this->entity->set->singularKey}/{0}/seasons", $this->entity->id)
       ->breadcrumb->addCrumbs([
         [ $this->intl->r("/series"), $this->intl->tp(-1, "Series") ],
         [ $this->entity->route, $this->entity->displayTitle ]

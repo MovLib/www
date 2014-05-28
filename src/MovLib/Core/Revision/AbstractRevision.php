@@ -317,7 +317,9 @@ abstract class AbstractRevision implements RevisionInterface {
   /**
    * {@inheritdoc}
    */
-  final public function create(\MovLib\Core\Database\Connection $connection) {
+  final public function create(\MovLib\Core\Database\Connection $connection, \MovLib\Component\DateTime $created) {
+    $this->created = $created;
+
     // Allow the concrete revision to perform work before the actual revision is created.
     $this->preCreate($connection);
 

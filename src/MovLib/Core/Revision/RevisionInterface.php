@@ -86,9 +86,13 @@ interface RevisionInterface {
    *
    * @param \MovLib\Core\Database\Connection $connection
    *   The transaction connection.
+   * @param \MovLib\Component\DateTime $created
+   *   The date and time the revision entity should use as its identifier within the history of the entity. This is
+   *   usually the request date and time and should match the creation date and time if you create a new entity or the
+   *   changed date and time if you edit an entity.
    * @return integer
    *   The unique identifier that was given by the database to the newly inserted entity.
    */
-  public function create(\MovLib\Core\Database\Connection $connection);
+  public function create(\MovLib\Core\Database\Connection $connection, \MovLib\Component\DateTime $created);
 
 }

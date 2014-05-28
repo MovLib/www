@@ -71,16 +71,12 @@ abstract class AbstractCreatePresenter extends \MovLib\Presentation\AbstractPres
     ));
     $this->entity = $entity;
 
-    if (empty($this->entity->routeIndex)) {
-      $this->entity->routeIndex = $this->intl->r("/{$this->entity->pluralKey}");
-    }
-
     $this->sidebarInit([
-      [ $this->entity->routeIndex, $breadcrumbIndexTitle, [ "class" => "ico ico-{$this->entity->singularKey}"] ],
-      [ $this->intl->r("/help/database/{$this->entity->pluralKey}"), $this->intl->t("Help"), [ "class" => "ico ico-help"] ],
+      [ $this->entity->set->route, $breadcrumbIndexTitle, [ "class" => "ico ico-{$this->entity->set->singularKey}"] ],
+      [ $this->intl->r("/help/database/{$this->entity->set->pluralKey}"), $this->intl->t("Help"), [ "class" => "ico ico-help"] ],
     ]);
-    $this->initLanguageLinks("/{$this->entity->singularKey}/create");
-    $this->breadcrumb->addCrumb($this->entity->routeIndex, $breadcrumbIndexTitle);
+    $this->initLanguageLinks("/{$this->entity->set->singularKey}/create");
+    $this->breadcrumb->addCrumb($this->entity->set->route, $breadcrumbIndexTitle);
     return $this;
   }
 

@@ -66,12 +66,12 @@ interface OriginatorInterface {
    *
    * @param integer $userId
    *   The user's unique identifier who created/edited the entity.
-   * @param \MovLib\Component\DateTime $created
+   * @param \MovLib\Component\DateTime $changed
    *   The date and time the user created/edited the entity, should be the request time.
    * @return \MovLib\Data\Revision\RevisionEntityInterface
    *   A revision based on the current state of the entity.
    */
-  public function createRevision($userId, \MovLib\Component\DateTime $created);
+  public function createRevision($userId, \MovLib\Component\DateTime $changed);
 
   /**
    * Set the state of the instance based on the given revision.

@@ -65,7 +65,7 @@ class Releases extends \MovLib\Presentation\AbstractPresenter {
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Releases"))
       ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/releases", $this->entity->id)
+      ->initLanguageLinks("/{$this->entity->set->singularKey}/{0}/releases", $this->entity->id)
       ->breadcrumb->addCrumbs([
         [ $this->intl->r("/companies"), $this->intl->t("Companies") ],
         [ $this->entity->route, $this->entity->name ]

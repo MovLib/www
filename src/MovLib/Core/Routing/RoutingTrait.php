@@ -60,7 +60,7 @@ trait RoutingTrait {
 
           // Count our placeholders if we haven't done so yet.
           if (!$c) {
-            $c = substr_count($this->route->args, "{") - 1; // Minus one because formatting starts at index zero.
+            $c = substr_count($this->route->route, "{") - 1; // Minus one because formatting starts at index zero.
           }
 
           // Increment, insert, return...

@@ -159,8 +159,9 @@ abstract class AbstractEntitySet extends \ArrayObject implements \MovLib\Core\En
 
   /**
    * {@inheritdoc}
+   * @todo Error occures when function defined with &: Only variable references should be returned by reference.
    */
-  final public function &offsetGet($index) {
+  final public function offsetGet($index) {
     return parent::offsetGet($index);
   }
 

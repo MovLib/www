@@ -84,14 +84,14 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractPresenter {
     $this->historySet = new HistorySet($entityName, $this->entity->id);
     $this->initPage(
       /// The {lemma} will be enclosed in localized quotes, e.g.: History of “Cat Movie”
-      $this->intl->t("History of {lemma}", $this->placeholder($this->entity->lemma)),
+      $this->intl->t("History of {lemma}", [ "lemma" => $this->entity->lemma($this->intl->languageCode) ]),
       null,
       $this->intl->t("History")
     );
     $this->sidebarInitToolbox($this->entity);
     $this->breadcrumb->addCrumbs([
-      [ $this->entity->indexRoute, $this->entity->indexTitle ],
-      [ $this->entity->route, $this->entity->lemma ],
+      [ $this->entity->route, $this->entity->bundleTitle ],
+      [ $this->entity->route, $this->entity->lemma($this->intl->languageCode) ],
     ]);
     $this->paginationInit($this->historySet->getTotalCount());
     $this->historySet->load($this->container, $this->paginationOffset, $this->paginationLimit);
@@ -122,7 +122,7 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractPresenter {
       }
       else {
         $diffToCurrentVersion =
-          "<a href='{$this->entity->r("/history/{0}", $revision->id)}'>" .
+          "<a href='{$this->entity->r("/history/{0}", [ $revision->id ])}'>" .
             $this->intl->t("Compare to current revision.") .
           "</a>"
         ;

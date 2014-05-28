@@ -65,7 +65,7 @@ class Discussion extends \MovLib\Presentation\AbstractPresenter {
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Discussion"))
       ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/discussion", $this->entity->id)
+      ->initLanguageLinks("/{$this->entity->set->singularKey}/{0}/discussion", $this->entity->id)
       ->breadcrumb->addCrumbs([
         [ $this->intl->r("/events"), $this->intl->t("Events") ],
         [ $this->entity->route, $this->entity->name ]

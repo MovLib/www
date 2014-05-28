@@ -172,7 +172,8 @@ trait OriginatorTrait {
       $connection->real_query("START TRANSACTION WITH CONSISTENT SNAPSHOT, READ WRITE");
       $revision = $this->createRevision($userId, $created);
       $this->preCreate($connection, $revision);
-      $this->id = $revision->create($connection);
+      $this->id      = $revision->create($connection, $created);
+      $this->created = $created;
       $this->postCreate($connection, $revision);
       $connection->commit();
     }
@@ -192,9 +193,9 @@ trait OriginatorTrait {
   }
 
   /**
-   * @see \MovLib\Data\Revision\EntityInterface::createRevision()
+   * @see \MovLib\Data\Revision\OriginatorInterface::createRevision()
    */
-  final public function createRevision($userId, \MovLib\Component\DateTime $created) {
+  final public function createRevision($userId, \MovLib\Component\DateTime $changed) {
     // We are always able to create a revision instance from the concrete class by simply appending Revision. Also note
     // that we are always able to instantiate the revision without checking for our own id property's value, because it
     // will be NULL if we're a new instance and not commited yet, thus, no query will be executed by the revision class.
@@ -202,8 +203,8 @@ trait OriginatorTrait {
     $revision = new $class($this->id);
 
     // Update the just loaded revision with the new values that we have in absolutely every originator.
-    $revision->id      = $created->formatInteger();
-    $revision->created = $created;
+    $revision->id      = $changed->formatInteger();
+    $revision->changed = $revision->created = $this->changed = $changed;
     $revision->userId  = $userId;
 
     // Not all originators implement the deleted property, we still want this in this unified place for later changes

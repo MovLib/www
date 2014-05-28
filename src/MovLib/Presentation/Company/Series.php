@@ -43,7 +43,7 @@ class Series extends \MovLib\Presentation\AbstractPresenter {
   use \MovLib\Partial\SidebarTrait;
   use \MovLib\Presentation\Company\CompanyTrait;
 
-  
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
@@ -67,7 +67,7 @@ class Series extends \MovLib\Presentation\AbstractPresenter {
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->tp(-1, "Series"))
       ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/series", $this->entity->id)
+      ->initLanguageLinks("/{$this->entity->set->singularKey}/{0}/series", $this->entity->id)
       ->breadcrumb->addCrumbs([
         [ $this->intl->r("/companies"), $this->intl->t("Companies") ],
         [ $this->entity->route, $this->entity->name ]

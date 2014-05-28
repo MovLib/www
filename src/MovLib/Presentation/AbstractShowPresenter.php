@@ -83,11 +83,11 @@ abstract class AbstractShowPresenter extends \MovLib\Presentation\AbstractPresen
     $this->entity                = $entity;
     $this->schemaType            = $typeOf;
     $this->headingSchemaProperty = $pageTitleProperty;
-    $this->breadcrumb->addCrumb($entity->routeIndex, $breadcrumbIndexTitle);
-    $this->initLanguageLinks("/{$entity->singularKey}/{0}", $entity->id);
+    $this->breadcrumb->addCrumb($entity->set->route, $breadcrumbIndexTitle);
+    $this->initLanguageLinks("/{$entity->set->singularKey}/{0}", $entity->id);
     $this->sidebarInitToolbox($entity, $additionalSidebarItems);
     if ($entity->deleted) {
-      throw new GoneException("The {$this->entity->singularKey} {$this->entity->id} is no longer available.");
+      throw new GoneException("The {$this->entity->set->singularKey} {$this->entity->id} is no longer available.");
     }
     return $this;
   }
@@ -103,16 +103,16 @@ abstract class AbstractShowPresenter extends \MovLib\Presentation\AbstractPresen
     if ($this->entity->deleted === true) {
       return [
         [ $this->entity->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
-        [ $this->intl->r("/{$this->entity->singularKey}/{0}/discussion", $this->entity->id), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
-        [ $this->intl->r("/{$this->entity->singularKey}/{0}/history", $this->entity->id), $this->intl->t("History"), [ "class" => "ico ico-history" ] ]
+        [ $this->entity->r("/discussion", [ $this->entity->route->args ]), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
+        [ $this->entity->r("/history", [ $this->entity->route->args ]), $this->intl->t("History"), [ "class" => "ico ico-history" ] ]
       ];
     }
     return [
       [ $this->entity->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
-      [ $this->intl->r("/{$this->entity->singularKey}/{0}/edit", $this->entity->id), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
-      [ $this->intl->r("/{$this->entity->singularKey}/{0}/discussion", $this->entity->id), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
-      [ $this->intl->r("/{$this->entity->singularKey}/{0}/history", $this->entity->id), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
-      [ $this->intl->r("/{$this->entity->singularKey}/{0}/delete", $this->entity->id), $this->intl->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
+      [ $this->entity->r("/edit", [ $this->entity->route->args ]), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
+      [ $this->entity->r("/discussion", [ $this->entity->route->args ]), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
+      [ $this->entity->r("/history", [ $this->entity->route->args ]), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
+      [ $this->entity->r("/delete", [ $this->entity->route->args ]), $this->intl->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
     ];
   }
 

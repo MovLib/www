@@ -65,7 +65,7 @@ class Movies extends \MovLib\Presentation\AbstractPresenter {
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Movies"))
       ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/movies", $this->entity->id, true)
+      ->initLanguageLinks("/{$this->entity->set->singularKey}/{0}/movies", $this->entity->id, true)
       ->breadcrumb->addCrumbs([
         [ $this->intl->r("/events"), $this->intl->t("Events") ],
         [ $this->entity->route, $this->entity->name ]

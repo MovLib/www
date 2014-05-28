@@ -77,7 +77,7 @@ trait RevisionTrait {
   protected function indexSearch(\MovLib\Core\Revision\RevisionInterface $revision) {
     // Create new search indexer instance and set default values, a concrete class can overwrite them via the dedicated
     // setters of the indexer.
-    $search = new SearchIndexer($this->pluralKey, $this->singularKey, $this->id);
+    $search = new SearchIndexer($this->set->pluralKey, $this->set->singularKey, $this->id);
 
     // Let the concrete class define which properties should be indexed and how.
     $this->defineSearchIndex($search, $revision);

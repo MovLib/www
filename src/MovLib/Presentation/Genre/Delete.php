@@ -64,8 +64,8 @@ class Delete extends \MovLib\Presentation\AbstractPresenter {
     $pageTitle    = $this->intl->t("Delete {0}", [ $this->entity->name ]);
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Delete"))
-      ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("/{$this->entity->singularKey}/{0}/delete", $this->entity->id)
+      ->sidebarInitToolbox($this->entity)
+      ->initLanguageLinks("/{$this->entity->set->singularKey}/{0}/delete", $this->entity->id)
       ->breadcrumb->addCrumbs([
         [ $this->intl->r("/genres"), $this->intl->t("Genres") ],
         [ $this->entity->route, $this->entity->name ]

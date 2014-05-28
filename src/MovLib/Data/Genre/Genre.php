@@ -112,11 +112,11 @@ SELECT
   `created`,
   `deleted`,
   IFNULL(
-    COLUMN_GET(`dyn_names`, '{$this->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+    COLUMN_GET(`dyn_names`, '{$container->intl->languageCode}' AS CHAR),
+    COLUMN_GET(`dyn_names`, '{$container->intl->defaultLanguageCode}' AS CHAR)
   ),
-  COLUMN_GET(`dyn_descriptions`, '{$this->intl->languageCode}' AS CHAR),
-  COLUMN_GET(`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`dyn_descriptions`, '{$container->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`dyn_wikipedia`, '{$container->intl->languageCode}' AS CHAR),
   `count_movies`,
   `count_series`
 FROM `genres`
