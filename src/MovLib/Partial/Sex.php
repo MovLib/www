@@ -32,6 +32,15 @@ use \MovLib\Partial\FormElement\InputText;
  */
 final class Sex {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Sex";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 

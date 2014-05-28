@@ -290,11 +290,7 @@ abstract class AbstractRevision implements RevisionInterface {
     $diffPatch = (new Diff())->getPatch(serialize($this), $oldSerialized);
 
     // Prepare the update query and set the default properties.
-    $update = (new Update($connection, $this->tableName))
-      ->set("changed", $this->created)
-      ->set("deleted", $this->deleted)
-      ->where("id", $this->entityId)
-    ;
+    $update = (new Update($connection, $this->tableName))->set("changed", $this->created)->where("id", $this->entityId);
 
     // Let the concrete revision add its custom fields.
     $this->addCommitFields($update, $oldRevision, $languageCode);

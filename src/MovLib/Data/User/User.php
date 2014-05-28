@@ -17,9 +17,10 @@
  */
 namespace MovLib\Data\User;
 
-use \MovLib\Core\HTTP\Session;
 use \MovLib\Component\Date;
 use \MovLib\Component\DateTime;
+use \MovLib\Core\Database\Database;
+use \MovLib\Core\HTTP\Session;
 use \MovLib\Data\Image\ImageResizeEffect;
 use \MovLib\Data\Movie\MovieSet;
 use \MovLib\Data\Series\SeriesSet;
@@ -36,6 +37,15 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @since 0.0.1-dev
  */
 final class User extends \MovLib\Data\Image\AbstractImageEntity {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "User";
+  // @codingStandardsIgnoreEnd
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -277,9 +287,8 @@ final class User extends \MovLib\Data\Image\AbstractImageEntity {
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
   public function __construct(\MovLib\Core\Container $container, $value = null, $from = self::FROM_NAME) {
-    parent::__construct($container);
     if ($value && $from) {
-      $stmt = $this->getMySQLi()->prepare(<<<SQL
+      $stmt = Database::getConnection()->prepare(<<<SQL
 SELECT
   `id`,
   `name`,
@@ -292,7 +301,7 @@ SELECT
   `count_contributions`,
   `country_code`,
   `currency_code`,
-  COLUMN_GET(`dyn_about_me`, '{$this->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`dyn_about_me`, '{$container->intl->languageCode}' AS CHAR),
   `edits`,
   HEX(`image_cache_buster`),
   `image_extension`,
@@ -346,9 +355,7 @@ SQL
         throw new NotFoundException("Couldn't find user {$from} {$value}");
       }
     }
-    if ($this->id) {
-      $this->init();
-    }
+    parent::__construct($container);
   }
 
   /**
@@ -376,7 +383,7 @@ SQL
    * @throws \mysqli_sql_exception
    */
   public function deleteAccount() {
-    $this->getMySQLi()->query("UPDATE `users` SET `" . implode("` = NULL, `", [
+    Database::getConnection()->query("UPDATE `users` SET `" . implode("` = NULL, `", [
       "admin", "birthdate", "country_code", "dyn_about_me", "edits", "email", "image_cache_buster", "image_extension",
       "image_styles", "password", "private", "profile_views", "real_name", "reputation", "sex", "language_code",
       "timezone", "website",
@@ -396,7 +403,7 @@ SQL
     if ($this->imageExists === true) {
       $this->imageDeleteStyles();
       $this->imageDelete();
-      $this->getMySQLi()->query("UPDATE `users` SET `image_cache_buster` = NULL, `image_extension` = NULL, `image_styles` = NULL WHERE `id` = {$this->id}");
+      Database::getConnection()->query("UPDATE `users` SET `image_cache_buster` = NULL, `image_extension` = NULL, `image_styles` = NULL WHERE `id` = {$this->id}");
       $session->userImageCacheBuster = $session->userImageExtension = $_SESSION[Session::USER_IMAGE_CACHE_BUSTER] = $_SESSION[Session::USER_IMAGE_EXTENSION] = null;
     }
     return $this;
@@ -418,7 +425,7 @@ SQL
     $contributions = $entities = [];
 
     // Select all contributions from the database matching the filter criteria and offset + limit.
-    $result = $this->getMySQLi()->query(<<<SQL
+    $result = Database::getConnection()->query(<<<SQL
 SELECT
   `revisions`.`id` + 0 AS `revisionId`,
   `revisions`.`entity_id` AS `entityId`,
@@ -482,7 +489,7 @@ SQL
     if (empty($userId)) {
       $userId = $this->id;
     }
-    $result = $this->getMySQLi()->query("SELECT `rating` FROM `{$entity->tableName}_ratings` WHERE `user_id` = {$userId} AND `{$entity->singularKey}_id` = {$entity->id} LIMIT 1");
+    $result = Database::getConnection()->query("SELECT `rating` FROM `{$entity->tableName}_ratings` WHERE `user_id` = {$userId} AND `{$entity->singularKey}_id` = {$entity->id} LIMIT 1");
     $rating = $result->fetch_row()[0];
     $result->free();
     return $rating;
@@ -496,7 +503,7 @@ SQL
    */
   public function getTotalContributionCount() {
     if (empty($this->edits)) {
-      $this->edits = (integer) $this->getMySQLi()->query(
+      $this->edits = (integer) Database::getConnection()->query(
         "SELECT COUNT(*) FROM `revisions` WHERE `user_id` = {$this->id} LIMIT 1"
       )->fetch_all()[0][0];
     }
@@ -506,19 +513,18 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function init() {
+  public function init(array $values = null) {
+    parent::init($values);
     $this->access               = new DateTime($this->access);
     $this->birthdate            && ($this->birthdate = new Date($this->birthdate));
     $this->deleted              = !(boolean) $this->email;
     $this->imageAlternativeText = $this->intl->t("{username}’s avatar image.", [ "username" => $this->name ]);
     $this->imageDirectory       = "upload://user";
     $this->imageFilename        = mb_strtolower($this->name);
-    $this->pluralKey            = "users";
     $this->private              = (boolean) $this->private;
-    $this->routeArgs            = [ $this->imageFilename ];
-    $this->singularKey          = "user";
+    $this->route->args          = [ "args" => $this->imageFilename ];
     $this->timezoneId           && ($this->timezone = new \DateTimeZone($this->timezoneId));
-    return parent::init();
+    return $this;
   }
 
   /**
@@ -541,7 +547,7 @@ SQL
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    $mysqli = $this->getMySQLi();
+    $mysqli = Database::getConnection();
     $stmt = $mysqli->prepare("INSERT INTO `users` (`dyn_about_me`, `email`, `name`, `password`, `language_code`) VALUES('', ?, ?, ?, ?)");
     $stmt->bind_param("ssss", $this->email, $this->name, $this->passwordHash, $this->languageCode);
     $stmt->execute();
@@ -563,7 +569,7 @@ SQL
    */
   public function loadRatedEntities($offset = 0, $limit = 10) {
     $ratedEntities  = [];
-    $result = $this->getMySQLi()->query(<<<SQL
+    $result = Database::getConnection()->query(<<<SQL
 (
 SELECT
   'Movie' AS `entity`,
@@ -634,7 +640,7 @@ SQL
    */
   protected function imageSaveStyles() {
     $styles = serialize($this->imageStyles);
-    $stmt   = $this->getMySQLi()->prepare("UPDATE `users` SET `image_styles` = ? WHERE `id` = ?");
+    $stmt   = Database::getConnection()->prepare("UPDATE `users` SET `image_styles` = ? WHERE `id` = ?");
     $stmt->bind_param("sd", $styles, $this->id);
     $stmt->execute();
     $stmt->close();
@@ -669,7 +675,7 @@ SQL
    *   <code>TRUE</code> if the value is already in use, <code>FALSE</code> otherwise.
    */
   public function inUse($what, $value) {
-    $stmt = $this->getMySQLi()->prepare("SELECT `id` FROM `users` WHERE `{$what}` = ? LIMIT 1");
+    $stmt = Database::getConnection()->prepare("SELECT `id` FROM `users` WHERE `{$what}` = ? LIMIT 1");
     $stmt->bind_param("s", $value);
     $stmt->execute();
     $found = $stmt->fetch();
@@ -678,6 +684,13 @@ SQL
       return false;
     }
     return true;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function lemma($locale) {
+    return $this->name;
   }
 
   /**
@@ -693,7 +706,7 @@ SQL
     }
 
     $styles = serialize($this->imageStyles);
-    $stmt = $this->getMySQLi()->prepare(<<<SQL
+    $stmt = Database::getConnection()->prepare(<<<SQL
 UPDATE `users` SET
   `dyn_about_me`       = COLUMN_ADD(`dyn_about_me`, '{$this->intl->languageCode}', ?),
   `birthdate`          = ?,
@@ -741,7 +754,7 @@ SQL
    * @throws \mysqli_sql_exception
    */
   public function updateEmail($newEmail) {
-    $stmt = $this->getMySQLi()->prepare("UPDATE `users` SET `email` = ? WHERE `id` = {$this->id}");
+    $stmt = Database::getConnection()->prepare("UPDATE `users` SET `email` = ? WHERE `id` = {$this->id}");
     $stmt->bind_param("s", $newEmail);
     $stmt->execute();
     $stmt->close();
@@ -761,7 +774,7 @@ SQL
     if (password_get_info($passwordHash)["algo"] !== $this->config->passwordAlgorithm) {
       $passwordHash = password_hash($passwordHash, $this->config->passwordAlgorithm, $this->config->passwordOptions);
     }
-    $stmt = $this->getMySQLi()->prepare("UPDATE `users` SET `password` = ? WHERE `id` = ?");
+    $stmt = Database::getConnection()->prepare("UPDATE `users` SET `password` = ? WHERE `id` = ?");
     $stmt->bind_param("sd", $passwordHash, $this->id);
     $stmt->execute();
     $stmt->close();

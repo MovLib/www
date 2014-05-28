@@ -29,6 +29,15 @@ namespace MovLib\Presentation\Profile;
  */
 final class Wantlist extends \MovLib\Presentation\Profile\AbstractProfilePresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Wantlist";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

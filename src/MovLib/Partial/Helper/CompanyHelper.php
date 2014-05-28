@@ -29,6 +29,15 @@ use \MovLib\Partial\Date;
  * @since 0.0.1-dev
  */
 final class CompanyHelper extends \MovLib\Core\Presentation\DependencyInjectionBase {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "CompanyHelper";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Presentation\Company\CompanyTrait;
 
   /**

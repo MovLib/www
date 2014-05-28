@@ -29,6 +29,15 @@ use \MovLib\Data\Release\ReleaseSet;
  * @since 0.0.1-dev
  */
 class Charts extends \MovLib\Presentation\AbstractPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Charts";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Partial\SidebarTrait;
 
   /**

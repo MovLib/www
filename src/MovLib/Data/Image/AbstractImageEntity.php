@@ -28,6 +28,15 @@ namespace MovLib\Data\Image;
  */
 abstract class AbstractImageEntity extends \MovLib\Data\Image\AbstractReadOnlyImageEntity {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractImageEntity";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 

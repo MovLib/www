@@ -28,6 +28,15 @@ namespace MovLib\Core;
  */
 class Container {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Container";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Active global configuration instance.
    *

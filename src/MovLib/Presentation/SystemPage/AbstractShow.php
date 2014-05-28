@@ -29,6 +29,15 @@ use \MovLib\Data\SystemPage\SystemPage;
  * @since 0.0.1-dev
  */
 abstract class AbstractShow extends \MovLib\Presentation\AbstractPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractShow";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Partial\SidebarTrait;
 
   /**

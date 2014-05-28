@@ -31,6 +31,15 @@ use \MovLib\Exception\ClientException\NotFoundException;
  */
 final class SubCategory extends \MovLib\Data\AbstractEntity {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "SubCategory";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
@@ -86,7 +95,7 @@ final class SubCategory extends \MovLib\Data\AbstractEntity {
   public function __construct(\MovLib\Core\Container $container, $id = null) {
     parent::__construct($container);
     if ($id) {
-      $stmt = $this->getMySQLi()->prepare(<<<SQL
+      $stmt = Database::getConnection()->prepare(<<<SQL
 SELECT
   `help_subcategories`.`help_category_id` AS `category`,
   `help_subcategories`.`id` AS `id`,

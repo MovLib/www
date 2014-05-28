@@ -28,6 +28,15 @@ namespace MovLib\Presentation\Tool;
  */
 final class PHPInfo extends \MovLib\Presentation\Tool\AbstractPage {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "PHPInfo";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

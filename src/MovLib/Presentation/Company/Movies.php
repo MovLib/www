@@ -30,6 +30,15 @@ use \MovLib\Partial\Helper\MovieHelper;
  * @since 0.0.1-dev
  */
 class Movies extends \MovLib\Presentation\AbstractPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Movies";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Partial\PaginationTrait;
   use \MovLib\Partial\SidebarTrait;
   use \MovLib\Presentation\Company\CompanyTrait;

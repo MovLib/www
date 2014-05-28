@@ -29,6 +29,15 @@ namespace MovLib\Data\Company;
  */
 final class CompanySet extends \MovLib\Data\AbstractEntitySet {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "CompanySet";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

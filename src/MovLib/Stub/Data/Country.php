@@ -28,6 +28,15 @@ namespace MovLib\Stub\Data;
  */
 abstract class Country {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Country";
+  // @codingStandardsIgnoreEnd
+
   /**
    * The country's ISO 3166-1 alpha-2 code.
    *

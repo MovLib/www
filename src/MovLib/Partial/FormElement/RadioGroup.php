@@ -32,6 +32,15 @@ namespace MovLib\Partial\FormElement;
  */
 class RadioGroup extends \MovLib\Partial\FormElement\Select {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "RadioGroup";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Get the radio group form element.
    *

@@ -29,6 +29,15 @@ namespace MovLib\Data\Event;
  */
 final class EventSet extends \MovLib\Data\AbstractEntitySet {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "EventSet";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

@@ -30,6 +30,15 @@ use \MovLib\Partial\Country;
  */
 final class Place {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Place";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

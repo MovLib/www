@@ -29,6 +29,15 @@ namespace MovLib\Partial;
  */
 final class Alert {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Alert";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 

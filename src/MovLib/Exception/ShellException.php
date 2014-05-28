@@ -28,6 +28,15 @@ namespace MovLib\Exception;
  */
 final class ShellException extends \RuntimeException {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "ShellException";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Instantiate new shell exception.
    *

@@ -36,6 +36,15 @@ use \MovLib\Partial\Navigation;
  */
 final class LanguageSelection extends \MovLib\Presentation\AbstractPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "LanguageSelection";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

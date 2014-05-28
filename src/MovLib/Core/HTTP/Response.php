@@ -28,6 +28,15 @@ namespace MovLib\Core\HTTP;
  */
 final class Response {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Response";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

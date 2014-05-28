@@ -35,6 +35,15 @@ use \MovLib\Partial\FormElement\TextareaHTMLRaw;
  */
 abstract class AbstractEdit extends \MovLib\Presentation\SystemPage\AbstractShow {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractEdit";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

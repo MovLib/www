@@ -33,6 +33,15 @@ use \Symfony\Component\Console\Output\OutputInterface;
  */
 final class SeedDatabase extends \MovLib\Console\Command\AbstractCommand {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "SeedDatabase";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

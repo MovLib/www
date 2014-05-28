@@ -30,6 +30,15 @@ namespace MovLib\Data\Release;
  */
 final class ReleaseSet extends \MovLib\Data\AbstractEntitySet {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "ReleaseSet";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

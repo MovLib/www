@@ -28,6 +28,15 @@ namespace MovLib\Stub\Data\Person;
  */
 abstract class PersonMovie {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "PersonMovie";
+  // @codingStandardsIgnoreEnd
+
   /**
    * The person's movie.
    *

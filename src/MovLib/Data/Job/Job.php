@@ -226,7 +226,7 @@ SQL
    */
   public function getCompanies($offset = null, $limit = null) {
     $companySet = new CompanySet($this->container);
-    $result     = $this->getMySQLi()->query(<<<SQL
+    $result     = Database::getConnection()->query(<<<SQL
 (
 SELECT `companies`.`id` FROM `companies`
   INNER JOIN `movies_crew` ON `movies_crew`.`company_id` = `companies`.`id` AND `movies_crew`.`job_id` = {$this->id}
@@ -257,7 +257,7 @@ SQL
    */
   public function getCompanyTotalCount() {
     if (empty($this->companyCount)) {
-      $this->companyCount = (integer) $this->getMySQLi()->query(<<<SQL
+      $this->companyCount = (integer) Database::getConnection()->query(<<<SQL
 SELECT count(*) FROM `companies`
   INNER JOIN `movies_crew` ON `movies_crew`.`company_id` = `companies`.`id` AND `movies_crew`.`job_id` = {$this->id}
   WHERE `companies`.`deleted` = false
@@ -284,7 +284,7 @@ SQL
    */
   public function getPersons($offset = null, $limit = null) {
     $personSet = new PersonSet($this->container);
-    $result = $this->getMySQLi()->query(<<<SQL
+    $result = Database::getConnection()->query(<<<SQL
 (
 SELECT `persons`.`id` FROM `persons`
   INNER JOIN `movies_crew` ON `movies_crew`.`person_id` = `persons`.`id` AND `movies_crew`.`job_id` = {$this->id}
@@ -315,7 +315,7 @@ SQL
    */
   public function getPersonTotalCount() {
     if (empty($this->personCount)) {
-      $this->personCount = (integer) $this->getMySQLi()->query(<<<SQL
+      $this->personCount = (integer) Database::getConnection()->query(<<<SQL
 SELECT count(*) FROM `persons`
   INNER JOIN `movies_crew` ON `movies_crew`.`person_id` = `persons`.`id` AND `movies_crew`.`job_id` = {$this->id}
   WHERE `persons`.`deleted` = false

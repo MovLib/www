@@ -29,6 +29,15 @@ namespace MovLib\Stub\Data\Revision;
  */
 abstract class DiffPatch {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "DiffPatch";
+  // @codingStandardsIgnoreEnd
+
   /**
    * The diff patch itself.
    *

@@ -35,6 +35,15 @@ use \MovLib\Partial\Alert;
  * @since 0.0.1-dev
  */
 final class Index extends \MovLib\Presentation\AbstractPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Index";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Partial\PaginationTrait;
 
   /**

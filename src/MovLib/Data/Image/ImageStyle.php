@@ -28,6 +28,15 @@ namespace MovLib\Data\Image;
  */
 class ImageStyle {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "ImageStyle";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

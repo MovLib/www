@@ -29,6 +29,15 @@ namespace MovLib\Data\Person;
  */
 final class PersonSet extends \MovLib\Data\AbstractEntitySet {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "PersonSet";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

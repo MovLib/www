@@ -34,6 +34,15 @@ use \MovLib\Partial\FormElement\InputEmail;
  */
 final class ComingSoon extends \MovLib\Presentation\AbstractPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "ComingSoon";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

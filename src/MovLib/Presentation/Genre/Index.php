@@ -34,6 +34,15 @@ use \MovLib\Data\Genre\GenreSet;
  */
 final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Index";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */
@@ -48,7 +57,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
   /**
    * {@inheritdoc}
    */
-  protected function formatListingItem(\MovLib\Data\AbstractEntity $genre, $delta) {
+  protected function formatListingItem(\MovLib\Core\Entity\EntityInterface $genre, $delta) {
     return
       "<li class='hover-item r'>" .
         "<article>" .

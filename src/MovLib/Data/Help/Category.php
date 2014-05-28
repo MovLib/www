@@ -30,6 +30,15 @@ use \MovLib\Exception\ClientException\NotFoundException;
  */
 final class Category extends \MovLib\Data\AbstractEntity {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Category";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
@@ -85,7 +94,7 @@ final class Category extends \MovLib\Data\AbstractEntity {
   public function __construct(\MovLib\Core\Container $container, $id = null) {
     parent::__construct($container);
     if ($id) {
-      $stmt = $this->getMySQLi()->prepare(<<<SQL
+      $stmt = Database::getConnection()->prepare(<<<SQL
 SELECT
   `help_categories`.`id` AS `id`,
   `help_categories`.`changed` AS `changed`,

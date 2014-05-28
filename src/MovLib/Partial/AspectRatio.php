@@ -28,6 +28,15 @@ namespace MovLib\Partial;
  */
 abstract class AspectRatio {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AspectRatio";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

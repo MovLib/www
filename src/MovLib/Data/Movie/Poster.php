@@ -31,6 +31,15 @@ use \MovLib\Data\Movie\Movie;
  */
 final class Poster extends \MovLib\Data\Image\AbstractImageEntity {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Poster";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */
@@ -68,7 +77,7 @@ final class Poster extends \MovLib\Data\Image\AbstractImageEntity {
    */
   protected function imageSaveStyles() {
     $styles = serialize($this->imageStyles);
-    $stmt   = $this->getMySQLi()->prepare("UPDATE `{$this->tableName}` SET `styles` = ? WHERE `id` = ? AND `movie_id` = ?");
+    $stmt   = Database::getConnection()->prepare("UPDATE `{$this->tableName}` SET `styles` = ? WHERE `id` = ? AND `movie_id` = ?");
     $stmt->bind_param("sdd", $styles, $this->id, $this->entityId);
     $stmt->execute();
     $stmt->close();

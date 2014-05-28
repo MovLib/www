@@ -29,5 +29,14 @@ namespace MovLib\Presentation\Job;
  * @since 0.0.1-dev
  */
 final class HistoryDiff {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "HistoryDiff";
+  // @codingStandardsIgnoreEnd
   
 }

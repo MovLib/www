@@ -46,7 +46,7 @@ trait SelectTrait {
     // @codeCoverageIgnoreEnd
     // @devEnd
     $options = [];
-    $result = $this->getMySQLi()->query("SELECT `id`, {$column} FROM {$this->tableName}");
+    $result = Database::getConnection()->query("SELECT `id`, {$column} FROM {$this->tableName}");
     /* @var $row \MovLib\Data\AbstractEntity */
     while ($row = $result->fetch_row()) {
       $options[$row[0]] = $row[1];

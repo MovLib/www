@@ -28,6 +28,15 @@ namespace MovLib\Presentation\Person;
  */
 abstract class AbstractBase extends \MovLib\Presentation\AbstractPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractBase";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

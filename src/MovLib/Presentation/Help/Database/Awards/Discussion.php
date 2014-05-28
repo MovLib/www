@@ -32,6 +32,15 @@ use \MovLib\Data\Help\Article;
  */
 final class Discussion extends \MovLib\Presentation\Help\AbstractDiscussion {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Discussion";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

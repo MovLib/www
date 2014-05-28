@@ -44,6 +44,15 @@ use \MovLib\Partial\FormElement\TextareaHTMLExtendedImage;
  */
 final class AccountSettings extends \MovLib\Presentation\Profile\AbstractProfilePresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AccountSettings";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    * @throws \MovLib\Exception\ClientException\UnauthorizedException

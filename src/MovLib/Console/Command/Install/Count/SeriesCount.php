@@ -28,6 +28,15 @@ namespace MovLib\Console\Command\Install\Count;
  */
 class SeriesCount extends \MovLib\Console\Command\Install\Count\AbstractEntityCountCommand {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "SeriesCount";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

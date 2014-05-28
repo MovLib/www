@@ -29,6 +29,15 @@ use \MovLib\Data\Award\Award;
  * @since 0.0.1-dev
  */
 class Delete extends \MovLib\Presentation\AbstractPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Delete";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Partial\SidebarTrait;
   use \MovLib\Presentation\Award\AwardTrait;
 

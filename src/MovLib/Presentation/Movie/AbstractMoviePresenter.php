@@ -30,6 +30,15 @@ use \MovLib\Partial\Helper\MovieHelper;
  * @since 0.0.1-dev
  */
 abstract class AbstractMoviePresenter extends \MovLib\Presentation\AbstractPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractMoviePresenter";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Partial\SidebarTrait;
   use \MovLib\Presentation\Movie\MovieTrait;
 

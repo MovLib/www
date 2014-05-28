@@ -29,6 +29,15 @@ use \MovLib\Data\Genre\Genre;
  * @since 0.0.1-dev
  */
 class Show extends \MovLib\Presentation\AbstractShowPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Show";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Presentation\Genre\GenreTrait;
 
   /**

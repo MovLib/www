@@ -75,7 +75,7 @@ trait RoutingTrait {
     }
 
     // Add this route to our cache and we're done.
-    $routes[$cacheKey] = $this->container->intl->r("{$this->route->key}{$routePart}", $args);
+    $routes[$cacheKey] = $this->container->intl->r("{$this->route->route}{$routePart}", $args);
     return $routes[$cacheKey];
   }
 

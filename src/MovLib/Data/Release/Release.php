@@ -32,6 +32,15 @@ use \MovLib\Exception\ClientException\NotFoundException;
  */
 class Release extends \MovLib\Data\AbstractEntity {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Release";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
@@ -152,7 +161,7 @@ class Release extends \MovLib\Data\AbstractEntity {
   public function __construct(\MovLib\Core\Container $container, $id = null) {
     parent::__construct($container);
     if ($id) {
-      $stmt = $this->getMySQLi()->prepare(<<<SQL
+      $stmt = Database::getConnection()->prepare(<<<SQL
 SELECT
   `release`.`changed`,
   `release`.`created`,

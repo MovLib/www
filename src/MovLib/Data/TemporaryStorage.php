@@ -28,6 +28,15 @@ namespace MovLib\Data;
  */
 final class TemporaryStorage extends \MovLib\Core\AbstractDatabase {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "TemporaryStorage";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
@@ -52,7 +61,7 @@ final class TemporaryStorage extends \MovLib\Core\AbstractDatabase {
    * @throws \mysqli_sql_exception
    */
   public function delete($key) {
-    $stmt = $this->getMySQLi()->prepare("DELETE FROM `tmp` WHERE `key` = ?");
+    $stmt = Database::getConnection()->prepare("DELETE FROM `tmp` WHERE `key` = ?");
     $stmt->bind_param("s", $key);
     $stmt->execute();
     $stmt->close();
@@ -69,7 +78,7 @@ final class TemporaryStorage extends \MovLib\Core\AbstractDatabase {
    * @throws \mysqli_sql_exception
    */
   public function get($key) {
-    $stmt = $this->getMySQLi()->prepare("SELECT `data` FROM `tmp` WHERE `key` = ? LIMIT 1");
+    $stmt = Database::getConnection()->prepare("SELECT `data` FROM `tmp` WHERE `key` = ? LIMIT 1");
     $stmt->bind_param("s", $key);
     $stmt->execute();
     $stmt->bind_result($data);
@@ -99,7 +108,7 @@ final class TemporaryStorage extends \MovLib\Core\AbstractDatabase {
       $key = hash("sha256", openssl_random_pseudo_bytes(1024));
     }
     $data = serialize($data);
-    $stmt = $this->getMySQLi()->prepare("INSERT INTO `tmp` (`data`, `key`, `ttl`) VALUES (?, ?, ?)");
+    $stmt = Database::getConnection()->prepare("INSERT INTO `tmp` (`data`, `key`, `ttl`) VALUES (?, ?, ?)");
     $stmt->bind_param("sss", $data, $key, $ttl);
     $stmt->execute();
     $stmt->close();
@@ -120,7 +129,7 @@ final class TemporaryStorage extends \MovLib\Core\AbstractDatabase {
    */
   public function update($data, $key, $ttl = self::TMP_TTL_DAILY) {
     $data = serialize($data);
-    $stmt = $this->getMySQLi()->prepare("UPDATE `tmp` SET `created` = CURRENT_TIMESTAMP, `data` = ?, `ttl` = ?  WHERE `key` = ?");
+    $stmt = Database::getConnection()->prepare("UPDATE `tmp` SET `created` = CURRENT_TIMESTAMP, `data` = ?, `ttl` = ?  WHERE `key` = ?");
     $stmt->bind_param("sss", $data, $ttl, $key);
     $stmt->execute();
     $stmt->close();

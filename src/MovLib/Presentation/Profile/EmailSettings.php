@@ -41,6 +41,15 @@ use \MovLib\Partial\FormElement\InputEmail;
  */
 final class EmailSettings extends \MovLib\Presentation\Profile\AbstractProfilePresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "EmailSettings";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

@@ -36,6 +36,15 @@ use \MovLib\Partial\Language;
  * @since 0.0.1-dev
  */
 class Create extends \MovLib\Presentation\AbstractCreatePresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Create";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Presentation\Series\SeriesTrait;
 
   /**

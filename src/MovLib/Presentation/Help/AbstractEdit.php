@@ -33,6 +33,15 @@ use \MovLib\Partial\FormElement\TextareaHTMLExtended;
  * @since 0.0.1-dev
  */
 abstract class AbstractEdit extends \MovLib\Presentation\AbstractEditPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractEdit";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Presentation\Help\HelpTrait;
 
   /**

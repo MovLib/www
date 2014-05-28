@@ -28,6 +28,15 @@ namespace MovLib\Console\Command\Dev\ElasticSearch\Mapping;
  */
 abstract class AbstractMapping {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractMapping";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 

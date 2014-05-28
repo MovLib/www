@@ -29,6 +29,15 @@ namespace MovLib\Partial\FormElement;
  */
 class InputWikipedia extends \MovLib\Partial\FormElement\InputURL {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "InputWikipedia";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 

@@ -31,6 +31,15 @@ use \MovLib\Data\TemporaryStorage;
  */
 final class PasswordChangeEmail extends \MovLib\Mail\AbstractEmail {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "PasswordChangeEmail";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

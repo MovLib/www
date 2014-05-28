@@ -38,6 +38,15 @@ use \Symfony\Component\Console\Output\OutputInterface;
  */
 class CronDaily extends \MovLib\Console\Command\AbstractCommand {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "CronDaily";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

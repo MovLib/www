@@ -28,6 +28,15 @@ namespace MovLib\Console\Command\Install;
  */
 final class SeedAspectRatios extends \MovLib\Console\Command\Install\AbstractIntlCommand {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "SeedAspectRatios";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

@@ -30,6 +30,19 @@ use \MovLib\Data\Genre\GenreSet;
  */
 class MovieSet extends \MovLib\Data\AbstractEntitySet {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "MovieSet";
+  // @codingStandardsIgnoreEnd
+
+  public static $tableName = "movies";
+
+  public $bundle = "Movies";
+
   /**
    * {@inheritdoc}
    */
@@ -76,15 +89,6 @@ SQL;
     return <<<SQL
 
 SQL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-    $this->pluralKey   = "movies";
-    $this->singularKey = "movie";
-    return parent::init();
   }
 
   /**

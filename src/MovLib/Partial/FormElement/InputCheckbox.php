@@ -28,6 +28,15 @@ namespace MovLib\Partial\FormElement;
  */
 final class InputCheckbox extends \MovLib\Partial\FormElement\AbstractFormElement {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "InputCheckbox";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 

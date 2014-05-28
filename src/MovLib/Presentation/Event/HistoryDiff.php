@@ -30,4 +30,13 @@ namespace MovLib\Presentation\Event;
  */
 class HistoryDiff {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "HistoryDiff";
+  // @codingStandardsIgnoreEnd
+
 }

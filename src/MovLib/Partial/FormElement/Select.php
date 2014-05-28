@@ -31,6 +31,15 @@ namespace MovLib\Partial\FormElement;
  */
 class Select extends \MovLib\Partial\FormElement\AbstractFormElement {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Select";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 

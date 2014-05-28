@@ -28,6 +28,15 @@ namespace MovLib\Presentation\Error;
  */
 final class NotFound extends \MovLib\Presentation\AbstractPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "NotFound";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

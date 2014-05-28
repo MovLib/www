@@ -30,6 +30,15 @@ use \MovLib\Partial\FormElement\Select;
  */
 final class Currency extends \MovLib\Core\Presentation\Base {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Currency";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Get select form element to select a currency.
    *

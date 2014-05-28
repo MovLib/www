@@ -29,6 +29,15 @@ use \MovLib\Data\Series\Series;
  * @since 0.0.1-dev
  */
 class Discussion extends \MovLib\Presentation\AbstractPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Discussion";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Partial\SidebarTrait;
   use \MovLib\Presentation\Series\SeriesTrait;
 

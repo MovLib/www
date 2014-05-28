@@ -38,6 +38,15 @@ use \MovLib\Partial\FormElement\TextareaHTMLExtended;
  */
 final class Create extends \MovLib\Presentation\AbstractCreatePresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Create";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

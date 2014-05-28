@@ -32,6 +32,15 @@ use \MovLib\Partial\DateTime;
  * @since 0.0.1-dev
  */
 abstract class AbstractHistoryDiffPresenter extends \MovLib\Presentation\AbstractPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractHistoryDiffPresenter";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Partial\SidebarTrait;
 
 

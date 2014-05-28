@@ -28,6 +28,15 @@ namespace MovLib\Console;
  */
 final class MySQLi extends \mysqli {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "MySQLi";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Instantiate new database.
    *

@@ -32,6 +32,15 @@ use \MovLib\Data\Help\Article;
  */
 final class Show extends \MovLib\Presentation\Help\AbstractShow {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Show";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

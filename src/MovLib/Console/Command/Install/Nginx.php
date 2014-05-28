@@ -35,6 +35,15 @@ use \Symfony\Component\Console\Output\OutputInterface;
  */
 final class Nginx extends \MovLib\Console\Command\Install\AbstractInstallCommand {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Nginx";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 

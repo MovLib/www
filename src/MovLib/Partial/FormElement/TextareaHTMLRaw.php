@@ -31,6 +31,15 @@ use \MovLib\Presentation\Error\Unauthorized;
  */
 class TextareaHTMLRaw extends \MovLib\Partial\FormElement\AbstractFormElement {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "TextareaHTMLRaw";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 

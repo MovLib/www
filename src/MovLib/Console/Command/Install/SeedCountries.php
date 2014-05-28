@@ -30,6 +30,15 @@ use \Collator;
  */
 class SeedCountries extends \MovLib\Console\Command\Install\AbstractIntlCommand {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "SeedCountries";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

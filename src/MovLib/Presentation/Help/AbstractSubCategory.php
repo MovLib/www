@@ -31,6 +31,15 @@ use \MovLib\Data\Help\SubCategorySet;
  */
 abstract class AbstractSubCategory extends \MovLib\Presentation\AbstractIndexPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractSubCategory";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

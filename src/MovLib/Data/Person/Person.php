@@ -200,7 +200,7 @@ final class Person extends \MovLib\Data\Image\AbstractImageEntity implements \Mo
   public function __construct(\MovLib\Core\Container $container, $id = null) {
     parent::__construct($container);
     if ($id) {
-      $stmt = $this->getMySQLi()->prepare(<<<SQL
+      $stmt = Database::getConnection()->prepare(<<<SQL
 SELECT
   `id`,
   `created`,
@@ -294,7 +294,7 @@ SQL
 //  public function commit($userId, \MovLib\Component\DateTime $changed, $oldRevisionId) {
 //    $this->links = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
 //
-//    $stmt = $this->getMySQLi()->prepare(<<<SQL
+//    $stmt = Database::getConnection()->prepare(<<<SQL
 //UPDATE `persons` SET
 //  `birthdate`              = ?,
 //  `born_name`              = ?,
@@ -337,7 +337,7 @@ SQL
 //  public function create($userId, \MovLib\Component\DateTime $created) {
 //    $this->links   = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
 //
-//    $stmt = $this->getMySQLi()->prepare(<<<SQL
+//    $stmt = Database::getConnection()->prepare(<<<SQL
 //INSERT INTO `persons` (
 //  `birthdate`,
 //  `born_name`,
@@ -393,7 +393,7 @@ SQL
    */
   public function getAliases() {
     $aliases = null;
-    $result = $this->getMySQLi()->query(<<<SQL
+    $result = Database::getConnection()->query(<<<SQL
 SELECT
   `id`,
   `alias`
@@ -416,7 +416,7 @@ SQL
   public function getAwards() {
     $awards = new AwardSet($this->container);
 
-    $result = $this->getMySQLi()->query(<<<SQL
+    $result = Database::getConnection()->query(<<<SQL
 (
   SELECT
     `award_category_id` AS `awardCategoryId`,
@@ -569,7 +569,7 @@ SQL
    */
   protected function imageSaveStyles() {
     $styles = serialize($this->imageStyles);
-    $stmt   = $this->getMySQLi()->prepare("UPDATE `persons` SET `image_styles` = ? WHERE `id` = ?");
+    $stmt   = Database::getConnection()->prepare("UPDATE `persons` SET `image_styles` = ? WHERE `id` = ?");
     $stmt->bind_param("sd", $styles, $this->id);
     $stmt->execute();
     $stmt->close();

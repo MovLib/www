@@ -40,6 +40,15 @@ use \Symfony\Component\Console\Output\OutputInterface;
  */
 abstract class AbstractIntlCommand extends \MovLib\Console\Command\AbstractCommand {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractIntlCommand";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 

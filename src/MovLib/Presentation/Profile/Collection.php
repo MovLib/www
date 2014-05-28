@@ -30,6 +30,15 @@ namespace MovLib\Presentation\Profile;
  */
 final class Collection extends \MovLib\Presentation\Profile\AbstractProfilePresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Collection";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

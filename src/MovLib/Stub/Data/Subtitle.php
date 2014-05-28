@@ -29,6 +29,15 @@ namespace MovLib\Stub\Data;
  */
 abstract class Subtitle extends \MovLib\Stub\Data\Language {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Subtitle";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Whether this subtitle is closed or not.
    *

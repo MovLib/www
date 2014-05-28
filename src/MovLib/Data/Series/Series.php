@@ -31,6 +31,15 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @since 0.0.1-dev
  */
 class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Data\Rating\RatingInterface {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Series";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Data\Rating\RatingTrait;
 
 
@@ -195,7 +204,7 @@ class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Data\Rating\
   public function __construct(\MovLib\Core\Container $container, $id = null) {
     parent::__construct($container);
     if ($id) {
-      $stmt = $this->getMySQLi()->prepare(<<<SQL
+      $stmt = Database::getConnection()->prepare(<<<SQL
 SELECT
   `series`.`id` AS `id`,
   `series`.`changed` AS `changed`,
@@ -276,7 +285,7 @@ SQL
    * @throws \mysqli_sql_exception
    */
   public function commit() {
-    $stmt = $this->getMySQLi()->prepare(<<<SQL
+    $stmt = Database::getConnection()->prepare(<<<SQL
 UPDATE `series` SET
   `dyn_synopses`  = COLUMN_ADD(`dyn_synopses`, '{$this->intl->languageCode}', ?),
   `dyn_wikipedia` = COLUMN_ADD(`dyn_wikipedia`, '{$this->intl->languageCode}', ?),
@@ -306,7 +315,7 @@ SQL
    * @throws \mysqli_sql_exception
    */
   public function create() {
-    $mysqli = $this->getMySQLi();
+    $mysqli = Database::getConnection();
     $mysqli->autocommit(FALSE);
 
     try {

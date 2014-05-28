@@ -28,6 +28,15 @@ namespace MovLib\Presentation\Movie\Poster;
  */
 class Create extends \MovLib\Presentation\AbstractPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Create";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

@@ -17,8 +17,6 @@
  */
 namespace MovLib\Core\Database;
 
-use \MovLib\Exception\ClientException\NotFoundException;
-
 /**
  * Defines the connection class.
  *

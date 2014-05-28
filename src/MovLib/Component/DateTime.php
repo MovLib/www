@@ -28,6 +28,15 @@ namespace MovLib\Component;
  */
 final class DateTime extends \DateTime {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "DateTime";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 

@@ -17,7 +17,7 @@
  */
 namespace MovLib\Data;
 
-use \MovLib\Component\DateTime;
+use \MovLib\Core\Database\Database;
 
 /**
  * Defines the base class for database entity objects.
@@ -28,100 +28,16 @@ use \MovLib\Component\DateTime;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
+abstract class AbstractEntity extends \MovLib\Core\Entity\AbstractEntity {
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
+  // @codingStandardsIgnoreStart
   /**
-   * The entity's unique identifier.
-   *
-   * @var integer
-   */
-  public $id;
-
-  /**
-   * The entity's changed date and time.
-   *
-   * @var \MovLib\Component\DateTime
-   */
-  public $changed;
-
-  /**
-   * The entity's creation date and time.
-   *
-   * @var \MovLib\Component\DateTime
-   */
-  public $created;
-
-  /**
-   * The entity's deletion status.
-   *
-   * @var boolean
-   */
-  public $deleted = false;
-
-  /**
-   * The entity's unique identifier this entity is in relation to.
-   *
-   * An entity might be instantiated for another entity, e.g. a set of genres for a single movie, this property will
-   * contain the unique identifier of the movie this particular genre was instantiated for.
-   *
-   * @see \MovLib\Data\AbstractEntitySet::loadEntitySets()
-   * @var mixed
-   */
-  public $entityId;
-
-  /**
-   * The entity's index route in the current locale.
+   * Short class name.
    *
    * @var string
    */
-  public $routeIndex;
-
-  /**
-   * The entity's index route key.
-   *
-   * @var string
-   */
-  public $routeIndexKey;
-
-  /**
-   * The entity's Wikipedia link in the current locale.
-   *
-   * @var null|string
-   */
-  public $wikipedia;
-
-  /**
-   * The entity's unique identifier of the user who created this entity.
-   *
-   * @var integer
-   */
-  public $userId;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Get the class's short name.
-   *
-   * @return string
-   *   The class's short name.
-   */
-  public function __toString() {
-    if (defined("static::name")) {
-      return static::name;
-    }
-    $shortName = explode("\\", static::class);
-    return end($shortName);
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
+  const name = "AbstractEntity";
+  // @codingStandardsIgnoreEnd
 
   /**
    * Get the count of a relationship.
@@ -130,7 +46,7 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
    * <code><?php
    *
    * public function getCount($from, $where = null, $what = "*") {
-   *   return $this->getMySQLi()->query("SELECT COUNT({$what}) FROM `{$from}` WHERE {$where}")->fetch_row()[0];
+   *   return Database::getConnection()->query("SELECT COUNT({$what}) FROM `{$from}` WHERE {$where}")->fetch_row()[0];
    * }
    *
    * ?></code>
@@ -145,55 +61,8 @@ abstract class AbstractEntity extends \MovLib\Data\AbstractConfig {
    *   The count of the relationship.
    */
   public function getCount($from, $where = null, $what = "*") {
-    if ($where) {
-      $where = " WHERE {$where}";
-    }
-    $result = $this->getMySQLi()->query("SELECT COUNT({$what}) FROM `{$from}`{$where} LIMIT 1");
-    $count  = $result->fetch_row()[0];
-    $result->free();
-    return $count;
-  }
-
-  /**
-   * Initialize the entity.
-   *
-   * Further initialization work after an entity was initialized via PHP's built-in {@see \mysqli_result::fetch_object}
-   * method or continued initialization after the own constructor was called.
-   *
-   * @return this
-   */
-  public function init() {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert(!empty($this->singularKey), "You must set the \$singularKey property");
-    assert(!empty($this->pluralKey), "You must set the \$pluralKey property");
-    assert(!empty($this->created) && !empty($this->changed), "You have to load created and changed date");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    $this->routeKey   || ($this->routeKey   = "/{$this->singularKey}/{0}");
-    $this->routeArgs  || ($this->routeArgs  = [ $this->id ]);
-    $this->route      || ($this->route      = $this->intl->r($this->routeKey, $this->routeArgs));
-    $this->routeIndex || ($this->routeIndex = $this->intl->r("/{$this->pluralKey}"));
-    $this->tableName  || ($this->tableName  = $this->pluralKey);
-    $this->changed    = new DateTime($this->changed);
-    $this->created    = new DateTime($this->created);
-    $this->deleted    = (boolean) $this->deleted;
-    return $this;
-  }
-
-  /**
-   * Translate and format singular entity sub-route.
-   *
-   * @param string $route
-   *   The route key of the subpage.
-   * @param array $args [optional]
-   *   Additional route arguments, defaults to <code>NULL</code>.
-   * @return string
-   *   The translated and formatted singular route.
-   * @throws \IntlException
-   */
-  public function r($route, array $args = []) {
-    return $this->intl->r("{$this->routeKey}{$route}", $this->routeArgs + $args);
+    $where && ($where = " WHERE {$where}");
+    return (integer) Database::getConnection()->query("SELECT COUNT({$what}) FROM `{$from}`{$where} LIMIT 1")->fetch_all()[0][0];
   }
 
 }

@@ -32,6 +32,15 @@ use \Symfony\Component\Console\Output\OutputInterface;
  */
 abstract class SkeletonGenerator extends \MovLib\Console\Command\AbstractCommand {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "SkeletonGenerator";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

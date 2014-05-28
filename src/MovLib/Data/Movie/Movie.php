@@ -353,7 +353,7 @@ SQL
    */
   private function getCountries() {
     $countries = $this->intl->getTranslations("countries");
-    $result    = $this->getMySQLi()->query("SELECT `country_code` FROM `movies_countries` WHERE `movie_id` = {$this->id}");
+    $result    = Database::getConnection()->query("SELECT `country_code` FROM `movies_countries` WHERE `movie_id` = {$this->id}");
     while ($countryCode = $result->fetch_row()[0]) {
       $this->countries[$countryCode] = $countries[$countryCode];
     }
@@ -366,7 +366,7 @@ SQL
    */
   protected function imageSaveStyles() {
     $styles = serialize($this->imageStyles);
-    $stmt   = $this->getMySQLi()->prepare("UPDATE `posters` SET `styles` = ? WHERE `id` = ? AND `movie_id` = ?");
+    $stmt   = Database::getConnection()->prepare("UPDATE `posters` SET `styles` = ? WHERE `id` = ? AND `movie_id` = ?");
     $stmt->bind_param("sdd", $styles, $this->imageFilename, $this->id);
     $stmt->execute();
     $stmt->close();
@@ -436,7 +436,7 @@ SQL
       if ($this->originalTitleId !== $this->displayTitleId) {
         $displayTitle = " AND `id` != {$this->displayTitleId}";
       }
-      $result = $this->getMySQLi()->query(<<<SQL
+      $result = Database::getConnection()->query(<<<SQL
 SELECT
   `id`,
   COLUMN_GET(`dyn_comments`, '{$this->intl->languageCode}' AS BINARY) AS `comment`,

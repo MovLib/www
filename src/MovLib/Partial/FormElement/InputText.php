@@ -28,6 +28,15 @@ namespace MovLib\Partial\FormElement;
  */
 class InputText extends \MovLib\Partial\FormElement\AbstractInput {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "InputText";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 

@@ -30,6 +30,15 @@ use \MovLib\Data\TemporaryStorage;
  */
 class JoinEmail extends \MovLib\Mail\AbstractEmail {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "JoinEmail";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

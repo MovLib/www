@@ -29,6 +29,15 @@ use \MovLib\Data\Company\Company;
  * @since 0.0.1-dev
  */
 class Show extends \MovLib\Presentation\AbstractPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Show";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Partial\SidebarTrait;
 
 

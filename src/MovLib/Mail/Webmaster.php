@@ -28,6 +28,15 @@ namespace MovLib\Mail;
  */
 final class Webmaster extends \MovLib\Mail\AbstractEmail {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Webmaster";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

@@ -29,6 +29,15 @@ namespace MovLib\Presentation\SystemPage\About;
  */
 final class Show extends \MovLib\Presentation\SystemPage\AbstractShow {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Show";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

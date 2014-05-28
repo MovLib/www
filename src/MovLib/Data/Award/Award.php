@@ -33,6 +33,15 @@ use \MovLib\Exception\ClientException\NotFoundException;
  */
 final class Award extends \MovLib\Data\AbstractEntity {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Award";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
@@ -165,7 +174,7 @@ final class Award extends \MovLib\Data\AbstractEntity {
   public function __construct(\MovLib\Core\Container $container, $id = null) {
     parent::__construct($container);
     if ($id) {
-      $stmt = $this->getMySQLi()->prepare(<<<SQL
+      $stmt = Database::getConnection()->prepare(<<<SQL
 SELECT
   `awards`.`id` AS `id`,
   `awards`.`changed` AS `changed`,
@@ -236,7 +245,7 @@ SQL
     $this->aliases = empty($this->aliases)? serialize([]) : serialize(explode("\n", $this->aliases));
     $this->links   = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
 
-    $stmt = $this->getMySQLi()->prepare(<<<SQL
+    $stmt = Database::getConnection()->prepare(<<<SQL
 UPDATE `awards` SET
   `aliases`          = ?,
   `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, '{$this->intl->languageCode}', ?),
@@ -269,7 +278,7 @@ SQL
     $this->aliases = empty($this->aliases)? serialize([]) : serialize(explode("\n", $this->aliases));
     $this->links   = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
 
-    $stmt = $this->getMySQLi()->prepare(<<<SQL
+    $stmt = Database::getConnection()->prepare(<<<SQL
 INSERT INTO `awards` (
   `aliases`,
   `dyn_descriptions`,

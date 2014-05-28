@@ -28,6 +28,15 @@ namespace MovLib\Data\Upload;
  */
 final class UploadSet extends \MovLib\Data\AbstractEntitySet {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "UploadSet";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

@@ -28,6 +28,15 @@ namespace MovLib\Stub\Data\Movie;
  */
 abstract class MovieCrew {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "MovieCrew";
+  // @codingStandardsIgnoreEnd
+
   /**
    * The job of the crew members.
    *

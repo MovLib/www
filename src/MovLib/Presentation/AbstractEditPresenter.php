@@ -29,6 +29,15 @@ use \MovLib\Exception\RedirectException\SeeOtherException;
  * @since 0.0.1-dev
  */
 abstract class AbstractEditPresenter extends \MovLib\Presentation\AbstractPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractEditPresenter";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Partial\SidebarTrait;
 
 

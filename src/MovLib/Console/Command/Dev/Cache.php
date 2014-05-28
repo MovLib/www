@@ -33,6 +33,15 @@ use \Symfony\Component\Console\Output\OutputInterface;
  */
 abstract class Cache extends \MovLib\Console\Command\AbstractCommand {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Cache";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

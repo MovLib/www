@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data\User;
 
+use \MovLib\Core\Database\Database;
+
 /**
  * Defines the user set object.
  *
@@ -27,6 +29,27 @@ namespace MovLib\Data\User;
  * @since 0.0.1-dev
  */
 final class UserSet extends \MovLib\Data\AbstractEntitySet {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "UserSet";
+  // @codingStandardsIgnoreEnd
+
+  /**
+   * {@inheritdoc}
+   */
+  public static $tableName = "users";
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(\MovLib\Core\Container $container) {
+    parent::__construct($container, "Users", "User", $container->intl->tp(-1, "Users", "User"));
+  }
 
   /**
    * {@inheritdoc}
@@ -64,7 +87,7 @@ SQL;
    */
   public function getRandom() {
     $name   = null;
-    $result = $this->getMySQLi()->query("SELECT `name` FROM `users` WHERE `email` IS NOT NULL ORDER BY RAND() LIMIT 1");
+    $result = Database::getConnection()->query("SELECT `name` FROM `users` WHERE `email` IS NOT NULL ORDER BY RAND() LIMIT 1");
     if ($result) {
       $name = mb_strtolower($result->fetch_row()[0]);
     }
@@ -76,17 +99,7 @@ SQL;
    * {@inheritdoc}
    */
   public function getTotalCount() {
-    return $this->getMySQLi()->query("SELECT COUNT(*) FROM `users` WHERE `email` IS NOT NULL LIMIT 1")->fetch_all()[0][0];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-    $this->pluralKey   = $this->tableName = "users";
-    $this->route       = $this->intl->r("/users");
-    $this->singularKey = "user";
-    return parent::init();
+    return Database::getConnection()->query("SELECT COUNT(*) FROM `users` WHERE `email` IS NOT NULL LIMIT 1")->fetch_all()[0][0];
   }
 
   /**

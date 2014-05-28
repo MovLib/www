@@ -32,6 +32,15 @@ use \MovLib\Exception\ClientException\NotFoundException;
  */
 class ResetPasswordEmail extends \MovLib\Mail\AbstractEmail {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "ResetPasswordEmail";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

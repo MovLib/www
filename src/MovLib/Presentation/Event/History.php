@@ -31,6 +31,15 @@ use \MovLib\Partial\DateTime;
  * @since 0.0.1-dev
  */
 final class History extends \MovLib\Presentation\AbstractPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "History";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Partial\SidebarTrait;
   use \MovLib\Partial\PaginationTrait;
   use \MovLib\Presentation\Event\EventTrait;

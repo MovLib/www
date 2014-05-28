@@ -30,6 +30,15 @@ use \MovLib\Core\Database\Database;
  */
 abstract class AbstractDatabase {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractDatabase";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

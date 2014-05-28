@@ -28,6 +28,15 @@ namespace MovLib\Data\Award;
  * @since 0.0.1-dev
  */
 final class AwardSet extends \MovLib\Data\AbstractEntitySet implements \MovLib\Data\SelectInterface {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AwardSet";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Data\SelectTrait;
 
  /**

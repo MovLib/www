@@ -28,6 +28,15 @@ namespace MovLib\Data\Image;
  */
 abstract class AbstractImageSet extends \MovLib\Data\AbstractEntitySet {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractImageSet";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
@@ -89,7 +98,7 @@ abstract class AbstractImageSet extends \MovLib\Data\AbstractEntitySet {
    */
   public function getRandom() {
     $id     = null;
-    $result = $this->getMySQLi()->query(
+    $result = Database::getConnection()->query(
       "SELECT `id` FROM `{$this->tableName}` WHERE `deleted` = false AND `{$this->entityKey}_id` = {$this->entityId} ORDER BY RAND() LIMIT 1"
     );
     if ($result) {
@@ -103,7 +112,7 @@ abstract class AbstractImageSet extends \MovLib\Data\AbstractEntitySet {
    * {@inheritdoc}
    */
   public function getTotalCount() {
-    return $this->getMySQLi()->query(
+    return Database::getConnection()->query(
       "SELECT COUNT(*) FROM `{$this->tableName}` WHERE `deleted` = false AND `{$this->entityKey}_id` = {$this->entityId} LIMIT 1"
     )->fetch_all()[0][0];
   }
@@ -120,7 +129,7 @@ abstract class AbstractImageSet extends \MovLib\Data\AbstractEntitySet {
    */
   protected function loadEntities($where = null, $orderBy = null) {
     $where .= (empty($where) ? " WHERE " : " AND ") . "`{$this->entityKey}_id` = {$this->entityId}";
-    $result = $this->getMySQLi()->query($this->getEntitiesQuery($where, $orderBy));
+    $result = Database::getConnection()->query($this->getEntitiesQuery($where, $orderBy));
     /* @var $entity \MovLib\Data\AbstractEntity */
     while ($entity = $result->fetch_object($this->entityClassName, [ $this->container, $this->entityId ])) {
       $this->entities[$entity->id] = $entity;

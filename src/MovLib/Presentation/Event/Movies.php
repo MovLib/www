@@ -29,6 +29,15 @@ use \MovLib\Data\Event\Event;
  * @since 0.0.1-dev
  */
 class Movies extends \MovLib\Presentation\AbstractPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Movies";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Partial\SidebarTrait;
   use \MovLib\Presentation\Event\EventTrait;
 

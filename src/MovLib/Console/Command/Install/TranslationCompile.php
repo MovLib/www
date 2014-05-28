@@ -32,6 +32,15 @@ use \Symfony\Component\Console\Output\OutputInterface;
  */
 final class TranslationCompile extends \MovLib\Console\Command\AbstractCommand {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "TranslationCompile";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

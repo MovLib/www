@@ -28,6 +28,15 @@ namespace MovLib\Stub\Data\Movie;
  */
 class MoviePersonJobs {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "MoviePersonJobs";
+  // @codingStandardsIgnoreEnd
+
   /**
    * The movie.
    *

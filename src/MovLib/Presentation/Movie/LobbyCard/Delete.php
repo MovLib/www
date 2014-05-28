@@ -28,6 +28,15 @@ namespace MovLib\Presentation\Movie\LobbyCard;
  */
 class Delete extends \MovLib\Presentation\AbstractPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Delete";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

@@ -32,6 +32,15 @@ use \MovLib\Partial\FormElement\TextareaHTMLExtended;
  * @since 0.0.1-dev
  */
 abstract class AbstractCreate extends \MovLib\Presentation\AbstractCreatePresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractCreate";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Presentation\Help\HelpTrait;
 
   /**

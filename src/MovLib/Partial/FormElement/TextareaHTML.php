@@ -32,6 +32,15 @@ use \MovLib\Exception\ValidationException;
  */
 class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "TextareaHTML";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 

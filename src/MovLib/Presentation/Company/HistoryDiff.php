@@ -30,6 +30,15 @@ namespace MovLib\Presentation\Company;
  */
 class HistoryDiff extends \MovLib\Presentation\Company\History {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "HistoryDiff";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

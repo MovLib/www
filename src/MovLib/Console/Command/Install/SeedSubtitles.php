@@ -31,6 +31,15 @@ use \MovLib\Core\Intl;
  */
 class SeedSubtitles extends \MovLib\Console\Command\Install\SeedLanguages {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "SeedSubtitles";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

@@ -29,6 +29,15 @@ use \MovLib\Data\User\User;
  * @since 0.0.1-dev
  */
 abstract class AbstractProfilePresenter extends \MovLib\Presentation\AbstractPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractProfilePresenter";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Partial\SidebarTrait;
 
 

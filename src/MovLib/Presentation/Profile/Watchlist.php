@@ -30,6 +30,15 @@ namespace MovLib\Presentation\Profile;
  */
 final class Watchlist extends \MovLib\Presentation\Profile\AbstractProfilePresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Watchlist";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

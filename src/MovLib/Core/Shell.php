@@ -30,6 +30,15 @@ use \MovLib\Exception\ShellException;
  */
 final class Shell {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Shell";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Execute external command.
    *

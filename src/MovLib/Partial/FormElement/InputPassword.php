@@ -28,6 +28,15 @@ namespace MovLib\Partial\FormElement;
  */
 final class InputPassword extends \MovLib\Partial\FormElement\AbstractInput {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "InputPassword";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 

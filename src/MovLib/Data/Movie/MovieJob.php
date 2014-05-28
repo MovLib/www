@@ -27,5 +27,14 @@ namespace MovLib\Data\Movie;
  * @since 0.0.1-dev
  */
 class MovieJob extends \MovLib\Data\AbstractEntity {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "MovieJob";
+  // @codingStandardsIgnoreEnd
   
 }

@@ -29,6 +29,15 @@ namespace MovLib\Data\Job;
  */
 class JobSet extends \MovLib\Data\AbstractEntitySet {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "JobSet";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

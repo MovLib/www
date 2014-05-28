@@ -30,6 +30,15 @@ namespace MovLib\Stub\Core\HTTP;
  */
 abstract class ActiveSessionSet {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "ActiveSessionSet";
+  // @codingStandardsIgnoreEnd
+
   /**
    * The active session's authentication time.
    *

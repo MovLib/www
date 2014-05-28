@@ -32,6 +32,15 @@ use \MovLib\Exception\ClientException\NotFoundException;
  */
 final class Category extends \MovLib\Data\AbstractEntity {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Category";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
@@ -184,7 +193,7 @@ final class Category extends \MovLib\Data\AbstractEntity {
     parent::__construct($container);
     $this->initAward = $initAward;
     if ($id) {
-      $stmt = $this->getMySQLi()->prepare(<<<SQL
+      $stmt = Database::getConnection()->prepare(<<<SQL
 SELECT
   `awards_categories`.`id` AS `id`,
   `awards_categories`.`award_id` AS `awardId`,
@@ -251,7 +260,7 @@ SQL
    */
   public function commit() {
 
-    $stmt = $this->getMySQLi()->prepare(<<<SQL
+    $stmt = Database::getConnection()->prepare(<<<SQL
 UPDATE `awards_categories` SET
   `award_id`         = ?,
   `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, '{$this->intl->languageCode}', ?),
@@ -283,7 +292,7 @@ SQL
    * @throws \mysqli_sql_exception
    */
   public function create() {
-    $mysqli = $this->getMySQLi();
+    $mysqli = Database::getConnection();
     if ($this->intl->languageCode === $this->intl->defaultLanguageCode) {
       $stmt = $mysqli->prepare(<<<SQL
 INSERT INTO `awards_categories` (

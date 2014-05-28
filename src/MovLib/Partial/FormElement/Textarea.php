@@ -28,6 +28,15 @@ namespace MovLib\Partial\FormElement;
  */
 class Textarea extends \MovLib\Partial\FormElement\InputText {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Textarea";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Get the textarea form element.
    *

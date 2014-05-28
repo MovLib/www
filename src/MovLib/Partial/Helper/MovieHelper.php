@@ -27,6 +27,15 @@ namespace MovLib\Partial\Helper;
  * @since 0.0.1-dev
  */
 final class MovieHelper extends \MovLib\Core\Presentation\DependencyInjectionBase {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "MovieHelper";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Presentation\Movie\MovieTrait;
 
   /**

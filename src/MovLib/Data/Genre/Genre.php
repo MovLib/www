@@ -89,16 +89,6 @@ final class Genre extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Re
    */
   public $name;
 
-  /**
-   * {@inheritdoc}
-   */
-  public $pluralKey = "genres";
-
-  /**
-   * {@inheritdoc}
-   */
-  public $singularKey = "genre";
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -112,8 +102,7 @@ final class Genre extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Re
    *   The genre's unique identifier to instantiate, defaults to <code>NULL</code> (no genre will be loaded).
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\Container $container, $id = null) {
-    parent::__construct($container);
+  public function __construct(\MovLib\Core\Container $container, $id = null, array $values = null) {
     if ($id) {
       $connection = Database::getConnection();
       $stmt = $connection->prepare(<<<SQL
@@ -154,9 +143,7 @@ SQL
         throw new NotFoundException("Couldn't find Genre {$id}");
       }
     }
-    if ($this->id) {
-      $this->init();
-    }
+    parent::__construct($container, $values);
   }
 
 
@@ -198,6 +185,18 @@ SQL
     $this->description = $this->getRevisionArrayValue($revision->descriptions);
     $this->name        = $this->getRevisionArrayValue($revision->names, $revision->names[$this->intl->languageCode]);
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function lemma($locale) {
+    static $names = null;
+    $languageCode = "{$locale{0}}{$locale{1}}";
+    if (!$names) {
+      $names = json_decode(Database::getConnection()->query("SELECT COLUMN_JSON(`dyn_names`) FROM `genres` WHERE `id` = {$this->id} LIMIT 1")->fetch_all()[0][0], true);
+    }
+    return isset($names[$languageCode]) ? $names[$languageCode] : $names[$this->intl->defaultLanguageCode];
   }
 
 }

@@ -30,6 +30,15 @@ namespace MovLib\Partial\FormElement;
  */
 class InputFloat extends \MovLib\Partial\FormElement\AbstractInputNumber {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "InputFloat";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Get the input float form element.
    *

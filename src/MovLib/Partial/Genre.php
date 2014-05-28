@@ -28,6 +28,15 @@ namespace MovLib\Partial;
  */
 final class Genre extends \MovLib\Core\Presentation\DependencyInjectionBase {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Genre";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Format an array of genres as comma separated list.
    *

@@ -28,6 +28,15 @@ namespace MovLib\Core\Search\Result;
  */
 final class SearchResult {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "SearchResult";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

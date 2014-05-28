@@ -33,6 +33,15 @@ use \MovLib\Exception\FileSystemException;
  */
 final class FileSystem {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "FileSystem";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 

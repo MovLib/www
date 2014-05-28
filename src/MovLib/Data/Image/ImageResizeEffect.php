@@ -30,6 +30,15 @@ use \MovLib\Data\Image\ImageStyle;
  */
 final class ImageResizeEffect extends \MovLib\Data\Image\AbstractImageEffect {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "ImageResizeEffect";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

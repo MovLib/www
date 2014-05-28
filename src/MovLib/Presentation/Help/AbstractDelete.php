@@ -27,6 +27,15 @@ namespace MovLib\Presentation\Help;
  * @since 0.0.1-dev
  */
 abstract class AbstractDelete extends \MovLib\Presentation\AbstractPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractDelete";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Partial\SidebarTrait;
   use \MovLib\Presentation\Help\HelpTrait;
 

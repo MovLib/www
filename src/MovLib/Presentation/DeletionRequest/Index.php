@@ -27,6 +27,15 @@ namespace MovLib\Presentation\DeletionRequest;
  * @since 0.0.1-dev
  */
 class Index extends \MovLib\Presentation\AbstractPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Index";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Partial\SidebarTrait;
 
   /**

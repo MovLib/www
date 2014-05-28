@@ -30,6 +30,15 @@ namespace MovLib\Presentation\SystemPage\About;
  */
 final class Edit extends \MovLib\Presentation\SystemPage\AbstractEdit {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Edit";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

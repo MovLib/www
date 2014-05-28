@@ -29,6 +29,15 @@ use \MovLib\Data\Company\Company;
  * @since 0.0.1-dev
  */
 class History extends \MovLib\Presentation\AbstractHistoryPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "History";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Presentation\Company\CompanyTrait;
 
   /**

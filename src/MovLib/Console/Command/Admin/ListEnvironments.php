@@ -31,6 +31,15 @@ use \Symfony\Component\Console\Output\OutputInterface;
  */
 class ListEnvironments extends \MovLib\Console\Command\AbstractCommand {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "ListEnvironments";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

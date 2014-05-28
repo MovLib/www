@@ -39,6 +39,15 @@ use \MovLib\Core\Intl;
  */
 class SeedLanguages extends \MovLib\Console\Command\Install\AbstractIntlCommand {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "SeedLanguages";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

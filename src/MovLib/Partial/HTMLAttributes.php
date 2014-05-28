@@ -579,6 +579,15 @@ use \MovLib\Core\HTTP\Request;
  */
 final class HTMLAttributes {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "HTMLAttributes";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Static Properties
 

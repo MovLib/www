@@ -29,7 +29,7 @@ namespace MovLib\Core\Entity;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-interface EntityInterface {
+interface EntityInterface extends \MovLib\Core\Routing\RoutingInterface {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods

@@ -32,6 +32,15 @@ use \MovLib\Partial\Sex;
  */
 final class CastSet extends \MovLib\Data\AbstractEntitySet {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "CastSet";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */
@@ -62,7 +71,7 @@ SQL;
 
   final public function loadMovieCast(\MovLib\Data\Movie\Movie $movie) {
     $jobId = Cast::JOB_ID;
-    $result = $this->getMySQLi()->query(<<<SQL
+    $result = Database::getConnection()->query(<<<SQL
 SELECT
   `movies_crew`.`person_id` AS `personId`,
   `persons`.`name` AS `personName`,
@@ -141,7 +150,7 @@ SQL
   public function loadMovieCastLimited(\MovLib\Data\Movie\Movie $movie, $limit = 5) {
     $jobId = Cast::JOB_ID;
     $limit = "LIMIT {$limit}";
-    $result = $this->getMySQLi()->query(<<<SQL
+    $result = Database::getConnection()->query(<<<SQL
 SELECT
   `movies_crew`.`id`,
   `persons`.`id` AS `personId`,

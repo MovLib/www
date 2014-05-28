@@ -29,7 +29,7 @@ use \MovLib\Core\Routing\Route;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractEntity implements \MovLib\Core\Entity\EntityInterface, \MovLib\Core\Routing\RoutingInterface {
+abstract class AbstractEntity implements \MovLib\Core\Entity\EntityInterface {
   use \MovLib\Core\Entity\EntityTrait;
   use \MovLib\Core\Routing\RoutingTrait;
 
@@ -114,8 +114,8 @@ abstract class AbstractEntity implements \MovLib\Core\Entity\EntityInterface, \M
   public function __construct(\MovLib\Core\Container $container, array $values = null) {
     // Export the container and intl to their own properties. We can't abstract this into the trait because the set is
     // extending \ArrayObject.
-    $this->container = $container;
-    $this->intl      = $container->intl;
+    $this->container   = $container;
+    $this->intl        = $container->intl;
 
     // Build the set's class and instantiate it, we export the set into the set property as well as to the first index
     // in the parents array.
@@ -137,6 +137,9 @@ abstract class AbstractEntity implements \MovLib\Core\Entity\EntityInterface, \M
 
     // We can always abstract the translation of the bundle. Note that we don't call out own bundle title's translation
     // method because its only a proxy method and costs us performance.
+    //
+    // @todo We can't be sure that this translation exists, we should therefore force the concrete entity's to translate
+    //       this in their constructor. Otherwise we have a problem during extraction. Thx to Marküs.
     $this->bundleTitle = $this->intl->tp(1, $this->set->bundleTitle, $this->bundle);
 
     // Always call init if we either have an id or values to export.

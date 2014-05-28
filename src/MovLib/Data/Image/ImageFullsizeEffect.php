@@ -28,6 +28,15 @@ namespace MovLib\Data\Image;
  */
 final class ImageFullsizeEffect extends \MovLib\Data\Image\AbstractImageEffect {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "ImageFullsizeEffect";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

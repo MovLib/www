@@ -37,6 +37,15 @@ namespace MovLib\Partial\FormElement;
  */
 class InputURL extends \MovLib\Partial\FormElement\AbstractInput {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "InputURL";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 

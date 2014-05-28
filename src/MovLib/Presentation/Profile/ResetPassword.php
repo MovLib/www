@@ -40,6 +40,15 @@ use \MovLib\Partial\FormElement\InputPassword;
  */
 final class ResetPassword extends \MovLib\Presentation\AbstractPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "ResetPassword";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

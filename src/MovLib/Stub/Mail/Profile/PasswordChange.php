@@ -28,6 +28,15 @@ namespace MovLib\Stub\Mail\Profile;
  */
 abstract class PasswordChange {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "PasswordChange";
+  // @codingStandardsIgnoreEnd
+
   /**
    * The user's unique identifier who requested the email changed for the given token.
    *

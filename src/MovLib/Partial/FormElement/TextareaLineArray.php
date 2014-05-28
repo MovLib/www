@@ -29,6 +29,15 @@ namespace MovLib\Partial\FormElement;
  */
 class TextareaLineArray extends \MovLib\Partial\FormElement\InputText {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "TextareaLineArray";
+  // @codingStandardsIgnoreEnd
+
   /**
    * @inheritdoc
    */

@@ -29,6 +29,15 @@ namespace MovLib\Partial\FormElement;
  */
 final class InputSex extends \MovLib\Partial\FormElement\RadioGroup {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "InputSex";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

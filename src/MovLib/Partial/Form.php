@@ -30,6 +30,15 @@ use \MovLib\Partial\FormElement\AbstractInputFile;
  */
 final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Form";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

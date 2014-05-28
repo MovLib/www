@@ -28,6 +28,15 @@ namespace MovLib\Data\Help;
  */
 final class CategorySet extends \MovLib\Data\AbstractEntitySet {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "CategorySet";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

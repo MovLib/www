@@ -31,10 +31,19 @@ use \MovLib\Partial\Sex;
  */
 final class DirectorSet extends \MovLib\Data\Job\JobSet {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "DirectorSet";
+  // @codingStandardsIgnoreEnd
+
   public function loadMovieDirectorsLimited(\MovLib\Data\Movie\Movie $movie, $limit = 5) {
     $jobId = Director::JOB_ID;
     $limit = "LIMIT {$limit}";
-    $result = $this->getMySQLi()->query(<<<SQL
+    $result = Database::getConnection()->query(<<<SQL
 SELECT
   `movies_crew`.`id`,
   `persons`.`id` AS `personId`,

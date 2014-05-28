@@ -30,6 +30,15 @@ use \MovLib\Partial\Helper\PersonHelper;
  * @since 0.0.1-dev
  */
 class Persons extends \MovLib\Presentation\AbstractPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Persons";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Partial\PaginationTrait;
   use \MovLib\Partial\SidebarTrait;
   use \MovLib\Presentation\Job\JobTrait;

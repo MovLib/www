@@ -28,6 +28,15 @@ namespace MovLib\Presentation\Movie\Backdrop;
  */
 class Show extends \MovLib\Presentation\AbstractShowPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Show";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

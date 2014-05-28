@@ -31,6 +31,15 @@ use \MovLib\Partial\DateTime;
  */
 final class Show extends \MovLib\Presentation\Profile\AbstractProfilePresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Show";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

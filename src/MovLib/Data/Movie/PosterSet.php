@@ -28,6 +28,15 @@ namespace MovLib\Data\Movie;
  */
 final class PosterSet extends \MovLib\Data\Image\AbstractImageSet {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "PosterSet";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

@@ -30,6 +30,15 @@ use \Elasticsearch\Client as ElasticClient;
  */
 final class SearchIndexer {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "SearchIndexer";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

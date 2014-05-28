@@ -28,6 +28,15 @@ namespace MovLib\Core\Presentation;
  */
 class Base {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Base";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Add CSS class(es) to attributes array of an element.
    *

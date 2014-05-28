@@ -28,6 +28,15 @@ namespace MovLib\Data\Series;
  */
 final class TitleSet extends \MovLib\Data\AbstractEntitySet {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "TitleSet";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */
@@ -59,7 +68,7 @@ final class TitleSet extends \MovLib\Data\AbstractEntitySet {
    * @return this
    */
   public function loadEntitiesBySeries(\MovLib\Data\Series\Series $series) {
-    $result = $this->getMySQLi()->query(<<<SQL
+    $result = Database::getConnection()->query(<<<SQL
 SELECT
   `series_titles`.`id` AS `id`,
   `series_titles`.`language_code` AS `languageCode`,

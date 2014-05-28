@@ -30,6 +30,15 @@ namespace MovLib\Presentation\Person\Photo;
  */
 class Show extends \MovLib\Presentation\AbstractPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Show";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Initialize person photo presentation.
    */

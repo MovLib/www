@@ -28,6 +28,15 @@ namespace MovLib\Core\StreamWrapper;
  */
 final class DocumentRootStreamWrapper extends \MovLib\Core\StreamWrapper\AbstractLocalStreamWrapper {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "DocumentRootStreamWrapper";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

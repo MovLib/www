@@ -28,6 +28,15 @@ namespace MovLib\Presentation\Movie\Backdrop;
  */
 class Index extends \MovLib\Presentation\AbstractIndexPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Index";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

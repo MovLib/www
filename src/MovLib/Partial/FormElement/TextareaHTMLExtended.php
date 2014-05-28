@@ -28,6 +28,15 @@ namespace MovLib\Partial\FormElement;
  */
 class TextareaHTMLExtended extends \MovLib\Partial\FormElement\TextareaHTML {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "TextareaHTMLExtended";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Instantiate new HTML form element.
    *

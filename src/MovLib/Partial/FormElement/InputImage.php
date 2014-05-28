@@ -35,6 +35,15 @@ use \MovLib\Exception\ClientException\UnauthorizedException;
  */
 final class InputImage extends \MovLib\Partial\FormElement\AbstractInputFile {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "InputImage";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

@@ -29,6 +29,15 @@ namespace MovLib\Stub\Data\User;
  */
 abstract class Contribution {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Contribution";
+  // @codingStandardsIgnoreEnd
+
   /**
    * The entity the user contributed to.
    *

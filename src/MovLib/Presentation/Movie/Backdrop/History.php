@@ -28,6 +28,15 @@ namespace MovLib\Presentation\Movie\Backdrop;
  */
 class History extends \MovLib\Presentation\AbstractPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "History";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

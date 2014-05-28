@@ -28,6 +28,15 @@ namespace MovLib\Partial\FormElement;
  */
 final class InputEmail extends \MovLib\Partial\FormElement\AbstractInput {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "InputEmail";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 

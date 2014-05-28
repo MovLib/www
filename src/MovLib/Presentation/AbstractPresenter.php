@@ -31,6 +31,15 @@ use \MovLib\Partial\Navigation\Breadcrumb;
  */
 abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInjectionBase {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractPresenter";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

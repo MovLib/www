@@ -36,6 +36,15 @@ use \MovLib\Partial\FormElement\TextareaLineURLArray;
  */
 class Create extends \MovLib\Presentation\AbstractCreatePresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Create";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

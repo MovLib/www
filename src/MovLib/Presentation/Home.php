@@ -30,6 +30,15 @@ namespace MovLib\Presentation;
  */
 final class Home extends \MovLib\Presentation\AbstractPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Home";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

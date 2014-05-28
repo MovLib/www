@@ -28,6 +28,15 @@ namespace MovLib\Partial\Form\Element;
  */
 class InputText extends AbstractInput {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "InputText";
+  // @codingStandardsIgnoreEnd
+
   public function __construct($name, $label, &$value, array $settings) {
     parent::__construct($name, $label, $value, $settings, [
       "type" => "text",

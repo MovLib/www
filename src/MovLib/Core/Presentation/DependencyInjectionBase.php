@@ -28,6 +28,15 @@ namespace MovLib\Core\Presentation;
  */
 class DependencyInjectionBase extends \MovLib\Core\Presentation\Base {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "DependencyInjectionBase";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

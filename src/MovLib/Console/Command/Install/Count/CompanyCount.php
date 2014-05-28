@@ -28,6 +28,15 @@ namespace MovLib\Console\Command\Install\Count;
  */
 class CompanyCount extends \MovLib\Console\Command\Install\Count\AbstractEntityCountCommand {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "CompanyCount";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

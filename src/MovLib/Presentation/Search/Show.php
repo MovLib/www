@@ -35,6 +35,15 @@ use \MovLib\Exception\ClientException\ClientExceptionInterface;
  * @since 0.0.1-dev
  */
 final class Show extends \MovLib\Presentation\AbstractPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Show";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Partial\SidebarTrait;
   use \MovLib\Partial\SectionTrait;
 

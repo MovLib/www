@@ -32,6 +32,15 @@ use \MovLib\Data\Help\Article;
  */
 final class Edit extends \MovLib\Presentation\Help\AbstractEdit {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Edit";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

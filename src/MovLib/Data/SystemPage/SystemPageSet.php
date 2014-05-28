@@ -28,6 +28,15 @@ namespace MovLib\Data\SystemPage;
  */
 final class SystemPageSet extends \MovLib\Data\AbstractEntitySet {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "SystemPageSet";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

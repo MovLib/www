@@ -28,6 +28,15 @@ namespace MovLib\Stub\Data;
  */
 abstract class Entity {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Entity";
+  // @codingStandardsIgnoreEnd
+
   /**
    * The entity's unique identifier.
    *

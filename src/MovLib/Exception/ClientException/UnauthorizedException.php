@@ -42,6 +42,15 @@ use \MovLib\Presentation\Profile\SignIn;
  */
 final class UnauthorizedException extends \RuntimeException implements \MovLib\Exception\ClientException\ClientExceptionInterface {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "UnauthorizedException";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

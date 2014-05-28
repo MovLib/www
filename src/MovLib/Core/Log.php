@@ -38,6 +38,15 @@ use \Monolog\Processor\IntrospectionProcessor;
  */
 final class Log {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Log";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

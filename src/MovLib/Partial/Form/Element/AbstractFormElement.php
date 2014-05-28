@@ -31,6 +31,15 @@ use \MovLib\Partial\HTMLAttributes;
  */
 abstract class AbstractFormElement extends \MovLib\Core\Presentation\Base {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractFormElement";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

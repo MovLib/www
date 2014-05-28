@@ -31,6 +31,15 @@ use \MovLib\Partial\Form;
  */
 final class StarRatingForm extends \MovLib\Core\Presentation\DependencyInjectionBase {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "StarRatingForm";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

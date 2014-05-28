@@ -35,6 +35,15 @@ use \MovLib\Data\Movie\Movie;
  */
 class MovieJobSet extends \MovLib\Data\Movie\MovieSet {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "MovieJobSet";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Load the movies and jobs for a specific person.
    *
@@ -43,7 +52,7 @@ class MovieJobSet extends \MovLib\Data\Movie\MovieSet {
    * @return this
    */
   public function loadEntitiesByPerson(\MovLib\Data\Person\Person $person) {
-    $result = $this->getMySQLi()->query(<<<SQL
+    $result = Database::getConnection()->query(<<<SQL
 SELECT
   `movies`.`id` AS `movieId`,
   `movies`.`created` AS `movieCreated`,

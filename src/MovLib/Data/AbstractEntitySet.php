@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data;
 
+use \MovLib\Core\Database\Database;
+
 /**
  * Defines the base class for database set objects.
  *
@@ -26,51 +28,34 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractEntitySet extends \MovLib\Data\AbstractConfig implements \ArrayAccess, \Countable, \Iterator {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * The entities this set is currently working with.
-   *
-   * @var array
-   */
-  protected $entities = [];
+abstract class AbstractEntitySet extends \MovLib\Core\Entity\AbstractEntitySet {
 
   /**
    * The canonical absolute class name of the entity this set controls.
    *
+   * @deprecated
    * @var string
    */
   protected $entityClassName;
 
+  /**
+   * @deprecated
+   */
+  public $singularKey;
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+  /**
+   * @deprecated
+   */
+  public $pluralKey;
 
   /**
    * {@inheritdoc}
    */
-  public function __construct(\MovLib\Core\Container $container) {
-    parent::__construct($container);
+  public function __construct(\MovLib\Core\Container $container, $bundlePlural, $bundleSingular, $bundleTitle) {
+    parent::__construct($container, $bundlePlural, $bundleSingular, $bundleTitle);
     $this->entityClassName = substr(static::class, 0, -3);
-    $this->init();
-  }
-
-  /**
-   * Get the class's short name.
-   *
-   * @return string
-   *   The class's short name.
-   */
-  public function __toString() {
-    if (defined("static::name")) {
-      return static::name;
-    }
-    $shortName = explode("\\", static::class);
-    return end($shortName);
+    $this->singularKey     = strtolower($bundleSingular);
+    $this->pluralKey       = strtolower($bundlePlural);
   }
 
 
@@ -111,61 +96,10 @@ abstract class AbstractEntitySet extends \MovLib\Data\AbstractConfig implements 
 
 
   /**
-   * @deprecated
+   * {@inheritdoc}
    */
-  public function getCount() {
-    return $this->getTotalCount();
-  }
-
-  /**
-   * Get a random, unique, existing entity's identifier from the set.
-   *
-   * @return mixed
-   *   A random, unique, existing entity's identifier from the set.
-   */
-  public function getRandom() {
-    $id     = null;
-    $result = $this->getMySQLi()->query("SELECT `id` FROM `{$this->tableName}` WHERE `deleted` = false ORDER BY RAND() LIMIT 1");
-    if ($result) {
-      $id = $result->fetch_row()[0];
-    }
-    $result->free();
-    return $id;
-  }
-
-  /**
-   * Get the total amount of entities in this set.
-   */
-  public function getTotalCount() {
-    // We use fetch all at this point, because we'll always get at least a single result from the query and it consumes
-    // and closes the statement at once (lesser method calls).
-    return (integer) $this->getMySQLi()->query(
-      "SELECT COUNT(*) FROM `{$this->tableName}` WHERE `deleted` = false LIMIT 1"
-    )->fetch_all()[0][0];
-  }
-
-  /**
-   * Initialize the set.
-   *
-   * Further initialization work after an entity was initialized via PHP's built-in {@see \mysqli_result::fetch_object}
-   * method or continued initialization after the own constructor was called.
-   *
-   * @return this
-   */
-  public function init() {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert(!empty($this->singularKey), "You must set the \$singularKey property in your class " . static::class);
-    assert(!empty($this->pluralKey), "You must set the \$pluralKey property in your class " . static::class);
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    if (empty($this->route)) {
-      $this->route = $this->intl->r("/{$this->pluralKey}");
-    }
-    if (empty($this->tableName)) {
-      $this->tableName = $this->pluralKey;
-    }
-    return $this;
+  protected function doLoad(\MovLib\Core\Database\Query\Select $select) {
+    return $select;
   }
 
   /**
@@ -179,10 +113,10 @@ abstract class AbstractEntitySet extends \MovLib\Data\AbstractConfig implements 
    * @throws \mysqli_sql_exception
    */
   protected function loadEntities($where = null, $orderBy = null) {
-    $result = $this->getMySQLi()->query($this->getEntitiesQuery($where, $orderBy));
+    $result = Database::getConnection()->query($this->getEntitiesQuery($where, $orderBy));
     /* @var $entity \MovLib\Data\AbstractEntity */
-    while ($entity = $result->fetch_object($this->entityClassName, [ $this->container, null, false ])) {
-      $this->entities[$entity->id] = $entity;
+    while ($entity = $result->fetch_object($this->entityClassName, [ $this->container ])) {
+      $this[$entity->id] = $entity;
     }
     $result->free();
     return $this;
@@ -206,28 +140,28 @@ abstract class AbstractEntitySet extends \MovLib\Data\AbstractConfig implements 
    * @throws \mysqli_sql_exception
    */
   public function loadEntitySets(\MovLib\Data\AbstractEntitySet $set) {
+    // Cast the set to a simple array, this allows us to use array functions.
+    $setEntities = (array) $set;
+
     // Nothing to do if the passed set has no entities.
-    if (empty($set->entities)) {
+    if (empty($setEntities)) {
       return $this;
     }
 
     // Build the IN clause based on the loaded entities of the given set.
-    $in = implode(",", array_keys($set->entities));
+    $in = implode(",", array_keys($setEntities));
 
-    // Try to load all genres for the given entities.
-    $result = $this->getMySQLi()->query($this->getEntitySetsQuery($set, $in));
+    // Try to load all entities for the given entities.
+    $result = Database::getConnection()->query($this->getEntitySetsQuery($set, $in));
 
-    // Create a fresh instance of ourself that we can export to the entities of the given set in the upcoming loop.
-    $reflector = new \ReflectionClass(static::class);
-
-    $entitySetPropertyName = (string) $this;
+    $entitySetPropertyName = static::name;
 
     // Instantiate and export an instance of ourself to each entity of the passed set and seed those set instances with
     // the entities that were returned by the above query.
     /* @var $entity \MovLib\Data\AbstractEntity */
     while ($entity = $result->fetch_object($this->entityClassName, [ $this->container ])) {
       if (empty($set[$entity->entityId]->{$entitySetPropertyName})) {
-        $set[$entity->entityId]->{$entitySetPropertyName} = $reflector->newInstance($this->container);
+        $set[$entity->entityId]->{$entitySetPropertyName} = new static($this->container);
       }
       $set[$entity->entityId]->{$entitySetPropertyName}[$entity->id] = $entity;
     }
@@ -255,7 +189,7 @@ abstract class AbstractEntitySet extends \MovLib\Data\AbstractConfig implements 
 
     $ids = implode(",", $ids);
     $orderBy && ($orderBy = "ORDER BY {$orderBy}");
-    return $this->loadEntities("WHERE `{$this->tableName}`.`id` IN({$ids})", $orderBy);
+    return $this->loadEntities("WHERE `{$this::$tableName}`.`id` IN({$ids})", $orderBy);
   }
 
   /**
@@ -276,107 +210,8 @@ abstract class AbstractEntitySet extends \MovLib\Data\AbstractConfig implements 
     if ($where) {
      $where = " AND {$where}";
     }
-    $this->loadEntities("WHERE `{$this->tableName}`.`deleted` = false{$where}", "ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}");
-    return $this->entities;
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Iterator Methods
-
-
-  /**
-   * Get the current entity.
-   *
-   * @return \MovLib\Data\AbstractEntity|boolean
-   *   The current entity, or <code>FALSE</code> if there the array is empty or the current entity is invalid.
-   */
-  public function current() {
-    return current($this->entities);
-  }
-
-  /**
-   * Get the unique identifier of the current entity.
-   *
-   * @return mixed
-   *   The unique identifier of the current entity, <code>NULL</code> if there are no entities or the current pointer is
-   *   beyond the array's elements.
-   */
-  public function key() {
-    return key($this->entities);
-  }
-
-  /**
-   * Get the next entity.
-   *
-   * @return \MovLib\Data\AbstractEntity|boolean
-   *   The next entity, or <code>FALSE</code> if there is no next entity.
-   */
-  public function next() {
-    return next($this->entities);
-  }
-
-  /**
-   * Rewind the iterator to the first entity.
-   *
-   * @return \MovLib\Data\AbstractEntity|boolean
-   *   The first entity, or <code>FALSE</code> if there are no more entities.
-   */
-  public function rewind() {
-    return reset($this->entities);
-  }
-
-  /**
-   * Check if the current position is valid.
-   *
-   * @return boolean
-   *   <code>TRUE</code> if the current position is valid, <code>FALSE</code> otherwise.
-   */
-  public function valid() {
-    return key($this->entities) !== null;
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Countable Methods
-
-
-  /**
-   * Implements <code>count()</code> callback.
-   *
-   * @return integer
-   *   Total count of elements in the set.
-   */
-  public function count() {
-    return count($this->entities);
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Array Access Methods
-
-
-  /**
-   * @return boolean
-   */
-  public function offsetExists($offset) {
-    return isset($this->entities[$offset]);
-  }
-
-  /**
-   * @return mixed
-   */
-  public function offsetGet($offset) {
-    return $this->entities[$offset];
-  }
-
-  /**
-   */
-  public function offsetSet($offset, $value) {
-    $this->entities[$offset] = $value;
-  }
-
-  /**
-   */
-  public function offsetUnset($offset) {
-    throw new \RuntimeException("You cannot remove entities from a set.");
+    $this->loadEntities("WHERE `{$this::$tableName}`.`deleted` = false{$where}", "ORDER BY {$by} LIMIT {$limit} OFFSET {$offset}");
+    return $this;
   }
 
 }

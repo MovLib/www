@@ -34,6 +34,15 @@ use \Symfony\Component\Console\Output\OutputInterface;
  */
 class FixPermissions extends \MovLib\Console\Command\AbstractCommand {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "FixPermissions";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

@@ -28,6 +28,15 @@ namespace MovLib\Partial\FormElement;
  */
 abstract class AbstractInput extends \MovLib\Partial\FormElement\AbstractFormElement {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractInput";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Instantiate new input form element.
    *

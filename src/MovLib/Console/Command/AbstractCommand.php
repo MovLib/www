@@ -36,6 +36,15 @@ use \Symfony\Component\Console\Output\OutputInterface;
  */
 abstract class AbstractCommand extends \Symfony\Component\Console\Command\Command {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractCommand";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 

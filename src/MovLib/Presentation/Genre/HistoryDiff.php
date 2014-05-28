@@ -33,6 +33,15 @@ use \MovLib\Exception\RedirectException\TemporaryRedirectException;
  * @since 0.0.1-dev
  */
 final class HistoryDiff extends \MovLib\Presentation\AbstractPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "HistoryDiff";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Partial\SidebarTrait;
 
 

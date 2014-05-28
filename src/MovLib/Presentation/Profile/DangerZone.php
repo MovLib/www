@@ -37,6 +37,15 @@ use \MovLib\Partial\Form;
  */
 final class DangerZone extends \MovLib\Presentation\Profile\AbstractProfilePresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "DangerZone";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

@@ -28,6 +28,15 @@ namespace MovLib\Console\Command\Install\Count;
  */
 class EventCount extends \MovLib\Console\Command\Install\Count\AbstractEntityCountCommand {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "EventCount";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

@@ -47,7 +47,7 @@ final class Select extends AbstractQuery {
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  protected static $collations = [
+  public static $collations = [
     null    => null, // Used for performance reasons.
     "en_US" => null,
     "de_AT" => " COLLATE utf8mb4_german2_ci",

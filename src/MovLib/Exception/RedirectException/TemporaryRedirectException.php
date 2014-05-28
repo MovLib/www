@@ -48,6 +48,15 @@ namespace MovLib\Exception\RedirectException;
  */
 final class TemporaryRedirectException extends \MovLib\Exception\RedirectException\AbstractRedirectException implements \MovLib\Exception\ClientException\ClientExceptionInterface {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "TemporaryRedirectException";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

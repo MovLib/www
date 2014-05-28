@@ -31,6 +31,15 @@ use \MovLib\Exception\RedirectException\SeeOtherException;
  */
 final class Dashboard extends \MovLib\Presentation\AbstractPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Dashboard";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

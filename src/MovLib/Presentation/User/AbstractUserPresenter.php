@@ -30,6 +30,15 @@ use \MovLib\Data\User\User;
  * @since 0.0.1-dev
  */
 abstract class AbstractUserPresenter extends \MovLib\Presentation\AbstractPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractUserPresenter";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Partial\SidebarTrait;
   use \MovLib\Partial\SectionTrait;
 
@@ -53,7 +62,7 @@ abstract class AbstractUserPresenter extends \MovLib\Presentation\AbstractPresen
     $breadcrumbTitle && ($breadcrumbTitle = str_replace("{username}", $this->entity->name, $breadcrumbTitle));
     parent::initPage($headTitle, $pageTitle, $breadcrumbTitle);
 
-    $this->breadcrumb->addCrumb($this->entity->routeIndex, $this->intl->t("Users"));
+    $this->breadcrumb->addCrumb($this->entity->set->route, $this->entity->set->bundleTitle);
     if ($this->request->path != $this->entity->route) {
       $this->breadcrumb->addCrumb($this->entity->route, $this->entity->name);
     }
@@ -77,13 +86,13 @@ abstract class AbstractUserPresenter extends \MovLib\Presentation\AbstractPresen
       ]);
     }
 
-    $langKey = $this->entity->routeKey;
+    $langKey = $this->entity->route->route;
     if (($shortName = strtolower(static::name)) != "show") {
       $langKey .= "/{$shortName}";
       $this->headingBefore .= "<div class='r'><div class='s s11'>";
       $this->headingAfter  .= "</div><div class='s s1'>{$this->img($this->entity->imageGetStyle("s1"))}</div></div>";
     }
-    $this->initLanguageLinks($langKey, $this->entity->routeArgs);
+    $this->initLanguageLinks($langKey, $this->entity->route->route);
 
     return $this;
   }

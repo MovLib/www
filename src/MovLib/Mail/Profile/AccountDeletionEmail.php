@@ -30,6 +30,15 @@ use \MovLib\Data\TemporaryStorage;
  */
 final class AccountDeletionEmail extends \MovLib\Mail\AbstractEmail {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AccountDeletionEmail";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

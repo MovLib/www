@@ -32,6 +32,15 @@ use \MovLib\Core\Search\Result\SuggestResult;
  */
 final class Search {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Search";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Execute a fuzzy search on one or more indexes.
    *

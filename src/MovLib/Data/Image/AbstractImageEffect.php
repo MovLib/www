@@ -32,6 +32,15 @@ use \MovLib\Exception\FileSystemException;
  */
 abstract class AbstractImageEffect {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractImageEffect";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

@@ -30,6 +30,15 @@ use \MovLib\Data\Genre\Genre;
  * @since 0.0.1-dev
  */
 class Series extends \MovLib\Presentation\AbstractPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Series";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Partial\SidebarTrait;
   use \MovLib\Presentation\Genre\GenreTrait;
 

@@ -77,7 +77,7 @@ trait RatingTrait {
    * @return this
    */
   public function rate($rating, $userId, $userRating) {
-    $mysqli = $this->getMySQLi();
+    $mysqli = Database::getConnection();
     // This user hasn't voted for this entity yet.
     if ($userRating === null) {
       $mysqli->query("INSERT INTO `{$this->tableName}_ratings` SET `rating` = {$rating}, `{$this->singularKey}_id` = {$this->id}, `user_id` = {$userId}");

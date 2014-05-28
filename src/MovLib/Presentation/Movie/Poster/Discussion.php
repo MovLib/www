@@ -28,6 +28,15 @@ namespace MovLib\Presentation\Movie\Poster;
  */
 class Discussion extends \MovLib\Presentation\AbstractPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Discussion";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

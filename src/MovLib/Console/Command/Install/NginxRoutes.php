@@ -34,6 +34,15 @@ use \Symfony\Component\Console\Output\OutputInterface;
  */
 final class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "NginxRoutes";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

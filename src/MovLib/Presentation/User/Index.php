@@ -69,7 +69,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    * @param \MovLib\Data\User\User $user {@inheritdoc}
    */
-  protected function formatListingItem(\MovLib\Data\AbstractEntity $user, $delta) {
+  protected function formatListingItem(\MovLib\Core\Entity\EntityInterface $user, $delta) {
     return
       "<li typeof='Person'><article>" .
         "<a class='hover-item r' href='{$user->route}' property='url'>" .

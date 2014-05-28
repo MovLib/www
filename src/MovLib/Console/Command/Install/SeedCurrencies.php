@@ -38,6 +38,15 @@ use \Collator;
  */
 class SeedCurrencies extends \MovLib\Console\Command\Install\AbstractIntlCommand {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "SeedCurrencies";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

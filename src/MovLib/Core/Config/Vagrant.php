@@ -28,6 +28,15 @@ namespace MovLib\Core\Config;
  */
 class Vagrant extends \MovLib\Core\Config {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Vagrant";
+  // @codingStandardsIgnoreEnd
+
   /**
    * @inheritdoc
    */

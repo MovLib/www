@@ -29,6 +29,15 @@ namespace MovLib\Partial\FormElement;
  */
 abstract class AbstractFormElement extends \MovLib\Core\Presentation\DependencyInjectionBase {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractFormElement";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 

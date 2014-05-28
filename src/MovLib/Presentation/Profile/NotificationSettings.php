@@ -29,6 +29,15 @@ namespace MovLib\Presentation\Profile;
  */
 final class NotificationSettings  extends \MovLib\Presentation\Profile\AbstractProfilePresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "NotificationSettings";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

@@ -28,6 +28,15 @@ namespace MovLib\Stub\Data\Search;
  */
 abstract class IndexFieldConfig {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "IndexFieldConfig";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Determines whether this field contains human names or not.
    *

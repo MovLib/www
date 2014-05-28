@@ -34,6 +34,15 @@ use \MovLib\Partial\Sex;
  */
 final class CrewSet extends \MovLib\Data\AbstractEntitySet {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "CrewSet";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */
@@ -61,7 +70,7 @@ final class CrewSet extends \MovLib\Data\AbstractEntitySet {
 
   public function loadMovieCrew(\MovLib\Data\Movie\Movie $movie) {
     $castJobId = Cast::JOB_ID;
-    $result = $this->getMySQLi()->query(<<<SQL
+    $result = Database::getConnection()->query(<<<SQL
 SELECT
   `movies_crew`.`person_id` AS `personId`,
   `movies_crew`.`company_id` AS `companyId`,

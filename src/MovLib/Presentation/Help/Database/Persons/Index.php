@@ -32,6 +32,15 @@ use \MovLib\Data\Help\SubCategory;
  */
 final class Index extends \MovLib\Presentation\Help\AbstractSubCategory {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Index";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

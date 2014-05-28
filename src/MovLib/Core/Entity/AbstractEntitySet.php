@@ -18,6 +18,7 @@
 namespace MovLib\Core\Entity;
 
 use \MovLib\Core\Database\Database;
+use \MovLib\Core\Routing\Route;
 
 /**
  * Defines the entity set base class.
@@ -28,7 +29,7 @@ use \MovLib\Core\Database\Database;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractEntitySet extends \ArrayObject implements \MovLib\Core\Entity\EntitySetInterface, \MovLib\Core\Routing\RoutingInterface {
+abstract class AbstractEntitySet extends \ArrayObject implements \MovLib\Core\Entity\EntitySetInterface {
   use \MovLib\Core\Entity\EntityTrait;
   use \MovLib\Core\Routing\RoutingTrait;
 
@@ -73,14 +74,13 @@ abstract class AbstractEntitySet extends \ArrayObject implements \MovLib\Core\En
    * @param \MovLib\Core\Container $container
    *   {@inheritdoc}
    */
-  public function __construct(\MovLib\Core\Container $container) {
+  public function __construct(\MovLib\Core\Container $container, $bundlePlural, $bundleSingular, $bundleTitle) {
     // @devStart
     // @codeCoverageIgnoreStart
     // We have no chance to find these values based on our surroundings, the concrete set has to set them.
     //
     // @todo Is there any way we might be able to abstract this?
     assert(isset(static::$tableName), "You have to set the static \$tableName property in your set.");
-    assert(isset($this->bundle), "You have to set the \$bundle property in your set.");
     // @codeCoverageIgnoreEnd
     // @devEnd
     parent::__construct([]);
@@ -90,16 +90,17 @@ abstract class AbstractEntitySet extends \ArrayObject implements \MovLib\Core\En
     $this->container = $container;
     $this->intl      = $container->intl;
 
-    // We can use the namespace to find the entity's bundle.
-    $this->entityBundle = explode("\\", static::class);
-    array_pop($this->entityBundle);
-    $this->entityBundle = end($this->entityBundle);
+    $this->bundle       = $bundlePlural;
+    $this->bundleTitle  = $bundleTitle;
+    $this->entityBundle = $bundleSingular;
 
     // We can build the entity's class based on our own.
     $this->entityClass = substr(static::class, 0, -3);
 
-    // At least we can take care of the initial translation.
-    $this->bundleTitle = $this->intl->tp(-1, $this->bundle, $this->entityBundle);
+    if (!$this->route) {
+      $routeKey = strtolower($this->bundle);
+      $this->route = new Route($this->intl, "/{$routeKey}");
+    }
   }
 
 

@@ -30,6 +30,15 @@ use \MovLib\Data\Award\Category;
  * @since 0.0.1-dev
  */
 class Companies extends \MovLib\Presentation\AbstractPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Companies";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Partial\SidebarTrait;
   use \MovLib\Presentation\Award\Category\CategoryTrait;
 

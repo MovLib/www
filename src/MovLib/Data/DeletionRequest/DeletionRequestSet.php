@@ -28,6 +28,15 @@ namespace MovLib\Data\DeletionRequest;
  */
 final class DeletionRequestSet extends \MovLib\Data\AbstractEntitySet {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "DeletionRequestSet";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

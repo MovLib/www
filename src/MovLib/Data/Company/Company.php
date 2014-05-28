@@ -35,6 +35,15 @@ use \MovLib\Data\Place\Place;
  */
 final class Company extends \MovLib\Data\Image\AbstractImageEntity {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Company";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
@@ -153,7 +162,7 @@ final class Company extends \MovLib\Data\Image\AbstractImageEntity {
   public function __construct(\MovLib\Core\Container $container, $id = null) {
     parent::__construct($container);
     if ($id) {
-      $stmt = $this->getMySQLi()->prepare(<<<SQL
+      $stmt = Database::getConnection()->prepare(<<<SQL
 SELECT
   `companies`.`id` AS `id`,
   `companies`.`changed` AS `changed`,
@@ -223,7 +232,7 @@ SQL
     $this->aliases = empty($this->aliases)? serialize([]) : serialize(explode("\n", $this->aliases));
     $this->links   = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
 
-    $stmt = $this->getMySQLi()->prepare(<<<SQL
+    $stmt = Database::getConnection()->prepare(<<<SQL
 UPDATE `companies` SET
   `aliases`          = ?,
   `defunct_date`     = ?,
@@ -260,7 +269,7 @@ SQL
     $this->aliases = empty($this->aliases)? serialize([]) : serialize(explode("\n", $this->aliases));
     $this->links   = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
 
-    $mysqli = $this->getMySQLi();
+    $mysqli = Database::getConnection();
     $stmt = $mysqli->prepare(<<<SQL
 INSERT INTO `companies` (
   `aliases`,
@@ -312,7 +321,7 @@ SQL
    */
   public function getMovies($offset = null, $limit = null) {
     $movieSet = new MovieSet($this->container);
-    $result   = $this->getMySQLi()->query(<<<SQL
+    $result   = Database::getConnection()->query(<<<SQL
 SELECT `movies`.`id` FROM `movies`
   INNER JOIN `movies_crew` ON `movies_crew`.`movie_id` = `movies`.`id` AND `movies_crew`.`company_id` = {$this->id}
 WHERE `movies`.`deleted` = false
@@ -336,7 +345,7 @@ SQL
    * Get the total amount of movies related to a company.
    */
   public function getMovieTotalCount() {
-    return (integer) $this->getMySQLi()->query(<<<SQL
+    return (integer) Database::getConnection()->query(<<<SQL
 SELECT count(*) FROM `movies`
   INNER JOIN `movies_crew` ON `movies_crew`.`movie_id` = `movies`.`id` AND `movies_crew`.`company_id` = {$this->id}
 WHERE `movies`.`deleted` = false
@@ -357,7 +366,7 @@ SQL
    */
   public function getSeries($offset = null, $limit = null) {
     $seriesSet = new SeriesSet($this->container);
-    $result   = $this->getMySQLi()->query(<<<SQL
+    $result   = Database::getConnection()->query(<<<SQL
 SELECT DISTINCT `series`.`id` FROM `series`
   INNER JOIN `episodes_crew` ON `episodes_crew`.`series_id` = `series`.`id` AND `episodes_crew`.`company_id` = {$this->id}
 WHERE `series`.`deleted` = false
@@ -381,7 +390,7 @@ SQL
    * Get the total amount of series related to a company.
    */
   public function getSeriesTotalCount() {
-    return (integer) $this->getMySQLi()->query(<<<SQL
+    return (integer) Database::getConnection()->query(<<<SQL
 SELECT count(DISTINCT `episodes_crew`.`series_id`) FROM `series`
   INNER JOIN `episodes_crew` ON `episodes_crew`.`series_id` = `series`.`id` AND `episodes_crew`.`company_id` = {$this->id}
 WHERE `series`.`deleted` = false

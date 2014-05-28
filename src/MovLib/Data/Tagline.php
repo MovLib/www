@@ -28,6 +28,15 @@ namespace MovLib\Data;
  */
 final class Tagline implements \MovLib\Core\Search\LanguageAnalyzerInterface {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Tagline";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

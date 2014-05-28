@@ -40,6 +40,15 @@ use \MovLib\Partial\Date;
  */
 final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Index";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

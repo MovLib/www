@@ -32,6 +32,15 @@ use \MovLib\Data\Help\Article;
  */
 final class History extends \MovLib\Presentation\Help\AbstractHistory {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "History";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

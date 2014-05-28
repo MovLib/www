@@ -37,6 +37,15 @@ use \MovLib\Presentation\Error\NotFound;
  */
 final class NotFoundException extends \RuntimeException implements \MovLib\Exception\ClientException\ClientExceptionInterface {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "NotFoundException";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

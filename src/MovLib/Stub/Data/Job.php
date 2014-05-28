@@ -28,6 +28,15 @@ namespace MovLib\Stub\Data;
  */
 abstract class Job {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Job";
+  // @codingStandardsIgnoreEnd
+
   /**
    * The job's identifier.
    *

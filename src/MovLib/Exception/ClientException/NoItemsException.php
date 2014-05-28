@@ -28,6 +28,15 @@ namespace MovLib\Exception\ClientException;
  */
 final class NoItemsException extends \RuntimeException implements \MovLib\Exception\ClientException\ClientExceptionInterface {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "NoItemsException";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

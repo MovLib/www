@@ -34,6 +34,15 @@ use \MovLib\Core\Container;
  */
 final class Application extends \Symfony\Component\Console\Application {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Application";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Instantiate new MovLib CLI application.
    *

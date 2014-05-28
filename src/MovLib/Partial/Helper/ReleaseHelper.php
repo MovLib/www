@@ -28,6 +28,15 @@ namespace MovLib\Partial\Helper;
  */
 final class ReleaseHelper {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "ReleaseHelper";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Get a release listing.
    *

@@ -28,6 +28,15 @@ namespace MovLib\Core\HTTP;
  */
 class Container extends \MovLib\Core\Container {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Container";
+  // @codingStandardsIgnoreEnd
+
   /**
    * The presenting presenter.
    *

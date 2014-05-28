@@ -299,7 +299,7 @@ SQL
    * @return this
    */
   private function updateAwardYears() {
-    $stmt = $this->getMySQLi()->prepare(<<<SQL
+    $stmt = Database::getConnection()->prepare(<<<SQL
 UPDATE `awards` SET
   `first_event_year` = (SELECT YEAR(MIN(`start_date`)) FROM `events` WHERE `award_id` = ?),
   `last_event_year`  = IFNULL(

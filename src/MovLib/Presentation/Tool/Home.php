@@ -30,6 +30,15 @@ use \MovLib\Presentation\Partial\Navigation;
  */
 final class Home extends \MovLib\Presentation\Tool\AbstractPage {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Home";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Whether the client has verified via PKCS #12 certificate or not.
    *

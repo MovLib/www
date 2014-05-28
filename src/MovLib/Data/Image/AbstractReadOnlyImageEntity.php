@@ -55,7 +55,20 @@ const S12 = 940;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
+abstract class AbstractReadOnlyImageEntity extends \MovLib\Core\Entity\AbstractEntity {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractReadOnlyImageEntity";
+  // @codingStandardsIgnoreEnd
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -167,18 +180,11 @@ abstract class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
   /**
    * {@inheritdoc}
    */
-  public function init() {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    foreach ([ "AlternativeText", "Directory" ] as $property) {
-      $property = "image{$property}";
-      assert(!empty($this->$property), "You must set the \${$property} property in your class " . static::class . ".");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
+  public function init(array $values = null) {
+    parent::init($values);
     $this->imageExists = (boolean) $this->imageCacheBuster;
     $this->imageStyles && ($this->imageStyles = unserialize($this->imageStyles));
-    return parent::init();
+    return $this;
   }
 
   /**
@@ -191,7 +197,7 @@ abstract class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
   final protected function imageGenerateStyles() {
     /* @var $imageEffect \MovLib\Data\Image\AbstractImageEffect */
     foreach ($this->imageGetEffects() as $style => $imageEffect) {
-      $imageEffect->apply($this, $this->fs, $style, $this->imageGetURI(), $this->imageGetStyleURI($style));
+      $imageEffect->apply($this, $this->container->fs, $style, $this->imageGetURI(), $this->imageGetStyleURI($style));
     }
     return $this;
   }
@@ -231,12 +237,12 @@ abstract class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
         $this->imageGenerateStyles()->imageSaveStyles();
       }
       $this->imageStylesCache[$style] = $this->imageStyles[$style];
-      $this->imageStylesCache[$style]->url = $this->fs->getExternalURL($this->imageGetStyleURI($style), $this->imageCacheBuster);
+      $this->imageStylesCache[$style]->url = $this->container->fs->getExternalURL($this->imageGetStyleURI($style), $this->imageCacheBuster);
     }
     else {
       $this->imageStylesCache[$style] = new ImageStylePlaceholder(
         $this->imageGetEffects()[$style]->width,
-        $this->fs->getExternalURL($this->imagePlaceholder)
+        $this->container->fs->getExternalURL($this->imagePlaceholder)
       );
     }
 
@@ -282,7 +288,7 @@ abstract class AbstractReadOnlyImageEntity extends \MovLib\Data\AbstractEntity {
    * @return this
    */
   final public function setFileSystem(\MovLib\Core\FileSystem $fileSystem) {
-    $this->fs = $fileSystem;
+    $this->container->fs = $fileSystem;
     return $this;
   }
 

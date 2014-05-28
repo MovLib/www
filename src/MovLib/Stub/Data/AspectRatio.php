@@ -28,6 +28,15 @@ namespace MovLib\Stub\Data;
  */
 class AspectRatio {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AspectRatio";
+  // @codingStandardsIgnoreEnd
+
   /**
    * The aspect ratio's unique identifier.
    *

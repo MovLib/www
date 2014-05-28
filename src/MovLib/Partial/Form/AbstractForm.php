@@ -28,4 +28,13 @@ namespace MovLib\Partial\Form;
  */
 abstract class AbstractForm implements FormInterface {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractForm";
+  // @codingStandardsIgnoreEnd
+
 }

@@ -32,6 +32,15 @@ use \Symfony\Component\Console\Output\OutputInterface;
  */
 class Autocomplete extends \MovLib\Console\Command\AbstractCommand {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Autocomplete";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

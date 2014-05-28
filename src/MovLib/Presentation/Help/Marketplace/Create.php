@@ -33,6 +33,15 @@ use \MovLib\Data\Help\Category;
  */
 final class Create extends \MovLib\Presentation\Help\AbstractCreate {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Create";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

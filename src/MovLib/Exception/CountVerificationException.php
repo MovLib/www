@@ -28,6 +28,15 @@ namespace MovLib\Exception;
  */
 class CountVerificationException extends \OutOfBoundsException {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "CountVerificationException";
+  // @codingStandardsIgnoreEnd
+
   /**
    * The count verification errors.
    *

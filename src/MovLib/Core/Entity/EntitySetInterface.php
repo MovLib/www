@@ -26,7 +26,7 @@ namespace MovLib\Core\Entity;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-interface EntitySetInterface extends \ArrayAccess {
+interface EntitySetInterface extends \ArrayAccess, \MovLib\Core\Routing\RoutingInterface {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods

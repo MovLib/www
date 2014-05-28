@@ -42,6 +42,15 @@ use \MovLib\Exception\StreamException;
  */
 abstract class AbstractLocalStreamWrapper {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractLocalStreamWrapper";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

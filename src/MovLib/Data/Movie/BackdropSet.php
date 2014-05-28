@@ -28,6 +28,15 @@ namespace MovLib\Data\Movie;
  */
 final class BackdropSet extends \MovLib\Data\AbstractEntitySet {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "BackdropSet";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

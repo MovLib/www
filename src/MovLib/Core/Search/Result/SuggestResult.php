@@ -28,6 +28,15 @@ namespace MovLib\Core\Search\Result;
  */
 final class SuggestResult {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "SuggestResult";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

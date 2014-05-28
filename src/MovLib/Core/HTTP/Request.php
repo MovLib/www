@@ -32,6 +32,15 @@ use \MovLib\Presentation\Error\Forbidden;
  */
 final class Request {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Request";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

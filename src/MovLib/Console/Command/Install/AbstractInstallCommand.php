@@ -33,6 +33,15 @@ use \Symfony\Component\Console\Output\OutputInterface;
  */
 abstract class AbstractInstallCommand extends \MovLib\Console\Command\AbstractCommand {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractInstallCommand";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 

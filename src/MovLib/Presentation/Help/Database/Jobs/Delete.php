@@ -32,6 +32,15 @@ use \MovLib\Data\Help\Article;
  */
 final class Delete extends \MovLib\Presentation\Help\AbstractDelete {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Delete";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

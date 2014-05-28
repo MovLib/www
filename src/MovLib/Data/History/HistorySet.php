@@ -31,6 +31,15 @@ use \MovLib\Data\User\UserSet;
  */
 final class HistorySet implements \ArrayAccess, \Countable, \Iterator {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "HistorySet";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 

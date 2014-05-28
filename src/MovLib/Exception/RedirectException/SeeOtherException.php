@@ -43,6 +43,15 @@ namespace MovLib\Exception\RedirectException;
  */
 final class SeeOtherException extends \MovLib\Exception\RedirectException\AbstractRedirectException implements \MovLib\Exception\ClientException\ClientExceptionInterface {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "SeeOtherException";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

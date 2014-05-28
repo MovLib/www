@@ -28,6 +28,15 @@ namespace MovLib\Component;
  */
 final class Collator extends \Collator {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Collator";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Sorts an array by key, maintaining key to data correlations. This is useful for associative arrays.
    *

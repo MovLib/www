@@ -29,6 +29,19 @@ namespace MovLib\Data\Series;
  */
 final class SeriesSet extends \MovLib\Data\AbstractEntitySet {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "SeriesSet";
+  // @codingStandardsIgnoreEnd
+
+  public static $tableName = "series";
+
+  public $bundle = "Series";
+
   /**
    * {@inheritdoc}
    */
@@ -75,15 +88,6 @@ SQL;
     return <<<SQL
 
 SQL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-    $this->pluralKey   = "series";
-    $this->singularKey = "series";
-    return parent::init();
   }
 
 }

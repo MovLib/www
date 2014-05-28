@@ -31,6 +31,15 @@ use \MovLib\Component\Date;
  */
 class InputDate extends \MovLib\Partial\FormElement\AbstractInput {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "InputDate";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 

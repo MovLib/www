@@ -33,6 +33,15 @@ use \MovLib\Component\Date;
  */
 class InputDateSeparate extends \MovLib\Partial\FormElement\AbstractFormElement {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "InputDateSeparate";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 

@@ -28,6 +28,15 @@ namespace MovLib\Data\Series;
  */
 final class SeasonSet extends \MovLib\Data\AbstractEntitySet {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "SeasonSet";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

@@ -39,6 +39,15 @@ use \MovLib\Partial\Place;
  * @since 0.0.1-dev
  */
 final class Show extends \MovLib\Presentation\AbstractShowPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Show";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Presentation\Company\CompanyTrait;
 
   /**

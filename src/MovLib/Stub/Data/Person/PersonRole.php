@@ -28,6 +28,15 @@ namespace MovLib\Stub\Data\Person;
  */
 abstract class PersonRole {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "PersonRole";
+  // @codingStandardsIgnoreEnd
+
   /**
    * The person this role references.
    *

@@ -28,4 +28,13 @@ namespace MovLib\Partial;
  */
 final class Subtitle {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Subtitle";
+  // @codingStandardsIgnoreEnd
+
 }

@@ -33,6 +33,15 @@ use \MovLib\Partial\Date;
  * @since 0.0.1-dev
  */
 final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Index";
+  // @codingStandardsIgnoreEnd
   use \MovLib\Presentation\Award\AwardTrait;
 
   /**

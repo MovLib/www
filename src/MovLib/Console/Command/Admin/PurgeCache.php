@@ -31,6 +31,15 @@ use \Symfony\Component\Console\Output\OutputInterface;
  */
 class PurgeCache extends \MovLib\Console\Command\AbstractCommand {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "PurgeCache";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */

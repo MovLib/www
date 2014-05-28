@@ -30,6 +30,15 @@ abstract class AbstractIndexPresenter extends \MovLib\Presentation\AbstractPrese
   use \MovLib\Partial\SidebarTrait;
   use \MovLib\Partial\PaginationTrait;
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractIndexPresenter";
+  // @codingStandardsIgnoreEnd
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
@@ -37,7 +46,7 @@ abstract class AbstractIndexPresenter extends \MovLib\Presentation\AbstractPrese
   /**
    * The set to present.
    *
-   * @var \MovLib\Data\AbstractEntitySet
+   * @var \MovLib\Core\Entity\EntitySetInterface
    */
   protected $set;
 
@@ -48,14 +57,14 @@ abstract class AbstractIndexPresenter extends \MovLib\Presentation\AbstractPrese
   /**
    * Format a single listing's item.
    *
-   * @param \MovLib\Data\AbstractEntity $item
+   * @param \MovLib\Core\Entity\EntityInterface $item
    *   The listing's item to format.
    * @param integer $delta
    *   The current loops delta.
    * @return string
    *   The formatted listing's item.
    */
-  abstract protected function formatListingItem(\MovLib\Data\AbstractEntity $item, $delta);
+  abstract protected function formatListingItem(\MovLib\Core\Entity\EntityInterface $item, $delta);
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -64,7 +73,7 @@ abstract class AbstractIndexPresenter extends \MovLib\Presentation\AbstractPrese
   /**
    * Initialize default index presentation.
    *
-   * @param \MovLib\Data\AbstractEntitySet $set
+   * @param \MovLib\Core\Entity\EntitySetInterface $set
    *   The set to present.
    * @param string $title
    *   The title for page title and breadcrumb.
@@ -72,16 +81,16 @@ abstract class AbstractIndexPresenter extends \MovLib\Presentation\AbstractPrese
    *   The translated text for the creation button (title case).
    * @return this
    */
-  public function initIndex(\MovLib\Data\AbstractEntitySet $set, $title, $createText) {
+  public function initIndex(\MovLib\Core\Entity\EntitySetInterface $set, $title, $createText) {
     $this->set           = $set;
     $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$this->intl->r("/{$set->singularKey}/create")}'>{$createText}</a>";
     $this->initPage($title);
     $this->initLanguageLinks("/{$set->pluralKey}", null, true);
     $this->sidebarInit([
       [ $set->route, $title, [ "class" => "ico ico-{$set->singularKey}" ] ],
-      [ $this->intl->r("/{$set->singularKey}/random"), $this->intl->t("Random"), [ "class" => "ico ico-random"] ],
-      [ $this->intl->r("/{$set->singularKey}/charts"), $this->intl->t("Charts"), [ "class" => "ico ico-chart"] ],
-      [ $this->intl->r("/help/database/{$set->pluralKey}"), $this->intl->t("Help"), [ "class" => "ico ico-help"] ],
+      [ $set->r("/random"), $this->intl->t("Random"), [ "class" => "ico ico-random"] ],
+      [ $set->r("/charts"), $this->intl->t("Charts"), [ "class" => "ico ico-chart"] ],
+      [ $this->intl->r("/help/database/" . end($set->route->parts)), $this->intl->t("Help"), [ "class" => "ico ico-help"] ],
     ]);
     $this->paginationInit($this->set->getTotalCount());
     return $this;

@@ -32,6 +32,15 @@ namespace MovLib\Core\Database;
  */
 abstract class Database {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Database";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Established database connection.
    *

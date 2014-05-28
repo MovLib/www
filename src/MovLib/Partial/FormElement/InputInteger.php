@@ -28,6 +28,15 @@ namespace MovLib\Partial\FormElement;
  */
 class InputInteger extends \MovLib\Partial\FormElement\AbstractInputNumber {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "InputInteger";
+  // @codingStandardsIgnoreEnd
+
   /**
    * Validate the submitted integer.
    *

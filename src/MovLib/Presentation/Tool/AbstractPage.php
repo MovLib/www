@@ -28,6 +28,15 @@ namespace MovLib\Presentation\Tool;
  */
 abstract class AbstractPage extends \MovLib\Presentation\AbstractPresenter {
 
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractPage";
+  // @codingStandardsIgnoreEnd
+
   /**
    * {@inheritdoc}
    */
