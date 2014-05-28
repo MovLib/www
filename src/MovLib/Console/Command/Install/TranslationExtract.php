@@ -85,7 +85,7 @@ final class TranslationExtract extends \MovLib\Console\Command\AbstractCommand {
           if (empty($matches[2])) {
             $matches[2] = $matches[1];
           }
-          return '->t("{0,plural,one{' . $matches[1] . '}other{' . $matches[2] . '}}")';
+          return '->t("{0,plural,one{' . $matches[1] . '}other{' . $matches[2] . '}}")->t("' . $matches[1] . '")->t("' . $matches[2] . '")';
         }, $content, -1, $count);
         $this->writeDebug("Expanded {$count} tp calls in file...");
         file_put_contents($path, $content);
