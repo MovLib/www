@@ -50,6 +50,9 @@ class TextareaLineURLArray extends \MovLib\Partial\FormElement\InputURL {
     // @codeCoverageIgnoreEnd
     // @devEnd
       unset($this->attributes["value"]);
+      if (is_array($this->value)) {
+        $this->value = implode("\n", array_values($this->value));
+      }
       return "{$this->helpPopup}<p><label for='{$this->id}'>{$this->label}</label><textarea{$this->expandTagAttributes($this->attributes)}>{$this->value}</textarea></p>";
     // @devStart
     // @codeCoverageIgnoreStart
@@ -84,6 +87,6 @@ class TextareaLineURLArray extends \MovLib\Partial\FormElement\InputURL {
         $result[] = parent::validateValue($lines[$i], $errors);
       }
     }
-    return implode("\n", $result);
+    return $result;
   }
 }

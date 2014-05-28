@@ -256,10 +256,10 @@ SQL
     return $insert
       ->set("descriptions", $this->descriptions)
       ->set("wikipedia", $this->wikipediaLinks)
-      ->set("aliases", empty($this->aliases)? serialize([]) : serialize(explode("\n", $this->aliases)))
+      ->set("aliases", serialize($this->aliases))
       ->set("award_id", $this->award->id)
       ->set("end_date", $this->endDate)
-      ->set("links", empty($this->links)? serialize([]) : serialize(explode("\n", $this->links)))
+      ->set("links", serialize($this->links))
       ->set("name", $this->name)
       //->set("place_id", $this->place->id)
       ->set("start_date", $this->startDate)

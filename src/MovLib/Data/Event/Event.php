@@ -265,7 +265,7 @@ SQL
    * @return this {@inheritdoc}
    */
   protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
-    $this->description  = $this->getRevisionArrayValue($revision->descriptions);
+    $this->description = $this->getRevisionArrayValue($revision->descriptions);
     $revision->aliases   && $this->aliases   = $revision->aliases;
     $revision->award     && $this->award     = $revision->award;
     $revision->endDate   && $this->endDate   = $revision->endDate;
@@ -282,8 +282,12 @@ SQL
    */
   public function init() {
     $this->place     && $this->place = new Place($this->container, $this->place);
-    $this->aliases   && ($this->aliases = unserialize(($this->aliases)));
-    $this->links     && ($this->links = unserialize($this->links));
+    if (isset($this->aliases) && !is_array($this->aliases)) {
+      $this->aliases = unserialize($this->aliases);
+    }
+    if (isset($this->links) && !is_array($this->links)) {
+      $this->links = unserialize($this->links);
+    }
     $this->startDate && ($this->startDate = new Date($this->startDate));
     $this->endDate   && ($this->endDate = new Date($this->endDate));
     return parent::init();
