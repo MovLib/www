@@ -17,6 +17,7 @@
  */
 namespace MovLib\Console\Command\Dev;
 
+use \Elasticsearch\Client;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -54,6 +55,59 @@ final class SeedElastic extends \MovLib\Console\Command\AbstractCommand {
    * {@inheritdoc}
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
+    $indexes         = (array) $input->getArgument("index");
+    $entitiesToIndex = [];
+    $indexNamespace  = "\\MovLib\\Console\\Command\\Dev\ElasticSearch\\Index\\";
+
+    // Add all available index definitions if no argument or argument "all" was supplied.
+    if (array_search("all", $indexes) !== false) {
+      $indexes = null;
+      $this->writeVerbose("Found special argument <comment>all</comment> creating and indexing all entities in ElasticSearch");
+      /* @var $fileInfo \SplFileInfo */
+      foreach (new \DirectoryIterator("dr://src/MovLib/Console/Command/Dev/ElasticSearch/Index") as $fileInfo) {
+        if ($fileInfo->isFile() && $fileInfo->getExtension() == "php") {
+          $className = $fileInfo->getBasename(".php");
+          $reflector = new \ReflectionClass("{$indexNamespace}{$className}");
+          if ($reflector->isAbstract() !== false) {
+            continue;
+          }
+          $indexes[] = $className;
+        }
+      }
+    }
+
+    $elasticClient = new Client();
+
+    // Create all indexes.
+    foreach ($indexes as $indexName) {
+      $indexClass = $indexNamespace . ucfirst($indexName);
+      $index = new $indexClass($this->config);
+
+      // Delete the index.
+      $this->writeDebug("Deleting index <comment>{$index->name}</comment>");
+      $index->delete();
+
+      // Create index and mappings.
+      $this->writeDebug("Creating index <comment>{$index->name}</comment> and its mappings");
+      $index->create();
+
+      // Add the mapping types to the entities which have to be indexed.
+      foreach ($index->mappings as $mapping) {
+        $entitiesToIndex[$mapping->name] = ucfirst($mapping->name);
+      }
+    }
+
+    // Index all entities constructed earlier.
+    foreach ($entitiesToIndex as $entityClassName) {
+      $setClass = "\\MovLib\\Data\\{$entityClassName}\\{$entityClassName}Set";
+      /* @var $set \MovLib\Core\Entity\AbstractEntitySet */
+      $set = new $set($this->container);
+      $set->load();
+      /*  */
+      foreach ($set as $id => $entity) {
+
+      }
+    }
 
     return 0;
   }

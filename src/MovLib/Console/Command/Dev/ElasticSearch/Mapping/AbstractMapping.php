@@ -20,6 +20,10 @@ namespace MovLib\Console\Command\Dev\ElasticSearch\Mapping;
 /**
  * Defines the base class for all ElasticSearch type mappings.
  *
+ * If you need to define a new mapping type, simply extend this class.
+ * Override the constructor, call the parent constructor and add custom fields with the helper methods provided
+ * in this class.
+ *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -138,12 +142,13 @@ abstract class AbstractMapping {
    *   The configuration instance.
    * @param string $name
    *   The mapping's name.
-   * @param boolean $suggestions [optional]
+   * @param boolean $hasSuggestions [optional]
    *   Add a field for suggestions (for e.g. autocompletion) or not, defaults to <code>TRUE</code>.
    */
-  public function __construct(\MovLib\Core\Config $config, $name, $suggestions = true) {
-    $this->name = $name;
-    $this->config = $config;
+  public function __construct(\MovLib\Core\Config $config, $name, $hasSuggestions = true) {
+    $this->name           = $name;
+    $this->config         = $config;
+    $this->hasSuggestions = $hasSuggestions;
   }
 
 
@@ -231,7 +236,8 @@ abstract class AbstractMapping {
    *   The mapping definition.
    */
   final public function getDefinition() {
-    // Safeguard to avoid empty definitions.
+    // Safeguard.
+    assert(!empty($this->name), "The mapping name cannot be empty");
     assert(
       !empty($this->properties) || $this->hasSuggestions,
       "You have to add fields or at least enable suggestions for entities without own fields"
