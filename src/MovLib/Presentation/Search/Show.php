@@ -133,7 +133,7 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
     }
 
     // No results returned, we are done.
-    if ($result->numberOfResults === 0) {
+    if (count($result) === 0) {
       $this->alertError(
         $this->intl->t("Your search {query} did not match any document.", [ "query" => $this->placeholder($this->query) ]),
         $this->intl->t("No Results")
@@ -141,13 +141,27 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
       return;
     }
 
+    $ids = null;
+
+    foreach ($result as $indexName => $types) {
+      foreach ($types as $typeName => $documents) {
+        if (empty($ids[$typeName])) {
+          $ids[$typeName] = [];
+        }
+        $ids[$typeName] = array_merge($ids[$typeName], array_keys($documents));
+      }
+    }
+
+    \Krumo::dump($ids);
+    exit();
+
     // Collect the identifiers for each entity type for use in sets.
     $movieIds = null;
     $personIds = null;
     $releaseIds = null;
     $seriesIds = null;
     /* @var $entity \MovLib\Core\Search\Result\SearchResult */
-    foreach ($result->results as $delta => $entity) {
+    foreach ($result as $indexName => $types) {
       switch ($entity->type) {
         case "movie":
           $movieIds[] = $entity->id;
