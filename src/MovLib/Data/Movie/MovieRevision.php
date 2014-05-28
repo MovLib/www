@@ -97,7 +97,7 @@ final class MovieRevision extends \MovLib\Core\Revision\AbstractRevision {
   /**
    * {@inheritdoc}
    */
-  protected function addCommitFields(\MovLib\Core\Database\Query\Update $update) {
+  protected function addCommitFields(\MovLib\Core\Database\Query\Update $update, \MovLib\Core\Revision\RevisionInterface $oldRevision, $languageCode) {
     return $update;
   }
 

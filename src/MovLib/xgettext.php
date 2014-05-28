@@ -26,6 +26,8 @@
  * @since 0.0.1-dev
  */
 
+function t() {}
+
 t("About");
 t("Category");
 t("Event");

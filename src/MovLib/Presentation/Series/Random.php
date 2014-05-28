@@ -27,4 +27,15 @@ namespace MovLib\Presentation\Series;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Random extends \MovLib\Presentation\AbstractRandomPresenter {}
+final class Random extends \MovLib\Presentation\AbstractRandomPresenter {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Random";
+  // @codingStandardsIgnoreEnd
+
+}

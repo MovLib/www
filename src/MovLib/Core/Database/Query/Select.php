@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Core\Database;
+namespace MovLib\Core\Database\Query;
 
 use \MovLib\Exception\ClientException\NotFoundException;
 
@@ -28,7 +28,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Select extends Condition {
+final class Select extends AbstractQuery {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants

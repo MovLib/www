@@ -28,12 +28,6 @@ namespace MovLib\Presentation\Event;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class HistoryDiff extends \MovLib\Presentation\Event\History {
+class HistoryDiff {
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getContent() {
-    return $this->getDiffContent("Event");
-  }
 }

@@ -26,7 +26,7 @@ namespace MovLib\Partial;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class License extends \MovLib\Presentation\AbstractBase {
+class License {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

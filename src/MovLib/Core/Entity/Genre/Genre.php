@@ -6,7 +6,7 @@ namespace MovLib\Core\Entity\Genre;
 
 use \MovLib\Core\Database\Database;
 
-final class Genre extends \MovLib\Core\Entity\AbstractEntity {
+final class Genre extends AbstractEntity {
 
   const name = "Genre";
 

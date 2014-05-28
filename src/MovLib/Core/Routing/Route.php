@@ -76,6 +76,13 @@ final class Route {
   public $fragment;
 
   /**
+   * The route's hostname including the leading subdomain separator.
+   *
+   * @var string
+   */
+  public $hostname;
+
+  /**
    * Active intl instance.
    *
    * @var \MovLib\Core\Intl
@@ -103,6 +110,13 @@ final class Route {
    */
   public $route;
 
+  /**
+   * The route's scheme, defaults to <code>"https"</code>
+   *
+   * @var string
+   */
+  public $scheme;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -123,17 +137,21 @@ final class Route {
       "absolute" => false,
       "args"     => null,
       "fragment" => null,
+      "hostname" => ".movlib.org",
       "query"    => null,
+      "scheme"   => "https",
     ];
 
     // Export to class scope.
     $this->absolute = $options["absolute"];
     $this->args     = $options["args"];
     $this->fragment = $options["fragment"];
+    $this->hostname = $options["hostname"];
     $this->intl     = $intl;
     $this->parts    = explode("/", $route);
     $this->query    = $options["query"];
     $this->route    = $route;
+    $this->scheme   = $options["scheme"];
 
     // The first element is always empty because a route always starts with a slash.
     array_shift($this->parts);
@@ -176,10 +194,7 @@ final class Route {
       // Format subdomain.
       $subDomain = $locale ? "{$locale{0}}{$locale{1}}" : $this->intl->languageCode;
 
-      // @todo The scheme and hostname are hardcoded, we have to get this from somewhere else, but introducing more
-      //       dependencies is a bad choice. We need to resolve this in some way.
-      // @todo Do we need routes that point to a non-subdomain target? I dont' think so.
-      $this->compiled = "https://{$subDomain}.movlib.org{$this->compiled}";
+      $this->compiled = "{$this->scheme}://{$subDomain}{$this->hostname}{$this->compiled}";
     }
 
     return $this->compiled;

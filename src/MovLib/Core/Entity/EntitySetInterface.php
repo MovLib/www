@@ -26,7 +26,7 @@ namespace MovLib\Core\Entity;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-interface EntitySetInterface {
+interface EntitySetInterface extends \ArrayAccess {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -68,6 +68,14 @@ interface EntitySetInterface {
   public function getRandom();
 
   /**
+   * Get the total count of all undeleted entities.
+   *
+   * @return integer
+   *   The total count of all undeleted entities.
+   */
+  public function getTotalCount();
+
+  /**
    * Load entities according to the conditions.
    *
    * @param \MovLib\Core\Database\Query\Condition $conditions [optional]
@@ -80,6 +88,14 @@ interface EntitySetInterface {
    * @throws \mysqli_sql_exception
    */
   public function load(\MovLib\Core\Database\Query\Condition $conditions = null, $alias = null);
+
+  /**
+   * Get the entity's parent entities and sets.
+   *
+   * @return array
+   *   The entity's parent entities and sets.
+   */
+  public function parents();
 
   /**
    * Get the entities index route.

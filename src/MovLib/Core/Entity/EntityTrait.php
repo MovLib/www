@@ -75,6 +75,13 @@ trait EntityTrait {
   protected $intl;
 
   /**
+   * The entity's / set's parents.
+   *
+   * @var array
+   */
+  public $parents = [];
+
+  /**
    * The entity's / set's route.
    *
    * @var \MovLib\Core\Routing\Route
@@ -98,10 +105,18 @@ trait EntityTrait {
 
 
   /**
+   * @see \MovLib\Core\Entity\EntityInterface::parents()
+   * @see \MovLib\Core\Entity\EntitySetInterface::parents()
+   */
+  final public function parents() {
+    return $this->parents;
+  }
+
+  /**
    * @see \MovLib\Core\Entity\EntityInterface::route()
    * @see \MovLib\Core\Entity\EntitySetInterface::route()
    */
-  public function route($locale) {
+  final public function route($locale) {
     return $this->route->recompile($locale);
   }
 

@@ -86,16 +86,6 @@ abstract class AbstractEntity implements \MovLib\Core\Entity\EntityInterface, \M
   public $lemma;
 
   /**
-   * The entity's parent entities and sets.
-   *
-   * <b>NOTE</b><br>
-   * Key zero always points to {@see AbstractEntity::$set}.
-   *
-   * @var array
-   */
-  public $parents = [];
-
-  /**
    * The entity's set.
    *
    * @var \MovLib\Core\Entity\EntitySetInterface|\MovLib\Core\Entity\AbstractEntitySet
@@ -180,7 +170,9 @@ abstract class AbstractEntity implements \MovLib\Core\Entity\EntityInterface, \M
     // @devStart
     // @codeCoverageIgnoreStart
     // We have to have an id at this point, either via the values array or set during construction.
-    assert(isset($this->id), "Seems like this object was incorrectly instantiated, you always have to set the id.");
+    foreach ([ "id", "changed", "created", "deleted" ] as $mandatory) {
+      assert(isset($this->$mandatory), "Seems like this object was incorrectly instantiated, you always have to set the {$mandatory} property.");
+    }
     // @codeCoverageIgnoreEnd
     // @devEnd
 

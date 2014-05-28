@@ -91,6 +91,14 @@ interface EntityInterface {
   public function lemma($locale);
 
   /**
+   * Get the entity's parent entities and sets.
+   *
+   * @return array
+   *   The entity's parent entities and sets.
+   */
+  public function parents();
+
+  /**
    * Get the entity's show route.
    *
    * <b>NOTE</b><br>

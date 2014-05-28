@@ -29,8 +29,17 @@ namespace MovLib\Data\Director;
 final class Director extends \MovLib\Data\Job\Job {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Constants
+  //-------------------------------------------------------------------------------------------------------------------- Constants
 
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Director";
+  // @codingStandardsIgnoreEnd
 
   const JOB_ID = 2;
 

@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Genre;
 
 use \MovLib\Data\Genre\Genre;
-use \MovLib\Data\History\History;
 use \MovLib\Exception\RedirectException\TemporaryRedirectException;
 
 /**
@@ -95,7 +94,7 @@ final class HistoryDiff extends \MovLib\Presentation\AbstractPresenter {
     // validated by nginx via a regular expression in the location block and the REVISION_NEW is validated in our init
     // method and either contains a revision identifier or is NULL, in which case we automatically load the current
     // revision of the entity.
-    $history = new History((string) $this->entity, $this->entity->id, $_SERVER["REVISION_OLD"], $_SERVER["REVISION_NEW"]);
+    $history = new \MovLib\Data\History\History((string) $this->entity, $this->entity->id, $_SERVER["REVISION_OLD"], $_SERVER["REVISION_NEW"]);
 
     // @todo Should we try to recover from a backup?
     ob_start();

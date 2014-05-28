@@ -28,12 +28,6 @@ namespace MovLib\Presentation\Job;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class HistoryDiff extends \MovLib\Presentation\Job\History {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getContent() {
-    return $this->getDiffContent("Job");
-  }
+final class HistoryDiff {
+  
 }

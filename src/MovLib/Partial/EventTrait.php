@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -16,9 +16,6 @@
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
 namespace MovLib\Partial;
-
-use \MovLib\Component\Date;
-use \MovLib\Partial\Date as DatePartial;
 
 /**
  * @todo Description of EventTrait
@@ -43,14 +40,14 @@ trait EventTrait {
   protected function getEventDates(\MovLib\Data\Event\Event $event) {
     $dates = null;
     if (($event->startDate && $event->endDate) && ($event->startDate != $event->endDate)) {
-      $dates = (new DatePartial($this->intl, $this->container->presenter))->formatFromTo(
-        new Date($event->startDate),
-        new Date($event->endDate)
+      $dates = (new \MovLib\Partial\Date($this->intl, $this->container->presenter))->formatFromTo(
+        new \MovLib\Component\Date($event->startDate),
+        new \MovLib\Component\Date($event->endDate)
       );
     }
     else if ($event->startDate) {
       $dates = "{$this->intl->t("on {0}", [
-        (new DatePartial($this->intl, $this->container->presenter))->format(new Date($event->startDate))
+        (new \MovLib\Partial\Date($this->intl, $this->container->presenter))->format(new \MovLib\Component\Date($event->startDate))
       ])} ";
     }
     return $dates;

@@ -29,6 +29,19 @@ namespace MovLib\Data\Crew;
 final class Crew extends \MovLib\Data\Job\Job {
 
 
+  //-------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Crew";
+  // @codingStandardsIgnoreEnd
+
+
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
 

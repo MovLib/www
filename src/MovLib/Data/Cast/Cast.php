@@ -32,8 +32,17 @@ use \MovLib\Partial\Sex;
 final class Cast extends \MovLib\Data\Job\Job {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Constants
+  //-------------------------------------------------------------------------------------------------------------------- Constants
 
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Cast";
+  // @codingStandardsIgnoreEnd
 
   const JOB_ID = 1;
 

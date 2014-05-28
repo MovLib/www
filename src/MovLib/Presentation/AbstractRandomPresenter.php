@@ -36,7 +36,7 @@ abstract class AbstractRandomPresenter extends \MovLib\Presentation\AbstractPres
    *
    * @var string
    */
-  const name = "Random";
+  const name = "AbstractRandomPresenter";
   // @codingStandardsIgnoreEnd
 
   /**

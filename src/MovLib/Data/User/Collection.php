@@ -26,8 +26,8 @@ namespace MovLib\Data\User;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Collection extends \MovLib\Data\Database {
- 
+class Collection {
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
@@ -38,22 +38,22 @@ class Collection extends \MovLib\Data\Database {
    * @var integer
    */
   public $userId;
-  
-  
+
+
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
    * Handling of movie collections.
-   * 
+   *
    */
   public function __construct() {
     $this->userId = $session->userId;
   }
-  
+
   /**
    * Get all available media conditions.
-   * 
+   *
    * @staticvar array $mediaConditions
    *   Associative array with translated media conditions.
    * @return array
@@ -75,10 +75,10 @@ class Collection extends \MovLib\Data\Database {
     }
     return $mediaConditions[$i18n->languageCode];
   }
-  
+
   /**
    * Get all available sleeve conditions.
-   * 
+   *
    * @staticvar array $sleeveConditions
    *   Associative array with translated sleeve conditions.
    * @return array

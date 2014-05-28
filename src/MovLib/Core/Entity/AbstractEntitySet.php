@@ -20,7 +20,7 @@ namespace MovLib\Core\Entity;
 use \MovLib\Core\Database\Database;
 
 /**
- * @todo Description of AbstractEntitySet
+ * Defines the entity set base class.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -142,7 +142,14 @@ abstract class AbstractEntitySet extends \ArrayObject implements \MovLib\Core\En
   public function getRandom() {
     // We stick with the direct query at this point because the whole thing is to trivial. A concrete set which has to
     // return a different value (user) can simply overwrite it.
-    return Database::getConnection()->query("SELECT `id` FROM `{$this::$tableName}` WHERE `deleted` = 0 ORDER BY RAND() LIMIT 1")->fetch_all()[0][0];
+    return (integer) Database::getConnection()->query("SELECT `id` FROM `{$this::$tableName}` WHERE `deleted` = 0 ORDER BY RAND() LIMIT 1")->fetch_all()[0][0];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTotalCount() {
+    return (integer) Database::getConnection()->query("SELECT COUNT(*) FROM `{$this::$tableName}` WHERE `deleted` = 0 LIMIT 1")->fetch_all()[0][0];
   }
 
 
