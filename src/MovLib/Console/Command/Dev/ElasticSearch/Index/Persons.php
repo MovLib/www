@@ -15,10 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Console\Command\Dev\ElasticSearch\Mapping;
+namespace MovLib\Console\Command\Dev\ElasticSearch\Index;
+
+use \MovLib\Console\Command\Dev\ElasticSearch\Mapping\PersonMapping;
 
 /**
- * Defines the ElasticSearch mapping of genre entities.
+ * Defines the persons index.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -26,8 +28,7 @@ namespace MovLib\Console\Command\Dev\ElasticSearch\Mapping;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class GenreMapping extends \MovLib\Console\Command\Dev\ElasticSearch\Mapping\AbstractMapping {
-
+final class Persons extends \MovLib\Console\Command\Dev\ElasticSearch\Index\AbstractIndex {
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
@@ -38,7 +39,7 @@ class GenreMapping extends \MovLib\Console\Command\Dev\ElasticSearch\Mapping\Abs
    *
    * @var string
    */
-  const name = "GenreMapping";
+  const name = "Persons";
 
   // @codingStandardsIgnoreEnd
 
@@ -47,12 +48,13 @@ class GenreMapping extends \MovLib\Console\Command\Dev\ElasticSearch\Mapping\Abs
 
 
   /**
-   * Instantiate new genre mapping.
+   * Instantiate new person index.
    *
    * @param \MovLib\Core\Config $config {@inheritdoc}
    */
   public function __construct(\MovLib\Core\Config $config) {
-    parent::__construct($config, "genre");
+    parent::__construct($config, "persons");
+    $this->addMapping(new PersonMapping($config));
   }
 
 }

@@ -29,6 +29,10 @@ namespace MovLib\Data\Person;
  */
 final class PersonSet extends \MovLib\Data\AbstractEntitySet {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
   // @codingStandardsIgnoreStart
   /**
    * Short class name.
@@ -37,6 +41,30 @@ final class PersonSet extends \MovLib\Data\AbstractEntitySet {
    */
   const name = "PersonSet";
   // @codingStandardsIgnoreEnd
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public static $tableName = "persons";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(\MovLib\Core\Container $container) {
+    parent::__construct($container, "Persons", "Person", $container->intl->tp(-1, "Persons", "Person"));
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * {@inheritdoc}

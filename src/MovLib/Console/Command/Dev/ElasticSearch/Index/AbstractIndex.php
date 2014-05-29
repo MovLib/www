@@ -67,7 +67,7 @@ abstract class AbstractIndex {
    *
    * @var array
    */
-  protected $mappings = [];
+  public $mappings = [];
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods

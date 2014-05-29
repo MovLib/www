@@ -18,6 +18,7 @@
 namespace MovLib\Console\Command\Dev;
 
 use \Elasticsearch\Client;
+use \MovLib\Core\Search\SearchIndexer;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -62,7 +63,7 @@ final class SeedElastic extends \MovLib\Console\Command\AbstractCommand {
     // Add all available index definitions if no argument or argument "all" was supplied.
     if (array_search("all", $indexes) !== false) {
       $indexes = null;
-      $this->writeVerbose("Found special argument <comment>all</comment> creating and indexing all entities in ElasticSearch");
+      $this->writeVerbose("Found special argument <comment>all</comment>, creating and indexing all entities in ElasticSearch");
       /* @var $fileInfo \SplFileInfo */
       foreach (new \DirectoryIterator("dr://src/MovLib/Console/Command/Dev/ElasticSearch/Index") as $fileInfo) {
         if ($fileInfo->isFile() && $fileInfo->getExtension() == "php") {
@@ -84,11 +85,11 @@ final class SeedElastic extends \MovLib\Console\Command\AbstractCommand {
       $index = new $indexClass($this->config);
 
       // Delete the index.
-      $this->writeDebug("Deleting index <comment>{$index->name}</comment>");
+      $this->writeVerbose("Deleting index <comment>{$index->name}</comment>");
       $index->delete();
 
       // Create index and mappings.
-      $this->writeDebug("Creating index <comment>{$index->name}</comment> and its mappings");
+      $this->writeVerbose("Creating index <comment>{$index->name}</comment> and its mappings");
       $index->create();
 
       // Add the mapping types to the entities which have to be indexed.
@@ -96,18 +97,45 @@ final class SeedElastic extends \MovLib\Console\Command\AbstractCommand {
         $entitiesToIndex[$mapping->name] = ucfirst($mapping->name);
       }
     }
+    $this->writeVerbose("Index(es) created successfully", self::MESSAGE_TYPE_INFO);
 
     // Index all entities constructed earlier.
     foreach ($entitiesToIndex as $entityClassName) {
-      $setClass = "\\MovLib\\Data\\{$entityClassName}\\{$entityClassName}Set";
-      /* @var $set \MovLib\Core\Entity\AbstractEntitySet */
-      $set = new $set($this->container);
-      $set->load();
-      /*  */
-      foreach ($set as $id => $entity) {
+      $setClass      = "\\MovLib\\Data\\{$entityClassName}\\{$entityClassName}Set";
+      $revisionClass = "\\MovLib\\Data\\{$entityClassName}\\{$entityClassName}Revision";
 
+      if (!class_exists($setClass)) {
+        $this->write("Cannot index {$entityClassName}, class {$setClass} does not exist!", self::MESSAGE_TYPE_ERROR);
+      }
+      if (!class_exists($revisionClass)) {
+        $this->write("Cannot index {$entityClassName}, class {$setClass} does not exist!", self::MESSAGE_TYPE_ERROR);
+      }
+
+      $this->writeVerbose("Indexing data for entity <comment>{$entityClassName}</comment>");
+
+      /* @var $set \MovLib\Data\AbstractEntitySet */
+      $set = new $setClass($this->container);
+      $set->loadOrdered("`id`", 0, $limit = $set->getTotalCount());
+
+      /* @var $entity \MovLib\Data\AbstractEntity */
+      foreach ($set as $id => $entity) {
+        // If this class is not indexable, stop the operation.
+        if (!method_exists($entity, "indexSearch")) {
+          $this->write("Entity {$entityClassName} is not indexable, aborting...", self::MESSAGE_TYPE_ERROR);
+          break;
+        }
+
+        // Set the identifier.
+
+        // @todo This is very inefficient, rework this when there is time.
+        $revision = new $revisionClass($entity->id);
+        $reflector = new \ReflectionMethod($entity, "indexSearch");
+        $reflector->setAccessible(true);
+        $reflector->invoke($entity, $revision);
       }
     }
+
+    $this->writeVerbose("All documents were successfully indexed, all done!", self::MESSAGE_TYPE_INFO);
 
     return 0;
   }

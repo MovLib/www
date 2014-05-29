@@ -263,15 +263,12 @@ SQL
         throw new NotFoundException("Couldn't find person {$id}");
       }
     }
-    if ($this->id) {
-      $this->init();
-    }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function init() {
+  public function init(array $values = null) {
     $this->birthDate && ($this->birthDate = new Date($this->birthDate));
     $this->deathDate && ($this->deathDate = new Date($this->deathDate));
     $this->imageAlternativeText = $this->intl->t("Photo of {name}", [ "name" => $this->name]);
@@ -620,6 +617,13 @@ SQL
    */
   protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function lemma($locale) {
+    return $this->name;
   }
 
 }
