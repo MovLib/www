@@ -57,13 +57,6 @@ final class SearchIndexer {
    */
   protected $params;
 
-  /**
-   * The request body of the operation.
-   *
-   * @var array
-   */
-  protected $body;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -143,10 +136,17 @@ final class SearchIndexer {
 
     // We can delay the actual indexing until the request was sent to the user because it doesn't matter for the user
     // how fast the created/edited/deleted entity is available in our search.
-    $kernel->delayMethodCall("search.execute_indexing", $this, "executeIndexing", [ $log, $deleted, $this->params ]);
+    // Also check for HTTP context, since delaying can only take place there, otherwise index immediately.
+    if ($kernel->http) {
+      $kernel->delayMethodCall("search.execute_indexing", $this, "executeIndexing", [ $log, $deleted, $this->params ]);
+    }
+    else {
+      $this->executeIndexing($log, $deleted, $this->params);
+    }
 
     // We've stacked this indexing job and now the caller can start a new one.
     $this->params = null;
+    $this->data   = null;
 
     return $this;
   }
@@ -416,7 +416,7 @@ final class SearchIndexer {
    *   Definition of the entity that should be indexed.
    * @return this
    */
-  protected function executeIndexing(\MovLib\Core\Log $log, $deleted, array $definition) {
+  public function executeIndexing(\MovLib\Core\Log $log, $deleted, array $definition) {
     static $elasticClient = null;
     if (!$elasticClient) {
       $elasticClient = new ElasticClient();
