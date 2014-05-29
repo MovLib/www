@@ -29,6 +29,10 @@ namespace MovLib\Data\Job;
  */
 class JobSet extends \MovLib\Data\AbstractEntitySet {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
   // @codingStandardsIgnoreStart
   /**
    * Short class name.
@@ -38,6 +42,30 @@ class JobSet extends \MovLib\Data\AbstractEntitySet {
   const name = "JobSet";
   // @codingStandardsIgnoreEnd
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public static $tableName = "jobs";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(\MovLib\Core\Container $container) {
+    parent::__construct($container, "Jobs", "Job", $container->intl->tp(-1, "Jobs", "Job"));
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
    * {@inheritdoc}
    */
@@ -45,6 +73,9 @@ class JobSet extends \MovLib\Data\AbstractEntitySet {
     return <<<SQL
 SELECT
   `jobs`.`id` AS `id`,
+  `jobs`.`changed` AS `changed`,
+  `jobs`.`created` AS `created`,
+  `jobs`.`deleted` AS `deleted`,
   IFNULL(COLUMN_GET(`jobs`.`dyn_titles_sex0`, '{$this->intl->languageCode}' AS CHAR), COLUMN_GET(`dyn_titles_sex0`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `title`,
   `jobs`.`count_companies` AS `companyCount`,
   `jobs`.`count_persons` AS `personCount`
@@ -61,15 +92,6 @@ SQL;
     return <<<SQL
 
 SQL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-    $this->pluralKey   = "jobs";
-    $this->singularKey = "job";
-    return parent::init();
   }
 
 }

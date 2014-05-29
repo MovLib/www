@@ -132,10 +132,11 @@ class Job extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\O
    *   {@inheritdoc}
    * @param integer $id [optional]
    *   The job's unique identifier to instantiate, defaults to <code>NULL</code> (no job will be loaded).
+   * @param array $values [optional]
+   *   An array of values to set, keyed by property name, defaults to <code>NULL</code>.
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\Container $container, $id = null) {
-    parent::__construct($container);
+  public function __construct(\MovLib\Core\Container $container, $id = null, $values = null) {
     if ($id) {
       $connection = Database::getConnection();
       $stmt = $connection->prepare(<<<SQL
@@ -144,20 +145,20 @@ SELECT
   `changed`,
   `created`,
   `deleted`,
-  COLUMN_GET(`dyn_descriptions`, '{$this->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`dyn_descriptions`, '{$container->intl->languageCode}' AS CHAR),
   IFNULL(
-    COLUMN_GET(`dyn_titles_sex0`, '{$this->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`dyn_titles_sex0`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+    COLUMN_GET(`dyn_titles_sex0`, '{$container->intl->languageCode}' AS CHAR),
+    COLUMN_GET(`dyn_titles_sex0`, '{$container->intl->defaultLanguageCode}' AS CHAR)
   ),
   IFNULL(
-    COLUMN_GET(`dyn_titles_sex1`, '{$this->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`dyn_titles_sex1`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+    COLUMN_GET(`dyn_titles_sex1`, '{$container->intl->languageCode}' AS CHAR),
+    COLUMN_GET(`dyn_titles_sex1`, '{$container->intl->defaultLanguageCode}' AS CHAR)
   ),
   IFNULL(
-    COLUMN_GET(`dyn_titles_sex2`, '{$this->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`dyn_titles_sex2`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+    COLUMN_GET(`dyn_titles_sex2`, '{$container->intl->languageCode}' AS CHAR),
+    COLUMN_GET(`dyn_titles_sex2`, '{$container->intl->defaultLanguageCode}' AS CHAR)
   ),
-  COLUMN_GET(`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`dyn_wikipedia`, '{$container->intl->languageCode}' AS CHAR),
   `count_companies` AS `companyCount`,
   `count_persons` AS `personCount`
 FROM `jobs`
@@ -186,9 +187,7 @@ SQL
         throw new NotFoundException("Couldn't find Job {$id}");
       }
     }
-    if ($this->id) {
-      $this->init();
-    }
+    parent::__construct($container, $values);
   }
 
 
@@ -198,9 +197,9 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function init() {
+  public function init(array $values = null) {
     $this->titles[Sex::UNKNOWN] && $this->title = $this->titles[Sex::UNKNOWN];
-    return parent::init();
+    parent::init($values);
   }
 
   /**
@@ -366,6 +365,18 @@ SQL
     $this->description = $this->getRevisionArrayValue($revision->descriptions);
     $this->title       = $this->getRevisionArrayValue($revision->titlesSex0, $revision->titles[$this->intl->languageCode]);
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function lemma($locale) {
+    static $titles = null;
+    $languageCode = "{$locale{0}}{$locale{1}}";
+    if (!$titles) {
+      $titles = json_decode(Database::getConnection()->query("SELECT COLUMN_JSON(`dyn_titles_sex0`) FROM `jobs` WHERE `id` = {$this->id} LIMIT 1")->fetch_all()[0][0], true);
+    }
+    return isset($titles[$languageCode]) ? $titles[$languageCode] : $titles[$this->intl->defaultLanguageCode];
   }
 
 }

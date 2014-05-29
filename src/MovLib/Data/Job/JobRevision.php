@@ -153,7 +153,6 @@ SQL
       );
       $found = $stmt->fetch();
       $stmt->close();
-
       if (!$found) {
         throw new NotFoundException("Couldn't find Job {$id}");
       }
