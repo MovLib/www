@@ -17,18 +17,16 @@
  */
 namespace MovLib\Presentation\Company;
 
-use \MovLib\Data\Company\Company;
-
 /**
- * A company's history.
+ * Defines the company history presentation.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\AbstractHistoryPresenter {
+final class History extends \MovLib\Core\Presentation\AbstractHistory {
 
   // @codingStandardsIgnoreStart
   /**
@@ -38,23 +36,5 @@ class History extends \MovLib\Presentation\AbstractHistoryPresenter {
    */
   const name = "History";
   // @codingStandardsIgnoreEnd
-  use \MovLib\Presentation\Company\CompanyTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-    return $this->initHistory(
-      new Company($this->container, $_SERVER["COMPANY_ID"]),
-      $this->intl->t("Companies")
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getContent() {
-    return $this->getIndexContent("Company");
-  }
 
 }

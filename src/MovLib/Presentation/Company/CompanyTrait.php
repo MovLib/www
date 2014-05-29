@@ -40,7 +40,7 @@ trait CompanyTrait {
    * @return string
    *   A formated list item.
    */
-  protected function formatListingItem(\MovLib\Data\AbstractEntity $company, $id) {
+  protected function formatListingItem(\MovLib\Core\Entity\EntityInterface $company, $id) {
     $companyDates = (new Date($this->intl, isset($this->presenter) ? $this->presenter : $this))->formatFromTo(
       $company->foundingDate,
       $company->defunctDate,

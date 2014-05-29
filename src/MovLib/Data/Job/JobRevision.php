@@ -62,7 +62,7 @@ final class JobRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $descriptions = [];
+  public $descriptions;
 
   /**
    * {@inheritdoc}
@@ -74,21 +74,21 @@ final class JobRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $titlesSex0 = [];
+  public $titlesSex0;
 
   /**
    * Associative array containing all the job's localized male titles, keyed by language code.
    *
    * @var array
    */
-  public $titlesSex1 = [];
+  public $titlesSex1;
 
   /**
    * Associative array containing all the job's localized female titles, keyed by language code.
    *
    * @var array
    */
-  public $titlesSex2 = [];
+  public $titlesSex2;
 
   /**
    * {@inheritdoc}
@@ -100,7 +100,7 @@ final class JobRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $wikipediaLinks = [];
+  public $wikipediaLinks;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -159,11 +159,11 @@ SQL
     }
 
     if ($this->id) {
-      $this->descriptions   === (array) $this->descriptions   || ($this->descriptions   = json_decode($this->descriptions, true));
-      $this->titlesSex0     === (array) $this->titlesSex0     || ($this->titlesSex0     = json_decode($this->titlesSex0, true));
-      $this->titlesSex1     === (array) $this->titlesSex1     || ($this->titlesSex1     = json_decode($this->titlesSex1, true));
-      $this->titlesSex2     === (array) $this->titlesSex2     || ($this->titlesSex2     = json_decode($this->titlesSex2, true));
-      $this->wikipediaLinks === (array) $this->wikipediaLinks || ($this->wikipediaLinks = json_decode($this->wikipediaLinks, true));
+      $connection->dynamicDecode($this->descriptions);
+      $connection->dynamicDecode($this->titlesSex0);
+      $connection->dynamicDecode($this->titlesSex1);
+      $connection->dynamicDecode($this->titlesSex2);
+      $connection->dynamicDecode($this->wikipediaLinks);
       parent::__construct();
     }
   }

@@ -17,14 +17,17 @@
  */
 namespace MovLib\Data\Company;
 
+use \MovLib\Core\Database\Database;
 use \MovLib\Component\Date;
+use \MovLib\Core\Revision\OriginatorTrait;
+use \MovLib\Core\Search\RevisionTrait;
+use \MovLib\Exception\ClientException\NotFoundException;
 use \MovLib\Data\Movie\MovieSet;
 use \MovLib\Data\Series\SeriesSet;
-use \MovLib\Exception\ClientException\NotFoundException;
 use \MovLib\Data\Place\Place;
 
 /**
- * Defines the company object.
+ * Defines the company entity object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
@@ -33,7 +36,15 @@ use \MovLib\Data\Place\Place;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Company extends \MovLib\Data\Image\AbstractImageEntity {
+final class Company extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\OriginatorInterface {
+  use OriginatorTrait, RevisionTrait {
+    RevisionTrait::postCommit insteadof OriginatorTrait;
+    RevisionTrait::postCreate insteadof OriginatorTrait;
+  }
+
+
+  //-------------------------------------------------------------------------------------------------------------------- Constants
+
 
   // @codingStandardsIgnoreStart
   /**
@@ -45,17 +56,6 @@ final class Company extends \MovLib\Data\Image\AbstractImageEntity {
   // @codingStandardsIgnoreEnd
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
-  /**
-   * The entity type used to store revisions.
-   *
-   * @var int
-   */
-  const REVISION_ENTITY_TYPE = 5;
-
-
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
@@ -65,6 +65,13 @@ final class Company extends \MovLib\Data\Image\AbstractImageEntity {
    * @var null|array
    */
   public $aliases;
+
+  /**
+   * The company's total release count.
+   *
+   * @var null|integer
+   */
+  public $awardCount;
 
   /**
    * The company's defunct date.
@@ -86,6 +93,13 @@ final class Company extends \MovLib\Data\Image\AbstractImageEntity {
    * @var null|\MovLib\Component\Date
    */
   public $foundingDate;
+
+  /**
+   * The company's translated image descriptions.
+   *
+   * @var null|string
+   */
+  public $imageDescription;
 
   /**
    * The company's weblinks.
@@ -136,16 +150,6 @@ final class Company extends \MovLib\Data\Image\AbstractImageEntity {
    */
   public $seriesCount;
 
-  /**
-   * {@inheritdoc}
-   */
-  public $pluralKey = "companies";
-
-  /**
-   * {@inheritdoc}
-   */
-  public $singularKey = "company";
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -157,34 +161,34 @@ final class Company extends \MovLib\Data\Image\AbstractImageEntity {
    *   {@inheritdoc}
    * @param integer $id [optional]
    *   The company's unique identifier to instantiate, defaults to <code>NULL</code> (no company will be loaded).
+   * @param array $values [optional]
+   *   An array of values to set, keyed by property name, defaults to <code>NULL</code>.
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\Container $container, $id = null) {
-    parent::__construct($container);
+  public function __construct(\MovLib\Core\Container $container, $id = null, array $values = null) {
     if ($id) {
-      $stmt = Database::getConnection()->prepare(<<<SQL
+      $connection = Database::getConnection();
+      $stmt = $connection->prepare(<<<SQL
 SELECT
-  `companies`.`id` AS `id`,
-  `companies`.`changed` AS `changed`,
-  `companies`.`created` AS `created`,
-  `companies`.`deleted` AS `deleted`,
-  `companies`.`aliases` AS `aliases`,
-  `companies`.`name` AS `name`,
-  COLUMN_GET(`companies`.`dyn_descriptions`, '{$this->intl->languageCode}' AS CHAR) AS `description`,
-  `companies`.`links` AS `links`,
-  `companies`.`founding_date` AS `foundingDate`,
-  `companies`.`defunct_date` AS `defunctDate`,
-  `companies`.`place_id` AS `placeId`,
-  COLUMN_GET(`companies`.`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR) AS `wikipedia`,
-  COUNT(DISTINCT `movies_crew`.`movie_id`) AS `movieCount`,
-  COUNT(DISTINCT `episodes_crew`.`series_id`) AS `seriesCount`,
-  COUNT(DISTINCT `releases_labels`.`release_id`) AS `releaseCount`
+  `id`,
+  `changed`,
+  `created`,
+  `deleted`,
+  `aliases`,
+  `name`,
+  COLUMN_GET(`dyn_descriptions`, '{$container->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`dyn_image_descriptions`, '{$container->intl->languageCode}' AS CHAR),
+  `links`,
+  `founding_date`,
+  `defunct_date`,
+  `place_id`,
+  COLUMN_GET(`dyn_wikipedia`, '{$container->intl->languageCode}' AS CHAR),
+  `count_awards`,
+  `count_movies`,
+  `count_releases`,
+  `count_series`
 FROM `companies`
-  LEFT JOIN `movies_crew`     ON `movies_crew`.`company_id`     = `companies`.`id`
-  LEFT JOIN `episodes_crew`   ON `episodes_crew`.`company_id`   = `companies`.`id`
-  LEFT JOIN `releases_labels` ON `releases_labels`.`company_id` = `companies`.`id`
-WHERE `companies`.`id` = ?
-GROUP BY `id`,`name`,`aliases`,`foundingDate`,`defunctDate`,`description`,`wikipedia`,`links`,`deleted`,`changed`,`created`,`placeId`
+WHERE `id` = ?
 LIMIT 1
 SQL
       );
@@ -198,11 +202,13 @@ SQL
         $this->aliases,
         $this->name,
         $this->description,
+        $this->imageDescription,
         $this->links,
         $this->foundingDate,
         $this->defunctDate,
         $this->placeId,
         $this->wikipedia,
+        $this->awardCount,
         $this->movieCount,
         $this->seriesCount,
         $this->releaseCount
@@ -213,100 +219,55 @@ SQL
         throw new NotFoundException("Couldn't find Company {$id}");
       }
     }
-    if ($this->id) {
-      $this->init();
-    }
+    parent::__construct($container, $values);
   }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
- /**
-   * Update the genre.
-   *
-   * @return this
-   * @throws \mysqli_sql_exception
+  /**
+   * {@inheritdoc}
    */
-  public function commit() {
-    $this->aliases = empty($this->aliases)? serialize([]) : serialize(explode("\n", $this->aliases));
-    $this->links   = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
-
-    $stmt = Database::getConnection()->prepare(<<<SQL
-UPDATE `companies` SET
-  `aliases`          = ?,
-  `defunct_date`     = ?,
-  `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, '{$this->intl->languageCode}', ?),
-  `dyn_wikipedia`    = COLUMN_ADD(`dyn_wikipedia`, '{$this->intl->languageCode}', ?),
-  `founding_date`    = ?,
-  `name`             = ?,
-  `links`            = ?
-WHERE `id` = {$this->id}
-SQL
-    );
-    $stmt->bind_param(
-      "sssssss",
-      $this->aliases,
-      $this->defunctDate,
-      $this->description,
-      $this->wikipedia,
-      $this->foundingDate,
-      $this->name,
-      $this->links
-    );
-    $stmt->execute();
-    $stmt->close();
-    return $this;
+  protected function defineSearchIndex(\MovLib\Core\Search\SearchIndexer $search, \MovLib\Core\Revision\RevisionInterface $revision) {
+    return $search->indexSimpleSuggestion($revision->name);
   }
 
   /**
-   * Create a new company.
-   *
-   * @return this
-   * @throws \mysqli_sql_exception
+   * {@inheritdoc}
+   * @param \MovLib\Data\Company\CompanyRevision $revision {@inheritdoc}
+   * @return \MovLib\Data\Company\CompanyRevision {@inheritdoc}
    */
-  public function create() {
-    $this->aliases = empty($this->aliases)? serialize([]) : serialize(explode("\n", $this->aliases));
-    $this->links   = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
+  protected function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
+    $this->setRevisionArrayValue($revision->descriptions, $this->description);
+    $this->setRevisionArrayValue($revision->imageDescription, $this->imageDescription);
+    $this->setRevisionArrayValue($revision->wkipediaLinks, $this->wikipedia);
+    $revision->aliases      = $this->aliases;
+    $revision->links        = $this->links;
+    $revision->defunctDate  = $this->defunctDate;
+    $revision->foundingDate = $this->foundingDate;
+    $revision->name         = $this->name;
+    $revision->placeId      = $this->placeId;
 
-    $mysqli = Database::getConnection();
-    $stmt = $mysqli->prepare(<<<SQL
-INSERT INTO `companies` (
-  `aliases`,
-  `defunct_date`,
-  `dyn_descriptions`,
-  `dyn_image_descriptions`,
-  `dyn_wikipedia`,
-  `founding_date`,
-  `name`,
-  `links`
-) VALUES (
-  ?,
-  ?,
-  COLUMN_CREATE('{$this->intl->languageCode}', ?),
-  '',
-  COLUMN_CREATE('{$this->intl->languageCode}', ?),
-  ?,
-  ?,
-  ?
-);
-SQL
-    );
-    $stmt->bind_param(
-      "sssssss",
-      $this->aliases,
-      $this->defunctDate,
-      $this->description,
-      $this->wikipedia,
-      $this->foundingDate,
-      $this->name,
-      $this->links
-    );
+    return $revision;
+  }
 
-    $stmt->execute();
-    $this->id = $stmt->insert_id;
-
-    return $this->init();
+  /**
+   * {@inheritdoc}
+   * @param \MovLib\Data\Company\CompanyRevision $revision {@inheritdoc}
+   * @return this {@inheritdoc}
+   */
+  protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
+    $this->description = $this->getRevisionArrayValue($revision->descriptions);
+    $this->description = $this->getRevisionArrayValue($revision->imageDescription);
+    $this->wikipedia   = $this->getRevisionArrayValue($revision->wikipediaLinks);
+    $revision->aliases      && $this->aliases       = $revision->aliases;
+    $revision->links        && $this->links         = $revision->links;
+    $revision->defunctDate  && $this->defunctDate   = $revision->defunctDate;
+    $revision->foundingDate && $this->foundingDate  = $revision->foundingDate;
+    $revision->name         && $this->name          = $revision->name;
+    $revision->placeId      && $this->placeId       = $revision->placeId;
+    return $this;
   }
 
   /**
@@ -345,13 +306,16 @@ SQL
    * Get the total amount of movies related to a company.
    */
   public function getMovieTotalCount() {
-    return (integer) Database::getConnection()->query(<<<SQL
+    if (empty($this->movieCount)) {
+      $this->movieCount = (integer) Database::getConnection()->query(<<<SQL
 SELECT count(*) FROM `movies`
   INNER JOIN `movies_crew` ON `movies_crew`.`movie_id` = `movies`.`id` AND `movies_crew`.`company_id` = {$this->id}
 WHERE `movies`.`deleted` = false
 LIMIT 1
 SQL
-    )->fetch_all()[0][0];
+      )->fetch_all()[0][0];
+    }
+    return $this->movieCount;
   }
 
   /**
@@ -390,27 +354,35 @@ SQL
    * Get the total amount of series related to a company.
    */
   public function getSeriesTotalCount() {
-    return (integer) Database::getConnection()->query(<<<SQL
+    if (empty($this->seriesCount)) {
+      $this->seriesCount = (integer) Database::getConnection()->query(<<<SQL
 SELECT count(DISTINCT `episodes_crew`.`series_id`) FROM `series`
   INNER JOIN `episodes_crew` ON `episodes_crew`.`series_id` = `series`.`id` AND `episodes_crew`.`company_id` = {$this->id}
 WHERE `series`.`deleted` = false
 LIMIT 1
 SQL
-    )->fetch_all()[0][0];
+      )->fetch_all()[0][0];
+    }
+    return $this->seriesCount;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function init() {
-    $this->aliases      && ($this->aliases      = unserialize($this->aliases));
-    $this->links        && ($this->links        = unserialize($this->links));
+  public function init(array $values = null) {
+    parent::init($values);
+    if (isset($this->aliases) && !is_array($this->aliases)) {
+      $this->aliases = unserialize($this->aliases);
+    }
+    if (isset($this->links) && !is_array($this->links)) {
+      $this->links = unserialize($this->links);
+    }
     $this->foundingDate && ($this->foundingDate = new Date($this->foundingDate));
     $this->defunctDate  && ($this->defunctDate  = new Date($this->defunctDate));
     $this->placeId      && ($this->place        = new Place($this->container, $this->placeId));
     $this->imageAlternativeText = $this->intl->t("{company_name} logo.", $this->name);
     $this->imageDirectory       = "upload://company";
-    return parent::init();
+    return $this;
   }
 
   /**
@@ -418,6 +390,13 @@ SQL
    */
   protected function imageSaveStyles() {
 
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function lemma($locale) {
+    return $this->name;
   }
 
 }

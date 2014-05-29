@@ -69,14 +69,14 @@ final class ArticleRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $titles = [];
+  public $titles;
 
   /**
    * Associative array containing all the articles's localized texts, keyed by ISO 639-1 language code.
    *
    * @var array
    */
-  public $texts = [];
+  public $texts;
 
   /**
    * The help article sub category.
@@ -149,8 +149,8 @@ SQL
       }
     }
     if ($this->id) {
-      $this->texts  === (array) $this->texts  || ($this->texts  = json_decode($this->texts, true));
-      $this->titles === (array) $this->titles || ($this->titles = json_decode($this->titles, true));
+      $connection->dynamicDecode($this->texts);
+      $connection->dynamicDecode($this->titles);
       parent::__construct();
     }
   }

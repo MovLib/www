@@ -15,24 +15,23 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Genre;
+namespace MovLib\Data\Company;
 
 use \MovLib\Core\Database\Database;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
- * Defines the revision entity object for genre entities.
+ * Defines the revision entity object for company entities.
  *
- * @property \MovLib\Data\Genre\Genre $entity
+ * @property \MovLib\Data\Company\Company $entity
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class GenreRevision extends \MovLib\Core\Revision\AbstractRevision {
+final class CompanyRevision extends \MovLib\Core\Revision\AbstractRevision {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -44,7 +43,7 @@ final class GenreRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var string
    */
-  const name = "GenreRevision";
+  const name = "CompanyRevision";
   // @codingStandardsIgnoreEnd
 
   /**
@@ -52,38 +51,80 @@ final class GenreRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var integer
    */
-  const REVISION_ENTITY_ID = 9;
+  const REVISION_ENTITY_ID = 5;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * Associative array containing all the genre's localized names, keyed by ISO 639-1 language code.
+   * The company's aliases.
    *
-   * @var array
+   * @var null|array
    */
-  public $names = [];
+  public $aliases;
 
   /**
-   * Associative array containing all the genre's localized descriptions, keyed by ISO 639-1 language code.
+   * The company's defunct date.
+   *
+   * @var null|string
+   */
+  public $defunctDate;
+
+  /**
+   * Associative array containing all the company's localized descriptions, keyed by ISO 639-1 language code.
    *
    * @var array
    */
   public $descriptions = [];
 
   /**
-   * {@inheritdoc}
+   * The company's founding date.
+   *
+   * @var null|string
    */
-  public $revisionEntityId = 9;
+  public $foundingDate;
+
+  /**
+   * Associative array containing all the company's localized image descriptions, keyed by ISO 639-1 language code.
+   *
+   * @var array
+   */
+  public $imageDescriptions = [];
+
+  /**
+   * The company's weblinks.
+   *
+   * @var null|array
+   */
+  public $links;
+
+  /**
+   * The company's name.
+   *
+   * @var string
+   */
+  public $name;
+
+  /**
+   * The company's unique place identifier.
+   *
+   * @var null|integer
+   */
+  public $placeId;
 
   /**
    * {@inheritdoc}
    */
-  protected $tableName = "genres";
+  public $revisionEntityId = 5;
 
   /**
-   * Associative array containing all the genre's localized wikipedia links, keyed by language code.
+   * {@inheritdoc}
+   */
+  protected $tableName = "companies";
+
+  /**
+   * Associative array containing all the company's localized wikipedia links, keyed by language code.
    *
    * @var array
    */
@@ -94,32 +135,38 @@ final class GenreRevision extends \MovLib\Core\Revision\AbstractRevision {
 
 
   /**
-   * Instantiate new genre revision.
+   * Instantiate new company revision.
    *
    * @param integer $id
-   *   The genre's unique identifier to load the revision for. The default value (<code>NULL</code>) is only used for
+   *   The company's unique identifier to load the revision for. The default value (<code>NULL</code>) is only used for
    *   internal purposes when loaded via <code>fetch_object()</code>.
    * @throws \MovLib\Exception\ClientException\NotFoundException
-   *   If no genre was found for the given unique identifier.
+   *   If no company was found for the given unique identifier.
    */
   public function __construct($id = null) {
     $connection = Database::getConnection();
     if ($id) {
       $stmt = $connection->prepare(<<<SQL
 SELECT
-  `genres`.`id`,
+  `companies`.`id`,
   `revisions`.`user_id`,
-  `genres`.`changed` + 0,
-  `genres`.`deleted`,
-  COLUMN_JSON(`genres`.`dyn_descriptions`),
-  COLUMN_JSON(`genres`.`dyn_names`),
-  COLUMN_JSON(`genres`.`dyn_wikipedia`)
-FROM `genres`
+  `companies`.`changed` + 0,
+  `companies`.`deleted`,
+  `companies`.`aliases`,
+  `companies`.`name`,
+  `companies`.`links`,
+  `companies`.`founding_date`,
+  `companies`.`defunct_date`,
+  `companies`.`place_id`,
+  COLUMN_JSON(`companies`.`dyn_descriptions`),
+  COLUMN_JSON(`companies`.`dyn_image_descriptions`),
+  COLUMN_JSON(`companies`.`dyn_wikipedia`)
+FROM `companies`
   INNER JOIN `revisions`
-    ON `revisions`.`entity_id` = `genres`.`id`
-    AND `revisions`.`id` = `genres`.`changed`
-    AND `revisions`.`revision_entity_id` = 9
-WHERE `genres`.`id` = ?
+    ON `revisions`.`entity_id` = `companies`.`id`
+    AND `revisions`.`id` = `companies`.`changed`
+    AND `revisions`.`revision_entity_id` = 5
+WHERE `companies`.`id` = ?
 LIMIT 1
 SQL
       );
@@ -130,8 +177,14 @@ SQL
         $this->userId,
         $this->id,
         $this->deleted,
+        $this->aliases,
+        $this->name,
+        $this->links,
+        $this->foundingDate,
+        $this->defunctDate,
+        $this->placeId,
         $this->descriptions,
-        $this->names,
+        $this->imageDescriptions,
         $this->wikipediaLinks
       );
       $found = $stmt->fetch();
@@ -142,7 +195,7 @@ SQL
     }
     if ($this->id) {
       $connection->dynamicDecode($this->descriptions);
-      $connection->dynamicDecode($this->names);
+      $connection->dynamicDecode($this->imageDescriptions);
       $connection->dynamicDecode($this->wikipediaLinks);
       parent::__construct();
     }
@@ -154,7 +207,17 @@ SQL
   public function __sleep() {
     static $properties = null;
     if (!$properties) {
-      $properties = array_merge(parent::__sleep(), [ "descriptions", "names", "wikipediaLinks" ]);
+      $properties = array_merge(parent::__sleep(), [
+        "aliases",
+        "name",
+        "links",
+        "foundingDate",
+        "defunctDate",
+        "placeId",
+        "descriptions",
+        "imageDescriptions",
+        "wikipediaLinks"
+      ]);
     }
     return $properties;
   }
@@ -169,8 +232,14 @@ SQL
   protected function addCommitFields(\MovLib\Core\Database\Query\Update $update, \MovLib\Core\Revision\RevisionInterface $oldRevision, $languageCode) {
     return $update
       ->setDynamicConditional("descriptions", $languageCode, $this->descriptions, $oldRevision->descriptions)
-      ->setDynamicConditional("names", $languageCode, $this->names, $oldRevision->names)
+      ->setDynamicConditional("image_descriptions", $languageCode, $this->imageDescriptions, $oldRevision->imageDescriptions)
       ->setDynamicConditional("wikipedia", $languageCode, $this->wikipediaLinks, $oldRevision->wikipediaLinks)
+      ->set("aliases", serialize($this->aliases))
+      ->set("defunct_date", $this->defunctDate)
+      ->set("links", serialize($this->links))
+      ->set("name", $this->name)
+      ->set("place_id", $this->placeId)
+      ->set("founding_date", $this->foundingDate)
     ;
   }
 
@@ -180,8 +249,14 @@ SQL
   protected function addCreateFields(\MovLib\Core\Database\Query\Insert $insert) {
     return $insert
       ->set("descriptions", $this->descriptions)
-      ->set("names", $this->names)
+      ->set("image_descriptions", $this->imageDescriptions)
       ->set("wikipedia", $this->wikipediaLinks)
+      ->set("aliases", serialize($this->aliases))
+      ->set("defunct_date", $this->defunctDate)
+      ->set("links", serialize($this->links))
+      ->set("name", $this->name)
+      ->set("place_id", $this->placeId)
+      ->set("founding_date", $this->foundingDate)
     ;
   }
 

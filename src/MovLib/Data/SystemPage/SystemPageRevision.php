@@ -72,14 +72,14 @@ final class SystemPageRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $titles = [];
+  public $titles;
 
   /**
    * Associative array containing all the system page's localized texts, keyed by ISO 639-1 language code.
    *
    * @var array
    */
-  public $texts = [];
+  public $texts;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -131,8 +131,8 @@ SQL
       }
     }
     if ($this->id) {
-      $this->texts  === (array) $this->texts  || ($this->texts  = json_decode($this->texts, true));
-      $this->titles === (array) $this->titles || ($this->titles = json_decode($this->titles, true));
+      $connection->dynamicDecode($this->titles);
+      $connection->dynamicDecode($this->texts);
       parent::__construct();
     }
   }

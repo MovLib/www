@@ -44,7 +44,7 @@ trait MovieTrait {
    * @return string
    *   A formated list item.
    */
-  protected function formatListingItem(\MovLib\Data\AbstractEntity $movie, $id) {
+  protected function formatListingItem(\MovLib\Core\Entity\EntityInterface $movie, $id) {
     /* @var $movie \MovLib\Data\Movie\Movie */
     return
       "<li class='hover-item r'>" .

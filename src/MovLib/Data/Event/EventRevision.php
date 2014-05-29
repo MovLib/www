@@ -83,7 +83,7 @@ final class EventRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $descriptions = [];
+  public $descriptions;
 
   /**
    * The event’s end date.
@@ -135,7 +135,7 @@ final class EventRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $wikipediaLinks = [];
+  public $wikipediaLinks;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -201,8 +201,8 @@ SQL
       }
     }
     if ($this->id) {
-      $this->descriptions   === (array) $this->descriptions   || ($this->descriptions   = json_decode($this->descriptions, true));
-      $this->wikipediaLinks === (array) $this->wikipediaLinks || ($this->wikipediaLinks = json_decode($this->wikipediaLinks, true));
+      $connection->dynamicDecode($this->descriptions);
+      $connection->dynamicDecode($this->wikipediaLinks);
       parent::__construct();
     }
   }

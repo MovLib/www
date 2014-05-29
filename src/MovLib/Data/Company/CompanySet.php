@@ -29,6 +29,10 @@ namespace MovLib\Data\Company;
  */
 final class CompanySet extends \MovLib\Data\AbstractEntitySet {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
   // @codingStandardsIgnoreStart
   /**
    * Short class name.
@@ -38,6 +42,30 @@ final class CompanySet extends \MovLib\Data\AbstractEntitySet {
   const name = "CompanySet";
   // @codingStandardsIgnoreEnd
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public static $tableName = "companies";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(\MovLib\Core\Container $container) {
+    parent::__construct($container, "Companies", "Company", $container->intl->tp(-1, "Companies", "Company"));
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
    * {@inheritdoc}
    */
@@ -46,21 +74,21 @@ final class CompanySet extends \MovLib\Data\AbstractEntitySet {
 SELECT
   `companies`.`id`,
   `companies`.`name`,
+  `companies`.`changed` AS `changed`,
+  `companies`.`created` AS `created`,
+  `companies`.`deleted` AS `deleted`,
   `companies`.`founding_date` AS `foundingDate`,
   `companies`.`defunct_date` AS `defunctDate`,
   `companies`.`deleted`,
   `companies`.`changed`,
   `companies`.`created`,
   `companies`.`place_id` AS `placeId`,
-  COUNT(DISTINCT `movies_crew`.`movie_id`) AS `movieCount`,
-  COUNT(DISTINCT `episodes_crew`.`series_id`) AS `seriesCount`,
-  COUNT(DISTINCT `releases_labels`.`release_id`) AS `releaseCount`
+  `companies`.`count_awards` AS `awardCount`,
+  `companies`.`count_movies` AS `movieCount`,
+  `companies`.`count_releases` AS `releaseCount`,
+  `companies`.`count_series` AS `seriesCount`
 FROM `companies`
-  LEFT JOIN `movies_crew`     ON `movies_crew`.`company_id`     = `companies`.`id`
-  LEFT JOIN `episodes_crew`   ON `episodes_crew`.`company_id`   = `companies`.`id`
-  LEFT JOIN `releases_labels` ON `releases_labels`.`company_id` = `companies`.`id`
 {$where}
-GROUP BY `id`,`name`,`foundingDate`,`defunctDate`,`deleted`,`changed`,`created`,`placeId`
 {$orderBy}
 SQL;
   }
@@ -72,15 +100,6 @@ SQL;
     return <<<SQL
 
 SQL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-    $this->pluralKey   = "companies";
-    $this->singularKey = "company";
-    return parent::init();
   }
 
 }
