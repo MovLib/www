@@ -206,11 +206,11 @@ SQL
    * {@inheritdoc}
    */
   protected function defineSearchIndex(\MovLib\Core\Search\SearchIndexer $search, \MovLib\Core\Revision\RevisionInterface $revision) {
-    return $search->indexSimpleSuggestion(array_merge(
-      $revision->titlesSex0,
-      $revision->titlesSex1,
-      $revision->titlesSex2
-    ));
+    return $search
+      ->indexSimpleSuggestion($revision->titlesSex0)
+      ->indexSimpleSuggestion($revision->titlesSex1)
+      ->indexSimpleSuggestion($revision->titlesSex2)
+    ;
   }
 
   /**
