@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data\Director;
 
+use \MovLib\Core\Database\Database;
+use \MovLib\Core\Database\Query\Select;
 use \MovLib\Data\Director\Director;
 use \MovLib\Partial\Sex;
 
@@ -29,7 +31,7 @@ use \MovLib\Partial\Sex;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class DirectorSet extends \MovLib\Data\Job\JobSet {
+final class DirectorSet extends \MovLib\Data\AbstractEntitySet {
 
   // @codingStandardsIgnoreStart
   /**
@@ -40,12 +42,19 @@ final class DirectorSet extends \MovLib\Data\Job\JobSet {
   const name = "DirectorSet";
   // @codingStandardsIgnoreEnd
 
+  public static $tableName = "";
+
+  public function __construct(\MovLib\Core\Container $container) {
+    parent::__construct($container, "Directors", "Director", $container->intl->tp(-1, "Directors", "Director"));
+  }
+
   public function loadMovieDirectorsLimited(\MovLib\Data\Movie\Movie $movie, $limit = 5) {
     $jobId = Director::JOB_ID;
     $limit = "LIMIT {$limit}";
+    $collation = Select::$collations[$this->intl->locale];
     $result = Database::getConnection()->query(<<<SQL
 SELECT
-  `movies_crew`.`id`,
+  `movies_crew`.`id` AS `id`,
   `persons`.`id` AS `personId`,
   `persons`.`name` AS `personName`,
   `persons_aliases`.`alias`,
@@ -64,7 +73,7 @@ FROM `movies_crew`
 WHERE `movies_crew`.`movie_id` = {$movie->id}
   AND `movies_crew`.`job_id` = {$jobId}
   AND `persons`.`deleted` = false
-ORDER BY `persons`.`name`{$this->collations[$this->intl->languageCode]} ASC
+ORDER BY `persons`.`name`{$collation} ASC
 {$limit}
 SQL
     );
@@ -87,6 +96,14 @@ SQL
     $result->free();
 
     return $this;
+  }
+
+  protected function getEntitiesQuery($where = null, $orderBy = null) {
+    
+  }
+
+  protected function getEntitySetsQuery(\MovLib\Data\AbstractEntitySet $set, $in) {
+    
   }
 
 }

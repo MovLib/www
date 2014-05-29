@@ -30,6 +30,8 @@ use \MovLib\Partial\Helper\MovieHelper;
  * @since 0.0.1-dev
  */
 abstract class AbstractMoviePresenter extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Presentation\Movie\MovieTrait;
 
   // @codingStandardsIgnoreStart
   /**
@@ -39,8 +41,6 @@ abstract class AbstractMoviePresenter extends \MovLib\Presentation\AbstractPrese
    */
   const name = "AbstractMoviePresenter";
   // @codingStandardsIgnoreEnd
-  use \MovLib\Partial\SidebarTrait;
-  use \MovLib\Presentation\Movie\MovieTrait;
 
   /**
    * The movie this presentation is for.
@@ -91,7 +91,7 @@ abstract class AbstractMoviePresenter extends \MovLib\Presentation\AbstractPrese
 
     // Construct the breadcrumbs and route key.
     $this->breadcrumb->addCrumb($this->intl->r("/movies"), $this->intl->t("Movies"));
-    $routeKey = $this->entity->routeKey;
+    $routeKey = $this->entity->route;
     if (($shortName = strtolower(static::name)) != "show") {
       $routeKey .= "/{$shortName}";
       $this->breadcrumb->addCrumb($this->entity->route, $this->entity->displayTitleAndYear);

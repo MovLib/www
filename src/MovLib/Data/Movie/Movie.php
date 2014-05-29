@@ -18,6 +18,7 @@
 namespace MovLib\Data\Movie;
 
 use \MovLib\Core\Database\Database;
+use \MovLib\Core\Database\Query\Select;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -305,20 +306,23 @@ SQL
         throw new NotFoundException("Couldn't find Movie {$id}");
       }
 
+      $collation = Select::$collations[$container->intl->locale];
       $result = $connection->query(<<<SQL
 SELECT
-  `genres`.`id`,
+  `genres`.`id` AS `id`,
+  `genres`.`created` AS `created`,
+  `genres`.`changed` AS `changed`,
   IFNULL(
     COLUMN_GET(`genres`.`dyn_names`, '{$container->intl->languageCode}' AS CHAR),
     COLUMN_GET(`genres`.`dyn_names`, '{$container->intl->defaultLanguageCode}' AS CHAR)
   ) AS `name`
 FROM `movies_genres`
   INNER JOIN `genres` ON `genres`.`id` = `movies_genres`.`genre_id`
-WHERE `movies_genres`.`movie_id` = {$container->id}
-ORDER BY `name` {$container->collations[$container->intl->languageCode]} DESC
+WHERE `movies_genres`.`movie_id` = {$this->id}
+ORDER BY `name` {$collation} DESC
 SQL
       );
-      while ($genre = $result->fetch_object("\\MovLib\\Data\\Genre\Genre", [ $this->container ])) {
+      while ($genre = $result->fetch_object("\\MovLib\\Data\\Genre\Genre", [ $container ])) {
         $this->genreSet[] = $genre;
       }
       $result->free();
