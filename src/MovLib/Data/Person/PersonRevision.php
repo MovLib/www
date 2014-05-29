@@ -282,13 +282,12 @@ SQL
       $result->free();
     }
     if ($this->id) {
-      $this->biographies       === (array) $this->biographies       || $this->biographies = json_decode($this->biographies, true);
-      $this->imageDescriptions === (array) $this->imageDescriptions || $this->imageDescriptions = json_decode($this->imageDescriptions, true);
-      $this->links             === (array) $this->links             || ($this->links = unserialize($this->links));
-      $this->wikipediaLinks    === (array) $this->wikipediaLinks    || ($this->wikipediaLinks = json_decode($this->wikipediaLinks, true));
-
-      parent::__construct();
+      $connection->dynamicDecode($this->biographies);
+      $connection->dynamicDecode($this->imageDescriptions);
+      $this->links === (array) $this->links || ($this->links = unserialize($this->links));
+      $connection->dynamicDecode($this->wikipediaLinks);
     }
+    parent::__construct();
   }
 
   /**

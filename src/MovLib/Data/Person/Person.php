@@ -501,7 +501,9 @@ SQL
    */
   protected function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
     // @todo: set aliases and awards once they can be retrieved correctly.
-    $revision->aliases = $this->getAliases();
+    if ($this->id) {
+      $revision->aliases = $this->getAliases();
+    }
 //    $revision->awards  = $this->getAwards();
     $this->setRevisionArrayValue($revision->biographies, $this->biography);
     $revision->birthDate = $this->birthDate;
