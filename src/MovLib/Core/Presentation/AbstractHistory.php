@@ -84,14 +84,14 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractPresenter {
     $this->historySet = new HistorySet($entityName, $this->entity->id);
     $this->initPage(
       /// The {lemma} will be enclosed in localized quotes, e.g.: History of “Cat Movie”
-      $this->intl->t("History of {lemma}", [ "lemma" => $this->entity->lemma($this->intl->languageCode) ]),
+      $this->intl->t("History of {lemma}", [ "lemma" => $this->entity->lemma ]),
       null,
       $this->intl->t("History")
     );
     $this->sidebarInitToolbox($this->entity);
     $this->breadcrumb->addCrumbs([
       [ $this->entity->route, $this->entity->bundleTitle ],
-      [ $this->entity->route, $this->entity->lemma($this->intl->languageCode) ],
+      [ $this->entity->route, $this->entity->lemma ],
     ]);
     $this->paginationInit($this->historySet->getTotalCount());
     $this->historySet->load($this->container, $this->paginationOffset, $this->paginationLimit);
