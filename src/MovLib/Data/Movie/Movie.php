@@ -23,8 +23,6 @@ use \MovLib\Exception\ClientException\NotFoundException;
 /**
  * Defines the movie object.
  *
- * @property-read array|null $countries The movie's countries.
- *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -55,9 +53,10 @@ final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity impleme
   /**
    * The movie's countries.
    *
+   * @see Movie::getCountries()
    * @var null|array
    */
-  public $countries;
+  protected $countries;
 
   /**
    * The movie's total award count.
@@ -200,16 +199,6 @@ final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity impleme
    */
   public $year;
 
-  /**
-   * {@inheritdoc}
-   */
-  public $pluralKey = "movies";
-
-  /**
-   * {@inheritdoc}
-   */
-  public $singularKey = "movie";
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -223,7 +212,6 @@ final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity impleme
    *   The movie's unique identifier to instantiate, defaults to <code>NULL</code> (no movie will be loaded).
    */
   public function __construct(\MovLib\Core\Container $container, $id = null) {
-    parent::__construct($container);
     if ($id) {
       $connection = Database::getConnection();
       $stmt = $connection->prepare(<<<SQL
@@ -239,7 +227,7 @@ SELECT
   `movies`.`deleted`,
   `movies`.`changed`,
   `movies`.`created`,
-  COLUMN_GET(`movies`.`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`movies`.`dyn_wikipedia`, '{$container->intl->languageCode}' AS CHAR),
   `movies`.`mean_rating`,
   `movies_taglines`.`tagline`,
   `movies_taglines`.`id` AS `taglineId`,
@@ -250,7 +238,7 @@ SELECT
   IFNULL(`display_title`.`title`, `original_title`.`title`),
   IFNULL(`display_title`.`id`, `original_title`.`id`) AS `displayTitleId`,
   IFNULL(`display_title`.`language_code`, `original_title`.`language_code`),
-  COLUMN_GET(`movies`.`dyn_synopses`, '{$this->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`movies`.`dyn_synopses`, '{$container->intl->languageCode}' AS CHAR),
   `posters`.`id`,
   HEX(`posters`.`cache_buster`),
   `posters`.`extension`,
@@ -258,7 +246,7 @@ SELECT
 FROM `movies`
   LEFT JOIN `movies_display_titles`
     ON `movies_display_titles`.`movie_id` = `movies`.`id`
-    AND `movies_display_titles`.`language_code` = '{$this->intl->languageCode}'
+    AND `movies_display_titles`.`language_code` = '{$container->intl->languageCode}'
   LEFT JOIN `movies_titles` AS `display_title`
     ON `display_title`.`id` = `movies_display_titles`.`title_id`
   LEFT JOIN `movies_original_titles`
@@ -267,12 +255,12 @@ FROM `movies`
     ON `original_title`.`id` = `movies_original_titles`.`title_id`
   LEFT JOIN `movies_display_taglines`
     ON `movies_display_taglines`.`movie_id` = `movies`.`id`
-    AND `movies_display_taglines`.`language_code` = '{$this->intl->languageCode}'
+    AND `movies_display_taglines`.`language_code` = '{$container->intl->languageCode}'
   LEFT JOIN `movies_taglines`
     ON `movies_taglines`.`id` = `movies_display_taglines`.`tagline_id`
   LEFT JOIN `display_posters`
     ON `display_posters`.`movie_id` = `movies`.`id`
-    AND `display_posters`.`language_code` = '{$this->intl->languageCode}'
+    AND `display_posters`.`language_code` = '{$container->intl->languageCode}'
   LEFT JOIN `posters`
     ON `posters`.`id` = `display_posters`.`poster_id`
     AND `posters`.`deleted` = false
@@ -321,13 +309,13 @@ SQL
 SELECT
   `genres`.`id`,
   IFNULL(
-    COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+    COLUMN_GET(`genres`.`dyn_names`, '{$container->intl->languageCode}' AS CHAR),
+    COLUMN_GET(`genres`.`dyn_names`, '{$container->intl->defaultLanguageCode}' AS CHAR)
   ) AS `name`
 FROM `movies_genres`
   INNER JOIN `genres` ON `genres`.`id` = `movies_genres`.`genre_id`
-WHERE `movies_genres`.`movie_id` = {$this->id}
-ORDER BY `name` {$this->collations[$this->intl->languageCode]} DESC
+WHERE `movies_genres`.`movie_id` = {$container->id}
+ORDER BY `name` {$container->collations[$container->intl->languageCode]} DESC
 SQL
       );
       while ($genre = $result->fetch_object("\\MovLib\\Data\\Genre\Genre", [ $this->container ])) {
@@ -335,9 +323,8 @@ SQL
       }
       $result->free();
     }
-    if ($this->id) {
-      $this->init();
-    }
+
+    parent::__construct($container);
   }
 
 
@@ -347,17 +334,18 @@ SQL
   /**
    * Get the movie's countries.
    *
-   * @see Movie::__get()
    * @return array
    *   Array containing all countries of this movie.
    */
-  private function getCountries() {
-    $countries = $this->intl->getTranslations("countries");
-    $result    = Database::getConnection()->query("SELECT `country_code` FROM `movies_countries` WHERE `movie_id` = {$this->id}");
-    while ($countryCode = $result->fetch_row()[0]) {
-      $this->countries[$countryCode] = $countries[$countryCode];
+  public function getCountries() {
+    if (!$this->countries) {
+      $countries = $this->intl->getTranslations("countries");
+      $result    = Database::getConnection()->query("SELECT `country_code` FROM `movies_countries` WHERE `movie_id` = {$this->id}");
+      while ($row = $result->fetch_row()) {
+        $this->countries[] = (object) [ "code" => $row[0], "name" => $countries[$row[0]] ];
+      }
+      $result->free();
     }
-    $result->free();
     return $this->countries;
   }
 
@@ -376,7 +364,9 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function init() {
+  public function init(array $values = null) {
+    parent::init($values);
+
     if ($this->year) {
       $this->displayTitleAndYear = $this->intl->t("{0} ({1})", [ $this->displayTitle, $this->year ]);
     }
@@ -385,7 +375,9 @@ SQL
     }
     $this->imageAlternativeText = $this->intl->t("{movie_title} poster.", [ "movie_title" => $this->displayTitleAndYear]);
     $this->imageDirectory       = "upload://movie/{$this->id}/poster";
-    return parent::init();
+    $this->lemma                = $this->displayTitleAndYear;
+
+    return $this;
   }
 
   /**
@@ -464,7 +456,27 @@ SQL
     return $this->titles;
   }
 
-  // ------------------------------------------------------------------------------------------------------------------- Entity Revision Methods
+
+  // ------------------------------------------------------------------------------------------------------------------- Entity Interface Methods
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function lemma($locale) {
+    static $titles = null;
+
+    if ($locale == $this->intl->locale) {
+      return $this->lemma;
+    }
+
+    throw new \LogicException("Not implemented!");
+
+    return $this->lemma;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Originator Methods
 
 
   /**

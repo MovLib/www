@@ -156,7 +156,7 @@ abstract class AbstractEntity implements \MovLib\Core\Entity\EntityInterface {
    * {@inheritdoc}
    */
   final public function bundleTitle($locale) {
-    return $this->intl->tp(-1, $this->set->bundleTitle, $this->bundleTitle, null, $locale);
+    return $this->intl->tp(-1, $this->set->bundle, $this->bundle, null, $locale);
   }
 
   /**
@@ -173,7 +173,7 @@ abstract class AbstractEntity implements \MovLib\Core\Entity\EntityInterface {
     // @devStart
     // @codeCoverageIgnoreStart
     // We have to have an id at this point, either via the values array or set during construction.
-    foreach ([ "id", "changed", "created", "deleted" ] as $mandatory) {
+    foreach ([ "id", "bundle", "bundleTitle", "changed", "created", "deleted" ] as $mandatory) {
       assert(isset($this->$mandatory), "Seems like this object was incorrectly instantiated, you always have to set the {$mandatory} property.");
     }
     // @codeCoverageIgnoreEnd

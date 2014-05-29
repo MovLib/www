@@ -28,7 +28,11 @@ use \MovLib\Data\Genre\GenreSet;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieSet extends \MovLib\Data\AbstractEntitySet {
+final class MovieSet extends \MovLib\Data\AbstractEntitySet {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
 
   // @codingStandardsIgnoreStart
   /**
@@ -39,9 +43,34 @@ class MovieSet extends \MovLib\Data\AbstractEntitySet {
   const name = "MovieSet";
   // @codingStandardsIgnoreEnd
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Static Properties
+
+
+  /**
+   * The entities primary table's name.
+   *
+   * @var string
+   */
   public static $tableName = "movies";
 
-  public $bundle = "Movies";
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new movie set.
+   *
+   * @param \MovLib\Core\Container $container
+   *   The dependency injection container.
+   */
+  public function __construct(\MovLib\Core\Container $container) {
+    parent::__construct($container, "Movies", "Movie", $container->intl->tp(-1, "Movies", "Movie"));
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * {@inheritdoc}
@@ -51,6 +80,7 @@ class MovieSet extends \MovLib\Data\AbstractEntitySet {
 SELECT
   `movies`.`id` AS `id`,
   `movies`.`created` AS `created`,
+  `movies`.`changed` AS `changed`,
   `movies`.`deleted` AS `deleted`,
   `movies`.`mean_rating` AS `meanRating`,
   `movies`.`year` AS `year`,
