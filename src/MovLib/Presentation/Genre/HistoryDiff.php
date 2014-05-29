@@ -33,6 +33,8 @@ use \MovLib\Exception\RedirectException\TemporaryRedirectException;
  * @since 0.0.1-dev
  */
 final class HistoryDiff extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
+
 
   // @codingStandardsIgnoreStart
   /**
@@ -42,7 +44,6 @@ final class HistoryDiff extends \MovLib\Presentation\AbstractPresenter {
    */
   const name = "HistoryDiff";
   // @codingStandardsIgnoreEnd
-  use \MovLib\Partial\SidebarTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

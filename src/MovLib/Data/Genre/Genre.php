@@ -100,6 +100,8 @@ final class Genre extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Re
    *   {@inheritdoc}
    * @param integer $id [optional]
    *   The genre's unique identifier to instantiate, defaults to <code>NULL</code> (no genre will be loaded).
+   * @param array $values [optional]
+   *   An array of values to set, keyed by property name, defaults to <code>NULL</code>.
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
   public function __construct(\MovLib\Core\Container $container, $id = null, array $values = null) {

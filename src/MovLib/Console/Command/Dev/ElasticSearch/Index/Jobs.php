@@ -15,10 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Job;
+namespace MovLib\Console\Command\Dev\ElasticSearch\Index;
+
+use \MovLib\Console\Command\Dev\ElasticSearch\Mapping\JobMapping;
 
 /**
- * Defines the job history presentation.
+ * Defines the jobs index.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -26,7 +28,11 @@ namespace MovLib\Presentation\Job;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class History extends \MovLib\Core\Presentation\AbstractHistory {
+final class Jobs extends \MovLib\Console\Command\Dev\ElasticSearch\Index\AbstractIndex {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
 
   // @codingStandardsIgnoreStart
   /**
@@ -34,7 +40,22 @@ final class History extends \MovLib\Core\Presentation\AbstractHistory {
    *
    * @var string
    */
-  const name = "History";
+  const name = "Jobs";
+
   // @codingStandardsIgnoreEnd
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new job index.
+   *
+   * @param \MovLib\Core\Config $config {@inheritdoc}
+   */
+  public function __construct(\MovLib\Core\Config $config) {
+    parent::__construct($config, "jobs");
+    $this->addMapping(new JobMapping($config));
+  }
 
 }

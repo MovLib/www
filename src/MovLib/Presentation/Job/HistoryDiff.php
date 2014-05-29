@@ -17,18 +17,23 @@
  */
 namespace MovLib\Presentation\Job;
 
+use \MovLib\Data\Job\Job;
+use \MovLib\Exception\RedirectException\TemporaryRedirectException;
+
 /**
- * A job's history diff.
+ * Defines the job history diff presentation.
  *
  * @route /job/{id}/history/{ro}/{rn}
+ * @property \MovLib\Data\Job\Job $entity
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class HistoryDiff {
+final class HistoryDiff extends \MovLib\Presentation\AbstractPresenter {
+use \MovLib\Partial\SidebarTrait;
 
   // @codingStandardsIgnoreStart
   /**
@@ -38,5 +43,72 @@ final class HistoryDiff {
    */
   const name = "HistoryDiff";
   // @codingStandardsIgnoreEnd
-  
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * The entity to present.
+   *
+   * @var \MovLib\Data\AbstractEntity
+   */
+  protected $entity;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function init() {
+    // We simply assume that the job actually exists.
+    $historyRoute = $this->intl->r("/job/{0}/history", $_SERVER["JOB_ID"]);
+
+    // We have to make sure that the request actually makes sense, if not redirect. We use a temporary redirect, may
+    // be that the route we redirect now has some purpose in the future.
+    if (isset($_SERVER["REVISION_NEW"])) {
+      // We can't display a diff between two revisions that are actually the same, doesn't make sense.
+      if ($_SERVER["REVISION_OLD"] == $_SERVER["REVISION_NEW"]) {
+        throw new TemporaryRedirectException("{$historyRoute}/{$_SERVER["REVISION_OLD"]}");
+      }
+      // We only support diff view between old and new.
+      elseif ($_SERVER["REVISION_OLD"] > $_SERVER["REVISION_NEW"]) {
+        throw new TemporaryRedirectException("{$historyRoute}/{$_SERVER["REVISION_NEW"]}/{$_SERVER["REVISION_OLD"]}");
+      }
+    }
+    else {
+      $_SERVER["REVISION_NEW"] = null;
+    }
+
+    // Now we try to instantiate the actual job for presentation purposes. This will throw the not found exception if
+    // the job doesn't exist at all.
+    $this->entity = new Job($this->container, $_SERVER["JOB_ID"]);
+
+    // No exception, let's start configuring the presentation.
+    $this->initPage(
+      $this->intl->t("{0}: {1}", [ $this->entity->lemma($this->intl->languageCode), $this->intl->t("Difference between revisions") ]),
+      null,
+      $this->intl->t("Diff")
+    );
+    $this->sidebarInitToolbox($this->entity);
+    $this->breadcrumb->addCrumb($this->intl->r("/jobs"), $this->intl->t("Jobs"));
+    $this->breadcrumb->addCrumb($this->entity->route, $this->entity->lemma($this->intl->languageCode));
+    $this->breadcrumb->addCrumb($historyRoute, $this->intl->t("History"));
+  }
+
+  public function getContent() {
+    // Now we can restore the old revisions of the entity. Note that REVISION_OLD is always present, as it is
+    // validated by nginx via a regular expression in the location block and the REVISION_NEW is validated in our init
+    // method and either contains a revision identifier or is NULL, in which case we automatically load the current
+    // revision of the entity.
+    $history = new \MovLib\Data\History\History((string) $this->entity, $this->entity->id, $_SERVER["REVISION_OLD"], $_SERVER["REVISION_NEW"]);
+
+    // @todo Should we try to recover from a backup?
+    ob_start();
+    \Krumo::dump($history);
+    return ob_get_clean();
+  }
+
 }
