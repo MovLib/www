@@ -51,6 +51,18 @@ final class CastSet extends \MovLib\Data\AbstractEntitySet {
    */
   public $singularKey = "job";
 
+  /**
+   * {@inheritdoc}
+   */
+  public static $tableName = "movies_crew";
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(\MovLib\Core\Container $container) {
+    parent::__construct($container, null, null, null);
+  }
+
   protected function getEntitiesQuery($where = null, $orderBy = null) {
     return <<<SQL
 SELECT

@@ -41,6 +41,18 @@ final class EventSet extends \MovLib\Data\AbstractEntitySet {
   /**
    * {@inheritdoc}
    */
+  public static $tableName = "events";
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(\MovLib\Core\Container $container) {
+    parent::__construct($container, "Events", "Event", $container->intl->tp(-1, "Events", "Event"));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function getEntitiesQuery($where = null, $orderBy = null) {
     return <<<SQL
 SELECT

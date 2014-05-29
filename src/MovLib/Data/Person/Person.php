@@ -18,6 +18,8 @@
 namespace MovLib\Data\Person;
 
 use \MovLib\Component\Date;
+use \MovLib\Core\Database\Database;
+use \MovLib\Core\Database\Query\Select;
 use \MovLib\Core\Revision\OriginatorTrait;
 use \MovLib\Core\Search\RevisionTrait;
 use \MovLib\Core\Search\SearchIndexer;
@@ -195,10 +197,12 @@ final class Person extends \MovLib\Data\Image\AbstractImageEntity implements \Mo
    *   {@inheritdoc}
    * @param integer $id [optional]
    *   The person's unique identifier to instantiate, defaults to <code>NULL</code> (no person will be loaded).
+   * @param array $values [optional]
+   *   An array of values to set, keyed by property name, defaults to <code>NULL</code>.
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\Container $container, $id = null) {
-    parent::__construct($container);
+  public function __construct(\MovLib\Core\Container $container, $id = null, array $values = null) {
+    $this->lemma =& $this->name;
     if ($id) {
       $stmt = Database::getConnection()->prepare(<<<SQL
 SELECT
@@ -207,14 +211,14 @@ SELECT
   `changed`,
   `deleted`,
   `name`,
-  COLUMN_GET(`dyn_biographies`, '{$this->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`dyn_biographies`, '{$container->intl->languageCode}' AS CHAR),
   `sex`,
   `birthdate`,
   `birthplace_id`,
   `born_name`,
   `deathdate`,
   `deathplace_id`,
-  COLUMN_GET(`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`dyn_wikipedia`, '{$container->intl->languageCode}' AS CHAR),
   `links`,
   `count_awards`,
   `count_movies`,
@@ -263,124 +267,26 @@ SQL
         throw new NotFoundException("Couldn't find person {$id}");
       }
     }
+    parent::__construct($container, $values);
   }
 
   /**
    * {@inheritdoc}
    */
   public function init(array $values = null) {
+    parent::init($values);
     $this->birthDate && ($this->birthDate = new Date($this->birthDate));
     $this->deathDate && ($this->deathDate = new Date($this->deathDate));
     $this->imageAlternativeText = $this->intl->t("Photo of {name}", [ "name" => $this->name]);
     $this->imageDirectory       = "upload://person";
     $this->imageFilename        = $this->id;
     $this->links     && ($this->links = unserialize($this->links));
-    return parent::init();
+    return $this;
   }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-
-  /**
-   * Update the person.
-   *
-   * @return this
-   * @throws \mysqli_sql_exception
-   */
-//  public function commit($userId, \MovLib\Component\DateTime $changed, $oldRevisionId) {
-//    $this->links = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
-//
-//    $stmt = Database::getConnection()->prepare(<<<SQL
-//UPDATE `persons` SET
-//  `birthdate`              = ?,
-//  `born_name`              = ?,
-//  `changed`                = ?,
-//  `deathdate`              = ?,
-//  `dyn_image_descriptions` = '',
-//  {$this->getDynamicColumnUpdateQuery(
-//    $this->intl->languageCode,
-//    "biographies", $this->biography,
-//    "wikipedia", $this->wikipedia
-//  )},
-//  `links`                  = ?,
-//  `name`                   = ?,
-//  `sex`                    = ?
-//WHERE `id` = {$this->id}
-//SQL
-//    );
-//    $stmt->bind_param(
-//      "ssssssi",
-//      $this->birthDate,
-//      $this->bornName,
-//      $changed,
-//      $this->deathDate,
-//      $this->links,
-//      $this->name,
-//      $this->sex
-//    );
-//    $stmt->execute();
-//    $stmt->close();
-//
-//    return $this;
-//  }
-//
-//  /**
-//   * Create a new person.
-//   *
-//   * @return this
-//   * @throws \mysqli_sql_exception
-//   */
-//  public function create($userId, \MovLib\Component\DateTime $created) {
-//    $this->links   = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
-//
-//    $stmt = Database::getConnection()->prepare(<<<SQL
-//INSERT INTO `persons` (
-//  `birthdate`,
-//  `born_name`,
-//  `created`,
-//  `changed`,
-//  `deathdate`,
-//  `dyn_biographies`,
-//  `dyn_image_descriptions`,
-//  `dyn_wikipedia`,
-//  `links`,
-//  `name`,
-//  `sex`
-//) VALUES (
-//  ?,
-//  ?,
-//  ?,
-//  ?,
-//  ?,
-//  COLUMN_CREATE('{$this->intl->languageCode}', ?),
-//  '',
-//  COLUMN_CREATE('{$this->intl->languageCode}', ?),
-//  ?,
-//  ?,
-//  ?
-//);
-//SQL
-//    );
-//    $stmt->bind_param(
-//      "sssssssssi",
-//      $this->birthDate,
-//      $this->bornName,
-//      $created,
-//      $created,
-//      $this->deathDate,
-//      $this->biography,
-//      $this->wikipedia,
-//      $this->links,
-//      $this->name,
-//      $this->sex
-//    );
-//
-//    $stmt->execute();
-//    $this->id = $stmt->insert_id;
-//
-//    return $this->init();
-//  }
 
   /**
    * Get the person's aliases.
@@ -389,14 +295,15 @@ SQL
    *   Numeric array containing the person's aliases.
    */
   public function getAliases() {
-    $aliases = null;
+    $aliases   = null;
+    $collation = Select::$collations[$this->intl->locale];
     $result = Database::getConnection()->query(<<<SQL
 SELECT
   `id`,
   `alias`
 FROM `persons_aliases`
 WHERE `person_id` = {$this->id}
-ORDER BY `alias`{$this->collations[$this->intl->languageCode]} ASC
+ORDER BY `alias`{$collation} ASC
 SQL
     );
     while ($row = $result->fetch_object()) {
@@ -411,6 +318,7 @@ SQL
    * @return \MovLib\Data\Award\AwardSet
    */
   public function getAwards() {
+    $collation = Select::$collations[$this->intl->locale];
     $awards = new AwardSet($this->container);
 
     $result = Database::getConnection()->query(<<<SQL
@@ -481,7 +389,7 @@ SQL
     }
 
     // Load all awards.
-    $awards->loadIdentifiers(array_keys($awardIds), "`name`{$this->collations[$this->intl->languageCode]} ASC");
+    $awards->loadIdentifiers(array_keys($awardIds), "`name`{$collation} ASC");
 
     // Load all events, regardless of the award.
     $events = new EventSet($this->container);
@@ -493,7 +401,7 @@ SQL
 IFNULL(
   COLUMN_GET(`dyn_names`, '{$this->intl->languageCode}' AS CHAR(255)),
   COLUMN_GET(`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR(255))
-){$this->collations[$this->intl->languageCode]} ASC
+){$collation} ASC
 SQL
     ;
     $categories->loadIdentifiers(array_keys($awardCategoryIds), $categoryOrder);
@@ -514,23 +422,23 @@ SQL
     /* @var $event \MovLib\Data\Event\Event */
     foreach ($events as $eventId => $event) {
       // Events are pretty straight forward.
-      if (empty($awards->entities[$event->award]->events)) {
-        $awards->entities[$event->award]->events = new EventSet($this->container);
+      if (empty($awards[$event->award]->events)) {
+        $awards[$event->award]->events = new EventSet($this->container);
       }
-      $awards->entities[$event->award]->events->entities[$eventId] = $event;
+      $awards[$event->award]->events[$eventId] = $event;
 
-      $awards->entities[$event->award]->events->entities[$eventId]->categories = new CategorySet($this->container);
+      $awards[$event->award]->events[$eventId]->categories = new CategorySet($this->container);
 
       // Get the event -> category association from the array constructed above.
       foreach ($eventCategorywins[$eventId] as $categoryId => $categoryProperties) {
-        $awards->entities[$event->award]->events->entities[$eventId]->categories->entities[$categoryId] = $categories->entities[$categoryId];
+        $awards[$event->award]->events[$eventId]->categories[$categoryId] = $categories[$categoryId];
         if (isset($categoryProperties["movie"])) {
-          $awards->entities[$event->award]->events->entities[$eventId]->categories->entities[$categoryId]->movie = $movies->entities[$categoryProperties["movie"]];
+          $awards[$event->award]->events[$eventId]->categories[$categoryId]->movie = $movies[$categoryProperties["movie"]];
         }
         if (isset($categoryProperties["series"])) {
-          $awards->entities[$event->award]->events->entities[$eventId]->categories->entities[$categoryId]->series = $series->entities[$categoryProperties["series"]];
+          $awards[$event->award]->events[$eventId]->categories[$categoryId]->series = $series[$categoryProperties["series"]];
         }
-        $awards->entities[$event->award]->events->entities[$eventId]->categories->entities[$categoryId]->won = $categoryProperties["won"];
+        $awards[$event->award]->events[$eventId]->categories[$categoryId]->won = $categoryProperties["won"];
       }
     }
 

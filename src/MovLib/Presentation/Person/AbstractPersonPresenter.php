@@ -29,6 +29,7 @@ use \MovLib\Data\Person\Person;
  * @since 0.0.1-dev
  */
 abstract class AbstractPersonPresenter extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
 
   // @codingStandardsIgnoreStart
   /**
@@ -38,7 +39,6 @@ abstract class AbstractPersonPresenter extends \MovLib\Presentation\AbstractPres
    */
   const name = "AbstractPersonPresenter";
   // @codingStandardsIgnoreEnd
-  use \MovLib\Partial\SidebarTrait;
 
   /**
    * The person this presentation is for.
@@ -82,7 +82,7 @@ abstract class AbstractPersonPresenter extends \MovLib\Presentation\AbstractPres
 
     // Construct the breadcrumbs and route key.
     $this->breadcrumb->addCrumb($this->intl->r("/persons"), $this->intl->tp(-1, "Persons", "Person"));
-    $routeKey = $this->entity->routeKey;
+    $routeKey = $this->entity->bundle;
     if (($shortName = strtolower(static::name)) != "show") {
       $routeKey .= "/{$shortName}";
       $this->breadcrumb->addCrumb($this->entity->route, $this->entity->name);

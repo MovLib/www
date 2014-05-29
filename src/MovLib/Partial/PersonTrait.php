@@ -34,14 +34,14 @@ trait PersonTrait {
   /**
    * Format a single listing's item.
    *
-   * @param \MovLib\Data\AbstractEntity $person
+   * @param \MovLib\Core\Entity\EntityInterface $person
    *   The person to format.
    * @param integer $id
    *   The current loops delta.
    * @return string
    *   A formated list item.
    */
-  public function formatListingItem(\MovLib\Data\AbstractEntity $person, $id) {
+  public function formatListingItem(\MovLib\Core\Entity\EntityInterface $person, $id) {
     if (($bornName = $this->getPersonBornName($person))) {
       $bornName = "<small>{$bornName}</small>";
     }

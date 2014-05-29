@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\Place;
 
+use \MovLib\Core\Database\Database;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -83,17 +84,19 @@ final class Place extends \MovLib\Data\AbstractEntity {
    *   {@inheritdoc}
    * @param integer $id [optional]
    *   The place's unique identifier to load.
+   * @param array $values [optional]
+   *   An array of values to set, keyed by property name, defaults to <code>NULL</code>.
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\Container $container, $id = null) {
-    parent::__construct($container);
+  public function __construct(\MovLib\Core\Container $container, $id = null, array $values = null) {
+    $this->lemma =& $this->name;
     if ($id) {
       $stmt = Database::getConnection()->prepare(<<<SQL
 SELECT
   `id`,
   `changed`,
   `created`,
-  IFNULL(COLUMN_GET(`dyn_names`, '{$this->intl->languageCode}' AS BINARY), `name`) AS `name`,
+  IFNULL(COLUMN_GET(`dyn_names`, '{$container->intl->languageCode}' AS BINARY), `name`) AS `name`,
   `country_code` AS `countryCode`,
   `latitude`,
   `longitude`
@@ -119,9 +122,7 @@ SQL
         throw new NotFoundException("Couldn't find Place {$id}");
       }
     }
-    if ($this->id) {
-      $this->init();
-    }
+    parent::__construct($container, $values);
   }
 
 
@@ -131,10 +132,18 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function init() {
+  public function init(array $values = null) {
+    parent::init($values);
     $this->pluralKey   = "places";
     $this->singularKey = "place";
-    return parent::init();
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function lemma($locale) {
+    return $this->name;
   }
 
 }

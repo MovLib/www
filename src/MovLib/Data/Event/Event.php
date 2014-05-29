@@ -168,10 +168,13 @@ final class Event extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Re
    *   {@inheritdoc}
    * @param integer $id [optional]
    *   The event's unique identifier to instantiate, defaults to <code>NULL</code> (no event will be loaded).
+   * @param array $values [optional]
+   *   An array of values to set, keyed by property name, defaults to <code>NULL</code>.
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\Container $container, $id = null) {
-    parent::__construct($container);
+  public function __construct(\MovLib\Core\Container $container, $id = null, array $values = null) {
+    $this->lemma =& $this->name;
+    parent::__construct($container, $values);
     if ($id) {
       $connection = Database::getConnection();
       $stmt = $connection->prepare(<<<SQL
@@ -225,9 +228,6 @@ SQL
         throw new NotFoundException("Couldn't find Event {$id}");
       }
     }
-    if ($this->id) {
-      $this->init();
-    }
   }
 
 
@@ -280,7 +280,8 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function init() {
+  public function init(array $values = null) {
+    parent::init($values);
     $this->place     && $this->place = new Place($this->container, $this->place);
     if (isset($this->aliases) && !is_array($this->aliases)) {
       $this->aliases = unserialize($this->aliases);
@@ -290,7 +291,7 @@ SQL
     }
     $this->startDate && ($this->startDate = new Date($this->startDate));
     $this->endDate   && ($this->endDate = new Date($this->endDate));
-    return parent::init();
+    return $this;
   }
 
   /**
@@ -320,6 +321,13 @@ SQL
     $stmt->close();
 
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function lemma($locale) {
+    return $this->name;
   }
 
 }

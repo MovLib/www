@@ -154,7 +154,7 @@ abstract class AbstractEntitySet extends \MovLib\Core\Entity\AbstractEntitySet {
     // Try to load all entities for the given entities.
     $result = Database::getConnection()->query($this->getEntitySetsQuery($set, $in));
 
-    $entitySetPropertyName = static::name;
+    $entitySetPropertyName = lcfirst(static::name);
 
     // Instantiate and export an instance of ourself to each entity of the passed set and seed those set instances with
     // the entities that were returned by the above query.

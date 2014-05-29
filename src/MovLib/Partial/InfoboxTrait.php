@@ -70,7 +70,7 @@ trait InfoboxTrait {
   final protected function getMainHeading() {
     // @devStart
     // @codeCoverageIgnoreStart
-    assert($this->entity instanceof \MovLib\Data\AbstractEntity, "You need to have an entity property in order to use the InfoboxTrait");
+    assert($this->entity instanceof \MovLib\Core\Entity\AbstractEntity, "You need to have an entity property in order to use the InfoboxTrait");
     // @codeCoverageIgnoreEnd
     // @devEnd
 

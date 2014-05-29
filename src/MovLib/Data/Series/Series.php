@@ -199,10 +199,12 @@ class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Data\Rating\
    *   {@inheritdoc}
    * @param integer $id [optional]
    *   The series's unique identifier to instantiate, defaults to <code>NULL</code> (no series will be loaded).
+   * @param array $values [optional]
+   *   An array of values to set, keyed by property name, defaults to <code>NULL</code>.
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\Container $container, $id = null) {
-    parent::__construct($container);
+  public function __construct(\MovLib\Core\Container $container, $id = null, array $values = null) {
+    $this->lemma =& $this->name;
     if ($id) {
       $stmt = Database::getConnection()->prepare(<<<SQL
 SELECT
@@ -269,9 +271,7 @@ SQL
         throw new NotFoundException("Couldn't find Series {$id}");
       }
     }
-    if ($this->id) {
-      $this->init();
-    }
+    parent::__construct($container, $values);
   }
 
 
@@ -372,14 +372,22 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function init() {
+  public function init(array $values = null) {
+    parent::init($values);
     if (isset($this->startYear) && !$this->startYear instanceof \stdClass) {
       $this->startYear = new Date($this->startYear);
     }
     if (isset($this->endYear) && !$this->endYear instanceof \stdClass) {
       $this->endYear = new Date($this->endYear);
     }
-    return parent::init();
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function lemma($locale) {
+    return $this->displayTitle;
   }
 
 }

@@ -28,6 +28,7 @@ namespace MovLib\Data\Award;
  * @since 0.0.1-dev
  */
 final class AwardSet extends \MovLib\Data\AbstractEntitySet implements \MovLib\Data\SelectInterface {
+  use \MovLib\Data\SelectTrait;
 
   // @codingStandardsIgnoreStart
   /**
@@ -37,7 +38,18 @@ final class AwardSet extends \MovLib\Data\AbstractEntitySet implements \MovLib\D
    */
   const name = "AwardSet";
   // @codingStandardsIgnoreEnd
-  use \MovLib\Data\SelectTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  public static $tableName = "awards";
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(\MovLib\Core\Container $container) {
+    parent::__construct($container, "Awards", "Award", $container->intl->tp(-1, "Awards", "Award"));
+  }
 
  /**
    * {@inheritdoc}

@@ -98,6 +98,8 @@ SQL;
 SELECT
   `{$set::$tableName}_genres`.`{$set->singularKey}_id` AS `entityId`,
   `genres`.`id`,
+  `genres`.`created`,
+  `genres`.`changed`,
   IFNULL(
     COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->languageCode}' AS CHAR),
     COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR)

@@ -18,6 +18,7 @@
 namespace MovLib\Data\Award;
 
 use \MovLib\Component\Date;
+use \MovLib\Core\Database\Database;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -169,10 +170,12 @@ final class Award extends \MovLib\Data\AbstractEntity {
    *   {@inheritdoc}
    * @param integer $id [optional]
    *   The award's unique identifier to instantiate, defaults to <code>NULL</code> (no award will be loaded).
+   * @param array $values [optional]
+   *   An array of values to set, keyed by property name, defaults to <code>NULL</code>.
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\Container $container, $id = null) {
-    parent::__construct($container);
+  public function __construct(\MovLib\Core\Container $container, $id = null, array $values = null) {
+    $this->lemma =& $this->name;
     if ($id) {
       $stmt = Database::getConnection()->prepare(<<<SQL
 SELECT
@@ -183,9 +186,9 @@ SELECT
   `awards`.`name` AS `name`,
   `awards`.`first_event_year` AS `firstEventYear`,
   `awards`.`last_event_year` AS `lastEventYear`,
-  COLUMN_GET(`dyn_descriptions`, '{$this->intl->languageCode}' AS CHAR) AS `description`,
+  COLUMN_GET(`dyn_descriptions`, '{$container->intl->languageCode}' AS CHAR) AS `description`,
   `awards`.`links` AS `links`,
-  COLUMN_GET(`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR) AS `wikipedia`,
+  COLUMN_GET(`dyn_wikipedia`, '{$container->intl->languageCode}' AS CHAR) AS `wikipedia`,
   `awards`.`aliases` AS `aliases`,
   `awards`.`count_movies` AS `movieCount`,
   `awards`.`count_series` AS `seriesCount`,
@@ -226,9 +229,7 @@ SQL
         throw new NotFoundException("Couldn't find Award {$id}");
       }
     }
-    if ($this->id) {
-      $this->init();
-    }
+    parent::__construct($container, $values);
   }
 
 
@@ -315,12 +316,20 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function init() {
+  public function init(array $values = null) {
+    parent::init($values);
     $this->aliases        && ($this->aliases        = unserialize($this->aliases));
     $this->links          && ($this->links          = unserialize($this->links));
     $this->firstEventYear && ($this->firstEventYear = new Date($this->firstEventYear));
     $this->lastEventYear  && ($this->lastEventYear  = new Date($this->lastEventYear));
-    return parent::init();
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function lemma($locale) {
+    return $this->name;
   }
 
 }

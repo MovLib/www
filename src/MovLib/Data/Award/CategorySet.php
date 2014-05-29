@@ -40,6 +40,18 @@ final class CategorySet extends \MovLib\Data\AbstractEntitySet {
   /**
    * {@inheritdoc}
    */
+  public static $tableName = "awards_categories";
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(\MovLib\Core\Container $container) {
+    parent::__construct($container, "Categories", "Category", $container->intl->tp(-1, "Categories", "Category"));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function getEntitiesQuery($where = null, $orderBy = null) {
     return <<<SQL
 SELECT

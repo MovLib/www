@@ -58,7 +58,7 @@ abstract class AbstractEditPresenter extends \MovLib\Presentation\AbstractPresen
   /**
    * Initialize the edit presenter.
    *
-   * @param \MovLib\Data\AbstractEntity $entity
+   * @param \MovLib\Core\Entity\AbstractEntity $entity
    *   The entity to present.
    * @param string $breadcrumbIndexTitle
    *   The entity's index title.
@@ -66,7 +66,7 @@ abstract class AbstractEditPresenter extends \MovLib\Presentation\AbstractPresen
    *   Additional items for the sidebar.
    * @return this
    */
-  final protected function initEdit(\MovLib\Data\AbstractEntity $entity, $breadcrumbIndexTitle, $additionalSidebarItems = []) {
+  final protected function initEdit(\MovLib\Core\Entity\AbstractEntity $entity, $breadcrumbIndexTitle, $additionalSidebarItems = []) {
     $this->session->checkAuthorization($this->intl->t(
       "You must be signed in to access this content. Please use the form below to sign in or {0}join {sitename}{1}.",
       [ "<a href='{$this->intl->r("/profile/join")}'>", "</a>", "sitename" => $this->config->sitename ]

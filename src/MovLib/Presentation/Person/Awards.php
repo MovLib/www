@@ -46,8 +46,8 @@ class Awards extends \MovLib\Presentation\Person\AbstractPersonPresenter {
    */
   public function init() {
     $this->initPersonPresentation(
-      $this->intl->t("Awards of {0}"),
-      $this->intl->t("Awards of {0}"),
+      $this->intl->t("Awards of {name}"),
+      $this->intl->t("Awards of {name}"),
       $this->intl->t("Awards")
     );
   }

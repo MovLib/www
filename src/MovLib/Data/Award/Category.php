@@ -162,7 +162,7 @@ final class Category extends \MovLib\Data\AbstractEntity {
   /**
    * {@inheritdoc}
    */
-  public $tableName = "awards_categories";
+  public static $tableName = "awards_categories";
 
   /**
    * {@inheritdoc}
@@ -185,13 +185,15 @@ final class Category extends \MovLib\Data\AbstractEntity {
    *   {@inheritdoc}
    * @param integer $id [optional]
    *   The category's unique identifier to instantiate, defaults to <code>NULL</code> (no category will be loaded).
+   * @param array $values [optional]
+   *   An array of values to set, keyed by property name, defaults to <code>NULL</code>.
    * @param mixed $initAward [optional]
    *   Whether to instantiate an award object or not, defaults to <code>TRUE</code>
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\Container $container, $id = null, $initAward = true) {
-    parent::__construct($container);
+  public function __construct(\MovLib\Core\Container $container, $id = null, array $values = null, $initAward = true) {
     $this->initAward = $initAward;
+    $this->lemma =& $this->name;
     if ($id) {
       $stmt = Database::getConnection()->prepare(<<<SQL
 SELECT
@@ -243,9 +245,7 @@ SQL
         throw new NotFoundException("Couldn't find Award {$id}");
       }
     }
-    if ($this->id) {
-      $this->init();
-    }
+    parent::__construct($container, $values);
   }
 
 
@@ -365,7 +365,8 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function init() {
+  public function init(array $values = null) {
+    parent::init($values);
     if ($this->initAward === true && isset($this->awardId)) {
       $this->award = new Award($this->container, $this->awardId);
     }
@@ -375,10 +376,14 @@ SQL
     if (isset($this->lastYear) && !$this->lastYear instanceof \stdClass) {
       $this->lastYear  = new Date($this->lastYear);
     }
-    $this->routeArgs     = [ $this->awardId, $this->id ];
-    $this->routeIndex    = $this->intl->r($this->routeIndexKey, $this->awardId);
-    $this->routeKey      = $this->intl->r($this->routeKey, $this->routeArgs);
-    return parent::init();
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function lemma($locale) {
+    return $this->name;
   }
 
 }

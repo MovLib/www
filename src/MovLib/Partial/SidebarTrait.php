@@ -132,7 +132,7 @@ trait SidebarTrait {
    *   Whether to create a small sidebar or not, defaults to <code>FALSE</code>.
    * @return this
    */
-  final protected function sidebarInitToolbox(\MovLib\Data\AbstractEntity $entity, array $menuitems = null, $small = false) {
+  final protected function sidebarInitToolbox(\MovLib\Core\Entity\AbstractEntity $entity, array $menuitems = null, $small = false) {
     if ($entity->deleted) {
       $toolboxItems = [
         [ $this->entity->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],

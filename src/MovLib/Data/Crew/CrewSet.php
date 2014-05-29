@@ -56,6 +56,18 @@ final class CrewSet extends \MovLib\Data\AbstractEntitySet {
   /**
    * {@inheritdoc}
    */
+  public static $tableName = "movies_crew";
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(\MovLib\Core\Container $container) {
+    parent::__construct($container, null, null, null);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function getEntitiesQuery($where = null, $orderBy = null) {
 
   }

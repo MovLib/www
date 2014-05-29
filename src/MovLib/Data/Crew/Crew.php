@@ -138,6 +138,12 @@ final class Crew extends \MovLib\Data\Job\Job {
    */
   public function __construct(\MovLib\Core\Container $container) {
     parent::__construct($container);
+    if (empty($this->changed)) {
+      $this->changed = new \MovLib\Component\DateTime();
+    }
+    if (empty($this->created)) {
+      $this->created = new \MovLib\Component\DateTime();
+    }
   }
 
 }
