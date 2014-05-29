@@ -18,6 +18,7 @@
 namespace MovLib\Core\Entity;
 
 use \MovLib\Core\Database\Database;
+use \MovLib\Core\Database\Query\Select;
 use \MovLib\Core\Routing\Route;
 
 /**
