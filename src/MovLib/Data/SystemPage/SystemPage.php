@@ -18,6 +18,8 @@
 namespace MovLib\Data\SystemPage;
 
 use \MovLib\Core\Database\Database;
+use \MovLib\Core\Revision\OriginatorTrait;
+use \MovLib\Core\Search\RevisionTrait;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -30,8 +32,11 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class SystemPage extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\OriginatorInterface {
-  use \MovLib\Core\Revision\OriginatorTrait;
+final class SystemPage extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\OriginatorInterface {
+  use OriginatorTrait, RevisionTrait {
+    RevisionTrait::postCommit insteadof OriginatorTrait;
+    RevisionTrait::postCreate insteadof OriginatorTrait;
+  }
 
 
   //-------------------------------------------------------------------------------------------------------------------- Constants
@@ -49,13 +54,6 @@ class SystemPage extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Rev
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   * The page's unique identifier.
-   *
-   * @var integer
-   */
-  public $id;
 
   /**
    * The page's localized title.
@@ -76,30 +74,34 @@ class SystemPage extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Rev
 
 
   /**
-   * Instantiate new company object.
+   * Instantiate new system page object.
    *
    * @param \MovLib\Core\Container $container
    *   {@inheritdoc}
    * @param integer $id [optional]
    *   The system page's unique identifier to instantiate, defaults to <code>NULL</code> (no system page will be loaded).
+   * @param array $values [optional]
+   *   An array of values to set, keyed by property name, defaults to <code>NULL</code>.
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\Container $container, $id = null) {
-    parent::__construct($container);
+  public function __construct(\MovLib\Core\Container $container, $id = null, array $values = null) {
     if ($id) {
       $connection = Database::getConnection();
       $stmt = $connection->prepare(<<<SQL
 SELECT
   `id`,
+  `changed`,
+  `created`,
+  `deleted`,
   IFNULL(
-    COLUMN_GET(`dyn_titles`, '{$this->intl->languageCode}' AS CHAR(255)),
-    COLUMN_GET(`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR(255))
+    COLUMN_GET(`dyn_titles`, '{$container->intl->languageCode}' AS CHAR(255)),
+    COLUMN_GET(`dyn_titles`, '{$container->intl->defaultLanguageCode}' AS CHAR(255))
   ),
   IFNULL(
-    COLUMN_GET(`dyn_texts`, '{$this->intl->languageCode}' AS BINARY),
-    COLUMN_GET(`dyn_texts`, '{$this->intl->defaultLanguageCode}' AS BINARY)
+    COLUMN_GET(`dyn_texts`, '{$container->intl->languageCode}' AS BINARY),
+    COLUMN_GET(`dyn_texts`, '{$container->intl->defaultLanguageCode}' AS BINARY)
   ),
-  COLUMN_GET(`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR(255))
+  COLUMN_GET(`dyn_titles`, '{$container->intl->defaultLanguageCode}' AS CHAR(255))
 FROM `system_pages`
 WHERE `id` = ?
 LIMIT 1
@@ -109,6 +111,9 @@ SQL
       $stmt->execute();
       $stmt->bind_result(
         $this->id,
+        $this->changed,
+        $this->created,
+        $this->deleted,
         $this->title,
         $this->text,
         $this->routeKey
@@ -119,28 +124,24 @@ SQL
         throw new NotFoundException("Couldn't find Systempage {$id}");
       }
     }
-    if ($this->id) {
-      $this->init();
-    }
+    parent::__construct($container, $values);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function init() {
-    // The plural key isn't used anywhere.
-    $this->pluralKey   = "system_pages";
+  public function init(array $values = null) {
+    parent::init($values);
     if ($this->routeKey == "About {$this->container->config->sitename}") {
-      $this->singularKey = "about";
-      $this->routeKey    = "/about";
+      $this->route->route = "/about";
+      $this->route->reset();
     }
     else {
-      $this->singularKey = sanitize_filename($this->routeKey);
-      $this->routeKey    = "/{$this->singularKey}";
+      $route = sanitize_filename($this->routeKey);
+      $this->route->route = "/{$route}";
+      $this->route->reset();
     }
-    $this->routeArgs   = [];
-    $this->routeIndex  = "/";
-    return parent::init();
+    return $this;
   }
 
 
@@ -149,12 +150,19 @@ SQL
 
   /**
    * {@inheritdoc}
+   */
+  protected function defineSearchIndex(\MovLib\Core\Search\SearchIndexer $search, \MovLib\Core\Revision\RevisionInterface $revision) {
+    return $search->indexSimpleSuggestion($revision->titles);
+  }
+
+  /**
+   * {@inheritdoc}
    * @param \MovLib\Data\SystemPage\SystemPageRevision $revision {@inheritdoc}
    * @return \MovLib\Data\SystemPage\SystemPageRevision {@inheritdoc}
    */
   protected function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
-    $revision->texts[$this->intl->languageCode]  = $this->text;
-    $revision->titles[$this->intl->languageCode] = $this->title;
+    $this->setRevisionArrayValue($revision->texts, $this->text);
+    $this->setRevisionArrayValue($revision->titles, $this->title);
 
     return $revision;
   }
@@ -165,16 +173,21 @@ SQL
    * @return this {@inheritdoc}
    */
   protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
-    if (isset($revision->texts[$this->intl->languageCode])) {
-      $this->text = $revision->texts[$this->intl->languageCode];
-    }
-    if (empty($revision->titles[$this->intl->languageCode])) {
-      $this->title = $revision->titles[$this->intl->defaultLanguageCode];
-    }
-    else {
-      $this->title = $revision->titles[$this->intl->languageCode];
-    }
+    $this->text  = $this->getRevisionArrayValue($revision->texts);
+    $this->title = $this->getRevisionArrayValue($revision->titles, $revision->titles[$this->intl->languageCode]);
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function lemma($locale) {
+    static $titles = null;
+    $languageCode = "{$locale{0}}{$locale{1}}";
+    if (!$titles) {
+      $titles = json_decode(Database::getConnection()->query("SELECT COLUMN_JSON(`dyn_titles`) FROM `system_pages` WHERE `id` = {$this->id} LIMIT 1")->fetch_all()[0][0], true);
+    }
+    return isset($titles[$languageCode]) ? $titles[$languageCode] : $titles[$this->intl->defaultLanguageCode];
   }
 
 }

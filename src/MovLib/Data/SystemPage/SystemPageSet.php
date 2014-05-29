@@ -28,6 +28,10 @@ namespace MovLib\Data\SystemPage;
  */
 final class SystemPageSet extends \MovLib\Data\AbstractEntitySet {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
   // @codingStandardsIgnoreStart
   /**
    * Short class name.
@@ -37,6 +41,30 @@ final class SystemPageSet extends \MovLib\Data\AbstractEntitySet {
   const name = "SystemPageSet";
   // @codingStandardsIgnoreEnd
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public static $tableName = "system_pages";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(\MovLib\Core\Container $container) {
+    parent::__construct($container, "System Pages", "System Page", $container->intl->tp(-1, "System Pages", "System Page"));
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
    * {@inheritdoc}
    */
@@ -44,6 +72,9 @@ final class SystemPageSet extends \MovLib\Data\AbstractEntitySet {
     return <<<SQL
 SELECT
   `id`,
+  `changed`,
+  `created`,
+  `deleted`,
   IFNULL(
     COLUMN_GET(`dyn_titles`, '{$this->intl->languageCode}' AS CHAR(255)),
     COLUMN_GET(`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR(255))
@@ -63,17 +94,9 @@ SQL;
    * {@inheritdoc}
    */
   protected function getEntitySetsQuery(\MovLib\Data\AbstractEntitySet $set, $in) {
-    return "";
-  }
+    return<<<SQL
 
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-    $this->tableName   = "system_pages";
-    $this->pluralKey   = "systempages";
-    $this->singularKey = "systempage";
-    return parent::init();
+SQL;
   }
 
 }

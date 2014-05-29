@@ -58,20 +58,6 @@ final class SystemPageRevision extends \MovLib\Core\Revision\AbstractRevision {
 
 
   /**
-   * Associative array containing all the system page's localized titles, keyed by ISO 639-1 language code.
-   *
-   * @var array
-   */
-  public $titles;
-
-  /**
-   * Associative array containing all the system page's localized texts, keyed by ISO 639-1 language code.
-   *
-   * @var array
-   */
-  public $texts;
-
-  /**
    * {@inheritdoc}
    */
   public $revisionEntityId = 13;
@@ -81,6 +67,20 @@ final class SystemPageRevision extends \MovLib\Core\Revision\AbstractRevision {
    */
   protected $tableName = "system_pages";
 
+  /**
+   * Associative array containing all the system page's localized titles, keyed by ISO 639-1 language code.
+   *
+   * @var array
+   */
+  public $titles = [];
+
+  /**
+   * Associative array containing all the system page's localized texts, keyed by ISO 639-1 language code.
+   *
+   * @var array
+   */
+  public $texts = [];
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -89,17 +89,20 @@ final class SystemPageRevision extends \MovLib\Core\Revision\AbstractRevision {
    * Instantiate new system page revision.
    *
    * @param integer $id
-   *   The system page's unique identifier to load the revision for.
+   *   The system page's unique identifier to load the revision for. The default value (<code>NULL</code>) is only used for
+   *   internal purposes when loaded via <code>fetch_object()</code>.
    * @throws \MovLib\Exception\ClientException\NotFoundException
    *   If no system page was found for the given unique identifier.
    */
-  public function __construct($id) {
-    $connection = Database::getConnection();
-    $stmt = $connection->prepare(<<<SQL
+  public function __construct($id = null) {
+    if ($id) {
+      $connection = Database::getConnection();
+      $stmt = $connection->prepare(<<<SQL
 SELECT
   `system_pages`.`id`,
   `revisions`.`user_id`,
   `system_pages`.`changed` + 0,
+  `system_pages`.`deleted`,
   COLUMN_JSON(`system_pages`.`dyn_texts`),
   COLUMN_JSON(`system_pages`.`dyn_titles`)
 FROM `system_pages`
@@ -110,24 +113,26 @@ FROM `system_pages`
 WHERE `system_pages`.`id` = ?
 LIMIT 1
 SQL
-    );
-    $stmt->bind_param("d", $id);
-    $stmt->execute();
-    $stmt->bind_result(
-      $this->entityId,
-      $this->userId,
-      $this->id,
-      $this->texts,
-      $this->titles
-    );
-    $found = $stmt->fetch();
-    $stmt->close();
-    if ($found === false) {
-      throw new NotFoundException("Couldn't find system page for {$id}.");
+      );
+      $stmt->bind_param("d", $id);
+      $stmt->execute();
+      $stmt->bind_result(
+        $this->entityId,
+        $this->userId,
+        $this->id,
+        $this->deleted,
+        $this->texts,
+        $this->titles
+      );
+      $found = $stmt->fetch();
+      $stmt->close();
+      if ($found === false) {
+        throw new NotFoundException("Couldn't find system page for {$id}.");
+      }
     }
     if ($this->id) {
-      $this->texts  = json_decode($this->texts, true);
-      $this->titles = json_decode($this->titles, true);
+      $this->texts  === (array) $this->texts  || ($this->texts  = json_decode($this->texts, true));
+      $this->titles === (array) $this->titles || ($this->titles = json_decode($this->titles, true));
       parent::__construct();
     }
   }
@@ -150,18 +155,10 @@ SQL
   /**
    * {@inheritdoc}
    */
-  protected function getCommitQuery(\MovLib\Core\Database\Connection $connection) {
-    return "";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   protected function addCommitFields(\MovLib\Core\Database\Query\Update $update, \MovLib\Core\Revision\RevisionInterface $oldRevision, $languageCode) {
     return $update
-      ->table("system_pages")
-      ->dynamicColumn("texts", $this->texts)
-      ->dynamicField("titles", $this->titles)
+      ->setDynamicConditional("texts", $languageCode, $this->texts, $oldRevision->texts)
+      ->setDynamicConditional("titles", $languageCode, $this->titles, $oldRevision->titles)
     ;
   }
 
@@ -170,9 +167,8 @@ SQL
    */
   protected function addCreateFields(\MovLib\Core\Database\Query\Insert $insert) {
     return $insert
-      ->table("system_pages")
-      ->dynamicColumn("texts", $this->texts)
-      ->dynamicField("titles", $this->titles)
+      ->set("texts", $this->texts)
+      ->set("titles", $this->titles)
     ;
   }
 

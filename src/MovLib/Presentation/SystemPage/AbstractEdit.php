@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\SystemPage;
 
-use \MovLib\Data\Revision\RevisionCommitConflictException;
+use \MovLib\Core\Revision\CommitConflictException;
 use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputText;
@@ -41,7 +41,7 @@ abstract class AbstractEdit extends \MovLib\Presentation\SystemPage\AbstractShow
    *
    * @var string
    */
-  const name = "AbstractEdit";
+  const name = "Edit";
   // @codingStandardsIgnoreEnd
 
   /**
@@ -65,8 +65,8 @@ abstract class AbstractEdit extends \MovLib\Presentation\SystemPage\AbstractShow
       $this->intl->t("Edit {0}", $this->placeholder($headTitle)),
       $this->intl->t("Edit")
     );
-    $this->breadcrumb->addCrumb($this->systemPage->route, $headTitle);
-    $this->initLanguageLinks("{$this->systemPage->routeKey}/edit");
+    $this->breadcrumb->addCrumb($this->entity->route, $headTitle);
+    $this->initLanguageLinks("{$this->entity->route->route}/edit");
     return $this;
   }
 
@@ -75,13 +75,8 @@ abstract class AbstractEdit extends \MovLib\Presentation\SystemPage\AbstractShow
    */
   public function getContent() {
     $form = (new Form($this->container))
-      ->addHiddenElement("revision_id", $this->systemPage->changed)
-      ->addElement(new InputText($this->container, "title", $this->intl->t("Title"), $this->systemPage->title, [
-        "autofocus"   => true,
-        "placeholder" => $this->intl->t("Enter the system page title"),
-        "required"    => true,
-      ]))
-      ->addElement(new TextareaHTMLRaw($this->container,"content", $this->intl->t("Content"), $this->systemPage->text, [
+      ->addHiddenElement("revision_id", $this->entity->changed->formatInteger())
+      ->addElement(new TextareaHTMLRaw($this->container,"content", $this->intl->t("Content"), $this->entity->text, [
         "placeholder" => $this->intl->t("Enter the system page content"),
         "required"    => true,
         "rows"        => 25,
@@ -94,7 +89,7 @@ abstract class AbstractEdit extends \MovLib\Presentation\SystemPage\AbstractShow
   }
 
   /**
-   * Submit callback for the system page edit form.
+   * Submit callback for the system page  edit form.
    *
    * @throws \MovLib\Exception\RedirectException\SeeOtherException
    *   Always redirects the user back to the edited system page.
@@ -103,16 +98,6 @@ abstract class AbstractEdit extends \MovLib\Presentation\SystemPage\AbstractShow
     try {
       $this->entity->commit($this->session->userId, $this->request->dateTime, $this->request->filterInput(INPUT_POST, "revision_id", FILTER_VALIDATE_INT));
       $this->alertSuccess($this->intl->t("Successfully Updated"));
-
-      // Encourage the user to validate the page.
-      $this->alertInfo(
-        $this->intl->t("Valid?"),
-        $this->intl->t("Please {0}validate your HTML with the W3C Validator{1}.", [
-          "<a href='http://validator.w3.org/check?uri=" . rawurlencode("{$this->request->scheme}://{$this->request->hostname}{$this->systemPage->route}") . "'>",
-          "</a>"
-        ])
-      );
-
       throw new SeeOtherException($this->entity->route);
     }
     catch (\BadMethodCallException $e) {
@@ -121,7 +106,7 @@ abstract class AbstractEdit extends \MovLib\Presentation\SystemPage\AbstractShow
         $this->intl->t("Seems like you haven’t changed anything, please only submit forms with changes.")
       );
     }
-    catch (RevisionCommitConflictException $e) {
+    catch (CommitConflictException $e) {
       $this->alertError(
         $this->intl->t("Conflicting Changes"),
         "<p>{$this->intl->t(
@@ -133,4 +118,3 @@ abstract class AbstractEdit extends \MovLib\Presentation\SystemPage\AbstractShow
   }
 
 }
-

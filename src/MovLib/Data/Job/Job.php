@@ -199,7 +199,7 @@ SQL
    */
   public function init(array $values = null) {
     $this->titles[Sex::UNKNOWN] && $this->title = $this->titles[Sex::UNKNOWN];
-    parent::init($values);
+    return parent::init($values);
   }
 
   /**

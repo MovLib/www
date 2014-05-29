@@ -29,6 +29,7 @@ use \MovLib\Data\SystemPage\SystemPage;
  * @since 0.0.1-dev
  */
 abstract class AbstractShow extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
 
   // @codingStandardsIgnoreStart
   /**
@@ -36,16 +37,15 @@ abstract class AbstractShow extends \MovLib\Presentation\AbstractPresenter {
    *
    * @var string
    */
-  const name = "AbstractShow";
+  const name = "Show";
   // @codingStandardsIgnoreEnd
-  use \MovLib\Partial\SidebarTrait;
 
   /**
    * The system page to present.
    *
    * @var \MovLib\Data\SystemPage
    */
-  protected $systemPage;
+  protected $entity;
 
   /**
    * Initialize the system page.
@@ -60,19 +60,24 @@ abstract class AbstractShow extends \MovLib\Presentation\AbstractPresenter {
    *   The presenter's title for the breadcrumb's entry of the current presentation.
    */
   public function initSystemPage($id, $headTitle, $pageTitle = null, $breadcrumbTitle = null) {
-    $this->systemPage = new SystemPage($this->container, $id);
+    $this->entity = new SystemPage($this->container, $id);
+    $sidebarItems = [
+      [ $this->intl->r("/about"), $this->intl->t("About {sitename}", [ "sitename" => $this->config->sitename ]) ],
+      [ $this->intl->r("/team"), $this->intl->t("Team") ],
+      [ $this->intl->r("/privacy-policy"), $this->intl->t("Privacy Policy") ],
+      [ $this->intl->r("/terms-of-use"), $this->intl->t("Terms of Use") ],
+      [ $this->intl->r("/impressum"), $this->intl->t("Impressum") ],
+      [ $this->intl->r("/contact"), $this->intl->t("Contact") ],
+      [ $this->intl->r("/articles-of-association"), $this->intl->t("Articles of Association"), [ "class" => "separator"] ],
+      [ $this->entity->r("/history", [ $this->entity->route->args ]), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
+    ];
+    if ($this->session->isAuthenticated && $this->session->isAdmin()) {
+      $sidebarItems[] = [ $this->entity->r("/edit", [ $this->entity->route->args ]), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ];
+    }
     return $this
       ->initPage($headTitle, $pageTitle, $breadcrumbTitle)
-      ->initLanguageLinks($this->systemPage->routeKey)
-      ->sidebarInit([
-        [ $this->intl->r("/about"), $this->intl->t("About {sitename}", [ "sitename" => $this->config->sitename ]) ],
-        [ $this->intl->r("/team"), $this->intl->t("Team") ],
-        [ $this->intl->r("/privacy-policy"), $this->intl->t("Privacy Policy") ],
-        [ $this->intl->r("/terms-of-use"), $this->intl->t("Terms of Use") ],
-        [ $this->intl->r("/impressum"), $this->intl->t("Impressum") ],
-        [ $this->intl->r("/contact"), $this->intl->t("Contact") ],
-        [ $this->intl->r("/articles-of-association"), $this->intl->t("Articles of Association") ],
-      ])
+      ->initLanguageLinks($this->entity->route->route)
+      ->sidebarInit($sidebarItems)
     ;
   }
 
@@ -80,7 +85,7 @@ abstract class AbstractShow extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    return "<div property='mainContentOfPage'>{$this->htmlDecode($this->systemPage->text)}</div>";
+    return "<div property='mainContentOfPage'>{$this->htmlDecode($this->entity->text)}</div>";
   }
 
 }

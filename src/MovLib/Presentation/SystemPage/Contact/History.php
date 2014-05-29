@@ -15,18 +15,18 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Upload;
+namespace MovLib\Presentation\SystemPage\Contact;
 
 /**
- * Defines the upload index presenter object.
+ * Defines the system page history presentation.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
+final class History extends \MovLib\Core\Presentation\AbstractHistory {
 
   // @codingStandardsIgnoreStart
   /**
@@ -34,28 +34,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    *
    * @var string
    */
-  const name = "Index";
+  const name = "History";
   // @codingStandardsIgnoreEnd
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function formatListingItem(\MovLib\Core\Entity\EntityInterface $item, $delta) {
-
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getNoItemsContent() {
-
-  }
 
 }
