@@ -63,14 +63,14 @@ final class GenreRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $names = [];
+  public $names;
 
   /**
    * Associative array containing all the genre's localized descriptions, keyed by ISO 639-1 language code.
    *
    * @var array
    */
-  public $descriptions = [];
+  public $descriptions;
 
   /**
    * {@inheritdoc}
@@ -87,7 +87,7 @@ final class GenreRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $wikipediaLinks = [];
+  public $wikipediaLinks;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -103,8 +103,8 @@ final class GenreRevision extends \MovLib\Core\Revision\AbstractRevision {
    *   If no genre was found for the given unique identifier.
    */
   public function __construct($id = null) {
+    $connection = Database::getConnection();
     if ($id) {
-      $connection = Database::getConnection();
       $stmt = $connection->prepare(<<<SQL
 SELECT
   `genres`.`id`,
@@ -141,9 +141,9 @@ SQL
       }
     }
     if ($this->id) {
-      $this->descriptions   === (array) $this->descriptions   || ($this->descriptions   = json_decode($this->descriptions, true));
-      $this->names          === (array) $this->names          || ($this->names          = json_decode($this->names, true));
-      $this->wikipediaLinks === (array) $this->wikipediaLinks || ($this->wikipediaLinks = json_decode($this->wikipediaLinks, true));
+      $connection->dynamicDecode($this->descriptions);
+      $connection->dynamicDecode($this->names);
+      $connection->dynamicDecode($this->wikipediaLinks);
       parent::__construct();
     }
   }

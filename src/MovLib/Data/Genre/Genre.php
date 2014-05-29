@@ -165,6 +165,7 @@ SQL
   protected function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
     $this->setRevisionArrayValue($revision->descriptions, $this->description);
     $this->setRevisionArrayValue($revision->names, $this->name);
+    $this->setRevisionArrayValue($revision->wkipediaLinks, $this->wikipedia);
 
     // Don't forget that we might be a new genre and that we might have been created via a different system locale than
     // the default one, in which case the user was required to enter a default name. Of course we have to export that
@@ -184,6 +185,7 @@ SQL
   protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
     $this->description = $this->getRevisionArrayValue($revision->descriptions);
     $this->name        = $this->getRevisionArrayValue($revision->names, $revision->names[$this->intl->languageCode]);
+    $this->wikipedia   = $this->getRevisionArrayValue($revision->wikipediaLinks);
     return $this;
   }
 
@@ -192,10 +194,20 @@ SQL
    */
   public function lemma($locale) {
     static $names = null;
+
+    // No need to ask the database if the requested locale matches the loaded locale.
+    if ($locale == $this->intl->locale) {
+      return $this->name;
+    }
+
+    // Extract the language code from the given locale.
     $languageCode = "{$locale{0}}{$locale{1}}";
+
+    // Load all names for this genre if we haven't done so yet.
     if (!$names) {
       $names = json_decode(Database::getConnection()->query("SELECT COLUMN_JSON(`dyn_names`) FROM `genres` WHERE `id` = {$this->id} LIMIT 1")->fetch_all()[0][0], true);
     }
+
     return isset($names[$languageCode]) ? $names[$languageCode] : $names[$this->intl->defaultLanguageCode];
   }
 

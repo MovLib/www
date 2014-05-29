@@ -119,6 +119,31 @@ final class Connection extends \mysqli {
 
 
   /**
+   * Decode a dynamic column that was fetched with <code>COLUMN_JSON()</code>.
+   *
+   * @param mixed $property
+   *   The property containing the result from the <code>COLUMN_JSON()</code> call.
+   * @return this
+   */
+  public function dynamicDecode(&$property) {
+    // If the value of the property is empty or contains an empty JSON object, use NULL. This makes sure that we have
+    // the same value within all properties which is important for serialization.
+    if (empty($property) || $property == "{}") {
+      $property = null;
+    }
+    // Otherwise we decode the string.
+    else {
+      $property = json_decode($property, true);
+
+      // Throw an exception in case of error.
+      if (($code = json_last_error()) !== JSON_ERROR_NONE) {
+        throw new \ErrorException(json_last_error_msg(), $code);
+      }
+    }
+    return $this;
+  }
+
+  /**
    * Get <code>"COLLATE"</code> SQL part for e.g. <code>"ORDER BY"</code> of strings.
    *
    * <b>EXAMPLE</b><br>

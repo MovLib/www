@@ -205,18 +205,8 @@ trait OriginatorTrait {
     // Update the just loaded revision with the new values that we have in absolutely every originator.
     $revision->id      = $changed->formatInteger();
     $revision->changed = $revision->created = $this->changed = $changed;
+    $revision->deleted = $this->deleted;
     $revision->userId  = $userId;
-
-    // Not all originators implement the deleted property, we still want this in this unified place for later changes
-    // because we're unsure if we really want to recreate the deletion state of an originator.
-    if (property_exists($this, "deleted")) {
-      $revision->deleted = $this->deleted;
-    }
-
-    // Not all originators implement the wikipedia links, but 90% do, lets keep this here for ease of use.
-    if (property_exists($this, "wikipedia")) {
-      $revision->wikipediaLinks[$this->intl->languageCode] = $this->wikipedia;
-    }
 
     // Let the concrete class perform more export work on the revision.
     return $this->doCreateRevision($revision);
@@ -236,14 +226,15 @@ trait OriginatorTrait {
    * @return this
    */
   final protected function getRevisionArrayValue($revisionProperty, $defaultValue = null, $key = null) {
-    if (!$key) {
-      $key = $this->intl->languageCode;
-    }
+    // Use the current language code of the current concrete instance if no key was passed.
+    $key || ($key = $this->intl->languageCode);
 
-    if (isset($revisionProperty[$key])) {
+    // We use array key exists at this point because it returns true in case the value is NULL, in contrast to isset().
+    if (array_key_exists($key, $revisionProperty)) {
       return $revisionProperty[$key];
     }
 
+    // If the key isn't present in the array, use default.
     return $defaultValue;
   }
 
@@ -261,17 +252,7 @@ trait OriginatorTrait {
 
     // Export all values that we have in absolutely every originator.
     $this->changed = $revision->created;
-
-    // Some originators don't have the deleted property.
-    if (property_exists($this, "deleted")) {
-      $this->deleted = $revision->deleted;
-    }
-
-    // The following properties are language dependent, an originator instance always contains only one language in
-    // contrast to the revision, which contains all languages. Not all originators implement the wikipedia links.
-    if (property_exists($this, "wikipedia") && isset($revision->wikipediaLinks[$this->intl->languageCode])) {
-      $this->wikipedia = $revision->wikipediaLinks[$this->intl->languageCode];
-    }
+    $this->deleted = $revision->deleted;
 
     // Let the concrete class export more properties.
     return $this->doSetRevision($revision);
@@ -292,13 +273,17 @@ trait OriginatorTrait {
    * @return this
    */
   final protected function setRevisionArrayValue(&$revisionProperty, $value, $key = null) {
-    if (!$key) {
-      $key = $this->intl->languageCode;
-    }
+    // Use the current language code of the current concrete instance if no key was passed.
+    $key || ($key = $this->intl->languageCode);
 
-    if ($value == false && $value != "0" && array_key_exists($key, (array) $revisionProperty)) {
-      unset($revisionProperty[$key]);
+    // If the value is false (note the two equal signs) and not simply a string containing 0 don't export.
+    if ($value == false && $value != "0") {
+      // Remove the key from the revision property in this case, this is important for serialization.
+      if (array_key_exists($key, (array) $revisionProperty)) {
+        unset($revisionProperty[$key]);
+      }
     }
+    // Otherwise export the value to the revision.
     else {
       $revisionProperty[$key] = $value;
     }
