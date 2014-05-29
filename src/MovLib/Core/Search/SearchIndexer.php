@@ -366,13 +366,13 @@ final class SearchIndexer {
         continue;
       }
 
-      // Add the suggestion for every element.
-      $body["suggest"]["input"][] = $v;
+      // Add the suggestion for every element and avoid duplicates.
+      $body["suggest"]["input"][$v] = true;
       // Generate a suggestion in the form [lastname], [firstname] to improve suggestions.
       if ($field->humanName === true) {
         $explodedIndexValue = explode(" ", $v);
         if (count($explodedIndexValue) > 1) {
-          $body["suggest"]["input"][] = array_pop($explodedIndexValue) . ", " . implode(" ", $explodedIndexValue);
+          $body["suggest"]["input"][array_pop($explodedIndexValue) . ", " . implode(" ", $explodedIndexValue)] = true;
         }
       }
 
@@ -443,6 +443,11 @@ final class SearchIndexer {
         foreach ($fields as $fieldConfig) {
           $this->{$analyzer}($definition["body"], $fieldConfig);
         }
+      }
+
+      // Collapse suggestions to the keys, since it was built that way to avoid duplicates.
+      if (!empty($definition["body"]["suggest"]["input"])) {
+        $definition["body"]["suggest"]["input"] = array_keys($definition["body"]["suggest"]["input"]);
       }
 
       // Finally index the document.
