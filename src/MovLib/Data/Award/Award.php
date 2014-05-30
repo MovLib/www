@@ -19,6 +19,8 @@ namespace MovLib\Data\Award;
 
 use \MovLib\Component\Date;
 use \MovLib\Core\Database\Database;
+use \MovLib\Core\Revision\OriginatorTrait;
+use \MovLib\Core\Search\RevisionTrait;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -32,7 +34,15 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Award extends \MovLib\Data\AbstractEntity {
+final class Award extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\OriginatorInterface {
+  use OriginatorTrait, RevisionTrait {
+    RevisionTrait::postCommit insteadof OriginatorTrait;
+    RevisionTrait::postCreate insteadof OriginatorTrait;
+  }
+
+
+  //-------------------------------------------------------------------------------------------------------------------- Constants
+
 
   // @codingStandardsIgnoreStart
   /**
@@ -42,17 +52,6 @@ final class Award extends \MovLib\Data\AbstractEntity {
    */
   const name = "Award";
   // @codingStandardsIgnoreEnd
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
-  /**
-   * The entity type used to store revisions.
-   *
-   * @var int
-   */
-  const REVISION_ENTITY_TYPE = 6;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -94,18 +93,18 @@ final class Award extends \MovLib\Data\AbstractEntity {
   public $eventCount;
 
   /**
-   * The awards events.
-   *
-   * @var \MovLib\Data\Event\EventSet
-   */
-  public $events;
-
-  /**
    * The award's first event year.
    *
    * @var null|\MovLib\Component\Date
    */
   public $firstEventYear;
+
+  /**
+   * The award image's localized description.
+   *
+   * @var string
+   */
+  public $imageDescription;
 
   /**
    * The award's last event year.
@@ -149,16 +148,6 @@ final class Award extends \MovLib\Data\AbstractEntity {
    */
   public $seriesCount;
 
-  /**
-   * {@inheritdoc}
-   */
-  public $pluralKey = "awards";
-
-  /**
-   * {@inheritdoc}
-   */
-  public $singularKey = "award";
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -179,26 +168,26 @@ final class Award extends \MovLib\Data\AbstractEntity {
     if ($id) {
       $stmt = Database::getConnection()->prepare(<<<SQL
 SELECT
-  `awards`.`id` AS `id`,
-  `awards`.`changed` AS `changed`,
-  `awards`.`created` AS `created`,
-  `awards`.`deleted` AS `deleted`,
-  `awards`.`name` AS `name`,
-  `awards`.`first_event_year` AS `firstEventYear`,
-  `awards`.`last_event_year` AS `lastEventYear`,
-  COLUMN_GET(`dyn_descriptions`, '{$container->intl->languageCode}' AS CHAR) AS `description`,
-  `awards`.`links` AS `links`,
-  COLUMN_GET(`dyn_wikipedia`, '{$container->intl->languageCode}' AS CHAR) AS `wikipedia`,
-  `awards`.`aliases` AS `aliases`,
-  `awards`.`count_movies` AS `movieCount`,
-  `awards`.`count_series` AS `seriesCount`,
-  `awards`.`count_persons` AS `personCount`,
-  `awards`.`count_companies` AS `companyCount`,
-  `awards`.`count_categories` AS `categoryCount`,
-  `awards`.`count_events` AS `eventCount`
+  `id` AS `id`,
+  `changed`,
+  `created`,
+  `deleted`,
+  `name`,
+  `first_event_year`,
+  `last_event_year`,
+  COLUMN_GET(`dyn_descriptions`, '{$container->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`dyn_image_descriptions`, '{$container->intl->languageCode}' AS CHAR),
+  `links`,
+  COLUMN_GET(`dyn_wikipedia`, '{$container->intl->languageCode}' AS CHAR),
+  `aliases`,
+  `count_movies`,
+  `count_series`,
+  `count_persons`,
+  `count_companies`,
+  `count_categories`,
+  `count_events`
 FROM `awards`
-  LEFT JOIN `movies_awards` ON `movies_awards`.`award_id` = `awards`.`id`
-WHERE `awards`.`id` = ?
+WHERE `id` = ?
 LIMIT 1
 SQL
       );
@@ -213,6 +202,7 @@ SQL
         $this->firstEventYear,
         $this->lastEventYear,
         $this->description,
+        $this->imageDescription,
         $this->links,
         $this->wikipedia,
         $this->aliases,
@@ -237,80 +227,40 @@ SQL
 
 
   /**
-   * Update the award.
-   *
-   * @return this
-   * @throws \mysqli_sql_exception
+   * {@inheritdoc}
    */
-  public function commit() {
-    $this->aliases = empty($this->aliases)? serialize([]) : serialize(explode("\n", $this->aliases));
-    $this->links   = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
-
-    $stmt = Database::getConnection()->prepare(<<<SQL
-UPDATE `awards` SET
-  `aliases`          = ?,
-  `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, '{$this->intl->languageCode}', ?),
-  `dyn_wikipedia`    = COLUMN_ADD(`dyn_wikipedia`, '{$this->intl->languageCode}', ?),
-  `name`             = ?,
-  `links`            = ?
-WHERE `id` = {$this->id}
-SQL
-    );
-    $stmt->bind_param(
-      "sssss",
-      $this->aliases,
-      $this->description,
-      $this->wikipedia,
-      $this->name,
-      $this->links
-    );
-    $stmt->execute();
-    $stmt->close();
-    return $this;
+  protected function defineSearchIndex(\MovLib\Core\Search\SearchIndexer $search, \MovLib\Core\Revision\RevisionInterface $revision) {
+    return $search->indexSimpleSuggestion($revision->name);
   }
 
   /**
-   * Create new new award.
-   *
-   * @return this
-   * @throws \mysqli_sql_exception
+   * {@inheritdoc}
+   * @param \MovLib\Data\Award\AwardRevision $revision {@inheritdoc}
+   * @return \MovLib\Data\Award\AwardRevision {@inheritdoc}
    */
-  public function create() {
-    $this->aliases = empty($this->aliases)? serialize([]) : serialize(explode("\n", $this->aliases));
-    $this->links   = empty($this->links)? serialize([]) : serialize(explode("\n", $this->links));
+  protected function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
+    $this->setRevisionArrayValue($revision->descriptions, $this->description);
+    $this->setRevisionArrayValue($revision->imageDescriptions, $this->imageDescription);
+    $this->setRevisionArrayValue($revision->wikipediaLinks, $this->wikipedia);
+    $revision->aliases = $this->aliases;
+    $revision->links   = $this->links;
+    $revision->name    = $this->name;
+    return $revision;
+  }
 
-    $stmt = Database::getConnection()->prepare(<<<SQL
-INSERT INTO `awards` (
-  `aliases`,
-  `dyn_descriptions`,
-  `dyn_image_descriptions`,
-  `dyn_wikipedia`,
-  `name`,
-  `links`
-) VALUES (
-  ?,
-  COLUMN_CREATE('{$this->intl->languageCode}', ?),
-  '',
-  COLUMN_CREATE('{$this->intl->languageCode}', ?),
-  ?,
-  ?
-);
-SQL
-    );
-    $stmt->bind_param(
-      "sssss",
-      $this->aliases,
-      $this->description,
-      $this->wikipedia,
-      $this->name,
-      $this->links
-    );
-
-    $stmt->execute();
-    $this->id = $stmt->insert_id;
-    $stmt->close();
-
-    return $this->init();
+  /**
+   * {@inheritdoc}
+   * @param \MovLib\Data\Award\AwardRevision $revision {@inheritdoc}
+   * @return this {@inheritdoc}
+   */
+  protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
+    $this->description      = $this->getRevisionArrayValue($revision->descriptions);
+    $this->imageDescription = $this->getRevisionArrayValue($revision->imageDescriptions);
+    $this->wikipedia        = $this->getRevisionArrayValue($revision->wikipediaLinks);
+    $revision->aliases      && $this->aliases = $revision->aliases;
+    $revision->links        && $this->links   = $revision->links;
+    $revision->name         && $this->name    = $revision->name;
+    return $this;
   }
 
   /**
@@ -318,8 +268,12 @@ SQL
    */
   public function init(array $values = null) {
     parent::init($values);
-    $this->aliases        && ($this->aliases        = unserialize($this->aliases));
-    $this->links          && ($this->links          = unserialize($this->links));
+    if (isset($this->aliases) && !is_array($this->aliases)) {
+      $this->aliases = unserialize($this->aliases);
+    }
+    if (isset($this->links) && !is_array($this->links)) {
+      $this->links = unserialize($this->links);
+    }
     $this->firstEventYear && ($this->firstEventYear = new Date($this->firstEventYear));
     $this->lastEventYear  && ($this->lastEventYear  = new Date($this->lastEventYear));
     return $this;

@@ -17,18 +17,16 @@
  */
 namespace MovLib\Presentation\Award;
 
-use \MovLib\Data\Award\Award;
-
 /**
- * A award's history.
+ * Defines the award history presentation.
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @author Richard Fussenegger <richard@fussenegger.info>
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\AbstractHistoryPresenter {
+final class History extends \MovLib\Core\Presentation\AbstractHistory {
 
   // @codingStandardsIgnoreStart
   /**
@@ -38,23 +36,5 @@ class History extends \MovLib\Presentation\AbstractHistoryPresenter {
    */
   const name = "History";
   // @codingStandardsIgnoreEnd
-  use \MovLib\Presentation\Award\AwardTrait;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-    return $this->initHistory(
-      new Award($this->container, $_SERVER["AWARD_ID"]),
-      $this->intl->t("Awards")
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getContent() {
-    return $this->getIndexContent("Award");
-  }
 
 }

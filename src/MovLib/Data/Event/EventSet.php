@@ -29,6 +29,10 @@ namespace MovLib\Data\Event;
  */
 final class EventSet extends \MovLib\Data\AbstractEntitySet {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
   // @codingStandardsIgnoreStart
   /**
    * Short class name.
@@ -38,10 +42,18 @@ final class EventSet extends \MovLib\Data\AbstractEntitySet {
   const name = "EventSet";
   // @codingStandardsIgnoreEnd
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /**
    * {@inheritdoc}
    */
   public static $tableName = "events";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
    * {@inheritdoc}
@@ -49,6 +61,10 @@ final class EventSet extends \MovLib\Data\AbstractEntitySet {
   public function __construct(\MovLib\Core\Container $container) {
     parent::__construct($container, "Events", "Event", $container->intl->tp(-1, "Events", "Event"));
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * {@inheritdoc}

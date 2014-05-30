@@ -17,18 +17,23 @@
  */
 namespace MovLib\Presentation\Award;
 
+use \MovLib\Data\Award\Award;
+
 /**
- * A award's history diff.
+ * Defines the award history diff presentation.
  *
  * @route /award/{id}/history/{ro}/{rn}
+ * @property \MovLib\Data\Award\Award $entity
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class HistoryDiff extends \MovLib\Presentation\Award\History {
+final class HistoryDiff extends \MovLib\Core\Presentation\AbstractHistoryDiff {
+
 
   // @codingStandardsIgnoreStart
   /**
@@ -42,7 +47,9 @@ class HistoryDiff extends \MovLib\Presentation\Award\History {
   /**
    * {@inheritdoc}
    */
-  public function getContent() {
-    return $this->getDiffContent("Award");
+  public function init() {
+    $this->entity = new Award($this->container, $_SERVER["AWARD_ID"]);
+    return $this->initHistoryDiff();
   }
+
 }

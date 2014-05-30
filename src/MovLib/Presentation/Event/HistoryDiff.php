@@ -17,18 +17,23 @@
  */
 namespace MovLib\Presentation\Event;
 
+use \MovLib\Data\Event\Event;
+
 /**
- * A event's history diff.
+ * Defines the event history diff presentation.
  *
  * @route /event/{id}/history/{ro}/{rn}
+ * @property \MovLib\Data\Event\Event $entity
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013 MovLib
+ * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class HistoryDiff {
+final class HistoryDiff extends \MovLib\Core\Presentation\AbstractHistoryDiff {
+
 
   // @codingStandardsIgnoreStart
   /**
@@ -38,5 +43,13 @@ class HistoryDiff {
    */
   const name = "HistoryDiff";
   // @codingStandardsIgnoreEnd
+
+  /**
+   * {@inheritdoc}
+   */
+  public function init() {
+    $this->entity = new Event($this->container, $_SERVER["EVENT_ID"]);
+    return $this->initHistoryDiff();
+  }
 
 }
