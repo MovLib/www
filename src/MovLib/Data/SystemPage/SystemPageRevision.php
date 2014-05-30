@@ -72,14 +72,14 @@ final class SystemPageRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $titles;
+  public $titles = [];
 
   /**
    * Associative array containing all the system page's localized texts, keyed by ISO 639-1 language code.
    *
    * @var array
    */
-  public $texts;
+  public $texts = [];
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -143,7 +143,7 @@ SQL
   public function __sleep() {
     static $properties = null;
     if (!$properties) {
-      $properties = array_merge(parent::__sleep(), [ "texts", "titles" ]);
+      $properties = array_merge(parent::__sleep(), [ "texts" ]);
     }
     return $properties;
   }
@@ -158,7 +158,6 @@ SQL
   protected function addCommitFields(\MovLib\Core\Database\Query\Update $update, \MovLib\Core\Revision\RevisionInterface $oldRevision, $languageCode) {
     return $update
       ->setDynamicConditional("texts", $languageCode, $this->texts, $oldRevision->texts)
-      ->setDynamicConditional("titles", $languageCode, $this->titles, $oldRevision->titles)
     ;
   }
 
@@ -168,7 +167,6 @@ SQL
   protected function addCreateFields(\MovLib\Core\Database\Query\Insert $insert) {
     return $insert
       ->set("texts", $this->texts)
-      ->set("titles", $this->titles)
     ;
   }
 

@@ -162,7 +162,6 @@ SQL
    */
   protected function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
     $this->setRevisionArrayValue($revision->texts, $this->text);
-    $this->setRevisionArrayValue($revision->titles, $this->title);
 
     return $revision;
   }
@@ -174,7 +173,6 @@ SQL
    */
   protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
     $this->text  = $this->getRevisionArrayValue($revision->texts);
-    $this->title = $this->getRevisionArrayValue($revision->titles, $revision->titles[$this->intl->languageCode]);
     return $this;
   }
 

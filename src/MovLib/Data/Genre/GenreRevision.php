@@ -144,8 +144,8 @@ SQL
       $connection->dynamicDecode($this->descriptions);
       $connection->dynamicDecode($this->names);
       $connection->dynamicDecode($this->wikipediaLinks);
-      parent::__construct();
     }
+    parent::__construct();
   }
 
   /**
@@ -154,7 +154,11 @@ SQL
   public function __sleep() {
     static $properties = null;
     if (!$properties) {
-      $properties = array_merge(parent::__sleep(), [ "descriptions", "names", "wikipediaLinks" ]);
+      $properties = array_merge(parent::__sleep(), [
+        "descriptions",
+        "names",
+        "wikipediaLinks",
+      ]);
     }
     return $properties;
   }

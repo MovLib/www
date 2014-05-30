@@ -308,7 +308,8 @@ SQL
         "imageDescriptions",
         "links",
         "name",
-        "sex"
+        "sex",
+        "wikipediaLinks"
       ]);
     }
     return $properties;

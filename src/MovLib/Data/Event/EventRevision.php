@@ -83,7 +83,7 @@ final class EventRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $descriptions;
+  public $descriptions = [];
 
   /**
    * The event’s end date.
@@ -135,7 +135,7 @@ final class EventRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $wikipediaLinks;
+  public $wikipediaLinks = [];
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods

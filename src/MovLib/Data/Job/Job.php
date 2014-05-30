@@ -111,16 +111,6 @@ class Job extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\O
    */
   public $personCount;
 
-  /**
-   * {@inheritdoc}
-   */
-  public $pluralKey = "jobs";
-
-  /**
-   * {@inheritdoc}
-   */
-  public $singularKey = "job";
-
 
   // ------------------------------------------------------------------------------------------------------------------- Initialize
 
@@ -137,6 +127,7 @@ class Job extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\O
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
   public function __construct(\MovLib\Core\Container $container, $id = null, $values = null) {
+    $this->lemma =& $this->title;
     if ($id) {
       $connection = Database::getConnection();
       $stmt = $connection->prepare(<<<SQL
@@ -198,8 +189,9 @@ SQL
    * {@inheritdoc}
    */
   public function init(array $values = null) {
+    parent::init($values);
     $this->titles[Sex::UNKNOWN] && $this->title = $this->titles[Sex::UNKNOWN];
-    return parent::init($values);
+    return $this;
   }
 
   /**
@@ -339,18 +331,19 @@ SQL
     $this->setRevisionArrayValue($revision->titlesSex0, $this->titles[Sex::UNKNOWN]);
     $this->setRevisionArrayValue($revision->titlesSex1, $this->titles[Sex::MALE]);
     $this->setRevisionArrayValue($revision->titlesSex2, $this->titles[Sex::FEMALE]);
+    $this->setRevisionArrayValue($revision->wikipediaLinks, $this->wikipedia);
 
     // Don't forget that we might be a new job and that we might have been created via a different system locale than
     // the default one, in which case the user was required to enter a default title. Of course we have to export that
     // as well to our revision.
     if (isset($this->defaultTitles[Sex::UNKNOWN])) {
-      $revision->titlesSex0[$this->intl->defaultLanguageCode] = $this->defaultTitles[Sex::UNKNOWN];
+      $this->setRevisionArrayValue($revision->titlesSex0, $this->defaultTitles[Sex::UNKNOWN], $this->intl->defaultLanguageCode);
     }
     if (isset($this->defaultTitles[Sex::MALE])) {
-      $revision->titlesSex1[$this->intl->defaultLanguageCode] = $this->defaultTitles[Sex::MALE];
+      $this->setRevisionArrayValue($revision->titlesSex1, $this->defaultTitles[Sex::MALE], $this->intl->defaultLanguageCode);
     }
     if (isset($this->defaultTitles[Sex::FEMALE])) {
-      $revision->titlesSex2[$this->intl->defaultLanguageCode] = $this->defaultTitles[Sex::FEMALE];
+      $this->setRevisionArrayValue($revision->titlesSex2, $this->defaultTitles[Sex::FEMALE], $this->intl->defaultLanguageCode);
     }
 
     return $revision;
@@ -363,7 +356,8 @@ SQL
    */
   protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
     $this->description = $this->getRevisionArrayValue($revision->descriptions);
-    $this->title       = $this->getRevisionArrayValue($revision->titlesSex0, $revision->titles[$this->intl->languageCode]);
+    $this->wikipedia   = $this->getRevisionArrayValue($revision->wikipediaLinks);
+    $this->title       = $this->getRevisionArrayValue($revision->titlesSex0, $revision->titlesSex0[$this->intl->languageCode]);
     return $this;
   }
 
@@ -372,10 +366,20 @@ SQL
    */
   public function lemma($locale) {
     static $titles = null;
+
+    // No need to ask the database if the requested locale matches the loaded locale.
+    if ($locale == $this->intl->locale) {
+      return $this->title;
+    }
+
+    // Extract the language code from the given locale.
     $languageCode = "{$locale{0}}{$locale{1}}";
+
+    // Load all names for this job if we haven't done so yet.
     if (!$titles) {
       $titles = json_decode(Database::getConnection()->query("SELECT COLUMN_JSON(`dyn_titles_sex0`) FROM `jobs` WHERE `id` = {$this->id} LIMIT 1")->fetch_all()[0][0], true);
     }
+
     return isset($titles[$languageCode]) ? $titles[$languageCode] : $titles[$this->intl->defaultLanguageCode];
   }
 

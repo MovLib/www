@@ -69,14 +69,14 @@ final class ArticleRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $titles;
+  public $titles = [];
 
   /**
    * Associative array containing all the articles's localized texts, keyed by ISO 639-1 language code.
    *
    * @var array
    */
-  public $texts;
+  public $texts = [];
 
   /**
    * The help article sub category.

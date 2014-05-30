@@ -62,7 +62,7 @@ final class JobRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $descriptions;
+  public $descriptions = [];
 
   /**
    * {@inheritdoc}
@@ -74,21 +74,21 @@ final class JobRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $titlesSex0;
+  public $titlesSex0 = [];
 
   /**
    * Associative array containing all the job's localized male titles, keyed by language code.
    *
    * @var array
    */
-  public $titlesSex1;
+  public $titlesSex1 = [];
 
   /**
    * Associative array containing all the job's localized female titles, keyed by language code.
    *
    * @var array
    */
-  public $titlesSex2;
+  public $titlesSex2 = [];
 
   /**
    * {@inheritdoc}
@@ -100,7 +100,7 @@ final class JobRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $wikipediaLinks;
+  public $wikipediaLinks = [];
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -116,8 +116,8 @@ final class JobRevision extends \MovLib\Core\Revision\AbstractRevision {
    *   If no job was found for the given unique identifier.
    */
   public function __construct($id = null) {
+    $connection = Database::getConnection();
     if ($id) {
-      $connection = Database::getConnection();
       $stmt = $connection->prepare(<<<SQL
 SELECT
   `jobs`.`id`,
@@ -153,7 +153,7 @@ SQL
       );
       $found = $stmt->fetch();
       $stmt->close();
-      if (!$found) {
+      if ($found === false) {
         throw new NotFoundException("Couldn't find Job {$id}");
       }
     }
@@ -164,8 +164,8 @@ SQL
       $connection->dynamicDecode($this->titlesSex1);
       $connection->dynamicDecode($this->titlesSex2);
       $connection->dynamicDecode($this->wikipediaLinks);
-      parent::__construct();
     }
+    parent::__construct();
   }
 
   /**

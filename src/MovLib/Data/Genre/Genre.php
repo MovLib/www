@@ -168,8 +168,7 @@ SQL
   protected function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
     $this->setRevisionArrayValue($revision->descriptions, $this->description);
     $this->setRevisionArrayValue($revision->names, $this->name);
-    $this->setRevisionArrayValue($revision->wkipediaLinks, $this->wikipedia);
-
+    $this->setRevisionArrayValue($revision->wikipediaLinks, $this->wikipedia);
     // Don't forget that we might be a new genre and that we might have been created via a different system locale than
     // the default one, in which case the user was required to enter a default name. Of course we have to export that
     // as well to our revision.

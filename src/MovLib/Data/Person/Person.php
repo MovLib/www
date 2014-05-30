@@ -60,13 +60,6 @@ final class Person extends \MovLib\Data\Image\AbstractImageEntity implements \Mo
   const name = "Person";
   // @codingStandardsIgnoreEnd
 
-  /**
-   * The entity type used to store revisions.
-   *
-   * @var int
-   */
-  const REVISION_ENTITY_TYPE = 4;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
