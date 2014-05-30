@@ -15,25 +15,23 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Genre;
+namespace MovLib\Presentation\Person;
 
-use \MovLib\Data\Genre\Genre;
+use \MovLib\Data\Person\Person;
 
 /**
- * Defines the genre history diff presentation.
+ * Defines the person history diff presentation.
  *
- * @route /genre/{id}/history/{ro}/{rn}
- * @property \MovLib\Data\Genre\Genre $entity
+ * @route /person/{id}/history/{ro}/{rn}
+ * @property \MovLib\Data\Person\Person $entity
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class HistoryDiff extends \MovLib\Core\Presentation\AbstractHistoryDiff {
-
+final class HistoryDiff extends \MovLib\Presentation\HistoryDiff {
 
   // @codingStandardsIgnoreStart
   /**
@@ -42,13 +40,14 @@ final class HistoryDiff extends \MovLib\Core\Presentation\AbstractHistoryDiff {
    * @var string
    */
   const name = "HistoryDiff";
+
   // @codingStandardsIgnoreEnd
 
   /**
    * {@inheritdoc}
    */
   public function init() {
-    $this->entity = new Genre($this->container, $_SERVER["GENRE_ID"]);
+    $this->entity = new Person($this->container, $_SERVER["PERSON_ID"]);
     return $this->initHistoryDiff();
   }
 

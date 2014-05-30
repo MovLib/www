@@ -180,8 +180,8 @@ final class PersonRevision extends \MovLib\Core\Revision\AbstractRevision {
    *   If no person was found for the given unique identifier.
    */
   public function __construct($id = null) {
+    $connection = Database::getConnection();
     if ($id) {
-      $connection = Database::getConnection();
       // Fetch basic person data.
       $stmt = $connection->prepare(<<<SQL
 SELECT

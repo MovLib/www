@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Person;
 
 /**
- * A person's history.
+ * Defines the person history presentation.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -26,7 +26,7 @@ namespace MovLib\Presentation\Person;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\Person\AbstractPersonPresenter {
+final class History extends \MovLib\Core\Presentation\AbstractHistory {
 
   // @codingStandardsIgnoreStart
   /**
@@ -36,23 +36,5 @@ class History extends \MovLib\Presentation\Person\AbstractPersonPresenter {
    */
   const name = "History";
   // @codingStandardsIgnoreEnd
-
-  /**
-   * Initialize person history presentation.
-   */
-  public function init() {
-    $this->initPersonPresentation(
-      $this->intl->t("History of {name}"),
-      $this->intl->t("History of {name}"),
-      $this->intl->t("History")
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getContent() {
-    return $this->checkBackLater("history");
-  }
 
 }

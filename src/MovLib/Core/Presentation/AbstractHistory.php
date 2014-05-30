@@ -90,7 +90,7 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractPresenter {
     );
     $this->sidebarInitToolbox($this->entity);
     $this->breadcrumb->addCrumbs([
-      [ $this->entity->route, $this->entity->bundleTitle ],
+      [ $this->entity->set->route, $this->entity->set->bundleTitle ],
       [ $this->entity->route, $this->entity->lemma ],
     ]);
     $this->paginationInit($this->historySet->getTotalCount());
