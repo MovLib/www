@@ -109,8 +109,8 @@ final class ArticleRevision extends \MovLib\Core\Revision\AbstractRevision {
    *   If no help article was found for the given unique identifier.
    */
   public function __construct($id = null) {
+    $connection = Database::getConnection();
     if ($id) {
-      $connection = Database::getConnection();
       $stmt = $connection->prepare(<<<SQL
 SELECT
   `help_articles`.`id`,
@@ -151,8 +151,8 @@ SQL
     if ($this->id) {
       $connection->dynamicDecode($this->texts);
       $connection->dynamicDecode($this->titles);
-      parent::__construct();
     }
+    parent::__construct();
   }
 
   /**
@@ -161,7 +161,12 @@ SQL
   public function __sleep() {
     static $properties = null;
     if (!$properties) {
-      $properties = array_merge(parent::__sleep(), [ "texts", "titles", "category", "subCategory" ]);
+      $properties = array_merge(parent::__sleep(), [
+        "texts",
+        "titles",
+        "category",
+        "subCategory",
+      ]);
     }
     return $properties;
   }

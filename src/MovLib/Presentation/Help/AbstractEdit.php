@@ -60,7 +60,7 @@ abstract class AbstractEdit extends \MovLib\Presentation\AbstractEditPresenter {
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Edit"))
       ->sidebarInitToolbox($this->entity, $additionalSidebarItems)
-      ->initLanguageLinks("{$this->entity->routeKey}/edit", $this->entity->id)
+      ->initLanguageLinks("{$this->entity->route->route}/edit", $this->entity->id)
       ->breadcrumb->addCrumbs($this->getArticleBreadCrumbs());
     ;
   }

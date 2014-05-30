@@ -65,7 +65,7 @@ abstract class AbstractDiscussion extends \MovLib\Presentation\AbstractPresenter
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Discussion"))
       ->sidebarInitToolbox($this->entity)
-      ->initLanguageLinks("{$this->entity->routeKey}/discuss", $this->entity->id)
+      ->initLanguageLinks("{$this->entity->route->route}/discuss", $this->entity->id)
       ->breadcrumb->addCrumbs($this->getArticleBreadCrumbs());
     ;
   }

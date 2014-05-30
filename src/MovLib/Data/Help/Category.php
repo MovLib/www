@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\Help;
 
+use \MovLib\Core\Database\Database;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -65,13 +66,6 @@ final class Category extends \MovLib\Data\AbstractEntity {
   public $icon;
 
   /**
-   * The help category's unique identifier.
-   *
-   * @var integer
-   */
-  public $id;
-
-  /**
    * The help category's title in the current display language.
    *
    * @var string
@@ -88,21 +82,24 @@ final class Category extends \MovLib\Data\AbstractEntity {
    * @param \MovLib\Core\Container $container
    *   {@inheritdoc}
    * @param integer $id [optional]
-   *   The helb category's unique identifier to instantiate, defaults to <code>NULL</code> (no helb category will be loaded).
+   *   The help category's unique identifier to instantiate, defaults to <code>NULL</code> (no help category will be loaded).
+   * @param array $values [optional]
+   *   An array of values to set, keyed by property name, defaults to <code>NULL</code>.
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\Container $container, $id = null) {
-    parent::__construct($container);
+  public function __construct(\MovLib\Core\Container $container, $id = null, array $values = null) {
+    $this->lemma =& $this->name;
     if ($id) {
-      $stmt = Database::getConnection()->prepare(<<<SQL
+      $connection = Database::getConnection();
+      $stmt = $connection->prepare(<<<SQL
 SELECT
-  `help_categories`.`id` AS `id`,
-  `help_categories`.`changed` AS `changed`,
-  `help_categories`.`created` AS `created`,
-  `help_categories`.`deleted` AS `deleted`,
-  `help_categories`.`icon` AS `icon`,
-  `help_categories`.`description` AS `description`,
-  `help_categories`.`title` AS `title`
+  `id`,
+  `changed`,
+  `created`,
+  `deleted`,
+  `icon`,
+  `description`,
+  `title`
 FROM `help_categories`
 WHERE `id` = ?
 LIMIT 1
@@ -125,9 +122,7 @@ SQL
         throw new NotFoundException("Couldn't find help category {$id}");
       }
     }
-    if ($this->id) {
-      $this->init();
-    }
+    parent::__construct($container, $values);
   }
 
 
@@ -137,14 +132,19 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function init() {
+  public function init(array $values = null) {
+    parent::init($values);
     $this->articleCount = $this->getCount("help_articles", "`deleted` = false AND `help_category_id` = {$this->id} AND `help_subcategory_id` IS NULL");
-    $this->tableName    = "help_categories";
-    $this->pluralKey    = "categories";
-    $this->routeKey     = "/help/" . sanitize_filename($this->title);
-    $this->route        = $this->intl->r($this->routeKey);
-    $this->singularKey  = "category";
-    return parent::init();
+    $this->route->route = "/help/" . sanitize_filename($this->title);
+    $this->route->reset();
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function lemma($locale) {
+    return $this->title;
   }
 
 }

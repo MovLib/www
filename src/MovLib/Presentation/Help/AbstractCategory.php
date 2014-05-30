@@ -76,7 +76,7 @@ abstract class AbstractCategory extends \MovLib\Presentation\AbstractIndexPresen
     $this->initBreadcrumb([
       [ $this->intl->r("/help"), $this->intl->t("Help") ]
     ]);
-    $this->initLanguageLinks($this->category->routeKey);
+    $this->initLanguageLinks($this->category->route->route);
 
     $sidebarItems = [ [ $this->category->route, "{$this->category->title} <span class='fr'>{$this->intl->format("{0,number}", [ $this->category->articleCount ])}</span>", [ "class" => "ico {$this->category->icon} separator" ] ] ];
     foreach ($this->set->getAllBelongingToCategory($this->category->id) as $id => $entity) {
@@ -84,7 +84,7 @@ abstract class AbstractCategory extends \MovLib\Presentation\AbstractIndexPresen
     }
     $this->sidebarInit($sidebarItems);
 
-    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$this->intl->r("{$this->category->routeKey}/create")}'>{$this->intl->t("Create Help Article")}</a>";
+    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$this->category->r("/create")}'>{$this->intl->t("Create Help Article")}</a>";
 
     return $this;
   }
@@ -103,7 +103,7 @@ abstract class AbstractCategory extends \MovLib\Presentation\AbstractIndexPresen
   /**
    * {@inheritdoc}
    */
-  protected function formatListingItem(\MovLib\Data\AbstractEntity $entity, $delta) {
+  protected function formatListingItem(\MovLib\Core\Entity\EntityInterface $entity, $delta) {
     return
       "<li class='hover-item r'>" .
         "<article>" .

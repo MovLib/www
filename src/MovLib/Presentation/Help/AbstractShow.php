@@ -53,7 +53,7 @@ abstract class AbstractShow extends \MovLib\Presentation\AbstractPresenter {
     $this->initBreadcrumb($breadcrumbItems);
 
     $this->sidebarInitToolbox($this->entity);
-    $this->initLanguageLinks($this->entity->routeKey, [ $this->entity->id ]);
+    $this->initLanguageLinks($this->entity->route->route, [ $this->entity->id ]);
     return $this;
   }
 

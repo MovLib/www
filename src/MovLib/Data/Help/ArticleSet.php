@@ -28,6 +28,10 @@ namespace MovLib\Data\Help;
  */
 final class ArticleSet extends \MovLib\Data\AbstractEntitySet {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
   // @codingStandardsIgnoreStart
   /**
    * Short class name.
@@ -37,6 +41,30 @@ final class ArticleSet extends \MovLib\Data\AbstractEntitySet {
   const name = "ArticleSet";
   // @codingStandardsIgnoreEnd
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public static $tableName = "help_articles";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(\MovLib\Core\Container $container) {
+    parent::__construct($container, "Articles", "Article", $container->intl->tp(-1, "Articles", "Article"));
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
    * {@inheritdoc}
    */
@@ -44,11 +72,11 @@ final class ArticleSet extends \MovLib\Data\AbstractEntitySet {
     return <<<SQL
 SELECT
   `help_articles`.`id` AS `id`,
-  `help_articles`.`help_category_id` AS `category`,
-  `help_articles`.`help_subcategory_id` AS `subCategory`,
   `help_articles`.`changed` AS `changed`,
   `help_articles`.`created` AS `created`,
   `help_articles`.`deleted` AS `deleted`,
+  `help_articles`.`help_category_id` AS `category`,
+  `help_articles`.`help_subcategory_id` AS `subCategory`,
   IFNULL(
     COLUMN_GET(`help_articles`.`dyn_titles`, '{$this->intl->languageCode}' AS CHAR),
     COLUMN_GET(`help_articles`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)
@@ -69,7 +97,7 @@ SQL;
    *   All sub categories, <code>NULL</code> if no entities were found.
    */
   public function getAllBelongingToCategory($id) {
-    return $this->loadEntities("WHERE `{$this->tableName}`.`deleted` = false AND `help_category_id` = {$id} AND `help_subcategory_id` IS NULL");
+    return $this->loadEntities("WHERE `help_articles`.`deleted` = false AND `help_category_id` = {$id} AND `help_subcategory_id` IS NULL");
   }
 
   /**
@@ -81,7 +109,7 @@ SQL;
    *   All sub categories, <code>NULL</code> if no entities were found.
    */
   public function getAllBelongingToSubCategory($id) {
-    return $this->loadEntities("WHERE `{$this->tableName}`.`deleted` = false AND `help_subcategory_id` = {$id}");
+    return $this->loadEntities("WHERE `help_articles`.`deleted` = false AND `help_subcategory_id` = {$id}");
   }
 
   /**
@@ -89,16 +117,6 @@ SQL;
    */
   protected function getEntitySetsQuery(\MovLib\Data\AbstractEntitySet $set, $in) {
     return "";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-    $this->pluralKey   = $this->tableName = "help_articles";
-    $this->route       = $this->intl->r("/help");
-    $this->singularKey = "help_article";
-    return parent::init();
   }
 
 }

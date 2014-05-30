@@ -65,7 +65,7 @@ abstract class AbstractDelete extends \MovLib\Presentation\AbstractPresenter {
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Delete"))
       ->sidebarInitToolbox($this->entity)
-      ->initLanguageLinks("{$this->entity->routeKey}/delete", $this->entity->id)
+      ->initLanguageLinks("{$this->entity->route->route}/delete", $this->entity->id)
       ->breadcrumb->addCrumbs($this->getArticleBreadCrumbs());
     ;
   }

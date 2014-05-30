@@ -32,6 +32,7 @@ use \MovLib\Partial\FormElement\TextareaHTMLExtended;
  * @since 0.0.1-dev
  */
 abstract class AbstractCreate extends \MovLib\Presentation\AbstractCreatePresenter {
+  use \MovLib\Presentation\Help\HelpTrait;
 
   // @codingStandardsIgnoreStart
   /**
@@ -41,7 +42,6 @@ abstract class AbstractCreate extends \MovLib\Presentation\AbstractCreatePresent
    */
   const name = "AbstractCreate";
   // @codingStandardsIgnoreEnd
-  use \MovLib\Presentation\Help\HelpTrait;
 
   /**
    * @param \MovLib\Data\Help\Article $article
@@ -67,21 +67,21 @@ abstract class AbstractCreate extends \MovLib\Presentation\AbstractCreatePresent
       $this->sidebarInit([
         [ $this->entity->subCategory->route, $this->entity->subCategory->title, [ "class" => "ico {$this->entity->subCategory->icon}"] ],
       ]);
-      $this->initLanguageLinks("{$this->entity->subCategory->routeKey}/create", $this->entity->subCategory->routeArgs);
+      $this->initLanguageLinks("{$this->entity->subCategory->route->route}/create", $this->entity->subCategory->route->args);
       $this->breadcrumb->addCrumbs([
         [ $this->intl->r("/help"), $this->intl->t("Help") ],
-        [ $this->intl->r($this->entity->category->routeKey), $this->entity->category->title ],
-        [ $this->intl->r($this->entity->subCategory->routeKey), $this->entity->subCategory->title ],
+        [ $this->intl->r($this->entity->category->route->route), $this->entity->category->title ],
+        [ $this->intl->r($this->entity->subCategory->route->route), $this->entity->subCategory->title ],
       ]);
     }
     else {
       $this->sidebarInit([
         [ $this->entity->category->route, $this->entity->category->title, [ "class" => "ico {$this->entity->category->icon}"] ],
       ]);
-      $this->initLanguageLinks("{$this->entity->category->routeKey}/create", $this->entity->category->routeArgs);
+      $this->initLanguageLinks("{$this->entity->category->route->route}/create", $this->entity->category->route->args);
       $this->breadcrumb->addCrumbs([
         [ $this->intl->r("/help"), $this->intl->t("Help") ],
-        [ $this->intl->r($this->entity->category->routeKey), $this->entity->category->title ],
+        [ $this->intl->r($this->entity->category->route->route), $this->entity->category->title ],
       ]);
     }
     return $this;

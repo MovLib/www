@@ -28,6 +28,10 @@ namespace MovLib\Data\Help;
  */
 final class CategorySet extends \MovLib\Data\AbstractEntitySet {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
   // @codingStandardsIgnoreStart
   /**
    * Short class name.
@@ -36,6 +40,30 @@ final class CategorySet extends \MovLib\Data\AbstractEntitySet {
    */
   const name = "CategorySet";
   // @codingStandardsIgnoreEnd
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public static $tableName = "help_categories";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(\MovLib\Core\Container $container) {
+    parent::__construct($container, "Categories", "Category", $container->intl->tp(-1, "Categories", "Category"));
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * {@inheritdoc}
@@ -61,17 +89,6 @@ SQL;
    */
   protected function getEntitySetsQuery(\MovLib\Data\AbstractEntitySet $set, $in) {
     return "";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-    $this->tableName   = "help_categories";
-    $this->pluralKey   = "categories";
-    $this->route       = $this->intl->r("/help");
-    $this->singularKey = "category";
-    return parent::init();
   }
 
 }

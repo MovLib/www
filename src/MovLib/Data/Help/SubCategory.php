@@ -18,6 +18,7 @@
 namespace MovLib\Data\Help;
 
 use \MovLib\Data\Help\Category;
+use \MovLib\Core\Database\Database;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -66,13 +67,6 @@ final class SubCategory extends \MovLib\Data\AbstractEntity {
   public $icon;
 
   /**
-   * The help subcategory's unique identifier.
-   *
-   * @var integer
-   */
-  public $id;
-
-  /**
    * The help subcategory's title in the current display language.
    *
    * @var string
@@ -90,20 +84,23 @@ final class SubCategory extends \MovLib\Data\AbstractEntity {
    *   {@inheritdoc}
    * @param integer $id [optional]
    *   The help subcategory's unique identifier to instantiate, defaults to <code>NULL</code> (no help subcategory will be loaded).
+   * @param array $values [optional]
+   *   An array of values to set, keyed by property name, defaults to <code>NULL</code>.
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\Container $container, $id = null) {
-    parent::__construct($container);
+  public function __construct(\MovLib\Core\Container $container, $id = null, array $values = null) {
+    $this->lemma =& $this->title;
     if ($id) {
-      $stmt = Database::getConnection()->prepare(<<<SQL
+      $connection = Database::getConnection();
+      $stmt = $connection->prepare(<<<SQL
 SELECT
-  `help_subcategories`.`help_category_id` AS `category`,
-  `help_subcategories`.`id` AS `id`,
-  `help_subcategories`.`changed` AS `changed`,
-  `help_subcategories`.`created` AS `created`,
-  `help_subcategories`.`deleted` AS `deleted`,
-  `help_subcategories`.`icon` AS `icon`,
-  `help_subcategories`.`title` AS `title`
+  `id`,
+  `help_category_id`,
+  `changed`,
+  `created`,
+  `deleted`,
+  `icon`,
+  `title`
 FROM `help_subcategories`
 WHERE `id` = ?
 LIMIT 1
@@ -112,8 +109,8 @@ SQL
       $stmt->bind_param("d", $id);
       $stmt->execute();
       $stmt->bind_result(
-        $this->category,
         $this->id,
+        $this->category,
         $this->changed,
         $this->created,
         $this->deleted,
@@ -126,9 +123,7 @@ SQL
         throw new NotFoundException("Couldn't find help subcategory {$id}");
       }
     }
-    if ($this->id) {
-      $this->init();
-    }
+    parent::__construct($container, $values);
   }
 
 
@@ -138,17 +133,22 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function init() {
+  public function init(array $values = null) {
+    parent::init($values);
     $this->articleCount = $this->getCount("help_articles", "`deleted` = false AND `help_subcategory_id` = {$this->id}");
     if (isset($this->category) && !$this->category instanceof \stdClass) {
       $this->category = new Category($this->container, $this->category);
     }
-    $this->tableName    = "help_subcategories";
-    $this->pluralKey    = "categories";
-    $this->routeKey     = "{$this->category->routeKey}/" . sanitize_filename($this->title);
-    $this->route        = $this->intl->r($this->routeKey);
-    $this->singularKey  = "category";
-    return parent::init();
+    $this->route->route = "{$this->category->route->route}/" . sanitize_filename($this->title);
+    $this->route->reset();
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function lemma($locale) {
+    return $this->title;
   }
 
 }

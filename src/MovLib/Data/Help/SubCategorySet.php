@@ -28,6 +28,10 @@ namespace MovLib\Data\Help;
  */
 final class SubCategorySet extends \MovLib\Data\AbstractEntitySet {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
   // @codingStandardsIgnoreStart
   /**
    * Short class name.
@@ -36,6 +40,30 @@ final class SubCategorySet extends \MovLib\Data\AbstractEntitySet {
    */
   const name = "SubCategorySet";
   // @codingStandardsIgnoreEnd
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public static $tableName = "help_subcategories";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(\MovLib\Core\Container $container) {
+    parent::__construct($container, "Subcategories", "Subcategory", $container->intl->tp(-1, "Subcategories", "Subcategory"));
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * {@inheritdoc}
@@ -65,7 +93,7 @@ SQL;
    *   All sub categories, <code>NULL</code> if no entities were found.
    */
   public function getAllBelongingToCategory($id) {
-    return $this->loadEntities("WHERE `{$this->tableName}`.`deleted` = false AND `help_category_id` = {$id}");
+    return $this->loadEntities("WHERE `help_subcategories`.`deleted` = false AND `help_category_id` = {$id}");
   }
 
   /**
@@ -73,17 +101,6 @@ SQL;
    */
   protected function getEntitySetsQuery(\MovLib\Data\AbstractEntitySet $set, $in) {
     return "";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-    $this->tableName   = "help_subcategories";
-    $this->pluralKey   = "categories";
-    $this->route       = $this->intl->r("/help");
-    $this->singularKey = "category";
-    return parent::init();
   }
 
 }

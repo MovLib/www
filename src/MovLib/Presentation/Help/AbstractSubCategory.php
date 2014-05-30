@@ -73,9 +73,9 @@ abstract class AbstractSubCategory extends \MovLib\Presentation\AbstractIndexPre
     $this->initPage($this->subCategory->title);
     $this->initBreadcrumb([
       [ $this->intl->r("/help"), $this->intl->t("Help") ],
-      [ $this->intl->r($this->subCategory->category->routeKey), $this->subCategory->category->title ]
+      [ $this->intl->r($this->subCategory->category->route->route), $this->subCategory->category->title ]
     ]);
-    $this->initLanguageLinks($this->subCategory->routeKey);
+    $this->initLanguageLinks($this->subCategory->route->route);
 
     $sidebarItems = [ [ $this->subCategory->category->route, "{$this->subCategory->category->title} <span class='fr'>{$this->intl->format("{0,number}", [ $this->subCategory->category->articleCount ])}</span>", [ "class" => "ico {$this->subCategory->category->icon} separator" ] ] ];
     foreach ((new SubCategorySet($this->container))->getAllBelongingToCategory($this->subCategory->category->id) as $id => $entity) {
@@ -83,7 +83,7 @@ abstract class AbstractSubCategory extends \MovLib\Presentation\AbstractIndexPre
     }
     $this->sidebarInit($sidebarItems);
 
-    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$this->intl->r("{$this->subCategory->routeKey}/create")}'>{$this->intl->t("Create Help Article")}</a>";
+    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$this->subCategory->r("/create")}'>{$this->intl->t("Create Help Article")}</a>";
 
     return $this;
   }
@@ -102,7 +102,7 @@ abstract class AbstractSubCategory extends \MovLib\Presentation\AbstractIndexPre
   /**
    * {@inheritdoc}
    */
-  protected function formatListingItem(\MovLib\Data\AbstractEntity $entity, $delta) {
+  protected function formatListingItem(\MovLib\Core\Entity\EntityInterface $entity, $delta) {
     return
       "<li class='hover-item r'>" .
         "<article>" .

@@ -171,7 +171,8 @@ trait OriginatorTrait {
     try {
       $connection->autocommit(true);
       $connection->real_query("SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE");
-      $connection->real_query("START TRANSACTION WITH CONSISTENT SNAPSHOT, READ WRITE");
+      // @todo: to slow!
+      //$connection->real_query("START TRANSACTION WITH CONSISTENT SNAPSHOT, READ WRITE");
       $revision = $this->createRevision($userId, $created);
       $this->preCreate($connection, $revision);
       $this->id      = $revision->create($connection, $created);

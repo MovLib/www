@@ -98,16 +98,6 @@ use \MovLib\Exception\ClientException\NotFoundException;
    */
   public $viewCount;
 
-  /**
-   * {@inheritdoc}
-   */
-  public $pluralKey = "help_articles";
-
-  /**
-   * {@inheritdoc}
-   */
-  public $singularKey = "help_article";
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -118,11 +108,13 @@ use \MovLib\Exception\ClientException\NotFoundException;
    * @param \MovLib\Core\Container $container
    *   {@inheritdoc}
    * @param integer $id [optional]
-   *   The helb article's unique identifier to instantiate, defaults to <code>NULL</code> (no helb article will be loaded).
+   *   The help article's unique identifier to instantiate, defaults to <code>NULL</code> (no help article will be loaded).
+   * @param array $values [optional]
+   *   An array of values to set, keyed by property name, defaults to <code>NULL</code>.
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\Container $container, $id = null) {
-    parent::__construct($container);
+  public function __construct(\MovLib\Core\Container $container, $id = null, array $values = null) {
+    $this->lemma =& $this->title;
     if ($id) {
       $connection = Database::getConnection();
       $stmt = $connection->prepare(<<<SQL
@@ -134,13 +126,13 @@ SELECT
   `created`,
   `deleted`,
   IFNULL(
-    COLUMN_GET(`dyn_texts`, '{$this->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`dyn_texts`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+    COLUMN_GET(`dyn_texts`, '{$container->intl->languageCode}' AS CHAR),
+    COLUMN_GET(`dyn_texts`, '{$container->intl->defaultLanguageCode}' AS CHAR)
   ),
-  COLUMN_GET(`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR),
+  COLUMN_GET(`dyn_titles`, '{$container->intl->defaultLanguageCode}' AS CHAR),
   IFNULL(
-    COLUMN_GET(`dyn_titles`, '{$this->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+    COLUMN_GET(`dyn_titles`, '{$container->intl->languageCode}' AS CHAR),
+    COLUMN_GET(`dyn_titles`, '{$container->intl->defaultLanguageCode}' AS CHAR)
   ),
   `view_count` as `viewCount`
 FROM `help_articles`
@@ -168,9 +160,7 @@ SQL
         throw new NotFoundException("Couldn't find help article {$id}");
       }
     }
-    if ($this->id) {
-      $this->init();
-    }
+    parent::__construct($container, $values);
   }
 
 
@@ -194,7 +184,6 @@ SQL
     $this->setRevisionArrayValue($revision->titles, $this->title);
     $revision->category    = $this->category;
     $revision->subCategory = $this->subCategory;
-
     // Don't forget that we might be a new help article and that we might have been created via a different system locale
     // than the default one, in which case the user was required to enter a default name. Of course we have to export that
     // as well to our revision.
@@ -222,23 +211,46 @@ SQL
   /**
    * {@inheritdoc}
    */
-  public function init() {
+  public function init(array $values = null) {
+    parent::init($values);
     if (isset($this->category) && !$this->category instanceof \MovLib\Data\Help\Category) {
       $this->category = new Category($this->container, $this->category);
     }
-    $this->routeArgs     = [ $this->id ];
+    $this->route->args     = [ $this->id ];
 
     if (isset($this->subCategory)) {
       if (isset($this->subCategory) && !$this->subCategory instanceof \MovLib\Data\Help\SubCategory) {
         $this->subCategory = new SubCategory($this->container, $this->subCategory);
       }
-      $this->routeKey = "{$this->subCategory->routeKey}/{0}";
+      $this->route->route = "{$this->subCategory->route->route}/{0}";
+      $this->route->reset();
     }
     else {
-      $this->routeKey = "{$this->category->routeKey}/{0}";
+      $this->route->route = "{$this->category->route->route}/{0}";
     }
-    $this->route    = $this->intl->r($this->routeKey, $this->routeArgs);
-    return parent::init();
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function lemma($locale) {
+    static $titles = null;
+
+    // No need to ask the database if the requested locale matches the loaded locale.
+    if ($locale == $this->intl->locale) {
+      return $this->title;
+    }
+
+    // Extract the language code from the given locale.
+    $languageCode = "{$locale{0}}{$locale{1}}";
+
+    // Load all names for this genre if we haven't done so yet.
+    if (!$titles) {
+      $titles = json_decode(Database::getConnection()->query("SELECT COLUMN_JSON(`dyn_titles`) FROM `help_articles` WHERE `id` = {$this->id} LIMIT 1")->fetch_all()[0][0], true);
+    }
+
+    return isset($titles[$languageCode]) ? $titles[$languageCode] : $titles[$this->intl->defaultLanguageCode];
   }
 
 }
