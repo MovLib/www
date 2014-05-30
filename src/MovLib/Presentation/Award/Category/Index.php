@@ -67,7 +67,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    * @param \MovLib\Data\Award\Category $category {@inheritdoc}
    */
-  public function formatListingItem(\MovLib\Data\AbstractEntity $category, $delta) {
+  public function formatListingItem(\MovLib\Core\Entity\EntityInterface $category, $delta) {
     $categoryDates = (new Date($this->intl, $this))->formatFromTo(
       $category->firstYear,
       $category->lastYear,

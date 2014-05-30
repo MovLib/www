@@ -41,7 +41,7 @@ trait SeriesTrait {
    * @return string
    *   A formated list item.
    */
-  public function formatListingItem(\MovLib\Data\AbstractEntity $series, $delta) {
+  public function formatListingItem(\MovLib\Core\Entity\EntityInterface $series, $delta) {
     return
       "<li class='hover-item r'>" .
         "<article>" .

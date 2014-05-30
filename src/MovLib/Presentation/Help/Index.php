@@ -97,7 +97,7 @@ final class Index extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    * @param \MovLib\Data\Help\Category\Category $category {@inheritdoc}
    */
-  protected function formatListingItem(\MovLib\Data\AbstractEntity $category, $delta) {
+  protected function formatListingItem(\MovLib\Core\Entity\EntityInterface $category, $delta) {
     return
       "<div class='s s4'>" .
         "<h2 class='ico {$category->icon} tac'> {$this->intl->t($category->title)}</h2>" .

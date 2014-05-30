@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Release;
 
 use \MovLib\Data\Release\ReleaseSet;
-use \MovLib\Partial\Alert;
 
 /**
  * Defines the release index presentation.
@@ -63,7 +62,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    * @param \MovLib\Data\Release\Release $release {@inheritdoc}
    */
-  public function formatListingItem(\MovLib\Data\AbstractEntity $release, $delta) {
+  public function formatListingItem(\MovLib\Core\Entity\EntityInterface $release, $delta) {
     return
       "<li class='hover-item r'>" .
         "<article>" .

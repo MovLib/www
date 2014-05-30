@@ -40,7 +40,7 @@ class Index extends \MovLib\Presentation\AbstractIndexPresenter {
   /**
    * {@inheritdoc}
    */
-  protected function formatListingItem(\MovLib\Data\AbstractEntity $item, $delta) {
+  protected function formatListingItem(\MovLib\Core\Entity\EntityInterface $item, $delta) {
 
   }
 

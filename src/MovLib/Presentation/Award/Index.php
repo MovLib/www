@@ -64,7 +64,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    * @param \MovLib\Data\Award\Award $award {@inheritdoc}
    */
-  public function formatListingItem(\MovLib\Data\AbstractEntity $award, $delta) {
+  public function formatListingItem(\MovLib\Core\Entity\EntityInterface $award, $delta) {
     $awardDates = (new Date($this->intl, $this))->formatFromTo(
       $award->firstEventYear,
       $award->lastEventYear,

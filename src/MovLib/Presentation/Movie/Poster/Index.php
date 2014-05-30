@@ -56,7 +56,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
   /**
    * {@inheritdoc}
    */
-  protected function formatListingItem(\MovLib\Data\AbstractEntity $poster, $delta) {
+  protected function formatListingItem(\MovLib\Core\Entity\EntityInterface $poster, $delta) {
     /* @var $poster \MovLib\Data\Movie\Poster */
     $return =
       "<li class='mb20 s s2 tac'>" .
