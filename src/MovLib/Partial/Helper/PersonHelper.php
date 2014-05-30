@@ -27,6 +27,7 @@ namespace MovLib\Partial\Helper;
  * @since 0.0.1-dev
  */
 final class PersonHelper extends \MovLib\Core\Presentation\DependencyInjectionBase {
+  use \MovLib\Partial\PersonTrait;
 
   // @codingStandardsIgnoreStart
   /**
@@ -36,7 +37,6 @@ final class PersonHelper extends \MovLib\Core\Presentation\DependencyInjectionBa
    */
   const name = "PersonHelper";
   // @codingStandardsIgnoreEnd
-  use \MovLib\Partial\PersonTrait;
 
   /**
    * Get a person listing.

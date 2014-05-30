@@ -27,6 +27,7 @@ namespace MovLib\Partial\Helper;
  * @since 0.0.1-dev
  */
 final class SeriesHelper extends \MovLib\Core\Presentation\DependencyInjectionBase {
+  use \MovLib\Presentation\Series\SeriesTrait;
 
   // @codingStandardsIgnoreStart
   /**
@@ -36,7 +37,6 @@ final class SeriesHelper extends \MovLib\Core\Presentation\DependencyInjectionBa
    */
   const name = "SeriesHelper";
   // @codingStandardsIgnoreEnd
-  use \MovLib\Presentation\Series\SeriesTrait;
 
   /**
    * Get a series listing.

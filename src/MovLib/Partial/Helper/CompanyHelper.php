@@ -17,8 +17,6 @@
  */
 namespace MovLib\Partial\Helper;
 
-use \MovLib\Partial\Date;
-
 /**
  * Company Helper Methodes.
  *
@@ -29,6 +27,7 @@ use \MovLib\Partial\Date;
  * @since 0.0.1-dev
  */
 final class CompanyHelper extends \MovLib\Core\Presentation\DependencyInjectionBase {
+  use \MovLib\Presentation\Company\CompanyTrait;
 
   // @codingStandardsIgnoreStart
   /**
@@ -38,7 +37,6 @@ final class CompanyHelper extends \MovLib\Core\Presentation\DependencyInjectionB
    */
   const name = "CompanyHelper";
   // @codingStandardsIgnoreEnd
-  use \MovLib\Presentation\Company\CompanyTrait;
 
   /**
    * Get a company listing.
