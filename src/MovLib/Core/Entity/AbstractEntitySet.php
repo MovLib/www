@@ -142,9 +142,14 @@ abstract class AbstractEntitySet extends \ArrayObject implements \MovLib\Core\En
    * {@inheritdoc}
    */
   public function getRandom() {
-    // We stick with the direct query at this point because the whole thing is to trivial. A concrete set which has to
-    // return a different value (user) can simply overwrite it.
-    return (integer) Database::getConnection()->query("SELECT `id` FROM `{$this::$tableName}` WHERE `deleted` = 0 ORDER BY RAND() LIMIT 1")->fetch_all()[0][0];
+    // A concrete set which has to return a different value (user) can simply overwrite it.
+    $id     = null;
+    $result = Database::getConnection()->query("SELECT `id` FROM `{$this::$tableName}` WHERE `deleted` = 0 ORDER BY RAND() LIMIT 1");
+    if ($result) {
+      $id = $result->fetch_row()[0];
+    }
+    $result->free();
+    return $id;
   }
 
   /**

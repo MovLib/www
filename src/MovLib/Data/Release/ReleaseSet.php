@@ -30,6 +30,10 @@ namespace MovLib\Data\Release;
  */
 final class ReleaseSet extends \MovLib\Data\AbstractEntitySet {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
   // @codingStandardsIgnoreStart
   /**
    * Short class name.
@@ -39,14 +43,40 @@ final class ReleaseSet extends \MovLib\Data\AbstractEntitySet {
   const name = "ReleaseSet";
   // @codingStandardsIgnoreEnd
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public static $tableName = "releases";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(\MovLib\Core\Container $container) {
+    parent::__construct($container, "Releases", "Release", $container->intl->tp(-1, "Releases", "Release"));
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
    * {@inheritdoc}
    */
   protected function getEntitiesQuery($where = null, $orderBy = null) {
     return <<<SQL
 SELECT
-  `releases`.`changed`,
-  `releases`.`created`,
+  `releases`.`id` AS `id`,
+  `releases`.`changed` AS `changed`,
+  `releases`.`created` AS `created`,
+  `releases`.`deleted` AS `deleted`,
   `releases`.`country_code`,
   `releases`.`title`,
   `releases`.`publishing_date_rental`,
