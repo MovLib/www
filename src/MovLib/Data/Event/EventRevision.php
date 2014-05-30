@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\Event;
 
+use \MovLib\Component\Date;
 use \MovLib\Core\Database\Database;
 use \MovLib\Exception\ClientException\NotFoundException;
 
@@ -67,9 +68,9 @@ final class EventRevision extends \MovLib\Core\Revision\AbstractRevision {
   /**
    * The award this event belongs to.
    *
-   * @var mixed
+   * @var integer
    */
-  public $award;
+  public $awardId;
 
   /**
    * The event's award categories.
@@ -107,11 +108,11 @@ final class EventRevision extends \MovLib\Core\Revision\AbstractRevision {
   public $name;
 
   /**
-   * The event’s place.
+   * The event’s place identifier.
    *
-   * @var integer|object
+   * @var integer
    */
-  public $place;
+  public $placeId;
 
   /**
    * The event’s start date.
@@ -151,8 +152,8 @@ final class EventRevision extends \MovLib\Core\Revision\AbstractRevision {
    *   If no event was found for the given unique identifier.
    */
   public function __construct($id = null) {
+    $connection = Database::getConnection();
     if ($id) {
-      $connection = Database::getConnection();
       $stmt = $connection->prepare(<<<SQL
 SELECT
   `events`.`id`,
@@ -185,11 +186,11 @@ SQL
         $this->id,
         $this->deleted,
         $this->aliases,
-        $this->award,
+        $this->awardId,
         $this->endDate,
         $this->links,
         $this->name,
-        $this->place,
+        $this->placeId,
         $this->startDate,
         $this->descriptions,
         $this->wikipediaLinks
@@ -203,8 +204,12 @@ SQL
     if ($this->id) {
       $connection->dynamicDecode($this->descriptions);
       $connection->dynamicDecode($this->wikipediaLinks);
-      parent::__construct();
+
+      // Convert types, since bind_result() can't do that for us.
+      $this->startDate && ($this->startDate = new Date($this->startDate));
+      $this->endDate   && ($this->endDate   = new Date($this->endDate));
     }
+    parent::__construct();
   }
 
   /**
@@ -215,11 +220,11 @@ SQL
     if (!$properties) {
       $properties = array_merge(parent::__sleep(), [
         "aliases",
-        "award",
+        "awardId",
         "endDate",
         "links",
         "name",
-        "place",
+        "placeId",
         "startDate",
         "descriptions",
         "wikipediaLinks"
@@ -239,12 +244,12 @@ SQL
     return $update
       ->setDynamicConditional("descriptions", $languageCode, $this->descriptions, $oldRevision->descriptions)
       ->setDynamicConditional("wikipedia", $languageCode, $this->wikipediaLinks, $oldRevision->wikipediaLinks)
-      ->set("aliases", empty($this->aliases)? serialize([]) : serialize(explode("\n", $this->aliases)))
-      ->set("award_id", $this->award->id)
+      ->set("aliases", serialize($this->aliases))
+      ->set("award_id", $this->awardId)
       ->set("end_date", $this->endDate)
-      ->set("links", empty($this->links)? serialize([]) : serialize(explode("\n", $this->links)))
+      ->set("links", serialize($this->links))
       ->set("name", $this->name)
-      //->set("place_id", $this->place->id)
+      ->set("place_id", $this->placeId)
       ->set("start_date", $this->startDate)
     ;
   }
@@ -257,11 +262,11 @@ SQL
       ->set("descriptions", $this->descriptions)
       ->set("wikipedia", $this->wikipediaLinks)
       ->set("aliases", serialize($this->aliases))
-      ->set("award_id", $this->award->id)
+      ->set("award_id", $this->awardId)
       ->set("end_date", $this->endDate)
       ->set("links", serialize($this->links))
       ->set("name", $this->name)
-      //->set("place_id", $this->place->id)
+      ->set("place_id", $this->placeId)
       ->set("start_date", $this->startDate)
     ;
   }

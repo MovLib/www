@@ -174,7 +174,6 @@ final class Event extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Re
    */
   public function __construct(\MovLib\Core\Container $container, $id = null, array $values = null) {
     $this->lemma =& $this->name;
-    parent::__construct($container, $values);
     if ($id) {
       $connection = Database::getConnection();
       $stmt = $connection->prepare(<<<SQL
@@ -184,14 +183,14 @@ SELECT
   `changed`,
   `created`,
   `deleted`,
-   COLUMN_GET(`dyn_descriptions`, '{$this->intl->languageCode}' AS CHAR),
+   COLUMN_GET(`dyn_descriptions`, '{$container->intl->languageCode}' AS CHAR),
   `end_date`,
   `id`,
   `links`,
   `name`,
   `place_id`,
   `start_date`,
-  COLUMN_GET(`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`dyn_wikipedia`, '{$container->intl->languageCode}' AS CHAR),
   `count_movies`,
   `count_series`,
   `count_persons`,
@@ -228,6 +227,7 @@ SQL
         throw new NotFoundException("Couldn't find Event {$id}");
       }
     }
+    parent::__construct($container, $values);
   }
 
 
@@ -249,7 +249,7 @@ SQL
   protected function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
     $this->setRevisionArrayValue($revision->descriptions, $this->description);
     $revision->aliases   = $this->aliases;
-    $revision->award     = $this->award;
+    $revision->awardId   = $this->award->id;
     $revision->endDate   = $this->endDate;
     $revision->links     = $this->links;
     $revision->name      = $this->name;
@@ -267,7 +267,7 @@ SQL
   protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
     $this->description = $this->getRevisionArrayValue($revision->descriptions);
     $revision->aliases   && $this->aliases   = $revision->aliases;
-    $revision->award     && $this->award     = $revision->award;
+    $revision->awardId   && $this->award     = $revision->awardId;
     $revision->endDate   && $this->endDate   = $revision->endDate;
     $revision->links     && $this->links     = $revision->links;
     $revision->name      && $this->name      = $revision->name;

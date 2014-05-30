@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data;
 
+use \MovLib\Core\Database\Database;
+
 /**
  * Defines the default implementation for the select interface.
  *
@@ -46,7 +48,8 @@ trait SelectTrait {
     // @codeCoverageIgnoreEnd
     // @devEnd
     $options = [];
-    $result = Database::getConnection()->query("SELECT `id`, {$column} FROM {$this->tableName}");
+    $tableName = self::$tableName;
+    $result = Database::getConnection()->query("SELECT `id`, {$column} FROM {$tableName}");
     /* @var $row \MovLib\Data\AbstractEntity */
     while ($row = $result->fetch_row()) {
       $options[$row[0]] = $row[1];

@@ -59,7 +59,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    * @param \MovLib\Data\Event\Event $event {@inheritdoc}
    */
-  protected function formatListingItem(\MovLib\Data\AbstractEntity $event, $delta) {
+  protected function formatListingItem(\MovLib\Core\Entity\EntityInterface $event, $delta) {
     return
       "<li class='hover-item r'>" .
         "<article>" .

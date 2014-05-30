@@ -166,6 +166,7 @@ final class Company extends \MovLib\Data\AbstractEntity implements \MovLib\Core\
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
   public function __construct(\MovLib\Core\Container $container, $id = null, array $values = null) {
+    $this->lemma =& $this->name;
     if ($id) {
       $connection = Database::getConnection();
       $stmt = $connection->prepare(<<<SQL
