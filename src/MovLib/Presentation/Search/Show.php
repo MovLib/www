@@ -128,9 +128,8 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
       return;
     }
 
-    // If we have one, ask our Search object.
+    // If we have a query and indexes, ask our Search object.
     $search = new \MovLib\Core\Search\Search();
-    $elasticClient = new ElasticClient();
     try {
       $result = $search->fuzzySearch($this->query, $this->indexes);
     }
@@ -161,69 +160,48 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
       }
     }
 
-    \Krumo::dump($ids);
-    exit();
-
-    // Collect the identifiers for each entity type for use in sets.
-    $movieIds = null;
-    $personIds = null;
-    $releaseIds = null;
-    $seriesIds = null;
-    /* @var $entity \MovLib\Core\Search\Result\SearchResult */
-    foreach ($result as $indexName => $types) {
-      switch ($entity->type) {
-        case "movie":
-          $movieIds[] = $entity->id;
-          break;
-
-        case "person":
-          $personIds[] = $entity->id;
-          break;
-
-        case "release":
-          $releaseIds[] = $entity->id;
-          break;
-
-        case "series":
-          $seriesIds[] = $entity->id;
-          break;
+    // Instantiate entity sets and formatting helpers according to the types received.
+    // Render them to sections straight away.
+    $notImplementedMessage = null;
+    foreach ($ids as $typeName => $idsToLoad) {
+      $typeName    = ucfirst($typeName);
+      $setClass    = "\\MovLib\\Data\\{$typeName}\\{$typeName}Set";
+      $helperClass = "\\MovLib\\Partial\\Helper\\{$typeName}Helper";
+      // Check for incomplete implementations, add alert message and continue.
+      if (!method_exists($setClass, "loadIdentifiers") || !method_exists($helperClass, "getListing")) {
+        $notImplementedMessage .= "<p>{$this->intl->t("Search for {type} is not implemented yet.", [ "type" => $typeName ])}</p>";
+        continue;
       }
+      $set = (new $setClass($this->container))->loadIdentifiers($idsToLoad);
+      $this->sectionAdd($set->bundleTitle, (new $helperClass($this->container))->getListing($set), false);
     }
 
-    $resultsToRender = [];
-
-    // Load sets for all entity types present in the result and already translate the name.
-    if ($movieIds) {
-      $resultsToRender[$this->intl->t("Movies")] = [
-        "helper" => "MovieHelper",
-        "set"    => (new MovieSet($this->container))->loadIdentifiers($movieIds),
-      ];
-    }
-    if ($seriesIds) {
-      $resultsToRender[$this->intl->tp(-1, "Series")] = [
-        "helper" => "SeriesHelper",
-        "set"    => (new SeriesSet($this->container))->loadIdentifiers($seriesIds),
-      ];
-    }
-    if ($releaseIds) {
-      $resultsToRender[$this->intl->t("Releases")] = [
-        "helper" => "ReleaseHelper",
-        "set"    => (new ReleaseSet($this->container))->loadIdentifiers($releaseIds),
-      ];
-    }
-    if ($personIds) {
-      $resultsToRender[$this->intl->t("Persons")] = [
-        "helper" => "PersonHelper",
-        "set"    => (new PersonSet($this->container))->loadIdentifiers($personIds),
-      ];
+    // Display not implemented message if there were entities which don't have the necessary implementations
+    // for rendering them.
+    if ($notImplementedMessage) {
+      $this->alertInfo($this->intl->t("Not implemented yet."), $notImplementedMessage);
     }
 
-    // Utilize the helper classes and add sections for every entity type.
-    foreach ($resultsToRender as $name => $config) {
-      $helperClass = "\\MovLib\\Partial\\Helper\\{$config["helper"]}";
-      $helper = new $helperClass($this->container);
-      $this->sectionAdd($name, $helper->getListing($config["set"]), false);
+    // Add fulltext search links to an alert.
+    $queryString = str_replace(" ", "+", $this->query) . "+site:{$this->config->hostnameStatic}";
+    $ddg = "<li class='s s3'><a href='https://duckduckgo.com/?q={$queryString}' rel='nofollow', target='_blank'><img class='inline-middle' src='https://duckduckgo.com/favicon.ico' alt='Duck Duck Go icon' height='16' width='16'>Duck Duck Go</a></li>";
+    $fulltextItems = [
+      "<li class='s s3'><a href='https://google.com/search?q={$queryString}' rel='nofollow', target='_blank'><img class='inline-middle' src='https://www.google.com/images/google_favicon_128.png' alt='Google icon' height='16' width='16'>Google</a></li>",
+      "<li class='s s3'><a href='https://www.bing.com/search?q={$queryString}' rel='nofollow', target='_blank'><img class='inline-middle' src='https://www.bing.com/s/a/bing_p.ico' alt='Google icon' height='16' width='16'>Bing</a></li>",
+      "<li class='s s3'><a href='https://search.yahoo.com/search?p={$queryString}' rel='nofollow', target='_blank'><img class='inline-middle' src='http://img2.wikia.nocookie.net/__cb20130905153346/logopedia/images/2/2f/Yahoo_Favicon_2013.png' alt='Yahoo! icon' height='16' width='16'>Yahoo!</a></li>",
+    ];
+
+    // Randomize display order of Google, Bing and Yahoo! links.
+    shuffle($fulltextItems);
+
+    // Always display Duck Duck Go first.
+    $fulltextAlert = "{$this->intl->t("Try a full text search with the sites linked below.")}<ul class='no-list r'>{$ddg}";
+
+    // Add the others.
+    foreach ($fulltextItems as $item) {
+      $fulltextAlert .= $item;
     }
+    $this->alert($this->intl->t("Haven’t found what you were looking for?"), "{$fulltextAlert}</ul>");
 
     // Put it all together and we're done.
     return "<div id='filter' class='tar'>Filter</div>{$this->sections}";

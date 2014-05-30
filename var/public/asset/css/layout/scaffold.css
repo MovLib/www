@@ -103,9 +103,13 @@ img {
   -ms-interpolation-mode: bicubic;
 }
 
+img.inline,
+img.inline-middle {
+  margin-right: 5px;
+}
+
 img.inline {
   vertical-align: baseline;
-  margin-right: 5px;
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------

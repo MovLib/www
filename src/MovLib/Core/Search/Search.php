@@ -139,7 +139,7 @@ final class Search {
     ]);
 
     // We have results, build the set.
-    if (isset($suggestResult["fuzzySuggest"][0]["options"]) && ($result->numberOfResults = count($suggestResult["fuzzySuggest"][0]["options"])) > 0) {
+    if (isset($suggestResult["fuzzySuggest"][0]["options"]) && (count($suggestResult["fuzzySuggest"][0]["options"])) > 0) {
       foreach ($suggestResult["fuzzySuggest"][0]["options"] as $document) {
         $doc = new SuggestResult($document);
         // Prevent duplicated results, since there is no way in ElasticSearch to do so without losing the matched text.
