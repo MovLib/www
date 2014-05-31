@@ -18,12 +18,14 @@
 namespace MovLib\Core\Revision;
 
 /**
- * Defines the interface for revision entities that represent a (previous or current) state of an entity.
+ * Defines the interface for revisions that represent a (previous or current) state of an originator.
  *
  * Our revisioning system is pretty similar to the memento design pattern. A revision entity is the memento class in our
  * system and used to set and get a previous or the current state of an entity via <code>serialize()</code> and
- * <code>unserialize()</code> calls. The care taker ({@see \MovLib\Data\Revision\Revision}) is responsible for storing
- * any revision entity (memento) to the persistent storage (namely in the revisions table).
+ * <code>unserialize()</code> calls. The care takers are the presentation classes and responsible for triggering the
+ * created and commit actions to the persistent storage. The actual storing is performed in combination of both, the
+ * revision (memento) and the originator. A presentation class cannot access the database, that's why we break the
+ * pattern and let the memento handle the actual storing.
  *
  * @link http://www.oodesign.com/memento-pattern.html
  * @author Richard Fussenegger <richard@fussenegger.info>
@@ -50,20 +52,18 @@ interface RevisionInterface {
   public function __wakeup();
 
   /**
-   * Commit a new revision of the entity.
+   * Commit a new revision of the originator.
    *
-   * An entity (originator) isn't able to commit itself, because of the various language dependent dynamic column fields
-   * that are needed for our international system. An entity usualy contains only values for the current display locale.
-   * <i>Usualy</i> because some entity's include the value of the default locale during their creation, to produce
-   * fallback values for the interface. This is, if the value is mandatory for presenting the entity to a user in all
-   * system locales. A good example for this is a genre. Suppose you create a genre on the German MovLib website, how
-   * could you present that new genre to a user of the Japanese MovLib website? You would have to fall back to the only
-   * available name, the German one, but how do you know that you have the German one? You don't! Therefore a user is
-   * required to enter the name in the default system locale as well, to ensure that we can rely on that value. Never-
-   * theless, a revision entity has to know all values of all fields at any given time because of the international
-   * approach of MovLib. We can't implement this in the revision (care taker) class because it can't know everything
-   * about every entity, in fact it doesn't know anything about any entity (just like in the original memento pattern,
-   * the revision entity [memento] is opaque to the revision [care taker]).
+   * An originator isn't able to commit itself, because of the various language dependent dynamic column fields that are
+   * needed for our international system. An entity usualy contains only values for the current display locale.
+   * <i>Usualy</i> because some originator's include the value of the default locale during their creation, to produce
+   * fallback values for the interface. This is, if the value is mandatory for presenting the originator to a user in
+   * all system locales. A good example for this is a genre. Suppose you create a genre on the German MovLib website,
+   * how could you present that new genre to a user of the Japanese MovLib website? You would have to fall back to the
+   * only available name, the German one, but how do you know that you have the German one? You don't! Therefore a user
+   * is required to enter the name in the default system locale as well, to ensure that we can rely on that value.
+   * Nevertheless, a revision has to know all values of all fields at any given time because of the international
+   * approach of MovLib.
    *
    * @param \MovLib\Core\Database\Connection $connection
    *   The transaction connection.
@@ -75,24 +75,30 @@ interface RevisionInterface {
    *   and old values.
    * @return this
    * @throws \mysqli_sql_exception
-   * @throws \BadMethodCallException
-   *   If nothing is to be commited a BadMethodCallException is thrown because it should be checked long before calling
-   *   this method that there is actually something to commit.
    */
   public function commit(\MovLib\Core\Database\Connection $connection, $oldRevisionId, $languageCode);
 
   /**
-   * Initial commit of a new entity.
+   * Initial commit of a new originator.
    *
    * @param \MovLib\Core\Database\Connection $connection
    *   The transaction connection.
    * @param \MovLib\Component\DateTime $created
-   *   The date and time the revision entity should use as its identifier within the history of the entity. This is
-   *   usually the request date and time and should match the creation date and time if you create a new entity or the
-   *   changed date and time if you edit an entity.
+   *   The date and time the originator was created, this is usually the request date and time.
    * @return integer
-   *   The unique identifier that was given by the database to the newly inserted entity.
+   *   The unique identifier that was given by the database to the newly created originator.
    */
   public function create(\MovLib\Core\Database\Connection $connection, \MovLib\Component\DateTime $created);
+
+  /**
+   * Get the revision originator's unique class identifier.
+   *
+   * <b>NOTE</b><br>
+   * You can also access the value directly via the static <var>$originatorClassId</var> property.
+   *
+   * @return integer
+   *   The revision originator's unique class identifier.
+   */
+  public function getOriginatorClassId();
 
 }

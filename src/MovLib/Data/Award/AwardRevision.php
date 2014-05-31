@@ -25,6 +25,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  *
  * @property \MovLib\Data\Award\Award $entity
  *
+ * @author Richard Fussenegger <richard@fussengger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -46,12 +47,14 @@ final class AwardRevision extends \MovLib\Core\Revision\AbstractRevision {
   const name = "AwardRevision";
   // @codingStandardsIgnoreEnd
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Static Properties
+
+
   /**
-   * The revision entity's unique identifier.
-   *
-   * @var integer
+   * {@inheritdoc}
    */
-  const REVISION_ENTITY_ID = 6;
+  public static $originatorClassId = 6;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -62,28 +65,28 @@ final class AwardRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $aliases = [];
+  public $aliases;
 
   /**
    * Associative array containing all the award's localized descriptions, keyed by ISO 639-1 language code.
    *
    * @var array
    */
-  public $descriptions = [];
+  public $descriptions;
 
   /**
    * Associative array containing all the award's localized image descriptions, keyed by ISO 639-1 language code.
    *
    * @var array
    */
-  public $imageDescriptions = [];
+  public $imageDescriptions;
 
   /**
    * The award’s weblinks.
    *
    * @var array
    */
-  public $links = [];
+  public $links;
 
   /**
    * The award's name.
@@ -93,21 +96,11 @@ final class AwardRevision extends \MovLib\Core\Revision\AbstractRevision {
   public $name;
 
   /**
-   * {@inheritdoc}
-   */
-  public $revisionEntityId = 6;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $tableName = "awards";
-
-  /**
    * Associative array containing all the award's localized wikipedia links, keyed by language code.
    *
    * @var array
    */
-  public $wikipediaLinks = [];
+  public $wikipediaLinks;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -141,7 +134,7 @@ FROM `awards`
   INNER JOIN `revisions`
     ON `revisions`.`entity_id` = `awards`.`id`
     AND `revisions`.`id` = `awards`.`changed`
-    AND `revisions`.`revision_entity_id` = 6
+    AND `revisions`.`revision_entity_id` = {$this::$originatorClassId}
 WHERE `awards`.`id` = ?
 LIMIT 1
 SQL
@@ -149,7 +142,7 @@ SQL
       $stmt->bind_param("d", $id);
       $stmt->execute();
       $stmt->bind_result(
-        $this->entityId,
+        $this->originatorId,
         $this->userId,
         $this->id,
         $this->deleted,
@@ -204,9 +197,9 @@ SQL
       ->setDynamicConditional("descriptions", $languageCode, $this->descriptions, $oldRevision->descriptions)
       ->setDynamicConditional("image_descriptions", $languageCode, $this->imageDescriptions, $oldRevision->imageDescriptions)
       ->setDynamicConditional("wikipedia", $languageCode, $this->wikipediaLinks, $oldRevision->wikipediaLinks)
-      ->set("aliases", serialize($this->aliases))
-      ->set("links", serialize($this->links))
-      ->set("name", $this->name)
+      ->setConditional("aliases", $this->aliases, $oldRevision->aliases)
+      ->setConditional("links", $this->links, $oldRevision->links)
+      ->setConditional("name", $this->name, $oldRevision->name)
     ;
   }
 
@@ -215,11 +208,11 @@ SQL
    */
   protected function addCreateFields(\MovLib\Core\Database\Query\Insert $insert) {
     return $insert
-      ->set("descriptions", $this->descriptions)
-      ->set("image_descriptions", $this->imageDescriptions)
-      ->set("wikipedia", $this->wikipediaLinks)
-      ->set("aliases", serialize($this->aliases))
-      ->set("links", serialize($this->links))
+      ->setDynamic("descriptions", $this->descriptions)
+      ->setDynamic("image_descriptions", $this->imageDescriptions)
+      ->setDynamic("wikipedia", $this->wikipediaLinks)
+      ->set("aliases", $this->aliases)
+      ->set("links", $this->links)
       ->set("name", $this->name)
     ;
   }

@@ -168,6 +168,23 @@ final class Date extends \DateTime {
     return sprintf("%04s-%02s-%02s", $this->year, $this->month, $this->day);
   }
 
+  /**
+   * Implements <code>serialize()</code> callback.
+   *
+   * @return array
+   *   Array containing the names of the properties that should be serialized.
+   */
+  public function __sleep() {
+    return [ "date" ];
+  }
+
+  /**
+   * Implements <code>unserialize()</code> callback.
+   */
+  public function __wakeup() {
+    list($this->year, $this->month, $this->day) = explode("-", $this->format(self::W3C_DATE), 3);
+  }
+
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 

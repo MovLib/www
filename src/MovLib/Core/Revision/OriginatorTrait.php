@@ -45,19 +45,19 @@ trait OriginatorTrait {
    * Continue revision creation.
    *
    * The trait will take care of instantiating the revision and setting the default properties that are the same for
-   * any entity. After that the concrete class has to take over and export the rest.
+   * any originator. After that the concrete class has to take over and export the rest.
    *
-   * @param \MovLib\Data\Revision\RevisionEntityInterface $revision
+   * @param \MovLib\Core\Revision\RevisionInterface $revision
    *   Prepared revision with default properties already set.
-   * @return \MovLib\Data\Revision\RevisionEntityInterface
-   *   The new revision with the complete state set.
+   * @return \MovLib\Core\Revision\RevisionInterface
+   *   The new revision with the complete state exported.
    */
-  abstract protected function doCreateRevision(RevisionInterface $revision);
+  abstract protected function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision);
 
   /**
    * Continue revision setting.
    *
-   * The trait will take care of setting the default properties that are the same for any entity. After that the
+   * The trait will take care of setting the default properties that are the same for any originator. After that the
    * concrete class has to take over and set the rest.
    *
    * @param \MovLib\Data\Revision\RevisionEntityInterface $revision
@@ -71,61 +71,62 @@ trait OriginatorTrait {
 
 
   /**
-   * Hook called before the entity is going to be commited.
+   * Hook called before the originator is going to be commited.
    *
    * @param \MovLib\Core\Database\Connection $connection
    *   Active database transaction connection.
-   * @param \MovLib\Data\Revision\RevisionEntityInterface $revision
-   *   The revision entity that will be commited.
+   * @param \MovLib\Core\Revision\RevisionInterface $revision
+   *   The revision that will be commited.
    * @param integer $oldRevisionId
-   *   The old revision's identifier that was sent along the form when the user started editing the entity.
+   *   The old revision's identifier that was sent along the form when the user started editing the originator.
    * @return this
    */
-  protected function preCommit(\MovLib\Core\Database\Connection $connection, RevisionInterface $revision, $oldRevisionId) {
+  protected function preCommit(\MovLib\Core\Database\Connection $connection, \MovLib\Core\Revision\RevisionInterface $revision, $oldRevisionId) {
     return $this;
   }
 
   /**
-   * Hook called after the entity has been commited.
+   * Hook called after the originator has been commited.
    *
    * @param \MovLib\Core\Database\Connection $connection
    *   Active database transaction connection.
-   * @param \MovLib\Data\Revision\RevisionEntityInterface $revision
-   *   The revision entity that was commited.
+   * @param \MovLib\Core\Revision\RevisionInterface $revision
+   *   The revision that was commited.
    * @param integer $oldRevisionId
    *   The old revision's identifier that was sent along the form when the user started editing the entity.
    * @return this
    */
-  protected function postCommit(\MovLib\Core\Database\Connection $connection, RevisionInterface $revision, $oldRevisionId) {
+  protected function postCommit(\MovLib\Core\Database\Connection $connection, \MovLib\Core\Revision\RevisionInterface $revision, $oldRevisionId) {
     return $this;
   }
 
   /**
-   * Hook called before the entity is going to be created.
+   * Hook called before the originator is going to be created.
    *
    * <b>NOTE</b><br>
-   * The entity has no unique identifier at this point because it wasn't commited to the database at this point.
+   * The originator has no unique identifier at this point because it wasn't commited to the database. Remember that the
+   * unique identifier is assigned by the corresponding table's auto increment field.
    *
    * @param \MovLib\Core\Database\Connection $connection
    *   Active database transaction connection.
-   * @param \MovLib\Data\Revision\RevisionEntityInterface $revision
-   *   The revision entity that will be created.
+   * @param \MovLib\Core\Revision\RevisionInterface $revision
+   *   The revision that will be created.
    * @return this
    */
-  protected function preCreate(\MovLib\Core\Database\Connection $connection, RevisionInterface $revision) {
+  protected function preCreate(\MovLib\Core\Database\Connection $connection, \MovLib\Core\Revision\RevisionInterface $revision) {
     return $this;
   }
 
   /**
-   * Hook called after the entity has been created.
+   * Hook called after the originator has been created.
    *
    * @param \MovLib\Core\Database\Connection $connection
    *   Active database transaction connection.
-   * @param \MovLib\Data\Revision\RevisionEntityInterface $revision
-   *   The revision entity that was created.
+   * @param \MovLib\Core\Revision\RevisionInterface $revision
+   *   The revision that was created.
    * @return this
    */
-  protected function postCreate(\MovLib\Core\Database\Connection $connection, RevisionInterface $revision) {
+  protected function postCreate(\MovLib\Core\Database\Connection $connection, \MovLib\Core\Revision\RevisionInterface $revision) {
     return $this;
   }
 
@@ -137,7 +138,6 @@ trait OriginatorTrait {
    * @see \MovLib\Data\Revision\EntityInterface::commit()
    */
   final public function commit($userId, \MovLib\Component\DateTime $changed, $oldRevisionId) {
-    // @todo Abstract transactions into their own object!
     $connection = Database::getConnection();
     try {
       $connection->autocommit(false);
@@ -165,7 +165,6 @@ trait OriginatorTrait {
    * @see \MovLib\Data\Revision\EntityInterface::create()
    */
   final public function create($userId, \MovLib\Component\DateTime $created) {
-    // @todo Abstract transactions into their own object!
     $connection = Database::getConnection();
     try {
       $connection->autocommit(true);
@@ -187,8 +186,10 @@ trait OriginatorTrait {
       $connection->autocommit(true);
     }
 
-    // Make sure that we're working with fully loaded entity from here on now.
-    $this->init();
+    // Make sure that we're working with a fully initialized originator.
+    if (method_exists($this, "init")) {
+      $this->init();
+    }
 
     return $this;
   }
@@ -205,9 +206,13 @@ trait OriginatorTrait {
 
     // Update the just loaded revision with the new values that we have in absolutely every originator.
     $revision->id      = $changed->formatInteger();
-    $revision->changed = $revision->created = $this->changed = $changed;
     $revision->deleted = $this->deleted;
     $revision->userId  = $userId;
+
+    // Note that we're also updating our own changed date. It doesn't matter if this revision is going to be commited to
+    // the persistent storage. The current object has to assume that the global state of it will change if it creates a
+    // new revision of itself.
+    $this->changed = $revision->changed = $revision->created = $changed;
 
     // Let the concrete class perform more export work on the revision.
     return $this->doCreateRevision($revision);
@@ -247,7 +252,7 @@ trait OriginatorTrait {
     // @codeCoverageIgnoreStart
     $class = static::class . "Revision";
     assert($revision instanceof $class, "You can only set a revision that is of the correct type.");
-    assert($revision->entityId === $this->id, "You can only set a revision of the same originator.");
+    assert($revision->originatorId === $this->id, "You can only set a revision of the same originator.");
     // @codeCoverageIgnoreEnd
     // @devEnd
 

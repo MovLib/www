@@ -31,6 +31,7 @@ use \MovLib\Core\Routing\Route;
  * @since 0.0.1-dev
  */
 abstract class AbstractEntitySet extends \ArrayObject implements \MovLib\Core\Entity\EntitySetInterface {
+  use \MovLib\Component\ArrayObjectTrait;
   use \MovLib\Core\Entity\EntityTrait;
   use \MovLib\Core\Routing\RoutingTrait;
 
@@ -157,41 +158,6 @@ abstract class AbstractEntitySet extends \ArrayObject implements \MovLib\Core\En
    */
   public function getTotalCount() {
     return (integer) Database::getConnection()->query("SELECT COUNT(*) FROM `{$this::$tableName}` WHERE `deleted` = 0 LIMIT 1")->fetch_all()[0][0];
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Array Object Methods
-
-
-  /**
-   * {@inheritdoc}
-   * @internal
-   *   Note that we don't need a function that returns a reference because we're only dealing with objects. An implicit
-   *   change of the object always works, in contrast to implicit changes to an e.g. array.
-   */
-  final public function offsetGet($index) {
-    return parent::offsetGet($index);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  final public function offsetSet($index, $newval) {
-    return parent::offsetSet($index, $newval);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  final public function offsetExists($index) {
-    return parent::offsetExists($index);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  final public function offsetUnset($index) {
-    throw new \BadMethodCallException("You're not allowed to remove entities from a set.");
   }
 
 }

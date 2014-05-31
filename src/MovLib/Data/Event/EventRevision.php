@@ -26,6 +26,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  *
  * @property \MovLib\Data\Event\Event $entity
  *
+ * @author Richard Fussenegger <richard@fussengger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -47,12 +48,14 @@ final class EventRevision extends \MovLib\Core\Revision\AbstractRevision {
   const name = "EventRevision";
   // @codingStandardsIgnoreEnd
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Static Properties
+
+
   /**
-   * The revision entity's unique identifier.
-   *
-   * @var integer
+   * {@inheritdoc}
    */
-  const REVISION_ENTITY_ID = 8;
+  public static $originatorClassId = 8;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -63,7 +66,7 @@ final class EventRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $aliases = [];
+  public $aliases;
 
   /**
    * The award this event belongs to.
@@ -84,7 +87,7 @@ final class EventRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $descriptions = [];
+  public $descriptions;
 
   /**
    * The event’s end date.
@@ -98,7 +101,7 @@ final class EventRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $links = [];
+  public $links;
 
   /**
    * The event's name.
@@ -122,21 +125,11 @@ final class EventRevision extends \MovLib\Core\Revision\AbstractRevision {
   public $startDate;
 
   /**
-   * {@inheritdoc}
-   */
-  public $revisionEntityId = 8;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $tableName = "events";
-
-  /**
    * Associative array containing all the event's localized wikipedia links, keyed by language code.
    *
    * @var array
    */
-  public $wikipediaLinks = [];
+  public $wikipediaLinks;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -173,7 +166,7 @@ FROM `events`
   INNER JOIN `revisions`
     ON `revisions`.`entity_id` = `events`.`id`
     AND `revisions`.`id` = `events`.`changed`
-    AND `revisions`.`revision_entity_id` = 8
+    AND `revisions`.`revision_entity_id` = {$this::$originatorClassId}
 WHERE `events`.`id` = ?
 LIMIT 1
 SQL
@@ -181,7 +174,7 @@ SQL
       $stmt->bind_param("d", $id);
       $stmt->execute();
       $stmt->bind_result(
-        $this->entityId,
+        $this->originatorId,
         $this->userId,
         $this->id,
         $this->deleted,
@@ -244,13 +237,13 @@ SQL
     return $update
       ->setDynamicConditional("descriptions", $languageCode, $this->descriptions, $oldRevision->descriptions)
       ->setDynamicConditional("wikipedia", $languageCode, $this->wikipediaLinks, $oldRevision->wikipediaLinks)
-      ->set("aliases", serialize($this->aliases))
-      ->set("award_id", $this->awardId)
-      ->set("end_date", $this->endDate)
-      ->set("links", serialize($this->links))
-      ->set("name", $this->name)
-      ->set("place_id", $this->placeId)
-      ->set("start_date", $this->startDate)
+      ->setConditional("aliases", $this->aliases, $oldRevision->aliases)
+      ->setConditional("award_id", $this->awardId, $this->awardId)
+      ->setConditional("end_date", $this->endDate, $oldRevision->endDate)
+      ->setConditional("links", $this->links, $oldRevision->links)
+      ->setConditional("name", $this->name, $oldRevision->name)
+      ->setConditional("place_id", $this->placeId, $oldRevision->placeId)
+      ->setConditional("start_date", $this->startDate, $oldRevision->startDate)
     ;
   }
 
@@ -259,12 +252,12 @@ SQL
    */
   protected function addCreateFields(\MovLib\Core\Database\Query\Insert $insert) {
     return $insert
-      ->set("descriptions", $this->descriptions)
-      ->set("wikipedia", $this->wikipediaLinks)
-      ->set("aliases", serialize($this->aliases))
+      ->setDynamic("descriptions", $this->descriptions)
+      ->setDynamic("wikipedia", $this->wikipediaLinks)
+      ->set("aliases", $this->aliases)
       ->set("award_id", $this->awardId)
       ->set("end_date", $this->endDate)
-      ->set("links", serialize($this->links))
+      ->set("links", $this->links)
       ->set("name", $this->name)
       ->set("place_id", $this->placeId)
       ->set("start_date", $this->startDate)

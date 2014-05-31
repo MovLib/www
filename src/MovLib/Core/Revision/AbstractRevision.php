@@ -24,7 +24,7 @@ use \MovLib\Core\Diff\Diff;
 use \MovLib\Core\FileSystem;
 
 /**
- * Defines the base object for revisioned database entities.
+ * Defines the base object for revision objects.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -48,74 +48,81 @@ abstract class AbstractRevision implements RevisionInterface {
   // @codingStandardsIgnoreEnd
 
 
+  //-------------------------------------------------------------------------------------------------------------------- Static Properties
+
+
+
+  /**
+   * The originator's class identifier.
+   *
+   * <b>NOTE</b><br>
+   * In order to efficiently select rows from the revisions table and to ensure data integrity each originator has a
+   * unique identifier. Those identifiers are managed through the database table <code>"revision_entities"</code> which
+   * allows us to easily add new originator's to the revision system without ever checking the current implementation
+   * for the identifier. A concrete revision has set its originator's unique identifier in this static property.
+   *
+   * @var integer
+   */
+  public static $originatorClassId;
+
+  /**
+   * The revision originators's primary table name.
+   *
+   * @var string
+   */
+  public static $tableName;
+
+
   //-------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The revision entity's creation date and time.
+   * The revision's creation date and time.
    *
    * @var \MovLib\Component\DateTime
    */
   public $created;
 
   /**
-   * The revision entity's deletion state.
+   * The revision's deletion state.
    *
    * @var boolean
    */
   public $deleted = false;
 
   /**
-   * The revision entity's unique entity identifier.
+   * The originator's unique database identifier.
+   *
+   * This is usually the value of the primary database key of the originator, e.g. unique movie id.
    *
    * @var integer
    */
-  public $entityId;
+  public $originatorId;
 
   /**
-   * The revision entity's identifier.
+   * The revision's identifier.
    *
    * <b>NOTE</b><br>
-   * Only unique together with <var>AbstractRevisionEntity::$entityId</var> and <var>AbstractRevisionEntity::ENTITY_ID</var>
-   * when selecting an entity's revisions from the revisions table in the database.
+   * Only unique together with <var>AbstractRevision::$originatorId</var> and <var>AbstractRevision::$originatorClassId</var>
+   * when selecting revisions from the table in the database.
    *
    * @var integer
    */
   public $id;
 
   /**
-   * The revision entity's type identifier.
+   * The revision's user who created this revision.
    *
    * <b>NOTE</b><br>
-   * In order to efficiently select rows from the revisions table and to ensure data integrity each entity has a unique
-   * identifier. Those identifiers are managed through the database table <code>"revision_entities"</code> which allows
-   * us to easily add new entity's to the revision system without ever checking the current implementation for the
-   * identifier. A concrete revision entity class has to define the own unique identifier as class constant, again to
-   * increase performance.
-   *
-   * @var integer
-   */
-  public $revisionEntityId;
-
-  /**
-   * The revision entity's table name.
-   *
-   * @var string
-   */
-  protected $tableName;
-
-  /**
-   * The revision entity's user who created this revision.
-   *
-   * <b>NOTE</b><br>
-   * This property is only set if this entity was instantiated via a {@see RevisionSet} for presentation purposes.
+   * This property is only set if this entity was instantiated via a {@see \MovLib\Data\History\HistorySet} for
+   * presentation purposes.
    *
    * @var \MovLib\Data\User\User|null
    */
   public $user;
 
   /**
-   * The revision entity's unique identifier of the user who created this revision.
+   * The revision's unique identifier of the user who created this revision.
    *
    * @var integer
    */
@@ -126,27 +133,29 @@ abstract class AbstractRevision implements RevisionInterface {
 
 
   /**
-   * Instantiate new revision entity object.
+   * Instantiate new revision object.
    */
   public function __construct() {
     // @devStart
     // @codeCoverageIgnoreStart
-    // The fact that a class has to include both, the constant and the property, might be annoying while implementing
-    // but is very good for performance. Any class that has to work with the revision entity can either access the
-    // constant without having an instance or the property for easy embedding within strings.
-    //
-    // NOTE for the future: We can dump this as soon as accessors are available.
-    assert(defined("static::REVISION_ENTITY_ID"), "You have to set the REVISION_ENTITY_ID in your class.");
-    assert(!empty($this->revisionEntityId), "You have to set the \$revisionEntityId property in your class.");
-    assert(!empty($this->tableName), "You have to set the \$tableName property in your class.");
+    assert(!empty(static::$originatorClassId), "You have to set the static \$originatorClassId property in your class.");
     // @codeCoverageIgnoreEnd
     // @devEnd
+
+    // We can safely assume that there is a set that contains the table name if no table name was defined by the
+    // concrete revision class, most entity's have one.
+    if (!static::$tableName) {
+      $set = substr(static::class, 0, -8) . "Set";
+      static::$tableName = $set::$tableName;
+    }
+
+    // Make sure all known property's are of correct type.
     if ($this->id) {
-      $this->entityId = (integer) $this->entityId;
-      $this->id       = (integer) $this->id;
-      $this->created  = new DateTime($this->id);
-      $this->deleted  = (boolean) $this->deleted;
-      $this->userId   = (integer) $this->userId;
+      $this->originatorId = (integer) $this->originatorId;
+      $this->id           = (integer) $this->id;
+      $this->created      = new DateTime($this->id);
+      $this->deleted      = (boolean) $this->deleted;
+      $this->userId       = (integer) $this->userId;
     }
   }
 
@@ -154,7 +163,7 @@ abstract class AbstractRevision implements RevisionInterface {
    * {@inheritdoc}
    */
   public function __sleep() {
-    static $properties = [ "deleted", "entityId", "id", "userId" ];
+    static $properties = [ "deleted", "originatorId", "id", "userId" ];
     return $properties;
   }
 
@@ -199,7 +208,7 @@ abstract class AbstractRevision implements RevisionInterface {
 
 
   /**
-   * Hook called before the revision entity is going to be commited.
+   * Hook called before the revision is going to be commited.
    *
    * @param \MovLib\Core\Database\Connection $connection
    *   Active database transaction connection.
@@ -215,7 +224,7 @@ abstract class AbstractRevision implements RevisionInterface {
   }
 
   /**
-   * Hook called after the revision entity has been commited.
+   * Hook called after the revision has been commited.
    *
    * @param \MovLib\Core\Database\Connection $connection
    *   Active database transaction connection.
@@ -231,7 +240,7 @@ abstract class AbstractRevision implements RevisionInterface {
   }
 
   /**
-   * Hook called before the revision entity is going to be created.
+   * Hook called before the revision is going to be created.
    *
    * @param \MovLib\Core\Database\Connection $connection
    *   Active database transaction connection.
@@ -242,7 +251,7 @@ abstract class AbstractRevision implements RevisionInterface {
   }
 
   /**
-   * Hook called after the revision entity has been created.
+   * Hook called after the revision has been created.
    *
    * @param \MovLib\Core\Database\Connection $connection
    *   Active database transaction connection.
@@ -261,7 +270,7 @@ abstract class AbstractRevision implements RevisionInterface {
    */
   final public function commit(\MovLib\Core\Database\Connection $connection, $oldRevisionId, $languageCode) {
     // Load the currently stored revision from the database, this will be the new old revision for the commit.
-    $oldRevision = new static($this->entityId);
+    $oldRevision = new static($this->originatorId);
 
     // We have to make sure that the revision currently stored in the database is the same revision the user edited. We
     // have an exclusive lock on all rows that we read during our transaction. If someone would have changed this row
@@ -271,26 +280,37 @@ abstract class AbstractRevision implements RevisionInterface {
       throw new CommitConflictException();
     }
 
-    // Serialize the old revision before passing it to the concrete class, you'll never know...
+    // Serialize the old revision before passing it to the concrete class, you'll never know if a developer might change
+    // the revision (which would be a mistake).
     $oldSerialized = serialize($oldRevision);
 
     // We also create a backup of the serialized old revision to ensure that we are able to easily recreate patches and
     // stuff in case something should ever go wrong. Note that the table name's are already unique (you can't have two
-    // tables within a single database that have the same name) and combined with the entity's uniqu identifier nothing
-    // bad can happen. We don't want to create any subdirectories within the backup directories. A direct listing of
-    // all available backups with `ls -l` is what we want.
-    $dir = "dr://var/backups/revisions/{$this->tableName}/{$this->entityId}";
+    // tables within a single database that have the same name) and combined with the originator's unique identifier
+    // nothing bad can happen. We don't want to create any subdirectories within the backup directories. A direct
+    // listing of all available backups with `ls -l` is what we want.
+    $dir = "dr://var/backups/revisions/{$this::$tableName}/{$this->originatorId}";
     mkdir($dir, FileSystem::MODE_DIR, true);
     file_put_contents("{$dir}/{$oldRevision->id}.ser", $oldSerialized);
 
     // Allow the concrete revision to perform work before we create the diff patch and start the commit.
     $this->preCommit($connection, $oldRevision, $languageCode);
 
+    header("content-type: text/plain");
+    echo
+      "Error in getPatch() which results in an infinite loop because new jobs get stacked and stacked!" , PHP_EOL , PHP_EOL ,
+      str_repeat("-", 4) , " FROM " , str_repeat("-", 4) , PHP_EOL , PHP_EOL ,
+      serialize($this) , PHP_EOL , PHP_EOL ,
+      str_repeat("-", 4) , " TO " , str_repeat("-", 4) , PHP_EOL , PHP_EOL ,
+      $oldSerialized , PHP_EOL , PHP_EOL
+    ;
+    exit();
+
     // Now we can create the actual diff patch that we'll store in the revisions row of the old revision.
     $diffPatch = (new Diff())->getPatch(serialize($this), $oldSerialized);
 
     // Prepare the update query and set the default properties.
-    $update = (new Update($connection, $this->tableName))->set("changed", $this->created)->where("id", $this->entityId);
+    $update = (new Update($connection, static::$tableName))->set("changed", $this->created)->where("id", $this->originatorId);
 
     // Let the concrete revision add its custom fields.
     $this->addCommitFields($update, $oldRevision, $languageCode);
@@ -302,8 +322,8 @@ abstract class AbstractRevision implements RevisionInterface {
     (new Update($connection, "revisions"))
       ->set("data", $diffPatch)
       ->where("id", $oldRevision->id)
-      ->where("entity_id", $this->entityId)
-      ->where("revision_entity_id", $this->revisionEntityId)
+      ->where("entity_id", $this->originatorId)
+      ->where("revision_entity_id", static::$originatorClassId)
       ->execute()
     ;
 
@@ -318,19 +338,17 @@ abstract class AbstractRevision implements RevisionInterface {
    * {@inheritdoc}
    */
   final public function create(\MovLib\Core\Database\Connection $connection, \MovLib\Component\DateTime $created) {
-    $this->created = $created;
-
     // Allow the concrete revision to perform work before the actual revision is created.
     $this->preCreate($connection);
 
     // Prepare insert statement and set default values.
-    $insert = (new Insert($connection, $this->tableName))->set("created", $this->created)->set("changed", $this->created);
+    $insert = (new Insert($connection, static::$tableName))->set("created", $this->created)->set("changed", $this->created);
 
     // Let the concrete revision add its custom fields.
     $this->addCreateFields($insert);
 
     // Now insert the revision and be sure to store the unique identifier that was assigned to our originator.
-    $this->entityId = $insert->execute();
+    $this->originatorId = $insert->execute();
 
     // Insert revision, update the user and allow the concrete revision entity to perform work after the actual revision
     // was created.
@@ -338,7 +356,14 @@ abstract class AbstractRevision implements RevisionInterface {
 
     // We have to return the originator's new unique identifier because it doesn't know it's identifier yet, remember
     // that the identifier is assigned by the database table's auto increment field.
-    return $this->entityId;
+    return $this->originatorId;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  final public function getOriginatorClassId() {
+    return static::$originatorClassId;
   }
 
   /**
@@ -354,8 +379,8 @@ abstract class AbstractRevision implements RevisionInterface {
   private function insertRevisionUpdateUser(\MovLib\Core\Database\Connection $connection) {
     (new Insert($connection, "revisions"))
       ->set("id", $this->created)
-      ->set("entity_id", $this->entityId)
-      ->set("revision_entity_id", static::REVISION_ENTITY_ID)
+      ->set("entity_id", $this->originatorId)
+      ->set("revision_entity_id", static::$originatorClassId)
       ->set("user_id", $this->userId)
       ->execute()
     ;
@@ -366,6 +391,7 @@ abstract class AbstractRevision implements RevisionInterface {
     (new Update($connection, "users"))
       ->increment("edits")
       ->where("id", $this->userId)
+      ->execute()
     ;
 
     return $this;

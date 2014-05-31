@@ -17,8 +17,6 @@
  */
 namespace MovLib\Data\Genre;
 
-use \MovLib\Core\Database\Database;
-
 /**
  * Defines the genre set object.
  *

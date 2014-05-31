@@ -147,6 +147,28 @@ class Base {
   }
 
   /**
+   * Encodes all HTML entities.
+   *
+   * @param string $text
+   *   The text to encode entities in.
+   * @return string
+   *   <var>$text</var> with all HTML entities encoded.
+   */
+  final public function htmlEncodeEntities($text) {
+    if (empty($text)) {
+      // @devStart
+      // @codeCoverageIgnoreStart
+      if (isset($this->log)) {
+        $this->log->debug("You should avoid passing empty texts to htmlEncodeEntities");
+      }
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+      return $text;
+    }
+    return htmlentities($text, ENT_QUOTES | ENT_HTML5);
+  }
+
+  /**
    * Decodes all HTML entities including numerical ones to regular UTF-8 bytes.
    *
    * Double-escaped entities will only be decoded once (<code>"&amp;lt;"</code> becomes <code>"&lt;"</code>, not

@@ -129,20 +129,17 @@ final class Update extends AbstractQuery {
    * @param string $fieldName
    *   The field's name.
    * @param mixed $value
-   *   The field's value.
+   *   The field's value. <b>NOTE</b> that arrays are automatically serialized.
    * @param mixed $oldValue
-   *   The field's old value.
+   *   The field's old value. <b>NOTE</b> that arrays are automatically serialized.
    * @param string $expression [optional]
    *   Any kind of expression, note that you'll have to escape field names yourself and that the placeholder
    *   <code>"?"</code> must be included.
    * @return this
    */
   public function setConditional($fieldName, $value, $oldValue, $expression = null) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert(!is_array($value), "Use Update::setDynamicConditional() method to set dynamic columns.");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
+    is_array($value)    && ($value = serialize($value));
+    is_array($oldValue) && ($oldValue = serialize($oldValue));
     if ($value == $oldValue) {
       return $this;
     }

@@ -47,12 +47,14 @@ final class GenreRevision extends \MovLib\Core\Revision\AbstractRevision {
   const name = "GenreRevision";
   // @codingStandardsIgnoreEnd
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Static Properties
+
+
   /**
-   * The revision entity's unique identifier.
-   *
-   * @var integer
+   * {@inheritdoc}
    */
-  const REVISION_ENTITY_ID = 9;
+  public static $originatorClassId = 9;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -63,31 +65,21 @@ final class GenreRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $names = [];
+  public $names;
 
   /**
    * Associative array containing all the genre's localized descriptions, keyed by ISO 639-1 language code.
    *
    * @var array
    */
-  public $descriptions = [];
-
-  /**
-   * {@inheritdoc}
-   */
-  public $revisionEntityId = 9;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $tableName = "genres";
+  public $descriptions;
 
   /**
    * Associative array containing all the genre's localized wikipedia links, keyed by language code.
    *
    * @var array
    */
-  public $wikipediaLinks = [];
+  public $wikipediaLinks;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -118,7 +110,7 @@ FROM `genres`
   INNER JOIN `revisions`
     ON `revisions`.`entity_id` = `genres`.`id`
     AND `revisions`.`id` = `genres`.`changed`
-    AND `revisions`.`revision_entity_id` = 9
+    AND `revisions`.`revision_entity_id` = {$this::$originatorClassId}
 WHERE `genres`.`id` = ?
 LIMIT 1
 SQL
@@ -126,7 +118,7 @@ SQL
       $stmt->bind_param("d", $id);
       $stmt->execute();
       $stmt->bind_result(
-        $this->entityId,
+        $this->originatorId,
         $this->userId,
         $this->id,
         $this->deleted,
@@ -183,9 +175,9 @@ SQL
    */
   protected function addCreateFields(\MovLib\Core\Database\Query\Insert $insert) {
     return $insert
-      ->set("descriptions", $this->descriptions)
-      ->set("names", $this->names)
-      ->set("wikipedia", $this->wikipediaLinks)
+      ->setDynamic("descriptions", $this->descriptions)
+      ->setDynamic("names", $this->names)
+      ->setDynamic("wikipedia", $this->wikipediaLinks)
     ;
   }
 

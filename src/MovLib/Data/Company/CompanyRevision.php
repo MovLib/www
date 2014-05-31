@@ -21,10 +21,11 @@ use \MovLib\Core\Database\Database;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
- * Defines the revision entity object for company entities.
+ * Defines the revision object for company entities.
  *
  * @property \MovLib\Data\Company\Company $entity
  *
+ * @author Richard Fussenegger <richard@fussengger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -46,12 +47,14 @@ final class CompanyRevision extends \MovLib\Core\Revision\AbstractRevision {
   const name = "CompanyRevision";
   // @codingStandardsIgnoreEnd
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Static Properties
+
+
   /**
-   * The revision entity's unique identifier.
-   *
-   * @var integer
+   * {@inheritdoc}
    */
-  const REVISION_ENTITY_ID = 5;
+  public static $originatorClassId = 5;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -76,7 +79,7 @@ final class CompanyRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $descriptions = [];
+  public $descriptions;
 
   /**
    * The company's founding date.
@@ -90,7 +93,7 @@ final class CompanyRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $imageDescriptions = [];
+  public $imageDescriptions;
 
   /**
    * The company's weblinks.
@@ -114,21 +117,11 @@ final class CompanyRevision extends \MovLib\Core\Revision\AbstractRevision {
   public $placeId;
 
   /**
-   * {@inheritdoc}
-   */
-  public $revisionEntityId = 5;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $tableName = "companies";
-
-  /**
    * Associative array containing all the company's localized wikipedia links, keyed by language code.
    *
    * @var array
    */
-  public $wikipediaLinks = [];
+  public $wikipediaLinks;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -165,7 +158,7 @@ FROM `companies`
   INNER JOIN `revisions`
     ON `revisions`.`entity_id` = `companies`.`id`
     AND `revisions`.`id` = `companies`.`changed`
-    AND `revisions`.`revision_entity_id` = 5
+    AND `revisions`.`revision_entity_id` = {$this::$originatorClassId}
 WHERE `companies`.`id` = ?
 LIMIT 1
 SQL
@@ -173,7 +166,7 @@ SQL
       $stmt->bind_param("d", $id);
       $stmt->execute();
       $stmt->bind_result(
-        $this->entityId,
+        $this->originatorId,
         $this->userId,
         $this->id,
         $this->deleted,
@@ -197,8 +190,8 @@ SQL
       $connection->dynamicDecode($this->descriptions);
       $connection->dynamicDecode($this->imageDescriptions);
       $connection->dynamicDecode($this->wikipediaLinks);
-      parent::__construct();
     }
+    parent::__construct();
   }
 
   /**
@@ -234,12 +227,12 @@ SQL
       ->setDynamicConditional("descriptions", $languageCode, $this->descriptions, $oldRevision->descriptions)
       ->setDynamicConditional("image_descriptions", $languageCode, $this->imageDescriptions, $oldRevision->imageDescriptions)
       ->setDynamicConditional("wikipedia", $languageCode, $this->wikipediaLinks, $oldRevision->wikipediaLinks)
-      ->set("aliases", serialize($this->aliases))
-      ->set("defunct_date", $this->defunctDate)
-      ->set("links", serialize($this->links))
-      ->set("name", $this->name)
-      ->set("place_id", $this->placeId)
-      ->set("founding_date", $this->foundingDate)
+      ->setConditional("aliases", $this->aliases, $oldRevision->aliases)
+      ->setConditional("defunct_date", $this->defunctDate, $oldRevision->defunctDate)
+      ->setConditional("links", $this->links, $oldRevision->links)
+      ->setConditional("name", $this->name, $oldRevision->name)
+      ->setConditional("place_id", $this->placeId, $oldRevision->placeId)
+      ->setConditional("founding_date", $this->foundingDate, $oldRevision->foundingDate)
     ;
   }
 
@@ -248,12 +241,12 @@ SQL
    */
   protected function addCreateFields(\MovLib\Core\Database\Query\Insert $insert) {
     return $insert
-      ->set("descriptions", $this->descriptions)
-      ->set("image_descriptions", $this->imageDescriptions)
-      ->set("wikipedia", $this->wikipediaLinks)
-      ->set("aliases", serialize($this->aliases))
+      ->setDynamic("descriptions", $this->descriptions)
+      ->setDynamic("image_descriptions", $this->imageDescriptions)
+      ->setDynamic("wikipedia", $this->wikipediaLinks)
+      ->set("aliases", $this->aliases)
       ->set("defunct_date", $this->defunctDate)
-      ->set("links", serialize($this->links))
+      ->set("links", $this->links)
       ->set("name", $this->name)
       ->set("place_id", $this->placeId)
       ->set("founding_date", $this->foundingDate)

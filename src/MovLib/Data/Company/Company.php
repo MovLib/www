@@ -17,14 +17,14 @@
  */
 namespace MovLib\Data\Company;
 
-use \MovLib\Core\Database\Database;
 use \MovLib\Component\Date;
+use \MovLib\Core\Database\Database;
 use \MovLib\Core\Revision\OriginatorTrait;
 use \MovLib\Core\Search\RevisionTrait;
-use \MovLib\Exception\ClientException\NotFoundException;
 use \MovLib\Data\Movie\MovieSet;
-use \MovLib\Data\Series\SeriesSet;
 use \MovLib\Data\Place\Place;
+use \MovLib\Data\Series\SeriesSet;
+use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
  * Defines the company entity object.
@@ -166,7 +166,6 @@ final class Company extends \MovLib\Data\AbstractEntity implements \MovLib\Core\
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
   public function __construct(\MovLib\Core\Container $container, $id = null, array $values = null) {
-    $this->lemma =& $this->name;
     if ($id) {
       $connection = Database::getConnection();
       $stmt = $connection->prepare(<<<SQL
@@ -249,7 +248,6 @@ SQL
     $revision->foundingDate = $this->foundingDate;
     $revision->name         = $this->name;
     $revision->placeId      = $this->placeId;
-
     return $revision;
   }
 
@@ -262,12 +260,12 @@ SQL
     $this->description = $this->getRevisionArrayValue($revision->descriptions);
     $this->description = $this->getRevisionArrayValue($revision->imageDescription);
     $this->wikipedia   = $this->getRevisionArrayValue($revision->wikipediaLinks);
-    $revision->aliases      && $this->aliases       = $revision->aliases;
-    $revision->links        && $this->links         = $revision->links;
-    $revision->defunctDate  && $this->defunctDate   = $revision->defunctDate;
-    $revision->foundingDate && $this->foundingDate  = $revision->foundingDate;
-    $revision->name         && $this->name          = $revision->name;
-    $revision->placeId      && $this->placeId       = $revision->placeId;
+    $revision->aliases      && ($this->aliases       = $revision->aliases);
+    $revision->links        && ($this->links         = $revision->links);
+    $revision->defunctDate  && ($this->defunctDate   = $revision->defunctDate);
+    $revision->foundingDate && ($this->foundingDate  = $revision->foundingDate);
+    $revision->name         && ($this->name          = $revision->name);
+    $revision->placeId      && ($this->placeId       = $revision->placeId);
     return $this;
   }
 
@@ -372,17 +370,14 @@ SQL
    */
   public function init(array $values = null) {
     parent::init($values);
-    if (isset($this->aliases) && !is_array($this->aliases)) {
-      $this->aliases = unserialize($this->aliases);
-    }
-    if (isset($this->links) && !is_array($this->links)) {
-      $this->links = unserialize($this->links);
-    }
-    $this->foundingDate && ($this->foundingDate = new Date($this->foundingDate));
-    $this->defunctDate  && ($this->defunctDate  = new Date($this->defunctDate));
-    $this->placeId      && ($this->place        = new Place($this->container, $this->placeId));
+    $this->aliases              && ($this->aliases      = unserialize($this->aliases));
+    $this->links                && ($this->links        = unserialize($this->links));
+    $this->foundingDate         && ($this->foundingDate = new Date($this->foundingDate));
+    $this->defunctDate          && ($this->defunctDate  = new Date($this->defunctDate));
+    $this->placeId              && ($this->place        = new Place($this->container, $this->placeId));
     $this->imageAlternativeText = $this->intl->t("{company_name} logo.", $this->name);
     $this->imageDirectory       = "upload://company";
+    $this->lemma                = $this->name;
     return $this;
   }
 

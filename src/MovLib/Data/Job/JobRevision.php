@@ -25,6 +25,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  *
  * @property \MovLib\Data\Job\Job $entity
  *
+ * @author Richard Fussenegger <richard@fussengger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -46,12 +47,14 @@ final class JobRevision extends \MovLib\Core\Revision\AbstractRevision {
   const name = "JobRevision";
   // @codingStandardsIgnoreEnd
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Static Properties
+
+
   /**
-   * The revision entity's unique identifier.
-   *
-   * @var integer
+   * {@inheritdoc}
    */
-  const REVISION_ENTITY_ID = 10;
+  public static $originatorClassId = 10;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -62,45 +65,35 @@ final class JobRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $descriptions = [];
-
-  /**
-   * {@inheritdoc}
-   */
-  public $revisionEntityId = 10;
+  public $descriptions;
 
   /**
    * Associative array containing all the job's localized unisex titles, keyed by language code.
    *
    * @var array
    */
-  public $titlesSex0 = [];
+  public $titlesSex0;
 
   /**
    * Associative array containing all the job's localized male titles, keyed by language code.
    *
    * @var array
    */
-  public $titlesSex1 = [];
+  public $titlesSex1;
 
   /**
    * Associative array containing all the job's localized female titles, keyed by language code.
    *
    * @var array
    */
-  public $titlesSex2 = [];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $tableName = "jobs";
+  public $titlesSex2;
 
   /**
    * Associative array containing all the genre's localized wikipedia links, keyed by language code.
    *
    * @var array
    */
-  public $wikipediaLinks = [];
+  public $wikipediaLinks;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -133,7 +126,7 @@ FROM `jobs`
   INNER JOIN `revisions`
     ON `revisions`.`entity_id` = `jobs`.`id`
     AND `revisions`.`id` = `jobs`.`changed`
-    AND `revisions`.`revision_entity_id` = 10
+    AND `revisions`.`revision_entity_id` = {$this::$originatorClassId}
 WHERE `jobs`.`id` = ?
 LIMIT 1
 SQL
@@ -141,7 +134,7 @@ SQL
       $stmt->bind_param("d", $id);
       $stmt->execute();
       $stmt->bind_result(
-        $this->entityId,
+        $this->originatorId,
         $this->userId,
         $this->id,
         $this->deleted,
@@ -207,11 +200,11 @@ SQL
    */
   protected function addCreateFields(\MovLib\Core\Database\Query\Insert $insert) {
     return $insert
-      ->set("descriptions", $this->descriptions)
-      ->set("titles_sex0", $this->titlesSex0)
-      ->set("titles_sex1", $this->titlesSex1)
-      ->set("titles_sex2", $this->titlesSex2)
-      ->set("wikipedia", $this->wikipediaLinks)
+      ->setDynamic("descriptions", $this->descriptions)
+      ->setDynamic("titles_sex0", $this->titlesSex0)
+      ->setDynamic("titles_sex1", $this->titlesSex1)
+      ->setDynamic("titles_sex2", $this->titlesSex2)
+      ->setDynamic("wikipedia", $this->wikipediaLinks)
     ;
   }
 

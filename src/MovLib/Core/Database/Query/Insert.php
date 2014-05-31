@@ -90,6 +90,21 @@ final class Insert extends AbstractQuery {
 
 
   /**
+   * Add field with placeholder to insert statement.
+   *
+   * @param string $fieldName
+   *   The sanitized field name.
+   * @param string $placeholder
+   *   The prepared placeholder.
+   * @return this
+   */
+  protected function addField($fieldName, $placeholder) {
+    $this->setClause .= $this->setClause ? ", " : " SET ";
+    $this->setClause .= "{$fieldName} = {$placeholder}";
+    return $this;
+  }
+
+  /**
    * Set the table to insert into.
    *
    * @param string $table
@@ -107,7 +122,7 @@ final class Insert extends AbstractQuery {
    * @param string $fieldName
    *   The name of the field to set.
    * @param mixed $value
-   *   The value to set. <b>NOTE</b> that arrays are considered dynamic columns.
+   *   The value to set. <b>NOTE</b> that arrays are automatically serialized.
    * @return this
    */
   public function set($fieldName, $value) {
@@ -115,7 +130,7 @@ final class Insert extends AbstractQuery {
 
     // We assume a dynamic column if the value is an array.
     if (is_array($value)) {
-      $placeholder = $this->dynamicColumnCreate($fieldName, $value);
+      $value = serialize($value);
     }
     // Otherwise we have an atomic value and can include it directly.
     else {
@@ -123,11 +138,24 @@ final class Insert extends AbstractQuery {
       $placeholder = $this->getPlaceholder($value);
     }
 
-    // Put the set clause together after compilation.
-    $this->setClause .= $this->setClause ? ", " : " SET ";
-    $this->setClause .= "{$fieldName} = {$placeholder}";
+    return $this->addField($fieldName, $placeholder);
+  }
 
-    return $this;
+  /**
+   * Set dynamic field to value.
+   *
+   * @param string $fieldName
+   *   The name of the dynamic field to set without the <code>"dyn_"</code> prefix.
+   * @param array|null $value
+   *   The value to set.
+   * @return this
+   */
+  public function setDynamic($fieldName, $value) {
+    // Prepare field name, export types and values and get the placeholder.
+    $placeholder = $this->dynamicColumnCreate($fieldName, $value);
+
+    // Add the dynamic column to the insert statement.
+    return $this->addField($fieldName, $placeholder);
   }
 
   /**

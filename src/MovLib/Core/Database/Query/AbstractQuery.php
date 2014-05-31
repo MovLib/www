@@ -89,13 +89,18 @@ abstract class AbstractQuery extends AbstractBase {
    *
    * @param string $fieldName
    *   The name of the dynamic field to set.
-   * @param array $values
+   * @param array|null $values [optional]
    *   The values of the dynamic field to set.
    * @return string
    *   The placeholder for the dynamic field.
    */
-  final protected function dynamicColumnCreate(&$fieldName, array $values) {
+  final protected function dynamicColumnCreate(&$fieldName, array $values = null) {
     $fieldName = $this->sanitizeDynamicFieldName($fieldName);
+
+    // We're done if we have no values at all from the start (NULL or empty array).
+    if (empty($values)) {
+      return "''";
+    }
 
     $placeholder = null;
     foreach ($values as $key => $value) {

@@ -17,8 +17,6 @@
  */
 namespace MovLib\Partial\FormElement;
 
-use \MovLib\Presentation\Error\Unauthorized;
-
 /**
  * Raw HTML textarea form element.
  *
@@ -184,6 +182,9 @@ class TextareaHTMLRaw extends \MovLib\Partial\FormElement\AbstractFormElement {
   protected function validateValue($html, &$errors) {
     // Trim the submitted HTML.
     $html = trim($html);
+
+    // Decode HTML twice.
+    $html = $this->htmlDecodeEntities($this->htmlDecodeEntities($html));
 
     // Normalize to NFC form as recommended by W3C.
     $html = \Normalizer::normalize($html);

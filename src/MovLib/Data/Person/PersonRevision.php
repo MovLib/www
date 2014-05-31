@@ -47,12 +47,14 @@ final class PersonRevision extends \MovLib\Core\Revision\AbstractRevision {
   const name = "PersonRevision";
   // @codingStandardsIgnoreEnd
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Static Properties
+
+
   /**
-   * The revision entity's unique identifier.
-   *
-   * @var integer
+   * {@inheritdoc}
    */
-  const REVISION_ENTITY_ID = 4;
+  public static $originatorClassId = 4;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -77,7 +79,7 @@ final class PersonRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $biographies = [];
+  public $biographies;
 
   /**
    * The person's date of birth in <code>"Y-m-d"</code> format.
@@ -126,7 +128,7 @@ final class PersonRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $imageDescriptions = [];
+  public $imageDescriptions;
 
   /**
    * The person’s weblinks.
@@ -143,11 +145,6 @@ final class PersonRevision extends \MovLib\Core\Revision\AbstractRevision {
   public $name;
 
   /**
-   * {@inheritdoc}
-   */
-  public $revisionEntityId = 4;
-
-  /**
    * The person's sex.
    *
    * @var integer
@@ -155,16 +152,11 @@ final class PersonRevision extends \MovLib\Core\Revision\AbstractRevision {
   public $sex;
 
   /**
-   * {@inheritdoc}
-   */
-  protected $tableName = "persons";
-
-  /**
    * Associative array containing all the genre's localized wikipedia links, keyed by language code.
    *
    * @var array
    */
-  public $wikipediaLinks = [];
+  public $wikipediaLinks;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -205,14 +197,14 @@ FROM `persons`
   INNER JOIN `revisions`
     ON `revisions`.`entity_id` = `persons`.`id`
     AND `revisions`.`id` = `persons`.`changed`
-    AND `revisions`.`revision_entity_id` = ?
+    AND `revisions`.`revision_entity_id` = {$this::$originatorClassId}
 WHERE `persons`.`id` = ?
 LIMIT 1
 SQL
       );
-      $stmt->bind_param("id", $this->revisionEntityId, $id);
+      $stmt->bind_param("d", $id);
       $stmt->bind_result(
-        $this->entityId,
+        $this->originatorId,
         $this->userId,
         $this->id,
         $this->deleted,
@@ -284,7 +276,7 @@ SQL
     if ($this->id) {
       $connection->dynamicDecode($this->biographies);
       $connection->dynamicDecode($this->imageDescriptions);
-      $this->links === (array) $this->links || ($this->links = unserialize($this->links));
+      $this->links && ($this->links = unserialize($this->links));
       $connection->dynamicDecode($this->wikipediaLinks);
     }
     parent::__construct();
@@ -332,7 +324,7 @@ SQL
       ->setConditional("deathdate", $this->deathDate, $oldRevision->deathDate)
       ->setConditional("deathplace_id", $this->deathPlaceId, $oldRevision->deathPlaceId)
       ->setDynamicConditional("image_descriptions", $languageCode, $this->imageDescriptions, $oldRevision->imageDescriptions)
-      ->setConditional("links", serialize($this->links), serialize($oldRevision->links))
+      ->setConditional("links", $this->links, $oldRevision->links)
       ->setConditional("name", $this->name, $oldRevision->name)
       ->setConditional("sex", $this->sex, $oldRevision->sex)
       ->setDynamicConditional("wikipedia", $languageCode, $this->wikipediaLinks, $oldRevision->wikipediaLinks)
@@ -344,18 +336,18 @@ SQL
    */
   protected function addCreateFields(\MovLib\Core\Database\Query\Insert $insert) {
     return $insert
-      ->set("biographies", $this->biographies)
+      ->setDynamic("biographies", $this->biographies)
       ->set("birthdate", $this->birthDate)
       ->set("birthplace_id", $this->birthPlaceId)
       ->set("born_name", $this->bornName)
       ->set("cause_of_death_id", $this->causeOfDeathId)
       ->set("deathdate", $this->deathDate)
       ->set("deathplace_id", $this->deathPlaceId)
-      ->set("image_descriptions", $this->imageDescriptions)
-      ->set("links", serialize($this->links))
+      ->setDynamic("image_descriptions", $this->imageDescriptions)
+      ->set("links", $this->links)
       ->set("name", $this->name)
       ->set("sex", $this->sex)
-      ->set("wikipedia", $this->wikipediaLinks)
+      ->setDynamic("wikipedia", $this->wikipediaLinks)
     ;
   }
 
@@ -370,7 +362,7 @@ SQL
       $old = array_key_exists($id, $oldAliases);
       if ((!$old && ($id = "NULL")) || $oldAliases[$id] != $alias) {
         $inserts && ($inserts .= ", ");
-        $inserts .= "({$id}, {$this->entityId}, '{$connection->real_escape_string($alias)}')";
+        $inserts .= "({$id}, {$this->originatorId}, '{$connection->real_escape_string($alias)}')";
       }
       if ($old) {
         unset($oldAliases[$id]);

@@ -41,26 +41,14 @@ final class MovieRevision extends \MovLib\Core\Revision\AbstractRevision {
   const name = "MovieRevision";
   // @codingStandardsIgnoreEnd
 
-  /**
-   * The entity type used to store revisions.
-   *
-   * @var int
-   */
-  const REVISION_ENTITY_TYPE = 1;
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
+  // ------------------------------------------------------------------------------------------------------------------- Static Properties
 
 
   /**
    * {@inheritdoc}
    */
-  public $revisionEntityId = 1;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $tableName = "movies";
+  public static $originatorClassId = 1;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -75,8 +63,8 @@ final class MovieRevision extends \MovLib\Core\Revision\AbstractRevision {
     }
     if ($this->id) {
       $this->year && ($this->year = (integer) $this->year);
-      parent::__construct();
     }
+    parent::__construct();
   }
 
   /**

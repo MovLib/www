@@ -25,6 +25,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  *
  * @property \MovLib\Data\Help\Article $entity
  *
+ * @author Richard Fussenegger <richard@fussengger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -46,12 +47,14 @@ final class ArticleRevision extends \MovLib\Core\Revision\AbstractRevision {
   const name = "ArticleRevision";
   // @codingStandardsIgnoreEnd
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Static Properties
+
+
   /**
-   * The revision entity's unique identifier.
-   *
-   * @var integer
+   * {@inheritdoc}
    */
-  const REVISION_ENTITY_ID = 11;
+  public static $originatorClassId = 11;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -69,14 +72,14 @@ final class ArticleRevision extends \MovLib\Core\Revision\AbstractRevision {
    *
    * @var array
    */
-  public $titles = [];
+  public $titles;
 
   /**
    * Associative array containing all the articles's localized texts, keyed by ISO 639-1 language code.
    *
    * @var array
    */
-  public $texts = [];
+  public $texts;
 
   /**
    * The help article sub category.
@@ -84,16 +87,6 @@ final class ArticleRevision extends \MovLib\Core\Revision\AbstractRevision {
    * @var mixed
    */
   public $subCategory;
-
-  /**
-   * {@inheritdoc}
-   */
-  public $revisionEntityId = 11;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $tableName = "help_articles";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -125,7 +118,7 @@ FROM `help_articles`
   INNER JOIN `revisions`
     ON `revisions`.`entity_id` = `help_articles`.`id`
     AND `revisions`.`id` = `help_articles`.`changed`
-    AND `revisions`.`revision_entity_id` = 11
+    AND `revisions`.`revision_entity_id` = {$this::$originatorClassId}
 WHERE `help_articles`.`id` = ?
 LIMIT 1
 SQL
@@ -133,7 +126,7 @@ SQL
       $stmt->bind_param("d", $id);
       $stmt->execute();
       $stmt->bind_result(
-        $this->entityId,
+        $this->originatorId,
         $this->category,
         $this->subCategory,
         $this->userId,
@@ -179,12 +172,23 @@ SQL
    * {@inheritdoc}
    */
   protected function addCommitFields(\MovLib\Core\Database\Query\Update $update, \MovLib\Core\Revision\RevisionInterface $oldRevision, $languageCode) {
-    return $update
+    $update
       ->setDynamicConditional("texts", $languageCode, $this->texts, $oldRevision->texts)
       ->setDynamicConditional("titles", $languageCode, $this->titles, $oldRevision->titles)
-      ->set("help_category_id", $this->category->id)
-      ->set("help_subcategory_id", isset($this->subCategory) ? $this->subCategory->id : null)
+      ->setConditional("help_category_id", $this->category->id, $oldRevision->category->id)
     ;
+
+    if (isset($this->subCategory->id) && isset($oldRevision->subCategory->id)) {
+      $update->setConditional("help_subcategory_id", $this->subCategory->id, $oldRevision->subCategory->id);
+    }
+    elseif (isset($this->subCategory->id)) {
+      $update->set("help_subcategory_id", $this->subCategory->id);
+    }
+    elseif (isset($oldRevision->subCategory->id)) {
+      $update->set("help_subcategory_id", null);
+    }
+
+    return $update;
   }
 
   /**
@@ -192,10 +196,10 @@ SQL
    */
   protected function addCreateFields(\MovLib\Core\Database\Query\Insert $insert) {
     return $insert
-      ->set("texts", $this->texts)
-      ->set("titles", $this->titles)
+      ->setDynamic("texts", $this->texts)
+      ->setDynamic("titles", $this->titles)
       ->set("help_category_id", $this->category->id)
-      ->set("help_subcategory_id", isset($this->subCategory) ? $this->subCategory->id : null)
+      ->set("help_subcategory_id", isset($this->subCategory->id) ? $this->subCategory->id : null)
     ;
   }
 

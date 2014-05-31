@@ -18,13 +18,12 @@
 namespace MovLib\Core\Revision;
 
 /**
- * Defines the interface for entities that support revisioning.
+ * Defines the interface for classes that support revisioning.
  *
- * Our revisioning system is pretty similar to the memento design pattern. An entity that supports revisioning knows
- * it's current state and is the originator. Each revisionable entity has to have a memento class, the class has to have
- * the exact same name with the suffix <i>Revision</i>. The memento class is used together with <code>serialize()</code>
- * and <code>unserialize()</code> in the care taker {@see \MovLib\Data\Revision\Revision} to (re-)create previous
- * revisions of an entity.
+ * Our revisioning system is pretty similar to the memento design pattern. A class that supports revisioning knows its
+ * current state and is the originator. Each revisionable entity has to have a memento class, the class has to have the
+ * exact same name with the suffix <i>Revision</i>. The memento class is used together with <code>serialize()</code>
+ * and <code>unserialize()</code> to (re-)create previous revisions of an entity.
  *
  * @link http://www.oodesign.com/memento-pattern.html
  * @author Richard Fussenegger <richard@fussenegger.info>
@@ -36,50 +35,52 @@ namespace MovLib\Core\Revision;
 interface OriginatorInterface {
 
   /**
-   * Commit the edited revisioned entity.
+   * Commit the edited originator.
+   *
+   * <b>NOTE</b><br>
+   * The word <i>commit</i> has nothing to do with the database transaction, it's about the commit of the edits the user
+   * made to the originator to our system.
    *
    * @param integer $userId
-   *   The user's unique identifier who edited the entity.
+   *   The user's unique identifier who edited the originator.
    * @param \MovLib\Component\DateTime $changed
-   *   The date and time the user edited the entity.
+   *   The date and time the user edited the originator. Usually the request date and time.
    * @param integer $oldRevisionId
-   *   The old revision's identifier that was sent along the form when the user started editing the entity.
+   *   The old revision's identifier that was sent along the form when the user started editing the originator.
    * @return this
    */
   public function commit($userId, \MovLib\Component\DateTime $changed, $oldRevisionId);
 
   /**
-   * Create new revisioned entity.
+   * Create new originator.
    *
    * @param integer $userId
-   *   The user's unique identifier who created the entity.
+   *   The user's unique identifier who created the originator.
    * @param \MovLib\Component\DateTime $created
-   *   The date and time the revision entity should use as its identifier within the history of the entity. This is
-   *   usually the request date and time and should match the creation date and time if you create a new entity or the
-   *   changed date and time if you edit an entity.
+   *   The date and time the user created the originator. Usually the request date and time.
    * @return this
    */
   public function create($userId, \MovLib\Component\DateTime $created);
 
   /**
-   * Create a revision based on the current state of the entity.
+   * Create a revision based on the current state of the originator.
    *
    * @param integer $userId
-   *   The user's unique identifier who created/edited the entity.
+   *   The user's unique identifier who created/edited the originator.
    * @param \MovLib\Component\DateTime $changed
-   *   The date and time the user created/edited the entity, should be the request time.
-   * @return \MovLib\Data\Revision\RevisionEntityInterface
-   *   A revision based on the current state of the entity.
+   *   The date and time the user created/edited the originator. Usually the request date and time.
+   * @return \MovLib\Core\Revision\RevisionInterface
+   *   A revision based on the current state of the originator.
    */
   public function createRevision($userId, \MovLib\Component\DateTime $changed);
 
   /**
-   * Set the state of the instance based on the given revision.
+   * Set the state of the originator on the given revision.
    *
-   * @param \MovLib\Data\Revision\RevisionEntityInterface $revisionEntity
+   * @param \MovLib\Core\Revision\RevisionInterface $revision
    *   The revision containing the state that should be recreated.
    * @return this
    */
-  public function setRevision(RevisionInterface $revisionEntity);
+  public function setRevision(\MovLib\Core\Revision\RevisionInterface $revision);
 
 }

@@ -379,7 +379,7 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
     // Parse the HTML input with tidy and clean it.
     // Double decode to circumvent hacks and decode all entities to characters.
     /* @var $tidy \tidy */
-    $tidy = tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body>{$this->htmlDecode($this->htmlDecode($html))}</body></html>");
+    $tidy = tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body>{$this->htmlDecodeEntities($this->htmlDecodeEntities($html))}</body></html>");
     $tidy->cleanRepair();
     if ($tidy->getStatus() === 2) {
       $errors[self::ERROR_INVALID_HTML] = $this->intl->t("Invalid HTML in “{label}” text.", [ "label" => $this->label ]);

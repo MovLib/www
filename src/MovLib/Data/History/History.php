@@ -23,7 +23,7 @@ use \MovLib\Core\Diff\Diff;
 /**
  * Defines the history object.
  *
- * The history unifies handling of loading and patching of specific revisions of any entity.
+ * The history unifies handling of loading and patching of specific revisions of any originator.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -116,10 +116,11 @@ final class History {
     // @devEnd
 
     // Create current revision, this is always our reference point.
-    $class     = "\\MovLib\\Data\\{$className}\\{$className}Revision";
-    $this->cur = new $class($id);
+    $class             = "\\MovLib\\Data\\{$className}\\{$className}Revision";
+    $this->cur         = new $class($id);
+    $originatorClassId = $class::$originatorClassId;
 
-    // Serialize the current revision entity, patching starts from here.
+    // Serialize the current revision, patching starts from here.
     $revision = serialize($this->cur);
 
     // Retrieve the revision range back to the requested old revision, which will automatically include the newer
@@ -141,7 +142,7 @@ ORDER BY `id` DESC
 LIMIT 18446744073709551615 OFFSET 1
 SQL
     );
-    $stmt->bind_param("ddd", $oldRevisionId, $this->cur->entityId, $this->cur->revisionEntityId);
+    $stmt->bind_param("ddd", $oldRevisionId, $this->cur->originatorId, $originatorClassId);
     $stmt->execute();
     $stmt->bind_result($patchRevisionId, $patchUserId, $patch);
 

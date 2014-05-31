@@ -46,40 +46,32 @@ final class SystemPageRevision extends \MovLib\Core\Revision\AbstractRevision {
   const name = "SystemPageRevision";
   // @codingStandardsIgnoreEnd
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Static Properties
+
+
   /**
-   * The revision entity's unique identifier.
-   *
-   * @var integer
+   * {@inheritdoc}
    */
-  const REVISION_ENTITY_ID = 13;
+  public static $originatorClassId = 13;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * {@inheritdoc}
-   */
-  public $revisionEntityId = 13;
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $tableName = "system_pages";
-
-  /**
    * Associative array containing all the system page's localized titles, keyed by ISO 639-1 language code.
    *
    * @var array
    */
-  public $titles = [];
+  public $titles;
 
   /**
    * Associative array containing all the system page's localized texts, keyed by ISO 639-1 language code.
    *
    * @var array
    */
-  public $texts = [];
+  public $texts;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -109,7 +101,7 @@ FROM `system_pages`
   INNER JOIN `revisions`
     ON `revisions`.`entity_id` = `system_pages`.`id`
     AND `revisions`.`id` = `system_pages`.`changed`
-    AND `revisions`.`revision_entity_id` = 13
+    AND `revisions`.`revision_entity_id` = {$this::$originatorClassId}
 WHERE `system_pages`.`id` = ?
 LIMIT 1
 SQL
@@ -117,7 +109,7 @@ SQL
       $stmt->bind_param("d", $id);
       $stmt->execute();
       $stmt->bind_result(
-        $this->entityId,
+        $this->originatorId,
         $this->userId,
         $this->id,
         $this->deleted,
@@ -133,8 +125,8 @@ SQL
     if ($this->id) {
       $connection->dynamicDecode($this->titles);
       $connection->dynamicDecode($this->texts);
-      parent::__construct();
     }
+    parent::__construct();
   }
 
   /**
@@ -166,7 +158,7 @@ SQL
    */
   protected function addCreateFields(\MovLib\Core\Database\Query\Insert $insert) {
     return $insert
-      ->set("texts", $this->texts)
+      ->setDynamic("texts", $this->texts)
     ;
   }
 
