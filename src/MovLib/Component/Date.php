@@ -175,14 +175,16 @@ final class Date extends \DateTime {
    *   Array containing the names of the properties that should be serialized.
    */
   public function __sleep() {
-    return [ "date" ];
+    return [ "year", "month", "day" ];
   }
 
   /**
    * Implements <code>unserialize()</code> callback.
    */
   public function __wakeup() {
-    list($this->year, $this->month, $this->day) = explode("-", $this->format(self::W3C_DATE), 3);
+    // Let PHP's DateTime object initialize itself since its properties are unknown.
+    // This can't be handled by our __sleep() implementation, because it doesn't define __sleep() itself.
+    parent::__construct(sprintf("%04s-%'0'11s-%'0'11s 00:00:00", $this->year, $this->month, $this->day));
   }
 
 
