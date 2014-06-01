@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Series;
 
 use \MovLib\Data\Series\Series;
+use \MovLib\Core\Revision\CommitConflictException;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputInteger;
 use \MovLib\Partial\FormElement\Select;
@@ -34,6 +35,7 @@ use \MovLib\Partial\FormElement\TextareaHTMLExtended;
  * @since 0.0.1-dev
  */
 class Edit extends \MovLib\Presentation\AbstractEditPresenter {
+  use \MovLib\Presentation\Series\SeriesTrait;
 
   // @codingStandardsIgnoreStart
   /**
@@ -43,7 +45,6 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    */
   const name = "Edit";
   // @codingStandardsIgnoreEnd
-  use \MovLib\Presentation\Series\SeriesTrait;
 
   /**
    * {@inheritdoc}
@@ -62,6 +63,7 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    */
    public function getContent() {
     $form = (new Form($this->container))
+      ->addHiddenElement("revision_id", $this->entity->changed->formatInteger())
       ->addElement(new InputInteger($this->container, "start-year", $this->intl->t("Start Year"), $this->entity->startYear->year, [
         "placeholder" => $this->intl->t("yyyy"),
         "required"    => true,
@@ -85,7 +87,7 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
         "data-allow-external" => "true",
       ]))
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
-      ->init([ $this, "valid" ])
+      ->init([ $this, "submit" ])
     ;
     return
       $form->open() .
@@ -98,6 +100,35 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
       $form->elements["wikipedia"] .
       $form->close()
     ;
+  }
+
+  /**
+   * Submit callback for the genre edit form.
+   *
+   * @throws \MovLib\Exception\RedirectException\SeeOtherException
+   *   Always redirects the user back to the edited genre.
+   */
+  public function submit() {
+    try {
+      $this->entity->commit($this->session->userId, $this->request->dateTime, $this->request->filterInput(INPUT_POST, "revision_id", FILTER_VALIDATE_INT));
+      $this->alertSuccess($this->intl->t("Successfully Updated"));
+      throw new SeeOtherException($this->entity->route);
+    }
+    catch (\BadMethodCallException $e) {
+      $this->alertError(
+        $this->intl->t("Validation Error"),
+        $this->intl->t("Seems like you haven’t changed anything, please only submit forms with changes.")
+      );
+    }
+    catch (CommitConflictException $e) {
+      $this->alertError(
+        $this->intl->t("Conflicting Changes"),
+        "<p>{$this->intl->t(
+          "Someone else has already submitted changes before you. Copy any unsaved work in the form below and then {0}reload this page{1}.",
+          [ "<a href='{$this->request->uri}'>", "</a>" ]
+        )}</p>"
+      );
+    }
   }
 
 }

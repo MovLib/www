@@ -18,6 +18,9 @@
 namespace MovLib\Data\Series;
 
 use \MovLib\Component\Date;
+use \MovLib\Core\Database\Database;
+use \MovLib\Core\Revision\OriginatorTrait;
+use \MovLib\Core\Search\RevisionTrait;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -30,7 +33,11 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Data\Rating\RatingInterface {
+class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\OriginatorInterface, \MovLib\Data\Rating\RatingInterface {
+  use OriginatorTrait, RevisionTrait {
+    RevisionTrait::postCommit insteadof OriginatorTrait;
+    RevisionTrait::postCreate insteadof OriginatorTrait;
+  }
 
   // @codingStandardsIgnoreStart
   /**
@@ -204,7 +211,7 @@ class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Data\Rating\
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
   public function __construct(\MovLib\Core\Container $container, $id = null, array $values = null) {
-    $this->lemma =& $this->name;
+    $this->lemma =& $this->displayTitle;
     if ($id) {
       $stmt = Database::getConnection()->prepare(<<<SQL
 SELECT
@@ -218,8 +225,8 @@ SELECT
   `series`.`rating` AS `ratingBayes`,
   `series`.`start_year` AS `startYear`,
   `series`.`status` AS `status`,
-  COLUMN_GET(`series`.`dyn_synopses`, '{$this->intl->languageCode}' AS CHAR) AS `synopsis`,
-  COLUMN_GET(`series`.`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR) AS `wikipedia`,
+  COLUMN_GET(`series`.`dyn_synopses`, '{$container->intl->languageCode}' AS CHAR) AS `synopsis`,
+  COLUMN_GET(`series`.`dyn_wikipedia`, '{$container->intl->languageCode}' AS CHAR) AS `wikipedia`,
   `original_title`.`title`,
   `original_title`.`language_code`,
   IFNULL(`display_title`.`title`, `original_title`.`title`),
@@ -231,7 +238,7 @@ SELECT
 FROM `series`
   LEFT JOIN `series_display_titles`
     ON `series_display_titles`.`series_id` = `series`.`id`
-    AND `series_display_titles`.`language_code` = '{$this->intl->languageCode}'
+    AND `series_display_titles`.`language_code` = '{$container->intl->languageCode}'
   LEFT JOIN `series_titles` AS `display_title`
     ON `display_title`.`id` = `series_display_titles`.`title_id`
   LEFT JOIN `series_original_titles`
@@ -279,94 +286,34 @@ SQL
 
 
   /**
-   * Update the series.
-   *
-   * @return this
-   * @throws \mysqli_sql_exception
+   * {@inheritdoc}
    */
-  public function commit() {
-    $stmt = Database::getConnection()->prepare(<<<SQL
-UPDATE `series` SET
-  `dyn_synopses`  = COLUMN_ADD(`dyn_synopses`, '{$this->intl->languageCode}', ?),
-  `dyn_wikipedia` = COLUMN_ADD(`dyn_wikipedia`, '{$this->intl->languageCode}', ?),
-  `end_year`      = ?,
-  `start_year`    = ?,
-  `status`        = ?
-WHERE `id` = {$this->id}
-SQL
-    );
-    $stmt->bind_param(
-      "ssddi",
-      $this->synopsis,
-      $this->wikipedia,
-      $this->endYear->year,
-      $this->startYear->year,
-      $this->status
-    );
-    $stmt->execute();
-    $stmt->close();
-    return $this;
+  protected function defineSearchIndex(\MovLib\Core\Search\SearchIndexer $search, \MovLib\Core\Revision\RevisionInterface $revision) {
+    return $search;
   }
 
   /**
-   * Create new series.
-   *
-   * @return this
-   * @throws \mysqli_sql_exception
+   * {@inheritdoc}
    */
-  public function create() {
-    $mysqli = Database::getConnection();
-    $mysqli->autocommit(FALSE);
+  protected function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
+    $revision->endYear   = $this->endYear;
+    $revision->startYear = $this->startYear;
+    $revision->status    = $this->status;
+    $this->setRevisionArrayValue($revision->synopses, $this->synopsis);
+    $this->setRevisionArrayValue($revision->wikipediaLinks, $this->wikipedia);
+    return $revision;
+  }
 
-    try {
-      $stmtSeries = $mysqli->prepare(<<<SQL
-INSERT INTO `series` (
-  `dyn_synopses`,
-  `dyn_wikipedia`,
-  `end_year`,
-  `start_year`,
-  `status`
-) VALUES (COLUMN_CREATE('{$this->intl->languageCode}', ?), COLUMN_CREATE('{$this->intl->languageCode}', ?), ?, ?, ?)
-SQL
-      );
-      $stmtSeries->bind_param(
-        "ssddi",
-        $this->synopsis,
-        $this->wikipedia,
-        $this->endYear->year,
-        $this->startYear->year,
-        $this->status
-      );
-      $stmtSeries->execute();
-      $this->id = $stmtSeries->insert_id;
-
-      $stmtTitle = $mysqli->prepare(
-        "INSERT INTO `series_titles` (`series_id`, `dyn_comments`, `language_code`, `title`) VALUES (?, '', ?, ?)"
-      );
-      $stmtTitle->bind_param(
-        "dss",
-        $this->id,
-        $this->originalTitleLanguageCode,
-        $this->originalTitle
-      );
-      $stmtTitle->execute();
-      $titleId = $stmtTitle->insert_id;
-
-      $mysqli->query(
-        "INSERT INTO `series_original_titles` (`title_id`, `series_id`) VALUES ({$titleId}, {$this->id})"
-      );
-      $mysqli->commit();
-    }
-    catch (\Exception $e) {
-      $mysqli->rollback();
-      throw $e;
-    }
-    finally {
-      $mysqli->autocommit(TRUE);
-      $mysqli->close();
-    }
-
-    return $this->init();
+  /**
+   * {@inheritdoc}
+   */
+  protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
+    $this->endYear   = $revision->endYear;
+    $this->startYear = $revision->startYear;
+    $this->status    = $revision->status;
+    $this->synopsis  = $this->getRevisionArrayValue($revision->synopses);
+    $this->wikipedia = $this->getRevisionArrayValue($revision->wikipediaLinks);
+    return $this;
   }
 
   /**

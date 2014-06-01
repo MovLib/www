@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data\Series;
 
+use \MovLib\Core\Database\Database;
+
 /**
  * Defines the series title set object.
  *
@@ -36,6 +38,18 @@ final class TitleSet extends \MovLib\Data\AbstractEntitySet {
    */
   const name = "TitleSet";
   // @codingStandardsIgnoreEnd
+
+  /**
+   * {@inheritdoc}
+   */
+  public static $tableName = "series_titles";
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(\MovLib\Core\Container $container) {
+    parent::__construct($container, "Titles", "Title", $container->intl->tp(-1, "Titles", "Title"));
+  }
 
   /**
    * {@inheritdoc}

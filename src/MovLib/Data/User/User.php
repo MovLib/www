@@ -477,7 +477,7 @@ SQL
   /**
    * Get the rating for an entity.
    *
-   * @param \MovLib\Data\AbstractEntity $entity
+   * @param \MovLib\Core\Entity\AbstractEntity $entity
    *   The entity to get the rating for.
    * @param integer $userId [optional]
    *   The user's unique identifier to get the rating for, defaults to <code>NULL</code> and the id from the current
@@ -485,11 +485,12 @@ SQL
    * @param return integer
    *   The user's rating for this movie, or <code>NULL</code> if the user hasn't rated this movie.
    */
-  public function getRating(\MovLib\Data\AbstractEntity $entity, $userId = null) {
+  public function getRating(\MovLib\Core\Entity\AbstractEntity $entity, $userId = null) {
     if (empty($userId)) {
       $userId = $this->id;
     }
-    $result = Database::getConnection()->query("SELECT `rating` FROM `{$entity->tableName}_ratings` WHERE `user_id` = {$userId} AND `{$entity->singularKey}_id` = {$entity->id} LIMIT 1");
+    $singular = strtolower($entity->bundle);
+    $result = Database::getConnection()->query("SELECT `rating` FROM `{$entity::$tableName}_ratings` WHERE `user_id` = {$userId} AND `{$singular}_id` = {$entity->id} LIMIT 1");
     $rating = $result->fetch_row()[0];
     $result->free();
     return $rating;

@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation\Series;
 
-use \MovLib\Data\Series\Series;
-
 /**
  * A series's history.
  *
@@ -28,7 +26,8 @@ use \MovLib\Data\Series\Series;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Core\Presentation\AbstractHistory {
+final class History extends \MovLib\Core\Presentation\AbstractHistory {
+  use \MovLib\Presentation\Series\SeriesTrait;
 
   // @codingStandardsIgnoreStart
   /**
@@ -38,24 +37,5 @@ class History extends \MovLib\Core\Presentation\AbstractHistory {
    */
   const name = "History";
   // @codingStandardsIgnoreEnd
-  use \MovLib\Presentation\Series\SeriesTrait;
-
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-    return $this->initHistory(
-      new Series($this->container, $_SERVER["SERIES_ID"]),
-      $this->intl->tp(-1, "Series")
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getContent() {
-    return $this->getIndexContent("Series");
-  }
 
 }

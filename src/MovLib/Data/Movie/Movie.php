@@ -178,6 +178,11 @@ final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity impleme
   public $synopsis;
 
   /**
+   * {@inheritdoc}
+   */
+  public static $tableName = "movies";
+
+  /**
    * The movie's taglines.
    *
    * @see Movie::getTaglines()

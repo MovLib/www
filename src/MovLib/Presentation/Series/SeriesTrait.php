@@ -130,12 +130,12 @@ trait SeriesTrait {
       $title = $this->intl->t("{0} ({1}–{2})", [
         $title,
         (new Date($this->intl, isset($this->presenter) ? $this->presenter : $this))->formatYear(
-          $series->startYear,
+          $series->startYear->year,
           [ "property" => "startDate" ],
           $linkYears ? [ "href" => $this->intl->r("/year/{0}/series", $series->startYear->year) ] : null
         ),
         (new Date($this->intl, isset($this->presenter) ? $this->presenter : $this))->formatYear(
-          $series->endYear,
+          $series->endYear->year,
           [ "property" => "startDate" ],
           $linkYears ? [ "href" => $this->intl->r("/year/{0}/series", $series->endYear->year) ] : null
         )
@@ -143,7 +143,7 @@ trait SeriesTrait {
     }
     else if (isset($series->startYear)) {
       $title = $this->intl->t("{0} ({1})", [ $title, (new Date($this->intl, isset($this->presenter) ? $this->presenter : $this))->formatYear(
-        $series->startYear,
+        $series->startYear->year,
         [ "property" => "startDate" ],
         $linkYears ? [ "href" => $this->intl->r("/year/{0}/series", $series->startYear->year) ] : null
       ) ]);
