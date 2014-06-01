@@ -40,6 +40,18 @@ final class LobbyCardSet extends \MovLib\Data\AbstractEntitySet {
   /**
    * {@inheritdoc}
    */
+  public static $tableName = "lobby_cards";
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(\MovLib\Core\Container $container) {
+    parent::__construct($container, "Lobby Cards", "Lobby Card", $container->intl->tp(-1, "Lobby Cards", "Lobby Card"));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function getEntitiesQuery($where = null, $orderBy = null) {
 
   }

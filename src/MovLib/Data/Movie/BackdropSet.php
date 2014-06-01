@@ -40,6 +40,18 @@ final class BackdropSet extends \MovLib\Data\AbstractEntitySet {
   /**
    * {@inheritdoc}
    */
+  public static $tableName = "backdrops";
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(\MovLib\Core\Container $container) {
+    parent::__construct($container, "Backdrops", "Backdrop", $container->intl->tp(-1, "Backdrops", "Backdrop"));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function getEntitiesQuery($where = null, $orderBy = null) {
 
   }

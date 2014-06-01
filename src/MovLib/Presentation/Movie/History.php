@@ -26,7 +26,7 @@ namespace MovLib\Presentation\Movie;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\AbstractHistoryPresenter {
+final class History extends \MovLib\Core\Presentation\AbstractHistory {
   use \MovLib\Presentation\Movie\MovieTrait;
 
   // @codingStandardsIgnoreStart

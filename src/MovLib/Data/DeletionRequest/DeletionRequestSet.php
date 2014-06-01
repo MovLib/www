@@ -40,6 +40,18 @@ final class DeletionRequestSet extends \MovLib\Data\AbstractEntitySet {
   /**
    * {@inheritdoc}
    */
+  public static $tableName = "deletion_requests";
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(\MovLib\Core\Container $container) {
+    parent::__construct($container, "Deletion Requests", "Deletion Request", $container->intl->tp(-1, "Deletion Requests", "Deletion Request"));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function getEntitiesQuery($where = null, $orderBy = null) {
 
   }

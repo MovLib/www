@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Movie;
 
+use \MovLib\Data\Movie\Movie;
+
 /**
  * A movie's history diff.
  *
@@ -28,7 +30,7 @@ namespace MovLib\Presentation\Movie;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class HistoryDiff extends \MovLib\Presentation\Movie\History {
+class HistoryDiff extends \MovLib\Core\Presentation\AbstractHistoryDiff {
 
   // @codingStandardsIgnoreStart
   /**
@@ -39,10 +41,9 @@ class HistoryDiff extends \MovLib\Presentation\Movie\History {
   const name = "HistoryDiff";
   // @codingStandardsIgnoreEnd
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getContent() {
-    return $this->getDiffContent("Movie");
+  public function init() {
+    $this->entity = new Movie($this->container, $_SERVER["MOVIE_ID"]);
+    return $this->initHistoryDiff();
   }
+
 }

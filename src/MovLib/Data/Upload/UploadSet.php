@@ -47,6 +47,20 @@ final class UploadSet extends \MovLib\Data\AbstractEntitySet {
   }
 
   /**
+   * The dummy table name for uploads.
+   *
+   * @var string
+   */
+  public static $tableName = "uploads";
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(\MovLib\Core\Container $container) {
+    parent::__construct($container, "Uploads", "Upload", "Uploads");
+  }
+
+  /**
    * {@inheritdoc}
    */
   protected function getEntitiesQuery($where = null, $orderBy = null) {

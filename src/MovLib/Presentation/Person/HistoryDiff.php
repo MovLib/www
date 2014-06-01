@@ -31,7 +31,7 @@ use \MovLib\Data\Person\Person;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class HistoryDiff extends \MovLib\Presentation\HistoryDiff {
+final class HistoryDiff extends \MovLib\Core\Presentation\AbstractHistoryDiff {
 
   // @codingStandardsIgnoreStart
   /**

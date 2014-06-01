@@ -26,7 +26,7 @@ namespace MovLib\Data\Movie;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class PosterSet extends \MovLib\Data\Image\AbstractImageSet {
+final class PosterSet extends \MovLib\Data\AbstractEntitySet {
 
   // @codingStandardsIgnoreStart
   /**
@@ -36,6 +36,18 @@ final class PosterSet extends \MovLib\Data\Image\AbstractImageSet {
    */
   const name = "PosterSet";
   // @codingStandardsIgnoreEnd
+
+  /**
+   * {@inheritdoc}
+   */
+  public static $tableName = "posters";
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(\MovLib\Core\Container $container) {
+    parent::__construct($container, "Posters", "Poster", $container->intl->tp(-1, "Posters", "Poster"));
+  }
 
   /**
    * {@inheritdoc}

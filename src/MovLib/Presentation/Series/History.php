@@ -28,7 +28,7 @@ use \MovLib\Data\Series\Series;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\AbstractHistoryPresenter {
+class History extends \MovLib\Core\Presentation\AbstractHistory {
 
   // @codingStandardsIgnoreStart
   /**
