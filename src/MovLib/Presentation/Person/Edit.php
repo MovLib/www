@@ -73,9 +73,7 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
       ->addElement(new InputText($this->container, "born-name", $this->intl->t("Birth Name"), $this->entity->bornName, [
         "placeholder" => $this->intl->t("Enter the persons’s birth name."),
       ]))
-      ->addElement(new InputDateSeparate($this->container, "birth-date", $this->intl->t("Birthdate"), $this->entity->birthDate, [
-        "required"    => true,
-      ]))
+      ->addElement(new InputDateSeparate($this->container, "birth-date", $this->intl->t("Birthdate"), $this->entity->birthDate))
       ->addElement(new InputDateSeparate($this->container, "death-date", $this->intl->t("Deathdate"), $this->entity->deathDate))
       ->addElement(new TextareaHTMLExtended($this->container, "biography", $this->intl->t("Biography"), $this->entity->biography, [
         "data-allow-external" => "true",

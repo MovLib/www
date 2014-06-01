@@ -139,6 +139,7 @@ class InputDateSeparate extends \MovLib\Partial\FormElement\AbstractFormElement 
 
     $this->inputDateAttributes = [
       "y" => [
+        "class"       => "w100",
         "id"          => "{$this->id}-year",
         "max"         => $this->yearMax,
         "min"         => $this->yearMin,
@@ -148,6 +149,7 @@ class InputDateSeparate extends \MovLib\Partial\FormElement\AbstractFormElement 
         "value"       => isset($this->value->year)? $this->value->year : null,
       ],
       "m" => [
+        "class"       => "w100",
         "id"          => "{$this->id}-month",
         "name"        => "{$this->id}[month]",
         "max"         => 12,
@@ -157,8 +159,9 @@ class InputDateSeparate extends \MovLib\Partial\FormElement\AbstractFormElement 
         "value"       => isset($this->value->month)? $this->value->month : null,
       ],
       "d" => [
+        "class"       => "w100",
         "id"          => "{$this->id}-day",
-        "max"         => 310,
+        "max"         => 31,
         "min"         => 1,
         "name"        => "{$this->id}[day]",
         "placeholder" => $this->intl->t("dd"),
