@@ -131,7 +131,7 @@ final class Diff {
           $deleteLength = $fromSegmentLength === 1 ? null : $fromSegmentLength;
           $result[$fromSegmentStart * 4 + 0] = "d{$deleteLength}";
         }
-        else {
+        elseif ($toSegmentLength > 0) {
           $insertText   = mb_substr($to, $toSegmentStart, $toSegmentLength);
           $insertLength = mb_strlen($insertText);
           $insertLength = $insertLength === 1 ? null : $insertLength;
