@@ -98,5 +98,12 @@ INSERT INTO `help_subcategories` SET
   `icon`             = 'ico-delete'
 ;
 
+INSERT INTO `help_subcategories` SET
+  `id`               = 11,
+  `title`            = 'Categories',
+  `help_category_id` = 1,
+  `icon`             = 'ico-category'
+;
+
 
 -- END "Help Sub Categories"
