@@ -296,8 +296,8 @@ SQL
    * {@inheritdoc}
    */
   protected function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
-    $revision->endYear   = $this->endYear;
-    $revision->startYear = $this->startYear;
+    $revision->endYear   = $this->endYear->year;
+    $revision->startYear = $this->startYear->year;
     $revision->status    = $this->status;
     $this->setRevisionArrayValue($revision->synopses, $this->synopsis);
     $this->setRevisionArrayValue($revision->wikipediaLinks, $this->wikipedia);

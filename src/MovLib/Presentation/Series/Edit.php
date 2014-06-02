@@ -19,6 +19,7 @@ namespace MovLib\Presentation\Series;
 
 use \MovLib\Data\Series\Series;
 use \MovLib\Core\Revision\CommitConflictException;
+use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputInteger;
 use \MovLib\Partial\FormElement\Select;

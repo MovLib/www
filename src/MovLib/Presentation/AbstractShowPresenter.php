@@ -29,6 +29,9 @@ use \MovLib\Exception\ClientException\GoneException;
  * @since 0.0.1-dev
  */
 abstract class AbstractShowPresenter extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Partial\SectionTrait;
+  use \MovLib\Partial\InfoboxTrait;
 
   // @codingStandardsIgnoreStart
   /**
@@ -38,9 +41,6 @@ abstract class AbstractShowPresenter extends \MovLib\Presentation\AbstractPresen
    */
   const name = "AbstractShowPresenter";
   // @codingStandardsIgnoreEnd
-  use \MovLib\Partial\SidebarTrait;
-  use \MovLib\Partial\SectionTrait;
-  use \MovLib\Partial\InfoboxTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
