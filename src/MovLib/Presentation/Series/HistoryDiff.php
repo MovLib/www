@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Series;
 
+use \MovLib\Data\Series\Series;
+
 /**
  * A series's history diff.
  *
@@ -28,7 +30,7 @@ namespace MovLib\Presentation\Series;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class HistoryDiff extends \MovLib\Presentation\Series\History {
+class HistoryDiff extends \MovLib\Core\Presentation\AbstractHistoryDiff {
 
   // @codingStandardsIgnoreStart
   /**
@@ -42,7 +44,8 @@ class HistoryDiff extends \MovLib\Presentation\Series\History {
   /**
    * {@inheritdoc}
    */
-  public function getContent() {
-    return $this->getDiffContent("Series");
+  public function init() {
+    $this->entity = new Series($this->container, $_SERVER["SERIES_ID"]);
+    return $this->initHistoryDiff();
   }
 }
