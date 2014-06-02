@@ -64,7 +64,7 @@ final class Company extends \MovLib\Data\AbstractEntity implements \MovLib\Core\
    *
    * @var null|array
    */
-  public $aliases;
+  public $aliases = [];
 
   /**
    * The company's total release count.
@@ -106,7 +106,7 @@ final class Company extends \MovLib\Data\AbstractEntity implements \MovLib\Core\
    *
    * @var null|array
    */
-  public $links;
+  public $links = [];
 
   /**
    * The company's total movie count.
@@ -370,8 +370,12 @@ SQL
    */
   public function init(array $values = null) {
     parent::init($values);
-    $this->aliases              && ($this->aliases      = unserialize($this->aliases));
-    $this->links                && ($this->links        = unserialize($this->links));
+    if (isset($this->aliases) && !is_array($this->aliases)) {
+      $this->aliases = unserialize($this->aliases);
+    }
+    if (isset($this->links) && !is_array($this->links)) {
+      $this->links = unserialize($this->links);
+    }
     $this->foundingDate         && ($this->foundingDate = new Date($this->foundingDate));
     $this->defunctDate          && ($this->defunctDate  = new Date($this->defunctDate));
     $this->placeId              && ($this->place        = new Place($this->container, $this->placeId));
