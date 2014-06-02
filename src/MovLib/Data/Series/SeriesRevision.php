@@ -18,6 +18,7 @@
 namespace MovLib\Data\Series;
 
 use \MovLib\Core\Database\Database;
+use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
  * Defines the revision object for series entities.
@@ -141,6 +142,11 @@ SQL
         $this->synopses,
         $this->wikipediaLinks
       );
+      $found = $stmt->fetch();
+      $stmt->close();
+      if ($found === false) {
+        throw new NotFoundException("Couldn't find series for {$id}.");
+      }
     }
     if ($this->id) {
       $connection->dynamicDecode($this->synopses);
@@ -188,11 +194,11 @@ SQL
    */
   protected function addCreateFields(\MovLib\Core\Database\Query\Insert $insert) {
     return $insert
-      ->set("end_year", $this->endYear, $oldRevision->endYear)
-      ->set("start_year", $this->startYear, $oldRevision->startYear)
-      ->set("status", $this->status, $oldRevision->status)
-      ->setDynamic("synopses", $languageCode, $this->synopses, $oldRevision->synopses)
-      ->setDynamic("wikipedia", $languageCode, $this->wikipediaLinks, $oldRevision->wikipediaLinks)
+      ->set("end_year", $this->endYear)
+      ->set("start_year", $this->startYear)
+      ->set("status", $this->status)
+      ->setDynamic("synopses", $this->synopses)
+      ->setDynamic("wikipedia", $this->wikipediaLinks)
     ;
   }
 }

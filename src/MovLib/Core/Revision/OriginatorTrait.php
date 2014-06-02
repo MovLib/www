@@ -212,7 +212,7 @@ trait OriginatorTrait {
     // Note that we're also updating our own changed date. It doesn't matter if this revision is going to be commited to
     // the persistent storage. The current object has to assume that the global state of it will change if it creates a
     // new revision of itself.
-    $this->changed = $revision->changed = $revision->created = $changed;
+    $this->changed = $revision->created = $changed;
 
     // Let the concrete class perform more export work on the revision.
     return $this->doCreateRevision($revision);
