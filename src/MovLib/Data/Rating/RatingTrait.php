@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data\Rating;
 
+use \MovLib\Core\Database\Database;
+
 /**
  * Defines the default implementation for the rating interface.
  *
@@ -80,19 +82,19 @@ trait RatingTrait {
     $mysqli = Database::getConnection();
     // This user hasn't voted for this entity yet.
     if ($userRating === null) {
-      $mysqli->query("INSERT INTO `{$this->tableName}_ratings` SET `rating` = {$rating}, `{$this->singularKey}_id` = {$this->id}, `user_id` = {$userId}");
+      $mysqli->query("INSERT INTO `{$this::$tableName}_ratings` SET `rating` = {$rating}, `{$this->set->singularKey}_id` = {$this->id}, `user_id` = {$userId}");
       ++$this->ratingVotes;
     }
     // This user already voted for this entity.
     else {
-      $mysqli->query("UPDATE `{$this->tableName}_ratings` SET `rating` = {$rating} WHERE `{$this->singularKey}_id` = {$this->id} AND `user_id` = {$userId}");
+      $mysqli->query("UPDATE `{$this::$tableName}_ratings` SET `rating` = {$rating} WHERE `{$this->set->singularKey}_id` = {$this->id} AND `user_id` = {$userId}");
     }
 
     // Calculate the new mean rating for this entity.
     $this->ratingMean = round(($this->ratingMean - $userRating + $rating) / $this->ratingVotes, 1);
 
     // Update the entity's rating statistics.
-    $mysqli->query("UPDATE `{$this->tableName}` SET `mean_rating` = {$this->ratingMean}, `votes` = {$this->ratingVotes} WHERE `id` = {$this->id}");
+    $mysqli->query("UPDATE `{$this::$tableName}` SET `mean_rating` = {$this->ratingMean}, `votes` = {$this->ratingVotes} WHERE `id` = {$this->id}");
 
     // @todo Update Bayes rating and global rank!
 
