@@ -43,10 +43,10 @@
     "phpunit/phpunit": "~4"
   },
   "scripts": {
-    "post-install-cmd": "MovLib\\Tool\\Composer::postInstall",
-    "post-update-cmd": "MovLib\\Tool\\Composer::postUpdate",
-    "post-package-install": "MovLib\\Tool\\Composer::postPackageInstall",
-    "post-package-update": "MovLib\\Tool\\Composer::postPackageUpdate"
+    "post-install-cmd": "MovLib\\Console\\Composer::postInstall",
+    "post-update-cmd": "MovLib\\Console\\Composer::postUpdate",
+    "post-package-install": "MovLib\\Console\\Composer::postPackageInstall",
+    "post-package-update": "MovLib\\Console\\Composer::postPackageUpdate"
   },
   "support": {
     "email": "webmaster@movlib.org",

@@ -296,16 +296,6 @@ abstract class AbstractRevision implements RevisionInterface {
     // Allow the concrete revision to perform work before we create the diff patch and start the commit.
     $this->preCommit($connection, $oldRevision, $languageCode);
 
-    header("content-type: text/plain");
-    echo
-      "Error in getPatch() which results in an infinite loop because new jobs get stacked and stacked!" , PHP_EOL , PHP_EOL ,
-      str_repeat("-", 4) , " FROM " , str_repeat("-", 4) , PHP_EOL , PHP_EOL ,
-      serialize($this) , PHP_EOL , PHP_EOL ,
-      str_repeat("-", 4) , " TO " , str_repeat("-", 4) , PHP_EOL , PHP_EOL ,
-      $oldSerialized , PHP_EOL , PHP_EOL
-    ;
-    exit();
-
     // Now we can create the actual diff patch that we'll store in the revisions row of the old revision.
     $diffPatch = (new Diff())->getPatch(serialize($this), $oldSerialized);
 

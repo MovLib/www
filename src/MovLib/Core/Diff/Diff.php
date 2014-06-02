@@ -99,111 +99,23 @@ final class Diff {
   }
 
   /**
-   * Get the differences between two strings as transformations.
+   * Get the diff patch to recreate <var>$old</var> from <var>$new</var>.
    *
-   * The returned diff patch can be used together with the {@see Diff::applyPatch()} method to recreate the
-   * <var>$from</var> string to the <var>$to</var> string at a later point. The transformations are optimized for size,
-   * the computation of the differences can take a long time if the strings are long.
-   *
-   * @param string $from
-   *   The old string.
-   * @param string $to
+   * @param string $new
    *   The new string.
+   * @param string $old
+   *   The old string.
    * @return string
-   *   The difference between two strings as transformations.
+   *   The diff patch that can be used with {@see Diff::applyPatch()} to recreated <var>$old</var> from <var>$new</var>.
    */
-  public function getPatch($from, $to) {
-    // Initialize all variables needed beforehand and add the first parse job.
-    $result     = [];
-    $jobs       = [[ 0, mb_strlen($from), 0, mb_strlen($to) ]];
-    $copyLength = $fromCopyStart = $toCopyStart = 0;
+  public function getPatch($new, $old) {
+    // Our own implementation of the diff contained errors, we therefore fall back to the implementation from FineDiff.
+    //
+    // @todo Revisit this problem and create an efficient solution for our use case.
+    $fineDiff = new \cogpowered\FineDiff\Diff();
 
-    // Pop the next job from the stack.
-    while ($job = array_pop($jobs)) {
-      list($fromSegmentStart, $fromSegmentEnd, $toSegmentStart, $toSegmentEnd) = $job;
-
-      $fromSegmentLength = $fromSegmentEnd - $fromSegmentStart;
-      $toSegmentLength   = $toSegmentEnd - $toSegmentStart;
-
-      // Detect simple insert/delete operations and continue with next job.
-      if ($fromSegmentLength === 0 || $toSegmentLength === 0) {
-        if ($fromSegmentLength > 0) {
-          $deleteLength = $fromSegmentLength === 1 ? null : $fromSegmentLength;
-          $result[$fromSegmentStart * 4 + 0] = "d{$deleteLength}";
-        }
-        elseif ($toSegmentLength > 0) {
-          $insertText   = mb_substr($to, $toSegmentStart, $toSegmentLength);
-          $insertLength = mb_strlen($insertText);
-          $insertLength = $insertLength === 1 ? null : $insertLength;
-          $result[$fromSegmentStart * 4 + 1] = "i{$insertLength}:{$insertText}";
-        }
-        continue;
-      }
-
-      // Determine start and length for a copy transformation.
-      if ($fromSegmentLength >= $toSegmentLength) {
-        $copyLength = $toSegmentLength;
-
-        while ($copyLength) {
-          $toCopyStartMax = $toSegmentEnd - $copyLength;
-
-          for ($toCopyStart = $toSegmentStart; $toCopyStart <= $toCopyStartMax; ++$toCopyStart) {
-            $fromCopyStart = mb_strpos(
-              mb_substr($from, $fromSegmentStart, $fromSegmentLength),
-              mb_substr($to, $toCopyStart, $copyLength)
-            );
-
-            if ($fromCopyStart !== false) {
-              $fromCopyStart += $fromSegmentStart;
-              break 2;
-            }
-          }
-
-          --$copyLength;
-        }
-      }
-      else {
-        $copyLength = $fromSegmentLength;
-
-        while ($copyLength) {
-          $fromCopyStartMax = $fromSegmentEnd - $copyLength;
-
-          for ($fromCopyStart = $fromSegmentStart; $fromCopyStart <= $fromCopyStartMax; ++$fromCopyStart) {
-            $toCopyStart = mb_strpos(
-              mb_substr($to, $toSegmentStart, $toSegmentLength),
-              mb_substr($from, $fromCopyStart, $copyLength)
-            );
-
-            if ($toCopyStart !== false) {
-              $toCopyStart += $toSegmentStart;
-              break 2;
-            }
-          }
-
-          --$copyLength;
-        }
-      }
-
-      // A copy operation is possible.
-      if ($copyLength) {
-        $copyTranformationLength = $copyLength === 1 ? null : $copyLength;
-        $result[$fromCopyStart * 4 + 2] = "c{$copyTranformationLength}";
-        // Add new jobs for the parts of the segment before and after the copy part.
-        $jobs[] = [ $fromSegmentStart, $fromCopyStart, $toSegmentStart, $toCopyStart ];
-        $jobs[] = [ $fromCopyStart + $copyLength, $fromSegmentEnd, $toCopyStart + $copyLength, $toSegmentEnd ];
-      }
-      // No copy possible, replace everything.
-      else {
-        $deleteLength = $fromSegmentLength === 1 ? null : $fromSegmentLength;
-        $insertLength = $toSegmentLength === 1 ? null : $toSegmentLength;
-        $insertText   = mb_substr($to, $toSegmentStart, $toSegmentLength);
-        $result[$fromSegmentStart * 4] = "d{$deleteLength}i{$insertLength}:{$insertText}";
-      }
-    }
-
-    // Sort and return the string representation of the transformations.
-    ksort($result, SORT_NUMERIC);
-    return implode(array_values($result));
+    // Note that the Parser class of our FineDiff is patched to use mb_ functions!
+    return (string) $fineDiff->getOpcodes($new, $old);
   }
 
 }

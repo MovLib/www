@@ -160,6 +160,8 @@ SQL
       }
     }
     if ($this->id) {
+      $this->aliases && ($this->aliases = unserialize($this->aliases));
+      $this->links   && ($this->links   = unserialize($this->links));
       $connection->dynamicDecode($this->descriptions);
       $connection->dynamicDecode($this->imageDescriptions);
       $connection->dynamicDecode($this->wikipediaLinks);
