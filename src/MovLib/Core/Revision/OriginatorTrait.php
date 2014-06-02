@@ -229,7 +229,8 @@ trait OriginatorTrait {
    * @param mixed $key [optional]
    *   The key that is used to decide if the value has to be set or not, defaults to <code>NULL</code> and the current
    *   ISO 639-1 language code is used.
-   * @return this
+   * @return mixed
+   *   The the atomic value from the revision array property.
    */
   final protected function getRevisionArrayValue($revisionProperty, $defaultValue = null, $key = null) {
     // Use the current language code of the current concrete instance if no key was passed.
