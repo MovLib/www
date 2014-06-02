@@ -40,84 +40,84 @@ final class Contributions extends \MovLib\Presentation\User\AbstractUserPresente
   const name = "Contributions";
   // @codingStandardsIgnoreEnd
 
-  public function formatArticle(\MovLib\Data\AbstractEntity $article) {
+  public function formatArticle(\MovLib\Core\Entity\AbstractEntity $article) {
     return
       "<td class='tac'><span class='ico ico-help' title='{$this->intl->t("Help Article")}'></span></td>" .
       "<td>{$this->a($article->route, $this->htmlDecode($article->title))}</td>"
     ;
   }
 
-  public function formatAward(\MovLib\Data\AbstractEntity $award) {
+  public function formatAward(\MovLib\Core\Entity\AbstractEntity $award) {
     return
       "<td class='tac'><span class='ico ico-award' title='{$this->intl->t("Award")}'></span></td>" .
       "<td>{$this->a($award->route, $this->htmlDecode($award->name))}</td>"
     ;
   }
 
-  public function formatCategory(\MovLib\Data\AbstractEntity $category) {
+  public function formatCategory(\MovLib\Core\Entity\AbstractEntity $category) {
     return
       "<td class='tac'><span class='ico ico-category' title='{$this->intl->t("Category")}'></span></td>" .
       "<td>{$this->a($category->route, $this->htmlDecode($category->name))}</td>"
     ;
   }
 
-  public function formatCompany(\MovLib\Data\AbstractEntity $company) {
+  public function formatCompany(\MovLib\Core\Entity\AbstractEntity $company) {
     return
       "<td class='tac'><span class='ico ico-company' title='{$this->intl->t("Company")}'></span></td>" .
       "<td>{$this->a($company->route, $this->htmlDecode($company->name))}</td>"
     ;
   }
 
-  public function formatEvent(\MovLib\Data\AbstractEntity $event) {
+  public function formatEvent(\MovLib\Core\Entity\AbstractEntity $event) {
     return
       "<td class='tac'><span class='ico ico-event' title='{$this->intl->t("Event")}'></span></td>" .
       "<td>{$this->a($event->route, $this->htmlDecode($event->name))}</td>"
     ;
   }
 
-  public function formatGenre(\MovLib\Data\AbstractEntity $genre) {
+  public function formatGenre(\MovLib\Core\Entity\AbstractEntity $genre) {
     return
       "<td class='tac'><span class='ico ico-genre' title='{$this->intl->t("Genre")}'></span></td>" .
       "<td>{$this->a($genre->route, $this->htmlDecode($genre->name))}</td>"
     ;
   }
 
-  public function formatJob(\MovLib\Data\AbstractEntity $job) {
+  public function formatJob(\MovLib\Core\Entity\AbstractEntity $job) {
     return
       "<td class='tac'><span class='ico ico-job' title='{$this->intl->t("Job")}'></span></td>" .
       "<td>{$this->a($job->route, $this->htmlDecode($job->title))}</td>"
     ;
   }
 
-  public function formatMovie(\MovLib\Data\AbstractEntity $movie) {
+  public function formatMovie(\MovLib\Core\Entity\AbstractEntity $movie) {
     return
       "<td class='tac'><span class='ico ico-movie' title='{$this->intl->t("Movie")}'></span></td>" .
       "<td>{$this->a($movie->route, $this->htmlDecode($movie->displayTitle))}</td>"
     ;
   }
 
-  public function formatPerson(\MovLib\Data\AbstractEntity $person) {
+  public function formatPerson(\MovLib\Core\Entity\AbstractEntity $person) {
     return
       "<td class='tac'><span class='ico ico-person' title='{$this->intl->t("Person")}'></span></td>" .
       "<td>{$this->a($person->route, $this->htmlDecode($person->name))}</td>"
     ;
   }
 
-  public function formatRelease(\MovLib\Data\AbstractEntity $release) {
+  public function formatRelease(\MovLib\Core\Entity\AbstractEntity $release) {
     return
       "<td class='tac'><span class='ico ico-release' title='{$this->intl->t("Release")}'></span></td>" .
       "<td>{$this->a($release->route, $this->htmlDecode($release->title))}</td>"
     ;
   }
 
-  public function formatSeries(\MovLib\Data\AbstractEntity $series) {
+  public function formatSeries(\MovLib\Core\Entity\AbstractEntity $series) {
     return
       "<td class='tac'><span class='ico ico-series' title='{$this->intl->t("Series")}'></span></td>" .
       "<td>{$this->a($series->route, $this->htmlDecode($series->displayTitle))}</td>"
     ;
   }
 
-  public function formatSystemPage(\MovLib\Data\AbstractEntity $systemPage) {
+  public function formatSystemPage(\MovLib\Core\Entity\AbstractEntity $systemPage) {
     return
       "<td class='tac'><span class='ico ico-star' title='{$this->intl->t("Movlib")}'></span></td>" .
       "<td>{$this->a($systemPage->route, $this->htmlDecode($systemPage->title))}</td>"
