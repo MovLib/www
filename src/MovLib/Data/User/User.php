@@ -544,14 +544,15 @@ SQL
     if ($info["algo"] === 0) {
       throw new \LogicException("The password was hashed with the following unsupported algorithm: {$info["algoName"]}");
     }
-    if ($info["algo"] !== $this->config->passwordAlgorithm) {
+    if ($info["algo"] !== $this->container->config->passwordAlgorithm) {
       throw new \LogicException("The password wasn’t hashed with the currently configured password hashing algorithm.");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
     $mysqli = Database::getConnection();
-    $stmt = $mysqli->prepare("INSERT INTO `users` (`dyn_about_me`, `email`, `name`, `password`, `language_code`) VALUES('', ?, ?, ?, ?)");
-    $stmt->bind_param("ssss", $this->email, $this->name, $this->passwordHash, $this->languageCode);
+    $defaultTimezone = date_default_timezone_get();
+    $stmt = $mysqli->prepare("INSERT INTO `users` (`dyn_about_me`, `email`, `name`, `password`, `language_code`, `timezone`) VALUES('', ?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssss", $this->email, $this->name, $this->passwordHash, $this->languageCode, $defaultTimezone);
     $stmt->execute();
     $stmt->close();
     $this->id = $mysqli->insert_id;
@@ -773,8 +774,8 @@ SQL
    */
   public function updatePassword($passwordHash) {
     // check if the password is hashed with our configured algorithm, otherwise hash it.
-    if (password_get_info($passwordHash)["algo"] !== $this->config->passwordAlgorithm) {
-      $passwordHash = password_hash($passwordHash, $this->config->passwordAlgorithm, $this->config->passwordOptions);
+    if (password_get_info($passwordHash)["algo"] !== $this->container->config->passwordAlgorithm) {
+      $passwordHash = password_hash($passwordHash, $this->container->config->passwordAlgorithm, $this->container->config->passwordOptions);
     }
     $stmt = Database::getConnection()->prepare("UPDATE `users` SET `password` = ? WHERE `id` = ?");
     $stmt->bind_param("sd", $passwordHash, $this->id);

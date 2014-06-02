@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data;
 
+use \MovLib\Core\Database\Database;
+
 /**
  * Defines the interface to access the temporary database table.
  *
