@@ -29,6 +29,8 @@ use \MovLib\Data\Award\Category;
  * @since 0.0.1-dev
  */
 class Persons extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Presentation\Award\Category\CategoryTrait;
 
   // @codingStandardsIgnoreStart
   /**
@@ -38,8 +40,6 @@ class Persons extends \MovLib\Presentation\AbstractPresenter {
    */
   const name = "Persons";
   // @codingStandardsIgnoreEnd
-  use \MovLib\Partial\SidebarTrait;
-  use \MovLib\Presentation\Award\Category\CategoryTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -65,7 +65,7 @@ class Persons extends \MovLib\Presentation\AbstractPresenter {
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Persons"))
       ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("{$this->entity->routeKey}/persons", $this->entity->routeArgs)
+      ->initLanguageLinks("{$this->entity->route->route}/persons", $this->entity->route->args)
       ->breadcrumb->addCrumbs($this->getBreadCrumbs())
     ;
   }

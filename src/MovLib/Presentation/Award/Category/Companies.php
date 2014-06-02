@@ -30,6 +30,8 @@ use \MovLib\Data\Award\Category;
  * @since 0.0.1-dev
  */
 class Companies extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Presentation\Award\Category\CategoryTrait;
 
   // @codingStandardsIgnoreStart
   /**
@@ -39,8 +41,6 @@ class Companies extends \MovLib\Presentation\AbstractPresenter {
    */
   const name = "Companies";
   // @codingStandardsIgnoreEnd
-  use \MovLib\Partial\SidebarTrait;
-  use \MovLib\Presentation\Award\Category\CategoryTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -66,7 +66,7 @@ class Companies extends \MovLib\Presentation\AbstractPresenter {
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->t("Companies"))
       ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("{$this->entity->routeKey}/companies", $this->entity->routeArgs)
+      ->initLanguageLinks("{$this->entity->route->route}/companies", $this->entity->route->args)
       ->breadcrumb->addCrumbs($this->getBreadCrumbs())
     ;
   }

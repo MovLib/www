@@ -28,6 +28,10 @@ namespace MovLib\Data\Award;
  */
 final class CategorySet extends \MovLib\Data\AbstractEntitySet {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
   // @codingStandardsIgnoreStart
   /**
    * Short class name.
@@ -37,10 +41,18 @@ final class CategorySet extends \MovLib\Data\AbstractEntitySet {
   const name = "CategorySet";
   // @codingStandardsIgnoreEnd
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /**
    * {@inheritdoc}
    */
   public static $tableName = "awards_categories";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
    * {@inheritdoc}
@@ -49,27 +61,31 @@ final class CategorySet extends \MovLib\Data\AbstractEntitySet {
     parent::__construct($container, "Categories", "Category", $container->intl->tp(-1, "Categories", "Category"));
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
    * {@inheritdoc}
    */
   protected function getEntitiesQuery($where = null, $orderBy = null) {
     return <<<SQL
 SELECT
-  `awards_categories`.`id` AS `id`,
-  `awards_categories`.`award_id` AS `awardId`,
-  `awards_categories`.`changed` AS `changed`,
-  `awards_categories`.`created` AS `created`,
-  `awards_categories`.`deleted` AS `deleted`,
+  `id`,
+  `award_id` AS `awardId`,
+  `changed`,
+  `created`,
+  `deleted`,
   IFNULL(
-    COLUMN_GET(`awards_categories`.`dyn_names`, '{$this->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`awards_categories`.`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+    COLUMN_GET(`dyn_names`, '{$this->intl->languageCode}' AS CHAR),
+    COLUMN_GET(`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR)
   ) AS `name`,
-  `awards_categories`.`first_year` AS `firstYear`,
-  `awards_categories`.`last_year` AS `lastYear`,
-  `awards_categories`.`count_movies` AS `movieCount`,
-  `awards_categories`.`count_series` AS `seriesCount`,
-  `awards_categories`.`count_persons` AS `personCount`,
-  `awards_categories`.`count_companies` AS `companyCount`
+  `first_year` AS `firstYear`,
+  `last_year` AS `lastYear`,
+  `count_movies` AS `movieCount`,
+  `count_series` AS `seriesCount`,
+  `count_persons` AS `personCount`,
+  `count_companies` AS `companyCount`
 FROM `awards_categories`
 {$where}
 {$orderBy}
@@ -83,16 +99,6 @@ SQL;
     return <<<SQL
 
 SQL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-    $this->pluralKey   = "categories";
-    $this->singularKey = "category";
-    $this->tableName   = "awards_categories";
-    return parent::init();
   }
 
 }

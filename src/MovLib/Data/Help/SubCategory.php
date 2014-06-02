@@ -140,7 +140,6 @@ SQL
       $this->category = new Category($this->container, $this->category);
     }
     $this->route->route = "{$this->category->route->route}/" . sanitize_filename($this->title);
-    $this->route->reset();
     return $this;
   }
 

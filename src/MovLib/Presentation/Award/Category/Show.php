@@ -32,6 +32,7 @@ use \MovLib\Partial\Date;
  * @since 0.0.1-dev
  */
 final class Show extends \MovLib\Presentation\AbstractShowPresenter {
+  use \MovLib\Presentation\Award\Category\CategoryTrait;
 
   // @codingStandardsIgnoreStart
   /**
@@ -41,20 +42,19 @@ final class Show extends \MovLib\Presentation\AbstractShowPresenter {
    */
   const name = "Show";
   // @codingStandardsIgnoreEnd
-  use \MovLib\Presentation\Award\Category\CategoryTrait;
 
   /**
    * {@inheritdoc}
    */
   public function init() {
     $this->entity = new Category($this->container, $_SERVER["CATEGORY_ID"]);
-    $this->initPage($this->entity->name);
+    $this->initPage($this->entity->lemma);
     $this->breadcrumb->addCrumbs([
-      [ $this->intl->r("/awards"), $this->intl->t("Awards") ],
-      [ $this->intl->r("/award/{0}/", [ $this->entity->award->id ]), $this->entity->award->name ],
+      [ $this->entity->award->set->route, $this->intl->t("Awards") ],
+      [ $this->entity->award->route, $this->entity->award->lemma ],
     ]);
-    $this->initShow($this->entity, $this->intl->t("Categories"), "Category", null, $this->getSidebarItems())
-    ;
+    $this->initShow($this->entity, $this->intl->t("Categories"), "Category", null, $this->getSidebarItems());
+    $this->initLanguageLinks($this->entity->route->route, $this->entity->route->args);
     return $this;
   }
 

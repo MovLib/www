@@ -36,6 +36,7 @@ use \MovLib\Partial\FormElement\TextareaHTMLExtended;
  * @since 0.0.1-dev
  */
 class Edit extends \MovLib\Presentation\AbstractEditPresenter {
+  use \MovLib\Presentation\Award\Category\CategoryTrait;
 
   // @codingStandardsIgnoreStart
   /**
@@ -45,21 +46,20 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    */
   const name = "Edit";
   // @codingStandardsIgnoreEnd
-  use \MovLib\Presentation\Award\Category\CategoryTrait;
 
   /**
    * {@inheritdoc}
    */
   public function init() {
     $this->entity = new Category($this->container, $_SERVER["CATEGORY_ID"]);
-    $pageTitle    = $this->intl->t("Edit {0}", [ $this->entity->name ]);
+    $pageTitle    = $this->intl->t("Edit {0}", [ $this->entity->lemma ]);
     $this->initPage($pageTitle, $pageTitle, $this->intl->t("Edit"));
     $this->breadcrumb->addCrumbs([
-      [ $this->intl->r("/awards"), $this->intl->t("Awards") ],
-      [ $this->intl->r("/award/{0}/", [ $this->entity->award->id ]), $this->entity->award->name ],
+      [ $this->entity->award->set->route, $this->intl->t("Awards") ],
+      [ $this->entity->award->route, $this->entity->award->name ],
     ]);
     $this->initEdit($this->entity, $this->intl->t("Categories"), $this->getSidebarItems());
-    $this->initLanguageLinks("{$this->entity->routeKey}/edit", $this->entity->routeArgs);
+    $this->initLanguageLinks("{$this->entity->route->route}/edit", $this->entity->route->args);
     return $this;
   }
 

@@ -223,7 +223,6 @@ SQL
         $this->subCategory = new SubCategory($this->container, $this->subCategory);
       }
       $this->route->route = "{$this->subCategory->route->route}/{0}";
-      $this->route->reset();
     }
     else {
       $this->route->route = "{$this->category->route->route}/{0}";

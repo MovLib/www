@@ -38,7 +38,7 @@ trait CategoryTrait {
     }
     $navItems = [
       [ "movie", "movies", $this->intl->t("Movies"), $this->entity->movieCount ],
-      [ "series", "series", $this->intl->tp(-1, "Series"), $this->entity->seriesCount ],
+      [ "series", "series", $this->intl->tp(-1, "Series", "Series"), $this->entity->seriesCount ],
       [ "person", "persons", $this->intl->t("Persons"), $this->entity->personCount ],
       [ "company separator", "companies", $this->intl->t("Companies"), $this->entity->companyCount ],
     ];
@@ -59,10 +59,10 @@ trait CategoryTrait {
    */
   protected function getBreadCrumbs() {
     return [
-      [ $this->intl->r("/awards"), $this->intl->t("Awards") ],
-      [ $this->intl->r("/award/{0}/", [ $this->entity->award->id ]), $this->entity->award->name ],
-      [ $this->intl->r("/award/{0}/categories", [ $this->entity->award->id ]), $this->intl->t("Categories") ],
-      [ $this->entity->route, $this->entity->name ]
+      [ $this->entity->award->set->route, $this->intl->t("Awards") ],
+      [ $this->entity->award->route, $this->entity->award->name ],
+      [ $this->entity->set->route, $this->intl->t("Categories") ],
+      [ $this->entity->route, $this->entity->lemma ]
     ];
   }
 

@@ -92,8 +92,10 @@ final class History {
 
   /**
    *
+   * @param string $classNamespace [optional]
+   *   The namespace if it differs from <code>"\\MovLib\\Data\\{$className}"</code>.
    */
-  public function __construct($className, $id, $oldRevisionId, $newRevisionId = null) {
+  public function __construct($className, $id, $oldRevisionId, $newRevisionId = null, $classNamespace = null) {
     // @devStart
     // @codeCoverageIgnoreStart
     // The format of the revision identifiers is validated via nginx if a request is made via the WWW. We still validate
@@ -116,7 +118,10 @@ final class History {
     // @devEnd
 
     // Create current revision, this is always our reference point.
-    $class             = "\\MovLib\\Data\\{$className}\\{$className}Revision";
+    if (!isset($classNamespace)) {
+      $classNamespace = "\\MovLib\\Data\\{$className}";
+    }
+    $class             = "{$classNamespace}\\{$className}Revision";
     $this->cur         = new $class($id);
     $originatorClassId = $class::$originatorClassId;
 

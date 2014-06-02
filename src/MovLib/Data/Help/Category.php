@@ -136,7 +136,6 @@ SQL
     parent::init($values);
     $this->articleCount = $this->getCount("help_articles", "`deleted` = false AND `help_category_id` = {$this->id} AND `help_subcategory_id` IS NULL");
     $this->route->route = "/help/" . sanitize_filename($this->title);
-    $this->route->reset();
     return $this;
   }
 

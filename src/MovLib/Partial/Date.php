@@ -119,13 +119,13 @@ final class Date {
     if ($dateFrom || $dateTo) {
       $format = $yearsOnly ? "formatYear" : "format";
       if ($dateFrom) {
-        $date = $this->$format($dateFrom, $fromAttributes);
+        $date = $this->$format($yearsOnly ? $dateFrom->year : $dateFrom, $fromAttributes);
       }
       else {
         $date = $this->presenter->placeholder("unknown");
       }
       if ($dateTo) {
-        $date = $this->intl->t("{0}–{1}", [ $date, $this->$format($dateTo, $toAttributes) ]);
+        $date = $this->intl->t("{0}–{1}", [ $date, $this->$format($yearsOnly ? $dateTo->year : $dateTo, $toAttributes) ]);
       }
       return $date;
     }

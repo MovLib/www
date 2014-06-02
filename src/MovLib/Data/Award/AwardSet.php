@@ -107,13 +107,4 @@ SQL;
 SQL;
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-    $this->pluralKey   = "awards";
-    $this->singularKey = "award";
-    return parent::init();
-  }
-
 }

@@ -29,6 +29,8 @@ use \MovLib\Data\Award\Category;
  * @since 0.0.1-dev
  */
 class Series extends \MovLib\Presentation\AbstractPresenter {
+  use \MovLib\Partial\SidebarTrait;
+  use \MovLib\Presentation\Award\Category\CategoryTrait;
 
   // @codingStandardsIgnoreStart
   /**
@@ -38,8 +40,6 @@ class Series extends \MovLib\Presentation\AbstractPresenter {
    */
   const name = "Series";
   // @codingStandardsIgnoreEnd
-  use \MovLib\Partial\SidebarTrait;
-  use \MovLib\Presentation\Award\Category\CategoryTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -65,7 +65,7 @@ class Series extends \MovLib\Presentation\AbstractPresenter {
     return $this
       ->initPage($pageTitle, $pageTitle, $this->intl->tp(-1, "Series"))
       ->sidebarInitToolbox($this->entity, $this->getSidebarItems())
-      ->initLanguageLinks("{$this->entity->routeKey}/series", $this->entity->routeArgs)
+      ->initLanguageLinks("{$this->entity->route->route}/series", $this->entity->route->args)
       ->breadcrumb->addCrumbs($this->getBreadCrumbs())
     ;
   }

@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Award\Category;
 
+use \MovLib\Core\Routing\Route;
 use \MovLib\Data\Award\Award;
 use \MovLib\Data\Award\Category;
 use \MovLib\Partial\Form;
@@ -51,15 +52,17 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
   public function init() {
     $category             = new Category($this->container);
     $category->award      = new Award($this->container, $_SERVER["AWARD_ID"]);
-    $category->routeIndex = $this->intl->r("/award/{0}/categories", $category->award->id);
+    $category->awardId    = $category->award->id;
+    $category->route      = new Route($this->intl, "/award/{0}/category/create", [ "args" => [ $category->award->id ]]);
+    $category->set->route = new Route($this->intl, "/award/{0}/categories", [ "args" => [ $category->award->id ]]);
 
     $this->initPage($this->intl->t("Create"), $this->intl->t("Create Category for {0}", [ $category->award->name ]));
     $this->breadcrumb->addCrumbs([
-      [ $this->intl->r("/awards"), $this->intl->t("Awards") ],
-      [ $this->intl->r("/award/{0}/", [ $category->award->id ]), $category->award->name ],
+      [ $category->award->set->route, $this->intl->t("Awards") ],
+      [ $category->award->route, $category->award->name ],
     ]);
     $this->initCreate($category, $this->intl->t("Categories"));
-    $this->initLanguageLinks("{$this->entity->routeIndexKey}/create", $this->entity->award->id);
+    $this->initLanguageLinks($this->entity->route->route, $category->award->id);
     return $this;
   }
 

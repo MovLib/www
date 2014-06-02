@@ -18,6 +18,9 @@
 namespace MovLib\Data\Award;
 
 use \MovLib\Component\Date;
+use \MovLib\Core\Database\Database;
+use \MovLib\Core\Revision\OriginatorTrait;
+use \MovLib\Core\Search\RevisionTrait;
 use \MovLib\Data\Award\Award;
 use \MovLib\Exception\ClientException\NotFoundException;
 
@@ -30,7 +33,15 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Category extends \MovLib\Data\AbstractEntity {
+final class Category extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\OriginatorInterface {
+  use OriginatorTrait, RevisionTrait {
+    RevisionTrait::postCommit insteadof OriginatorTrait;
+    RevisionTrait::postCreate insteadof OriginatorTrait;
+  }
+
+
+  //-------------------------------------------------------------------------------------------------------------------- Constants
+
 
   // @codingStandardsIgnoreStart
   /**
@@ -42,24 +53,13 @@ final class Category extends \MovLib\Data\AbstractEntity {
   // @codingStandardsIgnoreEnd
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
-  /**
-   * The entity type used to store revisions.
-   *
-   * @var int
-   */
-  const REVISION_ENTITY_TYPE = 7;
-
-
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
    * The category's award.
    *
-   * @var mixed
+   * @var \Movlib\Data\Award\Award
    */
   public $award;
 
@@ -90,13 +90,6 @@ final class Category extends \MovLib\Data\AbstractEntity {
    * @var null|string
    */
   public $description;
-
-  /**
-   * The category's event.
-   *
-   * @var mixed
-   */
-  public $event;
 
   /**
    * The category's first year.
@@ -149,31 +142,6 @@ final class Category extends \MovLib\Data\AbstractEntity {
    */
   public $seriesCount;
 
-  /**
-   * {@inheritdoc}
-   */
-  public $pluralKey = "categories";
-
-  /**
-   * {@inheritdoc}
-   */
-  public $singularKey = "category";
-
-  /**
-   * {@inheritdoc}
-   */
-  public static $tableName = "awards_categories";
-
-  /**
-   * {@inheritdoc}
-   */
-  public $routeKey = "/award/{0}/category/{1}";
-
-  /**
-   * {@inheritdoc}
-   */
-  public $routeIndexKey = "/award/{0}/category";
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -197,26 +165,26 @@ final class Category extends \MovLib\Data\AbstractEntity {
     if ($id) {
       $stmt = Database::getConnection()->prepare(<<<SQL
 SELECT
-  `awards_categories`.`id` AS `id`,
-  `awards_categories`.`award_id` AS `awardId`,
-  `awards_categories`.`changed` AS `changed`,
-  `awards_categories`.`created` AS `created`,
-  COLUMN_GET(`awards_categories`.`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR),
-  `awards_categories`.`deleted` AS `deleted`,
+  `id`,
+  `award_id`,
+  `changed`,
+  `created`,
+  COLUMN_GET(`dyn_names`, '{$container->intl->defaultLanguageCode}' AS CHAR),
+  `deleted`,
   IFNULL(
-    COLUMN_GET(`awards_categories`.`dyn_names`, '{$this->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`awards_categories`.`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR)
-  ) AS `name`,
-  `awards_categories`.`first_year` AS `firstYear`,
-  `awards_categories`.`last_year` AS `lastYear`,
-  COLUMN_GET(`dyn_descriptions`, '{$this->intl->languageCode}' AS CHAR) AS `description`,
-  COLUMN_GET(`dyn_wikipedia`, '{$this->intl->languageCode}' AS CHAR) AS `wikipedia`,
-  `awards_categories`.`count_movies` AS `movieCount`,
-  `awards_categories`.`count_series` AS `seriesCount`,
-  `awards_categories`.`count_persons` AS `personCount`,
-  `awards_categories`.`count_companies` AS `companyCount`
+    COLUMN_GET(`dyn_names`, '{$container->intl->languageCode}' AS CHAR),
+    COLUMN_GET(`dyn_names`, '{$container->intl->defaultLanguageCode}' AS CHAR)
+  ),
+  `first_year`,
+  `last_year`,
+  COLUMN_GET(`dyn_descriptions`, '{$container->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`dyn_wikipedia`, '{$container->intl->languageCode}' AS CHAR),
+  `count_movies`,
+  `count_series`,
+  `count_persons`,
+  `count_companies`
 FROM `awards_categories`
-WHERE `awards_categories`.`id` = ?
+WHERE `id` = ?
 LIMIT 1
 SQL
       );
@@ -253,114 +221,49 @@ SQL
 
 
   /**
-   * Update the award category.
-   *
-   * @return this
-   * @throws \mysqli_sql_exception
+   * {@inheritdoc}
    */
-  public function commit() {
-
-    $stmt = Database::getConnection()->prepare(<<<SQL
-UPDATE `awards_categories` SET
-  `award_id`         = ?,
-  `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, '{$this->intl->languageCode}', ?),
-  `dyn_names`        = COLUMN_ADD(`dyn_names`, '{$this->intl->languageCode}', ?),
-  `dyn_wikipedia`    = COLUMN_ADD(`dyn_wikipedia`, '{$this->intl->languageCode}', ?),
-  `first_year`       = ?,
-  `last_year`        = ?
-WHERE `id` = {$this->id}
-SQL
-    );
-    $stmt->bind_param(
-      "dsssii",
-      $this->award->id,
-      $this->description,
-      $this->name,
-      $this->wikipedia,
-      $this->firstYear->year,
-      $this->lastYear->year
-    );
-    $stmt->execute();
-
-    return $this;
+  protected function defineSearchIndex(\MovLib\Core\Search\SearchIndexer $search, \MovLib\Core\Revision\RevisionInterface $revision) {
+    return $search->indexSimpleSuggestion($revision->names);
   }
 
   /**
-   * Create new award category.
-   *
-   * @return this
-   * @throws \mysqli_sql_exception
+   * {@inheritdoc}
+   * @param \MovLib\Data\Award\CategoryRevision $revision {@inheritdoc}
+   * @return \MovLib\Data\Award\CategoryRevision {@inheritdoc}
    */
-  public function create() {
-    $mysqli = Database::getConnection();
-    if ($this->intl->languageCode === $this->intl->defaultLanguageCode) {
-      $stmt = $mysqli->prepare(<<<SQL
-INSERT INTO `awards_categories` (
-  `award_id`,
-  `dyn_descriptions`,
-  `dyn_names`,
-  `dyn_wikipedia`,
-  `first_year`,
-  `last_year`
-) VALUES (
-  ?,
-  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
-  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
-  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
-  ?,
-  ?
-);
-SQL
-      );
-      $stmt->bind_param(
-        "dsssii",
-        $this->award->id,
-        $this->description,
-        $this->name,
-        $this->wikipedia,
-        $this->firstYear->year,
-        $this->lastYear->year
-      );
-    }
-    else {
-      $stmt = $mysqli->prepare(<<<SQL
-INSERT INTO `awards_categories` (
-  `award_id`,
-  `dyn_descriptions`,
-  `dyn_names`,
-  `dyn_wikipedia`,
-  `first_year`,
-  `last_year`
-) VALUES (
-  ?,
-  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
-  COLUMN_CREATE(
-    '{$this->intl->defaultLanguageCode}', ?,
-    '{$this->intl->languageCode}', ?
-  ),
-  COLUMN_CREATE('{$this->intl->defaultLanguageCode}', ?),
-  ?,
-  ?
-);
-SQL
-      );
-      $stmt->bind_param(
-        "dssssii",
-        $this->award->id,
-        $this->description,
-        $this->defaultName,
-        $this->name,
-        $this->wikipedia,
-        $this->firstYear->year,
-        $this->lastYear->year
-      );
+  protected function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
+    $this->setRevisionArrayValue($revision->descriptions, $this->description);
+    $this->setRevisionArrayValue($revision->names, $this->name);
+    $this->setRevisionArrayValue($revision->wikipediaLinks, $this->wikipedia);
+    $revision->awardId   = $this->awardId;
+    $revision->firstYear = $this->firstYear->year;
+    $revision->lastYear  = $this->lastYear->year;
+    // Don't forget that we might be a new genre and that we might have been created via a different system locale than
+    // the default one, in which case the user was required to enter a default name. Of course we have to export that
+    // as well to our revision.
+    if (isset($this->defaultName)) {
+      $revision->names[$this->intl->defaultLanguageCode] = $this->defaultName;
     }
 
-    $stmt->execute();
-    $this->id = $stmt->insert_id;
-
-    return $this->init();
+    return $revision;
   }
+
+  /**
+   * {@inheritdoc}
+   * @param \MovLib\Data\Award\CategoryRevision $revision {@inheritdoc}
+   * @return this {@inheritdoc}
+   */
+  protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
+    $this->description   = $this->getRevisionArrayValue($revision->descriptions);
+    $this->name          = $this->getRevisionArrayValue($revision->names);
+    $this->wikipedia     = $this->getRevisionArrayValue($revision->wikipediaLinks);
+    $revision->awardId   && $this->awardId   = $revision->awardId;
+    $revision->firstYear && $this->firstYear = $revision->firstYear;
+    $revision->lastYear  && $this->lastYear  = $revision->lastYear;
+    return $this;
+  }
+
 
   /**
    * {@inheritdoc}
@@ -376,14 +279,33 @@ SQL
     if (isset($this->lastYear) && !$this->lastYear instanceof \stdClass) {
       $this->lastYear  = new Date($this->lastYear);
     }
+    $this->route->route = "/award/{0}/category/{1}";
+    $this->route->args  = [ $this->awardId, $this->id ];
+    $this->set->route->route = "/award/{0}/categories";
+    $this->set->route->args  = [ $this->awardId ];
     return $this;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function lemma($locale) {
-    return $this->name;
+public function lemma($locale) {
+    static $names = null;
+
+    // No need to ask the database if the requested locale matches the loaded locale.
+    if ($locale == $this->intl->locale) {
+      return $this->name;
+    }
+
+    // Extract the language code from the given locale.
+    $languageCode = "{$locale{0}}{$locale{1}}";
+
+    // Load all names for this genre if we haven't done so yet.
+    if (!$names) {
+      $names = json_decode(Database::getConnection()->query("SELECT COLUMN_JSON(`dyn_names`) FROM `awards_categories` WHERE `id` = {$this->id} LIMIT 1")->fetch_all()[0][0], true);
+    }
+
+    return isset($names[$languageCode]) ? $names[$languageCode] : $names[$this->intl->defaultLanguageCode];
   }
 
 }

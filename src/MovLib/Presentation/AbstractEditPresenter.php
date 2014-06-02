@@ -81,8 +81,8 @@ abstract class AbstractEditPresenter extends \MovLib\Presentation\AbstractPresen
     $this->initLanguageLinks("/{$this->entity->set->singularKey}/{0}/edit", $this->entity->id);
 
     $this->breadcrumb->addCrumbs([
-      [ $this->entity->route, $breadcrumbIndexTitle ],
-      [ $this->entity->route, $this->entity->lemma($this->intl->languageCode) ]
+      [ $this->entity->set->route, $breadcrumbIndexTitle ],
+      [ $this->entity->route, $this->entity->lemma ]
     ]);
     return $this;
   }
