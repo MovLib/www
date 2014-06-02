@@ -164,7 +164,7 @@ abstract class AbstractImageEntity extends \MovLib\Data\Image\AbstractReadOnlyIm
     // Move the original file from the temporary upload directory to the persistent storage within the correct directory
     // without altering the image in any way. We want to keep the original for future changes.
     $uri      = $this->imageGetURI();
-    $realpath = $this->fs->realpath($uri);
+    $realpath = $this->container->fs->realpath($uri);
     rename($uploadedFile->path, $realpath);
 
     // Now we can generate all styles based on the original.
