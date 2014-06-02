@@ -91,7 +91,7 @@ class Persons extends \MovLib\Presentation\AbstractPresenter {
   public function getNoItemsContent() {
     return $this->calloutInfo(
       "<p>{$this->intl->t("We couldn’t find any person matching your filter criteria.")}</p>" .
-      "<p>{$this->intl->t("Would you like to {0}create an person{1}?", [ "<a href='{$this->intl->r("/person/create")}'>", "</a>" ])}</p>",
+      "<p>{$this->intl->t("Would you like to {0}create a person{1}?", [ "<a href='{$this->intl->r("/person/create")}'>", "</a>" ])}</p>",
       $this->intl->t("No Persons With This Job")
     );
   }

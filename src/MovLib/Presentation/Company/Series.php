@@ -91,7 +91,7 @@ class Series extends \MovLib\Presentation\AbstractPresenter {
   public function getNoItemsContent() {
     return $this->calloutInfo(
       "<p>{$this->intl->t("We couldn’t find any series matching your filter criteria.")}</p>" .
-      "<p>{$this->intl->t("Would you like to {0}create an series{1}?", [ "<a href='{$this->intl->r("/series/create")}'>", "</a>" ])}</p>",
+      "<p>{$this->intl->t("Would you like to {0}create a series{1}?", [ "<a href='{$this->intl->r("/series/create")}'>", "</a>" ])}</p>",
       $this->intl->t("No Series Related To This Company")
     );
   }

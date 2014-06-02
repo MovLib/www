@@ -243,7 +243,7 @@ class InputDateSeparate extends \MovLib\Partial\FormElement\AbstractFormElement 
     // Validate mandatory year if required
     if (isset($this->attributes["required"]) ) {
       if (empty($value["year"])) {
-        $errors[self::ERROR_REQUIRED] = $this->intl->t("The “{0}” is required.", [ $this->label ]);
+        $errors[self::ERROR_REQUIRED] = $this->intl->t("The field {label} is required.", [ "label" => $this->placeholder($this->label) ]);
       }
     }
     elseif (empty($value["year"]) && empty($value["month"]) && empty($value["day"])) {
@@ -252,15 +252,15 @@ class InputDateSeparate extends \MovLib\Partial\FormElement\AbstractFormElement 
 
     // Month and year are mandatory when a day is present.
     if (!empty($value["day"]) && (empty($value["month"]))) {
-      $errors[self::ERROR_INVALID_MONTH] = $this->intl->t("Month is mandatory in “{0}” date.", [ $this->label ]);
+      $errors[self::ERROR_INVALID_MONTH] = $this->intl->t("Month is mandatory in {label} date.", [ "label" => $this->placeholder($this->label) ]);
     }
     if (!empty($value["day"]) && (empty($value["year"]))) {
-      $errors[self::ERROR_INVALID_YEAR] = $this->intl->t("Year is mandatory in “{0}” date.", [ $this->label ]);
+      $errors[self::ERROR_INVALID_YEAR] = $this->intl->t("Year is mandatory in {label} date.", [ "label" => $this->placeholder($this->label) ]);
     }
 
     // Year is mandatory when a month is present.
     if (!empty($value["month"]) && empty($value["year"])) {
-      $errors[self::ERROR_INVALID_YEAR] = $this->intl->t("Year is mandatory in “{0}” date.", [ $this->label ]);
+      $errors[self::ERROR_INVALID_YEAR] = $this->intl->t("Year is mandatory in {label} date.", [ "label" => $this->placeholder($this->label) ]);
     }
 
     if (!empty($value["day"])) {
@@ -299,7 +299,7 @@ class InputDateSeparate extends \MovLib\Partial\FormElement\AbstractFormElement 
         $date = new Date("{$value["year"]}-{$value["month"]}-{$value["day"]}");
         // Check if parsing the date according to the format failed.
         if ($date === false || (($dateErrors = $date->getLastErrors()) && ($dateErrors["error_count"] !== 0 || $dateErrors["warning_count"] !== 0))) {
-          $errors[self::ERROR_INVALID] = $this->intl->t("The “{0}” date is invalid, only the following format is valid: {format}.", [ $this->label, "format" => Date::W3C_DATE ]);
+          $errors[self::ERROR_INVALID] = $this->intl->t("The {label} date is invalid, only the following format is valid: {format}.", [ "label" => $this->placeholder($this->label), "format" => Date::W3C_DATE ]);
         }
         else {
           return $date;

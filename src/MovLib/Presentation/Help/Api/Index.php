@@ -43,7 +43,7 @@ final class Index extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->initPage($this->intl->t("MovLib API"));
+    $this->initPage($this->intl->t("{sitename} API", [ "sitename" => $this->config->sitename ]));
     $this->initBreadcrumb([ [ $this->intl->r("/help"), $this->intl->t("Help") ] ]);
     $this->initLanguageLinks("/help/api");
     $this->stylesheets[] = "help";

@@ -62,7 +62,7 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
   public function getNoItemsContent() {
     return $this->calloutInfo(
       "<p>{$this->intl->t("We couldn’t find any person matching your filter criteria, or there simply aren’t any persons available.")}</p>" .
-      "<p>{$this->intl->t("Would you like to {0}create an person{1}?", [ "<a href='{$this->intl->r("/person/create")}'>", "</a>" ])}</p>",
+      "<p>{$this->intl->t("Would you like to {0}create a person{1}?", [ "<a href='{$this->intl->r("/person/create")}'>", "</a>" ])}</p>",
       $this->intl->t("No Persons")
     );
   }

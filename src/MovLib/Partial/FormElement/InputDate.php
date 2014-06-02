@@ -110,7 +110,7 @@ class InputDate extends \MovLib\Partial\FormElement\AbstractInput {
 
     // Check if parsing the date according to the format failed.
     if ($date === false || (($dateErrors = $date->getLastErrors()) && ($dateErrors["error_count"] !== 0 || $dateErrors["warning_count"] !== 0))) {
-      $errors = $this->intl->t("The “{0}” date is invalid, only the following format is valid: {format}.", [ $this->label, "format" => Date::FORMAT_W3C ]);
+      $errors = $this->intl->t("The {label} date is invalid, only the following format is valid: {format}.", [ "label" => $this->placeholder($this->label), "format" => Date::FORMAT_W3C ]);
     }
 
     // Validate maximum date value if present and only if we have no errors so far.

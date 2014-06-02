@@ -91,7 +91,7 @@ class Movies extends \MovLib\Presentation\AbstractPresenter {
   public function getNoItemsContent() {
     return $this->calloutInfo(
       "<p>{$this->intl->t("We couldn’t find any movie matching your filter criteria.")}</p>" .
-      "<p>{$this->intl->t("Would you like to {0}create an movie{1}?", [ "<a href='{$this->intl->r("/movie/create")}'>", "</a>" ])}</p>",
+      "<p>{$this->intl->t("Would you like to {0}create a movie{1}?", [ "<a href='{$this->intl->r("/movie/create")}'>", "</a>" ])}</p>",
       $this->intl->t("No Movies Related To This Company")
     );
   }

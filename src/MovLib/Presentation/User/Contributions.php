@@ -119,7 +119,7 @@ final class Contributions extends \MovLib\Presentation\User\AbstractUserPresente
 
   public function formatSystemPage(\MovLib\Core\Entity\AbstractEntity $systemPage) {
     return
-      "<td class='tac'><span class='ico ico-star' title='{$this->intl->t("Movlib")}'></span></td>" .
+      "<td class='tac'><span class='ico ico-star' title='{$this->config->sitename}'></span></td>" .
       "<td>{$this->a($systemPage->route, $this->htmlDecode($systemPage->title))}</td>"
     ;
   }
@@ -161,8 +161,8 @@ final class Contributions extends \MovLib\Presentation\User\AbstractUserPresente
         "<tr>" .
           $this->{"format{$contribution->entity}"}($contribution->entity) .
           "<td class='tac'>{$dateTime->format($contribution->dateTime)}</td>" .
-          "<td><a class='btn btn-info btn-small' href='{$contribution->entity->r("/history")}/{$contribution->revisionId}'>{$this->intl->t("diff")}</a></td>" .
-          "<td><a class='btn btn-success btn-small' href='{$contribution->entity->r("/history")}'>{$this->intl->t("history")}</a></td>" .
+          "<td><a class='btn btn-info btn-small' href='{$contribution->entity->r("/history")}/{$contribution->revisionId}'>{$this->intl->t("Differences")}</a></td>" .
+          "<td><a class='btn btn-success btn-small' href='{$contribution->entity->r("/history")}'>{$this->intl->t("History")}</a></td>" .
         "</tr>"
       ;
     }

@@ -382,7 +382,7 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
     $tidy = tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body>{$this->htmlDecodeEntities($this->htmlDecodeEntities($html))}</body></html>");
     $tidy->cleanRepair();
     if ($tidy->getStatus() === 2) {
-      $errors[self::ERROR_INVALID_HTML] = $this->intl->t("Invalid HTML in “{label}” text.", [ "label" => $this->label ]);
+      $errors[self::ERROR_INVALID_HTML] = $this->intl->t("Invalid HTML in {label} text.", [ "label" => $this->placeholder($this->label) ]);
       return $html;
     }
 
@@ -404,8 +404,8 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
     $tidy->cleanRepair();
     if ($tidy->getStatus() === 2) {
       $errors[self::ERROR_INVALID_HTML] = $this->intl->t(
-        "Invalid HTML after the validation in “{label}” text.",
-        [ "label" => $this->label ]
+        "Invalid HTML after the validation in {label} text.",
+        [ "label" => $this->placeholder($this->label) ]
       );
       return $html;
     }
@@ -433,8 +433,8 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
     // Check if the <code>href</code> attribute was set and validate the URL.
     if (empty($node->attribute) || empty($node->attribute["href"])) {
       $errors[self::ERROR_LINK_NO_TARGET] = $this->intl->t(
-        "Links without a link target in “{label}” text.",
-        [ "label" => $this->label ]
+        "Links without a link target in {label} text.",
+        [ "label" => $this->placeholder($this->label) ]
       );
       return "a";
     }
@@ -446,8 +446,8 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
 
     if (($parts = parse_url($node->attribute["href"])) === false || empty($parts["host"])) {
       $errors[self::ERROR_LINK_INVALID] = $this->intl->t(
-        "Invalid link in “{label}” text ({link_url}).",
-        [ "label" => $this->label, "link_url" => "<code>{$this->htmlEncode($node->attribute["href"])}</code>" ]
+        "Invalid link in {label} text ({link_url}).",
+        [ "label" => $this->placeholder($this->label), "link_url" => "<code>{$this->htmlEncode($node->attribute["href"])}</code>" ]
       );
       return "a";
     }
@@ -465,8 +465,8 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
     else {
       if ($this->allowExternalLinks === false) {
         $errors[self::ERROR_LINK_EXTERNAL] = $this->intl->t(
-          "No external links are allowed in “{label}” text.",
-          [ "label" => $this->label ]
+          "No external links are allowed in {label} text.",
+          [ "label" => $this->placeholder($this->label) ]
         );
         return "a";
       }
@@ -496,23 +496,23 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
     // Validate user, password and port, since we don't allow them.
     if (isset($parts["user"]) || isset($parts["pass"])) {
       $errors[self::ERROR_LINK_CREDENTIALS] = $this->intl->t(
-        "Credentials are not allowed in “{label}” text ({link_url}).",
-        [ "label" => $this->label, "link_url" => "<code>{$this->htmlEncode($node->attribute["href"])}</code>" ]
+        "Credentials are not allowed in {label} text ({link_url}).",
+        [ "label" => $this->placeholder($this->label), "link_url" => "<code>{$this->htmlEncode($node->attribute["href"])}</code>" ]
       );
       return "a";
     }
     if (isset($parts["port"])) {
       $errors[self::ERROR_LINK_PORT] = $this->intl->t(
-        "Ports are not allowed in “{label}” text ({link_url}).",
-        [ "label" => $this->label, "link_url" => "<code>{$this->htmlEncode($node->attribute["href"])}</code>" ]
+        "Ports are not allowed in {label} text ({link_url}).",
+        [ "label" => $this->placeholder($this->label), "link_url" => "<code>{$this->htmlEncode($node->attribute["href"])}</code>" ]
       );
       return "a";
     }
 
     if (filter_var($validateURL, FILTER_VALIDATE_URL, FILTER_REQUIRE_SCALAR | FILTER_FLAG_HOST_REQUIRED) === false) {
       $errors[self::ERROR_LINK_INVALID] = $this->intl->t(
-        "Invalid link in “{label}” text ({link_url}).",
-        [ "label" => $this->label, "link_url" => "<code>{$this->htmlEncode($node->attribute["href"])}</code>" ]
+        "Invalid link in {label} text ({link_url}).",
+        [ "label" => $this->placeholder($this->label), "link_url" => "<code>{$this->htmlEncode($node->attribute["href"])}</code>" ]
       );
       throw new \ErrorException;
     }
@@ -555,8 +555,8 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
     // A <blockquote> without a <cite> is invalid.
     else {
       $errors[self::ERROR_QUOTATION_NO_SOURCE] = $this->intl->t(
-        "The “{label}” text contains a quotation without source.",
-        [ "label" => $this->label ]
+        "The {label} text contains a quotation without source.",
+        [ "label" => $this->placeholder($this->label) ]
       );
       return "blockquote";
     }
@@ -564,8 +564,8 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
     // Do not allow quotations without content.
     if (!isset($node->child[0])) {
       $errors[self::ERROR_QUOTATION_NO_TEXT] = $this->intl->t(
-        "The “{label}” text contains quotation without text.",
-        [ "label" => $this->label ]
+        "The {label} text contains quotation without text.",
+        [ "label" => $this->placeholder($this->label) ]
       );
       return "blockquote";
     }
@@ -762,15 +762,15 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
 
     // Validate the image's src URL.
     if (($url = parse_url($image->attribute["src"])) === false || !isset($url["host"])) {
-      $errors[self::ERROR_IMAGE_INVALID_SOURCE] = $this->intl->t("Image URL seems to be invalid.");
+      $errors[self::ERROR_IMAGE_INVALID_SOURCE] = $this->intl->t("Image URL seems to be invalid ({url}).", [ "url" => $image->attribute["src"] ]);
       return "figure";
     }
 
     // If a host is present check if it's from MovLib.
     if (isset($url["host"]) && $url["host"] != $this->config->hostname && strpos($url["host"], ".{$this->config->hostname}") === false) {
       $errors[self::ERROR_IMAGE_EXTERNAL] = $this->intl->t(
-        "Only images from {movlib} are allowed.",
-        [ "movlib" => $this->config->sitename ]
+        "Only images from {sitename} are allowed.",
+        [ "sitename" => $this->config->sitename ]
       );
       return "figure";
     }
@@ -871,8 +871,8 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
       if (!isset($this->userClasses[$node->attribute["class"]])) {
         $classes = implode(" ", array_keys($this->userClasses));
         $errors[self::ERROR_DISALLOWED_CSS_CLASSES] = $this->intl->t(
-          "Disallowed CSS classes in “{label}” text, allowed values are: {classes}",
-          [ "label" => $this->label, "classes" => "<code>{$classes}</code>" ]
+          "Disallowed CSS classes in {label} text, allowed values are: {classes}",
+          [ "label" => $this->placeholder($this->label), "classes" => "<code>{$classes}</code>" ]
         );
         return null;
       }

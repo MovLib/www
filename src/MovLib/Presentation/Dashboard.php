@@ -81,10 +81,10 @@ final class Dashboard extends \MovLib\Presentation\AbstractPresenter {
         [ "<a href='{$this->intl->r("/team")}'>", "</a>", "<a target='_blank' href='https://www.ohloh.net/p/movlib/estimated_cost'>" ]
       )}</p><h2>{$this->intl->t("{sitename} is {0}open source{1}", [ "<strong>", "</strong>" ])}</h2><p>{$this->intl->t(
         "And like almost all open source projects developed by people in their spare time. We don’t have a 24/7 " .
-        "support team, we aren’t baked by a multi-million dollar company. This means development will be slow compared " .
+        "support team, we aren’t backed by a multi-million dollar company. This means development will be slow compared " .
         "to big commercial projects. We have to go to work each day and take care of other things. If you have any " .
         "talent that might be useful for {sitename} and you’d like to support us, simply {0}get in touch{1}. It " .
-        "doesn’t matter what you might be good at. Maybe you’re a passioned designer, marketer, or a developer " .
+        "doesn’t matter what you might be good at. Maybe you’re a passionate designer, marketer, or a developer " .
         "yourself. Doesn’t matter, {sitename} needs the help of every person who is interested in the topic to reach " .
         "our goal.",
         [ "<a href='{$this->intl->r("/contact")}'>", "</a>" ]

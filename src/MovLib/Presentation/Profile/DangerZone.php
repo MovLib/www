@@ -79,7 +79,7 @@ final class DangerZone extends \MovLib\Presentation\Profile\AbstractProfilePrese
       if ($activeSession->ssid == $this->session->ssid) {
         $active = " class='warning'";
         $btn    = "error";
-        $title  = $this->intl->t("If you use this button all your active session will be terminated and you’ll be signed out!");
+        $title  = $this->intl->t("If you use this button all your active sessions will be terminated and you’ll be signed out!");
         $text   = $this->intl->t("Sign Out");
       }
       else {
@@ -125,7 +125,7 @@ final class DangerZone extends \MovLib\Presentation\Profile\AbstractProfilePrese
         "If you want to delete your account—for whatever reason—click the button below. All your personal data is " .
         "purged from our system and this action is final. Please note that all your contributions and your username " .
         "will stay in our system. You agreed to release all your contributions to the {sitename} database along with " .
-        "an open and free license, therefor each of your contributions don’t belong to you anymore. Attribution to " .
+        "an open and free license, therefore each of your contributions don’t belong to you anymore. Attribution to " .
         "you stays with the username you’ve initially chosen. This doesn’t include any reviews of yours which have no " .
         "open license, they are deleted as well and lost forever. Again, this action is final and there’s no way for " .
         "you to reclaim your account after deletion!",
