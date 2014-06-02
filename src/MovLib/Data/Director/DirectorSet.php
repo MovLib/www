@@ -62,7 +62,9 @@ SELECT
   IFNULL(
     COLUMN_GET(`jobs`.`dyn_titles_sex0`, '{$this->intl->languageCode}' AS BINARY),
     COLUMN_GET(`jobs`.`dyn_titles_sex0`, '{$this->intl->defaultLanguageCode}' AS BINARY)
-  ) AS `jobTitle`
+  ) AS `jobTitle`,
+  `jobs`.`created`,
+  `jobs`.`changed`
 FROM `movies_crew`
   INNER JOIN `persons`
     ON `persons`.`id` = `movies_crew`.`person_id`
@@ -88,6 +90,8 @@ SQL
         $this->entities[$row->id]->personName = $row->personName;
         $this->entities[$row->id]->alias = $row->alias;
         $this->entities[$row->id]->names[Sex::UNKNOWN] = $row->jobTitle;
+        $this->entities[$row->id]->created = $row->created;
+        $this->entities[$row->id]->changed = $row->changed;
         $reflector = new \ReflectionMethod($this->entities[$row->id], "init");
         $reflector->setAccessible(true);
         $reflector->invoke($this->entities[$row->id]);
@@ -99,11 +103,11 @@ SQL
   }
 
   protected function getEntitiesQuery($where = null, $orderBy = null) {
-    
+
   }
 
   protected function getEntitySetsQuery(\MovLib\Data\AbstractEntitySet $set, $in) {
-    
+
   }
 
 }

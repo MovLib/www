@@ -70,7 +70,7 @@ abstract class AbstractMoviePresenter extends \MovLib\Presentation\AbstractPrese
     $this->headingSchemaProperty = null;
 
     if ($title) {
-      $title = str_replace("{0}", $this->entity->displayTitleAndYear, $title);
+      $title = str_replace("{title}", $this->entity->displayTitleAndYear, $title);
     }
     else {
       $title = $this->entity->displayTitleAndYear;
@@ -78,7 +78,7 @@ abstract class AbstractMoviePresenter extends \MovLib\Presentation\AbstractPrese
 
     $movieHelper = new MovieHelper($this->container);
     if ($pageTitle) {
-      $pageTitle = str_replace("{0}", $movieHelper->getStructuredDisplayTitle($this->entity));
+      $pageTitle = str_replace("{title}", $movieHelper->getStructuredDisplayTitle($this->entity), $pageTitle);
     }
     else {
       $pageTitle = $movieHelper->getStructuredDisplayTitle($this->entity, false);
@@ -91,7 +91,7 @@ abstract class AbstractMoviePresenter extends \MovLib\Presentation\AbstractPrese
 
     // Construct the breadcrumbs and route key.
     $this->breadcrumb->addCrumb($this->intl->r("/movies"), $this->intl->t("Movies"));
-    $routeKey = $this->entity->route;
+    $routeKey = $this->entity->route->route;
     if (($shortName = strtolower(static::name)) != "show") {
       $routeKey .= "/{$shortName}";
       $this->breadcrumb->addCrumb($this->entity->route, $this->entity->displayTitleAndYear);

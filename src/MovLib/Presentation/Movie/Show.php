@@ -75,7 +75,7 @@ final class Show extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
     $this->infoboxBefore =
       "{$movieHelper->getStructuredOriginalTitle($this->entity, "p")}{$movieHelper->getStructuredTagline($this->entity)}{$starRating}"
     ;
-    $this->infoboxImageRoute = $this->intl->r("/movie/{0}/posters", $this->entity->id);
+    $this->infoboxImageRoute = $this->entity->r("/posters");
 
     $directorsInfo = null;
     $directorJob   = null;
@@ -88,7 +88,7 @@ final class Show extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
       if ($directorsInfo) {
         $directorsInfo .= ", ";
       }
-      $directorsInfo .= "<a href='{$this->intl->r("/person", $director->personId)}'>{$director->personName}</a>";
+      $directorsInfo .= "<a href='{$this->intl->r("/person/{0}", $director->personId)}'>{$director->personName}</a>";
     }
     if ($directorsInfo) {
       $this->infoboxAdd($directorJob, $directorsInfo);
@@ -100,7 +100,7 @@ final class Show extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
       if ($castInfo) {
         $castInfo .= ", ";
       }
-      $castInfo .= "<a href='{$this->intl->r("/person", $castMember->personId)}'>{$castMember->personName}</a>";
+      $castInfo .= "<a href='{$this->intl->r("/person/{0}", $castMember->personId)}'>{$castMember->personName}</a>";
     }
     if ($castInfo) {
       $this->infoboxAdd($this->intl->t("Cast"), $castInfo);
@@ -108,7 +108,8 @@ final class Show extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
 
     $this->entity->runtime   && $this->infoboxAdd($this->intl->t("Runtime"), (new Duration($this->container))->formatMinutes($this->entity->runtime, [ "property" => "runtime" ]));
     $this->entity->genreSet  && $this->infoboxAdd($this->intl->t("Genres"), (new Genre($this->container))->getList($this->entity->genreSet));
-    $this->entity->countries && $this->infoboxAdd($this->intl->t("Countries"), (new Country($this->container))->getList($this->entity->countries, "contentLocation"));
+    $countries = $this->entity->getCountries();
+    $countries && $this->infoboxAdd($this->intl->t("Countries"), (new Country($this->container))->getList($countries, "contentLocation"));
 
     if ($this->entity->synopsis) {
       $synopsis = $this->entity->synopsis;
@@ -151,13 +152,6 @@ final class Show extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
     }
 
     return $this->sections;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getPageTitle() {
-    return $this->entity->displayTitleAndYear;
   }
 
 }

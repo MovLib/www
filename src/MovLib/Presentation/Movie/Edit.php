@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Movie\Movie;
+use \MovLib\Core\Revision\CommitConflictException;
 use \MovLib\Partial\Form;
 use \MovLib\Partial\FormElement\InputInteger;
 use \MovLib\Partial\FormElement\InputWikipedia;
@@ -60,35 +61,62 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
    * {@inheritdoc}
    */
    public function getContent() {
-    $form = (new Form($this->container))
-      ->addElement(new TextareaHTMLExtended($this->container, "synopsis", $this->intl->t("Synopsis"), $this->entity->synopsis, [
-        "placeholder" => $this->intl->t("Write a synopsis."),
-        "data-allow-external" => "true",
-      ]))
-      ->addElement(new InputInteger($this->container, "runtime", $this->intl->t("Runtime (in seconds)"), $this->entity->runtime, [
-        "min"         => 0,
-        "max"         => 16777215
-      ]))
-      ->addElement(new InputInteger($this->container, "year", $this->intl->t("Year"), $this->entity->year->year, [
+    return (new Form($this->container))
+      ->addHiddenElement("revision_id", $this->entity->changed->formatInteger())
+      ->addElement(new InputInteger($this->container, "year", $this->intl->t("Release Year"), $this->entity->year, [
+        "#prefix"   => "<div class='r'><div class='s s3'>",
+        "#suffix"   => "</div>",
         "placeholder" => $this->intl->t("yyyy"),
         "min"         => 1000,
         "max"         => 9999
+      ]))
+      ->addElement(new InputInteger($this->container, "runtime", $this->intl->t("Runtime"), $this->entity->runtime, [
+        "#prefix"     => "<div class='s s7'>",
+        "#suffix"     => "</div></div>",
+        "#field_suffix" => " {$this->intl->t("Seconds")}",
+        "min"         => 0,
+        "max"         => 16777215
+      ]))
+      ->addElement(new TextareaHTMLExtended($this->container, "synopsis", $this->intl->t("Synopsis"), $this->entity->synopsis, [
+        "placeholder" => $this->intl->t("Write a synopsis."),
+        "data-allow-external" => "true",
       ]))
       ->addElement(new InputWikipedia($this->container, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
         "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/…",
         "data-allow-external" => "true",
       ]))
       ->addAction($this->intl->t("Update"), [ "class" => "btn btn-large btn-success" ])
-      ->init([ $this, "valid" ])
+      ->init([ $this, "submit" ])
     ;
-    return
-      $form->open() .
-      $form->elements["synopsis"] .
-      $form->elements["runtime"] .
-      $form->elements["year"] .
-      $form->elements["wikipedia"] .
-      $form->close()
-    ;
+  }
+
+  /**
+   * Submit callback for the series edit form.
+   *
+   * @throws \MovLib\Exception\RedirectException\SeeOtherException
+   *   Always redirects the user back to the edited series.
+   */
+  public function submit() {
+    try {
+      $this->entity->commit($this->session->userId, $this->request->dateTime, $this->request->filterInput(INPUT_POST, "revision_id", FILTER_VALIDATE_INT));
+      $this->alertSuccess($this->intl->t("Successfully Updated"));
+      throw new SeeOtherException($this->entity->route);
+    }
+    catch (\BadMethodCallException $e) {
+      $this->alertError(
+        $this->intl->t("Validation Error"),
+        $this->intl->t("Seems like you haven’t changed anything, please only submit forms with changes.")
+      );
+    }
+    catch (CommitConflictException $e) {
+      $this->alertError(
+        $this->intl->t("Conflicting Changes"),
+        "<p>{$this->intl->t(
+          "Someone else has already submitted changes before you. Copy any unsaved work in the form below and then {0}reload this page{1}.",
+          [ "<a href='{$this->request->uri}'>", "</a>" ]
+        )}</p>"
+      );
+    }
   }
 
 }

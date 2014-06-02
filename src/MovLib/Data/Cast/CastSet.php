@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\Cast;
 
+use \MovLib\Core\Database\Database;
 use \MovLib\Data\Cast\Cast;
 use \MovLib\Data\Person\Person;
 use \MovLib\Partial\Sex;
@@ -83,9 +84,12 @@ SQL;
 
   final public function loadMovieCast(\MovLib\Data\Movie\Movie $movie) {
     $jobId = Cast::JOB_ID;
-    $result = Database::getConnection()->query(<<<SQL
+    $connection = Database::getConnection();
+    $result = $connection->query(<<<SQL
 SELECT
   `movies_crew`.`person_id` AS `personId`,
+  `persons`.`created` AS `personCreated`,
+  `persons`.`changed` AS `personChanged`,
   `persons`.`name` AS `personName`,
   `persons`.`sex` AS `personSex`,
   `persons`.`birthdate` AS `personBirthDate`,
@@ -98,8 +102,6 @@ SELECT
   `persons`.`image_styles` AS `personImageStyles`,
   `persons`.`image_width` AS `personImageWidth`,
   `movies_crew`.`id`,
-  `movies_crew`.`created`,
-  `movies_crew`.`changed`,
   `movies_crew`.`job_id` AS `jobId`,
   `crew_alias`.`alias` AS `alias`,
   IFNULL(
@@ -116,7 +118,7 @@ FROM `movies_crew`
   LEFT JOIN `persons_aliases` AS `crew_alias`
     ON `crew_alias`.`id` = `movies_crew`.`alias_id`
 WHERE `movies_crew`.`movie_id` = {$movie->id} AND `movies_crew`.`job_id` = {$jobId} AND `persons`.`deleted` = false
-ORDER BY `movies_crew`.`weight` DESC, `persons`.`name`{$this->collations[ $this->intl->languageCode ]} ASC
+ORDER BY `movies_crew`.`weight` DESC, `persons`.`name`{$connection->collate($this->intl->languageCode)} ASC
 SQL
     );
 
@@ -132,7 +134,7 @@ SQL
           "castSet" => new CastSet($this->container),
         ];
         foreach ([
-                    "id", "name", "sex", "birthDate", "bornName",
+                    "id", "created", "changed", "name", "sex", "birthDate", "bornName",
                     "deathDate", "imageCacheBuster", "imageExtension", "imageFilesize", "imageHeight",
                     "imageStyles", "imageWidth"
                 ] as $property) {
@@ -146,7 +148,7 @@ SQL
 
       if (empty($this->entities[$row->personId]->castSet->entities[$row->id])) {
         $this->entities[$row->personId]->castSet->entities[$row->id] = new Cast($this->container, $movie);
-        foreach ([ "id", "created", "changed", "jobId", "alias", "role", "roleId", "roleName" ] as $property) {
+        foreach ([ "id", "jobId", "alias", "role", "roleId", "roleName" ] as $property) {
           $this->entities[$row->personId]->castSet->entities[$row->id]->$property = $row->$property;
         }
         $reflector = new \ReflectionMethod($this->entities[$row->personId]->castSet->entities[$row->id], "init");
@@ -162,7 +164,8 @@ SQL
   public function loadMovieCastLimited(\MovLib\Data\Movie\Movie $movie, $limit = 5) {
     $jobId = Cast::JOB_ID;
     $limit = "LIMIT {$limit}";
-    $result = Database::getConnection()->query(<<<SQL
+    $connection = Database::getConnection();
+    $result = $connection->query(<<<SQL
 SELECT
   `movies_crew`.`id`,
   `persons`.`id` AS `personId`,
@@ -183,7 +186,7 @@ FROM `movies_crew`
 WHERE `movies_crew`.`movie_id` = {$movie->id}
   AND `movies_crew`.`job_id` = {$jobId}
   AND `persons`.`deleted` = false
-ORDER BY `persons`.`name`{$this->collations[$this->intl->languageCode]} ASC
+ORDER BY `persons`.`name`{$connection->collate($this->intl->languageCode)} ASC
 {$limit}
 SQL
     );

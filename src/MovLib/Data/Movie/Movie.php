@@ -18,7 +18,9 @@
 namespace MovLib\Data\Movie;
 
 use \MovLib\Core\Database\Database;
-use \MovLib\Core\Database\Query\Select;
+use \MovLib\Core\Database\Query\Insert;
+use \MovLib\Core\Revision\OriginatorTrait;
+use \MovLib\Core\Search\RevisionTrait;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -31,7 +33,10 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @since 0.0.1-dev
  */
 final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity implements \MovLib\Data\Rating\RatingInterface, \MovLib\Core\Revision\OriginatorInterface {
-  use \MovLib\Core\Revision\OriginatorTrait;
+  use OriginatorTrait, RevisionTrait {
+    RevisionTrait::postCommit insteadof OriginatorTrait;
+    RevisionTrait::postCreate insteadof OriginatorTrait;
+  }
   use \MovLib\Data\Rating\RatingTrait;
 
 
@@ -311,7 +316,6 @@ SQL
         throw new NotFoundException("Couldn't find Movie {$id}");
       }
 
-      $collation = Select::$collations[$container->intl->locale];
       $result = $connection->query(<<<SQL
 SELECT
   `genres`.`id` AS `id`,
@@ -324,7 +328,7 @@ SELECT
 FROM `movies_genres`
   INNER JOIN `genres` ON `genres`.`id` = `movies_genres`.`genre_id`
 WHERE `movies_genres`.`movie_id` = {$this->id}
-ORDER BY `name` {$collation} DESC
+ORDER BY `name` {$connection->collate($container->intl->languageCode)} DESC
 SQL
       );
       while ($genre = $result->fetch_object("\\MovLib\\Data\\Genre\Genre", [ $container ])) {
@@ -351,7 +355,7 @@ SQL
       $countries = $this->intl->getTranslations("countries");
       $result    = Database::getConnection()->query("SELECT `country_code` FROM `movies_countries` WHERE `movie_id` = {$this->id}");
       while ($row = $result->fetch_row()) {
-        $this->countries[] = (object) [ "code" => $row[0], "name" => $countries[$row[0]] ];
+        $this->countries[] = (object) [ "code" => $row[0], "name" => $countries[$row[0]]->name ];
       }
       $result->free();
     }
@@ -398,6 +402,10 @@ SQL
    */
   public function getTaglines() {
     if ($this->taglines === null) {
+      $displayTaglineCondition = null;
+      if ($this->displayTaglineId) {
+        $displayTaglineCondition = " AND `id` != {$this->displayTaglineId}";
+      }
       $connection = Database::getConnection();
       $result = $connection->query(<<<SQL
 SELECT
@@ -406,8 +414,8 @@ SELECT
   `language_code` AS `languageCode`,
   `tagline`
 FROM `movies_taglines`
-WHERE `movie_id` = {$this->id} AND `id` != {$this->displayTaglineId}
-ORDER BY `tagline` {$connection->collate($this->intl->languageCode)}
+WHERE `movie_id` = {$this->id}{$displayTaglineCondition}
+ORDER BY `tagline`{$connection->collate($this->intl->languageCode)}
 SQL
       );
       /* @var $tagline \MovLib\Data\Tagline */
@@ -437,7 +445,8 @@ SQL
       if ($this->originalTitleId !== $this->displayTitleId) {
         $displayTitle = " AND `id` != {$this->displayTitleId}";
       }
-      $result = Database::getConnection()->query(<<<SQL
+      $connection = Database::getConnection();
+      $result = $connection->query(<<<SQL
 SELECT
   `id`,
   COLUMN_GET(`dyn_comments`, '{$this->intl->languageCode}' AS BINARY) AS `comment`,
@@ -445,7 +454,7 @@ SELECT
   `title`
 FROM `movies_titles`
 WHERE `movie_id` = {$this->id} AND `id` != {$this->originalTitleId}{$displayTitle}
-ORDER BY `title`{$this->collations[$this->intl->languageCode]}
+ORDER BY `title`{$connection->collate($this->intl->languageCode)}
 SQL
       );
       /* @var $title \MovLib\Data\Title */
@@ -475,7 +484,7 @@ SQL
   public function lemma($locale) {
     static $titles = null;
 
-    if ($locale == $this->intl->locale) {
+    if (empty($locale) || $locale == $this->intl->locale) {
       return $this->lemma;
     }
 
@@ -494,12 +503,17 @@ SQL
    * @return \MovLib\Data\Movie\MovieRevision {@inheritdoc}
    */
   protected function doCreateRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
-    $revision->year = $this->year;
+    $this->setRevisionArrayValue($revision->synopses, $this->synopsis);
+    $this->setRevisionArrayValue($revision->wikipediaLinks, $this->wikipedia);
+    $revision->runtime = $this->runtime;
+    $revision->year    = $this->year;
 
     // Only overwrite the titles if we have them, note that it's impossible to delete all titles, you always have at
     // least the original title. Therefore any check with isset() or empty() would be pointless. The revision has
     // already loaded all existing titles from the database, so no need to do anything if we have no update for them.
     $this->titles && ($revision->titles = $this->titles);
+
+    // @todo Add all other cross references once they can be edited in the interface.
 
     return $revision;
   }
@@ -510,7 +524,61 @@ SQL
    * @return this {@inheritdoc}
    */
   protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
-    // @todo Implement me!
+    $this->runtime   = $revision->runtime;
+    $this->synopsis  = $this->getRevisionArrayValue($revision->synopses);
+    $this->wikipedia = $this->getRevisionArrayValue($revision->wikipediaLinks);
+    $this->year      = $revision->year;
+    // @todo Add all other cross references once they can be edited in the interface.
+    return $this;
+  }
+
+  protected function defineSearchIndex(\MovLib\Core\Search\SearchIndexer $search, \MovLib\Core\Revision\RevisionInterface $revision) {
+    return $search;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function preCommit(\MovLib\Core\Database\Connection $connection, \MovLib\Core\Revision\RevisionInterface $revision, $oldRevisionId) {
+    // @todo Implement saving of cross references once they can be edited.
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function postCreate(\MovLib\Core\Database\Connection $connection, \MovLib\Core\Revision\RevisionInterface $revision) {
+    // Insert original title.
+    $this->originalTitleId = (new Insert($connection, "movies_titles"))
+      ->set("movie_id", $this->id)
+      ->setDynamic("comments", null)
+      ->set("language_code", $this->originalTitleLanguageCode)
+      ->set("title", $this->originalTitle)
+      ->execute()
+    ;
+    (new Insert($connection, "movies_original_titles"))
+      ->set("movie_id", $this->id)
+      ->set("title_id", $this->originalTitleId)
+      ->execute()
+    ;
+
+    // @todo Insert user entered display title, when implemented.
+    $this->displayTitleId = $this->originalTitleId;
+    (new Insert($connection, "movies_display_titles"))
+      ->set("language_code", $this->intl->languageCode)
+      ->set("movie_id", $this->id)
+      ->set("title_id", $this->originalTitleId)
+      ->execute()
+    ;
+    if ($this->intl->languageCode != $this->intl->defaultLanguageCode) {
+      (new Insert($connection, "movies_display_titles"))
+        ->set("language_code", $this->intl->defaultLanguageCode)
+        ->set("movie_id", $this->id)
+        ->set("title_id", $this->originalTitleId)
+        ->execute()
+      ;
+    }
+
     return $this;
   }
 
