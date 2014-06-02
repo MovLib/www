@@ -78,7 +78,7 @@ final class Index extends \MovLib\Presentation\AbstractPresenter {
         "<div class='r'>" .
           "<div class='s s6 tac well'>" .
             "<p class='big'>{$this->intl->t("Building something cool? Check out our API!")}</p>" .
-            "<a class='ico ico-api btn btn-primary btn-medium' href='{$this->intl->r("/api")}'> " .
+            "<a class='ico ico-api btn btn-primary btn-medium' href='{$this->intl->r("/help/api")}'> " .
               $this->intl->t("API Documentation") .
             "</a>" .
           "</div>" .

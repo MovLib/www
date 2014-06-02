@@ -100,12 +100,12 @@ final class Home extends \MovLib\Presentation\AbstractPresenter {
     }
 
     return
-      "<div class='c'><div class='r'>{$content}<div class='s s4 tac'>{$this->a(
-        "/releases/create", $this->intl->t("Add a Release"), [ "class" => "btn btn-info btn-large" ]
-      )}</div><div class='s s4 tac'>{$this->a(
-        "/profile/join", $this->intl->t("Join {sitename}", $tSitenameArg), [ "class" => "btn btn-success btn-large" ]
-      )}</div><div class='s s4 tac'>{$this->a(
-        "/help/api", $this->intl->t("Read the API documentation"),  [ "class" => "btn btn-large" ]
+      "<div class='c'><div class='r'>{$content}<div class='s s4 tac'>{$this->a($this->intl->r("/release/create"),
+        $this->intl->t("Add a Release"), [ "class" => "btn btn-info btn-large" ]
+      )}</div><div class='s s4 tac'>{$this->a($this->intl->r("/profile/join"),
+        $this->intl->t("Join {sitename}", $tSitenameArg), [ "class" => "btn btn-success btn-large" ]
+      )}</div><div class='s s4 tac'>{$this->a($this->intl->r("/help/api"),
+        $this->intl->t("Read the API documentation"),  [ "class" => "btn btn-large" ]
       )}</div></div></div>"
     ;
   }

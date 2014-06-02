@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data\Release;
 
-use \MovLib\Data\Revision;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -245,17 +244,8 @@ SQL
     }
   }
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-    $this->pluralKey   = "releases";
-    $this->singularKey = "release";
-    return parent::init();
+  public function lemma($locale) {
+    return $this->title;
   }
 
 }

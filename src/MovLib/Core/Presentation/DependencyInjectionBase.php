@@ -151,7 +151,7 @@ class DependencyInjectionBase extends \MovLib\Core\Presentation\Base {
    * @link http://www.w3.org/TR/html5/text-level-semantics.html#the-a-element
    * @link http://www.nngroup.com/articles/avoid-within-page-links/ Avoid Within-Page Links
    * @param string $route
-   *   The original English route.
+   *   The translated route.
    * @param string $text
    *   The translated text that should appear as link on the page.
    * @param array $attributes [optional]
