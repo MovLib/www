@@ -17,8 +17,10 @@
  */
 namespace MovLib\Data\Crew;
 
+use \MovLib\Core\Database\Database;
 use \MovLib\Data\Cast\Cast;
 use \MovLib\Data\Crew\Crew;
+use \MovLib\Data\Company\Company;
 use \MovLib\Data\Job\Job;
 use \MovLib\Data\Person\Person;
 use \MovLib\Partial\Sex;
@@ -82,7 +84,8 @@ final class CrewSet extends \MovLib\Data\AbstractEntitySet {
 
   public function loadMovieCrew(\MovLib\Data\Movie\Movie $movie) {
     $castJobId = Cast::JOB_ID;
-    $result = Database::getConnection()->query(<<<SQL
+    $connection = Database::getConnection();
+    $result = $connection->query(<<<SQL
 SELECT
   `movies_crew`.`person_id` AS `personId`,
   `movies_crew`.`company_id` AS `companyId`,
@@ -91,14 +94,18 @@ SELECT
     `companies`.`name`
   ) AS `entityName`,
   `movies_crew`.`id`,
-  `movies_crew`.`created`,
-  `movies_crew`.`changed`,
   `movies_crew`.`job_id` AS `jobId`,
   IFNULL(
     COLUMN_GET(`jobs`.`dyn_titles_sex0`, '{$this->intl->languageCode}' AS CHAR(255)),
     COLUMN_GET(`jobs`.`dyn_titles_sex0`, '{$this->intl->defaultLanguageCode}' AS CHAR(255))
   ) AS `jobTitle`,
-  `crew_alias`.`alias` AS `alias`
+  `crew_alias`.`alias` AS `alias`,
+  `jobs`.`changed` AS `jobChanged`,
+  `jobs`.`created` AS `jobCreated`,
+  `persons`.`changed` AS `personChanged`,
+  `persons`.`created` AS `personCreated`,
+  `companies`.`changed` AS `companyChanged`,
+  `companies`.`created` AS `companyCreated`
 FROM `movies_crew`
   INNER JOIN `jobs`
     ON `jobs`.`id` = `movies_crew`.`job_id`
@@ -112,8 +119,8 @@ WHERE `movies_crew`.`movie_id` = {$movie->id}
   AND `movies_crew`.`job_id` > {$castJobId}
   AND `jobs`.`deleted` = false
   AND (`persons`.`deleted` = false OR `companies`.`deleted` = false)
-ORDER BY `jobTitle`{$this->collations[ $this->intl->languageCode ]} ASC,
-  `entityName`{$this->collations[ $this->intl->languageCode ]} ASC
+ORDER BY `jobTitle`{$connection->collate($this->intl->languageCode)} ASC,
+  `entityName`{$connection->collate($this->intl->languageCode)} ASC
 SQL
     );
 
@@ -129,6 +136,8 @@ SQL
           "crewSet" => new CrewSet($this->container),
         ];
         $this->entities[$row->jobId]->job->id = $row->jobId;
+        $this->entities[$row->jobId]->job->changed = $row->jobChanged;
+        $this->entities[$row->jobId]->job->created = $row->jobCreated;
         $this->entities[$row->jobId]->job->names[Sex::UNKNOWN] = $row->jobTitle;
         $reflector = new \ReflectionMethod($this->entities[$row->jobId]->job, "init");
         $reflector->setAccessible(true);
@@ -136,7 +145,7 @@ SQL
       }
 
       if (empty($this->entities[$row->jobId]->crewSet->entities[$row->id])) {
-        $this->log->debug(print_r($row, true));
+        //$this->log->debug(print_r($row, true));
         $this->entities[$row->jobId]->crewSet->entities[$row->id]            = new Crew($this->container);
         $this->entities[$row->jobId]->crewSet->entities[$row->id]->id        = $row->id;
         $this->entities[$row->jobId]->crewSet->entities[$row->id]->movieId   = $movie->id;
@@ -145,18 +154,22 @@ SQL
         $this->entities[$row->jobId]->crewSet->entities[$row->id]->jobId     = $row->jobId;
         $this->entities[$row->jobId]->crewSet->entities[$row->id]->alias     = $row->alias;
 
-        if (isset($row->personId)) {
-          $this->entities[$row->jobId]->crewSet->entities[$row->id]->person       = new Person($this->container);
-          $this->entities[$row->jobId]->crewSet->entities[$row->id]->person->id   = $row->personId;
-          $this->entities[$row->jobId]->crewSet->entities[$row->id]->person->name = $row->entityName;
+        if (isset($row->personId) && $row->personId !== 0) {
+          $this->entities[$row->jobId]->crewSet->entities[$row->id]->person          = new Person($this->container);
+          $this->entities[$row->jobId]->crewSet->entities[$row->id]->person->id      = $row->personId;
+          $this->entities[$row->jobId]->crewSet->entities[$row->id]->person->name    = $row->entityName;
+          $this->entities[$row->jobId]->crewSet->entities[$row->id]->person->changed = $row->personChanged;
+          $this->entities[$row->jobId]->crewSet->entities[$row->id]->person->created = $row->personCreated;
           $reflector = new \ReflectionMethod($this->entities[$row->jobId]->crewSet->entities[$row->id]->person, "init");
           $reflector->setAccessible(true);
           $reflector->invoke($this->entities[$row->jobId]->crewSet->entities[$row->id]->person);
         }
-        elseif (isset($row->companyId)) {
-          $this->entities[$row->jobId]->crewSet->entities[$row->id]->company       = new Company($this->container);
-          $this->entities[$row->jobId]->crewSet->entities[$row->id]->company->id   = $row->companyId;
-          $this->entities[$row->jobId]->crewSet->entities[$row->id]->company->name = $row->entityName;
+        elseif (isset($row->companyId) && $row->companyId !== 0) {
+          $this->entities[$row->jobId]->crewSet->entities[$row->id]->company          = new Company($this->container);
+          $this->entities[$row->jobId]->crewSet->entities[$row->id]->company->id      = $row->companyId;
+          $this->entities[$row->jobId]->crewSet->entities[$row->id]->company->name    = $row->entityName;
+          $this->entities[$row->jobId]->crewSet->entities[$row->id]->company->changed = $row->companyChanged;
+          $this->entities[$row->jobId]->crewSet->entities[$row->id]->company->created = $row->companyCreated;
           $reflector = new \ReflectionMethod($this->entities[$row->jobId]->crewSet->entities[$row->id]->company, "init");
           $reflector->setAccessible(true);
           $reflector->invoke($this->entities[$row->jobId]->crewSet->entities[$row->id]->company);

@@ -27,7 +27,6 @@ namespace MovLib\Presentation\Movie;
  * @since 0.0.1-dev
  */
 final class History extends \MovLib\Core\Presentation\AbstractHistory {
-  use \MovLib\Presentation\Movie\MovieTrait;
 
   // @codingStandardsIgnoreStart
   /**
@@ -38,20 +37,4 @@ final class History extends \MovLib\Core\Presentation\AbstractHistory {
   const name = "History";
   // @codingStandardsIgnoreEnd
 
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-    return $this->initHistory(
-      new Movie($this->container, $_SERVER["MOVIE_ID"]),
-      $this->intl->t("Movies")
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getContent() {
-    return $this->getIndexContent("Movie");
-  }
 }
