@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Help;
 
 use \MovLib\Data\History\HistorySet;
-use \MovLib\Partial\DateTime;
 
 /**
  * Shows the history of an article.

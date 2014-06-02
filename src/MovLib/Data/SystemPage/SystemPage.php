@@ -85,6 +85,7 @@ final class SystemPage extends \MovLib\Data\AbstractEntity implements \MovLib\Co
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
   public function __construct(\MovLib\Core\Container $container, $id = null, array $values = null) {
+    $this->lemma =& $this->title;
     if ($id) {
       $connection = Database::getConnection();
       $stmt = $connection->prepare(<<<SQL
@@ -134,12 +135,10 @@ SQL
     parent::init($values);
     if ($this->routeKey == "About {$this->container->config->sitename}") {
       $this->route->route = "/about";
-      $this->route->reset();
     }
     else {
       $route = sanitize_filename($this->routeKey);
       $this->route->route = "/{$route}";
-      $this->route->reset();
     }
     return $this;
   }

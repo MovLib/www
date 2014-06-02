@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,36 +15,33 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Help;
+namespace MovLib\Presentation\SystemPage\Impressum;
 
 /**
- * Provides properties and methods that are used by several help presenters.
+ * Defines the impressum history presenter object.
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-trait HelpTrait {
+final class History extends \MovLib\Presentation\SystemPage\AbstractHistory {
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "History";
+  // @codingStandardsIgnoreEnd
 
   /**
-   * Get breadcrumbs for an article.
-   *
-   * @return array
-   *   Array containing the breadcrumbs of an article.
+   * {@inheritdoc}
    */
-  protected function getArticleBreadCrumbs() {
-    $breadcrumbItems = [
-      [ $this->intl->r("/help"), $this->intl->t("Help") ],
-      [ $this->entity->category->route, $this->intl->t($this->entity->category->lemma) ],
-    ];
-    if (isset($this->entity->subCategory)) {
-      $breadcrumbItems[] = [ $this->entity->subCategory->route, $this->intl->t($this->entity->subCategory->lemma) ];
-    }
-    $breadcrumbItems[] = [ $this->entity->route, $this->entity->lemma ];
-
-    return $breadcrumbItems;
+  public function init() {
+    return $this->initSystemPage(6);
   }
 
 }

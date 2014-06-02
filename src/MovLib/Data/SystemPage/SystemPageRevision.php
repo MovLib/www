@@ -87,8 +87,8 @@ final class SystemPageRevision extends \MovLib\Core\Revision\AbstractRevision {
    *   If no system page was found for the given unique identifier.
    */
   public function __construct($id = null) {
+    $connection = Database::getConnection();
     if ($id) {
-      $connection = Database::getConnection();
       $stmt = $connection->prepare(<<<SQL
 SELECT
   `system_pages`.`id`,

@@ -17,19 +17,19 @@
  */
 namespace MovLib\Presentation\SystemPage;
 
+use \MovLib\Data\History\HistorySet;
 use \MovLib\Data\SystemPage\SystemPage;
 
 /**
- * Defines the base class for all system page presenters.
+ * Shows the history of an article.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2014 MovLib
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractShow extends \MovLib\Presentation\AbstractPresenter {
-  use \MovLib\Partial\SidebarTrait;
+abstract class AbstractHistory extends \MovLib\Core\Presentation\AbstractHistory {
   use \MovLib\Presentation\SystemPage\SystemPageTrait;
 
   // @codingStandardsIgnoreStart
@@ -38,7 +38,7 @@ abstract class AbstractShow extends \MovLib\Presentation\AbstractPresenter {
    *
    * @var string
    */
-  const name = "Show";
+  const name = "AbstractHistory";
   // @codingStandardsIgnoreEnd
 
   /**
@@ -48,32 +48,27 @@ abstract class AbstractShow extends \MovLib\Presentation\AbstractPresenter {
    */
   protected $entity;
 
-  /**
-   * Initialize the system page.
-   *
-   * @param integer $id
-   *   The system page's unique identifier.
-   * @param string $headTitle
-   *   The presenter's <code><title></code> title.
-   * @param string $pageTitle [optional]
-   *   The presenter's <code><h1></code> title.
-   * @param string $breadcrumbTitle [optional]
-   *   The presenter's title for the breadcrumb's entry of the current presentation.
-   */
-  public function initSystemPage($id, $headTitle, $pageTitle = null, $breadcrumbTitle = null) {
-    $this->entity = new SystemPage($this->container, $id);
-    return $this
-      ->initPage($headTitle, $pageTitle, $breadcrumbTitle)
-      ->initLanguageLinks($this->entity->route->route)
-      ->sidebarInit($this->getSidebarItems())
-    ;
-  }
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * {@inheritdoc}
+   * @param integer $id
+   *   The system page's unique identifier.
    */
-  public function getContent() {
-    return "<div property='mainContentOfPage'>{$this->htmlDecode($this->entity->text)}</div>";
+  public function initSystemPage($id) {
+    $this->entity = new SystemPage($this->container, $id);
+    $pageTitle    = $this->intl->t("History of {0}", [ $this->entity->lemma ]);
+    $this->initPage($pageTitle, $pageTitle, $this->intl->t("History"));
+    $this->sidebarInit($this->getSidebarItems());
+    $this->initLanguageLinks("{$this->entity->route->route}/history", $this->entity->id);
+    $this->breadcrumb->addCrumbs([ [ $this->entity->route, $this->entity->lemma ] ]);
+    $this->historySet = new HistorySet("SystemPage", $this->entity->id);
+    $this->paginationInit($this->historySet->getTotalCount());
+    $this->historySet->load($this->container, $this->paginationOffset, $this->paginationLimit);
+
+    return $this;
   }
 
 }
