@@ -126,19 +126,7 @@ final class Insert extends AbstractQuery {
    * @return this
    */
   public function set($fieldName, $value) {
-    $placeholder = null;
-
-    // We assume a dynamic column if the value is an array.
-    if (is_array($value)) {
-      $value = serialize($value);
-    }
-    // Otherwise we have an atomic value and can include it directly.
-    else {
-      $fieldName   = $this->sanitizeFieldName($fieldName);
-      $placeholder = $this->getPlaceholder($value);
-    }
-
-    return $this->addField($fieldName, $placeholder);
+    return $this->addField($this->sanitizeFieldName($fieldName), $this->getPlaceholder($value));
   }
 
   /**

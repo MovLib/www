@@ -112,7 +112,6 @@ final class Update extends AbstractQuery {
   public function set($fieldName, $value, $expression = null) {
     // @devStart
     // @codeCoverageIgnoreStart
-    assert(!is_array($value), "Use Update::setDynamic() method to set dynamic columns.");
     assert(is_null($expression) || strpos($expression, "?") !== false, "Your expression must include the value placeholder (?).");
     // @codeCoverageIgnoreEnd
     // @devEnd

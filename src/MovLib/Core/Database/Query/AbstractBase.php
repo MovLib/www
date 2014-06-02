@@ -133,19 +133,13 @@ abstract class AbstractBase {
    *   The placeholder for the value.
    */
   protected function getPlaceholder($value) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert(
-      !is_array($value),
-      "This method is only for atomic values because you have to perform additional work if it's an array, loop once " .
-      "and call this method with each value in your loop, this is more efficient than a recursive handling of the " .
-      "values with an additional loop to build the placeholders."
-    );
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
     $placeholder = "?";
     switch (gettype($value)) {
+      case "array":
+        $value = serialize($value);
+        $this->types .= "s";
+        break;
+
       case "boolean":
         $this->types .= "i";
         break;
