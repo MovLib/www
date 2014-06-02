@@ -175,7 +175,7 @@ SQL
     $update
       ->setDynamicConditional("texts", $languageCode, $this->texts, $oldRevision->texts)
       ->setDynamicConditional("titles", $languageCode, $this->titles, $oldRevision->titles)
-      ->setConditional("help_category_id", $this->category->id, $oldRevision->category->id)
+      ->setConditional("help_category_id", $this->category->id, $oldRevision->category)
     ;
 
     if (isset($this->subCategory->id) && isset($oldRevision->subCategory->id)) {
