@@ -20,6 +20,7 @@ namespace MovLib\Presentation\Help;
 /**
  * Present search results to the user.
  *
+ * @route /help/search
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
