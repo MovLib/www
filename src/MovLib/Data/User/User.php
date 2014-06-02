@@ -523,8 +523,8 @@ SQL
     $this->imageDirectory       = "upload://user";
     $this->imageFilename        = mb_strtolower($this->name);
     $this->private              = (boolean) $this->private;
-    $this->route->args          = [ "args" => $this->imageFilename ];
-    $this->route->route         = "/user/" . sanitize_filename($this->name);
+    $this->route->args          = [ sanitize_filename($this->name) ];
+    $this->route->route         = "/user/{0}";
     $this->timezoneId           && ($this->timezone = new \DateTimeZone($this->timezoneId));
     return $this;
   }
