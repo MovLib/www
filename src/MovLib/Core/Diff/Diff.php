@@ -62,9 +62,12 @@ final class Diff {
   /**
    * Deadline for for diff generation.
    *
+   * <b>NOTE</b><br>
+   * We need a longer deadline because of UTF-8, it simply takes some time.
+   *
    * @var float
    */
-  const DEADLINE = 1.0;
+  const DEADLINE = 2.0;
 
   /**
    * Code for delete transformations.
@@ -199,7 +202,7 @@ final class Diff {
     $fineDiff = new \cogpowered\FineDiff\Diff();
 
     // Note that the Parser class of our FineDiff is patched to use mb_ functions!
-   return (string) $fineDiff->getOpcodes($new, $old);
+    return (string) $fineDiff->getOpcodes($new, $old);
   }
 
 
@@ -258,18 +261,40 @@ final class Diff {
 
 
   /**
+   * Find the <i>middle snake</i> of a diff, split the problem in half and return the recursively constructed diff.
    *
+   * @link http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.4.6927
+   *   Eugene W. Myers: "An O(ND) Difference Algorithm and Its Variations" (1986)
    * @param string $text1
+   *   The first text to check.
    * @param integer $text1Length
+   *   The length of the first text (be sure to use a multi-byte aware function).
    * @param string $text2
+   *   The second text to check.
    * @param integer $text2Length
+   *   The length of the second text (be sure to use a multi-byte aware function).
    * @param float $deadline
+   *   The microtime at which compilation should abort.
    * @return array
+   *   Array containing the differences between <var>$text1</var> and <var>$text2</var>.
    */
   protected function bisect($text1, $text1Length, $text2, $text2Length, $deadline) {
-    $maxD             = (integer) ($text1Length + $text2Length + 1) / 2;
+    // @devStart
+    // @codeCoverageIgnoreStart
+    foreach ([ 1, 2 ] as $assert) {
+      $assertText   = ${"text{$assert}"};
+      $assertLength = ${"text{$assert}Length"};
+      assert(is_string($assertText), "Text {$assert} must be of type string.");
+      assert(is_int($assertLength), "Text {$assert} length must be of type integer.");
+      assert(mb_strlen($assertText) === $assertLength, "Text {$assert} length must be correct (multi-byte).");
+    }
+    assert(is_float($deadline), "Deadline must be of type float.");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    $maxD             = (integer) (($text1Length + $text2Length + 1) / 2);
     $vOffset          = $maxD;
-    $vLength          = 2 * $maxD;
+    $vLength          = $maxD * 2;
     $v1               = array_fill(0, $vLength, -1);
     $v1[$vOffset + 1] = 0;
     $v2               = $v1;
@@ -299,7 +324,7 @@ final class Diff {
           $x1 = $v1[$k1OffsetD] + 1;
         }
         $y1 = $x1 - $k1;
-        while ($x1 < $text1Length && $y1 < $text2Length && mb_substr($text1, $x1, 1) == mb_substr($text2, $y1, 1)) {
+        while ($x1 < $text1Length && $y1 < $text2Length && mb_substr($text1, $x1, 1) === mb_substr($text2, $y1, 1)) {
           ++$x1;
           ++$y1;
         }
@@ -340,7 +365,7 @@ final class Diff {
           $x2 = $v2[$k2OffsetD] + 1;
         }
         $y2 = $x2 - $k2;
-        while ($x2 < $text1Length && $y2 < $text2Length && mb_substr($text1, -$x2 - 1, 1) == mb_substr($text2, -$y2 - 1, 1)) {
+        while ($x2 < $text1Length && $y2 < $text2Length && mb_substr($text1, -$x2 - 1, 1) === mb_substr($text2, -$y2 - 1, 1)) {
           ++$x2;
           ++$y2;
         }
@@ -380,81 +405,148 @@ final class Diff {
   }
 
   /**
+   * Get the length of the longest common prefix of <var>$text1</var> and <var>$text2</var>.
    *
+   * @link http://neil.fraser.name/news/2007/10/09/ Performance Analysis
+   * @see Diff::commonSuffix()
    * @param string $text1
+   *   The first text to check.
    * @param integer $text1Length
+   *   The length of the first text (be sure to use a multi-byte aware function).
    * @param string $text2
+   *   The second text to check.
    * @param integer $text2Length
+   *   The length of the second text (be sure to use a multi-byte aware function).
    * @return integer
+   *   The length of the longest common prefix of <var>$text1</var> and <var>$text2</var>.
    */
   protected function commonPrefix($text1, $text1Length, $text2, $text2Length) {
-    if ($text1 == "" || $text2 == "" || mb_substr($text1, 0, 1) != mb_substr($text2, 0, 1)) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    foreach ([ 1, 2 ] as $assert) {
+      $assertText   = ${"text{$assert}"};
+      $assertLength = ${"text{$assert}Length"};
+      assert(is_string($assertText), "Text {$assert} must be of type string.");
+      assert(is_int($assertLength), "Text {$assert} length must be of type integer.");
+      assert(mb_strlen($assertText) === $assertLength, "Text {$assert} length must be correct (multi-byte).");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    // Directly take care of easy cases that have nothing in common for sure.
+    if ($text1Length === 0 || $text2Length === 0 || mb_substr($text1, 0, 1) !== mb_substr($text2, 0, 1)) {
       return 0;
     }
 
-    $min = $start = 0;
-    $max = $mid   = min($text1Length, $text2Length);
+    // Prepare variables for binary search, the shorter string is our upper limit during the following loop.
+    $min = $stx = 0;
+    $max = $mid = $len = min($text1Length, $text2Length);
 
+    // Binary Search: https://en.wikipedia.org/wiki/Binary_search_algorithm
     while ($min < $mid) {
-      $len = $mid - $start;
-      if (mb_substr($text1, $start, $len) == mb_substr($text2, $start, $len)) {
-        $start = $min = $mid;
+      if (mb_substr($text1, $stx, $len) === mb_substr($text2, $stx, $len)) {
+        $stx = $min = $mid;
       }
       else {
         $max = $mid;
       }
-      $mid = (integer) (($max - $min) / 2) + $min;
+      $mid = (integer) ((($max - $min) / 2) + $min);
+      $len = $mid - $stx;
     }
 
     return $mid;
   }
 
   /**
+   * Get the length of the longest common suffix of <var>$text1</var> and <var>$text2</var>.
    *
+   * @link http://neil.fraser.name/news/2007/10/09/ Performance Analysis
+   * @see Diff::commonPrefix()
    * @param string $text1
+   *   The first text to check.
    * @param integer $text1Length
+   *   The length of the first text (be sure to use a multi-byte aware function).
    * @param string $text2
+   *   The second text to check.
    * @param integer $text2Length
+   *   The length of the second text (be sure to use a multi-byte aware function).
    * @return integer
+   *   The length of the longest common suffix of <var>$text1</var> and <var>$text2</var>.
    */
   protected function commonSuffix($text1, $text1Length, $text2, $text2Length) {
-    if ($text1 == "" || $text2 == "" || mb_substr($text1, -1, 1) != mb_substr($text2, -1, 1)) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    foreach ([ 1, 2 ] as $assert) {
+      $assertText   = ${"text{$assert}"};
+      $assertLength = ${"text{$assert}Length"};
+      assert(is_string($assertText), "Text {$assert} must be of type string.");
+      assert(is_int($assertLength), "Text {$assert} length must be of type integer.");
+      assert(mb_strlen($assertText) === $assertLength, "Text {$assert} length must be correct (multi-byte).");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    // Directly take care of easy cases that have nothing in common for sure.
+    if ($text1Length === 0 || $text2Length === 0 || mb_substr($text1, -1, 1) !== mb_substr($text2, -1, 1)) {
       return 0;
     }
 
+    // Prepare variables for binary search, the shorter string is our upper limit during the following loop.
     $min = $end = 0;
-    $max = $mid = min($text1Length, $text2Length);
+    $max = $mid = $len = min($text1Length, $text2Length);
 
+    // Binary Search: https://en.wikipedia.org/wiki/Binary_search_algorithm
     while ($min < $mid) {
-      $len = $mid - $end;
-      if (mb_substr($text1, -$mid, $len) == mb_substr($text2, -$mid, $len)) {
+      if (mb_substr($text1, -$mid, $len) === mb_substr($text2, -$mid, $len)) {
         $end = $min = $mid;
       }
       else {
         $max = $mid;
       }
-      $mid = (integer) (($max - $min) / 2) + $min;
+      $mid = (integer) ((($max - $min) / 2) + $min);
+      $len = $mid - $end;
     }
 
     return $mid;
   }
+
   /**
+   * Compute differences between <var>$text1</var> and <var>$text2</var> that have no common pre- nor suffix.
    *
    * @param string $text1
+   *   The first text to check.
    * @param integer $text1Length
+   *   The length of the first text (be sure to use a multi-byte aware function).
    * @param string $text2
+   *   The second text to check.
    * @param integer $text2Length
+   *   The length of the second text (be sure to use a multi-byte aware function).
    * @param float $deadline
-   * @return integer
+   *   The microtime at which compilation should abort.
+   * @return array
+   *   Array containing the differences between <var>$text1</var> and <var>$text2</var>.
    */
   protected function compute($text1, $text1Length, $text2, $text2Length, $deadline) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    foreach ([ 1, 2 ] as $assert) {
+      $assertText   = ${"text{$assert}"};
+      $assertLength = ${"text{$assert}Length"};
+      assert(is_string($assertText), "Text {$assert} must be of type string.");
+      assert(is_int($assertLength), "Text {$assert} length must be of type integer.");
+      assert(mb_strlen($assertText) === $assertLength, "Text {$assert} length must be correct (multi-byte).");
+    }
+    assert(is_float($deadline), "Deadline must be of type float.");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
     // The first text is empty, simple insertion necessary.
-    if ($text1 == "") {
+    if ($text1Length === 0) {
       return [[ self::INSERT_KEY, $text2, $text2Length ]];
     }
 
     // The second text is empty, simple deletion necessary.
-    if ($text2 == "") {
+    if ($text2Length === 0) {
       return [[ self::DELETE_KEY, $text1, $text1Length ]];
     }
 
@@ -502,11 +594,9 @@ final class Diff {
       }
 
       // Compute differences of left and right hand side of the copy operation of the common middle characters.
-      return array_merge(
-        $this->diff($hm[0], mb_strlen($hm[0]), $hm[2], mb_strlen($hm[2]), $deadline),
-        [[ self::COPY_KEY, $hm[4], $hm[5] ]],
-        $this->diff($hm[1], mb_strlen($hm[1]), $hm[3], mb_strlen($hm[3]), $deadline)
-      );
+      $diffs   = $this->diff($hm[0], mb_strlen($hm[0]), $hm[2], mb_strlen($hm[2]), $deadline);
+      $diffs[] = [ self::COPY_KEY, $hm[4], $hm[5] ];
+      return array_merge($diffs, $this->diff($hm[1], mb_strlen($hm[1]), $hm[3], mb_strlen($hm[3]), $deadline));
     }
 
     return $this->bisect($text1, $text1Length, $text2, $text2Length, $deadline);
@@ -529,14 +619,24 @@ final class Diff {
    *   Array containing the differences between <var>$text1</var> and <var>$text2</var>.
    */
   protected function diff($text1, $text1Length, $text2, $text2Length, $deadline) {
-    $text1Length = (integer) $text1Length;
-    $text2Length = (integer) $text2Length;
+    // @devStart
+    // @codeCoverageIgnoreStart
+    foreach ([ 1, 2 ] as $assert) {
+      $assertText   = ${"text{$assert}"};
+      $assertLength = ${"text{$assert}Length"};
+      assert(is_string($assertText), "Text {$assert} must be of type string.");
+      assert(is_int($assertLength), "Text {$assert} length must be of type integer.");
+      assert(mb_strlen($assertText) === $assertLength, "Text {$assert} length must be correct (multi-byte).");
+    }
+    assert(is_float($deadline), "Deadline must be of type float.");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
 
     // Check for equality.
-    if ($text1 == $text2) {
+    if ($text1 === $text2) {
       // We always return an array, this makes sure that we don't generate errors together with all other methods that
-      // expect an array to work with. Note that the final generated patch would still be NULL.
-      if ($text1 == "") {
+      // expect an array to work with. Note that the final generated patch is still NULL.
+      if ($text1 === "") {
         return [];
       }
 
@@ -545,21 +645,19 @@ final class Diff {
     }
 
     // Compute common prefix.
-    $prefixLength = $this->commonPrefix($text1, $text1Length, $text2, $text2Length);
-    if ($prefixLength === 0) {
+    if (($prefixLength = $this->commonPrefix($text1, $text1Length, $text2, $text2Length)) === 0) {
       $prefix = null;
     }
     else {
       $prefix       = mb_substr($text1, 0, $prefixLength);
       $text1Length -= $prefixLength;
       $text2Length -= $prefixLength;
-      $text1        = mb_substr($text1, $prefixLength, $text1Length);
-      $text2        = mb_substr($text2, $prefixLength, $text2Length);
+      $text1        = mb_substr($text1, $prefixLength);
+      $text2        = mb_substr($text2, $prefixLength);
     }
 
     // Compute common suffix.
-    $suffixLength = $this->commonSuffix($text1, $text1Length, $text2, $text2Length);
-    if ($suffixLength === 0) {
+    if (($suffixLength = $this->commonSuffix($text1, $text1Length, $text2, $text2Length)) === 0) {
       $suffix = null;
     }
     else {
@@ -582,7 +680,7 @@ final class Diff {
     if ($suffix) {
       $diffs[] = [ self::COPY_KEY, $suffix, $suffixLength ];
     }
-
+return $diffs;
     // Clean the differences by merging as many operations as possible.
     return $this->merge($diffs);
   }
@@ -596,32 +694,40 @@ final class Diff {
    * @return null|array
    */
   protected function halfMatch($longText, $longLength, $shortText, $shortLength) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    foreach ([ "long", "short" ] as $assert) {
+      $assertText   = ${"{$assert}Text"};
+      $assertLength = ${"{$assert}Length"};
+      assert(is_string($assertText), "Text {$assert} must be of type string.");
+      assert(is_int($assertLength), "Text {$assert} length must be of type integer.");
+      assert(mb_strlen($assertText) === $assertLength, "Text {$assert} length must be correct (multi-byte).");
+    }
+    assert($longLength >= $shortLength, "The short text must be shorter than the long text (or at least equal).");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
     // Pointless to continue...
-    if ($longLength < 4 || $shortLength * 2 < strlen((string) $longLength)) {
+    if ($longLength < 4 || $shortLength * 2 < strlen($longLength)) {
       return;
     }
 
     // First check if the second quarter is the seed for a half-match.
-    $hm1 = $this->halfMatchI($longText, $longLength, $shortText, $shortLength, (integer) ($longLength + 3) / 4);
+    $hm1 = $this->halfMatchI($longText, $longLength, $shortText, $shortLength, (integer) (($longLength + 3) / 4));
 
     // Check again based on the third quarter.
-    $hm2 = $this->halfMatchI($longText, $longLength, $shortText, $shortLength, (integer) ($longLength + 1) / 2);
+    $hm2 = $this->halfMatchI($longText, $longLength, $shortText, $shortLength, (integer) (($longLength + 1) / 2));
 
     // Both matched, select the longest.
     if ($hm1 && $hm2) {
-      $hm = $hm1[5] > $hm2[5] ? $hm1 : $hm2;
+      return $hm1[5] > $hm2[5] ? $hm1 : $hm2;
     }
     elseif ($hm1) {
-      $hm = $hm1;
+      return $hm1;
     }
     elseif ($hm2) {
-      $hm = $hm2;
+      return $hm2;
     }
-    else {
-      return;
-    }
-
-    return $hm;
   }
 
   /**
@@ -634,22 +740,42 @@ final class Diff {
    * @return type
    */
   protected function halfMatchI($longText, $longLength, $shortText, $shortLength, $i) {
-    $seed       = mb_substr($longText, $i, (integer) $longLength / 4);
-    $bestCommon = $bestLongA  = $bestLongB  = $bestShortA = $bestShortB = "";
-    $j          = mb_strpos($shortText, $seed);
+    // @devStart
+    // @codeCoverageIgnoreStart
+    foreach ([ "long", "short" ] as $assert) {
+      $assertText   = ${"{$assert}Text"};
+      $assertLength = ${"{$assert}Length"};
+      assert(is_string($assertText), "Text {$assert} must be of type string.");
+      assert(is_int($assertLength), "Text {$assert} length must be of type integer.");
+      assert(mb_strlen($assertText) === $assertLength, "Text {$assert} length must be correct (multi-byte).");
+    }
+    assert($longLength >= $shortLength, "The short text must be shorter than the long text (or at least equal).");
+    assert(is_int($i), "Index must be of type integer.");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
 
+    // Extract a quarter from the long text, starting at the desired index.
+    $seed = mb_substr($longText, $i, (integer) ($longLength / 4));
+
+    // Prepare variables for half match search.
+    $bestCommon = $bestLongA  = $bestLongB  = $bestShortA = $bestShortB = "";
+
+    // Check if the extracted seed is contained in the short text, if not continue search for a match.
+    $j = mb_strpos($shortText, $seed);
     while ($j !== false) {
-      $tmpLongLength  = $longLength  - $i;
-      $tmpShortLength = $shortLength - $j;
-      $prefixLength   = $this->commonPrefix(mb_substr($longText, $i, $tmpLongLength), $tmpLongLength, mb_substr($shortText, $i, $tmpShortLength), $tmpShortLength);
-      $suffixLength   = $this->commonSuffix(mb_substr($longText, 0, $i), $tmpLongLength, mb_substr($shortText, 0, $j), $tmpShortLength);
+      $prefixLength = $this->commonPrefix(mb_substr($longText, $i), $longLength - $i, mb_substr($shortText, $j), $shortLength - $j);
+      $suffixLength = $this->commonSuffix(mb_substr($longText, 0, $i), $i, mb_substr($shortText, 0, $j), $j);
+
       if (mb_strlen($bestCommon) < $suffixLength + $prefixLength) {
-        $bestCommon = mb_substr($shortText, $j - $suffixLength, $suffixLength) . mb_substr($shortText, $j, $prefixLength);
         $bestLongA  = mb_substr($longText, 0, $i - $suffixLength);
         $bestLongB  = mb_substr($longText, $i + $prefixLength);
+
         $bestShortA = mb_substr($shortText, 0, $j - $suffixLength);
         $bestShortB = mb_substr($shortText, $j + $prefixLength);
+
+        $bestCommon = mb_substr($shortText, $j - $suffixLength, $suffixLength) . mb_substr($shortText, $j, $prefixLength);
       }
+
       $j = mb_strpos($shortText, $seed, $j + 1);
     }
 
@@ -664,11 +790,6 @@ final class Diff {
    * @return array
    */
   protected function merge(array $diffs) {
-    // No need to merge if there are no transformations at all.
-    if (empty($diffs)) {
-      return $diffs;
-    }
-
     // Why are we adding an empty copy operation at this point?
     $diffs[] = [ self::COPY_KEY, "", 0 ];
 
@@ -765,7 +886,7 @@ final class Diff {
     }
 
     // Why are we removing the empty copy operation?
-    if ($diffs[count($diffs) - 1][1] == "") {
+    if ($diffs[count($diffs) - 1][1] === "") {
       array_pop($diffs);
     }
 
@@ -783,7 +904,7 @@ final class Diff {
       // Check if this transformation is actually surrounded by copy transformations.
       if ($diffs[$prev][0] === self::COPY_KEY && $diffs[$next][0] === self::COPY_KEY) {
         // Shift the transformation over the previous copy transformation.
-        if (mb_substr($diffs[$pointer][1], -$diffs[$prev][2]) == $diffs[$prev][1]) {
+        if (mb_substr($diffs[$pointer][1], -$diffs[$prev][2]) === $diffs[$prev][1]) {
           $diffs[$pointer][1]  = $diffs[$prev][1] . mb_substr($diffs[$pointer][1], 0, -$diffs[$prev][2]);
           $diffs[$pointer][2] -= $diffs[$prev][2];
           $diffs[$next][1]     = "{$diffs[$prev][1]}{$diffs[$next][1]}";
@@ -792,7 +913,7 @@ final class Diff {
           $changes = true;
         }
         // Shift the transformation over the next copy transformation.
-        elseif (mb_substr($diffs[$pointer][1], 0, $diffs[$next][2]) == $diffs[$next][1]) {
+        elseif (mb_substr($diffs[$pointer][1], 0, $diffs[$next][2]) === $diffs[$next][1]) {
           $diffs[$prev][1]     = "{$diffs[$prev][1]}{$diffs[$next][1]}";
           $diffs[$prev][2]    += $diffs[$next][2];
           $diffs[$pointer][1]  = mb_substr($diffs[$pointer][1], $diffs[$next][2]) . $diffs[$next][1];
