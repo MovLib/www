@@ -228,6 +228,15 @@ SQL
     return $properties;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function __wakeup() {
+    parent::__wakeup();
+    $this->aliases && ($this->aliases = unserialize($this->aliases));
+    $this->links   && ($this->links   = unserialize($this->links));
+  }
+
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 

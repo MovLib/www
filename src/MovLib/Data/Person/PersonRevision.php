@@ -307,6 +307,14 @@ SQL
     return $properties;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function __wakeup() {
+    parent::__wakeup();
+    $this->links && ($this->links = unserialize($this->links));
+  }
+
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
