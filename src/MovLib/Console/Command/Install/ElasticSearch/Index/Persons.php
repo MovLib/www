@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,10 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Console\Command\Dev\ElasticSearch\Mapping;
+namespace MovLib\Console\Command\Install\ElasticSearch\Index;
+
+use \MovLib\Console\Command\Install\ElasticSearch\Mapping\PersonMapping;
 
 /**
- * Defines the ElasticSearch mapping of person entities.
+ * Defines the persons index.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
@@ -26,8 +28,7 @@ namespace MovLib\Console\Command\Dev\ElasticSearch\Mapping;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class PersonMapping extends \MovLib\Console\Command\Dev\ElasticSearch\Mapping\AbstractMapping {
-
+final class Persons extends \MovLib\Console\Command\Install\ElasticSearch\Index\AbstractIndex {
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
@@ -38,7 +39,7 @@ final class PersonMapping extends \MovLib\Console\Command\Dev\ElasticSearch\Mapp
    *
    * @var string
    */
-  const name = "PersonMapping";
+  const name = "Persons";
 
   // @codingStandardsIgnoreEnd
 
@@ -47,13 +48,13 @@ final class PersonMapping extends \MovLib\Console\Command\Dev\ElasticSearch\Mapp
 
 
   /**
-   * Instantiate new person mapping.
+   * Instantiate new person index.
    *
    * @param \MovLib\Core\Config $config {@inheritdoc}
    */
   public function __construct(\MovLib\Core\Config $config) {
-    parent::__construct($config, "person");
-    $this->addStringField("name");
+    parent::__construct($config, "persons");
+    $this->addMapping(new PersonMapping($config));
   }
 
 }

@@ -15,20 +15,21 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Console\Command\Dev\ElasticSearch\Index;
+namespace MovLib\Console\Command\Install\ElasticSearch\Index;
 
-use \MovLib\Console\Command\Dev\ElasticSearch\Mapping\PersonMapping;
+use \MovLib\Console\Command\Install\ElasticSearch\Mapping\JobMapping;
 
 /**
- * Defines the persons index.
+ * Defines the jobs index.
  *
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Persons extends \MovLib\Console\Command\Dev\ElasticSearch\Index\AbstractIndex {
+final class Jobs extends \MovLib\Console\Command\Install\ElasticSearch\Index\AbstractIndex {
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
@@ -39,7 +40,7 @@ final class Persons extends \MovLib\Console\Command\Dev\ElasticSearch\Index\Abst
    *
    * @var string
    */
-  const name = "Persons";
+  const name = "Jobs";
 
   // @codingStandardsIgnoreEnd
 
@@ -48,13 +49,13 @@ final class Persons extends \MovLib\Console\Command\Dev\ElasticSearch\Index\Abst
 
 
   /**
-   * Instantiate new person index.
+   * Instantiate new job index.
    *
    * @param \MovLib\Core\Config $config {@inheritdoc}
    */
   public function __construct(\MovLib\Core\Config $config) {
-    parent::__construct($config, "persons");
-    $this->addMapping(new PersonMapping($config));
+    parent::__construct($config, "jobs");
+    $this->addMapping(new JobMapping($config));
   }
 
 }

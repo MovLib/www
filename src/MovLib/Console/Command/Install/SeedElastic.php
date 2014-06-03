@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Console\Command\Dev;
+namespace MovLib\Console\Command\Install;
 
 use \Elasticsearch\Client;
 use \MovLib\Core\Search\SearchIndexer;
@@ -58,14 +58,14 @@ final class SeedElastic extends \MovLib\Console\Command\AbstractCommand {
   protected function execute(InputInterface $input, OutputInterface $output) {
     $indexes         = (array) $input->getArgument("index");
     $entitiesToIndex = [];
-    $indexNamespace  = "\\MovLib\\Console\\Command\\Dev\ElasticSearch\\Index\\";
+    $indexNamespace  = "\\MovLib\\Console\\Command\\Install\ElasticSearch\\Index\\";
 
     // Add all available index definitions if no argument or argument "all" was supplied.
     if (array_search("all", $indexes) !== false) {
       $indexes = null;
       $this->writeVerbose("Found special argument <comment>all</comment>, creating and indexing all entities in ElasticSearch");
       /* @var $fileInfo \SplFileInfo */
-      foreach (new \DirectoryIterator("dr://src/MovLib/Console/Command/Dev/ElasticSearch/Index") as $fileInfo) {
+      foreach (new \DirectoryIterator("dr://src/MovLib/Console/Command/Install/ElasticSearch/Index") as $fileInfo) {
         if ($fileInfo->isFile() && $fileInfo->getExtension() == "php") {
           $className = $fileInfo->getBasename(".php");
           $reflector = new \ReflectionClass("{$indexNamespace}{$className}");

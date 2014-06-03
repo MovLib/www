@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Console\Command\Dev\ElasticSearch\Mapping;
+namespace MovLib\Console\Command\Install\ElasticSearch\Mapping;
 
 /**
  * Defines the ElasticSearch mapping of genre entities.
@@ -26,7 +26,7 @@ namespace MovLib\Console\Command\Dev\ElasticSearch\Mapping;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class GenreMapping extends \MovLib\Console\Command\Dev\ElasticSearch\Mapping\AbstractMapping {
+class GenreMapping extends \MovLib\Console\Command\Install\ElasticSearch\Mapping\AbstractMapping {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants

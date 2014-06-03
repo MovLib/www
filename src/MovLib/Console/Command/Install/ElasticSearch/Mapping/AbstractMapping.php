@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Console\Command\Dev\ElasticSearch\Mapping;
+namespace MovLib\Console\Command\Install\ElasticSearch\Mapping;
 
 /**
  * Defines the base class for all ElasticSearch type mappings.

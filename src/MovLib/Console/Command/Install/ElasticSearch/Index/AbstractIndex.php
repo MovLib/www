@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Console\Command\Dev\ElasticSearch\Index;
+namespace MovLib\Console\Command\Install\ElasticSearch\Index;
 
 use \Elasticsearch\Client;
 
@@ -63,7 +63,7 @@ abstract class AbstractIndex {
   /**
    * The index's type mappings.
    *
-   * Consists of {@see \MovLib\Console\Command\Dev\ElasticSearch\Mapping\AbstractMapping} objects.
+   * Consists of {@see \MovLib\Console\Command\Install\ElasticSearch\Mapping\AbstractMapping} objects.
    *
    * @var array
    */
@@ -92,11 +92,11 @@ abstract class AbstractIndex {
   /**
    * Add a type mapping to the index.
    *
-   * @param \MovLib\Console\Command\Dev\ElasticSearch\Mapping\AbstractMapping $mapping
+   * @param \MovLib\Console\Command\Install\ElasticSearch\Mapping\AbstractMapping $mapping
    *   The mapping to add.
    * @return this
    */
-  final protected function addMapping(\MovLib\Console\Command\Dev\ElasticSearch\Mapping\AbstractMapping $mapping) {
+  final protected function addMapping(\MovLib\Console\Command\Install\ElasticSearch\Mapping\AbstractMapping $mapping) {
     $this->mappings[$mapping->name] = $mapping;
     return $this;
   }

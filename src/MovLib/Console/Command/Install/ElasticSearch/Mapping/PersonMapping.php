@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,20 +15,18 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Console\Command\Dev\ElasticSearch\Index;
-
-use \MovLib\Console\Command\Dev\ElasticSearch\Mapping\JobMapping;
+namespace MovLib\Console\Command\Install\ElasticSearch\Mapping;
 
 /**
- * Defines the jobs index.
+ * Defines the ElasticSearch mapping of person entities.
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Jobs extends \MovLib\Console\Command\Dev\ElasticSearch\Index\AbstractIndex {
+final class PersonMapping extends \MovLib\Console\Command\Install\ElasticSearch\Mapping\AbstractMapping {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -40,7 +38,7 @@ final class Jobs extends \MovLib\Console\Command\Dev\ElasticSearch\Index\Abstrac
    *
    * @var string
    */
-  const name = "Jobs";
+  const name = "PersonMapping";
 
   // @codingStandardsIgnoreEnd
 
@@ -49,13 +47,13 @@ final class Jobs extends \MovLib\Console\Command\Dev\ElasticSearch\Index\Abstrac
 
 
   /**
-   * Instantiate new job index.
+   * Instantiate new person mapping.
    *
    * @param \MovLib\Core\Config $config {@inheritdoc}
    */
   public function __construct(\MovLib\Core\Config $config) {
-    parent::__construct($config, "jobs");
-    $this->addMapping(new JobMapping($config));
+    parent::__construct($config, "person");
+    $this->addStringField("name");
   }
 
 }

@@ -15,18 +15,20 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Console\Command\Dev\ElasticSearch\Mapping;
+namespace MovLib\Console\Command\Install\ElasticSearch\Index;
+
+use \MovLib\Console\Command\Install\ElasticSearch\Mapping\GenreMapping;
 
 /**
- * Defines the ElasticSearch mapping of job entities.
+ * Defines the genres index.
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class JobMapping extends \MovLib\Console\Command\Dev\ElasticSearch\Mapping\AbstractMapping {
+final class Genres extends \MovLib\Console\Command\Install\ElasticSearch\Index\AbstractIndex {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -38,7 +40,7 @@ class JobMapping extends \MovLib\Console\Command\Dev\ElasticSearch\Mapping\Abstr
    *
    * @var string
    */
-  const name = "JobMapping";
+  const name = "Genres";
 
   // @codingStandardsIgnoreEnd
 
@@ -47,12 +49,13 @@ class JobMapping extends \MovLib\Console\Command\Dev\ElasticSearch\Mapping\Abstr
 
 
   /**
-   * Instantiate new job mapping.
+   * Instantiate new genre index.
    *
    * @param \MovLib\Core\Config $config {@inheritdoc}
    */
   public function __construct(\MovLib\Core\Config $config) {
-    parent::__construct($config, "job");
+    parent::__construct($config, "genres");
+    $this->addMapping(new GenreMapping($config));
   }
 
 }
