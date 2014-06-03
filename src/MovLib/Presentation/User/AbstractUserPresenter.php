@@ -55,7 +55,7 @@ abstract class AbstractUserPresenter extends \MovLib\Presentation\AbstractPresen
   final protected function initPage($headTitle, $pageTitle = null, $breadcrumbTitle = null) {
     $this->stylesheets[] = "user";
 
-    $this->entity = new User($this->container, $_SERVER["USER_NAME"]);
+    $this->entity = new User($this->container, rawurldecode($_SERVER["USER_NAME"]));
 
     $headTitle = $headTitle ? str_replace("{username}", $this->entity->name, $headTitle) : $this->entity->name;
     $pageTitle && ($pageTitle = str_replace("{username}", $this->entity->name, $pageTitle));
@@ -63,7 +63,7 @@ abstract class AbstractUserPresenter extends \MovLib\Presentation\AbstractPresen
     parent::initPage($headTitle, $pageTitle, $breadcrumbTitle);
 
     $this->breadcrumb->addCrumb($this->entity->set->route, $this->entity->set->bundleTitle);
-    if ($this->request->path != $this->entity->route) {
+    if (static::name != "Show") {
       $this->breadcrumb->addCrumb($this->entity->route, $this->entity->name);
     }
 

@@ -17,6 +17,7 @@
  */
 namespace MovLib\Core\HTTP;
 
+use \MovLib\Component\URL;
 use \MovLib\Core\Intl;
 use \MovLib\Component\DateTime;
 use \MovLib\Presentation\Error\Forbidden;
@@ -201,7 +202,7 @@ final class Request {
     $this->method        =  $_SERVER["REQUEST_METHOD"];
     $this->methodGET     =  $this->method == "GET";
     $this->methodPOST    = !$this->methodGET;
-    $this->path          =  $_SERVER["REQUEST_PATH"];
+    $this->path          =  URL::encodePath($_SERVER["REQUEST_PATH"]);
     $this->post          =& $_POST;
     $this->protocol      =  $_SERVER["SERVER_PROTOCOL"];
     $this->query         =& $_GET;
