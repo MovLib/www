@@ -34,11 +34,14 @@ trait RoutingTrait {
    * @see \MovLib\Core\Data\RoutingInterface::r()
    */
   final public function r($routePart, array $args = []) {
+    // This array is used to cache previously generated routes. Note that we have to build a deep structure because this
+    // trait is shared among many entities. We use the class name and the concrete entity's unique identifier to create
+    // that structure. This should ensure that routes are correctly cached for each entity.
     static $routes = [];
 
     // Use the cached route if we already built this once.
-    if (isset($routes[$routePart])) {
-      return $routes[$routePart];
+    if (isset($routes[static::name][$this->id][$routePart])) {
+      return $routes[static::name][$this->id][$routePart];
     }
 
     // The route will change if it contains placeholders, but later look-ups will be unprocessed, therefore we have to
@@ -75,8 +78,8 @@ trait RoutingTrait {
     }
 
     // Add this route to our cache and we're done.
-    $routes[$cacheKey] = $this->container->intl->r("{$this->route->route}{$routePart}", $args);
-    return $routes[$cacheKey];
+    $routes[static::name][$this->id][$cacheKey] = $this->container->intl->r("{$this->route->route}{$routePart}", $args);
+    return $routes[static::name][$this->id][$cacheKey];
   }
 
 }
