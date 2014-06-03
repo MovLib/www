@@ -48,30 +48,15 @@ final class HistoryDiff extends \MovLib\Core\Presentation\AbstractHistoryDiff {
    * {@inheritdoc}
    */
   public function init() {
+//    $this->entity = new Category($this->container, $_SERVER["CATEGORY_ID"]);
+//    return $this->initHistoryDiff([
+//      [ $this->entity->award->set->route, $this->entity->award->set->bundleTitle ],
+//      [ $this->entity->award->route, $this->entity->award->lemma ],
+//    ]);
+    // @todo Remove these lines and uncomment the ones above when the revision class is ready.
     $this->entity = new Category($this->container, $_SERVER["CATEGORY_ID"]);
-
-   // We can assume that the entity exists at this point.
-    $historyRoute = $this->entity->r("/history");
-
-    // We have to make sure that the request actually makes sense, if not redirect. We use a temporary redirect, may
-    // be that the route we redirect now has some purpose in the future.
-    if (isset($_SERVER["REVISION_NEW"])) {
-      // We can't display a diff between two revisions that are actually the same, doesn't make sense.
-      if ($_SERVER["REVISION_OLD"] == $_SERVER["REVISION_NEW"]) {
-        throw new TemporaryRedirectException("{$historyRoute}/{$_SERVER["REVISION_OLD"]}");
-      }
-      // We only support diff view between old and new.
-      elseif ($_SERVER["REVISION_OLD"] > $_SERVER["REVISION_NEW"]) {
-        throw new TemporaryRedirectException("{$historyRoute}/{$_SERVER["REVISION_NEW"]}/{$_SERVER["REVISION_OLD"]}");
-      }
-    }
-    else {
-      $_SERVER["REVISION_NEW"] = null;
-    }
-
-    // Configure the presentation.
     $this->initPage(
-      $this->intl->t("{lemma}: Difference between revisions", [ "lemma" => $this->entity->lemma ]),
+      $this->intl->t("{0}: {1}", [ $this->entity->lemma, $this->intl->t("Difference between revisions") ]),
       null,
       $this->intl->t("Diff")
     );
@@ -80,15 +65,14 @@ final class HistoryDiff extends \MovLib\Core\Presentation\AbstractHistoryDiff {
     $this->breadcrumb->addCrumb($this->entity->award->route, $this->entity->award->lemma);
     $this->breadcrumb->addCrumb($this->entity->set->route, $this->entity->set->bundleTitle);
     $this->breadcrumb->addCrumb($this->entity->route, $this->entity->lemma);
-    $this->breadcrumb->addCrumb($historyRoute, $this->intl->t("History"));
-
-    return $this;
+    $this->breadcrumb->addCrumb($this->entity->r("/history"), $this->intl->t("History"));
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getContent() {
-    $history = new \MovLib\Data\History\History((string) $this->entity, $this->entity->id, $_SERVER["REVISION_OLD"], $_SERVER["REVISION_NEW"], "\\MovLib\\Data\\Award");
-
-    // @todo Should we try to recover from a backup?
-    return \Krumo::dump($history, KRUMO_RETURN);
+    return $this->checkBackLater($this->intl->t("Award category differences"));
   }
+
 }

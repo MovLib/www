@@ -63,9 +63,12 @@ abstract class AbstractHistoryDiff extends \MovLib\Presentation\AbstractPresente
   /**
    * Initialize the history diff presentation.
    *
+   * @param array $breadcrumbs [optional]
+   *   Additional breadcrumbs to prepend to the trail (in the syntax of {@see \MovLib\Partial\Navigation\Breadcrumb::addCrumbs}).
+   *   The entity's and the set's breadcrumb will be added automatically.
    * @throws TemporaryRedirectException
    */
-  protected function initHistoryDiff() {
+  protected function initHistoryDiff(array $breadcrumbs = null) {
     // @devStart
     // @codeCoverageIgnoreStart
     assert(!empty($this->entity), "You have to initialize the entity property");
@@ -94,12 +97,13 @@ abstract class AbstractHistoryDiff extends \MovLib\Presentation\AbstractPresente
 
     // Configure the presentation.
     $this->initPage(
-      $this->intl->t("{lemma}: Difference between revisions", [ "lemma" => $this->entity->lemma ]),
+      $this->intl->t("{0}: {1}", [ $this->entity->lemma, $this->intl->t("Difference between revisions") ]),
       null,
       $this->intl->t("Diff")
     );
     $this->sidebarInitToolbox($this->entity);
     // @todo Replace with the new universal implementation to enable nested entities.
+    isset($breadcrumbs) && ($this->breadcrumb->addCrumbs($breadcrumbs));
     $this->breadcrumb->addCrumb($this->entity->set->route, $this->entity->set->bundleTitle);
     $this->breadcrumb->addCrumb($this->entity->route, $this->entity->lemma);
     $this->breadcrumb->addCrumb($historyRoute, $this->intl->t("History"));
