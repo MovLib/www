@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MovLib Messages 0.0.1-dev\n"
 "Report-Msgid-Bugs-To: https://github.com/MovLib/www/issues?labels=translation\n"
-"POT-Creation-Date: 2014-06-02 17:37+0000\n"
+"POT-Creation-Date: 2014-06-03 10:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,7 +21,7 @@ msgstr ""
 msgid "{company_name} logo."
 msgstr ""
 
-#: /src/MovLib/Data/Movie/Movie.php:384
+#: /src/MovLib/Data/Movie/Movie.php:387
 #: /src/MovLib/Partial/License.php:109
 #: /src/MovLib/Partial/Currency.php:62
 #: /src/MovLib/Partial/PaginationTrait.php:160
@@ -42,7 +42,7 @@ msgstr ""
 msgid "{0} ({1})"
 msgstr ""
 
-#: /src/MovLib/Data/Movie/Movie.php:389
+#: /src/MovLib/Data/Movie/Movie.php:392
 msgid "{movie_title} poster."
 msgstr ""
 
@@ -131,24 +131,27 @@ msgstr ""
 msgid "Please note that you have to submit your IP address and user agent string to identify yourself as being human; should you have privacy concerns read our {privacy_policy}."
 msgstr ""
 
-#: /src/MovLib/Core/Presentation/AbstractHistoryDiff.php:97
-#: /src/MovLib/Presentation/Award/Category/HistoryDiff.php:74
-msgid "{lemma}: Difference between revisions"
+#: /src/MovLib/Core/Presentation/AbstractHistoryDiff.php:100
+#: /src/MovLib/Presentation/Award/Category/HistoryDiff.php:59
+msgid "Difference between revisions"
 msgstr ""
 
-#: /src/MovLib/Core/Presentation/AbstractHistoryDiff.php:99
-#: /src/MovLib/Presentation/Job/HistoryDiff.php:93
-#: /src/MovLib/Presentation/Award/Category/HistoryDiff.php:76
+#: /src/MovLib/Core/Presentation/AbstractHistoryDiff.php:100
+#: /src/MovLib/Presentation/Award/Category/HistoryDiff.php:59
+msgid "{0}: {1}"
+msgstr ""
+
+#: /src/MovLib/Core/Presentation/AbstractHistoryDiff.php:102
+#: /src/MovLib/Presentation/Award/Category/HistoryDiff.php:61
 msgid "Diff"
 msgstr ""
 
-#: /src/MovLib/Core/Presentation/AbstractHistoryDiff.php:105
+#: /src/MovLib/Core/Presentation/AbstractHistoryDiff.php:109
 #: /src/MovLib/Core/Presentation/AbstractHistory.php:89
 #: /src/MovLib/Partial/SidebarTrait.php:140
 #: /src/MovLib/Partial/SidebarTrait.php:148
-#: /src/MovLib/Presentation/Job/HistoryDiff.php:98
 #: /src/MovLib/Presentation/Award/Category/History.php:54
-#: /src/MovLib/Presentation/Award/Category/HistoryDiff.php:83
+#: /src/MovLib/Presentation/Award/Category/HistoryDiff.php:68
 #: /src/MovLib/Presentation/AbstractShowPresenter.php:107
 #: /src/MovLib/Presentation/AbstractShowPresenter.php:114
 #: /src/MovLib/Presentation/Help/AbstractHistory.php:55
@@ -1199,7 +1202,6 @@ msgstr ""
 #: /src/MovLib/Presentation/Job/Create.php:54
 #: /src/MovLib/Presentation/Job/Show.php:53
 #: /src/MovLib/Presentation/Job/Delete.php:70
-#: /src/MovLib/Presentation/Job/HistoryDiff.php:96
 #: /src/MovLib/Presentation/AbstractPresenter.php:553
 msgid "Jobs"
 msgstr ""
@@ -1483,14 +1485,6 @@ msgstr ""
 #: /src/MovLib/Presentation/Genre/Delete.php:64
 #: /src/MovLib/Presentation/Event/Delete.php:64
 msgid "Delete {0}"
-msgstr ""
-
-#: /src/MovLib/Presentation/Job/HistoryDiff.php:91
-msgid "Difference between revisions"
-msgstr ""
-
-#: /src/MovLib/Presentation/Job/HistoryDiff.php:91
-msgid "{0}: {1}"
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/SignIn.php:105
@@ -2450,6 +2444,10 @@ msgstr ""
 
 #: /src/MovLib/Presentation/Award/Category/Show.php:75
 msgid "{sitename} doesn’t have further details about this award category."
+msgstr ""
+
+#: /src/MovLib/Presentation/Award/Category/HistoryDiff.php:75
+msgid "Award category differences"
 msgstr ""
 
 #: /src/MovLib/Presentation/Award/Show.php:68
