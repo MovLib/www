@@ -160,7 +160,13 @@ final class MovieRevision extends \MovLib\Core\Revision\AbstractRevision {
 
 
   /**
-   * Instantiate new movie revision.
+   * Instantiate new series revision.
+   *
+   * @param integer $id
+   *   The movie's unique identifier to load the revision for. The default value (<code>NULL</code>) is only used for
+   *   internal purposes when loaded via <code>fetch_object()</code>.
+   * @throws \MovLib\Exception\ClientException\NotFoundException
+   *   If no movie was found for the given unique identifier.
    */
   public function __construct($id = null) {
     $connection = Database::getConnection();

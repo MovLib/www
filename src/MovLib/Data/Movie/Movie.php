@@ -221,8 +221,11 @@ final class Movie extends \MovLib\Data\Image\AbstractReadOnlyImageEntity impleme
    *   {@inheritdoc}
    * @param integer $id [optional]
    *   The movie's unique identifier to instantiate, defaults to <code>NULL</code> (no movie will be loaded).
+   * @param array $values [optional]
+   *   An array of values to set, keyed by property name, defaults to <code>NULL</code>.
+   * @throws \MovLib\Exception\ClientException\NotFoundException
    */
-  public function __construct(\MovLib\Core\Container $container, $id = null) {
+  public function __construct(\MovLib\Core\Container $container, $id = null, array $values = null) {
     if ($id) {
       $connection = Database::getConnection();
       $stmt = $connection->prepare(<<<SQL
@@ -337,7 +340,7 @@ SQL
       $result->free();
     }
 
-    parent::__construct($container);
+    parent::__construct($container, $values);
   }
 
 
@@ -533,7 +536,7 @@ SQL
   }
 
   protected function defineSearchIndex(\MovLib\Core\Search\SearchIndexer $search, \MovLib\Core\Revision\RevisionInterface $revision) {
-    return $search;
+    return $search->indexSimpleSuggestion($revision->titles);
   }
 
   /**

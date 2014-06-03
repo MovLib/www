@@ -80,6 +80,13 @@ final class SeriesRevision extends \MovLib\Core\Revision\AbstractRevision {
   public $status;
 
   /**
+   * The series' titles.
+   *
+   * @var array
+   */
+  public $titles;
+
+  /**
    * The series' localized synopses.
    *
    * @var array
@@ -109,6 +116,7 @@ final class SeriesRevision extends \MovLib\Core\Revision\AbstractRevision {
   public function __construct($id = null) {
     $connection = Database::getConnection();
     if ($id) {
+      $originalTitleId = null;
       $stmt = $connection->prepare(<<<SQL
 SELECT
   `series`.`id`,
@@ -119,12 +127,15 @@ SELECT
   `series`.`start_year`,
   `series`.`status`,
   COLUMN_JSON(`series`.`dyn_synopses`),
-  COLUMN_JSON(`series`.`dyn_wikipedia`)
+  COLUMN_JSON(`series`.`dyn_wikipedia`),
+  `series_original_titles`.`title_id`
 FROM `series`
   INNER JOIN `revisions`
     ON `revisions`.`entity_id` = `series`.`id`
     AND `revisions`.`id` = `series`.`changed`
     AND `revisions`.`revision_entity_id` = {$this::$originatorClassId}
+  INNER JOIN `series_original_titles`
+    ON `series_original_titles`.`series_id` = `series`.`id`
 WHERE `series`.`id` = ?
 LIMIT 1
 SQL
@@ -140,17 +151,56 @@ SQL
         $this->startYear,
         $this->status,
         $this->synopses,
-        $this->wikipediaLinks
+        $this->wikipediaLinks,
+        $originalTitleId
       );
       $found = $stmt->fetch();
       $stmt->close();
       if ($found === false) {
         throw new NotFoundException("Couldn't find series for {$id}.");
       }
+      $originalTitleId = (integer) $originalTitleId;
+
+      // Retrieve the titles and display title language codes.
+      $result = $connection->query(<<<SQL
+SELECT
+  `series_titles`.`id`,
+  COLUMN_JSON(`series_titles`.`dyn_comments`) AS `comments`,
+  `series_titles`.`language_code` AS `languageCode`,
+  `series_titles`.`title`,
+  `series_display_titles`.`language_code` AS `displayLanguageCode`
+FROM `series_titles`
+  LEFT JOIN `series_display_titles`
+    ON `series_display_titles`.`title_id` = `series_titles`.`id`
+WHERE `series_titles`.`series_id` = {$id}
+ORDER BY `series_titles`.`id` ASC
+SQL
+      );
+      while ($row = $result->fetch_object()) {
+        $row->id = (integer) $row->id;
+        if (empty($this->titles[$row->id])) {
+          $connection->dynamicDecode($row->comments);
+          $this->titles[$row->id] = (object) [
+            "id" => $row->id,
+            "comments" => $row->comments,
+            "languageCode" => $row->languageCode,
+            "title" => $row->title,
+            "displayLanguageCodes" => [],
+          ];
+        }
+        if (isset($row->displayLanguageCode)) {
+          // Avoid duplicates.
+          $this->titles[$row->id]->displayLanguageCodes[$row->displayLanguageCode] = true;
+        }
+      }
+      $result->free();
+
     }
     if ($this->id) {
       $connection->dynamicDecode($this->synopses);
       $connection->dynamicDecode($this->wikipediaLinks);
+      $this->endYear   && ($this->endYear   = (integer) $this->endYear);
+      $this->startYear && ($this->startYear = (integer) $this->startYear);
     }
     parent::__construct();
   }
@@ -167,6 +217,7 @@ SQL
         "wikipediaLinks",
         "startYear",
         "status",
+        "titles",
       ]);
     }
     return $properties;

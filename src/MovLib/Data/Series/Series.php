@@ -19,6 +19,7 @@ namespace MovLib\Data\Series;
 
 use \MovLib\Component\Date;
 use \MovLib\Core\Database\Database;
+use \MovLib\Core\Database\Query\Insert;
 use \MovLib\Core\Revision\OriginatorTrait;
 use \MovLib\Core\Search\RevisionTrait;
 use \MovLib\Exception\ClientException\NotFoundException;
@@ -100,18 +101,25 @@ class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revisio
 
 
   /**
-   * The series's award count.
+   * The series' award count.
    *
    * @var integer
    */
   public $awardCount;
 
   /**
-   *  The series's display title in the current locale.
+   *  The series' display title in the current locale.
    *
    * @var string
    */
   public $displayTitle;
+
+  /**
+   * The series' display title's unique identifier.
+   *
+   * @var integer
+   */
+  public $displayTitleId;
 
   /**
    * The display title's ISO 639-1 language code.
@@ -128,11 +136,18 @@ class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revisio
   public $endYear;
 
   /**
-   * The series's original title.
+   * The series' original title.
    *
    * @var string
    */
   public $originalTitle;
+
+  /**
+   * The series' original title's unique identifier.
+   *
+   * @var integer
+   */
+  public $originalTitleId;
 
   /**
    * The original title's ISO 639-1 language code.
@@ -142,14 +157,14 @@ class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revisio
   public $originalTitleLanguageCode;
 
   /**
-   * The series's release count.
+   * The series' release count.
    *
    * @var null|integer
    */
   public $releaseCount;
 
   /**
-   * The series's season count.
+   * The series' season count.
    *
    * @var integer
    */
@@ -163,7 +178,7 @@ class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revisio
   public $startYear;
 
   /**
-   * The series's status.
+   * The series' status.
    *
    * One of the STATUS_ constants.
    *
@@ -172,28 +187,19 @@ class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revisio
   public $status;
 
   /**
-   * The series's synopsis in the current locale.
+   * The series' synopsis in the current locale.
    *
    * @var null|string
    */
   public $synopsis;
 
   /**
-   * Assiciative array containing all titles of the series.
+   * The series' titles.
    *
-   * @var array
+   * @see Series::getTitles()
+   * @var mixed
    */
-  public $titles;
-
-  /**
-   * {@inheritdoc}
-   */
-  public $pluralKey = "series";
-
-  /**
-   * {@inheritdoc}
-   */
-  public $singularKey = "series";
+  protected $titles;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -205,36 +211,37 @@ class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revisio
    * @param \MovLib\Core\Container $container
    *   {@inheritdoc}
    * @param integer $id [optional]
-   *   The series's unique identifier to instantiate, defaults to <code>NULL</code> (no series will be loaded).
+   *   The series' unique identifier to instantiate, defaults to <code>NULL</code> (no series will be loaded).
    * @param array $values [optional]
    *   An array of values to set, keyed by property name, defaults to <code>NULL</code>.
    * @throws \MovLib\Exception\ClientException\NotFoundException
    */
   public function __construct(\MovLib\Core\Container $container, $id = null, array $values = null) {
-    $this->lemma =& $this->displayTitle;
     if ($id) {
       $stmt = Database::getConnection()->prepare(<<<SQL
 SELECT
   `series`.`id` AS `id`,
-  `series`.`changed` AS `changed`,
-  `series`.`created` AS `created`,
-  `series`.`deleted` AS `deleted`,
-  `series`.`end_year` AS `endYear`,
-  `series`.`mean_rating` AS `ratingMean`,
-  `series`.`rank` AS `ratingRank`,
-  `series`.`rating` AS `ratingBayes`,
-  `series`.`start_year` AS `startYear`,
-  `series`.`status` AS `status`,
-  COLUMN_GET(`series`.`dyn_synopses`, '{$container->intl->languageCode}' AS CHAR) AS `synopsis`,
-  COLUMN_GET(`series`.`dyn_wikipedia`, '{$container->intl->languageCode}' AS CHAR) AS `wikipedia`,
+  `series`.`changed`,
+  `series`.`created`,
+  `series`.`deleted`,
+  `series`.`end_year`,
+  `series`.`mean_rating`,
+  `series`.`rank`,
+  `series`.`rating`,
+  `series`.`start_year`,
+  `series`.`status`,
+  COLUMN_GET(`series`.`dyn_synopses`, '{$container->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`series`.`dyn_wikipedia`, '{$container->intl->languageCode}' AS CHAR),
   `original_title`.`title`,
+  `original_title`.`id`,
   `original_title`.`language_code`,
   IFNULL(`display_title`.`title`, `original_title`.`title`),
+  IFNULL(`display_title`.`id`, `original_title`.`id`),
   IFNULL(`display_title`.`language_code`, `original_title`.`language_code`),
-  `series`.`votes` AS `ratingVotes`,
-  `series`.`count_awards` AS `awardCount`,
-  `series`.`count_seasons` AS `seasonCount`,
-  `series`.`count_releases` AS `releaseCount`
+  `series`.`votes`,
+  `series`.`count_awards`,
+  `series`.`count_seasons`,
+  `series`.`count_releases`
 FROM `series`
   LEFT JOIN `series_display_titles`
     ON `series_display_titles`.`series_id` = `series`.`id`
@@ -264,8 +271,10 @@ SQL
         $this->synopsis,
         $this->wikipedia,
         $this->originalTitle,
+        $this->originalTitleId,
         $this->originalTitleLanguageCode,
         $this->displayTitle,
+        $this->displayTitleId,
         $this->displayTitleLanguageCode,
         $this->ratingVotes,
         $this->awardCount,
@@ -289,7 +298,7 @@ SQL
    * {@inheritdoc}
    */
   protected function defineSearchIndex(\MovLib\Core\Search\SearchIndexer $search, \MovLib\Core\Revision\RevisionInterface $revision) {
-    return $search;
+    return $search->indexSimpleSuggestion($revision->titles);
   }
 
   /**
@@ -301,6 +310,14 @@ SQL
     $revision->status    = $this->status;
     $this->setRevisionArrayValue($revision->synopses, $this->synopsis);
     $this->setRevisionArrayValue($revision->wikipediaLinks, $this->wikipedia);
+
+    // Only overwrite the titles if we have them, note that it's impossible to delete all titles, you always have at
+    // least the original title. Therefore any check with isset() or empty() would be pointless. The revision has
+    // already loaded all existing titles from the database, so no need to do anything if we have no update for them.
+    $this->titles && ($revision->titles = $this->titles);
+
+    // @todo Add all other cross references once they can be edited in the interface.
+
     return $revision;
   }
 
@@ -313,6 +330,53 @@ SQL
     $this->status    = $revision->status;
     $this->synopsis  = $this->getRevisionArrayValue($revision->synopses);
     $this->wikipedia = $this->getRevisionArrayValue($revision->wikipediaLinks);
+    // @todo Add all other cross references once they can be edited in the interface.
+    return $this;
+  }
+
+ /**
+   * {@inheritdoc}
+   */
+  protected function preCommit(\MovLib\Core\Database\Connection $connection, \MovLib\Core\Revision\RevisionInterface $revision, $oldRevisionId) {
+    // @todo Implement saving of cross references once they can be edited.
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function postCreate(\MovLib\Core\Database\Connection $connection, \MovLib\Core\Revision\RevisionInterface $revision) {
+    // Insert original title.
+    $this->originalTitleId = (new Insert($connection, "series_titles"))
+      ->set("series_id", $this->id)
+      ->setDynamic("comments", null)
+      ->set("language_code", $this->originalTitleLanguageCode)
+      ->set("title", $this->originalTitle)
+      ->execute()
+    ;
+    (new Insert($connection, "series_original_titles"))
+      ->set("series_id", $this->id)
+      ->set("title_id", $this->originalTitleId)
+      ->execute()
+    ;
+
+    // @todo Insert user entered display title, when implemented.
+    $this->displayTitleId = $this->originalTitleId;
+    (new Insert($connection, "series_display_titles"))
+      ->set("language_code", $this->intl->languageCode)
+      ->set("series_id", $this->id)
+      ->set("title_id", $this->originalTitleId)
+      ->execute()
+    ;
+    if ($this->intl->languageCode != $this->intl->defaultLanguageCode) {
+      (new Insert($connection, "series_display_titles"))
+        ->set("language_code", $this->intl->defaultLanguageCode)
+        ->set("series_id", $this->id)
+        ->set("title_id", $this->originalTitleId)
+        ->execute()
+      ;
+    }
+
     return $this;
   }
 
@@ -321,6 +385,7 @@ SQL
    */
   public function init(array $values = null) {
     parent::init($values);
+    $this->lemma =& $this->displayTitle;
     if (isset($this->startYear) && !$this->startYear instanceof \stdClass) {
       $this->startYear = new Date($this->startYear);
     }
@@ -331,10 +396,60 @@ SQL
   }
 
   /**
+   * Get the series' titles.
+   *
+   * @return array|boolean
+   *   An array containing the series' titles where the keys are the unique title identifiers and the values the title
+   *   objects. If this series has no titles <code>FALSE</code> is returned.
+   */
+  public function getTitles() {
+    if ($this->titles === null) {
+      $displayTitle = null;
+      if ($this->originalTitleId !== $this->displayTitleId) {
+        $displayTitle = " AND `id` != {$this->displayTitleId}";
+      }
+      $connection = Database::getConnection();
+      $result = $connection->query(<<<SQL
+SELECT
+  `id`,
+  COLUMN_GET(`dyn_comments`, '{$this->intl->languageCode}' AS BINARY) AS `comment`,
+  `language_code` AS `languageCode`,
+  `title`
+FROM `series_titles`
+WHERE `series_id` = {$this->id} AND `id` != {$this->originalTitleId}{$displayTitle}
+ORDER BY `title`{$connection->collate($this->intl->languageCode)}
+SQL
+      );
+      /* @var $title \MovLib\Data\Title */
+      while ($title = $result->fetch_object("\\MovLib\\Data\\Title")) {
+        if ($title->title == $this->displayTitle) {
+          $title->display = true;
+        }
+        if ($title->title == $this->originalTitle) {
+          $title->original = true;
+        }
+        $this->titles[$title->id] = $title;
+      }
+      if (empty($this->titles)) {
+        $this->titles = false;
+      }
+    }
+    return $this->titles;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function lemma($locale) {
-    return $this->displayTitle;
+    static $titles = null;
+
+    if (empty($locale) || $locale == $this->intl->locale) {
+      return $this->lemma;
+    }
+
+    throw new \LogicException("Not implemented!");
+
+    return $this->lemma;
   }
 
 }

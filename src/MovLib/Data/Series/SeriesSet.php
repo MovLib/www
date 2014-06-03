@@ -29,6 +29,10 @@ namespace MovLib\Data\Series;
  */
 final class SeriesSet extends \MovLib\Data\AbstractEntitySet {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
   // @codingStandardsIgnoreStart
   /**
    * Short class name.
@@ -38,19 +42,34 @@ final class SeriesSet extends \MovLib\Data\AbstractEntitySet {
   const name = "SeriesSet";
   // @codingStandardsIgnoreEnd
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Static Properties
+
+
   /**
-   * {@inheritdoc}
+   * The entities primary table's name.
+   *
+   * @var string
    */
   public static $tableName = "series";
 
-  public $bundle = "Series";
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
-   * {@inheritdoc}
+   * Instantiate new series set.
+   *
+   * @param \MovLib\Core\Container $container
+   *   The dependency injection container.
    */
   public function __construct(\MovLib\Core\Container $container) {
     parent::__construct($container, "Series", "Series", $container->intl->tp(-1, "Series"));
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * {@inheritdoc}
