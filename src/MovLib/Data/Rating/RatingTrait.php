@@ -82,19 +82,29 @@ trait RatingTrait {
     $mysqli = Database::getConnection();
     // This user hasn't voted for this entity yet.
     if ($userRating === null) {
-      $mysqli->query("INSERT INTO `{$this::$tableName}_ratings` SET `rating` = {$rating}, `{$this->set->singularKey}_id` = {$this->id}, `user_id` = {$userId}");
+      $mysqli->real_query(
+        "INSERT INTO `{$this::$tableName}_ratings` SET `rating` = {$rating}, `{$this->set->singularKey}_id` = {$this->id}, `user_id` = {$userId}"
+      );
       ++$this->ratingVotes;
     }
     // This user already voted for this entity.
     else {
-      $mysqli->query("UPDATE `{$this::$tableName}_ratings` SET `rating` = {$rating} WHERE `{$this->set->singularKey}_id` = {$this->id} AND `user_id` = {$userId}");
+      $mysqli->real_query(
+        "UPDATE `{$this::$tableName}_ratings` SET `rating` = {$rating} WHERE `{$this->set->singularKey}_id` = {$this->id} AND `user_id` = {$userId}"
+      );
     }
 
+    $cummulatedRating = (float) $mysqli->query(
+      "SELECT SUM(`rating`) FROM `{$this::$tableName}_ratings` WHERE `{$this->set->singularKey}_id` = {$this->id}"
+    )->fetch_all()[0][0];
+
     // Calculate the new mean rating for this entity.
-    $this->ratingMean = round(($this->ratingMean - $userRating + $rating) / $this->ratingVotes, 1);
+    $this->ratingMean = round($cummulatedRating / $this->ratingVotes, 1);
 
     // Update the entity's rating statistics.
-    $mysqli->query("UPDATE `{$this::$tableName}` SET `mean_rating` = {$this->ratingMean}, `votes` = {$this->ratingVotes} WHERE `id` = {$this->id}");
+    $mysqli->real_query(
+      "UPDATE `{$this::$tableName}` SET `mean_rating` = {$this->ratingMean}, `votes` = {$this->ratingVotes} WHERE `id` = {$this->id}"
+    );
 
     // @todo Update Bayes rating and global rank!
 

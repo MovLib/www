@@ -63,7 +63,8 @@ interface EntitySetInterface extends \ArrayAccess, \MovLib\Core\Routing\RoutingI
    * Get a random, unique, existing entity's identifier from all undeleted entities.
    *
    * @return mixed
-   *   A random, unique, existing entity's identifier from all undeleted entities.
+   *   A random, unique, existing entity's identifier from all undeleted entities. <code>NULL</code> if the table is
+   *   completely empty.
    */
   public function getRandom();
 
