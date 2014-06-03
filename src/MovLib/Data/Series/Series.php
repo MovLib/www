@@ -35,6 +35,7 @@ use \MovLib\Exception\ClientException\NotFoundException;
  * @since 0.0.1-dev
  */
 class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revision\OriginatorInterface, \MovLib\Data\Rating\RatingInterface {
+  use \MovLib\Data\Rating\RatingTrait;
   use OriginatorTrait, RevisionTrait {
     RevisionTrait::postCommit insteadof OriginatorTrait;
     RevisionTrait::postCreate insteadof OriginatorTrait;
@@ -48,7 +49,6 @@ class Series extends \MovLib\Data\AbstractEntity implements \MovLib\Core\Revisio
    */
   const name = "Series";
   // @codingStandardsIgnoreEnd
-  use \MovLib\Data\Rating\RatingTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants

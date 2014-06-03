@@ -34,6 +34,7 @@ use \MovLib\Data\Series\SeriesSet;
  * @since 0.0.1-dev
  */
 final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
+  use \MovLib\Presentation\Series\SeriesTrait;
 
   // @codingStandardsIgnoreStart
   /**
@@ -43,7 +44,6 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    */
   const name = "Index";
   // @codingStandardsIgnoreEnd
-  use \MovLib\Presentation\Series\SeriesTrait;
 
   /**
    * {@inheritdoc}
