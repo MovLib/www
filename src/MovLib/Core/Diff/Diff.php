@@ -50,7 +50,7 @@ final class Diff {
    *
    * @var string
    */
-  const COPY = "=";
+  const COPY = "c";
 
   /**
    * Code for copy key.
@@ -71,7 +71,7 @@ final class Diff {
    *
    * @var string
    */
-  const DELETE = "-";
+  const DELETE = "d";
 
   /**
    * Code for delete key.
@@ -85,7 +85,7 @@ final class Diff {
    *
    * @var string
    */
-  const INSERT = "+";
+  const INSERT = "i";
 
   /**
    * Code for insert key.
