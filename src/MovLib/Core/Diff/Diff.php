@@ -94,8 +94,19 @@ final class Diff {
    */
   const INSERT_KEY = 1;
 
+  /**
+   * The character that is used as separator within insert transformations.
+   *
+   * The separator is important for correct extraction of the length of an insert transformation. We can't be certain
+   * that the first character of an insert operation isn't a numeric one. The actual separator character doesn't matter,
+   * it simply has to be known.
+   *
+   * @var string
+   */
+  const INSERT_SEPARATOR = ":";
 
-  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+  // ------------------------------------------------------------------------------------------------------------------- Public Methods
 
 
   /**
@@ -192,157 +203,344 @@ final class Diff {
   }
 
 
-  // ------------------------------------------------------------------------------------------------------------------- NEW
+  // ------------------------------------------------------------------------------------------------------------------- NEW Public Methods
 
 
   /**
-   * Get the diff patch to recreate <var>$old</var> from <var>$new</var>.
+   * Get the differences between <var>$new</var> and <var>$old</var>.
    *
-   * This method is optimized for serialized PHP strings that contain changes. Our form system has to make sure that
-   * there are actually changes because we aren't able to determine this within our revision system. The problem is that
-   * new revision always contain changes due to the fact that the created date and time is set to the date and time of
-   * the request. The fact that we don't even want to start the revisioning process if the user hasn't changed anything
-   * lead to the decision that the form system should take care of this case.
+   * @param string $new
+   *   The new text.
+   * @param string $old
+   *   The old text.
+   * @return array
+   *   The differences between <var>$new</var> and <var>$old</var>.
+   */
+  public function getDiff($new, $old) {
+    // Perform the actual diff, this method is only a public wrapper for the actual diff method that has an extended
+    // signature. See the method's documentation for more info on this.
+    return $this->diff($new, mb_strlen($new), $old, mb_strlen($old), microtime(true) + self::DEADLINE);
+  }
+
+  /**
+   * Get a human readable diff patch.
    *
    * <b>NOTE</b><br>
-   * This method has all operations inlined for better speed. This makes it somewhat hard to follow. Have a look at the
-   * original implementation to better understand what's going on. I inserted some visual delimiters to make it easier
-   * to read.
+   * The patch is optimized for space and compatible with FineDiff.
    *
-   * <b>SIDENOTE</b><br>
-   * We aren't using the FineDiff implementation to generate the patches because it's awfully slow compared to Google's
-   * diff-match-patch algorithm family. We are using it to apply patches though, because the produced diff patches are
-   * extremely small, human readable and easy to apply.
-   *
-   * @link https://github.com/yetanotherape/diff-match-patch
-   * @see Diff::applyPatch()
-   * @param string $new
-   *   The newer serialized PHP string.
-   * @param string $old
-   *   The older serialized PHP string.
+   * @param array $diffs
+   *   The diffs to get human readable patch for.
    * @return string
-   *   The diff patch to recreate <var>$old</var> from <var>$new</var>.
+   *   The human readable diff patch.
    */
-  public function getPatchOptimizedForRevisions($new, $old) {
-    // -----------------------------------------------------------------------------------------------------------------
-    // We always have common prefixes because we're always creating patches for serialized strings of the same objects.
-
-    $newLength = mb_strlen($new);
-    $oldLength = mb_strlen($old);
-    $prefixMin = $prefixStart = 0;
-    $prefixMax = $prefixMid   = min($newLength, $oldLength);
-
-    // Binary search...
-    while ($prefixMin < $prefixMid) {
-      // Compute length once...
-      $len = $prefixMid - $prefixStart;
-
-      if (mb_substr($new, $prefixStart, $len) == mb_substr($old, $prefixStart, $len)) {
-        $prefixStart = $prefixMin = $prefixMid;
-      }
-      else {
-        $prefixMax = $prefixMid;
-      }
-
-      $prefixMid = (integer) (($prefixMax - $prefixMin) / 2) + $prefixMin;
-    }
-
-    // Remember the prefix copy operation.
-    $prefix = self::COPY . ($prefixMid === 1 ? null : $prefixMid);
-
-    // -----------------------------------------------------------------------------------------------------------------
-    // We always have common suffixes because of the same reason as above.
-
-    // Simple substraction is faster than calling mb_strlen() again!
-    $newLength -= $prefixStart;
-    $oldLength -= $prefixStart;
-    $suffixMin = $suffixEnd = 0;
-    $suffixMax = $suffixMid = min($newLength, $oldLength);
-
-    // Binary search..
-    while ($suffixMin < $suffixMid) {
-      // Compute length once...
-      $len = $suffixMid - $suffixEnd;
-
-      if (mb_substr($new, -$suffixMid, $len) == mb_substr($old, -$suffixMid, $len)) {
-        $suffixEnd = $suffixMin = $suffixMid;
-      }
-      else {
-        $suffixMax = $suffixMid;
-      }
-
-      $suffixMid = (integer) (($suffixMax - $suffixMin) / 2) + $suffixMin;
-    }
-
-    // Remember the suffix copy operation.
-    $suffix = self::COPY . ($suffixMid === 1 ? null : $suffixMid);
-
-    // -----------------------------------------------------------------------------------------------------------------
-    // Remove the common pre- and suffixes from both serialized strings.
-
-    // Simple substraction is faster than calling mb_strlen() again and the following calls to mb_substr() are faster.
-    $newLength -= $suffixEnd;
-    $oldLength -= $suffixEnd;
-    $new        = mb_substr($new, $prefixStart, $newLength);
-    $old        = mb_substr($old, $prefixStart, $oldLength);
-
-    // -----------------------------------------------------------------------------------------------------------------
-    // The actual diff of the middle block is generated with the default implementation.
-
-    // @todo We have to add prefix and suffix to the diff for clean up!
-    $diff = $this->getDiff($new, $old, null, $newLength, $oldLength);
-
-    // -----------------------------------------------------------------------------------------------------------------
-    // Now we start creating the actual patch string, again optimized / inlined for speed.
-
+  public function getDiffPatch(array $diffs) {
     $patch = null;
-    $colon = ":";
-    $c     = count($diff);
+    $c     = count($diffs);
     for ($i = 0; $i < $c; ++$i) {
-      if ($diff[$i][0] === self::INSERT_KEY) {
-        $patch .= self::INSERT . ($diff[$i][2] === 1 ? null : $diff[$i][2]) . $colon . $diff[$i][1];
+      if ($diffs[$i][0] === self::INSERT_KEY) {
+        $patch .= self::INSERT . ($diffs[$i][2] === 1 ? null : $diffs[$i][2]) . self::INSERT_SEPARATOR . $diffs[$i][1];
       }
       else {
-        if ($diff[$i][0] === self::COPY_KEY) {
+        if ($diffs[$i][0] === self::COPY_KEY) {
           $patch .= self::COPY;
         }
         else {
           $patch .= self::DELETE;
         }
-        $patch .= $diff[$i][2] === 1 ? null : $diff[$i][2];
+        $patch .= $diffs[$i][2] === 1 ? null : $diffs[$i][2];
+      }
+    }
+    return $patch;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Protected Methods
+
+
+  /**
+   *
+   * @param string $text1
+   * @param integer $text1Length
+   * @param string $text2
+   * @param integer $text2Length
+   * @param float $deadline
+   * @return array
+   */
+  protected function bisect($text1, $text1Length, $text2, $text2Length, $deadline) {
+    $maxD             = (integer) ($text1Length + $text2Length + 1) / 2;
+    $vOffset          = $maxD;
+    $vLength          = 2 * $maxD;
+    $v1               = array_fill(0, $vLength, -1);
+    $v1[$vOffset + 1] = 0;
+    $v2               = $v1;
+    $delta            = $text1Length - $text2Length;
+
+    // Front path will collide with reverse path if total character count is odd.
+    $even = ($delta % 2 === 0); // true = even | false = odd
+
+    // Offsets for start and end of k loops, prevents mapping of space beyond the grid.
+    $k1Start = $k1End = $k2Start = $k2End = 0;
+
+    for ($d = 0; $d < $maxD; ++$d) {
+      // Bail out if deadline is reached.
+      if (microtime(true) > $deadline) {
+        break;
+      }
+
+      // Walk the front path one step.
+      for ($k1 = -$d + $k1Start; $k1 < $d + 1 - $k1End; $k1 += 2) {
+        $k1Offset  = $vOffset + $k1;
+        $k1OffsetD = $k1Offset - 1;
+        $k1OffsetI = $k1Offset + 1;
+        if ($k1 === -$d || ($k1 !== $d && $v1[$k1OffsetD] < $v1[$k1OffsetI])) {
+          $x1 = $v1[$k1OffsetI];
+        }
+        else {
+          $x1 = $v1[$k1OffsetD] + 1;
+        }
+        $y1 = $x1 - $k1;
+        while ($x1 < $text1Length && $y1 < $text2Length && mb_substr($text1, $x1, 1) == mb_substr($text2, $y1, 1)) {
+          ++$x1;
+          ++$y1;
+        }
+        $v1[$k1Offset] = $x1;
+
+        // Outside the right of the graph.
+        if ($x1 > $text1Length) {
+          $k1End += 2;
+        }
+        // Outside the bottom of the graph.
+        elseif ($y1 > $text2Length) {
+          $k1Start += 2;
+        }
+        // Additional checks in odd case.
+        elseif ($even === false) {
+          $k2Offset = $vOffset + $delta - $k1;
+          if ($k2Offset >= 0 && $k2Offset < $vLength && $v2[$k2Offset] !== -1) {
+            $x2 = $text1Length - $v2[$k2Offset];
+            if ($x1 >= $x2) {
+              return array_merge(
+                $this->diff(mb_substr($text1, 0, $x1), $x1, mb_substr($text2, 0, $y1), $y1, $deadline),
+                $this->diff(mb_substr($text1, $x1), $text1Length - $x1, mb_substr($text2, $y1), $text2Length - $y1, $deadline)
+              );
+            }
+          }
+        }
+      }
+
+      // Walk the back path one step.
+      for ($k2 = -$d + $k2Start; $k2 < $d + 1 - $k2End; $k2 += 2) {
+        $k2Offset  = $vOffset + $k2;
+        $k2OffsetD = $k2Offset - 1;
+        $k2OffsetI = $k2Offset + 1;
+        if ($k2 === -$d || ($k2 !== $d && $v2[$k2OffsetD] < $v2[$k2OffsetI])) {
+          $x2 = $v2[$k2OffsetI];
+        }
+        else {
+          $x2 = $v2[$k2OffsetD] + 1;
+        }
+        $y2 = $x2 - $k2;
+        while ($x2 < $text1Length && $y2 < $text2Length && mb_substr($text1, -$x2 - 1, 1) == mb_substr($text2, -$y2 - 1, 1)) {
+          ++$x2;
+          ++$y2;
+        }
+        $v2[$k2Offset] = $x2;
+
+        // Outside the right of the graph.
+        if ($x2 > $text1Length) {
+          $k2End += 2;
+        }
+        // Outside the bottom of the graph.
+        elseif ($y2 > $text2Length) {
+          $k2Start += 2;
+        }
+        // Additional checks in even case.
+        elseif ($even === true) {
+          $k1Offset = $vOffset + $delta - $k2;
+          if ($k1Offset >= 0 && $k1Offset < $vLength && $v1[$k1Offset] !== -1) {
+            $x1 = $v1[$k1Offset];
+            $y1 = $vOffset + $x1 - $k1Offset;
+            $x2 = $text1Length - $x2;
+            if ($x1 >= $x2) {
+              return array_merge(
+                $this->diff(mb_substr($text1, 0, $x1), $x1, mb_substr($text2, 0, $y1), $y1, $deadline),
+                $this->diff(mb_substr($text1, $x1), $text1Length - $x1, mb_substr($text2, $y1), $text2Length - $y1, $deadline)
+              );
+            }
+          }
+        }
       }
     }
 
-    return "{$prefix}{$patch}{$suffix}";
+    // Diff took too long and hit the deadline or number of diffs equals number of characters, no commonality at all.
+    return [
+      [ self::DELETE_KEY, $text1, $text1Length ],
+      [ self::INSERT_KEY, $text2, $text2Length ],
+    ];
   }
 
   /**
    *
-   * @param type $text1
-   * @param type $text2
-   * @param float $deadline [internal]
-   *   Used internally for recursive calls.
-   * @param type $text1Length [internal]
-   *   Used internally for recursive calls.
-   * @param type $text2Length [internal]
-   *   Used internally for recursive calls.
-   * @return type
+   * @param string $text1
+   * @param integer $text1Length
+   * @param string $text2
+   * @param integer $text2Length
+   * @return integer
    */
-  public function getDiff($text1, $text2, $deadline = null, $text1Length = null, $text2Length = null) {
-    // Calculate deadline for diff patch generation.
-    if ($deadline === null) {
-      $deadline = microtime(true) + self::DEADLINE;
+  protected function commonPrefix($text1, $text1Length, $text2, $text2Length) {
+    if ($text1 == "" || $text2 == "" || mb_substr($text1, 0, 1) != mb_substr($text2, 0, 1)) {
+      return 0;
     }
 
-    // Compute lengths if not passed.
-    $text1Length || ($text1Length = mb_strlen($text1));
-    $text2Length || ($text2Length = mb_strlen($text2));
+    $min = $start = 0;
+    $max = $mid   = min($text1Length, $text2Length);
+
+    while ($min < $mid) {
+      $len = $mid - $start;
+      if (mb_substr($text1, $start, $len) == mb_substr($text2, $start, $len)) {
+        $start = $min = $mid;
+      }
+      else {
+        $max = $mid;
+      }
+      $mid = (integer) (($max - $min) / 2) + $min;
+    }
+
+    return $mid;
+  }
+
+  /**
+   *
+   * @param string $text1
+   * @param integer $text1Length
+   * @param string $text2
+   * @param integer $text2Length
+   * @return integer
+   */
+  protected function commonSuffix($text1, $text1Length, $text2, $text2Length) {
+    if ($text1 == "" || $text2 == "" || mb_substr($text1, -1, 1) != mb_substr($text2, -1, 1)) {
+      return 0;
+    }
+
+    $min = $end = 0;
+    $max = $mid = min($text1Length, $text2Length);
+
+    while ($min < $mid) {
+      $len = $mid - $end;
+      if (mb_substr($text1, -$mid, $len) == mb_substr($text2, -$mid, $len)) {
+        $end = $min = $mid;
+      }
+      else {
+        $max = $mid;
+      }
+      $mid = (integer) (($max - $min) / 2) + $min;
+    }
+
+    return $mid;
+  }
+  /**
+   *
+   * @param string $text1
+   * @param integer $text1Length
+   * @param string $text2
+   * @param integer $text2Length
+   * @param float $deadline
+   * @return integer
+   */
+  protected function compute($text1, $text1Length, $text2, $text2Length, $deadline) {
+    // The first text is empty, simple insertion necessary.
+    if ($text1 == "") {
+      return [[ self::INSERT_KEY, $text2, $text2Length ]];
+    }
+
+    // The second text is empty, simple deletion necessary.
+    if ($text2 == "") {
+      return [[ self::DELETE_KEY, $text1, $text1Length ]];
+    }
+
+    // We don't want to repeat ourselfs, therefore we create intermediate variables based on lengths.
+    if ($text1Length < $text2Length) {
+      $shortText   = $text1;
+      $shortLength = $text1Length;
+      $longText    = $text2;
+      $longLength  = $text2Length;
+    }
+    else {
+      $shortText   = $text2;
+      $shortLength = $text2Length;
+      $longText    = $text1;
+      $longLength  = $text1Length;
+    }
+
+    // The shorter text is contained within the longer text.
+    if (($i = mb_strpos($longText, $shortText)) !== false) {
+      $diff = [
+        [ self::INSERT_KEY, mb_substr($longText, 0, $i), $i ],
+        [ self::COPY_KEY, $shortText, $shortLength ],
+        [ self::INSERT_KEY, mb_substr($longText, ($length = $i + $shortLength)), $longLength - $length ],
+      ];
+
+      // Swap insertions with deletions if diff is reversed.
+      if ($text2Length < $text1Length) {
+        $diff[0][0] = self::DELETE_KEY;
+        $diff[2][0] = self::DELETE_KEY;
+      }
+
+      return $diff;
+    }
+
+    // Single character, cannot be a copy operation because of previous checks.
+    if ($shortLength === 1) {
+      return [[ self::DELETE_KEY, $text1, $text1Length ], [ self::INSERT_KEY, $text2, $text2Length ]];
+    }
+
+    // Don't risk returning a non-optimal patch if we can divide the texts.
+    if (($hm = $this->halfMatch($longText, $longLength, $shortText, $shortLength))) {
+      // Reorder if diff is reversed.
+      if ($text1Length < $text2Length) {
+        $hm = [ $hm[2], $hm[3], $hm[0], $hm[1], $hm[4], $hm[5] ];
+      }
+
+      // Compute differences of left and right hand side of the copy operation of the common middle characters.
+      return array_merge(
+        $this->diff($hm[0], mb_strlen($hm[0]), $hm[2], mb_strlen($hm[2]), $deadline),
+        [[ self::COPY_KEY, $hm[4], $hm[5] ]],
+        $this->diff($hm[1], mb_strlen($hm[1]), $hm[3], mb_strlen($hm[3]), $deadline)
+      );
+    }
+
+    return $this->bisect($text1, $text1Length, $text2, $text2Length, $deadline);
+  }
+
+  /**
+   * Find the differences between <var>$text1</var> and <var>$text2</var>.
+   *
+   * @param string $text1
+   *   The first text to compare.
+   * @param type $text1Length
+   *   Used internally for recursive calls.
+   * @param string $text2
+   *   The second text to compare.
+   * @param type $text2Length
+   *   Used internally for recursive calls.
+   * @param float $deadline
+   *   Used internally for recursive calls.
+   * @return array
+   *   Array containing the differences between <var>$text1</var> and <var>$text2</var>.
+   */
+  protected function diff($text1, $text1Length, $text2, $text2Length, $deadline) {
+    $text1Length = (integer) $text1Length;
+    $text2Length = (integer) $text2Length;
 
     // Check for equality.
     if ($text1 == $text2) {
+      // We always return an array, this makes sure that we don't generate errors together with all other methods that
+      // expect an array to work with. Note that the final generated patch would still be NULL.
       if ($text1 == "") {
         return [];
       }
+
+      // Simply copy the complete text and we're done.
       return [[ self::COPY_KEY, $text1, $text1Length ]];
     }
 
@@ -352,11 +550,11 @@ final class Diff {
       $prefix = null;
     }
     else {
+      $prefix       = mb_substr($text1, 0, $prefixLength);
       $text1Length -= $prefixLength;
       $text2Length -= $prefixLength;
       $text1        = mb_substr($text1, $prefixLength, $text1Length);
       $text2        = mb_substr($text2, $prefixLength, $text2Length);
-      $prefix       = mb_substr($text1, 0, $prefixLength);
     }
 
     // Compute common suffix.
@@ -365,28 +563,99 @@ final class Diff {
       $suffix = null;
     }
     else {
+      $suffix       = mb_substr($text1, -$suffixLength);
       $text1Length -= $suffixLength;
       $text2Length -= $suffixLength;
       $text1        = mb_substr($text1, 0, $text1Length);
       $text2        = mb_substr($text2, 0, $text2Length);
-      $suffix       = mb_substr($text1, -$suffixLength);
     }
 
-    // Compute diff of middle block.
+    // Compute differences in middle block.
     $diffs = $this->compute($text1, $text1Length, $text2, $text2Length, $deadline);
 
     // Restore common prefix.
     if ($prefix) {
-      array_unshift($diffs, [ self::COPY_KEY, $prefix, mb_strlen($prefix) ]);
+      array_unshift($diffs, [ self::COPY_KEY, $prefix, $prefixLength ]);
     }
 
     // Append common suffix.
     if ($suffix) {
-      $diffs[] = [ self::COPY_KEY, $suffix, mb_strlen($suffix) ];
+      $diffs[] = [ self::COPY_KEY, $suffix, $suffixLength ];
     }
 
-    // Clean the diff by merging as many operations as possible.
-    return $this->cleanUpDiff($diffs);
+    // Clean the differences by merging as many operations as possible.
+    return $this->merge($diffs);
+  }
+
+  /**
+   *
+   * @param type $longText
+   * @param type $longLength
+   * @param type $shortText
+   * @param type $shortLength
+   * @return null|array
+   */
+  protected function halfMatch($longText, $longLength, $shortText, $shortLength) {
+    // Pointless to continue...
+    if ($longLength < 4 || $shortLength * 2 < strlen((string) $longLength)) {
+      return;
+    }
+
+    // First check if the second quarter is the seed for a half-match.
+    $hm1 = $this->halfMatchI($longText, $longLength, $shortText, $shortLength, (integer) ($longLength + 3) / 4);
+
+    // Check again based on the third quarter.
+    $hm2 = $this->halfMatchI($longText, $longLength, $shortText, $shortLength, (integer) ($longLength + 1) / 2);
+
+    // Both matched, select the longest.
+    if ($hm1 && $hm2) {
+      $hm = $hm1[5] > $hm2[5] ? $hm1 : $hm2;
+    }
+    elseif ($hm1) {
+      $hm = $hm1;
+    }
+    elseif ($hm2) {
+      $hm = $hm2;
+    }
+    else {
+      return;
+    }
+
+    return $hm;
+  }
+
+  /**
+   *
+   * @param type $longText
+   * @param type $longLength
+   * @param type $shortText
+   * @param type $shortLength
+   * @param type $i
+   * @return type
+   */
+  protected function halfMatchI($longText, $longLength, $shortText, $shortLength, $i) {
+    $seed       = mb_substr($longText, $i, (integer) $longLength / 4);
+    $bestCommon = $bestLongA  = $bestLongB  = $bestShortA = $bestShortB = "";
+    $j          = mb_strpos($shortText, $seed);
+
+    while ($j !== false) {
+      $tmpLongLength  = $longLength  - $i;
+      $tmpShortLength = $shortLength - $j;
+      $prefixLength   = $this->commonPrefix(mb_substr($longText, $i, $tmpLongLength), $tmpLongLength, mb_substr($shortText, $i, $tmpShortLength), $tmpShortLength);
+      $suffixLength   = $this->commonSuffix(mb_substr($longText, 0, $i), $tmpLongLength, mb_substr($shortText, 0, $j), $tmpShortLength);
+      if (mb_strlen($bestCommon) < $suffixLength + $prefixLength) {
+        $bestCommon = mb_substr($shortText, $j - $suffixLength, $suffixLength) . mb_substr($shortText, $j, $prefixLength);
+        $bestLongA  = mb_substr($longText, 0, $i - $suffixLength);
+        $bestLongB  = mb_substr($longText, $i + $prefixLength);
+        $bestShortA = mb_substr($shortText, 0, $j - $suffixLength);
+        $bestShortB = mb_substr($shortText, $j + $prefixLength);
+      }
+      $j = mb_strpos($shortText, $seed, $j + 1);
+    }
+
+    if (($bestCommonLength = mb_strlen($bestCommon)) * 2 >= $longLength) {
+      return [ $bestLongA, $bestLongB, $bestShortA, $bestShortB, $bestCommon, $bestCommonLength ];
+    }
   }
 
   /**
@@ -394,12 +663,20 @@ final class Diff {
    * @param array $diffs
    * @return array
    */
-  protected function cleanUpDiff($diffs) {
-    $diffs[] = [ self::COPY_KEY, null, 0 ];
+  protected function merge(array $diffs) {
+    // No need to merge if there are no transformations at all.
+    if (empty($diffs)) {
+      return $diffs;
+    }
 
+    // Why are we adding an empty copy operation at this point?
+    $diffs[] = [ self::COPY_KEY, "", 0 ];
+
+    // Declare variables for merge optimization.
     $pointer    = $countDelete = $countInsert = $lengthDelete = $lengthInsert = 0;
     $textDelete = $textInsert  = null;
 
+    // Note that the diffs count changes while we're iterating over it, therefore we have to recount it all the time.
     while ($pointer < count($diffs)) {
       if ($diffs[$pointer][0] === self::INSERT_KEY) {
         $textInsert   .= $diffs[$pointer][1];
@@ -476,15 +753,19 @@ final class Diff {
           $diffs[$previous][2] += $diffs[$pointer][2];
           array_splice($diffs, $pointer, 1);
         }
+        // Advance the pointer and go to the next record.
         else {
           ++$pointer;
         }
+
+        // Reset all variables to their defaults, except the pointer of course.
         $countDelete = $countInsert = $lengthDelete = $lengthInsert = 0;
         $textDelete  = $textInsert  = null;
       }
     }
 
-    if ($diffs[count($diffs) - 1][1] === null) {
+    // Why are we removing the empty copy operation?
+    if ($diffs[count($diffs) - 1][1] == "") {
       array_pop($diffs);
     }
 
@@ -502,7 +783,7 @@ final class Diff {
       // Check if this transformation is actually surrounded by copy transformations.
       if ($diffs[$prev][0] === self::COPY_KEY && $diffs[$next][0] === self::COPY_KEY) {
         // Shift the transformation over the previous copy transformation.
-        if (mb_substr($diffs[$pointer][1], -$diffs[$prev][2]) === $diffs[$prev][1]) {
+        if (mb_substr($diffs[$pointer][1], -$diffs[$prev][2]) == $diffs[$prev][1]) {
           $diffs[$pointer][1]  = $diffs[$prev][1] . mb_substr($diffs[$pointer][1], 0, -$diffs[$prev][2]);
           $diffs[$pointer][2] -= $diffs[$prev][2];
           $diffs[$next][1]     = "{$diffs[$prev][1]}{$diffs[$next][1]}";
@@ -511,7 +792,7 @@ final class Diff {
           $changes = true;
         }
         // Shift the transformation over the next copy transformation.
-        elseif (mb_substr($diffs[$pointer][1], 0, $diffs[$next][2]) === $diffs[$next][1]) {
+        elseif (mb_substr($diffs[$pointer][1], 0, $diffs[$next][2]) == $diffs[$next][1]) {
           $diffs[$prev][1]     = "{$diffs[$prev][1]}{$diffs[$next][1]}";
           $diffs[$prev][2]    += $diffs[$next][2];
           $diffs[$pointer][1]  = mb_substr($diffs[$pointer][1], $diffs[$next][2]) . $diffs[$next][1];
@@ -527,333 +808,10 @@ final class Diff {
 
     // If we shifted something, go through all of it again.
     if ($changes === true) {
-      return $this->cleanUpDiff($diffs);
+      return $this->merge($diffs);
     }
 
     return $diffs;
-  }
-
-  /**
-   *
-   * @param type $text1
-   * @param type $text1Length
-   * @param type $text2
-   * @param type $text2Length
-   * @return int
-   */
-  protected function commonPrefix($text1, $text1Length, $text2, $text2Length) {
-    if ($text1 == "" || $text2 == "" || mb_substr($text1, 0, 1) != mb_substr($text2, 0, 1)) {
-      return 0;
-    }
-
-    $min = $start = 0;
-    $max = $mid   = min($text1Length, $text2Length);
-
-    while ($min < $mid) {
-      $len = $mid - $start;
-      if (mb_substr($text1, $start, $len) == mb_substr($text2, $start, $len)) {
-        $start = $min = $mid;
-      }
-      else {
-        $max = $mid;
-      }
-      $mid = (integer) (($max - $min) / 2) + $min;
-    }
-
-    return $mid;
-  }
-
-  /**
-   *
-   * @param type $text1
-   * @param type $text1Length
-   * @param type $text2
-   * @param type $text2Length
-   * @return int
-   */
-  protected function commonSuffix($text1, $text1Length, $text2, $text2Length) {
-    if ($text1 == "" || $text2 == "" || mb_substr($text1, -1, 1) != mb_substr($text2, -1, 1)) {
-      return 0;
-    }
-
-    $min = $end = 0;
-    $max = $mid = min($text1Length, $text2Length);
-
-    while ($min < $mid) {
-      $len = $mid - $end;
-      if (mb_substr($text1, -$mid, $len) == mb_substr($text2, -$mid, $len)) {
-        $end = $min = $mid;
-      }
-      else {
-        $max = $mid;
-      }
-      $mid = (integer) (($max - $min) / 2) + $min;
-    }
-
-    return $mid;
-  }
-
-  /**
-   *
-   * @param type $text1
-   * @param type $text1Length
-   * @param type $text2
-   * @param type $text2Length
-   * @return type
-   */
-  protected function compute($text1, $text1Length, $text2, $text2Length, $deadline) {
-    // The first text is empty, simple insertion necessary.
-    if ($text1 == "") {
-      return [[ self::INSERT_KEY, $text2, $text2Length ]];
-    }
-
-    // The second text is empty, simple deletion necessary.
-    if ($text2 == "") {
-      return [[ self::DELETE_KEY, $text1, $text1Length ]];
-    }
-
-    // We don't want to repeat ourselfs, therefore we create intermediate variables based on lengths.
-    if ($text1Length < $text2Length) {
-      $shortText   = $text1;
-      $shortLength = $text1Length;
-      $longText    = $text2;
-      $longLength  = $text2Length;
-    }
-    else {
-      $shortText   = $text2;
-      $shortLength = $text2Length;
-      $longText    = $text1;
-      $longLength  = $text1Length;
-    }
-
-    // The shorter text is contained within the longer text.
-    if (($i = mb_strpos($longText, $shortText)) !== false) {
-      $diff = [
-        [ self::INSERT_KEY, mb_substr($longText, 0, $i), $i ],
-        [ self::COPY_KEY, $shortText, $shortLength ],
-        [ self::INSERT_KEY, mb_substr($longText, ($length = $i + $shortLength)), $longLength - $length ],
-      ];
-
-      // Swap insertions with deletions if diff is reversed.
-      if ($text2Length < $text1Length) {
-        $diff[0][0] = self::DELETE_KEY;
-        $diff[2][0] = self::DELETE_KEY;
-      }
-
-      return $diff;
-    }
-
-    // Single character, cannot be a copy operation because of previous checks.
-    if ($shortLength === 1) {
-      return [[ self::DELETE_KEY, $text1, $text1Length ], [ self::INSERT_KEY, $text2, $text2Length ]];
-    }
-
-    // Don't risk returning a non-optimal patch if we can divide the texts.
-    if (($hm = $this->halfMatch($longText, $longLength, $shortText, $shortLength))) {
-      return array_merge(
-        $this->getDiff($hm[0], $hm[2], $deadline),
-        [[ self::COPY_KEY, $hm[4], $hm[5] ]],
-        $this->getDiff($hm[1], $hm[3], $deadline)
-      );
-    }
-
-    return $this->bisect($text1, $text1Length, $text2, $text2Length, $deadline);
-  }
-
-  /**
-   *
-   * @param type $longText
-   * @param type $longLength
-   * @param type $shortText
-   * @param type $shortLength
-   * @return null|array
-   */
-  protected function halfMatch($longText, $longLength, $shortText, $shortLength) {
-    // Pointless to continue...
-    if ($longLength < 4 || $shortLength * 2 < strlen((string) $longLength)) {
-      return;
-    }
-
-    // First check if the second quarter is the seed for a half-match.
-    $hm1 = $this->halfMatchI($longText, $longLength, $shortText, $shortLength, (integer) ($longLength + 3) / 4);
-
-    // Check again based on the third quarter.
-    $hm2 = $this->halfMatchI($longText, $longLength, $shortText, $shortLength, (integer) ($longLength + 1) / 2);
-
-    // Both matched, select the longest.
-    if ($hm1 && $hm2) {
-      $hm = $hm1[5] > $hm2[5] ? $hm1 : $hm2;
-    }
-    elseif ($hm1) {
-      $hm = $hm1;
-    }
-    elseif ($hm2) {
-      $hm = $hm2;
-    }
-    else {
-      return;
-    }
-
-    // Reorder if diff is reversed.
-    if ($longLength < $shortLength) {
-      return [ $hm[2], $hm[3], $hm[0], $hm[1], $hm[4], $hm[5] ];
-    }
-
-    return $hm;
-  }
-
-  /**
-   *
-   * @param type $longText
-   * @param type $longLength
-   * @param type $shortText
-   * @param type $shortLength
-   * @param type $i
-   * @return type
-   */
-  protected function halfMatchI($longText, $longLength, $shortText, $shortLength, $i) {
-    $seed       = mb_substr($longText, $i, (integer) $longLength / 4);
-    $bestCommon = $bestLongA  = $bestLongB  = $bestShortA = $bestShortB = "";
-    $j          = mb_strpos($shortText, $seed);
-
-    while ($j !== false) {
-      $tmpLongLength  = $longLength  - $i;
-      $tmpShortLength = $shortLength - $j;
-      $prefixLength   = $this->commonPrefix(mb_substr($longText, $i, $tmpLongLength), $tmpLongLength, mb_substr($shortText, $i, $tmpShortLength), $tmpShortLength);
-      $suffixLength   = $this->commonSuffix(mb_substr($longText, 0, $i), $tmpLongLength, mb_substr($shortText, 0, $j), $tmpShortLength);
-      if (mb_strlen($bestCommon) < $suffixLength + $prefixLength) {
-        $bestCommon = mb_substr($shortText, $j - $suffixLength, $suffixLength) . mb_substr($shortText, $j, $prefixLength);
-        $bestLongA  = mb_substr($longText, 0, $i - $suffixLength);
-        $bestLongB  = mb_substr($longText, $i + $prefixLength);
-        $bestShortA = mb_substr($shortText, 0, $j - $suffixLength);
-        $bestShortB = mb_substr($shortText, $j + $prefixLength);
-      }
-      $j = mb_strpos($shortText, $seed, ++$j);
-    }
-
-    if (($bestCommonLength = mb_strlen($bestCommon)) * 2 >= $longLength) {
-      return [ $bestLongA, $bestLongB, $bestShortA, $bestShortB, $bestCommon, $bestCommonLength ];
-    }
-  }
-
-  /**
-   *
-   * @param type $text1
-   * @param type $text1Length
-   * @param type $text2
-   * @param type $text2Length
-   */
-  protected function bisect($text1, $text1Length, $text2, $text2Length, $deadline) {
-    $maxD             = (integer) ($text1Length + $text2Length + 1) / 2;
-    $vOffset          = $maxD;
-    $vLength          = 2 * $maxD;
-    $v1               = array_fill(0, $vLength, -1);
-    $v1[$vOffset + 1] = 0;
-    $v2               = $v1;
-    $delta            = $text1Length - $text2Length;
-
-    // Front path will collide with reverse path if total character count is odd.
-    $even = ($delta % 2 === 0); // true = even | false = odd
-
-    // Offsets for start and end of k loops, prevents mapping of space beyond the grid.
-    $k1Start = $k1End = $k2Start = $k2End = 0;
-
-    for ($d = 0; $d < $maxD; ++$d) {
-      // Bail out if deadline is reached.
-      if (microtime(true) > $deadline) {
-        break;
-      }
-
-      // Walk the front path one step.
-      for ($k1 = -$d + $k1Start; $k1 < $d + 1 - $k1End; $k1 += 2) {
-        $k1Offset  = $vOffset + $k1;
-        $k1OffsetD = $k1Offset - 1;
-        $k1OffsetI = $k1Offset + 1;
-        if ($k1 === -$d || ($k1 !== $d && $v1[$k1OffsetD] < $v1[$k1OffsetI])) {
-          $x1 = $v1[$k1OffsetI];
-        }
-        else {
-          $x1 = $v1[$k1OffsetD] + 1;
-        }
-        $y1 = $x1 - $k1;
-        while ($x1 < $text1Length && $y1 < $text2Length && mb_substr($text1, $x1, 1) == mb_substr($text2, $y1, 1)) {
-          ++$x1;
-          ++$y1;
-        }
-        $v1[$k1Offset] = $x1;
-
-        // Outside the right of the graph.
-        if ($x1 > $text1Length) {
-          $k1End += 2;
-        }
-        // Outside the bottom of the graph.
-        elseif ($y1 > $text2Length) {
-          $k1Start += 2;
-        }
-        // Additional checks in odd case.
-        elseif ($even === false) {
-          $k2Offset = $vOffset + $delta - $k1;
-          if ($k2Offset >= 0 && $k2Offset < $vLength && $v2[$k2Offset] !== -1) {
-            $x2 = $text1Length - $v2[$k2Offset];
-            if ($x1 >= $x2) {
-              return array_merge(
-                $this->getDiff(mb_substr($text1, 0, $x1), mb_substr($text2, 0, $y1), $deadline),
-                $this->getDiff(mb_substr($text1, $x1), mb_substr($text2, $y1), $deadline)
-              );
-            }
-          }
-        }
-      }
-
-      // Walk the back path one step.
-      for ($k2 = -$d + $k2Start; $k2 < $d + 1 - $k2End; $k2 += 2) {
-        $k2Offset  = $vOffset + $k2;
-        $k2OffsetD = $k2Offset - 1;
-        $k2OffsetI = $k2Offset + 1;
-        if ($k2 === -$d || ($k2 !== $d && $v2[$k2OffsetD] < $v2[$k2OffsetI])) {
-          $x2 = $v2[$k2OffsetI];
-        }
-        else {
-          $x2 = $v2[$k2OffsetD] + 1;
-        }
-        $y2 = $x2 - $k2;
-        while ($x2 < $text1Length && $y2 < $text2Length && mb_substr($text1, -$x2 - 1, 1) == mb_substr($text2, -$y2 - 1, 1)) {
-          ++$x2;
-          ++$y2;
-        }
-        $v2[$k2Offset] = $x2;
-
-        // Outside the right of the graph.
-        if ($x2 > $text1Length) {
-          $k2End += 2;
-        }
-        // Outside the bottom of the graph.
-        elseif ($y2 > $text2Length) {
-          $k2Start += 2;
-        }
-        // Additional checks in even case.
-        elseif ($even === true) {
-          $k1Offset = $vOffset + $delta - $k2;
-          if ($k1Offset >= 0 && $k1Offset < $vLength && $v1[$k1Offset] !== -1) {
-            $x1 = $v1[$k1Offset];
-            $y1 = $vOffset + $x1 - $k1Offset;
-            $x2 = $text1Length - $x2;
-            if ($x1 >= $x2) {
-              return array_merge(
-                $this->getDiff(mb_substr($text1, 0, $x1), mb_substr($text2, 0, $y1), $deadline),
-                $this->getDiff(mb_substr($text1, $x1), mb_substr($text2, $y1), $deadline)
-              );
-            }
-          }
-        }
-      }
-    }
-
-    // Diff took too long and hit the deadline or number of diffs equals number of characters, no commonality at all.
-    return [
-      [ self::DELETE_KEY, $text1, $text1Length ],
-      [ self::INSERT_KEY, $text2, $text2Length ],
-    ];
   }
 
 }
