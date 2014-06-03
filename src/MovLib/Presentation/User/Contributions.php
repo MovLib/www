@@ -22,6 +22,8 @@ use \MovLib\Partial\DateTime;
 /**
  * Defines the user contribution presentation object.
  *
+ * @property \MovLib\Data\User\User $entity
+ *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -31,6 +33,10 @@ use \MovLib\Partial\DateTime;
 final class Contributions extends \MovLib\Presentation\User\AbstractUserPresenter {
   use \MovLib\Partial\PaginationTrait;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
   // @codingStandardsIgnoreStart
   /**
    * Short class name.
@@ -39,6 +45,99 @@ final class Contributions extends \MovLib\Presentation\User\AbstractUserPresente
    */
   const name = "Contributions";
   // @codingStandardsIgnoreEnd
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function init(){
+    return $this
+      ->initPage($this->intl->t("{username}’s Contributions"), null, $this->intl->t("Contributions"))
+      ->paginationInit($this->entity->edits)
+    ;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {
+    $contributions = null;
+    $dateTime      = new DateTime($this->intl, $this, $this->session->userTimezone);
+
+    $orderBy = "`revisionId` DESC";
+    $this->request->query["field"] = "date";
+    $this->request->query["sort"] = "asc";
+    if ($this->paginationCurrentPage === 1) {
+      unset($this->request->query["page"]);
+    }
+    else {
+      $this->request->query["page"] = $this->paginationCurrentPage;
+    }
+    $queryString = http_build_query($this->request->query);
+    $orderCaret = "<a class='btn btn-mini ico ico-chevron-down' href='{$this->request->path}?{$queryString}'></a>";
+    if (isset($_GET["sort"]) && isset($_GET["field"])) {
+      if ($this->request->filterInputString(INPUT_GET, "field") == "date" && $this->request->filterInputString(INPUT_GET, "sort") == "asc") {
+        $orderBy = "`revisionId` ASC";
+        unset($this->request->query["field"]);
+        unset($this->request->query["sort"]);
+        $queryString = null;
+        if (!empty($this->request->query)) {
+          $queryString = "?" . http_build_query($this->request->query);
+        }
+        $orderCaret = "<a class='btn btn-mini ico ico-chevron-up' href='{$this->request->path}{$queryString}'></a>";
+      }
+    }
+
+    /* @var $contribution \MovLib\Stub\Data\User\Contribution */
+    foreach ($this->entity->getContributions($this->paginationOffset, $this->paginationLimit, $orderBy) as $contribution) {
+      $diff = $contribution->entity->changed == $contribution->dateTime ? null : "<a class='btn btn-info btn-small' href='{$contribution->entity->r("/history")}/{$contribution->revisionId}'>{$this->intl->t("Differences")}</a>";
+      $contributions .=
+        "<tr>" .
+          $this->{"format{$contribution->entity}"}($contribution->entity) .
+          "<td class='tac'>{$dateTime->format($contribution->dateTime)}</td>" .
+          "<td>{$diff}</td>" .
+          "<td><a class='btn btn-success btn-small' href='{$contribution->entity->r("/history")}'>{$this->intl->t("History")}</a></td>" .
+        "</tr>"
+      ;
+    }
+
+    return
+      "<table>" .
+        "<colgroup>" .
+          "<col class='s1'>" .
+          "<col class='s4'>" .
+          "<col class='s3'>" .
+          "<col class='s1'>" .
+          "<col class='s1'>" .
+        "</colgroup>" .
+        "<thead>" .
+          "<tr>" .
+            "<th colspan='2'>{$this->intl->t("Contribution")}</th>".
+            "<th>{$this->intl->t("Date")} &nbsp; {$orderCaret}</th>".
+            "<th colspan='2'>{$this->intl->t("Actions")}</th>" .
+          "</tr>" .
+        "</thead>" .
+        "<tbody>{$contributions}</tbody>" .
+      "</table>"
+    ;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getNoItemsContent() {
+    return $this->calloutInfo(
+      "<p>{$this->intl->t("We couldn’t find any contributions by this user")}</p>",
+       $this->intl->t("No Contributions")
+    );
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Helper Methods
+
 
   public function formatArticle(\MovLib\Core\Entity\AbstractEntity $article) {
     return
@@ -121,90 +220,6 @@ final class Contributions extends \MovLib\Presentation\User\AbstractUserPresente
     return
       "<td class='tac'><span class='ico ico-star' title='{$this->config->sitename}'></span></td>" .
       "<td>{$this->a($systemPage->route, $this->htmlDecode($systemPage->title))}</td>"
-    ;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getContent() {
-    $contributions = null;
-    $dateTime      = new DateTime($this->intl, $this, $this->session->userTimezone);
-
-    $orderBy = "`revisionId` DESC";
-    $this->request->query["field"] = "date";
-    $this->request->query["sort"] = "asc";
-    if ($this->paginationCurrentPage === 1) {
-      unset($this->request->query["page"]);
-    }
-    else {
-      $this->request->query["page"] = $this->paginationCurrentPage;
-    }
-    $queryString = http_build_query($this->request->query);
-    $orderCaret = "<a class='btn btn-mini ico ico-chevron-down' href='{$this->request->path}?{$queryString}'></a>";
-    if (isset($_GET["sort"]) && isset($_GET["field"])) {
-      if ($this->request->filterInputString(INPUT_GET, "field") == "date" && $this->request->filterInputString(INPUT_GET, "sort") == "asc") {
-        $orderBy = "`revisionId` ASC";
-        unset($this->request->query["field"]);
-        unset($this->request->query["sort"]);
-        $queryString = null;
-        if (!empty($this->request->query)) {
-          $queryString = "?" . http_build_query($this->request->query);
-        }
-        $orderCaret = "<a class='btn btn-mini ico ico-chevron-up' href='{$this->request->path}{$queryString}'></a>";
-      }
-    }
-
-    /* @var $contribution \MovLib\Stub\Data\User\Contribution */
-    foreach ($this->entity->getContributions($this->paginationOffset, $this->paginationLimit, $orderBy) as $contribution) {
-      $contributions .=
-        "<tr>" .
-          $this->{"format{$contribution->entity}"}($contribution->entity) .
-          "<td class='tac'>{$dateTime->format($contribution->dateTime)}</td>" .
-          "<td><a class='btn btn-info btn-small' href='{$contribution->entity->r("/history")}/{$contribution->revisionId}'>{$this->intl->t("Differences")}</a></td>" .
-          "<td><a class='btn btn-success btn-small' href='{$contribution->entity->r("/history")}'>{$this->intl->t("History")}</a></td>" .
-        "</tr>"
-      ;
-    }
-
-    return
-      "<table>" .
-        "<colgroup>" .
-          "<col class='s1'>" .
-          "<col class='s4'>" .
-          "<col class='s3'>" .
-          "<col class='s1'>" .
-          "<col class='s1'>" .
-        "</colgroup>" .
-        "<thead>" .
-          "<tr>" .
-            "<th colspan='2'>{$this->intl->t("Contribution")}</th>".
-            "<th>{$this->intl->t("Date")} &nbsp; {$orderCaret}</th>".
-            "<th colspan='2'>{$this->intl->t("Actions")}</th>" .
-          "</tr>" .
-        "</thead>" .
-        "<tbody>{$contributions}</tbody>" .
-      "</table>"
-    ;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getNoItemsContent() {
-    return $this->calloutInfo(
-      "<p>{$this->intl->t("We couldn’t find any contributions by this user")}</p>",
-       $this->intl->t("No Contributions")
-    );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init(){
-    return $this
-      ->initPage($this->intl->t("{username}’s Contributions"), null, $this->intl->t("Contributions"))
-      ->paginationInit($this->entity->getTotalContributionCount())
     ;
   }
 

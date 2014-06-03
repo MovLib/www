@@ -497,21 +497,6 @@ SQL
   }
 
   /**
-   * Get the total count of contributions this user has performed.
-   *
-   * @return integer
-   *   The total count of contributions this user has performed.
-   */
-  public function getTotalContributionCount() {
-    if (empty($this->edits)) {
-      $this->edits = (integer) Database::getConnection()->query(
-        "SELECT COUNT(*) FROM `revisions` WHERE `user_id` = {$this->id} LIMIT 1"
-      )->fetch_all()[0][0];
-    }
-    return $this->edits;
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function init(array $values = null) {
