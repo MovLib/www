@@ -17,11 +17,6 @@
  */
 namespace MovLib\Presentation\Search;
 
-use \Elasticsearch\Client as ElasticClient;
-use \MovLib\Data\Movie\MovieSet;
-use \MovLib\Data\Person\PersonSet;
-use \MovLib\Data\Release\ReleaseSet;
-use \MovLib\Data\Series\SeriesSet;
 use \MovLib\Exception\ClientException\ClientExceptionInterface;
 
 /**
@@ -83,17 +78,17 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
     $queries       = null;
     $this->query   = $this->request->filterInputString(INPUT_GET, "q");
     if ($this->query) {
-      $queries["q"] = rawurlencode($this->query);
+      $queries["q"] = $this->query;
     }
 
     $this->indexes = $this->request->filterInputString(INPUT_GET, "i");
     if ($this->indexes) {
-      $queries["i"] = rawurlencode($this->indexes);
+      $queries["i"] = $this->indexes;
     }
 
     $this->types   = $this->request->filterInputString(INPUT_GET, "t");
     if ($this->types) {
-      $queries["t"] = rawurlencode($this->types);
+      $queries["t"] = $this->types;
     }
     else {
       $this->types = "";
@@ -131,7 +126,7 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
     // If we have a query and indexes, ask our Search object.
     $search = new \MovLib\Core\Search\Search();
     try {
-      $result = $search->fuzzySearch($this->query, $this->indexes);
+      $result = $search->fuzzySearch($this->query, strtr($this->indexes, "-", ","));
     }
     // Missing index or type, assume the user typed invalid parameters.
     catch (\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
@@ -139,27 +134,6 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
       $this->alertError($this->intl->t("Wrong search parameters."), $this->intl->t("Malformed search options specified. We don’t know how to fulfill your search request."));
       return;
     }
-
-    // Add fulltext search links to an alert.
-    $queryString = str_replace(" ", "+", $this->query) . "+site:{$this->config->hostnameStatic}";
-    $ddg = "<li class='s s3'><a href='https://duckduckgo.com/?q={$queryString}' rel='nofollow', target='_blank'><img class='inline-middle' src='https://duckduckgo.com/favicon.ico' alt='Duck Duck Go icon' height='16' width='16'>Duck Duck Go</a></li>";
-    $fulltextItems = [
-      "<li class='s s3'><a href='https://google.com/search?q={$queryString}' rel='nofollow', target='_blank'><img class='inline-middle' src='https://www.google.com/images/google_favicon_128.png' alt='Google icon' height='16' width='16'>Google</a></li>",
-      "<li class='s s3'><a href='https://www.bing.com/search?q={$queryString}' rel='nofollow', target='_blank'><img class='inline-middle' src='https://www.bing.com/s/a/bing_p.ico' alt='Google icon' height='16' width='16'>Bing</a></li>",
-      "<li class='s s3'><a href='https://search.yahoo.com/search?p={$queryString}' rel='nofollow', target='_blank'><img class='inline-middle' src='http://img2.wikia.nocookie.net/__cb20130905153346/logopedia/images/2/2f/Yahoo_Favicon_2013.png' alt='Yahoo! icon' height='16' width='16'>Yahoo!</a></li>",
-    ];
-
-    // Randomize display order of Google, Bing and Yahoo! links.
-    shuffle($fulltextItems);
-
-    // Always display Duck Duck Go first.
-    $fulltextAlert = "{$this->intl->t("Try a full text search with the sites linked below.")}<ul class='no-list r'>{$ddg}";
-
-    // Add the others.
-    foreach ($fulltextItems as $item) {
-      $fulltextAlert .= $item;
-    }
-    $this->alert($this->intl->t("Haven’t found what you were looking for?"), "{$fulltextAlert}</ul>");
 
     // No results returned, we are done.
     if (count($result) === 0) {

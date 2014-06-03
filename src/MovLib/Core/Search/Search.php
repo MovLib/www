@@ -73,9 +73,9 @@ final class Search {
       "body"  => [
         "query" => [
           "fuzzy_like_this" => [
+            "fuzziness"       => 0.3,
             "like_text"       => $query,
             "max_query_terms" => 25,
-            "min_similarity"  => 0.5
           ],
         ],
       ],
