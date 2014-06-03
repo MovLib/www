@@ -93,7 +93,10 @@ final class Contributions extends \MovLib\Presentation\User\AbstractUserPresente
 
     /* @var $contribution \MovLib\Stub\Data\User\Contribution */
     foreach ($this->entity->getContributions($this->paginationOffset, $this->paginationLimit, $orderBy) as $contribution) {
-      $diff = $contribution->entity->changed == $contribution->dateTime ? null : "<a class='btn btn-info btn-small' href='{$contribution->entity->r("/history")}/{$contribution->revisionId}'>{$this->intl->t("Differences")}</a>";
+      $diff = $contribution->entity->changed == $contribution->dateTime
+        ? null
+        : "<a class='btn btn-info btn-small' href='{$contribution->entity->r("/history")}/{$contribution->revisionId}'>{$this->intl->t("Differences")}</a>"
+      ;
       $contributions .=
         "<tr>" .
           $this->{"format{$contribution->entity}"}($contribution->entity) .
