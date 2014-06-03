@@ -69,7 +69,7 @@ final class Poster extends \MovLib\Data\Image\AbstractImageEntity {
     $this->routeKey             = "/movie/{0}/poster/{1}";
     $this->route                = $this->intl->r($this->routeKey, $this->routeArgs);
     $this->routeIndex           = $this->intl->r("/movie/{0}/posters", $this->entityId);
-    return parent::init();
+    return $this;
   }
 
   /**
@@ -82,6 +82,10 @@ final class Poster extends \MovLib\Data\Image\AbstractImageEntity {
     $stmt->execute();
     $stmt->close();
     return $this;
+  }
+
+  public function lemma($locale) {
+    return $this->imageFilename;
   }
 
 }

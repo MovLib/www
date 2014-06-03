@@ -28,7 +28,7 @@ use \MovLib\Data\Movie\PosterSet;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
+final class Index extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
 
   // @codingStandardsIgnoreStart
   /**
@@ -43,14 +43,11 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->initIndex(
-      new PosterSet($this->container, $_SERVER["MOVIE_ID"]),
-      $this->intl->t("Posters"),
-      $this->intl->t("Upload New Poster")
-    );
-    $this->breadcrumb->addCrumb($this->set->route, $this->intl->t("Movies"));
-    $this->breadcrumb->addCrumb($this->intl->r("/movie/{0}", $_SERVER["MOVIE_ID"]), $this->intl->t("Movie"));
-    return $this;
+    $this->initMoviePresenation(
+      $this->intl->t("Posters of {title}"),
+      $this->intl->t("Posters of {title}"),
+      $this->intl->t("Posters"))
+    ;
   }
 
   /**
@@ -98,6 +95,10 @@ final class Index extends \MovLib\Presentation\AbstractIndexPresenter {
    */
   public function getNoItemsContent() {
     return $this->calloutInfo("<p>{$this->intl->t("We couldn’t find any posters for this movie.")}</p>", $this->intl->t("No Posters"));
+  }
+
+  public function getContent() {
+    return $this->checkBackLater($this->intl->t("Movie Poster"));
   }
 
 }

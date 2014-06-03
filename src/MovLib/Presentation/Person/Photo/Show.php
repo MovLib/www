@@ -18,6 +18,8 @@
 
 namespace MovLib\Presentation\Person\Photo;
 
+use \MovLib\Data\Person\Person;
+
 /**
  * Image details presentation for a person's photo.
  *
@@ -48,8 +50,8 @@ class Show extends \MovLib\Presentation\AbstractPresenter {
     $this->pageTitle        = $this->intl->t("Photo of {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
     $this->initLanguageLinks("/person/{0}/photo", [ $this->person->id ]);
     $this->breadcrumb
-      ->addCrumb($this->person->routeIndex, $this->intl->t("Persons"))
-      ->addCrumb($this->person->route, $this->person->name)
+      ->addCrumb($this->person->set->route, $this->intl->t("Persons"))
+      ->addCrumb($this->person->route, $this->person->lemma)
     ;
     $this->contentBefore = "<div class='c'>";
     $this->contentAfter  = "</div>";
