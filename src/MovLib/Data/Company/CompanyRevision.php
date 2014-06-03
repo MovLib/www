@@ -17,13 +17,12 @@
  */
 namespace MovLib\Data\Company;
 
+use \MovLib\Component\Date;
 use \MovLib\Core\Database\Database;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
  * Defines the revision object for company entities.
- *
- * @property \MovLib\Data\Company\Company $entity
  *
  * @author Richard Fussenegger <richard@fussengger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
@@ -70,7 +69,7 @@ final class CompanyRevision extends \MovLib\Core\Revision\AbstractRevision {
   /**
    * The company's defunct date.
    *
-   * @var null|string
+   * @var null|\MovLib\Component\Date
    */
   public $defunctDate;
 
@@ -84,7 +83,7 @@ final class CompanyRevision extends \MovLib\Core\Revision\AbstractRevision {
   /**
    * The company's founding date.
    *
-   * @var null|string
+   * @var null|\MovLib\Component\Date
    */
   public $foundingDate;
 
@@ -189,6 +188,10 @@ SQL
     if ($this->id) {
       $this->aliases && ($this->aliases = unserialize($this->aliases));
       $this->links   && ($this->links   = unserialize($this->links));
+
+      $this->foundingDate && ($this->foundingDate = new Date($this->foundingDate));
+      $this->defunctDate  && ($this->defunctDate  = new Date($this->defunctDate));
+
       $connection->dynamicDecode($this->descriptions);
       $connection->dynamicDecode($this->imageDescriptions);
       $connection->dynamicDecode($this->wikipediaLinks);
@@ -215,15 +218,6 @@ SQL
       ]);
     }
     return $properties;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __wakeup() {
-    parent::__wakeup();
-    $this->aliases && ($this->aliases = unserialize($this->aliases));
-    $this->links   && ($this->links   = unserialize($this->links));
   }
 
 
