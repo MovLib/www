@@ -3,6 +3,12 @@
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
+ * Copyright © 2006 Google Inc.
+ * Copyright © 2013 Daniil Skrobov <yetanotherape@gmail.com>
+ *
+ * Copyright © 2011 Raymond Hill {@link http://raymondhill.net/}
+ * Copyright © 2013 Rob Crowe {@link http://cogpowered.com/}
+ *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
  *
  * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
@@ -19,6 +25,22 @@ namespace MovLib\Core\Diff;
 
 /**
  * Defines the diff object.
+ *
+ * We couldn't find a good diff software that works on character basis and supports 4-byte UTF-8 characters. Therefore
+ * we were forced to create our own implementation that is fast and has support for our requirements.
+ *
+ * <b>NOTE</b><br>
+ * This class incorporates code from the following projects:
+ *
+ * <ul>
+ *   <li>{@link https://github.com/yetanotherape/diff-match-patch}</li>
+ *   <li>{@link https://github.com/cogpowered/FineDiff/}</li>
+ * </ul>
+ *
+ * The first project is licensed under the Apache License 2.0 which is compatible with the AGPLv3 and latter is under
+ * the MIT license which is compatible with the AGPLv3 license as well. We checked this to our best knowledge and hope
+ * that this is actually true. We are no lawyers and incorporated the code of those projects in the hope to benefit the
+ * open source world with our approach to the problem.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -116,6 +138,7 @@ final class Diff {
    * Apply patch to a string and recreate a previous version of this string.
    *
    * @link https://github.com/cogpowered/FineDiff/
+   *   This code is based on the FineDiff project.
    * @param string $string
    *   The string to apply the patch to.
    * @param string $patch
@@ -220,6 +243,12 @@ final class Diff {
    *   The differences between <var>$new</var> and <var>$old</var>.
    */
   public function getDiff($new, $old) {
+    // No need to call the diff method if both texts are equal. Note that this will never happen if we're called as part
+    // of our revisioning system, this is simply because the created date of each revision always changes.
+    if ($new === $old) {
+      return [];
+    }
+
     // Perform the actual diff, this method is only a public wrapper for the actual diff method that has an extended
     // signature. See the method's documentation for more info on this.
     return $this->diff($new, mb_strlen($new), $old, mb_strlen($old), microtime(true) + self::DEADLINE);
@@ -292,9 +321,9 @@ final class Diff {
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-    $maxD             = (integer) (($text1Length + $text2Length + 1) / 2);
-    $vOffset          = $maxD;
-    $vLength          = $maxD * 2;
+    $dMax             = (integer) (($text1Length + $text2Length + 1) / 2);
+    $vOffset          = $dMax;
+    $vLength          = $dMax * 2;
     $v1               = array_fill(0, $vLength, -1);
     $v1[$vOffset + 1] = 0;
     $v2               = $v1;
@@ -306,23 +335,26 @@ final class Diff {
     // Offsets for start and end of k loops, prevents mapping of space beyond the grid.
     $k1Start = $k1End = $k2Start = $k2End = 0;
 
-    for ($d = 0; $d < $maxD; ++$d) {
+    // Start of greedy LCS/SES algorithm, see page 6 of the original paper.
+    for ($d = 0; $d < $dMax; ++$d) {
       // Bail out if deadline is reached.
       if (microtime(true) > $deadline) {
         break;
       }
 
-      // Walk the front path one step.
+      // Walk the front path in steps of 2.
       for ($k1 = -$d + $k1Start; $k1 < $d + 1 - $k1End; $k1 += 2) {
-        $k1Offset  = $vOffset + $k1;
-        $k1OffsetD = $k1Offset - 1;
-        $k1OffsetI = $k1Offset + 1;
-        if ($k1 === -$d || ($k1 !== $d && $v1[$k1OffsetD] < $v1[$k1OffsetI])) {
-          $x1 = $v1[$k1OffsetI];
+        $k1Offset          = $vOffset + $k1;
+        $k1OffsetDecrement = $k1Offset - 1;
+        $k1OffsetIncrement = $k1Offset + 1;
+
+        if ($k1 === -$d || ($k1 !== $d && $v1[$k1OffsetDecrement] < $v1[$k1OffsetIncrement])) {
+          $x1 = $v1[$k1OffsetIncrement];
         }
         else {
-          $x1 = $v1[$k1OffsetD] + 1;
+          $x1 = $v1[$k1OffsetDecrement] + 1;
         }
+
         $y1 = $x1 - $k1;
         while ($x1 < $text1Length && $y1 < $text2Length && mb_substr($text1, $x1, 1) === mb_substr($text2, $y1, 1)) {
           ++$x1;
@@ -343,6 +375,8 @@ final class Diff {
           $k2Offset = $vOffset + $delta - $k1;
           if ($k2Offset >= 0 && $k2Offset < $vLength && $v2[$k2Offset] !== -1) {
             $x2 = $text1Length - $v2[$k2Offset];
+
+            // Check if we have an overlap.
             if ($x1 >= $x2) {
               return array_merge(
                 $this->diff(mb_substr($text1, 0, $x1), $x1, mb_substr($text2, 0, $y1), $y1, $deadline),
@@ -355,15 +389,17 @@ final class Diff {
 
       // Walk the back path one step.
       for ($k2 = -$d + $k2Start; $k2 < $d + 1 - $k2End; $k2 += 2) {
-        $k2Offset  = $vOffset + $k2;
-        $k2OffsetD = $k2Offset - 1;
-        $k2OffsetI = $k2Offset + 1;
-        if ($k2 === -$d || ($k2 !== $d && $v2[$k2OffsetD] < $v2[$k2OffsetI])) {
-          $x2 = $v2[$k2OffsetI];
+        $k2Offset          = $vOffset + $k2;
+        $k2OffsetDecrement = $k2Offset - 1;
+        $k2OffsetIncrement = $k2Offset + 1;
+
+        if ($k2 === -$d || ($k2 !== $d && $v2[$k2OffsetDecrement] < $v2[$k2OffsetIncrement])) {
+          $x2 = $v2[$k2OffsetIncrement];
         }
         else {
-          $x2 = $v2[$k2OffsetD] + 1;
+          $x2 = $v2[$k2OffsetDecrement] + 1;
         }
+
         $y2 = $x2 - $k2;
         while ($x2 < $text1Length && $y2 < $text2Length && mb_substr($text1, -$x2 - 1, 1) === mb_substr($text2, -$y2 - 1, 1)) {
           ++$x2;
@@ -386,6 +422,8 @@ final class Diff {
             $x1 = $v1[$k1Offset];
             $y1 = $vOffset + $x1 - $k1Offset;
             $x2 = $text1Length - $x2;
+
+            // Check if we have an overlap.
             if ($x1 >= $x2) {
               return array_merge(
                 $this->diff(mb_substr($text1, 0, $x1), $x1, mb_substr($text2, 0, $y1), $y1, $deadline),
@@ -540,6 +578,11 @@ final class Diff {
     // @codeCoverageIgnoreEnd
     // @devEnd
 
+    // Both texts are equal, simply return.
+    if ($text1 === $text2) {
+      return [[ self::COPY_KEY, $text1, $text1Length ]];
+    }
+
     // The first text is empty, simple insertion necessary.
     if ($text1Length === 0) {
       return [[ self::INSERT_KEY, $text2, $text2Length ]];
@@ -640,7 +683,9 @@ final class Diff {
         return [];
       }
 
-      // Simply copy the complete text and we're done.
+      // Simply copy the complete text and we're done. Note, we don't know if we're called in recursion or not, that's
+      // why the public wrapper has to take care of any initial equality. We have to copy, because there might be other
+      // transformations surrounding us.
       return [[ self::COPY_KEY, $text1, $text1Length ]];
     }
 
@@ -686,12 +731,30 @@ return $diffs;
   }
 
   /**
+   * Check if the two texts share a substrig which is at least half the length of the longer text.
    *
-   * @param type $longText
-   * @param type $longLength
-   * @param type $shortText
-   * @param type $shortLength
+   * <b>NOTE</b><br>
+   * This method isn't inlined for unit test reasons.
+   *
+   * @param string $longText
+   *   The longer text.
+   * @param integer $longLength
+   *   The length of the longer text.
+   * @param string $shortText
+   *   The shorter text.
+   * @param integer $shortLength
+   *   The length of the shorter text.
    * @return null|array
+   *   An array containing six elements in the form:
+   *   <ul>
+   *     <li><code>0</code>: The prefix of the longer text.</li>
+   *     <li><code>1</code>: The suffix of the longer text.</li>
+   *     <li><code>2</code>: The prefix of the shorter text.</li>
+   *     <li><code>3</code>: The suffix of the shorter text.</li>
+   *     <li><code>4</code>: The common middle text.</li>
+   *     <li><code>5</code>: The length of the common middle text.</li>
+   *   </ul>
+   *   If no shared substring was found <code>NULL</code> is returned.
    */
   protected function halfMatch($longText, $longLength, $shortText, $shortLength) {
     // @devStart
@@ -713,10 +776,10 @@ return $diffs;
     }
 
     // First check if the second quarter is the seed for a half-match.
-    $hm1 = $this->halfMatchI($longText, $longLength, $shortText, $shortLength, (integer) (($longLength + 3) / 4));
+    $hm1 = $this->halfMatchIndex($longText, $longLength, $shortText, $shortLength, (integer) (($longLength + 3) / 4));
 
     // Check again based on the third quarter.
-    $hm2 = $this->halfMatchI($longText, $longLength, $shortText, $shortLength, (integer) (($longLength + 1) / 2));
+    $hm2 = $this->halfMatchIndex($longText, $longLength, $shortText, $shortLength, (integer) (($longLength + 1) / 2));
 
     // Both matched, select the longest.
     if ($hm1 && $hm2) {
@@ -731,15 +794,32 @@ return $diffs;
   }
 
   /**
+   * Check if a substring of the shorter text exists within the longer text such that the substring is at least half the
+   * length of the longer text.
    *
-   * @param type $longText
-   * @param type $longLength
-   * @param type $shortText
-   * @param type $shortLength
-   * @param type $i
-   * @return type
+   * @param string $longText
+   *   The longer text.
+   * @param integer $longLength
+   *   The length of the longer text.
+   * @param string $shortText
+   *   The shorter text.
+   * @param integer $shortLength
+   *   The length of the shorter text.
+   * @param integer $i
+   *   Start index of quarter length substring within the longer text.
+   * @return null|array
+   *   An array containing six elements in the form:
+   *   <ul>
+   *     <li><code>0</code>: The prefix of the longer text.</li>
+   *     <li><code>1</code>: The suffix of the longer text.</li>
+   *     <li><code>2</code>: The prefix of the shorter text.</li>
+   *     <li><code>3</code>: The suffix of the shorter text.</li>
+   *     <li><code>4</code>: The common middle text.</li>
+   *     <li><code>5</code>: The length of the common middle text.</li>
+   *   </ul>
+   *   If no shared substring was found <code>NULL</code> is returned.
    */
-  protected function halfMatchI($longText, $longLength, $shortText, $shortLength, $i) {
+  protected function halfMatchIndex($longText, $longLength, $shortText, $shortLength, $i) {
     // @devStart
     // @codeCoverageIgnoreStart
     foreach ([ "long", "short" ] as $assert) {
