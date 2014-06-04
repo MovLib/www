@@ -98,7 +98,10 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
 
     $this->fuzziness = $this->request->filterInputString(INPUT_GET, "f");
     if ($this->fuzziness) {
-      if ($this->fuzziness != "AUTO") {
+      if (strtoupper($this->fuzziness) == "AUTO") {
+        $this->fuzziness = strtoupper($this->fuzziness);
+      }
+      else {
         $this->fuzziness = (float) $this->fuzziness;
       }
       $queries["f"] = $this->fuzziness;
@@ -136,9 +139,17 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
       return;
     }
 
+    // We're done if we have no indexes to search in.
     if (empty($this->indexes)) {
       http_response_code(ClientExceptionInterface::HTTP_BAD_REQUEST);
       $this->alertError($this->intl->t("No search range submitted."), $this->intl->t("We don’t know what kind of items you are looking for…"));
+      return;
+    }
+
+    // We're done if the fuzziness parameter is malformed
+    if (!( $this->fuzziness == "AUTO" || in_array($this->fuzziness, [0, 1, 2]) || ($this->fuzziness >= 0.0 && $this->fuzziness <= 1.0 ) )) {
+      http_response_code(ClientExceptionInterface::HTTP_BAD_REQUEST);
+      $this->alertError($this->intl->t("Wrong search parameters."), $this->intl->t("Malformed search options specified. We don’t know how to fulfill your search request."));
       return;
     }
 
