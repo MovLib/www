@@ -126,7 +126,7 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
     // If we have a query and indexes, ask our Search object.
     $search = new \MovLib\Core\Search\Search();
     try {
-      $result = $search->fuzzySearch($this->query, strtr($this->indexes, "-", ","));
+      $result = $search->fuzzySearch($this->query, strtr($this->indexes, " ", ","));
     }
     // Missing index or type, assume the user typed invalid parameters.
     catch (\Elasticsearch\Common\Exceptions\Missing404Exception $e) {

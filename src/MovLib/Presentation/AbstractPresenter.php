@@ -628,7 +628,7 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
             "</div>" .
           "</nav>" .
           "<form action='{$this->intl->r("/search")}' class='s' id='s' method='get' role='search'>" .
-            "<input name='i' type='hidden' value='movies-series-releases-persons'>" .
+            "<input name='i' type='hidden' value='movies series releases persons'>" .
             "<button class='ico ico-search' tabindex='2' type='submit'><span class='vh'>{$this->intl->t(
               "Start searching for the entered keyword."
             )}</span></button>" .
