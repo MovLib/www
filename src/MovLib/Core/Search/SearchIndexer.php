@@ -160,12 +160,14 @@ final class SearchIndexer {
    *   The field's name.
    * @param mixed $value
    *   The field's value. Allowed types are primitives and numeric arrays.
+   * @param boolean $humanName [optional]
+   *   Add additional values for human names to improve searches or not, defaults to <code>FALSE</code>.
    * @return this
    */
-  public function indexSimple($name, $value) {
+  public function indexSimple($name, $value, $humanName = false) {
     // Guardian pattern.
     if (!empty($value)) {
-      $this->addIndexField("analyzeSimpleField", $name, $value, false, false);
+      $this->addIndexField("analyzeSimpleField", $name, $value, false, $humanName);
     }
     return $this;
   }
@@ -174,6 +176,7 @@ final class SearchIndexer {
    * Prepare a simple field for indexing as search suggestion (without generating a field in the document).
    *
    * You can use primitives as well as numeric arrays as value.
+   * Important note: Suggestions can't be searched with a standard fuzzy query (used in our search)!
    *
    * @param mixed $value
    *   The suggestion(s). Allowed types are primitives and numeric arrays.
@@ -307,6 +310,7 @@ final class SearchIndexer {
    * @param array $body
    *   The request body for the indexing operation.
    * @param \MovLib\Stub\Data\Search\IndexFieldConfig $field
+   *   The field configuration.
    * @return this
    */
   protected function analyzeLanguageField(&$body, $field) {
@@ -337,6 +341,7 @@ final class SearchIndexer {
    * @param array $body
    *   The request body for the indexing operation.
    * @param \MovLib\Stub\Data\Search\IndexFieldConfig $field
+   *   The field configuration.
    * @return this
    */
   protected function analyzeSimpleField(&$body, $field) {
@@ -346,6 +351,22 @@ final class SearchIndexer {
         continue;
       }
       $body[$field->name][] = $v;
+      // We have a human name to index, split on spaces and add addtional names.
+      if ($field->humanName === true) {
+        $parts = explode(" ", $v);
+        $lastName = array_pop($parts);
+        $names = [];
+        $c = count($parts);
+        // Add names in the format: [name_part] [last_name] and [last_name] [name_part] to produce better matches.
+        for ($i = 0; $i < $c; ++$i) {
+          // Ignore [name_part] [last_name] for the first item, since we already have indexed this one.
+          if ($i > 0) {
+            $names["{$parts[$i]} {$lastName}"] = true;
+          }
+          $names["{$lastName} {$parts[$i]}"] = true;
+        }
+        $body[$field->name] = array_merge($body[$field->name], array_keys($names));
+      }
     }
 
     return $this;
@@ -357,6 +378,7 @@ final class SearchIndexer {
    * @param array $body
    *   The request body for the indexing operation.
    * @param \MovLib\Stub\Data\Search\IndexFieldConfig $field
+   *   The field configuration.
    * @return this
    */
   protected function analyzeSimpleFieldSuggestion(&$body, $field) {
@@ -385,6 +407,7 @@ final class SearchIndexer {
    * @param array $body
    *   The request body for the indexing operation.
    * @param \MovLib\Stub\Data\Search\IndexFieldConfig $field
+   *   The field configuration.
    * @return this
    */
   protected function analyzeSuggestionData(&$body, $field) {
@@ -416,7 +439,7 @@ final class SearchIndexer {
    *   Definition of the entity that should be indexed.
    * @return this
    */
-  public function executeIndexing(\MovLib\Core\Log $log, $deleted, array $definition) {
+  protected function executeIndexing(\MovLib\Core\Log $log, $deleted, array $definition) {
     static $elasticClient = null;
     if (!$elasticClient) {
       $elasticClient = new ElasticClient();

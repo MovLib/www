@@ -480,7 +480,7 @@ SQL
   protected function defineSearchIndex(SearchIndexer $search, \MovLib\Core\Revision\RevisionInterface $revision) {
     $names = [ $revision->name, $revision->bornName ];
     return $search
-      ->indexSimple("name", $names)
+      ->indexSimple("name", $names, true)
       ->addSuggestionData("name", $revision->name)
       ->addSuggestionData("bornName", $revision->bornName)
       ->indexSimpleSuggestion(array_merge((array) $revision->aliases, $names), true)
