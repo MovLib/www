@@ -50,14 +50,17 @@ final class Search {
    *   The index(es) to search in. Supply them as numeric array or comma separated string (without whitespace).
    * @param string|array $types [optional]
    *   The document types to search for. Supply them as numeric array or comma separated string (without whitespace). Defaults to no type restrictions.
-   * @param array $fields
+   * @param array $fields [optional]
    *   The document field names to search in, defaults to all fields (which might impact performance).
+   * @param mixed $fuzziness [optional]
+   *   The fuzziness to use, defaults to <code>0.5</code>.
+   *   Permitted values: "AUTO", 0.0..1.0, or 0,1,2 {@link http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/common-options.html#fuzziness ElasticSearch documentation on fuzziness}.
    * @return array
    *   The search results.
    * @throws \Elasticsearch\Common\Exceptions\*Exception
    *   The most common is {@see \Elasticsearch\Common\Exceptions\Missing404Exception}, which might indicate missing indexes.
    */
-  public function fuzzySearch($query, $indexes, $types = null, array $fields = null) {
+  public function fuzzySearch($query, $indexes, $types = null, array $fields = null, $fuzziness = 0.5) {
     $result = [];
 
     // Convert indexes and types to ElasticSearch syntax if provided as array.
@@ -73,7 +76,7 @@ final class Search {
       "body"  => [
         "query" => [
           "fuzzy_like_this" => [
-            "fuzziness"       => 0.3,
+            "fuzziness"       => $fuzziness,
             "like_text"       => $query,
             "max_query_terms" => 25,
           ],

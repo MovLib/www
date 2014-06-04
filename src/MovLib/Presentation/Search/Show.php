@@ -47,6 +47,15 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
 
 
   /**
+   * The fuzziness to use for the search.
+   *
+   * {@link http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/common-options.html#fuzziness ElasticSearch documentation on fuzziness}
+   *
+   * @var mixed
+   */
+  protected $fuzziness;
+
+  /**
    * The indexes to search in (e.g. persons).
    *
    * @var null|string
@@ -76,10 +85,6 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
    */
   public function init() {
     $queries       = null;
-    $this->query   = $this->request->filterInputString(INPUT_GET, "q");
-    if ($this->query) {
-      $queries["q"] = $this->query;
-    }
 
     $this->indexes = $this->request->filterInputString(INPUT_GET, "i");
     if ($this->indexes) {
@@ -90,6 +95,20 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
     if ($this->types) {
       $queries["t"] = $this->types;
     }
+
+    $this->fuzziness = $this->request->filterInputString(INPUT_GET, "f");
+    if ($this->fuzziness) {
+      if ($this->fuzziness != "AUTO") {
+        $this->fuzziness = (float) $this->fuzziness;
+      }
+      $queries["f"] = $this->fuzziness;
+    }
+
+    $this->query   = $this->request->filterInputString(INPUT_GET, "q");
+    if ($this->query) {
+      $queries["q"] = $this->query;
+    }
+
     else {
       $this->types = "";
     }
@@ -126,7 +145,7 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
     // If we have a query and indexes, ask our Search object.
     $search = new \MovLib\Core\Search\Search();
     try {
-      $result = $search->fuzzySearch($this->query, strtr($this->indexes, " ", ","));
+      $result = $search->fuzzySearch($this->query, strtr($this->indexes, " ", ","), strtr($this->types, " ", ","), null, $this->fuzziness);
     }
     // Missing index or type, assume the user typed invalid parameters.
     catch (\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
