@@ -17,9 +17,6 @@
  */
 namespace MovLib;
 
-use \MovLib\Presentation\AbstractPresenter;
-use \MovLib\Presentation\Partial\Alert;
-
 /**
  * Extended PHPUnit Framework TestCase
  *
@@ -55,26 +52,6 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase {
 
   // ------------------------------------------------------------------------------------------------------------------- Public Methods
 
-
-  /**
-   * Assert that the presentation contains an alert message with the given alert severity and contains the given text.
-   *
-   * @param \MovLib\Presentation\AbstractPresenter $page
-   *   The object that should contain the alert message.
-   * @param string $contains
-   *   The text the alert message should contain.
-   * @param string $severity [optional]
-   *   The severity levelt he alert message should have, defaults to <code>Alert::SEVERITY_ERROR</code>.
-   * @param string $message [optional]
-   *   The error message if the alert message isn't present, has the wrong severity or doesn't contain the text.
-   */
-  protected function assertPresentationContainsAlert(AbstractPresenter $page, $contains, $severity = Alert::SEVERITY_ERROR, $message = "The presentation doesn't contain the desired alert message.") {
-    $this->assertTag([
-      "tag"        => "div",
-      "content"    => $contains,
-      "attributes" => [ "class" => trim($severity) ]
-    ], $page->alerts, $message, true);
-  }
 
   /**
    * Assert that the method returns itself for chaining.
