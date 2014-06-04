@@ -412,8 +412,11 @@
   transition: width 0.5s ease-in-out;
 }
 
+#s.focus input,
 #s input:focus,
+#s.focus .ico + #s.focus input,
 #s .ico:focus + #s input,
+#s.focus input,
 #s:focus input,
 #s:hover input {
   width: 660px;

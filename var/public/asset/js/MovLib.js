@@ -408,6 +408,21 @@
         if (languageSelector) {
           languageSelector.addEventListener("keypress", expanderKeypress.bind(languageSelector.parentNode.children[0]), false);
         }
+
+        var search = document.getElementById("s");
+        var searchQuery = search.children.q;
+
+        function searchQueryChange() {
+          if (searchQuery.value === "") {
+            search.classList.remove("focus");
+          }
+          else {
+            search.classList.add("focus");
+          }
+        }
+
+        searchQuery.addEventListener("change", searchQueryChange);
+        searchQueryChange();
       }
 
       return this.execute(document);
