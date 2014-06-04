@@ -61,7 +61,7 @@ abstract class AbstractMapping {
    *
    * @var array
    */
-  protected static $languageAnalyzers = [
+  public static $languageAnalyzers = [
     "ar" => "arabic",
     "hy" => "armenian",
     "eu" => "basque",
@@ -167,21 +167,19 @@ abstract class AbstractMapping {
    * @return this
    */
   final protected function addLanguageDependentField($fieldName) {
-    // Add a field for each language for analyzing purposes.
-    foreach ($this->config->locales as $code => $locale) {
-      // Set the correct ElasticSearch analyzer for the language.
-      if (isset(self::$languageAnalyzers[$code])) {
-        $analyzer = self::$languageAnalyzers[$code];
-      }
-      else {
-        $analyzer = self::DEFAULT_ANALYZER;
-      }
-
+    // Add a field for each language supported by elastic for analyzing purposes.
+    foreach (self::$languageAnalyzers as $code => $analyzer) {
       $this->properties["{$fieldName}_{$code}"] = [
         "type"     => "string",
         "analyzer" => $analyzer,
       ];
     }
+
+    // Add an additional field without suffix for languages not supported by elastic.
+    $this->properties[$fieldName] = [
+        "type"     => "string",
+        "analyzer" => self::DEFAULT_ANALYZER,
+      ];
 
     return $this;
   }
@@ -199,7 +197,7 @@ abstract class AbstractMapping {
    */
   final protected function addNumberField($fieldName, $type = "integer") {
     $this->properties[$fieldName] = [
-
+      "type" => $type
     ];
 
     return $this;

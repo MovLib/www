@@ -18,6 +18,7 @@
 namespace MovLib\Core\Search;
 
 use \Elasticsearch\Client as ElasticClient;
+use \MovLib\Console\Command\Install\ElasticSearch\Mapping\AbstractMapping;
 
 /**
  * Defines the Search Indexer class in charge of indexing.
@@ -315,7 +316,7 @@ final class SearchIndexer {
    */
   protected function analyzeLanguageField(&$body, $field) {
     foreach ($field->value as $languageCode => $text) {
-      if ($text instanceof \MovLib\Data\Search\LanguageAnalyzerInterface) {
+      if ($text instanceof \MovLib\Core\Search\LanguageAnalyzerInterface) {
         $languageCode = $text->getLanguageCode();
         $text         = $text->getText();
       }
@@ -325,10 +326,15 @@ final class SearchIndexer {
       }
       // Put every value to a separate field with the language code as suffix.
       // This has to be done in order to analyze the field with a language specific analyzer.
-      $body["{$field->name}_{$languageCode}"] = $text;
+      $languageSuffix = null;
+      if (array_key_exists($languageCode, AbstractMapping::$languageAnalyzers)) {
+        $languageSuffix = "_{$languageCode}";
+      }
+      $body["{$field->name}{$languageSuffix}"][] = $text;
 
       if ($field->suggest === true) {
-        $body["suggest"]["input"][] = $text;
+        // Avoid duplicate suggestions.
+        $body["suggest"]["input"][$text] = true;
       }
     }
 
