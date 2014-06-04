@@ -38,6 +38,11 @@
          stopOnIncomplete="false"
          syntaxCheck="false"
 >
+  <filter>
+    <whitelist processUncoveredFilesFromWhitelist="true">
+      <directory suffix=".php">src</directory>
+    </whitelist>
+  </filter>
   <php>
     <const name="MOVLIB_PHPUNIT" value="true" />
   </php>
