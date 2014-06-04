@@ -53,7 +53,7 @@ final class Title implements \MovLib\Core\Search\LanguageAnalyzerInterface {
    *
    * @var array
    */
-  protected $comments;
+  public $comments;
 
   /**
    * Whether the title is the movie's display title (in the current locale) or not.
@@ -69,7 +69,7 @@ final class Title implements \MovLib\Core\Search\LanguageAnalyzerInterface {
    *
    * @var array|null
    */
-  protected $displayLanguageCodes;
+  public $displayLanguageCodes;
 
   /**
    * The title's unique identifier.
@@ -124,6 +124,13 @@ final class Title implements \MovLib\Core\Search\LanguageAnalyzerInterface {
     !empty($this->displayLanguageCodes) && ($data[] = "displayLanguageCodes");
     $this->original                     && ($data[] = "original");
     return $data;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __toString() {
+    return $this->title;
   }
 
   /**
