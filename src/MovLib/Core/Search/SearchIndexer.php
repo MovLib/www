@@ -19,6 +19,7 @@ namespace MovLib\Core\Search;
 
 use \Elasticsearch\Client as ElasticClient;
 use \MovLib\Console\Command\Install\ElasticSearch\Mapping\AbstractMapping;
+use \MovLib\Core\Search\Search;
 
 /**
  * Defines the Search Indexer class in charge of indexing.
@@ -365,7 +366,7 @@ final class SearchIndexer {
         $c = count($parts);
         // Add names in the format: [name_part] [last_name] and [last_name] [name_part] to produce better matches.
         for ($i = 0; $i < $c; ++$i) {
-          // Ignore [name_part] [last_name] for the first item, since we already have indexed this one.
+          // Ignore [name_part] [last_name] for the first item, since we have already indexed this one.
           if ($i > 0) {
             $names["{$parts[$i]} {$lastName}"] = true;
           }
@@ -400,7 +401,7 @@ final class SearchIndexer {
       if ($field->humanName === true) {
         $explodedIndexValue = explode(" ", $v);
         if (count($explodedIndexValue) > 1) {
-          $body["suggest"]["input"][array_pop($explodedIndexValue) . ", " . implode(" ", $explodedIndexValue)] = true;
+          $body["suggest"]["input"][array_pop($explodedIndexValue) . Search::$suggestionSeparator . implode(" ", $explodedIndexValue)] = true;
         }
       }
 

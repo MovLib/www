@@ -41,6 +41,14 @@ final class Search {
   const name = "Search";
   // @codingStandardsIgnoreEnd
 
+
+  /**
+   * The separator for suggestion splitting.
+   *
+   * @var string
+   */
+  public static $suggestionSeparator = "\t";
+
   /**
    * Execute a fuzzy search on one or more indexes.
    *
