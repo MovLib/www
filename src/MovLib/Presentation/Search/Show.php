@@ -116,10 +116,10 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
       $this->types = "";
     }
 
-    $this->initPage($this->intl->t("Search"), $this->intl->t("Search: {query}", [ "query" => $this->placeholder($this->query) ]));
-    $this->initBreadcrumb();
-    $this->sidebarInit([]);
-    $this->breadcrumb->ignoreQuery = true;
+    $this->initPage(
+      $this->intl->t("{0}: {1}", [ $this->intl->t("Search"), $this->intl->t("“{0}”", $this->htmlEncode($this->query)) ]),
+      $this->intl->t("{0}: {1}", [ $this->intl->t("Search"), $this->placeholder($this->query) ])
+    );
 
     $this->initLanguageLinks("/search", null, false, $queries);
   }
@@ -155,8 +155,9 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
 
     // If we have a query and indexes, ask our Search object.
     $search = new \MovLib\Core\Search\Search();
+    $this->indexes = strtr($this->indexes, " ", ",");
     try {
-      $result = $search->fuzzySearch($this->query, strtr($this->indexes, " ", ","), strtr($this->types, " ", ","), null, $this->fuzziness);
+      $result = $search->fuzzySearch($this->query, $this->indexes, strtr($this->types, " ", ","), null, $this->fuzziness);
     }
     // Missing index or type, assume the user typed invalid parameters.
     catch (\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
@@ -167,12 +168,45 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
 
     // No results returned, we are done.
     if (count($result) === 0) {
-      $this->alertError(
-        $this->intl->t("Your search {query} did not match any document.", [ "query" => $this->placeholder($this->query) ]),
-        $this->intl->t("No Results")
+      // Start the suggester to enhance user experience.
+      $result = $search->fuzzySuggest($this->query, $this->indexes);
+      $suggestions = null;
+      if (count($result) > 0) {
+        // We don't know if the "," is used in other languages as well, so translate and cache it.
+        $separator = $this->intl->t("{0}, {1}", [ "", "" ]);
+
+        foreach ($result as $type => $docs) {
+          /* @var $doc \MovLib\Core\Search\Result\SuggestResult */
+          foreach ($docs as $id => $doc) {
+            if ($suggestions) {
+              $suggestions .= $separator;
+            }
+
+            // If there is a suggestion separator, we have to switch the surname and the name(s) since we trick elastic
+            // with the suggestions [last_name], [name] to produce better suggestions.
+            if (strpos($doc->match, $search::$suggestionSeparator) !== false) {
+              $doc->match = preg_replace("/(.*){$search::$suggestionSeparator}(.*)/", "$2 $1", $doc->match);
+            }
+
+            $suggestions .= "<a href='{$this->intl->r("/{$doc->type}/{0}", $doc->id)}'>{$doc->match}</a>";
+          }
+        }
+      }
+
+      if ($suggestions) {
+        $suggestions = $this->intl->t("Did you mean {suggestions}?", [ "suggestions" => $suggestions ]);
+      }
+
+      return $this->calloutError(
+        $suggestions,
+        $this->intl->t("Your search for {query} did not match any document.", [ "query" => $this->placeholder($this->query) ]),
+        [ "role" => "alert", "aria-live" => "assertive" ],
+        2
       );
-      return;
     }
+
+    // Initialize the sidebar if there really are results.
+    $this->sidebarInit([]);
 
     $ids = null;
 
