@@ -298,7 +298,11 @@ SQL
    * {@inheritdoc}
    */
   protected function defineSearchIndex(\MovLib\Core\Search\SearchIndexer $search, \MovLib\Core\Revision\RevisionInterface $revision) {
-    return $search->indexSimpleSuggestion($revision->titles);
+    return $search
+      ->indexLanguageSuggestion("title", $revision->titles)
+      ->indexSimple("start_year", $revision->startYear)
+      ->indexSimple("end_year", $revision->endYear)
+    ;
   }
 
   /**
