@@ -536,7 +536,10 @@ SQL
   }
 
   protected function defineSearchIndex(\MovLib\Core\Search\SearchIndexer $search, \MovLib\Core\Revision\RevisionInterface $revision) {
-    return $search->indexSimpleSuggestion($revision->titles);
+    return $search
+      ->indexLanguageSuggestion("title", $revision->titles)
+      ->indexSimple("year", $this->year)
+    ;
   }
 
   /**

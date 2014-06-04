@@ -18,6 +18,7 @@
 namespace MovLib\Data\Movie;
 
 use \MovLib\Core\Database\Database;
+use \MovLib\Data\Title;
 use \MovLib\Exception\ClientException\NotFoundException;
 
 /**
@@ -237,17 +238,19 @@ SQL
         $row->id = (integer) $row->id;
         if (empty($this->titles[$row->id])) {
           $connection->dynamicDecode($row->comments);
-          $this->titles[$row->id] = (object) [
-            "id" => $row->id,
-            "comments" => $row->comments,
-            "languageCode" => $row->languageCode,
-            "title" => $row->title,
-            "displayLanguageCodes" => [],
-          ];
+          $this->titles[$row->id] = new Title();
+          $this->titles[$row->id]->id = $row->id;
+          $this->titles[$row->id]->comments = $row->comments;
+          $this->titles[$row->id]->languageCode = $row->languageCode;
+          if ($row->id === $originalTitleId) {
+            $this->titles[$row->id]->original = true;
+          }
+          $this->titles[$row->id]->title = $row->title;
         }
         if (isset($row->displayLanguageCode)) {
           // Avoid duplicates.
           $this->titles[$row->id]->displayLanguageCodes[$row->displayLanguageCode] = true;
+          $this->titles[$row->id]->display = true;
         }
       }
       $result->free();
