@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: MovLib Messages 0.0.1-dev\n"
 "Report-Msgid-Bugs-To: https://github.com/MovLib/www/issues?"
 "labels=translation\n"
-"POT-Creation-Date: 2014-06-03 10:00+0000\n"
-"PO-Revision-Date: 2014-06-03 12:20+0100\n"
+"POT-Creation-Date: 2014-06-04 12:52+0000\n"
+"PO-Revision-Date: 2014-06-04 14:52+0100\n"
 "Last-Translator: Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>\n"
 "Language-Team: MovDev <developers@movlib.org>\n"
 "Language: de_AT\n"
@@ -31,8 +31,8 @@ msgstr "{company_name} Logo."
 #: /src/MovLib/Partial/PersonTrait.php:89
 #: /src/MovLib/Console/Command/Install/SeedAspectRatios.php:99
 #: /src/MovLib/Presentation/Job/Create.php:70
-#: /src/MovLib/Presentation/Series/SeriesTrait.php:145
-#: /src/MovLib/Presentation/Series/SeriesTrait.php:173
+#: /src/MovLib/Presentation/Series/SeriesTrait.php:141
+#: /src/MovLib/Presentation/Series/SeriesTrait.php:169
 #: /src/MovLib/Presentation/AbstractPresenter.php:461
 #: /src/MovLib/Presentation/Movie/Show.php:132
 #: /src/MovLib/Presentation/Movie/Show.php:146
@@ -64,7 +64,7 @@ msgstr "Selbst"
 msgid "Photo of {name}"
 msgstr "Photo von {name}"
 
-#: /src/MovLib/Data/User/User.php:522
+#: /src/MovLib/Data/User/User.php:507
 msgid "{username}’s avatar image."
 msgstr "{username}s Avatarbild."
 
@@ -116,11 +116,11 @@ msgstr "Allgemein"
 msgid "No Cover"
 msgstr "Keine Hülle"
 
-#: /src/MovLib/Core/HTTP/Request.php:222
+#: /src/MovLib/Core/HTTP/Request.php:223
 msgid "IP address or user agent string is invalid or empty."
 msgstr "IP-Adresse oder User Agent-Zeichenkette ist ungültig oder leer."
 
-#: /src/MovLib/Core/HTTP/Request.php:226
+#: /src/MovLib/Core/HTTP/Request.php:227
 #: /src/MovLib/Presentation/Profile/Join.php:207
 #: /src/MovLib/Presentation/AbstractPresenter.php:517
 #: /src/MovLib/Presentation/SystemPage/SystemPageTrait.php:41
@@ -129,7 +129,7 @@ msgstr "IP-Adresse oder User Agent-Zeichenkette ist ungültig oder leer."
 msgid "Privacy Policy"
 msgstr "Datenschutz"
 
-#: /src/MovLib/Core/HTTP/Request.php:224
+#: /src/MovLib/Core/HTTP/Request.php:225
 msgid ""
 "Please note that you have to submit your IP address and user agent string to "
 "identify yourself as being human; should you have privacy concerns read our "
@@ -146,7 +146,8 @@ msgstr "Unterschiede zwischen Revisionen"
 
 #: /src/MovLib/Core/Presentation/AbstractHistoryDiff.php:100
 #: /src/MovLib/Presentation/Award/Category/HistoryDiff.php:59
-#| msgid "{0}, {1}"
+#: /src/MovLib/Presentation/Search/Show.php:120
+#: /src/MovLib/Presentation/Search/Show.php:121
 msgid "{0}: {1}"
 msgstr "{0}: {1}"
 
@@ -169,7 +170,7 @@ msgstr "Unterschiede"
 #: /src/MovLib/Presentation/Person/AbstractBase.php:118
 #: /src/MovLib/Presentation/SystemPage/AbstractHistory.php:63
 #: /src/MovLib/Presentation/SystemPage/SystemPageTrait.php:46
-#: /src/MovLib/Presentation/User/Contributions.php:165
+#: /src/MovLib/Presentation/User/Contributions.php:105
 msgid "History"
 msgstr "Geschichte"
 
@@ -215,6 +216,7 @@ msgstr "Schau später nochmals vorbei"
 
 #: /src/MovLib/Core/Presentation/DependencyInjectionBase.php:418
 #: /src/MovLib/Partial/Place.php:142
+#: /src/MovLib/Presentation/Search/Show.php:176
 msgid "{0}, {1}"
 msgstr "{0}, {1}"
 
@@ -236,10 +238,6 @@ msgstr "Es gibt noch keine Bewertungen, sei der/die erste!"
 msgid "You’re the only one who rated yet."
 msgstr ""
 "Du bist der/die Einzige der/die bis jetzt eine Bewertung abgegeben hat."
-
-#: /src/MovLib/Partial/StarRatingForm.php:144
-msgid "View the rating demographics."
-msgstr "Schau dir die Bewertungsdemographien an."
 
 #: /src/MovLib/Partial/StarRatingForm.php:141
 msgid ""
@@ -890,7 +888,6 @@ msgstr "Todesdatum"
 #: /src/MovLib/Presentation/Movie/AbstractMoviePresenter.php:93
 #: /src/MovLib/Presentation/Movie/Edit.php:57
 #: /src/MovLib/Presentation/Movie/Create.php:55
-#: /src/MovLib/Presentation/Movie/Poster/Index.php:51
 #: /src/MovLib/Presentation/Person/AbstractBase.php:121
 #: /src/MovLib/Presentation/Person/Movies.php:54
 #: /src/MovLib/Presentation/Person/AbstractPersonPresenter.php:97
@@ -905,8 +902,7 @@ msgid "Movies"
 msgstr "Filme"
 
 #: /src/MovLib/Partial/PersonTrait.php:67
-#: /src/MovLib/Presentation/Series/SeriesTrait.php:52
-#: /src/MovLib/Presentation/Series/SeriesTrait.php:73
+#: /src/MovLib/Presentation/Series/SeriesTrait.php:69
 #: /src/MovLib/Presentation/Series/Releases.php:66
 #: /src/MovLib/Presentation/Company/Releases.php:66
 #: /src/MovLib/Presentation/Company/CompanyTrait.php:65
@@ -946,11 +942,10 @@ msgstr "Veröffentlichungen"
 #: /src/MovLib/Presentation/Award/Delete.php:70
 #: /src/MovLib/Presentation/Award/Event/Index.php:70
 #: /src/MovLib/Presentation/Award/Icon/Show.php:70
-#: /src/MovLib/Presentation/Series/SeriesTrait.php:50
-#: /src/MovLib/Presentation/Series/SeriesTrait.php:71
+#: /src/MovLib/Presentation/Series/SeriesTrait.php:67
 #: /src/MovLib/Presentation/Series/Awards.php:66
 #: /src/MovLib/Presentation/AbstractPresenter.php:550
-#: /src/MovLib/Presentation/Movie/Awards.php:44
+#: /src/MovLib/Presentation/Movie/Awards.php:47
 #: /src/MovLib/Presentation/Movie/MovieTrait.php:76
 #: /src/MovLib/Presentation/Person/AbstractPersonPresenter.php:100
 #: /src/MovLib/Presentation/Person/Awards.php:51
@@ -1348,7 +1343,7 @@ msgstr "Kein Unternehmen mit diesem Beruf verknüpft"
 #: /src/MovLib/Presentation/Person/Charts.php:49
 #: /src/MovLib/Presentation/Person/Charts.php:52
 #: /src/MovLib/Presentation/Person/Edit.php:57
-#: /src/MovLib/Presentation/Person/Photo/Show.php:51
+#: /src/MovLib/Presentation/Person/Photo/Show.php:53
 #: /src/MovLib/Presentation/Person/Create.php:55
 #: /src/MovLib/Presentation/Home.php:63
 #: /src/MovLib/Presentation/Event/EventTrait.php:42
@@ -2737,7 +2732,7 @@ msgid "No Award Categories"
 msgstr "Keine Auszeichnungskategorien"
 
 #: /src/MovLib/Presentation/Award/Category/Edit.php:72
-#: /src/MovLib/Presentation/User/Contributions.php:52
+#: /src/MovLib/Presentation/User/Contributions.php:154
 #: /src/MovLib/Presentation/Event/Edit.php:75
 #: /src/MovLib/Presentation/Event/Create.php:69
 #: /src/MovLib/Presentation/Event/Show.php:71
@@ -2801,7 +2796,6 @@ msgstr ""
 "{sitename} hat keine weiteren Details über diese Auszeichnungskategorie."
 
 #: /src/MovLib/Presentation/Award/Category/HistoryDiff.php:75
-#| msgid "No Award Categories"
 msgid "Award category differences"
 msgstr "Auszeichnungskategorien Unterschiede"
 
@@ -2886,8 +2880,7 @@ msgid "Seasons of {0}"
 msgstr "Staffeln von {0}"
 
 #: /src/MovLib/Presentation/Series/Season/Index.php:66
-#: /src/MovLib/Presentation/Series/SeriesTrait.php:51
-#: /src/MovLib/Presentation/Series/SeriesTrait.php:72
+#: /src/MovLib/Presentation/Series/SeriesTrait.php:68
 msgid "Seasons"
 msgstr "Staffel"
 
@@ -2897,7 +2890,7 @@ msgstr "Seriencharts"
 
 #: /src/MovLib/Presentation/Series/Charts.php:52
 #: /src/MovLib/Presentation/Person/Series.php:49
-#: /src/MovLib/Presentation/User/Contributions.php:115
+#: /src/MovLib/Presentation/User/Contributions.php:217
 msgid "Series"
 msgstr "Serien"
 
@@ -2932,31 +2925,31 @@ msgstr "Synopsis"
 msgid "Write a synopsis."
 msgstr "Verfasse eine Synopsis."
 
-#: /src/MovLib/Presentation/Series/SeriesTrait.php:106
+#: /src/MovLib/Presentation/Series/SeriesTrait.php:102
 msgid "Unknown"
 msgstr "Unbekannt"
 
-#: /src/MovLib/Presentation/Series/SeriesTrait.php:107
+#: /src/MovLib/Presentation/Series/SeriesTrait.php:103
 msgid "New"
 msgstr "Neu"
 
-#: /src/MovLib/Presentation/Series/SeriesTrait.php:108
+#: /src/MovLib/Presentation/Series/SeriesTrait.php:104
 msgid "Returning"
 msgstr "Wiederkehrend"
 
-#: /src/MovLib/Presentation/Series/SeriesTrait.php:109
+#: /src/MovLib/Presentation/Series/SeriesTrait.php:105
 msgid "Ended"
 msgstr "Beendet"
 
-#: /src/MovLib/Presentation/Series/SeriesTrait.php:110
+#: /src/MovLib/Presentation/Series/SeriesTrait.php:106
 msgid "Cancelled"
 msgstr "Abgesetzt"
 
-#: /src/MovLib/Presentation/Series/SeriesTrait.php:130
+#: /src/MovLib/Presentation/Series/SeriesTrait.php:126
 msgid "{0} ({1}–{2})"
 msgstr "{0} ({1}–{2})"
 
-#: /src/MovLib/Presentation/Series/SeriesTrait.php:176
+#: /src/MovLib/Presentation/Series/SeriesTrait.php:172
 #: /src/MovLib/Presentation/Movie/MovieTrait.php:171
 msgid "original title"
 msgstr "Originaltitel"
@@ -2979,7 +2972,6 @@ msgid "Releases of {0}"
 msgstr "Veröffentlichungen von {0}"
 
 #: /src/MovLib/Presentation/Series/Awards.php:64
-#: /src/MovLib/Presentation/Movie/Awards.php:44
 msgid "Awards of {0}"
 msgstr "Auszeichnungen von {0}"
 
@@ -3092,7 +3084,7 @@ msgid "{sitename} doesn’t have further details about this company."
 msgstr "{sitename} hat keine weiteren Details über dieses Unternehmen."
 
 #: /src/MovLib/Presentation/Company/CompanyTrait.php:86
-#: /src/MovLib/Presentation/User/Contributions.php:66
+#: /src/MovLib/Presentation/User/Contributions.php:168
 msgid "Company"
 msgstr "Unternehmen"
 
@@ -3175,7 +3167,7 @@ msgid "Dev Links"
 msgstr "Entwicklerlinks"
 
 #: /src/MovLib/Presentation/AbstractPresenter.php:567
-#: /src/MovLib/Presentation/DeletionRequest/Index.php:46
+#: /src/MovLib/Presentation/DeletionRequest/Index.php:47
 msgid "Deletion Requests"
 msgstr "Löschanträge"
 
@@ -3200,11 +3192,11 @@ msgstr "Marktplatz"
 msgid "Community"
 msgstr "Gemeinschaft"
 
-#: /src/MovLib/Presentation/AbstractPresenter.php:632
+#: /src/MovLib/Presentation/AbstractPresenter.php:633
 msgid "Start searching for the entered keyword."
 msgstr "Such nach dem eingegebenen Suchbegriff starten."
 
-#: /src/MovLib/Presentation/AbstractPresenter.php:635
+#: /src/MovLib/Presentation/AbstractPresenter.php:636
 msgid "Enter the search term you wish to search for and hit enter."
 msgstr "Gib den Suchbegriff ein nachdem du suchen möchtest und drücke Eingabe."
 
@@ -3224,37 +3216,40 @@ msgstr "Die freie online Filmdatenbank die jede/r bearbeiten kann."
 msgid "The free movie library."
 msgstr "Die freie Kinemathek."
 
-#: /src/MovLib/Presentation/Search/Show.php:102
+#: /src/MovLib/Presentation/Search/Show.php:120
+#: /src/MovLib/Presentation/Search/Show.php:121
 msgid "Search"
 msgstr "Suche"
 
-#: /src/MovLib/Presentation/Search/Show.php:102
-msgid "Search: {query}"
-msgstr "Suche: {query}"
+#: /src/MovLib/Presentation/Search/Show.php:120
+msgid "“{0}”"
+msgstr "„{0}“"
 
-#: /src/MovLib/Presentation/Search/Show.php:121
+#: /src/MovLib/Presentation/Search/Show.php:138
 #: /src/MovLib/Presentation/Help/Search.php:84
 msgid "No search query submitted."
 msgstr "Keine Suchzeichenkette übermittelt."
 
-#: /src/MovLib/Presentation/Search/Show.php:121
+#: /src/MovLib/Presentation/Search/Show.php:138
 #: /src/MovLib/Presentation/Help/Search.php:85
 msgid "Nothing to Search for…"
 msgstr "Nichts zu suchen…"
 
-#: /src/MovLib/Presentation/Search/Show.php:127
+#: /src/MovLib/Presentation/Search/Show.php:145
 msgid "No search range submitted."
 msgstr "Kein Suchbereich übermittelt."
 
-#: /src/MovLib/Presentation/Search/Show.php:127
+#: /src/MovLib/Presentation/Search/Show.php:145
 msgid "We don’t know what kind of items you are looking for…"
 msgstr "Wir wissen nicht nach welcher Art von Dingen du suchen möchtest…"
 
-#: /src/MovLib/Presentation/Search/Show.php:139
+#: /src/MovLib/Presentation/Search/Show.php:152
+#: /src/MovLib/Presentation/Search/Show.php:165
 msgid "Wrong search parameters."
 msgstr "Falsche Suchparameter."
 
-#: /src/MovLib/Presentation/Search/Show.php:139
+#: /src/MovLib/Presentation/Search/Show.php:152
+#: /src/MovLib/Presentation/Search/Show.php:165
 msgid ""
 "Malformed search options specified. We don’t know how to fulfill your search "
 "request."
@@ -3262,31 +3257,22 @@ msgstr ""
 "Falsche Suchoptionen erhalten. Wir wissen nicht, wie wir deine Suchanfrage "
 "erfüllen können."
 
-#: /src/MovLib/Presentation/Search/Show.php:146
-msgid "Your search {query} did not match any document."
-msgstr "Deine suche {query} lieferte kein Ergebnis."
+#: /src/MovLib/Presentation/Search/Show.php:197
+msgid "Did you mean {suggestions}?"
+msgstr "Meintest du {suggestions}?"
 
-#: /src/MovLib/Presentation/Search/Show.php:147
-msgid "No Results"
-msgstr "Keine Resultate"
+#: /src/MovLib/Presentation/Search/Show.php:202
+#| msgid "Your search {query} did not match any document."
+msgid "Your search for {query} did not match any document."
+msgstr "Deine Suche nach {query} lieferte kein Ergebnis."
 
-#: /src/MovLib/Presentation/Search/Show.php:172
+#: /src/MovLib/Presentation/Search/Show.php:231
 msgid "Search for {type} is not implemented yet."
 msgstr "Die Suche nach {type} ist noch nicht implementiert."
 
-#: /src/MovLib/Presentation/Search/Show.php:182
+#: /src/MovLib/Presentation/Search/Show.php:241
 msgid "Not implemented yet."
 msgstr "Noch nicht implementiert."
-
-#: /src/MovLib/Presentation/Search/Show.php:198
-msgid "Try a full text search with the sites linked below."
-msgstr ""
-"Versuche es mit einer Volltextsuche auf den Seiten, die unterhalb verlinkt "
-"sind."
-
-#: /src/MovLib/Presentation/Search/Show.php:204
-msgid "Haven’t found what you were looking for?"
-msgstr "Immer noch nicht gefunden wonach du gesucht hast?"
 
 #: /src/MovLib/Presentation/Help/Index.php:75
 msgid "Still can’t find what you’re looking for? {0}Visit the Forum{1}"
@@ -3539,7 +3525,7 @@ msgid "Backdrop History"
 msgstr "Hintegrund-Geschichte"
 
 #: /src/MovLib/Presentation/Movie/Backdrop/Index.php:52
-#: /src/MovLib/Presentation/Movie/Poster/Index.php:100
+#: /src/MovLib/Presentation/Movie/Poster/Index.php:97
 #: /src/MovLib/Presentation/Movie/LobbyCard/Index.php:51
 msgid "We couldn’t find any posters for this movie."
 msgstr "Wir konnten keine Poster für diesen Film finden."
@@ -3615,6 +3601,11 @@ msgstr "Die Sprache des Originaltitels."
 msgid "Releases of {title}"
 msgstr "Veröffentlichungen von {title}"
 
+#: /src/MovLib/Presentation/Movie/Awards.php:45
+#: /src/MovLib/Presentation/Movie/Awards.php:46
+msgid "Awards of {title}"
+msgstr "Auszeichnungen von {0}"
+
 #: /src/MovLib/Presentation/Movie/Show.php:112
 msgid "Countries"
 msgstr "Länder"
@@ -3635,27 +3626,27 @@ msgstr "{title} löschen"
 msgid "Poster History"
 msgstr "Postergeschichte"
 
+#: /src/MovLib/Presentation/Movie/Poster/Index.php:47
 #: /src/MovLib/Presentation/Movie/Poster/Index.php:48
+msgid "Posters of {title}"
+msgstr "Poster von {title}"
+
+#: /src/MovLib/Presentation/Movie/Poster/Index.php:49
 #: /src/MovLib/Presentation/Movie/Poster/Show.php:45
 msgid "Posters"
 msgstr "Poster"
 
-#: /src/MovLib/Presentation/Movie/Poster/Index.php:49
-msgid "Upload New Poster"
-msgstr "Neues Poster Hochladen"
-
-#: /src/MovLib/Presentation/Movie/Poster/Index.php:52
-#: /src/MovLib/Presentation/User/Contributions.php:94
-msgid "Movie"
-msgstr "Film"
-
-#: /src/MovLib/Presentation/Movie/Poster/Index.php:65
+#: /src/MovLib/Presentation/Movie/Poster/Index.php:62
 msgid "{width} × {height}"
 msgstr "{width} × {height}"
 
-#: /src/MovLib/Presentation/Movie/Poster/Index.php:100
+#: /src/MovLib/Presentation/Movie/Poster/Index.php:97
 msgid "No Posters"
 msgstr "Keine Poster"
+
+#: /src/MovLib/Presentation/Movie/Poster/Index.php:101
+msgid "Movie Poster"
+msgstr "Filmposter"
 
 #: /src/MovLib/Presentation/Movie/Poster/Edit.php:51
 msgid "Poster Edit"
@@ -3874,8 +3865,8 @@ msgstr "Serien mit {0}"
 msgid "Discussion of {name}"
 msgstr "Diskussion über {name}"
 
-#: /src/MovLib/Presentation/Person/Photo/Show.php:47
-#: /src/MovLib/Presentation/Person/Photo/Show.php:48
+#: /src/MovLib/Presentation/Person/Photo/Show.php:49
+#: /src/MovLib/Presentation/Person/Photo/Show.php:50
 msgid "Photo of {0}"
 msgstr "Foto von {0}"
 
@@ -3890,12 +3881,12 @@ msgid "Awards of {name}"
 msgstr "Auszeichnungen von {0}"
 
 #: /src/MovLib/Presentation/Person/Awards.php:66
-#: /src/MovLib/Presentation/User/Contributions.php:73
+#: /src/MovLib/Presentation/User/Contributions.php:175
 msgid "Event"
 msgstr "Veranstaltung"
 
 #: /src/MovLib/Presentation/Person/Awards.php:67
-#: /src/MovLib/Presentation/User/Contributions.php:59
+#: /src/MovLib/Presentation/User/Contributions.php:161
 msgid "Category"
 msgstr "Kategorie"
 
@@ -4169,7 +4160,7 @@ msgstr ""
 
 #: /src/MovLib/Presentation/User/AbstractUserPresenter.php:73
 #: /src/MovLib/Presentation/User/AbstractUserPresenter.php:83
-#: /src/MovLib/Presentation/User/Contributions.php:206
+#: /src/MovLib/Presentation/User/Contributions.php:58
 msgid "Contributions"
 msgstr "Beiträge"
 
@@ -4199,53 +4190,57 @@ msgstr "Keine Benutzer"
 msgid "{username}’s Uploads"
 msgstr "{username}s Uploads"
 
-#: /src/MovLib/Presentation/User/Contributions.php:45
-msgid "Help Article"
-msgstr "Hilfeartikel"
+#: /src/MovLib/Presentation/User/Contributions.php:58
+msgid "{username}’s Contributions"
+msgstr "{username}s Beiträge"
 
-#: /src/MovLib/Presentation/User/Contributions.php:80
-msgid "Genre"
-msgstr "Genre"
-
-#: /src/MovLib/Presentation/User/Contributions.php:87
-msgid "Job"
-msgstr "Beruf"
-
-#: /src/MovLib/Presentation/User/Contributions.php:101
-msgid "Person"
-msgstr "Person"
-
-#: /src/MovLib/Presentation/User/Contributions.php:108
-msgid "Release"
-msgstr "Veröffentlichung"
-
-#: /src/MovLib/Presentation/User/Contributions.php:164
+#: /src/MovLib/Presentation/User/Contributions.php:98
 msgid "Differences"
 msgstr "Unterschiede"
 
-#: /src/MovLib/Presentation/User/Contributions.php:181
+#: /src/MovLib/Presentation/User/Contributions.php:121
 msgid "Contribution"
 msgstr "Beitrag"
 
-#: /src/MovLib/Presentation/User/Contributions.php:182
+#: /src/MovLib/Presentation/User/Contributions.php:122
 msgid "Date"
 msgstr "Datum"
 
-#: /src/MovLib/Presentation/User/Contributions.php:183
+#: /src/MovLib/Presentation/User/Contributions.php:123
 msgid "Actions"
 msgstr "Aktionen"
 
-#: /src/MovLib/Presentation/User/Contributions.php:196
+#: /src/MovLib/Presentation/User/Contributions.php:136
 msgid "We couldn’t find any contributions by this user"
 msgstr "Wir konnten keine Beiträge dieses Benutzers finden"
 
-#: /src/MovLib/Presentation/User/Contributions.php:197
+#: /src/MovLib/Presentation/User/Contributions.php:137
 msgid "No Contributions"
 msgstr "Keine Beiträge"
 
-#: /src/MovLib/Presentation/User/Contributions.php:206
-msgid "{username}’s Contributions"
-msgstr "{username}s Beiträge"
+#: /src/MovLib/Presentation/User/Contributions.php:147
+msgid "Help Article"
+msgstr "Hilfeartikel"
+
+#: /src/MovLib/Presentation/User/Contributions.php:182
+msgid "Genre"
+msgstr "Genre"
+
+#: /src/MovLib/Presentation/User/Contributions.php:189
+msgid "Job"
+msgstr "Beruf"
+
+#: /src/MovLib/Presentation/User/Contributions.php:196
+msgid "Movie"
+msgstr "Film"
+
+#: /src/MovLib/Presentation/User/Contributions.php:203
+msgid "Person"
+msgstr "Person"
+
+#: /src/MovLib/Presentation/User/Contributions.php:210
+msgid "Release"
+msgstr "Veröffentlichung"
 
 #: /src/MovLib/Presentation/User/Lists.php:44
 msgid "{username}’s Lists"
@@ -4470,6 +4465,26 @@ msgstr "{sitename} hat keine weiteren Details über diese Veranstaltung."
 msgid "Successfully updated"
 msgstr "Erfolgreich aktualisiert"
 
+#~ msgid "View the rating demographics."
+#~ msgstr "Schau dir die Bewertungsdemographien an."
+
+#~ msgid "Search: {query}"
+#~ msgstr "Suche: {query}"
+
+#~ msgid "No Results"
+#~ msgstr "Keine Resultate"
+
+#~ msgid "Try a full text search with the sites linked below."
+#~ msgstr ""
+#~ "Versuche es mit einer Volltextsuche auf den Seiten, die unterhalb "
+#~ "verlinkt sind."
+
+#~ msgid "Haven’t found what you were looking for?"
+#~ msgstr "Immer noch nicht gefunden wonach du gesucht hast?"
+
+#~ msgid "Upload New Poster"
+#~ msgstr "Neues Poster Hochladen"
+
 #~ msgid "{lemma}: Difference between revisions"
 #~ msgstr "{lemma}: Unterschiede zwischen Revisionen"
 
@@ -4491,9 +4506,6 @@ msgstr "Erfolgreich aktualisiert"
 #~| msgid "No Award Categories"
 #~ msgid "Award Category"
 #~ msgstr "Keine Auszeichnungskategorien"
-
-#~ msgid "Movie Poster"
-#~ msgstr "Filmposter"
 
 #~ msgid "from {0} to {1}"
 #~ msgstr "von {0} bis {1}"
@@ -4677,11 +4689,6 @@ msgstr "Erfolgreich aktualisiert"
 
 #~ msgid "deletion request"
 #~ msgstr "Löschanträge"
-
-#, fuzzy
-#~| msgid "Categories of {0}"
-#~ msgid "Awards of {title}"
-#~ msgstr "Kategorien von {0}"
 
 #~ msgid "Hi there {0}!"
 #~ msgstr "Hallo {0}!"
