@@ -310,7 +310,6 @@ final class Update extends AbstractQuery {
     // @devStart
     // @codeCoverageIgnoreStart
     assert(!empty($this->table), "You must set the table name in order to execute an UPDATE query.");
-    // Note that the set clause is optional, one might want to insert only default values.
     // @codeCoverageIgnoreEnd
     // @devEnd
 
