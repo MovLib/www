@@ -84,12 +84,9 @@ final class Diff {
   /**
    * Deadline for for diff generation.
    *
-   * <b>NOTE</b><br>
-   * We need a longer deadline because of UTF-8, it simply takes some time.
-   *
    * @var float
    */
-  const DEADLINE = 2.0;
+  const DEADLINE = 1.0;
 
   /**
    * Code for delete transformations.
@@ -435,7 +432,6 @@ final class Diff {
       }
     }
 
-    // Diff took too long and hit the deadline or number of diffs equals number of characters, no commonality at all.
     return [
       [ self::DELETE_KEY, $text1, $text1Length ],
       [ self::INSERT_KEY, $text2, $text2Length ],
@@ -725,7 +721,7 @@ final class Diff {
     if ($suffix) {
       $diffs[] = [ self::COPY_KEY, $suffix, $suffixLength ];
     }
-return $diffs;
+
     // Clean the differences by merging as many operations as possible.
     return $this->merge($diffs);
   }
@@ -939,7 +935,7 @@ return $diffs;
             ]);
           }
 
-          $pointer = $pointer - $countDelete - $countInsert + 1;
+          $pointer -= $countDelete - $countInsert + 1;
           if ($countDelete !== 0) {
             ++$pointer;
           }
@@ -948,8 +944,7 @@ return $diffs;
           }
         }
         // Merge copy with previous copy.
-        elseif ($pointer !== 0 && $diffs[$pointer - 1][0] === self::COPY_KEY) {
-          $previous = $pointer - 1;
+        elseif ($pointer !== 0 && $diffs[($previous = $pointer - 1)][0] === self::COPY_KEY) {
           $diffs[$previous][1] .= $diffs[$pointer][1];
           $diffs[$previous][2] += $diffs[$pointer][2];
           array_splice($diffs, $pointer, 1);
