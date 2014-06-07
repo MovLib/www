@@ -17,7 +17,7 @@
  */
 namespace MovLib\Console\Command\Admin;
 
-use \MovLib\Console\MySQLi;
+use \MovLib\Core\Database\Database;
 use \MovLib\Exception\CountVerificationException;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\StringInput;
@@ -80,7 +80,7 @@ class CronDaily extends \MovLib\Console\Command\AbstractCommand {
     $query = "DELETE FROM `tmp` WHERE DATEDIFF(CURRENT_TIMESTAMP, `created`) > 0 AND `ttl` = '{$ttl}'";
     $this->writeDebug("Purging temporary table for <comment>{$ttl}</comment> entries...");
     $this->writeDebug("mysql> <comment>{$query};</comment>");
-    (new MySQLi("movlib"))->query($query);
+    Database::getConnection()->real_query($query);
     return $this;
   }
 
@@ -121,7 +121,8 @@ class CronDaily extends \MovLib\Console\Command\AbstractCommand {
             "<comment>{$countCommand->entityName}</comment> counts verified successfully.",
             self::MESSAGE_TYPE_INFO
           );
-        } catch (CountVerificationException $e) {
+        }
+        catch (CountVerificationException $e) {
           $this->log->critical($e, $e->errors);
         }
       }

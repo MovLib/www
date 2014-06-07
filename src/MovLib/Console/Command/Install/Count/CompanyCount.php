@@ -61,7 +61,7 @@ class CompanyCount extends \MovLib\Console\Command\Install\Count\AbstractEntityC
     $awardCounts = [];
 
     // Get the awards.
-    $result = $this->mysqli->query(<<<SQL
+    $result = $this->connection->query(<<<SQL
 SELECT
   `companies`.`id`,
   `movies_awards`.`award_id` AS `movieAwardId`,

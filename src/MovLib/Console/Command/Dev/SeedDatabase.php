@@ -17,7 +17,7 @@
  */
 namespace MovLib\Console\Command\Dev;
 
-use \MovLib\Console\MySQLi;
+use \MovLib\Core\Database\Database;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -114,35 +114,35 @@ final class SeedDatabase extends \MovLib\Console\Command\AbstractCommand {
     }
 
     $this->writeVerbose("Importing individual SQL scripts...");
-    $mysqli = new MySQLi("movlib");
+    $connection = Database::getConnection();
     try {
-      $mysqli->autocommit(false);
+      $connection->autocommit(false);
       foreach ($scripts as $script => $type) {
         $script = "{$this->scriptDirectory}/{$script}.{$type}";
         $this->writeDebug("Importing <comment>{$script}</comment>");
-        $mysqli->query("SET foreign_key_checks = 0");
+        $connection->query("SET foreign_key_checks = 0");
         if ($type == "sql") {
           $script = file_get_contents($script);
         }
         else {
           $script = require $script;
         }
-        $mysqli->multi_query($script);
+        $connection->multi_query($script);
         do {
-          $mysqli->use_result();
-          if (($more = $mysqli->more_results())) {
-            $mysqli->next_result();
+          $connection->use_result();
+          if (($more = $connection->more_results())) {
+            $connection->next_result();
           }
         }
         while ($more);
-        $mysqli->query("SET foreign_key_checks = 1");
-        $mysqli->commit();
+        $connection->query("SET foreign_key_checks = 1");
+        $connection->commit();
       }
     }
     catch (\mysqli_sql_exception $e) {
-      $mysqli->query("SET foreign_key_checks = 1");
-      $mysqli->rollback();
-      $mysqli->close();
+      $connection->query("SET foreign_key_checks = 1");
+      $connection->rollback();
+      $connection->close();
       throw $e;
     }
     $this->writeVerbose("Successfully imported individual SQL scripts!", self::MESSAGE_TYPE_INFO);

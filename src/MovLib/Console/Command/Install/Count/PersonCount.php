@@ -61,7 +61,7 @@ class PersonCount extends \MovLib\Console\Command\Install\Count\AbstractEntityCo
     $awardCounts = [];
 
     // Get the awards.
-    $result = $this->mysqli->query(<<<SQL
+    $result = $this->connection->query(<<<SQL
 SELECT
   `persons`.`id`,
   `movies_awards`.`award_id` AS `movieAwardId`,
@@ -117,7 +117,7 @@ SQL
     $movieKeys   = [];
     $movieCounts = [];
 
-    $result = $this->mysqli->query(<<<SQL
+    $result = $this->connection->query(<<<SQL
 SELECT
   `persons`.`id`,
   `movies_directors`.`movie_id` AS `directorMovieId`,
@@ -160,7 +160,7 @@ SQL
     $seriesKeys   = [];
     $seriesCounts = [];
 
-    $result = $this->mysqli->query(<<<SQL
+    $result = $this->connection->query(<<<SQL
 SELECT
   `persons`.`id`,
   `episodes_directors`.`series_id` AS `directorSeriesId`,

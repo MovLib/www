@@ -17,7 +17,7 @@
  */
 namespace MovLib\Console\Command\Install\Count;
 
-use \MovLib\Console\MySQLi;
+use \MovLib\Core\Database\Database;
 use \MovLib\Exception\CountVerificationException;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
@@ -91,9 +91,9 @@ abstract class AbstractEntityCountCommand extends \MovLib\Console\Command\Abstra
   /**
    * The command's mysqli object.
    *
-   * @var MovLib\Console\MySQLi
+   * @var \MovLib\Core\Database\Connection
    */
-  protected $mysqli;
+  protected $connection;
 
   /**
    * The table name for the count verification.
@@ -145,7 +145,7 @@ abstract class AbstractEntityCountCommand extends \MovLib\Console\Command\Abstra
    */
   final protected function aggregateSimpleQuery($query, $idColumn = "id", $countColumn = "count"){
     $counts = [];
-    $result = $this->mysqli->query($query);
+    $result = $this->connection->query($query);
     while ($row = $result->fetch_object()) {
       $counts[$row->$idColumn] = (integer) $row->$countColumn;
     }
@@ -167,8 +167,8 @@ abstract class AbstractEntityCountCommand extends \MovLib\Console\Command\Abstra
     }
     $this->addOption("seed", null, InputOption::VALUE_NONE);
     // Make sure the id columns form an array, since a simple string is also possible for convenience.
-    $this->idColumns = (array) $this->idColumns;
-    $this->mysqli = new MySQLi("movlib");
+    $this->idColumns  = (array) $this->idColumns;
+    $this->connection = Database::getConnection();
     return parent::configure();
   }
 
@@ -243,7 +243,7 @@ abstract class AbstractEntityCountCommand extends \MovLib\Console\Command\Abstra
 
     // There were count discrepancies, correct and report them according to parameters.
     if ($errors) {
-      $this->mysqli->multi_query(rtrim($queriesToRun, ";"));
+      $this->connection->multi_query(rtrim($queriesToRun, ";"));
       $this->write("Count verification failed for entity '{$this->entityName}', updating...");
       if (!$seed) {
         throw new CountVerificationException($errors, "Count verification failed for entity '{$this->entityName}'");
@@ -275,7 +275,7 @@ abstract class AbstractEntityCountCommand extends \MovLib\Console\Command\Abstra
     foreach ($countColumns as $column) {
       $projection .= ", `count_{$column}` AS `{$column}`";
     }
-    $result = $this->mysqli->query(<<<SQL
+    $result = $this->connection->query(<<<SQL
 SELECT
   CONCAT_WS('-', `{$idColumns}`) AS `id`{$projection}
 FROM `{$tableName}`
@@ -358,7 +358,7 @@ SQL
     if ($where) {
       $where = "WHERE {$where}";
     }
-    $result = $this->mysqli->query(<<<SQL
+    $result = $this->connection->query(<<<SQL
 SELECT
   CONCAT_WS('-',`{$idColumns}`) AS `id`,
   COUNT(DISTINCT `{$countColumns}`) AS `count`
