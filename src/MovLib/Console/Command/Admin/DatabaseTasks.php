@@ -30,7 +30,11 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Database extends \MovLib\Console\Command\AbstractCommand {
+class DatabaseTasks extends \MovLib\Console\Command\AbstractCommand {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
 
   // @codingStandardsIgnoreStart
   /**
@@ -38,12 +42,8 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
    *
    * @var string
    */
-  const name = "Database";
+  const name = "DatabaseTasks";
   // @codingStandardsIgnoreEnd
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
 
   /**
    * The directory where backups are stored.
