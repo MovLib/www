@@ -133,10 +133,25 @@ abstract class AbstractEntitySet extends \ArrayObject implements \MovLib\Core\En
   /**
    * {@inheritdoc}
    */
-  final public function load(\MovLib\Core\Database\Query\Condition $conditions = null, $alias = null) {
+  public function load(\MovLib\Core\Database\Query\Condition $conditions = null, $alias = null) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert(empty($this), "You should only call load once per instance, create a new set if you need different data from the same set.");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    // Prepare extendable database select query object.
     $select = (new Select(Database::getConnection(), static::$tableName, $alias))->setConditions($conditions);
+
+    // Allow the concrete class to alter the object.
     $this->doLoad($select);
-    return $select->fetchObject($this->entityClass, $this->container);
+
+    // Execute the select query and fetch all objects from the query. We exchange our current instance's array with the
+    // new array. This ensures that we have exactly the entities within us that were requested, in case someone called
+    // this method multiple times.
+    $this->exchangeArray($select->fetchObjects($this->entityClass, $this->container));
+
+    return $this;
   }
 
   /**
