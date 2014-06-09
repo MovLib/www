@@ -21,7 +21,6 @@ use \MovLib\Component\DateTime;
 use \MovLib\Core\Database\Database;
 use \MovLib\Data\Image\ImageStyle;
 use \MovLib\Data\Image\ImageStylePlaceholder;
-use \MovLib\Exception\ClientException\ForbiddenException;
 use \MovLib\Exception\ClientException\UnauthorizedException;
 
 /**
@@ -359,7 +358,7 @@ SQL
    */
   public function checkAuthorizationAdmin($message) {
     if ($this->isAdmin() === false) {
-      throw new ForbiddenException($message);
+      throw new UnauthorizedException($message);
     }
     return $this;
   }
