@@ -193,11 +193,15 @@ final class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
       list($cache, $presenter) = $args;
       try {
         $set = $this->getDataSet($presenter);
-        $tpk = $this->translateRoute($intl, "/{$set->pluralKey}");
-        $tsk = str_replace("/{0}", "", $this->translateRoute($intl, "/{$set->singularKey}/{0}"));
-        if (empty($redirects["{$tpk}{$tsk}"]) && $tpk != $tsk) {
-          $locations .= "\nlocation = '{$tsk}' {\n  return 301 '{$tpk}';\n}\n";
-          $redirects["{$tpk}{$tsk}"] = true;
+
+        // @todo We need a much better system for this!
+        if (isset($set->pluralKey) && isset($set->singularKey)) {
+          $tpk = $this->translateRoute($intl, "/{$set->pluralKey}");
+          $tsk = str_replace("/{0}", "", $this->translateRoute($intl, "/{$set->singularKey}/{0}"));
+          if (empty($redirects["{$tpk}{$tsk}"]) && $tpk != $tsk) {
+            $locations .= "\nlocation = '{$tsk}' {\n  return 301 '{$tpk}';\n}\n";
+            $redirects["{$tpk}{$tsk}"] = true;
+          }
         }
       }
       catch (\LogicException $e) {
@@ -513,7 +517,7 @@ NGX;
       // Make sure this is an actual concrete presenter.
       $reflector = new \ReflectionClass($className);
       if (!$reflector->isInstantiable()) {
-        $this->writeDebug("Route aren't auto-generated for unconcrete presenters, <comment>skipping!</comment>");
+        $this->writeDebug("Routes aren't auto-generated for unconcrete presenters, <comment>skipping!</comment>");
         continue;
       }
 
