@@ -19,8 +19,8 @@
 /**
  * These are translations for the user interface and not meant for HTTP headers!
  *
- * The list of codes is complete according to the Hypertext Transfer Protocol (HTTP) Status Code Registry (last updated
- * 2012-02-13). nless otherwise noted, the status code is defined in RFC2616.
+  // The list of codes is complete according to the Hypertext Transfer Protocol (HTTP) Status Code Registry (last
+  // updated 2012-02-13). Unless otherwise noted, the status code is defined in RFC7231.
  *
  * @link http://www.iana.org/assignments/http-status-codes/
  *
@@ -44,7 +44,7 @@ return [
   206 => "Unvollständiger Inhalt",
   207 => "Multi-Status", // RFC4918
   208 => "Bereits Berichtet", // RFC5842
-  226 => "IM Used", // RFC3229
+  226 => "IM verwendet", // RFC3229
   300 => "Multiple Auswahl",
   301 => "Permanent Verschoben",
   302 => "Gefunden",
@@ -54,43 +54,43 @@ return [
   306 => "Reserviert",
   307 => "Temporäre Umleitung",
   308 => "Permanente Umleitung", // RFC-reschke-http-status-308-07
-  400 => "Bad Request",
-  401 => "Unauthorized",
-  402 => "Payment Required",
-  403 => "Forbidden",
-  404 => "Not Found",
-  405 => "Method Not Allowed",
-  406 => "Not Acceptable",
-  407 => "Proxy Authentication Required",
-  408 => "Request Timeout",
-  409 => "Conflict",
-  410 => "Gone",
-  411 => "Length Required",
-  412 => "Precondition Failed",
-  413 => "Request Entity Too Large",
-  414 => "Request-URI Too Long",
-  415 => "Unsupported Media Type",
-  416 => "Requested Range Not Satisfiable",
-  417 => "Expectation Failed",
-  418 => "I’m a teapot", // RFC2324
-  422 => "Unprocessable Entity", // RFC4918
-  423 => "Locked", // RFC4918
-  424 => "Failed Dependency", // RFC4918
-  425 => "Reserved for WebDAV advanced collections expired proposal", // RFC2817
-  426 => "Upgrade Required", // RFC2817
-  428 => "Precondition Required", // RFC6585
-  429 => "Too Many Requests", // RFC6585
-  431 => "Request Header Fields Too Large", // RFC6585
-  500 => "Internal Server Error",
-  501 => "Not Implemented",
-  502 => "Bad Gateway",
-  503 => "Service Unavailable",
-  504 => "Gateway Timeout",
-  505 => "HTTP Version Not Supported",
+  400 => "Fehlerhafte Anfrage",
+  401 => "Unbefugt",
+  402 => "Zahlung erforderlich",
+  403 => "Verboten",
+  404 => "Nicht gefunden",
+  405 => "Methode nicht erlaubt",
+  406 => "Nicht akzeptabel",
+  407 => "Proxyauthentifikation erforderlich",
+  408 => "Anfragenzeitüberschreitung",
+  409 => "Konflikt",
+  410 => "Gegangen",
+  411 => "Länge erforderlich",
+  412 => "Vorbedingungen fehlgeschlagen",
+  413 => "Angeforderte Entität zu groß",
+  414 => "Anforderungs-URI zu lang",
+  415 => "Nicht unterstützter Medientyp",
+  416 => "Anforderungsbereich nicht erfüllbar",
+  417 => "Erwartung fehlgeschlagen",
+  418 => "Ich bin eine Teekanne", // RFC2324
+  422 => "Nicht verarbeitbare Entität", // RFC4918
+  423 => "Gesperrt", // RFC4918
+  424 => "Fehlgeschlagene Abhängigkeit", // RFC4918
+  425 => "Reserviert für WebDAV advanced collections expired Vorschlag", // RFC2817
+  426 => "Aktualisierung erforderlich", // RFC2817
+  428 => "Vorbedingungen erforderlich", // RFC6585
+  429 => "Zu viele Anforderungen", // RFC6585
+  431 => "Anforderungsüberschriftenfeld zu groß", // RFC6585
+  500 => "Interner Serverfehler",
+  501 => "Nicht implementiert",
+  502 => "Beschädigtes Gateway",
+  503 => "Service nicht verfügbar",
+  504 => "Gatewayzeitüberschreitung",
+  505 => "HTTP-Version nicht unterstützt",
   506 => "Variant Also Negotiates (Experimental)", // RFC2295
-  507 => "Insufficient Storage", // RFC4918
-  508 => "Loop Detected", // RFC5842
-  510 => "Not Extended", // RFC2774
-  511 => "Network Authentication Required", // RFC6585
+  507 => "Ungenügend Speicher", // RFC4918
+  508 => "Schleife entdeckt", // RFC5842
+  510 => "Nicht erweitert", // RFC2774
+  511 => "Netzwerkauthentifikation erforderlich", // RFC6585
 ];
 // @codeCoverageIgnoreEnd

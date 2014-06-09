@@ -37,14 +37,17 @@ return [
   // These are translations for the user interface and not meant for HTTP headers!
   //
   // The list of codes is complete according to the Hypertext Transfer Protocol (HTTP) Status Code Registry (last
-  // updated 2012-02-13). nless otherwise noted, the status code is defined in RFC2616.
+  // updated 2012-02-13). Unless otherwise noted, the status code is defined in RFC7231.
   //
   // @link http://www.iana.org/assignments/http-status-codes/
   //
   // HTTP Staus Codes >>>
+  // {{{ Informational
   100 => "Continue",
   101 => "Switching Protocols",
   102 => "Processing", // RFC2518
+  // }}}
+  // {{{ Successful
   200 => "OK",
   201 => "Created",
   202 => "Accepted",
@@ -55,6 +58,8 @@ return [
   207 => "Multi-Status", // RFC4918
   208 => "Already Reported", // RFC5842
   226 => "IM Used", // RFC3229
+  // }}}
+  // {{{ Redirection
   300 => "Multiple Choices",
   301 => "Moved Permanently",
   302 => "Found",
@@ -64,6 +69,8 @@ return [
   306 => "Reserved",
   307 => "Temporary Redirect",
   308 => "Permanent Redirect", // RFC-reschke-http-status-308-07
+  // }}}
+  // {{{ Client Error
   400 => "Bad Request",
   401 => "Unauthorized",
   402 => "Payment Required",
@@ -91,6 +98,8 @@ return [
   428 => "Precondition Required", // RFC6585
   429 => "Too Many Requests", // RFC6585
   431 => "Request Header Fields Too Large", // RFC6585
+  // }}}
+  // {{{ Server Error
   500 => "Internal Server Error",
   501 => "Not Implemented",
   502 => "Bad Gateway",
@@ -102,6 +111,7 @@ return [
   508 => "Loop Detected", // RFC5842
   510 => "Not Extended", // RFC2774
   511 => "Network Authentication Required", // RFC6585
+  // }}}
   // HTTP Staus Codes <<<
 
 ];
