@@ -35,13 +35,18 @@ trait RoutingTrait {
    */
   final public function r($routePart, array $args = []) {
     // This array is used to cache previously generated routes. Note that we have to build a deep structure because this
-    // trait is shared among many entities. We use the class name and the concrete entity's unique identifier to create
-    // that structure. This should ensure that routes are correctly cached for each entity.
+    // trait is shared among many entities. We use the class name to create that structure. This ensures that routes are
+    // correctly cached for each entity.
     static $routes = [];
 
     // Use the cached route if we already built this once.
-    if (isset($routes[static::name][$this->id][$routePart])) {
-      return $routes[static::name][$this->id][$routePart];
+    if (isset($routes[static::name][$routePart])) {
+      // We have to rebuild the arguments each time, because we can't be certain that this is the same entity that
+      // was previously requested.
+      if ($this->route->args) {
+        $args = empty($args) ? $this->route->args : array_merge($this->route->args, $args);
+      }
+      return $this->container->intl->r($routes[static::name][$routePart], $args);
     }
 
     // The route will change if it contains placeholders, but later look-ups will be unprocessed, therefore we have to
@@ -78,8 +83,8 @@ trait RoutingTrait {
     }
 
     // Add this route to our cache and we're done.
-    $routes[static::name][$this->id][$cacheKey] = $this->container->intl->r("{$this->route->route}{$routePart}", $args);
-    return $routes[static::name][$this->id][$cacheKey];
+    $routes[static::name][$cacheKey] = "{$this->route->route}{$routePart}";
+    return $this->container->intl->r($routes[static::name][$cacheKey], $args);
   }
 
 }
