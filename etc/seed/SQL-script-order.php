@@ -29,6 +29,7 @@
 // @codeCoverageIgnoreStart
 return [
   "users" => "sql",
+  "forums" => "sql",
   "places" => "sql",
   "awards" => "sql",
   "companies" => "sql",
@@ -40,6 +41,7 @@ return [
   "movies" => "sql",
   "movies_posters" => "sql",
   "series" => "sql",
+  "ratings" => "sql",
   "system_pages" => "sql",
   "revision_entities" => "sql",
   "revisions" => "sql",
