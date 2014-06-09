@@ -125,7 +125,7 @@ abstract class AbstractEntityCountCommand extends \MovLib\Console\Command\Abstra
     // @devEnd
     $this->countConfiguration[$name] = (object) [
       "callback" => $countCallback,
-      "args" => (array) $args,
+      "args"     => (array) $args,
     ];
   }
 

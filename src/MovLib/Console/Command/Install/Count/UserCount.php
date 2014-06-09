@@ -47,12 +47,7 @@ class UserCount extends \MovLib\Console\Command\Install\Count\AbstractEntityCoun
     $this->addCountColumn(
       "contributions",
       [ $this, "getCounts" ],
-      [ "user_id", null, [ "entity_type_id", "entity_id", "created" ], "revisions"]
-    );
-    $this->addCountColumn(
-      "uploads",
-      [ $this, "getCounts" ],
-      [ "user_id", null, [ "entity_type_id", "entity_id", "created" ], "image_revisions", "`path` IS NOT NULL"]
+      [ "user_id", null, [ "revision_entity_id", "entity_id" ], "revisions"]
     );
     return parent::configure();
   }
