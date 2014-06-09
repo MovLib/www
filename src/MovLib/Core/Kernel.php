@@ -59,17 +59,6 @@ final class Kernel {
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  // @devStart
-  // @codeCoverageIgnoreStart
-  /**
-   * Whether the kernel has already booted or not.
-   *
-   * @var boolean
-   */
-  protected $booted = false;
-  // @codeCoverageIgnoreEnd
-  // @devEnd
-
   /**
    * Whether this kernel is in CLI context or not.
    *
@@ -123,8 +112,6 @@ final class Kernel {
       !empty($documentRoot) && is_string($documentRoot) && !is_link($documentRoot) && is_dir($documentRoot) && realpath($documentRoot) !== false,
       "\$documentRoot cannot be empty, must be of type string and point to an existing directory."
     );
-    assert($this->booted === false, "Kernel already booted!");
-    $this->booted = true;
     // @codeCoverageIgnoreEnd
     // @devEnd
 
