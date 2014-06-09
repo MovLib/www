@@ -20,7 +20,6 @@ namespace MovLib\Presentation\SystemPage;
 use \MovLib\Core\Revision\CommitConflictException;
 use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Form;
-use \MovLib\Partial\FormElement\InputText;
 use \MovLib\Partial\FormElement\TextareaHTMLRaw;
 
 /**
