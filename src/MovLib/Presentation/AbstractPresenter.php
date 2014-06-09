@@ -563,7 +563,9 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
 
     $communityNavigation =
       "<ul class='o1 sm2 no-list'>" .
+        "<li>{$this->a($this->intl->r("/forums"), $this->intl->t("Forums"), [ "class" => "ico ico-discussion" ])}</li>" .
         "<li>{$this->a($this->intl->r("/users"), $this->intl->t("Users"), [ "class" => "ico ico-person" ])}</li>" .
+        "<li>{$this->a($this->intl->r("/statistics"), $this->intl->t("Statistics"), [ "class" => "ico ico-chart" ])}</li>" .
         "<li class='separator'>{$this->a($this->intl->r("/deletion-requests"), $this->intl->t("Deletion Requests"), [ "class" => "ico ico-delete" ])}</li>" .
       "</ul>"
     ;
