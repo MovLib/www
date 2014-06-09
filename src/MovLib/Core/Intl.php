@@ -272,6 +272,29 @@ final class Intl {
   }
 
   /**
+   * Format the given number as integer.
+   *
+   * @param mixed $number
+   *   The number to format.
+   * @param string $locale [optional]
+   *   Use different locale to format this number.
+   * @return string
+   *   The formatted integer number.
+   */
+  public function formatInteger($number, $locale = null) {
+    static $fmts = [];
+    if (!$locale) {
+      $locale = $this->locale;
+    }
+    if (empty($fmts[$locale])) {
+      $fmts[$locale] = new \NumberFormatter($locale, \NumberFormatter::DECIMAL);
+      $fmts[$locale]->setAttribute(\NumberFormatter::MIN_FRACTION_DIGITS, 0);
+      $fmts[$locale]->setAttribute(\NumberFormatter::MAX_FRACTION_DIGITS, 0);
+    }
+    return $fmts[$locale]->format($number, \NumberFormatter::TYPE_INT64);
+  }
+
+  /**
    * Get translations from file.
    *
    * @param string $filename
