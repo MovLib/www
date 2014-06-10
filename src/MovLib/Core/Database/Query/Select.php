@@ -99,6 +99,13 @@ final class Select extends AbstractQuery {
 
 
   /**
+   * Associative array containing composition objects.
+   *
+   * @var array
+   */
+  protected $compositions = [];
+
+  /**
    * The update's conditions instantiated on demand.
    *
    * @var \MovLib\Core\Database\Query\Condition|null
@@ -158,6 +165,60 @@ final class Select extends AbstractQuery {
 
   // ------------------------------------------------------------------------------------------------------------------- Fetch Methods
 
+
+  /**
+   * Add composite object to the final fetched object(s).
+   *
+   * This method allows you to instantiate a different object from various fields from the projection and therefore
+   * create a sub object within the fetched object(s). This is something that PHP's built-in methods don't support. We
+   * know that we should follow the {@link https://en.wikipedia.org/wiki/Composition_over_inheritance Composite Reuse
+   * Principle} and this method allows us to do exactly that.
+   *
+   * You have to set the <code>"property"</code> offset in the options of the selected fields that should be exported to
+   * a composite object. Assume the following example:
+   *
+   * <ul>
+   *   <li>Your object is stored in <code>$object</code> and is an instance of <code>\Object</code>.</li>
+   *   <li>Your composite object is stored in <code>$obj->composite</code> and is an instance of <code>\Composite</code>.</li>
+   *   <li>Your select query is <code>SELECT `id`, `compositeId` FROM `table`</code>.</li>
+   * </ul>
+   *
+   * With the above lemma the final code would look like:
+   * <pre>
+   * var_dump((new Select(Database::getConnection()))
+   *   ->select("id")
+   *   ->select("compositeId", [ "property" => "composite.id" ])
+   *   ->addComposite("\\Composite")
+   *   ->from("table")
+   *    ->fetchObject("\\Object")
+   * );
+   * </pre>
+   *
+   * You resulting object will be correctly exported (above <code>var_dump()</code> output):
+   * <pre>
+   * object(Object)#2 (2) {
+   *   ["id"]=>
+   *   int(1)
+   *   ["composite"]=>
+   *   object(Composite)#3 (1) {
+   *     ["id"]=>
+   *     int(1)
+   *   }
+   * }
+   * </pre>
+   *
+   * @param string $propertyName
+   *   The name of the property in the fetched object that will contain the instantiated object.
+   * @param string $class
+   *   Canonical absolute class name of the object to instantiate.
+   * @param array $args [optional]
+   *   Additional arguments that should be passed to the constructor of <var>$class</var>.
+   * @return this
+   */
+  public function addComposite($propertyName, $class, array $args = []) {
+    $this->compositions[$propertyName] = [ $class, $args ];
+    return $this;
+  }
 
   /**
    * Fetch the first row from the result as object of <var>$class</var>.
@@ -256,10 +317,21 @@ final class Select extends AbstractQuery {
     // We instantiate the class once and simply clone this instance within the loop for each exported object.
     $instance = new $class(...$args);
 
+    // Instantiate all composition objects, if any.
+    $compositions = [];
+    foreach ($this->compositions as $property => $composite) {
+      $compositions[$property] = new $composite[0](...$composite[1]);
+    }
+
     // Start consuming the results.
     while ($stmt->fetch()) {
       // Cloning is faster than instantiating.
       $object = clone $instance;
+
+      // Export the composite objects, of course we clone again (faster).
+      foreach ($compositions as $property => $instance) {
+        $object->$property = clone $instance;
+      }
 
       // Export all fields from the projection to the new instance.
       foreach ($result as $key => $value) {
@@ -283,8 +355,16 @@ final class Select extends AbstractQuery {
         }
 
         // Finally export the value to the object. Note that we only support public properties, anything else would
-        // break encapsulation.
-        $object->{$this->fields[$key]["property"]} = $value;
+        // break encapsulation. We have to check for a dot, because dots have a special meaning in the property's name.
+        // Not only can't we export properties that contain a dot in their name, they belong to a composite object.
+        if (strpos($this->fields[$key]["property"], ".") === false) {
+          $object->{$this->fields[$key]["property"]} = $value;
+        }
+        // Composition is only supported one level deep!
+        else {
+          list($composite, $property) = explode(".", $this->fields[$key]["property"]);
+          $object->$composite->$property = $value;
+        }
       }
 
       // Last but not least add the instance to our return array.
@@ -452,7 +532,9 @@ final class Select extends AbstractQuery {
    *     simply escape the passed field's name.</li>
    *     <li><code>"name"</code> = <var>$fieldName</var></li>
    *     <li><code>"property"</code> The name of the property of the object that will be fetched, defaults to simply
-   *     camelCase the <var>$fieldName</var>.</li>
+   *     camelCase the <var>$fieldName</var>. This is mandatory if you want to fetch the field into a composite
+   *     object. The property must follow the JavaScript object notation to accomplish the correct export of the
+   *     fetched field, e.g. <code>"composite.id"</code> will be exported to <code>$yourObject->composite->id</code></li>
    *   </ul>
    * @return this
    */
