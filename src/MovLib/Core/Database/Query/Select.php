@@ -155,6 +155,10 @@ final class Select extends AbstractQuery {
     return json_decode($json, true);
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Fetch Methods
+
+
   /**
    * Fetch the first row from the result as object of <var>$class</var>.
    *
@@ -291,6 +295,10 @@ final class Select extends AbstractQuery {
     return $objects;
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Table Methods
+
+
   /**
    * Set the table to select from.
    *
@@ -307,7 +315,75 @@ final class Select extends AbstractQuery {
   }
 
   /**
+   * Add join clause to query.
+   *
+   * @param string $tableName
+   *   The table's name to join with.
+   * @param string $alias [optional]
+   *   The alias for the joined table, defaults to <code>NULL</code> (no alias).
+   * @param string $type [optional]
+   *   The join type, one of <code>"INNER "</code>, <code>"LEFT "</code>, <code>"RIGHT "</code> and defaults to
+   *   <code>NULL</code>. You should use the provided inner, left, and right join method of this class instead of
+   *   passing the third parameter.
+   * @return this
+   */
+  public function join($tableName, $alias = null, $type = null) {
+    $this->joins[] = [
+      "alias" => $alias,
+      "name"  => $tableName,
+      "join"  => " {$type}JOIN {$this->getTable($tableName, $alias)}",
+    ];
+    return $this;
+  }
+
+  /**
+   * Inner join with the given table.
+   *
+   * @param string $tableName
+   *   The table's name to join with.
+   * @param string $alias [optional]
+   *   The alias for the joined table, defaults to <code>NULL</code> (no alias).
+   * @return this
+   */
+  public function innerJoin($tableName, $alias = null) {
+    return $this->join($tableName, $alias, "INNER ");
+  }
+
+  /**
+   * Left join with the given table.
+   *
+   * @param string $tableName
+   *   The table's name to join with.
+   * @param string $alias [optional]
+   *   The alias for the joined table, defaults to <code>NULL</code> (no alias).
+   * @return this
+   */
+  public function leftJoin($tableName, $alias = null) {
+    return $this->join($tableName, $alias, "LEFT ");
+  }
+
+  /**
+   * Right join with the given table.
+   *
+   * @param string $tableName
+   *   The table's name to join with.
+   * @param string $alias [optional]
+   *   The alias for the joined table, defaults to <code>NULL</code> (no alias).
+   * @return this
+   */
+  public function rightJoin($tableName, $alias = null) {
+    return $this->join($tableName, $alias, "RIGHT ");
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Special Select Clause Methods
+
+
+  /**
    * Limit the result from the query.
+   *
+   * @todo We have to move this to the conditions object, otherwise it's not possible for e.g. the pagination to add
+   *       limit and offset.
    *
    * @param integer $rowCount
    *   The desired row count. <b>NOTE:</b> If you simply want to jump over the first result but get all the other
@@ -321,6 +397,10 @@ final class Select extends AbstractQuery {
     $offset && ($this->limit .= " OFFSET {$offset}");
     return $this;
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Projection Methods
+
 
   /**
    * Remove a previously selected field from the projection.
@@ -506,8 +586,18 @@ final class Select extends AbstractQuery {
   // ------------------------------------------------------------------------------------------------------------------- Condition Methods
 
 
+  /**
+   * Set conditions on select query.
+   *
+   * <b>NOTE</b><br>
+   * This will overwrite any previously set conditions of this query.
+   *
+   * @param \MovLib\Core\Database\Query\Condition $conditions
+   *   The conditions to set.
+   * @return this
+   */
   public function setConditions(\MovLib\Core\Database\Query\Condition $conditions) {
-    // @todo Implement
+    $this->conditions = $conditions;
     return $this;
   }
 
