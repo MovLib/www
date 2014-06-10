@@ -220,23 +220,29 @@ final class Select extends AbstractQuery {
    * @return this
    */
   public function addComposite($propertyName, $class, array $args = []) {
-    $this->compositions[$propertyName] = [ $class, $args ];
+    $reflector = new \ReflectionClass($class);
+    $this->compositions[$propertyName] = (object) [ // \MovLib\Stub\Core\Database\Query\Composite
+      "args"        => $args,
+      "constructor" => $reflector->getConstructor(),
+      "instance"    => $reflector->newInstanceWithoutConstructor(),
+      "reflector"   => $reflector,
+    ];
     return $this;
   }
 
   /**
    * Fetch the results from the query.
    *
-   * @param mixed $instance
-   *   The object's instance to export the results to. This instance only acts as template if <var>$clone</var> is set
-   *   to <code>TRUE</code> (default).
+   * @param mixed $object
+   *   The object to export the results to. This instance only acts as template if <var>$clone</var> is set to
+   *   <code>TRUE</code>.
    * @param boolean $clone
    *   Whether to clone the given instance for each result row or not.
    * @return array
    *   An array containing as many objects as the query returned results.
    * @throws \mysqli_sql_exception
    */
-  protected function fetch($instance, $clone) {
+  protected function fetch($object, \ReflectionMethod $constructor = null, array $args = []) {
     // First thing is of course preparation and execution.
     $stmt = $this->connection->prepare($this);
 
@@ -269,20 +275,20 @@ final class Select extends AbstractQuery {
     // We'll use this variable to collect all the objects.
     $objects = [];
 
-    // Instantiate all composition objects, if any.
-    $compositions = [];
-    foreach ($this->compositions as $property => $composite) {
-      $compositions[$property] = new $composite[0](...$composite[1]);
-    }
-
     // Start consuming the results.
     while ($stmt->fetch()) {
-      // Cloning is faster than instantiating, but only clone if it was requested.
-      $object = $clone ? clone $instance : $instance;
+      // Cloning is faster than instantiating, but only clone if we have a constructor to call afterwards.
+      //
+      // @todo Does really every object have a constructor that we should clone? Note that the getConstructor() method
+      //       will return NULL in case the class has none and we wouldn't clone at this point, thus overwriting the
+      //       previously exported object because we'd be working with a simple reference. I couldn't find any class of
+      //       ours that doesn't have a constructor and I keep it like this for now.
+      $instance = $constructor ? clone $object : $object;
 
-      // Export the composite objects, of course we clone again (faster).
-      foreach ($compositions as $property => $instance) {
-        $object->$property = clone $instance;
+      // We have to create clones of each composite object for our actual instance.
+      /* @var $composite \MovLib\Stub\Core\Database\Query\Composite */
+      foreach ($this->compositions as $compositeProperty => $composite) {
+        $instance->$compositeProperty = clone $composite->instance;
       }
 
       // Export all fields from the projection to the new instance.
@@ -308,16 +314,25 @@ final class Select extends AbstractQuery {
 
         // Export to composite object if desirable, only works one level deep.
         if ($this->fields[$key]["property"] === (array) $this->fields[$key]["property"]) {
-          $object->{$this->fields[$key]["property"][0]}->{$this->fields[$key]["property"][1]} = $value;
+          $instance->{$this->fields[$key]["property"][0]}->{$this->fields[$key]["property"][1]} = $value;
         }
         // If not export to the property of the object.
         else {
-          $object->{$this->fields[$key]["property"]} = $value;
+          $instance->{$this->fields[$key]["property"]} = $value;
         }
       }
 
-      // Last but not least add the instance to our return array.
-      $objects[] = $object;
+      // Invoke the objects constructor after exporting all values.
+      $constructor && $constructor->invokeArgs($instance, $args);
+
+      // Same is true for all our composite objects.
+      /* @var $composite \MovLib\Stub\Core\Database\Query\Composite */
+      foreach ($this->compositions as $compositeProperty => $composite) {
+        $composite->constructor->invokeArgs($instance->$compositeProperty, $composite->args);
+      }
+
+      // Finally export the instance and we're done.
+      $objects[] = $instance;
     }
     $stmt->close();
 
@@ -345,7 +360,7 @@ final class Select extends AbstractQuery {
 
     // The code to fetch an object isn't trivial, therefore it's better to keep it in a single place and life with the
     // overhead of the additional method call.
-    $objects = $this->fetch($object, false);
+    $objects = $this->fetch($object);
 
     // Check if we got our desired object with the fields exported to it. Note that it doesn't matter that we already
     // had an instance. The fetch method iterates over the result and only adds the object back to the returned array
@@ -377,7 +392,11 @@ final class Select extends AbstractQuery {
    *   If the select query returned no results.
    */
   public function fetchObject($class, array $args = []) {
-    return $this->fetchInto(new $class(...$args));
+    $reflector   = new \ReflectionClass($class);
+    $constructor = $reflector->getConstructor();
+    $object      = $this->fetchInto($reflector->newInstanceWithoutConstructor());
+    $constructor && $constructor->invokeArgs($object, $args);
+    return $object;
   }
 
   /**
@@ -389,7 +408,6 @@ final class Select extends AbstractQuery {
    *
    * <ol>
    *   <li>Only public properties will be exported to class scope.</li>
-   *   <li>The constructor is called before the properties are exported.</li>
    *   <li>Primitives are always automatically exported in their correct type.</li>
    *   <li>Some objects are automatically instantiated based on the type of a field.</li>
    *   <li>If a class or callback was defined while a field was added, that is used and overwrites any of the internal
@@ -406,7 +424,8 @@ final class Select extends AbstractQuery {
    * @throws \mysqli_sql_exception
    */
   public function fetchObjects($class, array $args = []) {
-    return $this->fetch(new $class(...$args), true);
+    $reflector = new \ReflectionClass($class);
+    return $this->fetch($reflector->newInstanceWithoutConstructor(), $reflector->getConstructor(), $args);
   }
 
 
@@ -764,6 +783,8 @@ final class Select extends AbstractQuery {
    *   The sanitized field name for use as property name.
    */
   protected function sanitizePropertyName($fieldName) {
+    static $dot = ".", $underscore = "_", $space = " ";
+
     // Might be a field name for a composite object, we need to sanitize both in this case.
     if ($fieldName === (array) $fieldName) {
       $fieldName[0] = $this->sanitizePropertyName($fieldName[0]);
@@ -771,13 +792,18 @@ final class Select extends AbstractQuery {
       return $fieldName;
     }
 
+    // The field name may contain an alias, which we have to remove for the property.
+    if (strpos($fieldName, $dot) !== false) {
+      $fieldName = substr($fieldName, strrpos($fieldName, $dot) + 1);
+    }
+
     // Only start below function call chain if we actually need to.
-    if (strpos($fieldName, "_") === false) {
+    if (strpos($fieldName, $underscore) === false) {
       return $fieldName;
     }
 
     // Replace underscore with space for ucword(), lowercase the first character again, remove spaces and we're done.
-    return str_replace(" ", "", lcfirst(ucwords(strtr($fieldName, "_", " "))));
+    return str_replace($space, "", lcfirst(ucwords(strtr($fieldName, $underscore, $space))));
   }
 
 }

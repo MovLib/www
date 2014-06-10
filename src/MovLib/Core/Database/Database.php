@@ -71,6 +71,11 @@ abstract class Database {
     // Connecting to the database may fail for various reasons, most common is a closed socket with persistent
     // connections. The database may have restarted or we've reached a timeout. Doesn't matter, we'll try to connect
     // again.
+    //
+    // @codeCoverageIgnoreStart
+    //
+    // We can't easily generate this kind of exception without being root and restarting or stoping the database. There-
+    // fore we simply ignore the following code.
     catch (\ErrorException $e) {
       // We have to kill any possibly still active thread before attempting to connect again.
       if (isset(self::$connections[$database]->thread_id)) {
@@ -80,6 +85,7 @@ abstract class Database {
       // Try again once, if this doesn't solve the issue let the exception fly.
       self::$connections[$database] = new Connection($database);
     }
+    // @codeCoverageIgnoreEnd
 
     return self::$connections[$database];
   }
