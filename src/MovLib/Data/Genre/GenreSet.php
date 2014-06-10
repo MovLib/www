@@ -68,6 +68,25 @@ final class GenreSet extends \MovLib\Data\AbstractEntitySet {
   /**
    * {@inheritdoc}
    */
+  protected function doLoad(\MovLib\Core\Database\Query\Select $select) {
+    return $select
+      ->select("id")
+      ->select("changed")
+      ->select("created")
+      ->select("deleted")
+      ->selectIfNull(
+        "name",
+        "COLUMN_GET(`dyn_names`, '{$this->intl->languageCode}' AS CHAR(255))",
+        "COLUMN_GET(`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR(255))"
+      )
+      ->select("count_movies")
+      ->select("count_series")
+    ;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function getEntitiesQuery($where = null, $orderBy = null) {
     return <<<SQL
 SELECT
