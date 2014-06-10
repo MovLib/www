@@ -81,12 +81,15 @@ abstract class AbstractBase {
    * This method will clean the field name and make it save for inclusion in any SQL query. It will also take care of
    * the correct escaping of table name or alias usage.
    *
-   * @param string $name
+   * @param array|string $name
    *   The name of the field, with or without table name / alias.
    * @return string
    *   The sanitized field name.
    */
   protected function sanitizeFieldName($name) {
+    if ($name === (array) $name) {
+      $name = "{$name[0]}_{$name[1]}";
+    }
     if (strpos($name, ".") !== false) {
       $name = str_replace(".", "`.`", $name);
     }
@@ -99,12 +102,15 @@ abstract class AbstractBase {
    * This method will clean the dynamic field name and prefix it with the <code>"dyn_"</code> string that every dynamic
    * column has in our architecture. It will also take care of the correct escaping of table name or alias usage.
    *
-   * @param string $name
+   * @param array|string $name
    *   The name of the dynamic field, with or without table name / alias.
    * @return string
    *   The sanitized dynamic field name prefixed with <code>"dyn_"</code>.
    */
   protected function sanitizeDynamicFieldName($name) {
+    if ($name === (array) $name) {
+      $name = "{$name[0]}_{$name[1]}";
+    }
     if (strpos($name, ".") === false) {
       $name = "dyn_{$name}";
     }

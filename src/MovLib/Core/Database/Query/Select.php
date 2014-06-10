@@ -137,7 +137,8 @@ final class Select extends AbstractQuery {
     $fields = null;
     foreach ($this->fields as $projected) {
       $fields && ($fields .= ",");
-      $fields .= $projected["field"];
+      $fields .= $projected["expression"];
+      isset($projected["as"]) && ($fields .= " AS `{$projected["as"]}`");
     }
     return "SELECT {$fields} FROM {$this->table}{$this->conditions}{$this->limit}";
   }
@@ -174,8 +175,9 @@ final class Select extends AbstractQuery {
    * know that we should follow the {@link https://en.wikipedia.org/wiki/Composition_over_inheritance Composite Reuse
    * Principle} and this method allows us to do exactly that.
    *
-   * You have to set the <code>"property"</code> offset in the options of the selected fields that should be exported to
-   * a composite object. Assume the following example:
+   * You have to pass the field's name as array to select a field that should be exported to a composite object. The
+   * first offset must match the property name of the composite object in your class and the second offset the name of
+   * the property in the composite class. Have a look at the following example:
    *
    * <ul>
    *   <li>Your object is stored in <code>$object</code> and is an instance of <code>\Object</code>.</li>
@@ -187,10 +189,10 @@ final class Select extends AbstractQuery {
    * <pre>
    * var_dump((new Select(Database::getConnection()))
    *   ->select("id")
-   *   ->select("compositeId", [ "property" => "composite.id" ])
-   *   ->addComposite("\\Composite")
+   *   ->addComposite("composite", "\\Composite")
+   *   ->select([ "composite", "id" ])
    *   ->from("table")
-   *    ->fetchObject("\\Object")
+   *   ->fetchObject("\\Object")
    * );
    * </pre>
    *
@@ -206,6 +208,9 @@ final class Select extends AbstractQuery {
    *   }
    * }
    * </pre>
+   *
+   * On a final side note, it doesn't matter in which order you call any of the methods. The complete objects is built
+   * in a fashion that you can call any method at any time.
    *
    * @param string $propertyName
    *   The name of the property in the fetched object that will contain the instantiated object.
@@ -354,16 +359,13 @@ final class Select extends AbstractQuery {
           $value = new self::$dataTypes[$fieldInfo[$key]->type]($value);
         }
 
-        // Finally export the value to the object. Note that we only support public properties, anything else would
-        // break encapsulation. We have to check for a dot, because dots have a special meaning in the property's name.
-        // Not only can't we export properties that contain a dot in their name, they belong to a composite object.
-        if (strpos($this->fields[$key]["property"], ".") === false) {
-          $object->{$this->fields[$key]["property"]} = $value;
+        // Export to composite object if desirable, only works one level deep.
+        if ($this->fields[$key]["property"] === (array) $this->fields[$key]["property"]) {
+          $object->{$this->fields[$key]["property"][0]}->{$this->fields[$key]["property"][1]} = $value;
         }
-        // Composition is only supported one level deep!
+        // If not export to the property of the object.
         else {
-          list($composite, $property) = explode(".", $this->fields[$key]["property"]);
-          $object->$composite->$property = $value;
+          $object->{$this->fields[$key]["property"]} = $value;
         }
       }
 
@@ -502,7 +504,7 @@ final class Select extends AbstractQuery {
    * Remove a previously selected field from the projection by its name.
    *
    * @see Select::removeField()
-   * @param string $fieldName
+   * @param array|string $fieldName
    *   The name of the field to remove.
    * @return this
    */
@@ -519,30 +521,31 @@ final class Select extends AbstractQuery {
   /**
    * Select field from result.
    *
-   * @param string $fieldName
-   *   The name of the field to select, including the alias if applicable.
+   * @param array|string $fieldName
+   *   The name of the field to select, including the alias if applicable. The field's name must be an array if it's for
+   *   a composite object. {@see Select::addComposite()} for an in-depth discussion.
    * @param array $options [optional]
    *   Additional options for the selected field, possible options are:
    *   <ul>
+   *     <li><code>"as"</code> An alias for the selected field, usually not necessary because this class performs and
+   *     internal matching based on the order.</li>
    *     <li><code>"callback"</code> A callable that retrieves the selected field's value as first argument and that has
    *     to return the value.</li>
    *     <li><code>"class"</code> Canonical absolute class name of the class that should be instantiated with the value
    *     of the selected field as first argument. The resulting object will be the new value.</li>
-   *     <li><code>"field"</code> This is the string that will be included in the actual query itself, default is to
-   *     simply escape the passed field's name.</li>
+   *     <li><code>"expression"</code> This is the string that will be included in the actual query itself, default is
+   *     to simply escape the passed field's name.</li>
    *     <li><code>"name"</code> = <var>$fieldName</var></li>
    *     <li><code>"property"</code> The name of the property of the object that will be fetched, defaults to simply
-   *     camelCase the <var>$fieldName</var>. This is mandatory if you want to fetch the field into a composite
-   *     object. The property must follow the JavaScript object notation to accomplish the correct export of the
-   *     fetched field, e.g. <code>"composite.id"</code> will be exported to <code>$yourObject->composite->id</code></li>
+   *     camelCase the <var>$fieldName</var>.</li>
    *   </ul>
    * @return this
    */
   public function select($fieldName, array $options = []) {
     $this->fields[] = $options + [
-      "field"    => $this->sanitizeFieldName($fieldName),
-      "name"     => $fieldName,
-      "property" => String::camelCase($fieldName),
+      "expression" => $this->sanitizeFieldName($fieldName),
+      "name"       => $fieldName,
+      "property"   => $this->sanitizePropertyName($fieldName),
     ];
     return $this;
   }
@@ -550,8 +553,10 @@ final class Select extends AbstractQuery {
   /**
    * Select dynamic column field from result.
    *
-   * @param string $fieldName
-   *   The dynamic column's name, without the <code>"dyn_"</code> prefix.
+   * @param array|string $fieldName
+   *   The name of the field to select, including the alias if applicable and without the <code>"dyn_"</code> prefix.
+   *   The field's name must be an array if it's for a composite object. {@see Select::addComposite()} for an in-depth
+   *   discussion.
    * @param string $key
    *   The key of the dynamic column to select.
    * @param string $dataType [optional]
@@ -565,7 +570,7 @@ final class Select extends AbstractQuery {
    *   An overview of all available data types for dynamic columns is available at {@link https://mariadb.com/kb/en/dynamic-columns/#datatypes}.
    * @param array $options [optional]
    *   Additional options for the selected field, {@see Select::select()} for an in-depth discussion. Note that the
-   *   <code>"field"</code> offset is handled differently by this method and shouldn't be overwritten.
+   *   <code>"expression"</code> offset is handled differently by this method and shouldn't be overwritten.
    * @return this
    */
   public function selectDynamic($fieldName, $key, $dataType = "CHAR(255)", array $options = []) {
@@ -574,9 +579,9 @@ final class Select extends AbstractQuery {
     $index = count($this->fields);
 
     $this->fields[$index] = $options + [
-      "field"    => "COLUMN_GET({$this->sanitizeDynamicFieldName($fieldName)}, ? AS {$dataType})",
-      "name"     => $fieldName,
-      "property" => String::camelCase($fieldName),
+      "expression" => "COLUMN_GET({$this->sanitizeDynamicFieldName($fieldName)}, ? AS {$dataType})",
+      "name"       => $fieldName,
+      "property"   => $this->sanitizePropertyName($fieldName),
     ];
 
     // A dynamic column key can only be a string or an integer, this check is therefore more than enough.
@@ -592,12 +597,14 @@ final class Select extends AbstractQuery {
    * <b>NOTE</b><br>
    * The returned JSON string is automatically decoded with the {@see Select::dynamicDecode()} method.
    *
-   * @param string $fieldName
-   *   The dynamic column's name, without the <code>"dyn_"</code> prefix.
+   * @param array|string $fieldName
+   *   The name of the field to select, including the alias if applicable and without the <code>"dyn_"</code> prefix.
+   *   The field's name must be an array if it's for a composite object. {@see Select::addComposite()} for an in-depth
+   *   discussion.
    * @param array $options [optional]
    *   Additional options for the selected field, {@see Select::select()} for an in-depth discussion. Note that the
-   *   <code>"field"</code> offset is handled differently by this method and shouldn't be overwritten. Also note that
-   *   the <code>"callback"</code> offset will be set to decode the JSON string and that the <code>"class"</code>
+   *   <code>"expression"</code> offset is handled differently by this method and shouldn't be overwritten. Also note
+   *   that the <code>"callback"</code> offset will be set to decode the JSON string and that the <code>"class"</code>
    *   offset always overwrites the <code>"callback"</code> offset. This means that you <code>"class"</code> will get
    *   the JSON string passed as first argument, not the resulting associative array that the callback would produce
    *   otherwise.
@@ -605,10 +612,10 @@ final class Select extends AbstractQuery {
    */
   public function selectDynamicJSON($fieldName, array $options = []) {
     $this->fields[] = $options + [
-      "callback" => [ $this, "dynamicDecode" ],
-      "field"    => "COLUMN_JSON({$this->sanitizeDynamicFieldName($fieldName)})",
-      "name"     => $fieldName,
-      "property" => String::camelCase($fieldName),
+      "callback"   => [ $this, "dynamicDecode" ],
+      "expression" => "COLUMN_JSON({$this->sanitizeDynamicFieldName($fieldName)})",
+      "name"       => $fieldName,
+      "property"   => $this->sanitizePropertyName($fieldName),
     ];
     return $this;
   }
@@ -619,8 +626,9 @@ final class Select extends AbstractQuery {
    * <b>IMPORTANT NOTE</b><br>
    * You have to take care of proper escaping of all values all by yourself if you use this method!
    *
-   * @param string $fieldName
-   *   The name of the field to select.
+   * @param array|string $fieldName
+   *   The name of the field to select, including the alias if applicable. The field's name must be an array if it's for
+   *   a composite object. {@see Select::addComposite()} for an in-depth discussion.
    * @param string $expression
    *   The custom expression that should be used to select the field. Again, it's important that you take care of proper
    *   escaping of all values within the expression. This includes proper escaping of field names etc.!
@@ -630,9 +638,9 @@ final class Select extends AbstractQuery {
    */
   public function selectExpression($fieldName, $expression, array $options = []) {
     $this->fields[] = $options + [
-      "field"    => $expression,
-      "name"     => $fieldName,
-      "property" => String::camelCase($fieldName),
+      "expression" => $expression,
+      "name"       => $fieldName,
+      "property"   => $this->sanitizePropertyName($fieldName),
     ];
     return $this;
   }
@@ -643,23 +651,24 @@ final class Select extends AbstractQuery {
    * <b>IMPORTANT NOTE</b><br>
    * You have to take care of proper escaping of all values all by yourself if you use this method!
    *
-   * @param string $fieldName
-   *   The name of the field to select.
+   * @param array|string $fieldName
+   *   The name of the field to select, including the alias if applicable. The field's name must be an array if it's for
+   *   a composite object. {@see Select::addComposite()} for an in-depth discussion.
    * @param string $expression1
    *   The first expression to select the field, this is used as result if it's not <code>NULL</code>.
    * @param string $expression2
    *   The second expression to select the field in case <var>$expression1</var> was <code>NULL</code>.
    * @param array $options [optional]
    *   Additional options for the selected field, {@see Select::select()} for an in-depth discussion. Note that the
-   *   <code>"field"</code> offset is handled differently by this method by surrounding <var>$expression1</var> and
+   *   <code>"expression"</code> offset is handled differently by this method by surrounding <var>$expression1</var> and
    *   <var>$expression2</var> with the desired <code>IFNULL()</code> function.
    * @return this
    */
   public function selectIfNull($fieldName, $expression1, $expression2, array $options = []) {
     $this->fields[] = $options + [
-      "field"    => "IFNULL({$expression1}, {$expression2})",
-      "name"     => $fieldName,
-      "property" => String::camelCase($fieldName),
+      "expression" => "IFNULL({$expression1}, {$expression2})",
+      "name"       => $fieldName,
+      "property"   => $this->sanitizePropertyName($fieldName),
     ];
     return $this;
   }
@@ -704,6 +713,39 @@ final class Select extends AbstractQuery {
     }
     $this->conditions->condition($fieldName, $value, $operator, $conjunction);
     return $this;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Helper Methods
+
+
+  /**
+   * Sanitize a database field name to use as property name.
+   *
+   * <b>NOTE</b><br>
+   * This method is <i>not</i> binary safe because field and property names shouldn't contain any multibyte strings. If
+   * you need to camel case in a binary safe fashion use {@see \MovLib\Component\String::camelCase()}.
+   *
+   * @param array|string $fieldName
+   *   The field's name to sanitize.
+   * @return string
+   *   The sanitized field name for use as property name.
+   */
+  protected function sanitizePropertyName($fieldName) {
+    // Might be a field name for a composite object, we need to sanitize both in this case.
+    if ($fieldName === (array) $fieldName) {
+      $fieldName[0] = $this->sanitizePropertyName($fieldName[0]);
+      $fieldName[1] = $this->sanitizePropertyName($fieldName[1]);
+      return $fieldName;
+    }
+
+    // Only start below function call chain if we actually need to.
+    if (strpos($fieldName, "_") === false) {
+      return $fieldName;
+    }
+
+    // Replace underscore with space for ucword(), lowercase the first character again, remove spaces and we're done.
+    return str_replace(" ", "", lcfirst(ucwords(strtr($fieldName, "_", " "))));
   }
 
 }
