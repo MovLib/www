@@ -96,7 +96,7 @@ final class Condition extends AbstractBase {
   public function condition($fieldName, $value, $operator, $conjunction) {
     $placeholder = null;
     if (is_array($value)) {
-      !$operator && ($operator = "IN");
+      $operator || ($operator = "IN");
       foreach ($value as $v) {
         $placeholder && ($placeholder .= ", ");
         $placeholder .= $this->getPlaceholder($v);
@@ -104,7 +104,7 @@ final class Condition extends AbstractBase {
       $placeholder = "({$placeholder})";
     }
     else {
-      !$operator && ($operator = "=");
+      $operator || ($operator = "=");
       $placeholder .= $this->getPlaceholder($value);
     }
     $this->conditions .= $this->conditions ? " {$conjunction} " : " WHERE ";

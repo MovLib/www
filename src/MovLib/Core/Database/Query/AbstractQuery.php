@@ -128,9 +128,7 @@ abstract class AbstractQuery extends AbstractBase {
    */
   final protected function getTable($name, $alias = null) {
     $table = "`{$name}`";
-    if ($alias) {
-      $table .= " AS `{$alias}`";
-    }
+    $alias && ($table .= " AS `{$alias}`");
     return $table;
   }
 

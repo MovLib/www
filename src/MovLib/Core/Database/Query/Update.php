@@ -48,7 +48,7 @@ final class Update extends AbstractQuery {
   /**
    * The update's conditions instantiated on demand.
    *
-   * @var \MovLib\Core\Database\Condition|null
+   * @var \MovLib\Core\Database\Query\Condition|null
    */
   protected $conditions;
 
@@ -281,9 +281,9 @@ final class Update extends AbstractQuery {
    * @param mixed $value
    *   The value the field should have.
    * @param string $operator [optional]
-   *   The operator that should be used to compare the field's value against the given value. If no operator is passed
-   *   (<code>NULL</code> default) <code>"AND"</code> is used if the value is atomic and <code>"IN"</code> is used if
-   *   the value is an array.
+   *   The operator that should be used to compare the field's value against the given <var>$value</var>. If no
+   *   operator is passed (<code>NULL</code> default) <code>"="</code> is used and <code>"IN"</code> if <var>$value</var>
+   *   is an array.
    * @param string $conjunction [optional]
    *   The conjunction that should be used for this condition, defaults to <code>"AND"</code>.
    * @return this
