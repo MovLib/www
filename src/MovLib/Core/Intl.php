@@ -532,7 +532,7 @@ final class Intl {
         }
       }
 
-      if ($args === null) {
+      if (empty($args)) {
         return self::$translations[$locale][$context][$pattern];
       }
       return \MessageFormatter::formatMessage($locale, self::$translations[$locale][$context][$pattern], (array) $args);
