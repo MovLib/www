@@ -17,7 +17,6 @@
  */
 namespace MovLib\Core\Database\Query;
 
-use \MovLib\Component\String;
 use \MovLib\Core\Database\Query\Condition;
 use \MovLib\Exception\ClientException\NotFoundException;
 
@@ -226,67 +225,18 @@ final class Select extends AbstractQuery {
   }
 
   /**
-   * Fetch the first row from the result as object of <var>$class</var>.
+   * Fetch the results from the query.
    *
-   * <b>NOTE</b><br>
-   * This method automatically adds a <code>"LIMIT 1"</code> clause to the query, overwriting any previously set limits.
-   *
-   * @param string $class
-   *   Canonical absolute class name of the objects that should be fetched for each row.
-   * @param array $args [optional]
-   *   Additional arguments that should be passed to the constructor of <var>$class</var>, defaults to an empty array.
-   * @return mixed
-   *   The
-   * @throws \mysqli_sql_exception
-   * @throws \MovLib\Exception\ClientException\NotFoundException
-   *   If the select query returned no results.
-   */
-  public function fetchObject($class, array $args = []) {
-    // We were asked to fetch a single object, let's help the query optimizer by adding a limit 1 clause and possibly
-    // speed things up a little bit.
-    $this->limit(1);
-
-    // The code to fetch an object isn't trivial, therefore it's better to keep it in a single place and life with the
-    // overhead of the additional method call at this point.
-    $objects = $this->fetchObjects($class, $args);
-
-    // Check if we got our desired object and return it if we did.
-    if ($objects[0]) {
-      return $objects[0];
-    }
-
-    // No need for the caller to check the returned value, directly throw the desired not found exception. This is the
-    // exception callers want in 99% of all cases. Note that this is very different to the fetch objects method of our
-    // class which silently returns an empty array.
-    throw new NotFoundException("Couldn't find " . $class::name . " with the given conditions.");
-  }
-
-  /**
-   * Fetch all rows from the result as objects of <var>$class</var>.
-   *
-   * <b>NOTE</b><br>
-   * This method works similar to PHP's built-in and very powerful {@see \mysqli_result::fetch_object()} method, but
-   * there are a few differences:
-   *
-   * <ol>
-   *   <li>Only public properties will be exported to class scope.</li>
-   *   <li>The constructor is called before the properties are exported.</li>
-   *   <li>Primitives are always automatically exported in their correct type.</li>
-   *   <li>Some objects are automatically instantiated based on the type of a field.</li>
-   *   <li>If a class or callback was defined while a field was added, that is used and overwrites any of the internal
-   *   smart guesses that were explained in point 3 and 4.</li>
-   * </ol>
-   *
-   * @param string $class
-   *   Canonical absolute class name of the objects that should be fetched for each row.
-   * @param array $args [optional]
-   *   Additional arguments that should be passed to the constructor of <var>$class</var>, defaults to an empty array.
+   * @param mixed $instance
+   *   The object's instance to export the results to. This instance only acts as template if <var>$clone</var> is set
+   *   to <code>TRUE</code> (default).
+   * @param boolean $clone
+   *   Whether to clone the given instance for each result row or not.
    * @return array
-   *   All rows from the result as objects of <var>$class</var>, an empty array is returned if the query returned no
-   *   results.
+   *   An array containing as many objects as the query returned results.
    * @throws \mysqli_sql_exception
    */
-  public function fetchObjects($class, array $args = []) {
+  protected function fetch($instance, $clone) {
     // First thing is of course preparation and execution.
     $stmt = $this->connection->prepare($this);
 
@@ -319,9 +269,6 @@ final class Select extends AbstractQuery {
     // We'll use this variable to collect all the objects.
     $objects = [];
 
-    // We instantiate the class once and simply clone this instance within the loop for each exported object.
-    $instance = new $class(...$args);
-
     // Instantiate all composition objects, if any.
     $compositions = [];
     foreach ($this->compositions as $property => $composite) {
@@ -330,8 +277,8 @@ final class Select extends AbstractQuery {
 
     // Start consuming the results.
     while ($stmt->fetch()) {
-      // Cloning is faster than instantiating.
-      $object = clone $instance;
+      // Cloning is faster than instantiating, but only clone if it was requested.
+      $object = $clone ? clone $instance : $instance;
 
       // Export the composite objects, of course we clone again (faster).
       foreach ($compositions as $property => $instance) {
@@ -375,6 +322,91 @@ final class Select extends AbstractQuery {
     $stmt->close();
 
     return $objects;
+  }
+
+  /**
+   * Fetch the first row from the result into the given object.
+   *
+   * <b>NOTE</b><br>
+   * This method automatically adds a <code>"LIMIT 1"</code> claus to the query, overwriting any previously set limits.
+   *
+   * @param mixed $object
+   *   The object to export the fields from the query to.
+   * @return mixed
+   *   <var>$object</var> with the fields exported to.
+   * @throws \mysqli_sql_exception
+   * @throws \MovLib\Exception\ClientException\NotFoundException
+   *   If the select query returned no results.
+   */
+  public function fetchInto($object) {
+    // We were asked to fetch into a single object, let's help the query optimizer by adding a limit 1 clause and
+    // possibly speed things up a little bit.
+    $this->limit(1);
+
+    // The code to fetch an object isn't trivial, therefore it's better to keep it in a single place and life with the
+    // overhead of the additional method call.
+    $objects = $this->fetch($object, false);
+
+    // Check if we got our desired object with the fields exported to it. Note that it doesn't matter that we already
+    // had an instance. The fetch method iterates over the result and only adds the object back to the returned array
+    // if there was a single row in the result.
+    if (isset($objects[0])) {
+      return $objects[0];
+    }
+
+    // No need for the caller to check the returned value, directly throw the desired not found exception. This is the
+    // exception callers want in 99% of all cases. Note that this is very different to the fetch objects method of our
+    // class which silently returns an empty array.
+    throw new NotFoundException("Couldn't find " . $class::name . " with the given conditions.");
+  }
+
+  /**
+   * Fetch the first row from the result as object of <var>$class</var>.
+   *
+   * <b>NOTE</b><br>
+   * This method automatically adds a <code>"LIMIT 1"</code> clause to the query, overwriting any previously set limits.
+   *
+   * @param string $class
+   *   Canonical absolute class name of the objects that should be fetched for each row.
+   * @param array $args [optional]
+   *   Additional arguments that should be passed to the constructor of <var>$class</var>, defaults to an empty array.
+   * @return mixed
+   *   The
+   * @throws \mysqli_sql_exception
+   * @throws \MovLib\Exception\ClientException\NotFoundException
+   *   If the select query returned no results.
+   */
+  public function fetchObject($class, array $args = []) {
+    return $this->fetchInto(new $class(...$args));
+  }
+
+  /**
+   * Fetch all rows from the result as objects of <var>$class</var>.
+   *
+   * <b>NOTE</b><br>
+   * This method works similar to PHP's built-in and very powerful {@see \mysqli_result::fetch_object()} method, but
+   * there are a few differences:
+   *
+   * <ol>
+   *   <li>Only public properties will be exported to class scope.</li>
+   *   <li>The constructor is called before the properties are exported.</li>
+   *   <li>Primitives are always automatically exported in their correct type.</li>
+   *   <li>Some objects are automatically instantiated based on the type of a field.</li>
+   *   <li>If a class or callback was defined while a field was added, that is used and overwrites any of the internal
+   *   smart guesses that were explained in point 3 and 4.</li>
+   * </ol>
+   *
+   * @param string $class
+   *   Canonical absolute class name of the objects that should be fetched for each row.
+   * @param array $args [optional]
+   *   Additional arguments that should be passed to the constructor of <var>$class</var>, defaults to an empty array.
+   * @return array
+   *   All rows from the result as objects of <var>$class</var>, an empty array is returned if the query returned no
+   *   results.
+   * @throws \mysqli_sql_exception
+   */
+  public function fetchObjects($class, array $args = []) {
+    return $this->fetch(new $class(...$args), true);
   }
 
 
