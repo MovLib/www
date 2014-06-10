@@ -1922,6 +1922,56 @@ KEY_BLOCK_SIZE = 8;
 
 SHOW WARNINGS;
 
+-- -----------------------------------------------------
+-- Table `movlib`.`de_post`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`de_post` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`de_topic`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`de_topic` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`de_forum`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`de_forum` (
+  `id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The forum’s unique identifier.',
+  `count_posts` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The forum’s total post count.',
+  `count_topics` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The forum’s total topic count.',
+  `last_post_created` DATETIME NULL COMMENT 'The forum’s last post’s creation date and time.',
+  `last_post_id` BIGINT UNSIGNED NULL COMMENT 'The forum’s last post’s unique identifier.',
+  `last_post_username` VARCHAR(40) NULL COMMENT 'The forum’s last post’s username.',
+  `last_topic_id` BIGINT UNSIGNED NULL COMMENT 'The forum’s last topic’s unique identifier.',
+  `last_topic_title` VARCHAR(255) NULL COMMENT 'The forum’s last topic’s title.',
+  PRIMARY KEY (`id`),
+  INDEX `fk_de_forum_de_post1_idx` (`last_post_id` ASC),
+  INDEX `fk_de_forum_de_topic1_idx` (`last_topic_id` ASC),
+  CONSTRAINT `fk_de_forum_de_post1`
+    FOREIGN KEY (`last_post_id`)
+    REFERENCES `movlib`.`de_post` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_de_forum_de_topic1`
+    FOREIGN KEY (`last_topic_id`)
+    REFERENCES `movlib`.`de_topic` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains caching data for German forums. The actual forums a /* comment truncated */ /*re defined in code.*/';
+
+SHOW WARNINGS;
+
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;

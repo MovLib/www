@@ -15,9 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\Presentation\Forum;
 
 /**
- * Defines the order in which the SQL scripts are imported if all scripts are imported at once.
+ * Defines the base class for all topic index presentations.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -25,25 +26,37 @@
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
+abstract class AbstractTopic extends \MovLib\Presentation\AbstractPresenter {
 
-// @codeCoverageIgnoreStart
-return [
-  "users" => "sql",
-  "forums" => "php",
-  "places" => "sql",
-  "awards" => "sql",
-  "companies" => "sql",
-  "genres" => "sql",
-  "help_categories" => "sql",
-  "help_subcategories" => "sql",
-  "jobs" => "sql",
-  "licenses" => "sql",
-  "movies" => "sql",
-  "movies_posters" => "sql",
-  "series" => "sql",
-  "ratings" => "sql",
-  "system_pages" => "sql",
-  "revision_entities" => "sql",
-  "revisions" => "sql",
-];
-// @codeCoverageIgnoreEnd
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "AbstractTopic";
+  // @codingStandardsIgnoreEnd
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function init() {
+    ;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {
+    ;
+  }
+
+}

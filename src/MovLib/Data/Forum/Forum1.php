@@ -15,9 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\Data\Forum;
 
 /**
- * Defines the order in which the SQL scripts are imported if all scripts are imported at once.
+ * Defines the Announcements forum object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -25,25 +26,40 @@
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
+final class Forum1 implements \MovLib\Data\Forum\ForumInterface {
 
-// @codeCoverageIgnoreStart
-return [
-  "users" => "sql",
-  "forums" => "php",
-  "places" => "sql",
-  "awards" => "sql",
-  "companies" => "sql",
-  "genres" => "sql",
-  "help_categories" => "sql",
-  "help_subcategories" => "sql",
-  "jobs" => "sql",
-  "licenses" => "sql",
-  "movies" => "sql",
-  "movies_posters" => "sql",
-  "series" => "sql",
-  "ratings" => "sql",
-  "system_pages" => "sql",
-  "revision_entities" => "sql",
-  "revisions" => "sql",
-];
-// @codeCoverageIgnoreEnd
+  /**
+   * {@inheritdoc}
+   */
+  public function getCategoryId() {
+    return 1;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getDescription(\MovLib\Core\Intl $intl, $locale = null) {
+    return $intl->t(
+      "Important news around {0}our{1} website will be announced by the administrators in the {0}announcement " .
+      "forum{1}. Active users should have a look at this forum on a regular basis, because all important facts are " .
+      "posted here first.",
+      [ "<em>", "</em>", "<strong>", "</strong>" ],
+      $locale
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getRoute() {
+    return "/forum/announcements";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTitle(\MovLib\Core\Intl $intl, $locale = null) {
+    return $intl->t("Announcements", null, $locale);
+  }
+
+}

@@ -246,14 +246,17 @@ final class Select extends AbstractQuery {
     // First thing is of course preparation and execution.
     $stmt = $this->connection->prepare($this);
 
-    // Bind parameters if we have any.
+    // @todo We have to overhaul the conditions object so this mess isn't necessary!
+    $types = $values = null;
     if ($this->types && $this->values) {
       $types  = implode($this->types);
       $values = $this->values;
-      if ($this->conditions) {
-        $types .= $this->conditions->types;
-        $values = array_merge($this->values, $this->conditions->values);
-      }
+    }
+    if ($this->conditions) {
+      $types .= $this->conditions->types;
+      $values = array_merge((array) $values, $this->conditions->values);
+    }
+    if ($types && $values) {
       // @codingStandardIgnoreStart
       $stmt->bind_param($types, ...$values);
       // @codingStandardIgnoreEnd

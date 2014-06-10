@@ -17,7 +17,7 @@
  */
 
 /**
- * Defines the order in which the SQL scripts are imported if all scripts are imported at once.
+ * Generate forums seed data.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,24 +26,16 @@
  * @since 0.0.1-dev
  */
 
-// @codeCoverageIgnoreStart
-return [
-  "users" => "sql",
-  "forums" => "php",
-  "places" => "sql",
-  "awards" => "sql",
-  "companies" => "sql",
-  "genres" => "sql",
-  "help_categories" => "sql",
-  "help_subcategories" => "sql",
-  "jobs" => "sql",
-  "licenses" => "sql",
-  "movies" => "sql",
-  "movies_posters" => "sql",
-  "series" => "sql",
-  "ratings" => "sql",
-  "system_pages" => "sql",
-  "revision_entities" => "sql",
-  "revisions" => "sql",
-];
-// @codeCoverageIgnoreEnd
+// We want to insert exactly as many forums into each table as we have defined in code.
+$insert = null;
+foreach (new \RegexIterator($this->fs->getRecursiveIterator("dr://src/MovLib/Data/Forum"), "/[0-9]+\.php$/") as $fileinfo) {
+  $insert && ($insert .= ",");
+  $insert .= "()";
+}
+$insert && ($insert = "INSERT INTO `de_forum` () VALUES {$insert};");
+
+return <<<SQL
+TRUNCATE TABLE `de_forum`;
+
+{$insert}
+SQL;
