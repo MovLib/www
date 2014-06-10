@@ -258,7 +258,6 @@ final class FileSystem {
    *
    * <b>EXAMPLE</b><br>
    * <pre>
-   * global $fs;
    * foreach (new \RegexIterator($fs->getRecursiveIterator("dr://src"), "/\.php$/") as $fileinfo) {
    *   touch($fileinfo->getPathname());
    * }
