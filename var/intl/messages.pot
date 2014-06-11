@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MovLib Messages 0.0.1-dev\n"
 "Report-Msgid-Bugs-To: https://github.com/MovLib/www/issues?labels=translation\n"
-"POT-Creation-Date: 2014-06-04 12:52+0000\n"
+"POT-Creation-Date: 2014-06-11 15:42+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,30 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#: /src/MovLib/Data/Forum/Forum.php:211
+msgid "Site Discussions"
+msgstr ""
+
+#: /src/MovLib/Data/Forum/Forum.php:212
+msgid "Suggestions"
+msgstr ""
+
+#: /src/MovLib/Data/Forum/Forum.php:213
+msgid "General Discussions"
+msgstr ""
+
+#: /src/MovLib/Data/Forum/Forum.php:214
+msgid "Database Discussions"
+msgstr ""
+
+#: /src/MovLib/Data/Forum/Forum1.php:43
+msgid "Important news around {0}our{1} website will be announced by the administrators in the {2}announcement forum{3}. Active users should have a look at this forum on a regular basis, because all important facts are posted here first."
+msgstr ""
+
+#: /src/MovLib/Data/Forum/Forum1.php:62
+msgid "Announcements"
+msgstr ""
 
 #: /src/MovLib/Data/Company/Company.php:382
 msgid "{company_name} logo."
@@ -271,7 +295,7 @@ msgid "Home"
 msgstr ""
 
 #: /src/MovLib/Partial/Navigation/Breadcrumb.php:80
-#: /src/MovLib/Presentation/AbstractPresenter.php:609
+#: /src/MovLib/Presentation/AbstractPresenter.php:611
 msgid "Go back to the home page."
 msgstr ""
 
@@ -320,7 +344,7 @@ msgstr ""
 #: /src/MovLib/Presentation/Series/Edit.php:126
 #: /src/MovLib/Presentation/Help/AbstractEdit.php:109
 #: /src/MovLib/Presentation/Movie/Edit.php:114
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:111
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:110
 #: /src/MovLib/Presentation/Genre/Edit.php:104
 #: /src/MovLib/Presentation/Event/Edit.php:138
 msgid "Conflicting Changes"
@@ -331,7 +355,7 @@ msgstr ""
 #: /src/MovLib/Presentation/Series/Edit.php:128
 #: /src/MovLib/Presentation/Help/AbstractEdit.php:111
 #: /src/MovLib/Presentation/Movie/Edit.php:116
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:113
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:112
 #: /src/MovLib/Presentation/Genre/Edit.php:106
 #: /src/MovLib/Presentation/Event/Edit.php:140
 msgid "Someone else has already submitted changes before you. Copy any unsaved work in the form below and then {0}reload this page{1}."
@@ -344,70 +368,34 @@ msgstr ""
 #: /src/MovLib/Presentation/Series/Edit.php:120
 #: /src/MovLib/Presentation/Help/AbstractEdit.php:103
 #: /src/MovLib/Presentation/Movie/Edit.php:108
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:105
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:104
 #: /src/MovLib/Presentation/Genre/Edit.php:98
 #: /src/MovLib/Presentation/Event/Edit.php:132
 msgid "Validation Error"
 msgstr ""
 
-#: /src/MovLib/Partial/DateTime.php:141
-#: /src/MovLib/Partial/Time.php:123
-msgid "one second ago"
+#: /src/MovLib/Partial/DateTime.php:146
+msgid "{0,plural,=1{last year}other{# years ago}}"
 msgstr ""
 
-#: /src/MovLib/Partial/DateTime.php:141
-#: /src/MovLib/Partial/Time.php:123
-msgid "{0,number,integer} seconds ago"
+#: /src/MovLib/Partial/DateTime.php:149
+msgid "{0,plural,=1{last month}other{# months ago}}"
 msgstr ""
 
-#: /src/MovLib/Partial/DateTime.php:144
-#: /src/MovLib/Partial/Time.php:126
-msgid "a minute ago"
+#: /src/MovLib/Partial/DateTime.php:152
+msgid "{0,plural,=1{today}=2{yesterday}other{# days ago}}"
 msgstr ""
 
-#: /src/MovLib/Partial/DateTime.php:147
-#: /src/MovLib/Partial/Time.php:129
-msgid "{0,number,integer} minutes ago"
+#: /src/MovLib/Partial/DateTime.php:155
+msgid "{0,plural,=1{an hour ago}other{# hours ago}}"
 msgstr ""
 
-#: /src/MovLib/Partial/DateTime.php:150
-#: /src/MovLib/Partial/Time.php:132
-msgid "an hour ago"
+#: /src/MovLib/Partial/DateTime.php:158
+msgid "{0,plural,=1{a minute ago}other{# minutes ago}}"
 msgstr ""
 
-#: /src/MovLib/Partial/DateTime.php:153
-#: /src/MovLib/Partial/Time.php:135
-msgid "{0,number,integer} hours ago"
-msgstr ""
-
-#: /src/MovLib/Partial/DateTime.php:156
-#: /src/MovLib/Partial/Time.php:138
-msgid "yesterday"
-msgstr ""
-
-#: /src/MovLib/Partial/DateTime.php:159
-#: /src/MovLib/Partial/Time.php:141
-msgid "{0,number,integer} days ago"
-msgstr ""
-
-#: /src/MovLib/Partial/DateTime.php:163
-#: /src/MovLib/Partial/Time.php:145
-msgid "one month ago"
-msgstr ""
-
-#: /src/MovLib/Partial/DateTime.php:163
-#: /src/MovLib/Partial/Time.php:145
-msgid "{0,number,integer} months ago"
-msgstr ""
-
-#: /src/MovLib/Partial/DateTime.php:166
-#: /src/MovLib/Partial/Time.php:148
-msgid "one year ago"
-msgstr ""
-
-#: /src/MovLib/Partial/DateTime.php:166
-#: /src/MovLib/Partial/Time.php:148
-msgid "{0,number,integer} years ago"
+#: /src/MovLib/Partial/DateTime.php:161
+msgid "{0,plural,=1{one second ago}other{# seconds ago}}"
 msgstr ""
 
 #. / The "," is used to separate list items, please note the space after the comma!
@@ -871,6 +859,54 @@ msgstr ""
 msgid "born name"
 msgstr ""
 
+#: /src/MovLib/Partial/Time.php:123
+msgid "one second ago"
+msgstr ""
+
+#: /src/MovLib/Partial/Time.php:123
+msgid "{0,number,integer} seconds ago"
+msgstr ""
+
+#: /src/MovLib/Partial/Time.php:126
+msgid "a minute ago"
+msgstr ""
+
+#: /src/MovLib/Partial/Time.php:129
+msgid "{0,number,integer} minutes ago"
+msgstr ""
+
+#: /src/MovLib/Partial/Time.php:132
+msgid "an hour ago"
+msgstr ""
+
+#: /src/MovLib/Partial/Time.php:135
+msgid "{0,number,integer} hours ago"
+msgstr ""
+
+#: /src/MovLib/Partial/Time.php:138
+msgid "yesterday"
+msgstr ""
+
+#: /src/MovLib/Partial/Time.php:141
+msgid "{0,number,integer} days ago"
+msgstr ""
+
+#: /src/MovLib/Partial/Time.php:145
+msgid "one month ago"
+msgstr ""
+
+#: /src/MovLib/Partial/Time.php:145
+msgid "{0,number,integer} months ago"
+msgstr ""
+
+#: /src/MovLib/Partial/Time.php:148
+msgid "one year ago"
+msgstr ""
+
+#: /src/MovLib/Partial/Time.php:148
+msgid "{0,number,integer} years ago"
+msgstr ""
+
 #: /src/MovLib/Partial/InfoboxTrait.php:79
 msgid "Wikipedia Article"
 msgstr ""
@@ -892,7 +928,7 @@ msgstr ""
 #: /src/MovLib/Presentation/Movie/Edit.php:56
 #: /src/MovLib/Presentation/Person/AbstractBase.php:117
 #: /src/MovLib/Presentation/Person/Edit.php:56
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:66
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:65
 #: /src/MovLib/Presentation/SystemPage/SystemPageTrait.php:49
 #: /src/MovLib/Presentation/Genre/Edit.php:60
 #: /src/MovLib/Presentation/Event/Edit.php:63
@@ -1303,8 +1339,8 @@ msgstr ""
 #: /src/MovLib/Presentation/Help/AbstractEdit.php:59
 #: /src/MovLib/Presentation/Movie/Edit.php:54
 #: /src/MovLib/Presentation/Person/Edit.php:54
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:63
 #: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:64
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:65
 #: /src/MovLib/Presentation/Genre/Edit.php:60
 #: /src/MovLib/Presentation/Event/Edit.php:61
 msgid "Edit {0}"
@@ -1359,7 +1395,7 @@ msgstr ""
 #: /src/MovLib/Presentation/Help/AbstractEdit.php:84
 #: /src/MovLib/Presentation/Movie/Edit.php:89
 #: /src/MovLib/Presentation/Person/Edit.php:89
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:84
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:83
 #: /src/MovLib/Presentation/Genre/Edit.php:79
 #: /src/MovLib/Presentation/Event/Edit.php:102
 msgid "Update"
@@ -1369,7 +1405,7 @@ msgstr ""
 #: /src/MovLib/Presentation/Series/Edit.php:115
 #: /src/MovLib/Presentation/Help/AbstractEdit.php:98
 #: /src/MovLib/Presentation/Movie/Edit.php:103
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:100
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:99
 #: /src/MovLib/Presentation/Genre/Edit.php:93
 #: /src/MovLib/Presentation/Event/Edit.php:127
 msgid "Successfully Updated"
@@ -1379,7 +1415,7 @@ msgstr ""
 #: /src/MovLib/Presentation/Series/Edit.php:121
 #: /src/MovLib/Presentation/Help/AbstractEdit.php:104
 #: /src/MovLib/Presentation/Movie/Edit.php:109
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:106
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:105
 #: /src/MovLib/Presentation/Genre/Edit.php:99
 #: /src/MovLib/Presentation/Event/Edit.php:133
 msgid "Seems like you haven’t changed anything, please only submit forms with changes."
@@ -1487,14 +1523,14 @@ msgstr ""
 #: /src/MovLib/Presentation/Profile/SignIn.php:139
 #: /src/MovLib/Presentation/Profile/ResetPassword.php:148
 #: /src/MovLib/Presentation/Profile/Join.php:104
-#: /src/MovLib/Presentation/AbstractPresenter.php:592
+#: /src/MovLib/Presentation/AbstractPresenter.php:594
 msgid "Sign In"
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/SignIn.php:106
 #: /src/MovLib/Presentation/Profile/ResetPassword.php:104
 #: /src/MovLib/Presentation/Profile/Join.php:88
-#: /src/MovLib/Presentation/AbstractPresenter.php:566
+#: /src/MovLib/Presentation/AbstractPresenter.php:567
 #: /src/MovLib/Presentation/User/Index.php:58
 msgid "Users"
 msgstr ""
@@ -1563,7 +1599,7 @@ msgstr ""
 #: /src/MovLib/Presentation/Profile/EmailSettings.php:77
 #: /src/MovLib/Presentation/Profile/AccountSettings.php:69
 #: /src/MovLib/Presentation/Profile/PasswordSettings.php:81
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:59
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:58
 msgid "Please sign in again to verify the legitimacy of this request."
 msgstr ""
 
@@ -1580,7 +1616,7 @@ msgid "If you use this button all your active sessions will be terminated and yo
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/DangerZone.php:83
-#: /src/MovLib/Presentation/AbstractPresenter.php:584
+#: /src/MovLib/Presentation/AbstractPresenter.php:586
 msgid "Sign Out"
 msgstr ""
 
@@ -1881,7 +1917,7 @@ msgid "My Watchlist"
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/Join.php:86
-#: /src/MovLib/Presentation/AbstractPresenter.php:593
+#: /src/MovLib/Presentation/AbstractPresenter.php:595
 msgid "Join"
 msgstr ""
 
@@ -2002,38 +2038,38 @@ msgstr ""
 #: /src/MovLib/Presentation/Profile/AbstractProfilePresenter.php:87
 #: /src/MovLib/Presentation/Profile/AbstractProfilePresenter.php:93
 #: /src/MovLib/Presentation/Company/Show.php:75
-#: /src/MovLib/Presentation/AbstractPresenter.php:581
+#: /src/MovLib/Presentation/AbstractPresenter.php:583
 msgid "Profile"
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/AbstractProfilePresenter.php:94
-#: /src/MovLib/Presentation/AbstractPresenter.php:576
+#: /src/MovLib/Presentation/AbstractPresenter.php:578
 msgid "Messages"
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/AbstractProfilePresenter.php:95
-#: /src/MovLib/Presentation/AbstractPresenter.php:577
+#: /src/MovLib/Presentation/AbstractPresenter.php:579
 #: /src/MovLib/Presentation/User/AbstractUserPresenter.php:80
 #: /src/MovLib/Presentation/User/Collection.php:44
 msgid "Collection"
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/AbstractProfilePresenter.php:96
-#: /src/MovLib/Presentation/AbstractPresenter.php:578
+#: /src/MovLib/Presentation/AbstractPresenter.php:580
 #: /src/MovLib/Presentation/User/AbstractUserPresenter.php:81
 #: /src/MovLib/Presentation/User/Wantlist.php:44
 msgid "Wantlist"
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/AbstractProfilePresenter.php:97
-#: /src/MovLib/Presentation/AbstractPresenter.php:579
+#: /src/MovLib/Presentation/AbstractPresenter.php:581
 #: /src/MovLib/Presentation/User/AbstractUserPresenter.php:82
 #: /src/MovLib/Presentation/User/Lists.php:44
 msgid "Lists"
 msgstr ""
 
 #: /src/MovLib/Presentation/Profile/AbstractProfilePresenter.php:98
-#: /src/MovLib/Presentation/AbstractPresenter.php:580
+#: /src/MovLib/Presentation/AbstractPresenter.php:582
 msgid "Watchlist"
 msgstr ""
 
@@ -2147,6 +2183,44 @@ msgstr ""
 
 #: /src/MovLib/Presentation/Profile/PasswordSettings.php:218
 msgid "Password change successful"
+msgstr ""
+
+#: /src/MovLib/Presentation/Forum/Index.php:48
+#: /src/MovLib/Presentation/Forum/AbstractForum.php:80
+#: /src/MovLib/Presentation/AbstractPresenter.php:566
+msgid "Forums"
+msgstr ""
+
+#: /src/MovLib/Presentation/Forum/Index.php:74
+msgid "by {username} {time}"
+msgstr ""
+
+#: /src/MovLib/Presentation/Forum/Index.php:82
+msgid "No topics so far in this forum."
+msgstr ""
+
+#: /src/MovLib/Presentation/Forum/Index.php:121
+msgid "Forum"
+msgstr ""
+
+#: /src/MovLib/Presentation/Forum/Index.php:122
+msgid "Last Post"
+msgstr ""
+
+#: /src/MovLib/Presentation/Forum/Index.php:123
+msgid "Topics"
+msgstr ""
+
+#: /src/MovLib/Presentation/Forum/Index.php:124
+msgid "Posts"
+msgstr ""
+
+#: /src/MovLib/Presentation/Forum/Index.php:139
+msgid "No Forums"
+msgstr ""
+
+#: /src/MovLib/Presentation/Forum/Index.php:140
+msgid "Please create new forums with the appropriate admin command."
 msgstr ""
 
 #: /src/MovLib/Presentation/Error/InternalServerError.php:67
@@ -2785,53 +2859,58 @@ msgstr ""
 msgid "Dev Links"
 msgstr ""
 
-#: /src/MovLib/Presentation/AbstractPresenter.php:567
+#: /src/MovLib/Presentation/AbstractPresenter.php:568
+#: /src/MovLib/Presentation/Statistic/Index.php:53
+msgid "Statistics"
+msgstr ""
+
+#: /src/MovLib/Presentation/AbstractPresenter.php:569
 #: /src/MovLib/Presentation/DeletionRequest/Index.php:47
 msgid "Deletion Requests"
 msgstr ""
 
-#: /src/MovLib/Presentation/AbstractPresenter.php:582
+#: /src/MovLib/Presentation/AbstractPresenter.php:584
 msgid "Settings"
 msgstr ""
 
-#: /src/MovLib/Presentation/AbstractPresenter.php:594
+#: /src/MovLib/Presentation/AbstractPresenter.php:596
 msgid "Forgot Password"
 msgstr ""
 
-#: /src/MovLib/Presentation/AbstractPresenter.php:613
+#: /src/MovLib/Presentation/AbstractPresenter.php:615
 msgid "Explore"
 msgstr ""
 
-#: /src/MovLib/Presentation/AbstractPresenter.php:619
+#: /src/MovLib/Presentation/AbstractPresenter.php:621
 #: /src/MovLib/Presentation/Home.php:69
 msgid "Marketplace"
 msgstr ""
 
-#: /src/MovLib/Presentation/AbstractPresenter.php:625
+#: /src/MovLib/Presentation/AbstractPresenter.php:627
 msgid "Community"
 msgstr ""
 
-#: /src/MovLib/Presentation/AbstractPresenter.php:633
+#: /src/MovLib/Presentation/AbstractPresenter.php:635
 msgid "Start searching for the entered keyword."
 msgstr ""
 
-#: /src/MovLib/Presentation/AbstractPresenter.php:636
+#: /src/MovLib/Presentation/AbstractPresenter.php:638
 msgid "Enter the search term you wish to search for and hit enter."
 msgstr ""
 
-#: /src/MovLib/Presentation/AbstractPresenter.php:640
+#: /src/MovLib/Presentation/AbstractPresenter.php:642
 msgid "User Navigation"
 msgstr ""
 
-#: /src/MovLib/Presentation/AbstractPresenter.php:658
+#: /src/MovLib/Presentation/AbstractPresenter.php:660
 msgid "{page_title} — {sitename}"
 msgstr ""
 
-#: /src/MovLib/Presentation/AbstractPresenter.php:725
+#: /src/MovLib/Presentation/AbstractPresenter.php:727
 msgid "The free online movie database that anyone can edit."
 msgstr ""
 
-#: /src/MovLib/Presentation/AbstractPresenter.php:732
+#: /src/MovLib/Presentation/AbstractPresenter.php:734
 msgid "The free movie library."
 msgstr ""
 
@@ -3569,15 +3648,15 @@ msgstr ""
 msgid "Articles of Association"
 msgstr ""
 
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:53
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:52
 msgid "This page can only be changed by administrators of {sitename}."
 msgstr ""
 
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:79
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:78
 msgid "Content"
 msgstr ""
 
-#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:80
+#: /src/MovLib/Presentation/SystemPage/AbstractEdit.php:79
 msgid "Enter the system page content"
 msgstr ""
 

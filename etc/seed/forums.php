@@ -34,8 +34,25 @@ foreach (new \RegexIterator($this->fs->getRecursiveIterator("dr://src/MovLib/Dat
 }
 $insert && ($insert = "INSERT INTO `de_forum` () VALUES {$insert};");
 
+$firstPostCreated = (string) new \MovLib\Component\DateTime();
+
 return <<<SQL
 TRUNCATE TABLE `de_forum`;
+TRUNCATE TABLE `de_topic`;
+TRUNCATE TABLE `de_post`;
 
 {$insert}
+
+INSERT INTO `de_topic` (`created`, `first_post_id`, `first_post_username`, `forum_id`, `title`) VALUES
+  ('{$firstPostCreated}', 1, 'Fleshgrinder', 1, 'MovLib Open Beta');
+
+INSERT INTO `de_post` () VALUES ();
+
+UPDATE `de_forum` SET
+  `last_post_created`  = '{$firstPostCreated}',
+  `last_post_id`       = 1,
+  `last_post_username` = 'Fleshgrinder',
+  `last_topic_id`      = 1,
+  `last_topic_title`   = 'MovLib Open Beta'
+;
 SQL;

@@ -47,6 +47,7 @@ final class Index extends \MovLib\Presentation\AbstractPresenter {
   public function init() {
     $this->initPage($this->intl->t("Forums"));
     $this->initLanguageLinks("/forums");
+    $this->stylesheets[] = "forum";
   }
 
   /**
@@ -59,32 +60,21 @@ final class Index extends \MovLib\Presentation\AbstractPresenter {
 
     /* @var $forum \MovLib\Data\Forum\Forum */
     foreach ($forums as $forum) {
-      // Usually each forum has a last topic, but this might not be the case if a forum was just created and we have
-      // to honor that case, even if it's rare.
       if ($forum->lastTopic->id) {
-        // This might be the last topic because somebody replied to it. The title itself always links to the first
-        // post in the topic, but we want to add a link to the last post in case we have one. Note that the last post
-        // is automatically corrected to the last post a signed in user has read, that's why we had to pass the
-        // session to the data layer. A special table keeps track of the posts a user has read.
-        if ($forum->lastPost->id) {
-          $lastPost = "lastPost";
-        }
-        else {
-          $lastPost = null;
-        }
-
+        // Provide direct link to the last post (read by the signed in user) in the topic.
+        $lastPost = $forum->lastPost->id ? $this->a("#", ">") : null;
         $last =
-          "<h4 class='last-title para'>{$forum->lastTopic->title}</h4>{$lastPost}" .
-          "<p class='last-meta'>{$this->intl->t("by {username} {time}", [
-            "username" => "<a href='{}'>{$forum->lastPost->username}</a>",
-            "time"     => $dateTime->formatRelative($forum->lastPost->created)
-          ])}</p>"
+          "<article class='cf'>" .
+            "<h3 class='fl para'>{$forum->lastTopic->title}</h3>{$lastPost}" .
+            "<p class='fr'>{$this->intl->t("by {username} {time}", [
+              "username" => "<a href='{}'>{$forum->lastPost->username}</a>",
+              "time"     => $dateTime->formatRelative($forum->lastPost->created, $this->request->dateTime)
+            ])}</p>" .
+          "</article>"
         ;
       }
-      // Rare but possible, we're using an article in our HTML to represent the last topic, therefore we have to
-      // include some mark-up for robots and screen readers that explains that there actually isn't any content.
       else {
-        $last = "<h4 class='last-title para'>{$this->intl->t("No topics so far in this forum.")}</h4>";
+        $last = "<em>{$this->intl->t("No topics so far in this forum.")}</em>";
       }
 
       // Get the forum's category ID and check if we already created this offset in any of the previous iterations of
@@ -95,13 +85,13 @@ final class Index extends \MovLib\Presentation\AbstractPresenter {
 
       // We can simply append the rendered forum to the array offset because of the previous check.
       $renderedForums[$forum->categoryId] .=
-        "<article class='dtr'>" .
-          "<div class='dtc forum-icon'>{$forum->icon}</div>" .
-          "<h3 class='dtc forum-title para'>{$this->a($forum->route, $forum->title)}</h3>" .
-          "<article class='dtc forum-last'>{$last}</article>" .
-          "<div class='dtc forum-topics'>{$this->intl->formatInteger($forum->countTopics)}</div>" .
-          "<div class='dtc forum-posts'>{$this->intl->formatInteger($forum->countPosts)}</div>" .
-        "</article>"
+        "<tr>" .
+          "<td>{$forum->icon}</td>" .
+          "<td>{$this->a($forum->route, $forum->title)}</td>" .
+          "<td>{$last}</td>" .
+          "<td class='tar'>{$this->intl->formatInteger($forum->countTopics)}</td>" .
+          "<td class='tar'>{$this->intl->formatInteger($forum->countPosts)}</td>" .
+        "</tr>"
       ;
     }
 
@@ -112,12 +102,30 @@ final class Index extends \MovLib\Presentation\AbstractPresenter {
       // Go through all defined categories, but only render it if there is at least a single forum assigned to it.
       foreach (Forum::getCategories($this->intl) as $id => $title) {
         if (isset($renderedForums[$id])) {
-          $categories .= "<h2>{$title}</h2><div class='dt w100'>{$renderedForums[$id]}</div>";
+          $categories .=
+            "<table class='forums'>" .
+              "<caption class='h2'>{$title}</caption>" .
+              "<colgroup>" .
+                "<col class='forum-icon'>" .
+                "<col class='forum-title'>" .
+                "<col class='forum-last'>" .
+                "<col class='forum-counts'>" .
+                "<col class='forum-counts'>" .
+              "</colgroup>" .
+              "<thead><tr>" .
+                "<th colspan='2'>{$this->intl->t("Forum")}</th>" .
+                "<th>{$this->intl->t("Last Post")}</th>" .
+                "<th>{$this->intl->t("Topics")}</th>" .
+                "<th>{$this->intl->t("Posts")}</th>" .
+              "</tr></thead>" .
+              "<tbody>{$renderedForums[$id]}</tbody>" .
+            "</table>"
+          ;
         }
       }
 
       // That's it, we're finally done.
-      return "<div class='c forums'>{$categories}</div>";
+      return "<div class='c'>{$categories}</div>";
     }
 
     // This is actually only possible if something went terribly wrong or if this is a new installation.

@@ -134,7 +134,7 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractPresenter {
             "<h2 class='para'><a href='{$revision->user->route}'>{$revision->user->name}</a></h2>" .
             "<small>{$diffToCurrentVersion}</small>" .
           "</div>" .
-          "<p class='s s4 tar'>{$dateTime->formatRelative($revision->created)}{$createdInfo}</p>" .
+          "<p class='s s4 tar'>{$dateTime->formatRelative($revision->created, $this->request->dateTime)}{$createdInfo}</p>" .
         "</div></li>"
       ;
     }

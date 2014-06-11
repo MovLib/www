@@ -108,13 +108,9 @@ final class DateTime {
    *   The date and time formatted in the current locale.
    */
   public function format(\MovLib\Component\DateTime $dateTime, array $attributes = null, $dateType = \IntlDateFormatter::MEDIUM, $timeType = \IntlDateFormatter::MEDIUM, $timezone = null, $locale = null) {
-    if (!$timezone) {
-      $timezone = $this->timezone;
-    }
-    if (!$locale) {
-      $locale = $this->intl->locale;
-    }
-    $time                   = new \IntlDateFormatter($locale, $dateType, $timeType, $timezone);
+    $timezone || ($timezone = $this->timezone);
+    $locale   || ($locale   = $this->intl->locale);
+    $time = new \IntlDateFormatter($locale, $dateType, $timeType, $timezone);
     $attributes["datetime"] = (string) $dateTime;
     return "<time{$this->presenter->expandTagAttributes($attributes)}>{$time->format($dateTime)}</time>";
   }
@@ -127,43 +123,46 @@ final class DateTime {
    * @link http://stackoverflow.com/questions/11
    * @param \MovLib\Component\DateTime $dateTime
    *   The date and time to format.
+   * @param \MovLib\Component\DateTime $requestDateTime
+   *   The date and time of the request.
+   * @param array $attributes [optional]
+   *   Additional attributes that should be applied to the <code><time></code> element.
    * @param string $timezone [optional]
    *   The timezone to use for calculation, defaults to the timezone passed to the constructor (if any) and than to the
    *   default server timezone.
    * @return string
    *   Relative string representation of the date and time.
    */
-  public function formatRelative(\MovLib\Component\DateTime $dateTime, $timezone = null) {
-    // @todo Change to use interval.
-    //$interval = (new \DateTime("now", $timezone ?: $this->timezone))->diff($dateTime);
-    $delta = $_SERVER["REQUEST_TIME"] - $dateTime->getTimestamp();
-    if ($delta < 60) {
-      return $delta < 2 ? $this->intl->t("one second ago") : $this->intl->t("{0,number,integer} seconds ago", [ $delta ]);
+  public function formatRelative(\MovLib\Component\DateTime $dateTime, \MovLib\Component\DateTime $requestDateTime, array $attributes = [], $timezone = null) {
+    $requestDateTime->setTimezone($timezone ?: $this->timezone);
+    $interval = $requestDateTime->diff($dateTime, true);
+
+    // The diff method returns FALSE upon failure, account for this by simply returning the original date and time
+    // formatted in the current locale.
+    if ($interval === false) {
+      return $this->format($dateTime, null, null, null, $timezone);
     }
-    if ($delta < 120) {
-      return $this->intl->t("a minute ago");
+    elseif ($interval->y > 0) {
+      $formatted = $this->intl->t("{0,plural,=1{last year}other{# years ago}}", $interval->y);
     }
-    if ($delta < 2700) { // 45 minutes
-      return $this->intl->t("{0,number,integer} minutes ago", [ ($delta / 60) ]);
+    elseif ($interval->m > 0) {
+      $formatted = $this->intl->t("{0,plural,=1{last month}other{# months ago}}", $interval->m);
     }
-    if ($delta < 5400) { // 90 minutes
-      return $this->intl->t("an hour ago");
+    elseif ($interval->d > 0) {
+      $formatted = $this->intl->t("{0,plural,=1{today}=2{yesterday}other{# days ago}}", $interval->d);
     }
-    if ($delta < 86400) { // 1 day
-      return $this->intl->t("{0,number,integer} hours ago", [ ($delta / 3600) ]);
+    elseif ($interval->h > 0) {
+      $formatted = $this->intl->t("{0,plural,=1{an hour ago}other{# hours ago}}", $interval->h);
     }
-    if ($delta < 172800) { // 2 days
-      return $this->intl->t("yesterday");
+    elseif ($interval->i > 0) {
+      $formatted = $this->intl->t("{0,plural,=1{a minute ago}other{# minutes ago}}", $interval->i);
     }
-    if ($delta < 2592000) { // 30 days
-      return $this->intl->t("{0,number,integer} days ago", [ ($delta / 86400) ]);
+    else {
+      $formatted = $this->intl->t("{0,plural,=1{one second ago}other{# seconds ago}}", $interval->s);
     }
-    if ($delta < 3.15569e7) { // 1 year
-      $months = $delta / 2592000;
-      return $months < 2 ? $this->intl->t("one month ago") : $this->intl->t("{0,number,integer} months ago", [ $months ]);
-    }
-    $years = $delta / 3.15569e7;
-    return $years < 2 ? $this->intl->t("one year ago") : $this->intl->t("{0,number,integer} years ago", [ $years ]);
+
+    $attributes["datetime"] = (string) $dateTime;
+    return "<time{$this->presenter->expandTagAttributes($attributes)}>{$formatted}</time>";
   }
 
 }

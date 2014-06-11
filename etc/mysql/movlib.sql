@@ -1936,8 +1936,37 @@ SHOW WARNINGS;
 -- Table `movlib`.`de_topic`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`de_topic` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  PRIMARY KEY (`id`))
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The topic’s unique identifier.',
+  `changed` DATETIME NULL,
+  `closed` TINYINT(1) NOT NULL DEFAULT FALSE COMMENT 'Whether this topic is closed or not, defaults to not closed.',
+  `created` DATETIME NOT NULL,
+  `first_post_id` BIGINT UNSIGNED NULL,
+  `first_post_username` VARCHAR(40) NULL,
+  `forum_id` TINYINT UNSIGNED NOT NULL COMMENT 'The topic’s unique forum identifier it belongs to.',
+  `last_post_created` DATETIME NULL,
+  `last_post_id` BIGINT UNSIGNED NULL,
+  `last_post_username` VARCHAR(40) NULL,
+  `sticky` TINYINT(1) NOT NULL DEFAULT FALSE COMMENT 'Whether this topic is sticky or not, defaults to not sticky.',
+  `title` VARCHAR(255) NOT NULL COMMENT 'The topic’s title.',
+  PRIMARY KEY (`id`),
+  INDEX `fk_de_topic_de_forum1_idx` (`forum_id` ASC),
+  INDEX `fk_de_topic_de_post1_idx` (`first_post_id` ASC),
+  INDEX `fk_de_topic_de_post2_idx` (`last_post_id` ASC),
+  CONSTRAINT `fk_de_topic_de_forum1`
+    FOREIGN KEY (`forum_id`)
+    REFERENCES `movlib`.`de_forum` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_de_topic_de_post1`
+    FOREIGN KEY (`first_post_id`)
+    REFERENCES `movlib`.`de_post` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_de_topic_de_post2`
+    FOREIGN KEY (`last_post_id`)
+    REFERENCES `movlib`.`de_post` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 SHOW WARNINGS;

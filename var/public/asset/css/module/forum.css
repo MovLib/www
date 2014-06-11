@@ -25,23 +25,33 @@
  * @since 0.0.1-dev
  */
 
+.forums thead {
+  border: 1px solid #252525;
+  border-bottom: 0;
+}
+
+.forums tbody tr {
+  border: 1px solid #e5e5e5;
+  border-top: 0;
+}
+
 .forums .forum-icon {
   width: 5%;
 }
 
 .forums .forum-title {
-  width: 15%;
+  width: 20%;
 }
 
-.forums .forum-post-title {
-  width: 30%;
+.forums .forum-last {
+  width: 55%;
 }
 
-.forums .forum-post-time {
-  width: 30%;
-}
-
-.forums .forum-topics,
-.forums .forum-posts {
+.forums .forum-counts {
   width: 10%;
+}
+
+.forums .cf h3,
+.forums .cf p {
+  margin-bottom: 0;
 }

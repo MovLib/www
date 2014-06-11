@@ -40,8 +40,8 @@ final class Forum1 implements \MovLib\Data\Forum\ForumInterface {
    */
   public function getDescription(\MovLib\Core\Intl $intl, $locale = null) {
     return $intl->t(
-      "Important news around {0}our{1} website will be announced by the administrators in the {0}announcement " .
-      "forum{1}. Active users should have a look at this forum on a regular basis, because all important facts are " .
+      "Important news around {0}our{1} website will be announced by the administrators in the {2}announcement " .
+      "forum{3}. Active users should have a look at this forum on a regular basis, because all important facts are " .
       "posted here first.",
       [ "<em>", "</em>", "<strong>", "</strong>" ],
       $locale
