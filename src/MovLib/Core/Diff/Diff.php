@@ -213,7 +213,7 @@ final class Diff {
    * @param string $old
    *   The old string.
    * @return string
-   *   The diff patch that can be used with {@see Diff::applyPatch()} to recreated <var>$old</var> from <var>$new</var>.
+   *   The diff patch that can be used with {@see Diff::applyPatch()} to recreate <var>$old</var> from <var>$new</var>.
    */
   public function getPatch($new, $old) {
     // Our own implementation of the diff contained errors, we therefore fall back to the implementation from FineDiff.
@@ -242,7 +242,7 @@ final class Diff {
   public function getDiff($new, $old) {
     // No need to call the diff method if both texts are equal. Note that this will never happen if we're called as part
     // of our revisioning system, this is simply because the created date of each revision always changes.
-    if ($new === $old) {
+    if ($new == $old) {
       return [];
     }
 
@@ -353,7 +353,7 @@ final class Diff {
         }
 
         $y1 = $x1 - $k1;
-        while ($x1 < $text1Length && $y1 < $text2Length && mb_substr($text1, $x1, 1) === mb_substr($text2, $y1, 1)) {
+        while ($x1 < $text1Length && $y1 < $text2Length && mb_substr($text1, $x1, 1) == mb_substr($text2, $y1, 1)) {
           ++$x1;
           ++$y1;
         }
@@ -398,7 +398,7 @@ final class Diff {
         }
 
         $y2 = $x2 - $k2;
-        while ($x2 < $text1Length && $y2 < $text2Length && mb_substr($text1, -$x2 - 1, 1) === mb_substr($text2, -$y2 - 1, 1)) {
+        while ($x2 < $text1Length && $y2 < $text2Length && mb_substr($text1, -$x2 - 1, 1) == mb_substr($text2, -$y2 - 1, 1)) {
           ++$x2;
           ++$y2;
         }
@@ -468,7 +468,7 @@ final class Diff {
     // @devEnd
 
     // Directly take care of easy cases that have nothing in common for sure.
-    if ($text1Length === 0 || $text2Length === 0 || mb_substr($text1, 0, 1) !== mb_substr($text2, 0, 1)) {
+    if ($text1Length === 0 || $text2Length === 0 || mb_substr($text1, 0, 1) != mb_substr($text2, 0, 1)) {
       return 0;
     }
 
@@ -478,7 +478,7 @@ final class Diff {
 
     // Binary Search: https://en.wikipedia.org/wiki/Binary_search_algorithm
     while ($min < $mid) {
-      if (mb_substr($text1, $stx, $len) === mb_substr($text2, $stx, $len)) {
+      if (mb_substr($text1, $stx, $len) == mb_substr($text2, $stx, $len)) {
         $stx = $min = $mid;
       }
       else {
@@ -521,7 +521,7 @@ final class Diff {
     // @devEnd
 
     // Directly take care of easy cases that have nothing in common for sure.
-    if ($text1Length === 0 || $text2Length === 0 || mb_substr($text1, -1, 1) !== mb_substr($text2, -1, 1)) {
+    if ($text1Length === 0 || $text2Length === 0 || mb_substr($text1, -1, 1) != mb_substr($text2, -1, 1)) {
       return 0;
     }
 
@@ -531,7 +531,7 @@ final class Diff {
 
     // Binary Search: https://en.wikipedia.org/wiki/Binary_search_algorithm
     while ($min < $mid) {
-      if (mb_substr($text1, -$mid, $len) === mb_substr($text2, -$mid, $len)) {
+      if (mb_substr($text1, -$mid, $len) == mb_substr($text2, -$mid, $len)) {
         $end = $min = $mid;
       }
       else {
@@ -575,7 +575,7 @@ final class Diff {
     // @devEnd
 
     // Both texts are equal, simply return.
-    if ($text1 === $text2) {
+    if ($text1 == $text2) {
       return [[ self::COPY_KEY, $text1, $text1Length ]];
     }
 
@@ -589,7 +589,7 @@ final class Diff {
       return [[ self::DELETE_KEY, $text1, $text1Length ]];
     }
 
-    // We don't want to repeat ourselfs, therefore we create intermediate variables based on lengths.
+    // We don't want to repeat ourselves, therefore we create intermediate variables based on lengths.
     if ($text1Length < $text2Length) {
       $shortText   = $text1;
       $shortLength = $text1Length;
@@ -672,10 +672,10 @@ final class Diff {
     // @devEnd
 
     // Check for equality.
-    if ($text1 === $text2) {
+    if ($text1 == $text2) {
       // We always return an array, this makes sure that we don't generate errors together with all other methods that
       // expect an array to work with. Note that the final generated patch is still NULL.
-      if ($text1 === "") {
+      if ($text1Length === 0) {
         return [];
       }
 
@@ -686,10 +686,7 @@ final class Diff {
     }
 
     // Compute common prefix.
-    if (($prefixLength = $this->commonPrefix($text1, $text1Length, $text2, $text2Length)) === 0) {
-      $prefix = null;
-    }
-    else {
+    if (($prefixLength = $this->commonPrefix($text1, $text1Length, $text2, $text2Length)) !== 0) {
       $prefix       = mb_substr($text1, 0, $prefixLength);
       $text1Length -= $prefixLength;
       $text2Length -= $prefixLength;
@@ -698,10 +695,7 @@ final class Diff {
     }
 
     // Compute common suffix.
-    if (($suffixLength = $this->commonSuffix($text1, $text1Length, $text2, $text2Length)) === 0) {
-      $suffix = null;
-    }
-    else {
+    if (($suffixLength = $this->commonSuffix($text1, $text1Length, $text2, $text2Length)) !== 0) {
       $suffix       = mb_substr($text1, -$suffixLength);
       $text1Length -= $suffixLength;
       $text2Length -= $suffixLength;
@@ -713,12 +707,12 @@ final class Diff {
     $diffs = $this->compute($text1, $text1Length, $text2, $text2Length, $deadline);
 
     // Restore common prefix.
-    if ($prefix) {
+    if ($prefixLength !== 0) {
       array_unshift($diffs, [ self::COPY_KEY, $prefix, $prefixLength ]);
     }
 
     // Append common suffix.
-    if ($suffix) {
+    if ($suffixLength !== 0) {
       $diffs[] = [ self::COPY_KEY, $suffix, $suffixLength ];
     }
 
@@ -727,7 +721,7 @@ final class Diff {
   }
 
   /**
-   * Check if the two texts share a substrig which is at least half the length of the longer text.
+   * Check if the two texts share a substring which is at least half the length of the longer text.
    *
    * <b>NOTE</b><br>
    * This method isn't inlined for unit test reasons.
@@ -766,7 +760,7 @@ final class Diff {
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-    // Pointless to continue...
+    // Pointless to continue... Why?
     if ($longLength < 4 || $shortLength * 2 < strlen($longLength)) {
       return;
     }
