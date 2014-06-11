@@ -297,7 +297,8 @@ abstract class AbstractRevision implements RevisionInterface {
     $this->preCommit($connection, $oldRevision, $languageCode);
 
     // Now we can create the actual diff patch that we'll store in the revisions row of the old revision.
-    $diffPatch = (new Diff())->getPatch(serialize($this), $oldSerialized);
+    $diff = new Diff();
+    $diffPatch = $diff->getDiffPatch($diff->getDiff(serialize($this), $oldSerialized));
 
     // Prepare the update query and set the default properties.
     $update = (new Update($connection, static::$tableName))->set("changed", $this->created)->where("id", $this->originatorId);

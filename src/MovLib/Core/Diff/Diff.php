@@ -3,13 +3,13 @@
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
- * Copyright © 2006 Google Inc.
- * Copyright © 2013 Daniil Skrobov <yetanotherape@gmail.com>
+ * Copyright Â© 2006 Google Inc.
+ * Copyright Â© 2013 Daniil Skrobov <yetanotherape@gmail.com>
  *
- * Copyright © 2011 Raymond Hill {@link http://raymondhill.net/}
- * Copyright © 2013 Rob Crowe {@link http://cogpowered.com/}
+ * Copyright Â© 2011 Raymond Hill {@link http://raymondhill.net/}
+ * Copyright Â© 2013 Rob Crowe {@link http://cogpowered.com/}
  *
- * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
+ * Copyright Â© 2013-present {@link https://movlib.org/ MovLib}.
  *
  * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
  * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
@@ -43,7 +43,7 @@ namespace MovLib\Core\Diff;
  * open source world with our approach to the problem.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2014 MovLib
+ * @copyright Â© 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
@@ -206,30 +206,6 @@ final class Diff {
   }
 
   /**
-   * Get the diff patch to recreate <var>$old</var> from <var>$new</var>.
-   *
-   * @param string $new
-   *   The new string.
-   * @param string $old
-   *   The old string.
-   * @return string
-   *   The diff patch that can be used with {@see Diff::applyPatch()} to recreate <var>$old</var> from <var>$new</var>.
-   */
-  public function getPatch($new, $old) {
-    // Our own implementation of the diff contained errors, we therefore fall back to the implementation from FineDiff.
-    //
-    // @todo Revisit this problem and create an efficient solution for our use case.
-    $fineDiff = new \cogpowered\FineDiff\Diff();
-
-    // Note that the Parser class of our FineDiff is patched to use mb_ functions!
-    return (string) $fineDiff->getOpcodes($new, $old);
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- NEW Public Methods
-
-
-  /**
    * Get the differences between <var>$new</var> and <var>$old</var>.
    *
    * @param string $new
@@ -273,7 +249,7 @@ final class Diff {
         if ($diffs[$i][0] === self::COPY_KEY) {
           $patch .= self::COPY;
         }
-        else {
+        else/*if($diffs[$i][0] === self::DELETE_KEY)*/ {
           $patch .= self::DELETE;
         }
         $patch .= $diffs[$i][2] === 1 ? null : $diffs[$i][2];
@@ -765,9 +741,12 @@ final class Diff {
   }
 
   /**
+   * Reorder and merge the same edit or copy sections in computed string differences.
    *
    * @param array $diffs
+   *   The differences between two strings as computed by {@see diff()}.
    * @return array
+   *   The cleaned and optimized differences.
    */
   protected function merge(array $diffs) {
     // Why are we adding an empty copy operation at this point?
@@ -885,7 +864,6 @@ final class Diff {
         // Shift the transformation over the previous copy transformation.
         if (mb_substr($diffs[$pointer][1], -$diffs[$prev][2]) === $diffs[$prev][1]) {
           $diffs[$pointer][1]  = $diffs[$prev][1] . mb_substr($diffs[$pointer][1], 0, -$diffs[$prev][2]);
-          $diffs[$pointer][2] -= $diffs[$prev][2];
           $diffs[$next][1]     = "{$diffs[$prev][1]}{$diffs[$next][1]}";
           $diffs[$next][2]    += $diffs[$prev][2];
           array_splice($diffs, $prev, 1);
@@ -896,7 +874,6 @@ final class Diff {
           $diffs[$prev][1]     = "{$diffs[$prev][1]}{$diffs[$next][1]}";
           $diffs[$prev][2]    += $diffs[$next][2];
           $diffs[$pointer][1]  = mb_substr($diffs[$pointer][1], $diffs[$next][2]) . $diffs[$next][1];
-          $diffs[$pointer][2] -= $diffs[$next][2];
           array_splice($diffs, $next, 1);
           $changes = true;
         }

@@ -237,9 +237,18 @@ final class DiffTest extends \MovLib\TestCase {
   }
 
   /**
+   * @see ::dataProviderDiff
+   */
+  public function dataProviderGetDiffDiff() {
+    $data = $this->dataProviderDiff();
+    $data[1][0] = [];
+    return $data;
+  }
+
+  /**
    * @see DiffTest::testDiff
    * @covers Diff::getDiff
-   * @dataProvider dataProviderDiff
+   * @dataProvider dataProviderGetDiffDiff
    * @param array $expected
    * @param string $text1
    * @param string $text2
