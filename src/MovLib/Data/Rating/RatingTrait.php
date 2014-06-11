@@ -70,6 +70,8 @@ trait RatingTrait {
   /**
    * Rate this entity.
    *
+   * @todo Update Baye's rating.
+   *
    * @param integer $rating
    *   A valid rating between 1 and 5.
    * @param integer $userId
@@ -79,34 +81,43 @@ trait RatingTrait {
    * @return this
    */
   public function rate($rating, $userId, $userRating) {
-    $mysqli = Database::getConnection();
-    // This user hasn't voted for this entity yet.
-    if ($userRating === null) {
-      $mysqli->real_query(
-        "INSERT INTO `{$this::$tableName}_ratings` SET `rating` = {$rating}, `{$this->set->singularKey}_id` = {$this->id}, `user_id` = {$userId}"
+    $connection = Database::getConnection();
+
+    $connection->autocommit(false);
+    try {
+      // User hans't voted for this entity yet.
+      if ($userRating === null) {
+        $connection->real_query("INSERT INTO `{$this::$tableName}_ratings` SET `rating` = {$rating}, `{$this->set->singularKey}_id` = {$this->id}, `user_id` = {$userId}");
+        ++$this->ratingVotes;
+      }
+      // User already voted for this entity.
+      else {
+        $connection->real_query("UPDATE `{$this::$tableName}_ratings` SET `rating` = {$rating} WHERE `{$this->set->singularKey}_id` = {$this->id} AND `user_id` = {$userId}");
+      }
+
+      // Retrieve the new cummulated ratings from the database.
+      $cummulatedRating = (float) $connection->query(
+        "SELECT SUM(`rating`) FROM `{$this::$tableName}_ratings` WHERE `{$this->set->singularKey}_id` = {$this->id} FOR UPDATE"
+      )->fetch_all()[0][0];
+
+      // Calculate the entity's new ratings.
+      $this->ratingMean  = round($cummulatedRating / $this->ratingVotes, 1);
+      //$this->ratingBayes = round();
+
+      // Update the entity's rating statistics cache.
+      $connection->real_query(
+        "UPDATE `{$this::$tableName}` SET `mean_rating` = {$this->ratingMean}, `votes` = {$this->ratingVotes} WHERE `id` = {$this->id}"
       );
-      ++$this->ratingVotes;
+
+      $connection->commit();
     }
-    // This user already voted for this entity.
-    else {
-      $mysqli->real_query(
-        "UPDATE `{$this::$tableName}_ratings` SET `rating` = {$rating} WHERE `{$this->set->singularKey}_id` = {$this->id} AND `user_id` = {$userId}"
-      );
+    catch (\Exception $e) {
+      $connection->rollback();
+      throw $e;
     }
-
-    $cummulatedRating = (float) $mysqli->query(
-      "SELECT SUM(`rating`) FROM `{$this::$tableName}_ratings` WHERE `{$this->set->singularKey}_id` = {$this->id}"
-    )->fetch_all()[0][0];
-
-    // Calculate the new mean rating for this entity.
-    $this->ratingMean = round($cummulatedRating / $this->ratingVotes, 1);
-
-    // Update the entity's rating statistics.
-    $mysqli->real_query(
-      "UPDATE `{$this::$tableName}` SET `mean_rating` = {$this->ratingMean}, `votes` = {$this->ratingVotes} WHERE `id` = {$this->id}"
-    );
-
-    // @todo Update Bayes rating and global rank!
+    finally {
+      $connection->autocommit(true);
+    }
 
     return $this;
   }
