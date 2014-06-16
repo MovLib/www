@@ -229,8 +229,7 @@ SQL
         throw new NotFoundException("Couldn't find person for {$id}.");
       }
 
-      // Convert types, since bind_result() can't do that for us.
-      $this->sex = (boolean) $this->sex;
+      // Instantiate dates, since bind_result() can't do that for us.
       $this->birthDate && ($this->birthDate = new Date($this->birthDate));
       $this->deathDate && ($this->deathDate = new Date($this->deathDate));
 
