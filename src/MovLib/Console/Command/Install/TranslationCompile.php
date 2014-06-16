@@ -17,6 +17,7 @@
  */
 namespace MovLib\Console\Command\Install;
 
+use \MovLib\Core\Intl;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -53,29 +54,53 @@ final class TranslationCompile extends \MovLib\Console\Command\AbstractCommand {
    * {@inheritdoc}
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    $this->writeVerbose("Compiling translations...", self::MESSAGE_TYPE_INFO);
-    foreach ($this->intl->systemLocales as $code => $locale) {
-      $matches = null;
-      if ($code != $this->intl->defaultLanguageCode) {
-        $c = preg_match_all('/msgid\s+((?:".*(?<!\\\\)"\s*)+)\s+msgstr\s+((?:".*(?<!\\\\)"\s*)+)/', file_get_contents("dr://var/intl/{$locale}/messages.po"), $matches);
-        $translations = "<?php return[";
-        for ($i = 0; $i < $c; ++$i) {
-          $msgid = $this->prepare($matches[1][$i]);
-          if (empty($msgid)) {
-            continue;
-          }
-          $msgstr = $this->prepare($matches[2][$i]);
-          if (empty($msgstr)) {
-            continue;
-          }
-          if ($msgid == $msgstr) {
-            continue;
-          }
-          $translations .= "\"{$msgid}\"=>\"{$msgstr}\",";
+    // Let the user now that compilation started.
+    $this->writeVerbose("Compiling message translations...", self::MESSAGE_TYPE_INFO);
+
+    // Go through all available system languages and compile the messages.
+    foreach (Intl::$systemLanguages as $code => $locale) {
+      // Build the absolute URI to the file that contains the translated messages.
+      $po = "dr://var/intl/{$locale}/messages.po";
+
+      // Skip this language if no messages are available that contain translations.
+      if (!file_exists($po)) {
+        $this->writeVerbose("Skipping <comment>{$code}</comment> no PO file found...");
+        continue;
+      }
+
+      // Extract all translations from the messages file.
+      $this->writeVerbose("Compiling <comment>{$code}</comment>...");
+      $c = preg_match_all('/msgid\s+((?:".*(?<!\\\\)"\s*)+)\s+msgstr\s+((?:".*(?<!\\\\)"\s*)+)/', file_get_contents($po), $matches);
+
+      // Start building the PHP array.
+      $translations = null;
+      for ($i = 0; $i < $c; ++$i) {
+        // Prepare the message's source string and check if it's empty. The source string is empty after preparation if
+        // it contains the PO file header.
+        $msgid = $this->prepare($matches[1][$i]);
+        if (empty($msgid)) {
+          continue;
         }
-        file_put_contents("dr://var/intl/{$locale}/messages.php", rtrim($translations, ",") . "];");
+
+        // Prepare the message's translation string and skip this translation if the string is empty or equals the
+        // source string. There's no need to include this translation in the compiled PHP array if it equals the source
+        // string because we can directly use the source string itself to format the message.
+        $msgstr = $this->prepare($matches[2][$i]);
+        if (empty($msgstr) || $msgid === $msgstr) {
+          continue;
+        }
+
+        // Append array entry separator if we already have translations and append this translation.
+        $translations && ($translations .= ",");
+        $translations .= "\"{$msgid}\"=>\"{$msgstr}\"";
+      }
+
+      // Only export the compiled translations if at least a single message differs from the source.
+      if ($translations) {
+        file_put_contents("dr://var/intl/{$locale}/messages.php", "<?php return[{$translations}];");
       }
     }
+
     return 0;
   }
 
@@ -95,16 +120,25 @@ final class TranslationCompile extends \MovLib\Console\Command\AbstractCommand {
   protected function prepare($string) {
     static $patterns = [ '/"\s+"/', '/\\\\n/', '/\\\\r/', '/\\\\t/', '/\\\\"/', '/\\\\\\\\/' ];
     static $replacements = [ "", "\n", "\r", "\t", '"', "\\" ];
+
+    // Replace all strings that might be within the translated string because of the PO file format.
     $prepared = (string) preg_replace($patterns, $replacements, substr(rtrim($string), 1, -1));
-    if (strip_tags($prepared) != $prepared) {
+
+    // Make sure that the translated message doesn't contain HTML tags.
+    if (strip_tags($prepared) !== $prepared) {
       throw new \LogicException("HTML isn't allowed in translations ({$prepared}).");
     }
+
+    // Make sure that the translated message doesn't contain computer quotes.
     if (strpos($prepared, "'") !== false || strpos($prepared, '"') !== false) {
       throw new \LogicException("Quotes (double and single) aren't allowed in translations ({$prepared}).");
     }
-    if (($pos = strpos($prepared, "$")) !== false && isset($prepared{++$pos}) && $prepared{$pos} != " " && !is_numeric($prepared{$pos})) {
+
+    // Make sure that the translated message doesn't contain PHP variables.
+    if (($pos = strpos($prepared, "$")) !== false && isset($prepared{++$pos}) && $prepared{$pos} !== " " && !is_numeric($prepared{$pos})) {
       throw new \LogicException("PHP variables aren't allowed in translations ({$prepared}).");
     }
+
     return $prepared;
   }
 

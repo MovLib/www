@@ -17,6 +17,7 @@
  */
 namespace MovLib\Console\Command\Install;
 
+use \MovLib\Core\Intl;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -56,7 +57,7 @@ final class TranslationExtract extends \MovLib\Console\Command\AbstractCommand {
     $potPath = $this->fs->realpath("dr://var/intl/messages.pot");
     $srcPath = $this->fs->realpath("dr://tmp/src");
 
-    $this->writeVerbose("Make temporary copy of source files to work with...", self::MESSAGE_TYPE_INFO);
+    $this->writeVerbose("Creating temporary copy of source files to work with...", self::MESSAGE_TYPE_INFO);
     $this->exec("cp -r {$this->fs->realpath("dr://src")} {$this->fs->realpath("dr://tmp")}");
 
     $this->writeVerbose("Fixing embedded translations...", self::MESSAGE_TYPE_INFO);
@@ -117,9 +118,10 @@ final class TranslationExtract extends \MovLib\Console\Command\AbstractCommand {
     $this->fs->registerFileForDeletion("dr://tmp/src", true);
 
     $this->writeVerbose("Updating po files for all languages...", self::MESSAGE_TYPE_INFO);
-    foreach ($this->intl->systemLocales as $code => $locale) {
-      if ($code != $this->intl->defaultLanguageCode) {
-        $poPath  = $this->fs->realpath("dr://var/intl/{$locale}/messages.po");
+    $defaultLanguageCode = Intl::getDefaultLanguageCode();
+    foreach (Intl::$systemLanguages as $code => $locale) {
+      if ($code !== $defaultLanguageCode) {
+        $poPath = $this->fs->realpath("dr://var/intl/{$locale}/messages.po");
         if (file_exists($poPath)) {
           $this->exec("msgmerge --backup='off' --no-wrap --previous --update {$poPath} {$potPath}");
         }
