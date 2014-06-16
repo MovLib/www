@@ -67,7 +67,7 @@ final class Index extends \MovLib\Presentation\AbstractPresenter {
           "<article class='cf'>" .
             "<h3 class='fl para'>{$forum->lastTopic->title}</h3>{$lastPost}" .
             "<p class='fr'>{$this->intl->t("by {username} {time}", [
-              "username" => "<a href='{}'>{$forum->lastPost->username}</a>",
+              "username" => "<a href='{}'>{$forum->lastPost->creator->name}</a>",
               "time"     => $dateTime->formatRelative($forum->lastPost->created, $this->request->dateTime)
             ])}</p>" .
           "</article>"

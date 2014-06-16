@@ -15,23 +15,48 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\Presentation\Forum\Topic;
+
+use \MovLib\Data\Forum\Topic;
+use \MovLib\Exception\RedirectException\TemporaryRedirectException;
 
 /**
- * Generate forums seed data.
+ * Defines the topic show presentation.
  *
+ * Allows the presentation of a single topic without knowing forum. Note that there's still the dependency for the
+ * language code which is provided by the subdomain. We don't know which topic is which in case we have no language
+ * code, we could only display a selection list to the client.
+ *
+ * @route /forum/topic/{id}
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
+final class Show extends \MovLib\Presentation\AbstractPresenter {
 
-$firstPostMessage = htmlspecialchars("<p>Welcome to MovLib’s open beta!</p>", ENT_QUOTES | ENT_HTML5);
+  // @codingStandardsIgnoreStart
+  /**
+   * Short class name.
+   *
+   * @var string
+   */
+  const name = "Show";
+  // @codingStandardsIgnoreEnd
 
-return <<<SQL
-TRUNCATE TABLE `de_topic`;
-TRUNCATE TABLE `de_post`;
+  /**
+   * {@inheritdoc}
+   */
+  public function init() {
+    throw new TemporaryRedirectException((new Topic($this->intl->languageCode, $_SERVER["FORUM_ID"]))->route);
+  }
 
-INSERT INTO `de_topic` (`forum_id`, `title`) VALUES (1, 'MovLib Open Beta');
-INSERT INTO `de_post` (`topic_id`, `created`, `creator_id`, `message`) VALUES (1, NOW(), 1, '{$firstPostMessage}');
-SQL;
+  /**
+   * {@inheritdoc}
+   */
+  public function getContent() {
+    // Nothing to, will always result in a redirect.
+  }
+
+}

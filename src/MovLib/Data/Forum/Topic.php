@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data\Forum;
 
+use \MovLib\Core\Database\Query\Select;
+
 /**
  * Defines the forum topic object.
  *
@@ -26,7 +28,8 @@ namespace MovLib\Data\Forum;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Topic {
+final class Topic implements \MovLib\Core\Routing\RoutingInterface {
+  use \MovLib\Core\Routing\RoutingTrait;
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
@@ -52,6 +55,40 @@ final class Topic {
   public $countPosts;
 
   /**
+   * Whether this topic is closed or not.
+   *
+   * @var boolean
+   */
+  public $closed = false;
+
+  /**
+   * The topic's date and time of the last edit.
+   *
+   * This property is <code>NULL</code> if it was never edited.
+   *
+   * @see ::$editorId
+   * @var \MovLib\Component\DateTime|null
+   */
+  public $edited;
+
+  /**
+   * The topic's unique user identifier who last edited it.
+   *
+   * This property is <code>NULL</code> if it was never edited.
+   *
+   * @see ::$edited
+   * @var integer|null
+   */
+  public $editorId;
+
+  /**
+   * The topic's unique forum identifier it belongs to.
+   *
+   * @var integer
+   */
+  public $forumId;
+
+  /**
    * The topic's unique identifier.
    *
    * @param integer
@@ -59,11 +96,36 @@ final class Topic {
   public $id;
 
   /**
+   * The topic's ISO 639-1 language code.
+   *
+   * @see ::__construct
+   * @var string
+   */
+  protected $languageCode;
+
+  /**
    * The topic's parent entities.
    *
-   * @param array
+   * @var array
    */
   public $parents = [];
+
+  /**
+   * Whether the topic is sticky or not.
+   *
+   * @var boolean
+   */
+  public $sticky = false;
+
+  /**
+   * The name of the database table that contains the topic.
+   *
+   * Each system language code has its own database table because there's no correlation between the languages.
+   *
+   * @see ::__construct
+   * @var string
+   */
+  protected $tableName;
 
   /**
    * The topic's title.
@@ -79,17 +141,56 @@ final class Topic {
   /**
    * Instantiate new forum topic.
    *
-   * @param \MovLib\Core\Container $container
-   *   The dependency injection container.
+   * @param string $languageCode
+   *   The topic's (system) language code. The language code of a topic is usually provided by the request's language
+   *   code. Note that the language code is used to determine which table is queried.
    * @param integer $id [optional]
    *   The topic's unique identifier to load, defaults to <code>NULL</code> and an empty topic is created.
    */
-  public function __construct(\MovLib\Core\Container $container, $id = null) {
-
+  public function __construct($languageCode, $id = null) {
+    $this->languageCode = $languageCode;
+    $this->tableName    = "{$languageCode}_topic";
+    if ($id) {
+      (new Select())
+        ->select("id")
+        ->select("closed")
+        ->select("edited")
+        ->select("editor_id")
+        ->select("forum_id")
+        ->select("sticky")
+        ->select("title")
+        ->from($this->tableName)
+        ->where("id", $id)
+        ->fetchInto($this)
+      ;
+      $this->parents[0] = new Forum($this->languageCode, $this->forumId);
+      $this->setRoute("/forum/{$this->parents[0]->title}/topic/{0}", $this->id);
+    }
   }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  /**
+   * Get the topic's posts.
+   *
+   * @return array
+   *   The topic's posts.
+   */
+  public function getPosts() {
+    return (new Select())
+      ->select("id")
+      ->select("topic_id")
+      ->select("created")
+      ->select("creator_id")
+      ->select("edited")
+      ->select("editor_id")
+      ->select("message")
+      ->from("{$this->languageCode}_post")
+      ->where("topic_id", $this->id)
+      ->fetchObjects("\\MovLib\\Data\\Forum\\Post", [ $this->languageCode ])
+    ;
+  }
 
 }
