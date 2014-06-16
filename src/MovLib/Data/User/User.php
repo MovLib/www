@@ -367,7 +367,7 @@ SQL
   public function __sleep() {
     return [
       "aboutMe", "access", "birthdate", "contributionCount", "countryCode", "currencyCode", "edits", "email",
-      "languageCode", "listCount", "name", "passwordHash", "private", "profileViews", "realName", "repuation", "sex",
+      "languageCode", "listCount", "name", "passwordHash", "private", "profileViews", "realName", "reputation", "sex",
       "timezone", "uploadCount", "website",
     ];
   }
