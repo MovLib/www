@@ -143,7 +143,6 @@ trait OriginatorTrait {
       $connection->autocommit(false);
       $connection->real_query("SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE");
       $connection->real_query("START TRANSACTION WITH CONSISTENT SNAPSHOT, READ WRITE");
-      $connection->real_query("START TRANSACTION");
       $revision = $this->createRevision($userId, $changed);
       $this->preCommit($connection, $revision, $oldRevisionId);
       $revision->commit($connection, $oldRevisionId, $this->intl->languageCode);
