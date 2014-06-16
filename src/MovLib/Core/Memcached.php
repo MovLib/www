@@ -28,6 +28,10 @@ namespace MovLib\Core;
  */
 final class Memcached {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
   // @codingStandardsIgnoreStart
   /**
    * Short class name.
@@ -36,10 +40,6 @@ final class Memcached {
    */
   const name = "Memcached";
   // @codingStandardsIgnoreEnd
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
 
   /**
    * The default expiration time (in seconds).
@@ -58,13 +58,6 @@ final class Memcached {
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   * The active logger instance.
-   *
-   * @var \MovLib\Core\Log
-   */
-  protected $log;
 
   /**
    * The current persistent memcached connection.
@@ -99,21 +92,14 @@ final class Memcached {
   /**
    * Instantiate new Memcached connection.
    *
-   * @internal
-   *   No clue how it's possible to get to this exception via PHPUnit, setting to ignore because it seems this will
-   *   never happen (and if it does, we'll know how to test it).
-   * @param \MovLib\Core\Log $logger
-   *   The active logger instance.
+   * @throws \MemcachedException
    */
-  public function __construct(\MovLib\Core\Log $log) {
-    $this->log = $log;
+  public function __construct() {
     if (!self::$memcached) {
       self::$memcached = new \Memcached("_");
       if (self::$memcached->setOptions(self::$options) === false || self::$memcached->addServers(self::$servers) === false) {
         // @codeCoverageIgnoreStart
-        $e = new \MemcachedException(self::$memcached->getResultMessage(), self::$memcached->getResultCode());
-        $this->log->critical($e);
-        throw $e;
+        throw new \MemcachedException(self::$memcached->getResultMessage(), self::$memcached->getResultCode());
         // @codeCoverageIgnoreEnd
       }
     }
@@ -134,9 +120,7 @@ final class Memcached {
   public function delete($key) {
     if (self::$memcached->delete($key) === false && ($code = self::$memcached->getResultCode()) !== \Memcached::RES_NOTFOUND) {
       // @codeCoverageIgnoreStart
-      $e = new \MemcachedException(self::$memcached->getResultMessage(), $code);
-      $this->log->critical($e);
-      throw $e;
+      throw new \MemcachedException(self::$memcached->getResultMessage(), $code);
       // @codeCoverageIgnoreEnd
     }
     return $this;
@@ -156,9 +140,7 @@ final class Memcached {
     $value = self::$memcached->get($key);
     if ($value === false && ($code = self::$memcached->getResultCode()) !== \Memcached::RES_NOTFOUND) {
       // @codeCoverageIgnoreStart
-      $e = new \MemcachedException(self::$memcached->getResultMessage(), $code);
-      $this->log->critical($e);
-      throw $e;
+      throw new \MemcachedException(self::$memcached->getResultMessage(), $code);
       // @codeCoverageIgnoreEnd
     }
     return $value;
@@ -169,23 +151,21 @@ final class Memcached {
    *
    * @param mixed $key
    *   They key of the item to increment.
-   * @param integer $initialValue [optional]
+   * @param integer $default [optional]
    *   The value to set the item to if it doesn't currently exist, defaults to <code>1</code>.
    * @param integer $expiration [optional]
    *   The expiration time in seconds, defaults to {@see Memcached::DEFAULT_EXPIRATION}.
-   * @param integer $incrementBy [optional]
+   * @param integer $by [optional]
    *   The amount by which to increment the item's value, defaults to <code>1</code>.
    * @return integer
    *   The new item's value on success or <code>FALSE</code> on failure.
    * @throws \MemcachedException
    */
-  public function increment($key, $initialValue = 1, $expiration = self::DEFAULT_EXPIRATION, $incrementBy = 1) {
-    $value = self::$memcached->increment($key, $incrementBy, $initialValue, $expiration);
+  public function increment($key, $default = 1, $expiration = self::DEFAULT_EXPIRATION, $by = 1) {
+    $value = self::$memcached->increment($key, $by, $default, $expiration);
     if ($value === false) {
       // @codeCoverageIgnoreStart
-      $e = new \MemcachedException(self::$memcached->getResultMessage(), self::$memcached->getResultCode());
-      $this->log->critical($e);
-      throw $e;
+      throw new \MemcachedException(self::$memcached->getResultMessage(), self::$memcached->getResultCode());
       // @codeCoverageIgnoreEnd
     }
     return $value;
@@ -220,9 +200,7 @@ final class Memcached {
    */
   public function isRemoteAddressFlooding($remoteAddress, $event) {
     if ($this->isFlooding("{$event}{$remoteAddress}", self::FLOODING_IP_MAX) === true) {
-      $e = new \MemcachedException("Flooding: too many attempts to invoke event from remote address.");
-      $this->log->warning($e, [ "remoteAddress" => $remoteAddress ]);
-      throw $e;
+      throw new \MemcachedException("Flooding: too many attempts to invoke event from remote address.");
     }
     return $this;
   }
@@ -242,9 +220,7 @@ final class Memcached {
   public function set($key, $value, $expiration = self::DEFAULT_EXPIRATION) {
     if (self::$memcached->set($key, $value, $expiration) === false) {
       // @codeCoverageIgnoreStart
-      $e = new \MemcachedException(self::$memcached->getResultMessage(), self::$memcached->getResultCode());
-      $this->log->critical($e);
-      throw $e;
+      throw new \MemcachedException(self::$memcached->getResultMessage(), self::$memcached->getResultCode());
       // @codeCoverageIgnoreEnd
     }
     return $this;
