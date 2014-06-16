@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Exception;
+namespace MovLib\Core\Revision;
 
 /**
  * The nothing to commit exception is only thrown if there are no changes in a form and a user tries to submit it anyway.

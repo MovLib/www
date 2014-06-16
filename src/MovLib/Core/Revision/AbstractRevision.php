@@ -22,7 +22,7 @@ use \MovLib\Core\Database\Query\Insert;
 use \MovLib\Core\Database\Query\Update;
 use \MovLib\Core\Diff\Diff;
 use \MovLib\Core\FileSystem;
-use \MovLib\Exception\NothingToCommitException;
+use \MovLib\Core\Revision\NothingToCommitException;
 
 /**
  * Defines the base object for revision objects.
