@@ -119,6 +119,15 @@ final class Select extends AbstractQuery {
   protected $limit;
 
   /**
+   * The select's order by clause.
+   *
+   * Associative array where the key is the field to order and the value the direction.
+   *
+   * @var array
+   */
+  protected $orderBy = [];
+
+  /**
    * The select query's projection fields.
    *
    * @var array
@@ -133,13 +142,23 @@ final class Select extends AbstractQuery {
    * {@inheritdoc}
    */
   public function __toString() {
+    // PROJECTION
     $fields = null;
-    foreach ($this->fields as $projected) {
+    foreach ($this->fields as $field) {
       $fields && ($fields .= ",");
-      $fields .= $projected["expression"];
-      isset($projected["as"]) && ($fields .= " AS `{$projected["as"]}`");
+      $fields .= $field["expression"];
+      isset($field["as"]) && ($fields .= " AS `{$field["as"]}`");
     }
-    return "SELECT {$fields} FROM {$this->table}{$this->conditions}{$this->limit}";
+
+    // ORDER BY
+    $orderBy = null;
+    foreach ($this->orderBy as $field => $direction) {
+      $orderBy && ($orderBy .= ",");
+      $orderBy = "{$this->sanitizeFieldName($field)} {$direction}";
+    }
+    $orderBy && ($orderBy = " ORDER BY {$orderBy}");
+
+    return "SELECT {$fields} FROM {$this->table}{$this->conditions}{$orderBy}{$this->limit}";
   }
 
 
@@ -531,6 +550,25 @@ final class Select extends AbstractQuery {
   public function limit($rowCount, $offset = null) {
     $this->limit = " LIMIT {$rowCount}";
     $offset && ($this->limit .= " OFFSET {$offset}");
+    return $this;
+  }
+
+  /**
+   * Add <code>ORDER BY</code> clause to select query.
+   *
+   * @param string $field
+   *   The field's name to order by.
+   * @param string $direction [optional]
+   *   The field's order, defaults to <code>"ASC"</code>.
+   * @return this
+   */
+  public function orderBy($field, $direction = "ASC") {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert($direction === "ASC" || $direction === "DESC", "Allowed values for order are ASC or DESC.");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    $this->orderBy[$field] = $direction;
     return $this;
   }
 
