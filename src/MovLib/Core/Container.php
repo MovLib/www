@@ -18,7 +18,7 @@
 namespace MovLib\Core;
 
 /**
- * @todo Description of DependencyInjectionContainer
+ * Defines the dependency injection container object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -27,15 +27,6 @@ namespace MovLib\Core;
  * @since 0.0.1-dev
  */
 class Container {
-
-  // @codingStandardsIgnoreStart
-  /**
-   * Short class name.
-   *
-   * @var string
-   */
-  const name = "Container";
-  // @codingStandardsIgnoreEnd
 
   /**
    * Active global configuration instance.
