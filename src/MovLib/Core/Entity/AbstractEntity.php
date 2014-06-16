@@ -170,18 +170,14 @@ abstract class AbstractEntity implements \MovLib\Core\Entity\EntityInterface {
       }
     }
 
-    // @devStart
-    // @codeCoverageIgnoreStart
-    // We have to have an id at this point, either via the values array or set during construction.
-    foreach ([ "id", "bundle", "bundleTitle", "changed", "created", "deleted" ] as $mandatory) {
-      assert(isset($this->$mandatory), "Seems like this object was incorrectly instantiated, you always have to set the {$mandatory} property.");
+    // The new Select object will automatically instantiate these objects. Make sure we don't try to instantiate an
+    // object from an object.
+    if ($this->changed && !($this->changed instanceof DateTime)) {
+      $this->changed = new DateTime($this->changed);
     }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
-    // Instantiate and cast everything that is shared among all entities.
-    $this->changed = new DateTime($this->changed);
-    $this->created = new DateTime($this->created);
+    if ($this->created && !($this->created instanceof DateTime)) {
+      $this->created = new DateTime($this->created);
+    }
     $this->deleted = (boolean) $this->deleted;
 
     // Allow concrete entity's to set a custom route, especially if they are sub entities.
