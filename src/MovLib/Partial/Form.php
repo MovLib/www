@@ -330,6 +330,9 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
       // Used to collect error messages of all form elements.
       $errors = null;
 
+      // Used to track the number of elements which were edited.
+      $changesCount = 0;
+
       if ($this->elements) {
         // Iterate through all form elements and validate them.
         /* @var $formElement \MovLib\Presentation\Partial\FormElement\AbstractFormElement */
@@ -337,8 +340,16 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
           // Used to collect the error messages of this specific form element.
           $error = null;
 
+          // Retrieve the value before the validation to keep track of changes. Since it was passed by reference, we need cloning.
+          $valueBefore = $formElement->value;
+
           // Let the form element validate itself.
           $formElement->validate($error);
+
+          // Check if the form element has changed and increase change counter if so.
+          if ($valueBefore != $formElement->value) {
+            ++$changesCount;
+          }
 
           // If we have one or more errors for this form element collect them under its unique identifier for easy access
           // later on within the concrete class. This allows a concrete class to alter certain error messages or react
@@ -359,6 +370,12 @@ final class Form extends \MovLib\Core\Presentation\DependencyInjectionBase {
         }
         // @codeCoverageIgnoreEnd
         // @devEnd
+      }
+
+      // If there were no changes in the form at all, abort.
+      if ($changesCount === 0) {
+        $this->presenter->alertError($this->intl->t("No Changes"), $this->intl->t("You can’t submit this form without having any changes."));
+        return $this;
       }
 
       // If we have errors at this point export them and abort.

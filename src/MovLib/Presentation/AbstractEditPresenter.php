@@ -93,7 +93,12 @@ abstract class AbstractEditPresenter extends \MovLib\Presentation\AbstractPresen
    * @return this
    */
   public function valid() {
-    $this->entity->commit($this->session->userId, $this->request->dateTime, $this->entity->changed->formatInteger());
+    try {
+      $this->entity->commit($this->session->userId, $this->request->dateTime, $this->entity->changed->formatInteger());
+    }
+    catch (\MovLib\Exception\NothingToCommitException $e) {
+      return $this->alertError($this->intl->t("No Changes"), $this->intl->t("You can’t submit this form without having any changes."));
+    }
     $this->alertSuccess($this->intl->t("Successfully updated"));
     throw new SeeOtherException($this->entity->route);
   }
