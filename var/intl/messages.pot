@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MovLib Messages 0.0.1-dev\n"
 "Report-Msgid-Bugs-To: https://github.com/MovLib/www/issues?labels=translation\n"
-"POT-Creation-Date: 2014-06-11 15:42+0000\n"
+"POT-Creation-Date: 2014-06-13 11:17+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2191,35 +2191,35 @@ msgstr ""
 msgid "Forums"
 msgstr ""
 
-#: /src/MovLib/Presentation/Forum/Index.php:74
+#: /src/MovLib/Presentation/Forum/Index.php:69
 msgid "by {username} {time}"
 msgstr ""
 
-#: /src/MovLib/Presentation/Forum/Index.php:82
+#: /src/MovLib/Presentation/Forum/Index.php:77
 msgid "No topics so far in this forum."
 msgstr ""
 
-#: /src/MovLib/Presentation/Forum/Index.php:121
+#: /src/MovLib/Presentation/Forum/Index.php:116
 msgid "Forum"
 msgstr ""
 
-#: /src/MovLib/Presentation/Forum/Index.php:122
+#: /src/MovLib/Presentation/Forum/Index.php:117
 msgid "Last Post"
 msgstr ""
 
-#: /src/MovLib/Presentation/Forum/Index.php:123
+#: /src/MovLib/Presentation/Forum/Index.php:118
 msgid "Topics"
 msgstr ""
 
-#: /src/MovLib/Presentation/Forum/Index.php:124
+#: /src/MovLib/Presentation/Forum/Index.php:119
 msgid "Posts"
 msgstr ""
 
-#: /src/MovLib/Presentation/Forum/Index.php:139
+#: /src/MovLib/Presentation/Forum/Index.php:134
 msgid "No Forums"
 msgstr ""
 
-#: /src/MovLib/Presentation/Forum/Index.php:140
+#: /src/MovLib/Presentation/Forum/Index.php:135
 msgid "Please create new forums with the appropriate admin command."
 msgstr ""
 
