@@ -81,13 +81,6 @@ trait EntityTrait {
    */
   public $parents = [];
 
-  /**
-   * The entity's / set's route.
-   *
-   * @var \MovLib\Core\Routing\Route
-   */
-  public $route;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 

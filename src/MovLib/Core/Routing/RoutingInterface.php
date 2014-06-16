@@ -29,6 +29,14 @@ namespace MovLib\Core\Routing;
 interface RoutingInterface {
 
   /**
+   * Get the object's route.
+   *
+   * @return \MovLib\Core\Routing\Route
+   *   The object's route.
+   */
+  public function getRoute();
+
+  /**
    * Append a rout part to the data class's route and translate/format it.
    *
    * This method can be used in abstracted classes to append certain parts that are the same for all data classes to the

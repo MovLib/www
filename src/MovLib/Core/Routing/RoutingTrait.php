@@ -31,6 +31,20 @@ namespace MovLib\Core\Routing;
 trait RoutingTrait {
 
   /**
+   * The concrete object's route.
+   *
+   * @var \MovLib\Core\Routing\Route
+   */
+  public $route;
+
+  /**
+   * @see \MovLib\Core\Data\RoutingInterface::getRoute();
+   */
+  final public function getRoute() {
+    return $this->route;
+  }
+
+  /**
    * @see \MovLib\Core\Data\RoutingInterface::r()
    */
   final public function r($routePart, array $args = []) {
@@ -85,6 +99,20 @@ trait RoutingTrait {
     // Add this route to our cache and we're done.
     $routes[static::name][$cacheKey] = "{$this->route->route}{$routePart}";
     return $this->container->intl->r($routes[static::name][$cacheKey], $args);
+  }
+
+  /**
+   * Set the concrete object's route.
+   *
+   * @param string $route
+   *   The route's route.
+   * @param array $args [optional]
+   *   The route's arguments.
+   * @return this
+   */
+  final protected function setRoute($route, array $args = null) {
+    $this->route = new Route($this->intl, $route, [ "args" => $args ]);
+    return $this;
   }
 
 }
