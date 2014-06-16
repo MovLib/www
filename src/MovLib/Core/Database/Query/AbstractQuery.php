@@ -17,6 +17,8 @@
  */
 namespace MovLib\Core\Database\Query;
 
+use \MovLib\Core\Database\Database;
+
 /**
  * Defines the abstract query class which is the base for all query classes.
  *
@@ -66,18 +68,16 @@ abstract class AbstractQuery extends AbstractBase {
   /**
    * Instantiate new SQL query object.
    *
-   * @param \MovLib\Core\Database\Connection $connection
-   *   Active database connection.
+   * @param \MovLib\Core\Database\Connection $connection [optional]
+   *   Active database connection, defaults to <code>NULL</code> and a new connection will be used.
    * @param string $tableName [optional]
    *   The name of the primary table to work with.
    * @param stirng $tableAlias [optional]
    *   The alias for the primary table to work with.
    */
-  public function __construct(\MovLib\Core\Database\Connection $connection, $tableName = null, $tableAlias = null) {
-    $this->connection = $connection;
-    if ($tableName) {
-      $this->table = $this->getTable($tableName, $tableAlias);
-    }
+  public function __construct(\MovLib\Core\Database\Connection $connection = null, $tableName = null, $tableAlias = null) {
+    $this->connection = $connection ?: Database::getConnection();
+    $tableName && ($this->table = $this->getTable($tableName, $tableAlias));
   }
 
 
