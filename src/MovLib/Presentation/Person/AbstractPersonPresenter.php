@@ -102,7 +102,7 @@ abstract class AbstractPersonPresenter extends \MovLib\Presentation\AbstractPres
     foreach ($navItems as list($icon, $routeAddition, $title, $count)) {
       $additionalSidebarItems[] = [
         $this->intl->r("/person/{0}/{$routeAddition}", $this->entity->id),
-        "{$title}<span class='fr'>{$this->intl->format("{0,number}", $count)}</span>",
+        "{$title}<span class='fr'>{$this->intl->formatInteger($count)}</span>",
         [ "class" => "ico ico-{$icon}" ]
       ];
     }

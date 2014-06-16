@@ -90,13 +90,13 @@ SELECT
   `movies_crew`.`person_id` AS `personId`,
   `movies_crew`.`job_id` AS `crewJobId`,
   IFNULL(
-    COLUMN_GET(`jobs`.`dyn_titles_sex{$person->sex}`, '{$this->intl->languageCode}' AS BINARY),
-    COLUMN_GET(`jobs`.`dyn_titles_sex{$person->sex}`, '{$this->intl->defaultLanguageCode}' AS BINARY)
+    COLUMN_GET(`jobs`.`dyn_titles_sex{$person->sex}`, '{$this->intl->code}' AS BINARY),
+    COLUMN_GET(`jobs`.`dyn_titles_sex{$person->sex}`, '{$this->intl->defaultCode}' AS BINARY)
   ) AS `crewJobTitle`,
   `crew_alias`.`alias` AS `crewAlias`,
   IFNULL(
-    COLUMN_GET(`movies_crew`.`dyn_role`, '{$this->intl->languageCode}' AS BINARY),
-    COLUMN_GET(`movies_crew`.`dyn_role`, '{$this->intl->defaultLanguageCode}' AS BINARY)
+    COLUMN_GET(`movies_crew`.`dyn_role`, '{$this->intl->code}' AS BINARY),
+    COLUMN_GET(`movies_crew`.`dyn_role`, '{$this->intl->defaultCode}' AS BINARY)
   ) AS `crewRole`,
   `movies_crew`.`role_id` AS `crewRoleId`,
   `crew_role`.`name` AS `crewRoleName`
@@ -111,12 +111,12 @@ FROM `movies_crew`
     ON `original_title`.`id` = `movies_original_titles`.`title_id`
   LEFT JOIN `movies_display_titles`
     ON `movies_display_titles`.`movie_id` = `movies`.`id`
-    AND `movies_display_titles`.`language_code` = '{$this->intl->languageCode}'
+    AND `movies_display_titles`.`language_code` = '{$this->intl->code}'
   LEFT JOIN `movies_titles` AS `display_title`
     ON `display_title`.`id` = `movies_display_titles`.`title_id`
   LEFT JOIN `display_posters`
     ON `display_posters`.`movie_id` = `movies`.`id`
-    AND `display_posters`.`language_code` = '{$this->intl->languageCode}'
+    AND `display_posters`.`language_code` = '{$this->intl->code}'
   LEFT JOIN `posters`
     ON `posters`.`id` = `display_posters`.`poster_id`
     AND `posters`.`deleted` = false

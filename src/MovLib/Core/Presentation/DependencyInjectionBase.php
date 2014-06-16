@@ -375,7 +375,7 @@ class DependencyInjectionBase extends \MovLib\Core\Presentation\Base {
         // is an exception to this rule.
         elseif ($name == "alt" || !empty($value)) {
           // Only output the language attribute if it differs from the current document language.
-          if ($name == "lang" && $this->intl->languageCode == $value) {
+          if ($name == "lang" && $this->intl->code == $value) {
             continue;
           }
 
@@ -433,7 +433,7 @@ class DependencyInjectionBase extends \MovLib\Core\Presentation\Base {
    *   attribute ready for print (e.g. <code>" lang='de'"</code>).
    */
   final public function lang($lang) {
-    if ($lang != $this->intl->languageCode) {
+    if ($lang != $this->intl->code) {
       return " lang='{$this->htmlEncode($lang)}'";
     }
   }

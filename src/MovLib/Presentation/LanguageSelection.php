@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation;
 
+use \MovLib\Core\Intl;
 use \MovLib\Partial\Navigation;
 
 /**
@@ -50,7 +51,7 @@ final class LanguageSelection extends \MovLib\Presentation\AbstractPresenter {
    */
   public function init() {
     $this->initPage($this->intl->t("Language Selection"));
-    $this->next("//{$this->intl->languageCode}.{$this->config->hostname}/");
+    $this->next("//{$this->intl->code}.{$this->config->hostname}/");
     $this->stylesheets[] = "language-selection";
   }
 
@@ -59,7 +60,7 @@ final class LanguageSelection extends \MovLib\Presentation\AbstractPresenter {
    */
   public function getContent() {
     $prerender = $menuitems = null;
-    foreach ($this->intl->systemLocales as $code => $locale) {
+    foreach (Intl::$systemLanguages as $code => $locale) {
       $href = "//{$code}.{$this->config->hostname}/";
       // Doesn't validate, but the browsers like it. Please note that Chrome doesn't prerender more than one URL and
       // no HTTPS pages; there's nothing we can do about that. But it works great in Gecko and IE.

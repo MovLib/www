@@ -54,7 +54,7 @@ final class Index extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    $forums         = Forum::getAll($this->container);
+    $forums         = Forum::getAll();
     $renderedForums = null;
     $dateTime       = new DateTime($this->intl, $this, $this->session->userTimezone);
 

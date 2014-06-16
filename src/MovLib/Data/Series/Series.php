@@ -230,8 +230,8 @@ SELECT
   `series`.`rating`,
   `series`.`start_year`,
   `series`.`status`,
-  COLUMN_GET(`series`.`dyn_synopses`, '{$container->intl->languageCode}' AS CHAR),
-  COLUMN_GET(`series`.`dyn_wikipedia`, '{$container->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`series`.`dyn_synopses`, '{$container->intl->code}' AS CHAR),
+  COLUMN_GET(`series`.`dyn_wikipedia`, '{$container->intl->code}' AS CHAR),
   `original_title`.`title`,
   `original_title`.`id`,
   `original_title`.`language_code`,
@@ -245,7 +245,7 @@ SELECT
 FROM `series`
   LEFT JOIN `series_display_titles`
     ON `series_display_titles`.`series_id` = `series`.`id`
-    AND `series_display_titles`.`language_code` = '{$container->intl->languageCode}'
+    AND `series_display_titles`.`language_code` = '{$container->intl->code}'
   LEFT JOIN `series_titles` AS `display_title`
     ON `display_title`.`id` = `series_display_titles`.`title_id`
   LEFT JOIN `series_original_titles`
@@ -367,14 +367,14 @@ SQL
     // @todo Insert user entered display title, when implemented.
     $this->displayTitleId = $this->originalTitleId;
     (new Insert($connection, "series_display_titles"))
-      ->set("language_code", $this->intl->languageCode)
+      ->set("language_code", $this->intl->code)
       ->set("series_id", $this->id)
       ->set("title_id", $this->originalTitleId)
       ->execute()
     ;
-    if ($this->intl->languageCode != $this->intl->defaultLanguageCode) {
+    if ($this->intl->code != $this->intl->defaultCode) {
       (new Insert($connection, "series_display_titles"))
-        ->set("language_code", $this->intl->defaultLanguageCode)
+        ->set("language_code", $this->intl->defaultCode)
         ->set("series_id", $this->id)
         ->set("title_id", $this->originalTitleId)
         ->execute()
@@ -416,12 +416,12 @@ SQL
       $result = $connection->query(<<<SQL
 SELECT
   `id`,
-  COLUMN_GET(`dyn_comments`, '{$this->intl->languageCode}' AS BINARY) AS `comment`,
+  COLUMN_GET(`dyn_comments`, '{$this->intl->code}' AS BINARY) AS `comment`,
   `language_code` AS `languageCode`,
   `title`
 FROM `series_titles`
 WHERE `series_id` = {$this->id} AND `id` != {$this->originalTitleId}{$displayTitle}
-ORDER BY `title`{$connection->collate($this->intl->languageCode)}
+ORDER BY `title`{$connection->collate($this->intl->code)}
 SQL
       );
       /* @var $title \MovLib\Data\Title */

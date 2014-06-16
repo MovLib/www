@@ -74,10 +74,10 @@ final class Create extends \MovLib\Presentation\AbstractCreatePresenter {
       ->addAction($this->intl->t("Create"), [ "class" => "btn btn-large btn-success" ])
     ;
 
-    if ($this->intl->languageCode !== $this->intl->defaultLanguageCode) {
+    if ($this->intl->code !== $this->intl->defaultCode) {
       $nameLabel = $this->intl->t("{0} ({1})", [
         $nameLabel,
-        $this->intl->getTranslations("languages")[$this->intl->defaultLanguageCode]->name,
+        $this->intl->getTranslations("languages")[$this->intl->defaultCode]->name,
       ]);
       $form
         ->addElement(new InputText($this->container, "default-name", $nameLabel, $this->entity->defaultName, [

@@ -18,7 +18,9 @@
 namespace MovLib\Core;
 
 /**
- * The i18n model loads and and updated translations and retrieves translated data.
+ * Defines the intl object.
+ *
+ * The intl object is responsible for everything that is related to translations and languages.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
@@ -30,6 +32,10 @@ namespace MovLib\Core;
  */
 final class Intl {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
   // @codingStandardsIgnoreStart
   /**
    * Short class name.
@@ -38,10 +44,6 @@ final class Intl {
    */
   const name = "Intl";
   // @codingStandardsIgnoreEnd
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
 
   /**
    * Custom language code for non linguistic content (used in languages).
@@ -71,16 +73,71 @@ final class Intl {
    */
   const CODE_FACT = "§§";
 
+  /**
+   * The default ISO 639-1 alpha-2 language code.
+   *
+   * @var string
+   */
+  const DEFAULT_CODE = "en";
+
+  /**
+   * The default Intl ICU locale.
+   *
+   * @var string
+   */
+  const DEFAULT_LOCALE = "en_US";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Static Properties
+
+
+  /**
+   * {@see \NumberFormatter} cache.
+   *
+   * @var array
+   */
+  public static $numberFormatters = [];
+
+  /**
+   * All available system languages.
+   *
+   * Associative array containing all available system languages where the key is the ISO 639-1 code and the value the
+   * corresponding Intl ICU locale.
+   *
+   * @var array
+   */
+  public static $systemLanguages = [
+    "de" => "de_AT",
+    "en" => "en_US",
+  ];
+
+  /**
+   * Used to cache translations.
+   *
+   * @see ::getTranslations
+   * @see ::translate
+   * @var array
+   */
+  protected static $translations = [];
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
+
+  /**
+   * ISO 639-1 alpha-2 language code. Supported language codes are defined via nginx configuration.
+   *
+   * @link https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
+   * @var string
+   */
+  public $code;
 
   /**
    * The default language code.
    *
    * @var string
    */
-  public $defaultLanguageCode;
+  public $defaultCode;
 
   /**
    * The default locale.
@@ -98,35 +155,11 @@ final class Intl {
   public $direction = "ltr";
 
   /**
-   * ISO 639-1 alpha-2 language code. Supported language codes are defined via nginx configuration.
-   *
-   * @link https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-   * @var string
-   */
-  public $languageCode;
-
-  /**
    * Locale for the current language code, used for Intl ICU related classes and functions (e.g. collators).
    *
    * @var string
    */
   public $locale;
-
-  /**
-   * All available system locales.
-   *
-   * @var array
-   */
-  public $systemLocales;
-
-  /**
-   * Used to cache translations.
-   *
-   * @see Intl::getTranslations()
-   * @see Intl::translate()
-   * @var array
-   */
-  protected static $translations = [];
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -135,30 +168,27 @@ final class Intl {
   /**
    * Instantiate new intl object.
    *
-   * @param \MovLib\Core\Config $config
-   *   The active config instance.
-   * @param string $language
-   *   An ISO 639-1 code (preferred) or a locale, defaults to <code>NULL</code> (default system locale from config will
-   *   be used).
-   * @throws \InvalidArgumentException
-   *   If <var>$locale</var> contains a malformed or unsupported locale/language code.
+   * @param string $code
+   *   ISO 639-1 alpha-2 system language code to use.
    */
-  final public function __construct(\MovLib\Core\Config $config, $language = null) {
+  final public function __construct($code) {
     // @devStart
     // @codeCoverageIgnoreStart
     assert(
-      !empty($config->defaultLanguageCode) && !empty($config->defaultLocale) && !empty($config->locales),
-      "Please execute `movadmin seed-languages` (or simply `make` in the document root)."
+      $code === null || isset(self::$systemLanguages[$code]) || in_array($code, self::$systemLanguages),
+      "\$language ({$code}) must be a valid system language's ISO 639-1 alpha-2 code."
     );
     // @codeCoverageIgnoreEnd
     // @devEnd
-    $this->defaultLanguageCode = $config->defaultLanguageCode;
-    $this->defaultLocale       = $config->defaultLocale;
-    $this->systemLocales       = $config->locales;
-    if (!$language) {
-      $language = $config->defaultLanguageCode;
-    }
-    $this->setLocale($language);
+
+    // Export default language code and locale to class scope. Providing public properties allows classes to directly
+    // embed the code and locale in strings.
+    $this->defaultCode   = self::DEFAULT_CODE;
+    $this->defaultLocale = self::DEFAULT_LOCALE;
+
+    // Export current language code and locale to class scope.
+    $this->code   = $code;
+    $this->locale = self::$systemLanguages[$code];
   }
 
 
@@ -166,38 +196,19 @@ final class Intl {
 
 
   /**
-   * Get the default locale.
+   * Get instance in the current language.
    *
-   * @staticvar string $defaultLocale
-   *   Used to cache the default locale.
-   * @return string
-   *   The default locale.
-   */
-  public static function getDefaultLocale() {
-    static $defaultLocale = null;
-    if ($defaultLocale === null) {
-      $defaultLocale = \Locale::getDefault();
-    }
-    return $defaultLocale;
-  }
-
-  /**
-   * Get the default language code.
+   * The <i>current language</i> is either the language provided by the server or the default language as defined in
+   * this class. If you need an instance with a specific language simply instantiate it.
    *
-   * @staticvar string $defaultLanguageCode
-   *   Used to cache the default language code.
-   * @return string
-   *   The default language code.
+   * @staticvar \MovLib\Core\Intl $instance
+   *   Used to cache the instance in the current language.
+   * @return \MovLib\Core\Intl
+   *   Instance in the current language.
    */
-  public static function getDefaultLanguageCode() {
-    static $defaultLanguageCode = null;
-    if ($defaultLanguageCode === null) {
-      // We call our own method at this point to seed its static variable and cache the value returned by the method
-      // call to the native Locale class.
-      $locale = self::getDefaultLocale();
-      $defaultLanguageCode = "{$locale{0}}{$locale{1}}";
-    }
-    return $defaultLanguageCode;
+  public static function getInstance() {
+    static $instance;
+    return $instance ?: ($instance = new Intl(isset($_SERVER["LANGUAGE_CODE"]) ? $_SERVER["LANGUAGE_CODE"] : self::DEFAULT_CODE));
   }
 
 
@@ -205,17 +216,23 @@ final class Intl {
 
 
   /**
-   * Format a message without translation, very useful for inline number formatting.
+   * Format message.
    *
+   * @see \MessageFormatter::formatMessage
    * @param string $message
    *   The message to format.
    * @param mixed $args
    *   The message arguments.
+   * @param string $code [optional]
+   *   The system language's ISO 639-1 alpha-2 code to use for formatting, defaults to <code>NULL</code> and the
+   *   language of the current instance is used for formatting.
    * @return string
    *   The formatted message.
+   * @throws \IntlException
+   *   If message formatting fails.
    */
-  public function format($message, $args) {
-    return \MessageFormatter::formatMessage($this->locale, $message, (array) $args);
+  public function format($message, $args, $code = null) {
+    return \MessageFormatter::formatMessage(self::$systemLanguages[$code ?: $this->code], $message, (array) $args);
   }
 
   /**
@@ -249,49 +266,137 @@ final class Intl {
   }
 
   /**
-   * Format the given value with the given currency.
+   * Format currency.
    *
-   * @param mixed $value
-   *   The value to format.
-   * @param string $currencyCode
-   *   The currency code that should be used to format the value.
-   * @param string $locale [optional]
-   *   Use a different locale for this formatted currency.
+   * @param mixed $amount
+   *   The amount to format.
+   * @param string $currency
+   *   The currency's ISO 4217 alpha-3 code.
+   * @param string $code [optional]
+   *   The system language's ISO 639-1 alpha-2 code to use for formatting, defaults to <code>NULL</code> and the
+   *   language of the current instance is used for formatting.
    * @return string
-   *   The formatted currency.
+   *   The formatted duration.
+   * @throws \IntlException
    */
-  public function formatCurrency($value, $currencyCode, $locale = null) {
-    static $fmts = [];
-    if (!$locale) {
-      $locale = $this->locale;
+  public function formatCurrency($amount, $currency, $code = null) {
+    $numberFormatter = $this->getNumberFormatter(\NumberFormatter::CURRENCY, $code);
+    $formatted       = $numberFormatter->formatCurrency($amount, $currency);
+    if ($formatted === false) {
+      throw new \IntlException($numberFormatter->getErrorMessage(), $numberFormatter->getErrorCode());
     }
-    if (empty($fmts[$locale])) {
-      $fmts[$locale] = new \NumberFormatter($locale, \NumberFormatter::CURRENCY);
-    }
-    return $fmts[$locale]->formatCurrency($value, $currencyCode);
+    return $formatted;
   }
 
   /**
-   * Format the given number as integer.
+   * Format decimal.
+   *
+   * @param mixed $decimal
+   *   The decimal to format.
+   * @param integer $minFraction [optional]
+   *   The minimum fraction digits, defaults to <code>2</code>.
+   * @param integer $maxFraction [optional]
+   *   The maximum fraction digits, defaults to <code>6</code>.
+   * @param string $code [optional]
+   *   The system language's ISO 639-1 alpha-2 code to use for formatting, defaults to <code>NULL</code> and the
+   *   language of the current instance is used for formatting.
+   * @return string
+   *   The formatted duration.
+   * @throws \IntlException
+   */
+  public function formatDecimal($decimal, $minFraction = 2, $maxFraction = 6, $code = null) {
+    $numberFormatter = $this->getNumberFormatter(\NumberFormatter::DECIMAL, $code);
+    $formatted       = $numberFormatter->format($decimal, \NumberFormatter::TYPE_DOUBLE);
+    $numberFormatter->setAttribute(\NumberFormatter::MIN_FRACTION_DIGITS, $minFraction);
+    $numberFormatter->setAttribute(\NumberFormatter::MAX_FRACTION_DIGITS, $maxFraction);
+    if ($formatted === false) {
+      throw new \IntlException($numberFormatter->getErrorMessage(), $numberFormatter->getErrorCode());
+    }
+    return $formatted;
+  }
+
+  /**
+   * Format duration.
+   *
+   * @param mixed $duration
+   *   The duration to format.
+   * @param string $code [optional]
+   *   The system language's ISO 639-1 alpha-2 code to use for formatting, defaults to <code>NULL</code> and the
+   *   language of the current instance is used for formatting.
+   * @return string
+   *   The formatted duration.
+   * @throws \IntlException
+   */
+  public function formatDuration($duration, $code = null) {
+    // @todo The duration formatter only supports the English locale as of now. This is no problem for German.
+    $numberFormatter = $this->getNumberFormatter(\NumberFormatter::DURATION, self::DEFAULT_CODE);
+    $formatted       = $numberFormatter->format($duration, \NumberFormatter::TYPE_INT64);
+    if ($formatted === false) {
+      throw new \IntlException($numberFormatter->getErrorMessage(), $numberFormatter->getErrorCode());
+    }
+    return $formatted;
+  }
+
+  /**
+   * Format integer.
    *
    * @param mixed $number
    *   The number to format.
-   * @param string $locale [optional]
-   *   Use different locale to format this number.
+   * @param string $code [optional]
+   *   The system language's ISO 639-1 alpha-2 code to use for formatting, defaults to <code>NULL</code> and the
+   *   language of the current instance is used for formatting.
    * @return string
-   *   The formatted integer number.
+   *   The formatted integer.
+   * @throws \IntlException
    */
-  public function formatInteger($number, $locale = null) {
-    static $fmts = [];
-    if (!$locale) {
-      $locale = $this->locale;
+  public function formatInteger($number, $code = null) {
+    $numberFormatter = $this->getNumberFormatter(\NumberFormatter::DECIMAL, $code);
+    $formatted       = $numberFormatter->format($number, \NumberFormatter::TYPE_INT64);
+    if ($formatted === false) {
+      throw new \IntlException($numberFormatter->getErrorMessage(), $numberFormatter->getErrorCode());
     }
-    if (empty($fmts[$locale])) {
-      $fmts[$locale] = new \NumberFormatter($locale, \NumberFormatter::DECIMAL);
-      $fmts[$locale]->setAttribute(\NumberFormatter::MIN_FRACTION_DIGITS, 0);
-      $fmts[$locale]->setAttribute(\NumberFormatter::MAX_FRACTION_DIGITS, 0);
+    return $formatted;
+  }
+
+  /**
+   * Format percentage.
+   *
+   * @param mixed $fraction
+   *   The fraction to format.
+   * @param string $code [optional]
+   *   The system language's ISO 639-1 alpha-2 code to use for formatting, defaults to <code>NULL</code> and the
+   *   language of the current instance is used for formatting.
+   * @return string
+   *   The formatted integer.
+   * @throws \IntlException
+   */
+  public function formatPercentage($fraction, $code = null) {
+    $numberFormatter = $this->getNumberFormatter(\NumberFormatter::PERCENT, $code);
+    $formatted       = $numberFormatter->format($fraction, \NumberFormatter::TYPE_DOUBLE);
+    if ($formatted === false) {
+      throw new \IntlException($numberFormatter->getErrorMessage(), $numberFormatter->getErrorCode());
     }
-    return $fmts[$locale]->format($number, \NumberFormatter::TYPE_INT64);
+    return $formatted;
+  }
+
+  /**
+   * Get {@see \NumberFormatter} for the current language.
+   *
+   * @param integer $style
+   *   One of the {@link http://php.net/class.numberformatter#intl.numberformatter-constants.unumberformatstyle format
+   *   style} constants.
+   * @param string $code [optional]
+   *   The system language's ISO 639-1 alpha-2 code to use for formatting, defaults to <code>NULL</code> and the
+   *   language of the current instance is used for formatting.
+   * @return \NumberFormatter
+   *   {@see \NumberFormatter} for the current language.
+   */
+  public function getNumberFormatter($style, $code = null) {
+    $code || ($code = $this->code);
+    if (empty(self::$numberFormatters[$code][$style])) {
+      self::$numberFormatters[$code][$style] = new \NumberFormatter(self::$systemLanguages[$code], $style);
+    }
+    return self::$numberFormatters[$code][$style];
   }
 
   /**
@@ -299,34 +404,32 @@ final class Intl {
    *
    * @param string $filename
    *   The name of the file that contains the translations.
-   * @param string $locale [optional]
-   *   Use a different locale for this translation.
+   * @param string $code [optional]
+   *   The system language's ISO 639-1 alpha-2 code to get the translations for, defaults to <code>NULL</code> and the
+   *   current instance's language is used.
    * @return array
    *   The translations from the file or an empty array if no translations are available.
    * @throws \IntlException
    */
-  public function getTranslations($filename, $locale = null) {
+  public function getTranslations($filename, $code = null) {
+    $code || ($code = $this->code);
     try {
-      if (!$locale) {
-        $locale = $this->locale;
-      }
-
       // Nothing to do if we already have the translations cached for this entry.
-      if (isset(self::$translations[$locale][$filename])) {
-        return self::$translations[$locale][$filename];
+      if (isset(self::$translations[$code][$filename])) {
+        return self::$translations[$code][$filename];
       }
 
       // Build absolute path to the translation file.
-      $file = "dr://var/intl/{$locale}/{$filename}.php";
+      $file = "dr://var/intl/{$code}/{$filename}.php";
 
       // Only load the translation file if it really exists, some things don't need translation in the default locale
       // (e.g. routes) and others do (e.g. time zones).
       if (is_file($file)) {
-        return (self::$translations[$locale][$filename] = require $file);
+        return (self::$translations[$code][$filename] = require $file);
       }
 
       // No cached entry and no file was loaded, create an empty index in the cache to speed up later look ups.
-      return (self::$translations[$locale][$filename] = []);
+      return (self::$translations[$code][$filename] = []);
     }
     catch (\Exception $e) {
       throw new \IntlException("Couldn't get translations for '{$filename}'.", null, $e);
@@ -341,50 +444,25 @@ final class Intl {
    * @param mixed $args [optional]
    *   The arguments that should be passed to the message formatter, defaults to an empty array and the message
    *   formatter isn't used at all. You can pass either a single scalar value or an array.
-   * @param string $locale [optional]
-   *   Use a different locale for this translation.
+   * @param string $code [optional]
+   *   The system language's ISO 639-1 alpha-2 code to translate the route to, defaults to <code>NULL</code> and the
+   *   current instance's language is used.
    * @return string
    *   The translated and formatted route or query key.
    * @throws \ErrorException
    *   If the given route is empty or a part of the route is empty.
    */
-  public function r($route, $args = [], $locale = null) {
+  public function r($route, $args = [], $code = null) {
     // @devStart
     // @codeCoverageIgnoreStart
     assert(!empty($route), "A route cannot be empty!");
     // @codeCoverageIgnoreEnd
     // @devEnd
     // Nothing to do if this is the index route.
-    if ($route == "/") {
+    if ($route === "/") {
       return $route;
     }
-    return $this->translate($route, $args, "routes", $locale);
-  }
-
-  /**
-   * Set the locale.
-   *
-   * @param string $language
-   *   An ISO 639-1 code (preferred) or a locale, defaults to <code>NULL</code> (default system locale from config will
-   *   be used).
-   * @return this
-   * @throws \InvalidArgumentException
-   */
-  public function setLocale($language) {
-    if (isset($this->systemLocales[$language])) {
-      $this->locale       = $this->systemLocales[$language];
-      $this->languageCode = $language;
-    }
-    elseif (in_array($language, $this->systemLocales)) {
-      $this->locale       = $language;
-      $this->languageCode = "{$language[0]}{$language[1]}";
-    }
-    else {
-      throw new \InvalidArgumentException(
-        "\$locale ({$language}) must be a valid system locale: " . implode(", ", $this->systemLocales)
-      );
-    }
-    return $this;
+    return $this->translate($route, $args, "routes", $code);
   }
 
   /**
@@ -395,14 +473,15 @@ final class Intl {
    * @param mixed $args [optional]
    *   The arguments that should be passed to the message formatter, defaults to an empty array and the message
    *   formatter isn't used at all. You can pass either a single scaler value or an array.
-   * @param string $locale [optional]
-   *   Use a different locale for this translation.
+   * @param string $code [optional]
+   *   The system language's ISO 639-1 alpha-2 code to translate the message to, defaults to <code>NULL</code> and the
+   *   current instance's language is used.
    * @return string
    *   The formatted and translated <var>$message</var>.
    * @throws \IntlException
    */
-  public function t($message, $args = [], $locale = null) {
-    return $this->translate($message, $args, "messages", $locale);
+  public function t($message, $args = [], $code = null) {
+    return $this->translate($message, $args, "messages", $code);
   }
 
   /**
@@ -428,7 +507,7 @@ final class Intl {
     $titleCase = explode(" ", $title);
     $c         = count($titleCase) - 1;
     for ($i = 0; $i <= $c; ++$i) {
-      if (($i === 0 || $i === $c || mb_strlen($titleCase[$i]) > 4) && mb_strtoupper($titleCase[$i]) != $titleCase[$i]) {
+      if (($i === 0 || $i === $c || mb_strlen($titleCase[$i]) > 4) && mb_strtoupper($titleCase[$i]) !== $titleCase[$i]) {
         $titleCase[$i] = mb_convert_case($titleCase[$i], MB_CASE_TITLE);
       }
     }
@@ -456,17 +535,18 @@ final class Intl {
    * @param mixed $args [optional]
    *   The arguments that should be passed to the message formatter, defaults to an empty array and the message
    *   formatter isn't used at all. You can pass either a single scaler value or an array.
-   * @param string $locale [optional]
-   *   Use a different locale for this translation.
+   * @param string $code [optional]
+   *   The system language's ISO 639-1 alpha-2 code to translate the singular/plural to, defaults to <code>NULL</code>
+   *   and the current instance's language is used.
    * @return string
    *   The translated and formatted plural message.
    * @throws \IntlException
    */
-  public function tp($count, $plural, $singular = null, $args = [], $locale = null) {
+  public function tp($count, $plural, $singular = null, $args = [], $code = null) {
     $singular || ($singular = $plural);
     $args && ($args = (array) $args);
     $args[0] = $count;
-    return $this->translate("{0,plural,=1{{$singular}}other{{$plural}}}", $args, "messages", $locale);
+    return $this->translate("{0,plural,=1{{$singular}}other{{$plural}}}", $args, "messages", $code);
   }
 
   /**
@@ -480,13 +560,13 @@ final class Intl {
    * @param string $context
    *   The translations context (e.g. <code>"routes/singular"</code> or <code>"countries"</code>) if you pass
    *   <code>NULL</code> the database is asked.
-   * @param null|string $locale
+   * @param null|string $code
    *   Use a different locale for this translation.
    * @return string
    *   The translated and formatted pattern.
    * @throws \IntlException
    */
-  public function translate($pattern, $args, $context, $locale) {
+  public function translate($pattern, $args, $context, $code) {
     // @devStart
     // @codeCoverageIgnoreStart
     assert(!empty($pattern), "The pattern cannot be empty.");
@@ -506,40 +586,31 @@ final class Intl {
       strpos($pattern, "...") === false,
       "Don't simply use three dots in a row, use the actual Unicode character with proper semantic: …"
     );
-    assert(strip_tags($pattern) == $pattern, "HTML is not allowed in translation patterns.");
+    assert(strip_tags($pattern) === $pattern, "HTML is not allowed in translation patterns.");
     // Allow passing NULL, 0, "false", false, ... etc.
     assert(!$args || !empty($args), "Message formatter arguments cannot be empty if given.");
     assert(!empty($context), "Translation context cannot be empty.");
     assert(is_string($context), "Translation context must be of type string.");
-    assert(
-      !isset($locale) || preg_match("/[a-z]{2}[_\-][A-Z]{2}/", $locale),
-      "A locale consists of a language and country part, e.g. 'de_AT' or 'de-AT'."
-    );
     // @codeCoverageIgnoreEnd
     // @devEnd
-    try {
-      $locale || ($locale = $this->locale);
-      // Only attempt to translate the pattern if we have no cached translation.
-      if (empty(self::$translations[$locale][$context][$pattern])) {
-        $this->getTranslations($context, $locale);
+    $code || ($code = $this->code);
+    // Only attempt to translate the pattern if we have no cached translation.
+    if (empty(self::$translations[$code][$context][$pattern])) {
+      $this->getTranslations($context, $code);
 
-        // Check if we have a translation for this pattern. If we have none this either means that the pattern is in the
-        // default locale and has no translations (e.g. time zones have translations in the default locale as well, but
-        // most other things have no default locale translations). We insert the given pattern in this case to speed up
-        // later look ups.
-        if (empty(self::$translations[$locale][$context][$pattern])) {
-          self::$translations[$locale][$context][$pattern] = $pattern;
-        }
+      // Check if we have a translation for this pattern. If we have none this either means that the pattern is in the
+      // default locale and has no translations (e.g. time zones have translations in the default locale as well, but
+      // most other things have no default locale translations). We insert the given pattern in this case to speed up
+      // later look ups.
+      if (empty(self::$translations[$code][$context][$pattern])) {
+        self::$translations[$code][$context][$pattern] = $pattern;
       }
+    }
 
-      if (empty($args)) {
-        return self::$translations[$locale][$context][$pattern];
-      }
-      return \MessageFormatter::formatMessage($locale, self::$translations[$locale][$context][$pattern], (array) $args);
+    if (empty($args)) {
+      return self::$translations[$code][$context][$pattern];
     }
-    catch (\Exception $e) {
-      throw new \IntlException("Couldn't translate '{$pattern}'.", null, $e);
-    }
+    return \MessageFormatter::formatMessage(self::$systemLanguages[$code], self::$translations[$code][$context][$pattern], (array) $args);
   }
 
   /**
@@ -549,22 +620,20 @@ final class Intl {
    *   Used to cache transliterator instances.
    * @param string $text
    *   The text to transliterate.
-   * @param null|string $locale [optional]
-   *   Use a different locale for this translation.
-   * @return null|string
-   *   <code>NULL</code> if the transliterated string is an exact match of the given <var>$text</var>, otherwise the
-   *   transliterated text is returned.
+   * @param string $code [optional]
+   *   The system language's ISO 639-1 alpha-2 code to transliterate to, defaults to <code>NULL</code> and the current
+   *   instances language is used.
+   * @return string
+   *   The transliterated string.
    * @throws \IntlException
    */
-  public function transliterate($text, $locale = null) {
+  public function transliterate($text, $code = null) {
     static $transliterators = [];
-    $locale || ($locale = $this->locale);
-    if (empty($transliterators[$locale])) {
-      $transliterators[$locale] = \Transliterator::create("Any-{$locale}");
+    $code || ($code = $this->code);
+    if (empty($transliterators[$code])) {
+      $transliterators[$code] = \Transliterator::create("Any-{$this::$systemLanguages[$code]}");
     }
-    if (($transliterated = $transliterators[$locale]->transliterate($text)) != $text) {
-      return $transliterated;
-    }
+    return $transliterators[$code]->transliterate($text);
   }
 
 }

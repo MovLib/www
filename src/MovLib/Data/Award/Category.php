@@ -169,16 +169,16 @@ SELECT
   `award_id`,
   `changed`,
   `created`,
-  COLUMN_GET(`dyn_names`, '{$container->intl->defaultLanguageCode}' AS CHAR),
+  COLUMN_GET(`dyn_names`, '{$container->intl->defaultCode}' AS CHAR),
   `deleted`,
   IFNULL(
-    COLUMN_GET(`dyn_names`, '{$container->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`dyn_names`, '{$container->intl->defaultLanguageCode}' AS CHAR)
+    COLUMN_GET(`dyn_names`, '{$container->intl->code}' AS CHAR),
+    COLUMN_GET(`dyn_names`, '{$container->intl->defaultCode}' AS CHAR)
   ),
   `first_year`,
   `last_year`,
-  COLUMN_GET(`dyn_descriptions`, '{$container->intl->languageCode}' AS CHAR),
-  COLUMN_GET(`dyn_wikipedia`, '{$container->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`dyn_descriptions`, '{$container->intl->code}' AS CHAR),
+  COLUMN_GET(`dyn_wikipedia`, '{$container->intl->code}' AS CHAR),
   `count_movies`,
   `count_series`,
   `count_persons`,
@@ -243,7 +243,7 @@ SQL
     // the default one, in which case the user was required to enter a default name. Of course we have to export that
     // as well to our revision.
     if (isset($this->defaultName)) {
-      $revision->names[$this->intl->defaultLanguageCode] = $this->defaultName;
+      $revision->names[$this->intl->defaultCode] = $this->defaultName;
     }
 
     return $revision;
@@ -305,7 +305,7 @@ public function lemma($locale) {
       $names = json_decode(Database::getConnection()->query("SELECT COLUMN_JSON(`dyn_names`) FROM `awards_categories` WHERE `id` = {$this->id} LIMIT 1")->fetch_all()[0][0], true);
     }
 
-    return isset($names[$languageCode]) ? $names[$languageCode] : $names[$this->intl->defaultLanguageCode];
+    return isset($names[$languageCode]) ? $names[$languageCode] : $names[$this->intl->defaultCode];
   }
 
 }

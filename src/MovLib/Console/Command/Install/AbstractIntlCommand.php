@@ -17,7 +17,7 @@
  */
 namespace MovLib\Console\Command\Install;
 
-use \MovLib\Core\Container;
+use \MovLib\Core\Intl;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -40,6 +40,10 @@ use \Symfony\Component\Console\Output\OutputInterface;
  */
 abstract class AbstractIntlCommand extends \MovLib\Console\Command\AbstractCommand {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
   // @codingStandardsIgnoreStart
   /**
    * Short class name.
@@ -48,10 +52,6 @@ abstract class AbstractIntlCommand extends \MovLib\Console\Command\AbstractComma
    */
   const name = "AbstractIntlCommand";
   // @codingStandardsIgnoreEnd
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
 
   /**
    * Intl ICU source data directory.
@@ -75,13 +75,13 @@ abstract class AbstractIntlCommand extends \MovLib\Console\Command\AbstractComma
   /**
    * {@inheritdoc}
    */
-  public function __construct(Container $container) {
+  public function __construct(\MovLib\Core\Container $container) {
     parent::__construct($container);
     $this->addArgument(
       "locale",
       InputArgument::IS_ARRAY | InputArgument::OPTIONAL,
       str_replace("'all'", "<comment>all</comment>", wordwrap(
-        "The system locales for which translations should be generated, either a language code or a locale. Note that " .
+        "The system locales for which translations should be generated, either a language code or locale. Note that " .
         "the default value 'all' is a special keyword, if 'all' is part of your supplied arguments any other argument " .
         "is simply ignored and translations for all available system locales will be generated. The following system " .
         "locales are currently available:\n\n<info>" . implode("</info>, <info>", [ "all" ] + $this->config->locales) .
@@ -129,33 +129,31 @@ abstract class AbstractIntlCommand extends \MovLib\Console\Command\AbstractComma
     $args = $input->getArgument("locale");
     if (in_array("all", $args)) {
       $this->writeVerbose("Found special <comment>all</comment> keyword, generating translations for all system locales");
-      $locales = $this->config->locales;
+      $languages = Intl::$systemLanguages;
     }
     else {
       foreach ($args as $arg) {
-        if (!isset($this->config->locales[$arg]) && !in_array($arg, $this->config->locales)) {
-          throw new \InvalidArgumentException("Supplied locale '{$arg}' is not a valid system locale.");
+        if (empty(Intl::$systemLanguages[$arg]) && ($arg = array_search($arg, Intl::$systemLanguages)) === false) {
+          throw new \InvalidArgumentException("Supplied language '{$arg}' is not a valid system language code or locale.");
         }
-        $languageCode           = "{$arg[0]}{$arg[1]}";
-        $locales[$languageCode] = $this->config->locales[$languageCode];
+        $languages[$arg] = Intl::$systemLanguages[$arg];
       }
     }
 
     $this->writeDebug("Creating target URI for translations based on the command's name");
     $targetFilename = str_replace("seed-", "", $this->getName());
     $name = strtr($this->getName(), "-", " ");
-    $this->writeVeryVerbose("Target filename will be <comment>dr://var/intl/<locale>/{$targetFilename}.php</comment>");
+    $this->writeVeryVerbose("Target filename will be <comment>dr://var/intl/<language_code>/{$targetFilename}.php</comment>");
 
-    foreach ($locales as $locale) {
-      $this->writeDebug("Setting Intl locale to <comment>{$locale}</comment>");
-      $this->intl->setLocale($locale);
+    foreach ($languages as $code => $locale) {
+      $this->writeDebug("Creating new Intl instance for <comment>{$code}</comment>...");
+      $this->intl = new Intl($code);
 
-      $this->writeVerbose("Creating <info>{$name}</info> translations for <comment>{$locale}</comment>");
-      file_put_contents("dr://var/intl/{$locale}/{$targetFilename}.php", "<?php return[{$this->translate()}];");
+      $this->writeVerbose("Creating <info>{$name}</info> translations for <comment>{$code}</comment>");
+      file_put_contents("dr://var/intl/{$code}/{$targetFilename}.php", "<?php return[{$this->translate()}];");
     }
 
-    $this->intl->setLocale($this->intl->defaultLocale);
-    $this->writeDebug("Successfully created translations for " . implode(", ", $locales) . "!", self::MESSAGE_TYPE_INFO);
+    $this->writeDebug("Successfully created translations for " . implode(", ", $languages) . "!", self::MESSAGE_TYPE_INFO);
     return 0;
   }
 
@@ -192,13 +190,13 @@ abstract class AbstractIntlCommand extends \MovLib\Console\Command\AbstractComma
     }
 
     // Load the best matching translations.
-    $source    = "{$source}/{$this->intl->languageCode}.txt";
+    $source    = "{$source}/{$this->intl->code}.txt";
     $srcLocale = "{$source}/{$this->intl->locale}.txt";
     if (is_file($srcLocale)) {
       $source = $srcLocale;
     }
     elseif (!is_file($source)) {
-      throw new \UnexpectedValueException("There are not translations available for '{$this->intl->languageCode}' ('{$dataSourceDirectoryName}')");
+      throw new \UnexpectedValueException("There are not translations available for '{$this->intl->code}' ('{$dataSourceDirectoryName}')");
     }
 
     // Generate the resource bundle.

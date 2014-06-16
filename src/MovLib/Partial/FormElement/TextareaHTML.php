@@ -322,7 +322,7 @@ class TextareaHTML extends \MovLib\Partial\FormElement\TextareaHTMLRaw {
     }
     $config = [
       "allowedTags"    => $allowedTags,
-      "language"       => $this->intl->languageCode,
+      "language"       => $this->intl->code,
       "headingLevel"   => $this->headingLevel,
       "mode"           => $mode,
     ];

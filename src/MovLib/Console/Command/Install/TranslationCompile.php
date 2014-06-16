@@ -60,7 +60,7 @@ final class TranslationCompile extends \MovLib\Console\Command\AbstractCommand {
     // Go through all available system languages and compile the messages.
     foreach (Intl::$systemLanguages as $code => $locale) {
       // Build the absolute URI to the file that contains the translated messages.
-      $po = "dr://var/intl/{$locale}/messages.po";
+      $po = "dr://var/intl/{$code}/messages.po";
 
       // Skip this language if no messages are available that contain translations.
       if (!file_exists($po)) {
@@ -97,7 +97,7 @@ final class TranslationCompile extends \MovLib\Console\Command\AbstractCommand {
 
       // Only export the compiled translations if at least a single message differs from the source.
       if ($translations) {
-        file_put_contents("dr://var/intl/{$locale}/messages.php", "<?php return[{$translations}];");
+        file_put_contents("dr://var/intl/{$code}/messages.php", "<?php return[{$translations}];");
       }
     }
 

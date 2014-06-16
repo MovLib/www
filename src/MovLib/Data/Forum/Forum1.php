@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data\Forum;
 
+use \MovLib\Core\Intl;
+
 /**
  * Defines the Announcements forum object.
  *
@@ -38,13 +40,13 @@ final class Forum1 implements \MovLib\Data\Forum\ForumInterface {
   /**
    * {@inheritdoc}
    */
-  public function getDescription(\MovLib\Core\Intl $intl, $locale = null) {
-    return $intl->t(
+  public function getDescription($languageCode = null) {
+    return Intl::getInstance()->t(
       "Important news around {0}our{1} website will be announced by the administrators in the {2}announcement " .
       "forum{3}. Active users should have a look at this forum on a regular basis, because all important facts are " .
       "posted here first.",
       [ "<em>", "</em>", "<strong>", "</strong>" ],
-      $locale
+      $languageCode
     );
   }
 
@@ -58,8 +60,8 @@ final class Forum1 implements \MovLib\Data\Forum\ForumInterface {
   /**
    * {@inheritdoc}
    */
-  public function getTitle(\MovLib\Core\Intl $intl, $locale = null) {
-    return $intl->t("Announcements", null, $locale);
+  public function getTitle($languageCode = null) {
+    return Intl::getInstance()->t("Announcements", null, $languageCode);
   }
 
 }

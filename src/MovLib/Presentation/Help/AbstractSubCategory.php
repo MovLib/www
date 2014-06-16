@@ -77,9 +77,9 @@ abstract class AbstractSubCategory extends \MovLib\Presentation\AbstractIndexPre
     ]);
     $this->initLanguageLinks($this->subCategory->route->route);
 
-    $sidebarItems = [ [ $this->subCategory->category->route, "{$this->subCategory->category->title} <span class='fr'>{$this->intl->format("{0,number}", [ $this->subCategory->category->articleCount ])}</span>", [ "class" => "ico {$this->subCategory->category->icon} separator" ] ] ];
+    $sidebarItems = [ [ $this->subCategory->category->route, "{$this->subCategory->category->title} <span class='fr'>{$this->intl->formatInteger($this->subCategory->category->articleCount)}</span>", [ "class" => "ico {$this->subCategory->category->icon} separator" ] ] ];
     foreach ((new SubCategorySet($this->container))->getAllBelongingToCategory($this->subCategory->category->id) as $id => $entity) {
-      $sidebarItems[] = [ $entity->route, "{$entity->title} <span class='fr'>{$this->intl->format("{0,number}", [ $entity->articleCount ])}</span>", [ "class" => "ico {$entity->icon}" ] ];
+      $sidebarItems[] = [ $entity->route, "{$entity->title} <span class='fr'>{$this->intl->formatInteger($entity->articleCount)}</span>", [ "class" => "ico {$entity->icon}" ] ];
     }
     $this->sidebarInit($sidebarItems);
 

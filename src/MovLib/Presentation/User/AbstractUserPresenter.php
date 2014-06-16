@@ -70,8 +70,8 @@ abstract class AbstractUserPresenter extends \MovLib\Presentation\AbstractPresen
     if ($this->entity->deleted) {
       $this->sidebarInit([
         [ $this->entity->route, $this->intl->t("View"), [ "class" => "ico ico-view" ]],
-        [ $this->entity->r("/contributions"), "{$this->intl->t("Contributions")} <span class='fr'>{$this->intl->format("{0,number}", $this->entity->edits)}</span>", [ "class" => "ico ico-database" ] ],
-        [ $this->entity->r("/uploads"), "{$this->intl->t("Uploads")} <span class='fr'>{$this->intl->format("{0,number}", $this->entity->uploadCount)}</span>", [ "class" => "ico ico-upload" ] ],
+        [ $this->entity->r("/contributions"), "{$this->intl->t("Contributions")} <span class='fr'>{$this->intl->formatInteger($this->entity->edits)}</span>", [ "class" => "ico ico-database" ] ],
+        [ $this->entity->r("/uploads"), "{$this->intl->t("Uploads")} <span class='fr'>{$this->intl->formatInteger($this->entity->uploadCount)}</span>", [ "class" => "ico ico-upload" ] ],
       ]);
     }
     else {
@@ -79,9 +79,9 @@ abstract class AbstractUserPresenter extends \MovLib\Presentation\AbstractPresen
         [ $this->entity->route, $this->intl->t("View"), [ "class" => "ico ico-view" ]],
         [ $this->entity->r("/collection"), $this->intl->t("Collection"), [ "class" => "ico ico-release" ] ],
         [ $this->entity->r("/wantlist"), $this->intl->t("Wantlist"), [ "class" => "ico ico-heart" ] ],
-        [ $this->entity->r("/lists"), "{$this->intl->t("Lists")} <span class='fr'>{$this->intl->format("{0,number}", $this->entity->listCount)}</span>", [ "class" => "ico ico-ul" ] ],
-        [ $this->entity->r("/contributions"), "{$this->intl->t("Contributions")} <span class='fr'>{$this->intl->format("{0,number}", $this->entity->edits)}</span>", [ "class" => "ico ico-database" ] ],
-        [ $this->entity->r("/uploads"), "{$this->intl->t("Uploads")} <span class='fr'>{$this->intl->format("{0,number}", $this->entity->uploadCount)}</span>", [ "class" => "ico ico-upload" ] ],
+        [ $this->entity->r("/lists"), "{$this->intl->t("Lists")} <span class='fr'>{$this->intl->formatInteger($this->entity->listCount)}</span>", [ "class" => "ico ico-ul" ] ],
+        [ $this->entity->r("/contributions"), "{$this->intl->t("Contributions")} <span class='fr'>{$this->intl->formatInteger($this->entity->edits)}</span>", [ "class" => "ico ico-database" ] ],
+        [ $this->entity->r("/uploads"), "{$this->intl->t("Uploads")} <span class='fr'>{$this->intl->formatInteger($this->entity->uploadCount)}</span>", [ "class" => "ico ico-upload" ] ],
         [ $this->entity->r("/contact"), $this->intl->t("Contact"), [ "class" => "ico ico-email separator" ] ],
       ]);
     }

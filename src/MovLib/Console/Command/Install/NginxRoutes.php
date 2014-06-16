@@ -137,9 +137,9 @@ final class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
     $this->writeVerbose("Starting to translate and compile nginx routes...", self::MESSAGE_TYPE_COMMENT);
 
     // Translate and compile routes for all system locales.
-    foreach ($this->intl->systemLocales as $code => $locale) {
+    foreach (Intl::$systemLanguages as $code => $locale) {
       $this->writeDebug("Translating and compiling routes for <comment>{$locale}</comment>");
-      $this->translateAndCompileRoutes(new Intl($this->config, $code));
+      $this->translateAndCompileRoutes(new Intl($code));
     }
 
     // Dynamic FastCGI parameters are the same for all locales, therefore we can write them once.
@@ -562,7 +562,7 @@ NGX;
     }
 
     // Write the locations to the appropriate position on disk.
-    $locationConfigurationURI = str_replace("{{ language_code }}", $intl->languageCode, $this->locationConfigurationURI);
+    $locationConfigurationURI = str_replace("{{ language_code }}", $intl->code, $this->locationConfigurationURI);
     $this->writeVeryVerbose("Writing routes file for <comment>{$intl->locale}</comment> to <comment>{$locationConfigurationURI}</comment>");
     file_put_contents($locationConfigurationURI, $locations);
 
@@ -587,7 +587,7 @@ NGX;
       $expandedRouteParts = substr($expandedRouteParts, 0, -1) . "];";
 
       // Write the content to the file.
-      $target = "dr://var/intl/{$intl->locale}/routes.php";
+      $target = "dr://var/intl/{$intl->code}/routes.php";
       $this->writeVeryVerbose("Writing route parts look-up file to <comment>{$target}</comment>");
       file_put_contents($target, $expandedRouteParts);
     }

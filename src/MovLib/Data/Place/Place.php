@@ -96,7 +96,7 @@ SELECT
   `id`,
   `changed`,
   `created`,
-  IFNULL(COLUMN_GET(`dyn_names`, '{$container->intl->languageCode}' AS BINARY), `name`) AS `name`,
+  IFNULL(COLUMN_GET(`dyn_names`, '{$container->intl->code}' AS BINARY), `name`) AS `name`,
   `country_code` AS `countryCode`,
   `latitude`,
   `longitude`

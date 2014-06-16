@@ -76,7 +76,7 @@ SELECT
   `jobs`.`changed` AS `changed`,
   `jobs`.`created` AS `created`,
   `jobs`.`deleted` AS `deleted`,
-  IFNULL(COLUMN_GET(`jobs`.`dyn_titles_sex0`, '{$this->intl->languageCode}' AS CHAR), COLUMN_GET(`dyn_titles_sex0`, '{$this->intl->defaultLanguageCode}' AS CHAR)) AS `title`,
+  IFNULL(COLUMN_GET(`jobs`.`dyn_titles_sex0`, '{$this->intl->code}' AS CHAR), COLUMN_GET(`dyn_titles_sex0`, '{$this->intl->defaultCode}' AS CHAR)) AS `title`,
   `jobs`.`count_companies` AS `companyCount`,
   `jobs`.`count_persons` AS `personCount`
 FROM `jobs`

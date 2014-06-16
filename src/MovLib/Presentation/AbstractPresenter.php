@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation;
 
+use \MovLib\Core\Intl;
 use \MovLib\Component\Collator;
 use \MovLib\Partial\Navigation\Breadcrumb;
 
@@ -437,25 +438,20 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
       // @devEnd
 
       // Format the current language's link right away.
-      $languageLinks[$languages[$this->intl->languageCode]->name] =
+      $languageLinks[$languages[$this->intl->code]->name] =
         "<a class='active' href='#' title='{$this->intl->t("You’re currently viewing this page.")}'>" .
-          $languages[$this->intl->languageCode]->name .
+          $languages[$this->intl->code]->name .
         "</a>"
       ;
 
       // Remove the current language from the available locales.
-      $locales = $this->intl->systemLocales;
-      unset($locales[$this->intl->languageCode]);
+      $systemLanguages = Intl::$systemLanguages;
+      unset($systemLanguages[$this->intl->code]);
 
       // Translate the rest of the available languages.
-      foreach ($locales as $code => $locale) {
-        $route = $this->intl->r($routeKey, $args, $locale);
-        if ($queries) {
-          array_walk($queries, function (&$value, $key) {
-            $value = rawurlencode($this->intl->r($key)) . "=" . rawurlencode($value);
-          });
-          $route .= "?" . implode("&amp;", $queries);
-        }
+      foreach ($systemLanguages as $code => $locale) {
+        $route = $this->intl->r($routeKey, $args, $code);
+        $queries && ($route .= "?" . http_build_query($queries));
         $languageLinks[$languages[$code]->name] =
           "<a href='//{$code}.{$this->config->hostname}{$route}' lang='{$code}'>{$this->intl->t(
             "{0} ({1})",
@@ -479,7 +475,7 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
               )}</small>" .
               implode(" ", $languageLinks) .
             "</div>" .
-            "<a class='ico ico-languages' id='f-language' tabindex='0'>{$this->intl->t("Language")}: {$languages[$this->intl->languageCode]->name}</a>" .
+            "<a class='ico ico-languages' id='f-language' tabindex='0'>{$this->intl->t("Language")}: {$languages[$this->intl->code]->name}</a>" .
           "</div>" .
         "</section>"
       ;
@@ -493,7 +489,7 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
             "<h3 class='vh'>{$this->intl->t("Copyright and licensing information")}</h3>" .
             "<p id='f-copyright'><span class='ico ico-cc'></span> <span class='ico ico-cc-zero'></span> {$this->intl->t(
               "Database data is available under the {0}Creative Commons — CC0 1.0 Universal{1} license.",
-              [ "<a href='https://creativecommons.org/publicdomain/zero/1.0/deed.{$this->intl->languageCode}' rel='license'>", "</a>" ]
+              [ "<a href='https://creativecommons.org/publicdomain/zero/1.0/deed.{$this->intl->code}' rel='license'>", "</a>" ]
             )}<br>{$this->intl->t(
               "Additional terms may apply for third-party content, please refer to any license or copyright information that is additionaly stated."
             )}</p>" .
@@ -702,7 +698,7 @@ abstract class AbstractPresenter extends \MovLib\Core\Presentation\DependencyInj
     }
     $jsSettings = json_encode($this->javascriptSettings, JSON_UNESCAPED_UNICODE);
 
-    $htmlAttr = " dir='{$this->intl->direction}' id='nojs' lang='{$this->intl->languageCode}' prefix='og: http://ogp.me/ns#'";
+    $htmlAttr = " dir='{$this->intl->direction}' id='nojs' lang='{$this->intl->code}' prefix='og: http://ogp.me/ns#'";
     $logo256  = $this->fs->getExternalURL("asset://img/logo/256.png");
     $title    = $this->getHeadTitle();
 

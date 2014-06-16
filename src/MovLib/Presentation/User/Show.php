@@ -154,7 +154,7 @@ class Show extends \MovLib\Presentation\User\AbstractUserPresenter {
                   $movieHelper->getStructuredOriginalTitle($ratedEntities[$i]->entity, "small") .
                   $this->intl->t("Rated: {0}", [ (new Time($this->intl, $ratedEntities[$i]->created))->formatRelative() ]) .
                 "</div>" .
-                "<div class='s s1 rating-mean tac'>{$this->intl->format("{0,number}", $ratedEntities[$i]->rating)}</div>" .
+                "<div class='s s1 rating-mean tac'>{$this->intl->formatInteger($ratedEntities[$i]->rating)}</div>" .
               "</article>" .
             "</li>"
           ;
@@ -169,7 +169,7 @@ class Show extends \MovLib\Presentation\User\AbstractUserPresenter {
                   $seriesHelper->getStructuredOriginalTitle($ratedEntities[$i]->entity, "small") .
                   $this->intl->t("Rated: {0}", [ (new Time($this->intl, $ratedEntities[$i]->created))->formatRelative() ]) .
                 "</div>" .
-                "<div class='s s1 rating-mean tac'>{$this->intl->format("{0,number}", $ratedEntities[$i]->rating)}</div>" .
+                "<div class='s s1 rating-mean tac'>{$this->intl->formatInteger($ratedEntities[$i]->rating)}</div>" .
               "</article>" .
             "</li>"
           ;

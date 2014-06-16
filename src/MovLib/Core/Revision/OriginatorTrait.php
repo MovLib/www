@@ -145,7 +145,7 @@ trait OriginatorTrait {
       $connection->real_query("START TRANSACTION WITH CONSISTENT SNAPSHOT, READ WRITE");
       $revision = $this->createRevision($userId, $changed);
       $this->preCommit($connection, $revision, $oldRevisionId);
-      $revision->commit($connection, $oldRevisionId, $this->intl->languageCode);
+      $revision->commit($connection, $oldRevisionId, $this->intl->code);
       $this->postCommit($connection, $revision, $oldRevisionId);
       $connection->commit();
     }
@@ -233,7 +233,7 @@ trait OriginatorTrait {
    */
   final protected function getRevisionArrayValue($revisionProperty, $defaultValue = null, $key = null) {
     // Use the current language code of the current concrete instance if no key was passed.
-    $key || ($key = $this->intl->languageCode);
+    $key || ($key = $this->intl->code);
 
     // We use array key exists at this point because it returns true in case the value is NULL, in contrast to isset().
     if (array_key_exists($key, $revisionProperty)) {
@@ -280,7 +280,7 @@ trait OriginatorTrait {
    */
   final protected function setRevisionArrayValue(&$revisionProperty, $value, $key = null) {
     // Use the current language code of the current concrete instance if no key was passed.
-    $key || ($key = $this->intl->languageCode);
+    $key || ($key = $this->intl->code);
 
     // If the value is false (note the two equal signs) and not simply a string containing 0 don't export.
     if ($value == false && $value != "0") {

@@ -143,8 +143,8 @@ final class StarRatingForm extends \MovLib\Core\Presentation\DependencyInjection
           $entity->ratingVotes,
           "<span>",  // @todo: change back to "<a href='{$entity->r("/ratings")}' title='{$this->intl->t("View the rating demographics.")}'>",
           "</span>", //                       "</a>",
-          "ratingVotes"  => "<span property='ratingCount'>{$this->intl->format("{0,number}", $entity->ratingVotes)}</span>",
-          "rating" => "<span property='ratingValue'>{$this->intl->format("{0,number}", $entity->ratingMean)}</span>",
+          "ratingVotes"  => "<span property='ratingCount'>{$this->intl->formatInteger($entity->ratingVotes)}</span>",
+          "rating" => "<span property='ratingValue'>{$this->intl->formatDecimal($entity->ratingMean, 0, 1)}</span>",
         ]
       );
     }

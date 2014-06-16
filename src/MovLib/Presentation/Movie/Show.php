@@ -106,7 +106,7 @@ final class Show extends \MovLib\Presentation\Movie\AbstractMoviePresenter {
       $this->infoboxAdd($this->intl->t("Cast"), $castInfo);
     }
 
-    $this->entity->runtime   && $this->infoboxAdd($this->intl->t("Runtime"), (new Duration($this->container))->formatMinutes($this->entity->runtime, [ "property" => "runtime" ]));
+    $this->entity->runtime   && $this->infoboxAdd($this->intl->t("Runtime"), (new Duration())->formatMinutes($this->entity->runtime, [ "property" => "runtime" ]));
     $this->entity->genreSet  && $this->infoboxAdd($this->intl->t("Genres"), (new Genre($this->container))->getList($this->entity->genreSet));
     $countries = $this->entity->getCountries();
     $countries && $this->infoboxAdd($this->intl->t("Countries"), (new Country($this->container))->getList($countries, "contentLocation"));

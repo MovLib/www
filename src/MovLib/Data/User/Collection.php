@@ -70,8 +70,8 @@ class Collection {
    */
   public static function getMediaConditions() {
     static $mediaConditions = null;
-    if (!isset($mediaConditions[$i18n->languageCode])) {
-      $mediaConditions[$i18n->languageCode] = [
+    if (!isset($mediaConditions[$i18n->code])) {
+      $mediaConditions[$i18n->code] = [
         $i18n->t("Mint (M)"),
         $i18n->t("Near Mint (NM or M-)"),
         $i18n->t("Very Good Plus (VG+)"),
@@ -82,7 +82,7 @@ class Collection {
         $i18n->t("Poor (P)")
       ];
     }
-    return $mediaConditions[$i18n->languageCode];
+    return $mediaConditions[$i18n->code];
   }
 
   /**
@@ -95,8 +95,8 @@ class Collection {
    */
   public static function getSleeveConditions() {
     static $sleeveConditions = null;
-    if (!isset($sleeveConditions[$i18n->languageCode])) {
-      $sleeveConditions[$i18n->languageCode] = [
+    if (!isset($sleeveConditions[$i18n->code])) {
+      $sleeveConditions[$i18n->code] = [
         $i18n->t("Generic"),
         $i18n->t("No Cover"),
         $i18n->t("Mint (M)"),
@@ -109,6 +109,6 @@ class Collection {
         $i18n->t("Poor (P)")
       ];
     }
-    return $sleeveConditions[$i18n->languageCode];
+    return $sleeveConditions[$i18n->code];
   }
 }

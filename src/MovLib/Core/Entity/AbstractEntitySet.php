@@ -100,8 +100,8 @@ abstract class AbstractEntitySet extends \ArrayObject implements \MovLib\Core\En
     $this->entityClass = substr(static::class, 0, -3);
 
     if (!$this->route) {
-      $routeKey = strtolower($this->bundle);
-      $this->route = new Route($this->intl, "/{$routeKey}");
+      $routeKey    = strtolower($this->bundle);
+      $this->route = new Route("/{$routeKey}");
     }
   }
 

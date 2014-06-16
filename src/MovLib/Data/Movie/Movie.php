@@ -241,7 +241,7 @@ SELECT
   `movies`.`deleted`,
   `movies`.`changed`,
   `movies`.`created`,
-  COLUMN_GET(`movies`.`dyn_wikipedia`, '{$container->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`movies`.`dyn_wikipedia`, '{$container->intl->code}' AS CHAR),
   `movies`.`mean_rating`,
   `movies_taglines`.`tagline`,
   `movies_taglines`.`id` AS `taglineId`,
@@ -252,7 +252,7 @@ SELECT
   IFNULL(`display_title`.`title`, `original_title`.`title`),
   IFNULL(`display_title`.`id`, `original_title`.`id`) AS `displayTitleId`,
   IFNULL(`display_title`.`language_code`, `original_title`.`language_code`),
-  COLUMN_GET(`movies`.`dyn_synopses`, '{$container->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`movies`.`dyn_synopses`, '{$container->intl->code}' AS CHAR),
   `posters`.`id`,
   HEX(`posters`.`cache_buster`),
   `posters`.`extension`,
@@ -260,7 +260,7 @@ SELECT
 FROM `movies`
   LEFT JOIN `movies_display_titles`
     ON `movies_display_titles`.`movie_id` = `movies`.`id`
-    AND `movies_display_titles`.`language_code` = '{$container->intl->languageCode}'
+    AND `movies_display_titles`.`language_code` = '{$container->intl->code}'
   LEFT JOIN `movies_titles` AS `display_title`
     ON `display_title`.`id` = `movies_display_titles`.`title_id`
   LEFT JOIN `movies_original_titles`
@@ -269,12 +269,12 @@ FROM `movies`
     ON `original_title`.`id` = `movies_original_titles`.`title_id`
   LEFT JOIN `movies_display_taglines`
     ON `movies_display_taglines`.`movie_id` = `movies`.`id`
-    AND `movies_display_taglines`.`language_code` = '{$container->intl->languageCode}'
+    AND `movies_display_taglines`.`language_code` = '{$container->intl->code}'
   LEFT JOIN `movies_taglines`
     ON `movies_taglines`.`id` = `movies_display_taglines`.`tagline_id`
   LEFT JOIN `display_posters`
     ON `display_posters`.`movie_id` = `movies`.`id`
-    AND `display_posters`.`language_code` = '{$container->intl->languageCode}'
+    AND `display_posters`.`language_code` = '{$container->intl->code}'
   LEFT JOIN `posters`
     ON `posters`.`id` = `display_posters`.`poster_id`
     AND `posters`.`deleted` = false
@@ -325,13 +325,13 @@ SELECT
   `genres`.`created` AS `created`,
   `genres`.`changed` AS `changed`,
   IFNULL(
-    COLUMN_GET(`genres`.`dyn_names`, '{$container->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`genres`.`dyn_names`, '{$container->intl->defaultLanguageCode}' AS CHAR)
+    COLUMN_GET(`genres`.`dyn_names`, '{$container->intl->code}' AS CHAR),
+    COLUMN_GET(`genres`.`dyn_names`, '{$container->intl->defaultCode}' AS CHAR)
   ) AS `name`
 FROM `movies_genres`
   INNER JOIN `genres` ON `genres`.`id` = `movies_genres`.`genre_id`
 WHERE `movies_genres`.`movie_id` = {$this->id}
-ORDER BY `name` {$connection->collate($container->intl->languageCode)} DESC
+ORDER BY `name` {$connection->collate($container->intl->code)} DESC
 SQL
       );
       while ($genre = $result->fetch_object("\\MovLib\\Data\\Genre\Genre", [ $container ])) {
@@ -413,12 +413,12 @@ SQL
       $result = $connection->query(<<<SQL
 SELECT
   `id`,
-  COLUMN_GET(`dyn_comments`, '{$this->intl->languageCode}' AS BINARY) AS `comment`,
+  COLUMN_GET(`dyn_comments`, '{$this->intl->code}' AS BINARY) AS `comment`,
   `language_code` AS `languageCode`,
   `tagline`
 FROM `movies_taglines`
 WHERE `movie_id` = {$this->id}{$displayTaglineCondition}
-ORDER BY `tagline`{$connection->collate($this->intl->languageCode)}
+ORDER BY `tagline`{$connection->collate($this->intl->code)}
 SQL
       );
       /* @var $tagline \MovLib\Data\Tagline */
@@ -452,12 +452,12 @@ SQL
       $result = $connection->query(<<<SQL
 SELECT
   `id`,
-  COLUMN_GET(`dyn_comments`, '{$this->intl->languageCode}' AS BINARY) AS `comment`,
+  COLUMN_GET(`dyn_comments`, '{$this->intl->code}' AS BINARY) AS `comment`,
   `language_code` AS `languageCode`,
   `title`
 FROM `movies_titles`
 WHERE `movie_id` = {$this->id} AND `id` != {$this->originalTitleId}{$displayTitle}
-ORDER BY `title`{$connection->collate($this->intl->languageCode)}
+ORDER BY `title`{$connection->collate($this->intl->code)}
 SQL
       );
       /* @var $title \MovLib\Data\Title */
@@ -571,14 +571,14 @@ SQL
     // @todo Insert user entered display title, when implemented.
     $this->displayTitleId = $this->originalTitleId;
     (new Insert($connection, "movies_display_titles"))
-      ->set("language_code", $this->intl->languageCode)
+      ->set("language_code", $this->intl->code)
       ->set("movie_id", $this->id)
       ->set("title_id", $this->originalTitleId)
       ->execute()
     ;
-    if ($this->intl->languageCode != $this->intl->defaultLanguageCode) {
+    if ($this->intl->code != $this->intl->defaultCode) {
       (new Insert($connection, "movies_display_titles"))
-        ->set("language_code", $this->intl->defaultLanguageCode)
+        ->set("language_code", $this->intl->defaultCode)
         ->set("movie_id", $this->id)
         ->set("title_id", $this->originalTitleId)
         ->execute()

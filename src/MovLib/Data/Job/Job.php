@@ -136,20 +136,20 @@ SELECT
   `changed`,
   `created`,
   `deleted`,
-  COLUMN_GET(`dyn_descriptions`, '{$container->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`dyn_descriptions`, '{$container->intl->code}' AS CHAR),
   IFNULL(
-    COLUMN_GET(`dyn_titles_sex0`, '{$container->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`dyn_titles_sex0`, '{$container->intl->defaultLanguageCode}' AS CHAR)
+    COLUMN_GET(`dyn_titles_sex0`, '{$container->intl->code}' AS CHAR),
+    COLUMN_GET(`dyn_titles_sex0`, '{$container->intl->defaultCode}' AS CHAR)
   ),
   IFNULL(
-    COLUMN_GET(`dyn_titles_sex1`, '{$container->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`dyn_titles_sex1`, '{$container->intl->defaultLanguageCode}' AS CHAR)
+    COLUMN_GET(`dyn_titles_sex1`, '{$container->intl->code}' AS CHAR),
+    COLUMN_GET(`dyn_titles_sex1`, '{$container->intl->defaultCode}' AS CHAR)
   ),
   IFNULL(
-    COLUMN_GET(`dyn_titles_sex2`, '{$container->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`dyn_titles_sex2`, '{$container->intl->defaultLanguageCode}' AS CHAR)
+    COLUMN_GET(`dyn_titles_sex2`, '{$container->intl->code}' AS CHAR),
+    COLUMN_GET(`dyn_titles_sex2`, '{$container->intl->defaultCode}' AS CHAR)
   ),
-  COLUMN_GET(`dyn_wikipedia`, '{$container->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`dyn_wikipedia`, '{$container->intl->code}' AS CHAR),
   `count_companies` AS `companyCount`,
   `count_persons` AS `personCount`
 FROM `jobs`
@@ -337,13 +337,13 @@ SQL
     // the default one, in which case the user was required to enter a default title. Of course we have to export that
     // as well to our revision.
     if (isset($this->defaultTitles[Sex::UNKNOWN])) {
-      $this->setRevisionArrayValue($revision->titlesSex0, $this->defaultTitles[Sex::UNKNOWN], $this->intl->defaultLanguageCode);
+      $this->setRevisionArrayValue($revision->titlesSex0, $this->defaultTitles[Sex::UNKNOWN], $this->intl->defaultCode);
     }
     if (isset($this->defaultTitles[Sex::MALE])) {
-      $this->setRevisionArrayValue($revision->titlesSex1, $this->defaultTitles[Sex::MALE], $this->intl->defaultLanguageCode);
+      $this->setRevisionArrayValue($revision->titlesSex1, $this->defaultTitles[Sex::MALE], $this->intl->defaultCode);
     }
     if (isset($this->defaultTitles[Sex::FEMALE])) {
-      $this->setRevisionArrayValue($revision->titlesSex2, $this->defaultTitles[Sex::FEMALE], $this->intl->defaultLanguageCode);
+      $this->setRevisionArrayValue($revision->titlesSex2, $this->defaultTitles[Sex::FEMALE], $this->intl->defaultCode);
     }
 
     return $revision;
@@ -357,7 +357,7 @@ SQL
   protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
     $this->description = $this->getRevisionArrayValue($revision->descriptions);
     $this->wikipedia   = $this->getRevisionArrayValue($revision->wikipediaLinks);
-    $this->title       = $this->getRevisionArrayValue($revision->titlesSex0, $revision->titlesSex0[$this->intl->languageCode]);
+    $this->title       = $this->getRevisionArrayValue($revision->titlesSex0, $revision->titlesSex0[$this->intl->code]);
     return $this;
   }
 
@@ -380,7 +380,7 @@ SQL
       $titles = json_decode(Database::getConnection()->query("SELECT COLUMN_JSON(`dyn_titles_sex0`) FROM `jobs` WHERE `id` = {$this->id} LIMIT 1")->fetch_all()[0][0], true);
     }
 
-    return isset($titles[$languageCode]) ? $titles[$languageCode] : $titles[$this->intl->defaultLanguageCode];
+    return isset($titles[$languageCode]) ? $titles[$languageCode] : $titles[$this->intl->defaultCode];
   }
 
 }

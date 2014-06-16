@@ -95,7 +95,7 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->post = new Post($this->intl->languageCode, $_SERVER["FORUM_ID"]);
+    $this->post = new Post($this->intl->code, $_SERVER["FORUM_ID"]);
   }
 
   /**

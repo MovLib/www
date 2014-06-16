@@ -17,6 +17,8 @@
  */
 namespace MovLib\Core\Routing;
 
+use \MovLib\Core\Intl;
+
 /**
  * Defines the routing trait.
  *
@@ -47,7 +49,7 @@ trait RoutingTrait {
   /**
    * @see \MovLib\Core\Data\RoutingInterface::r()
    */
-  final public function r($routePart, array $args = []) {
+  final public function r($routePart, array $args = [], $languageCode = null) {
     // This array is used to cache previously generated routes. Note that we have to build a deep structure because this
     // trait is shared among many entities. We use the class name to create that structure. This ensures that routes are
     // correctly cached for each entity.
@@ -60,7 +62,7 @@ trait RoutingTrait {
       if ($this->route->args) {
         $args = empty($args) ? $this->route->args : array_merge($this->route->args, $args);
       }
-      return $this->container->intl->r($routes[static::name][$routePart], $args);
+      return Intl::getInstance()->r($routes[static::name][$routePart], $args, $languageCode);
     }
 
     // The route will change if it contains placeholders, but later look-ups will be unprocessed, therefore we have to
@@ -98,21 +100,7 @@ trait RoutingTrait {
 
     // Add this route to our cache and we're done.
     $routes[static::name][$cacheKey] = "{$this->route->route}{$routePart}";
-    return $this->container->intl->r($routes[static::name][$cacheKey], $args);
-  }
-
-  /**
-   * Set the concrete object's route.
-   *
-   * @param string $route
-   *   The route's route.
-   * @param array $args [optional]
-   *   The route's arguments.
-   * @return this
-   */
-  final protected function setRoute($route, array $args = null) {
-    $this->route = new Route($this->intl, $route, [ "args" => $args ]);
-    return $this;
+    return Intl::getInstance()->r($routes[static::name][$cacheKey], $args, $languageCode);
   }
 
 }

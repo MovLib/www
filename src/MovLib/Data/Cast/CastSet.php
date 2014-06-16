@@ -105,8 +105,8 @@ SELECT
   `movies_crew`.`job_id` AS `jobId`,
   `crew_alias`.`alias` AS `alias`,
   IFNULL(
-    COLUMN_GET(`movies_crew`.`dyn_role`, '{$this->intl->languageCode}' AS BINARY),
-    COLUMN_GET(`movies_crew`.`dyn_role`, '{$this->intl->defaultLanguageCode}' AS BINARY)
+    COLUMN_GET(`movies_crew`.`dyn_role`, '{$this->intl->code}' AS BINARY),
+    COLUMN_GET(`movies_crew`.`dyn_role`, '{$this->intl->defaultCode}' AS BINARY)
   ) AS `role`,
   `movies_crew`.`role_id` AS `roleId`,
   `crew_role`.`name` AS `roleName`
@@ -118,7 +118,7 @@ FROM `movies_crew`
   LEFT JOIN `persons_aliases` AS `crew_alias`
     ON `crew_alias`.`id` = `movies_crew`.`alias_id`
 WHERE `movies_crew`.`movie_id` = {$movie->id} AND `movies_crew`.`job_id` = {$jobId} AND `persons`.`deleted` = false
-ORDER BY `movies_crew`.`weight` DESC, `persons`.`name`{$connection->collate($this->intl->languageCode)} ASC
+ORDER BY `movies_crew`.`weight` DESC, `persons`.`name`{$connection->collate($this->intl->code)} ASC
 SQL
     );
 
@@ -173,8 +173,8 @@ SELECT
   `persons_aliases`.`alias`,
   `movies_crew`.`job_id` AS `jobId`,
   IFNULL(
-    COLUMN_GET(`jobs`.`dyn_titles_sex0`, '{$this->intl->languageCode}' AS BINARY),
-    COLUMN_GET(`jobs`.`dyn_titles_sex0`, '{$this->intl->defaultLanguageCode}' AS BINARY)
+    COLUMN_GET(`jobs`.`dyn_titles_sex0`, '{$this->intl->code}' AS BINARY),
+    COLUMN_GET(`jobs`.`dyn_titles_sex0`, '{$this->intl->defaultCode}' AS BINARY)
   ) AS `jobTitle`
 FROM `movies_crew`
   INNER JOIN `persons`
@@ -186,7 +186,7 @@ FROM `movies_crew`
 WHERE `movies_crew`.`movie_id` = {$movie->id}
   AND `movies_crew`.`job_id` = {$jobId}
   AND `persons`.`deleted` = false
-ORDER BY `persons`.`name`{$connection->collate($this->intl->languageCode)} ASC
+ORDER BY `persons`.`name`{$connection->collate($this->intl->code)} ASC
 {$limit}
 SQL
     );

@@ -88,7 +88,7 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
       ]))
       ->addElement(new TextareaHTMLExtended($this->container, "synopsis", $this->intl->t("Synopsis"), $this->entity->synopsis))
       ->addElement(new InputWikipedia($this->container, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
-        "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/…",
+        "placeholder"         => "http://{$this->intl->code}.wikipedia.org/…",
         "data-allow-external" => "true",
       ]))
       ->addAction($this->intl->t("Create"), [ "class" => "btn btn-large btn-success" ])

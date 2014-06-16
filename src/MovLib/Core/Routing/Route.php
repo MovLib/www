@@ -17,6 +17,7 @@
  */
 namespace MovLib\Core\Routing;
 
+use \MovLib\Core\Intl;
 use \MovLib\Component\URL;
 
 /**
@@ -83,13 +84,6 @@ final class Route {
   public $hostname;
 
   /**
-   * Active intl instance.
-   *
-   * @var \MovLib\Core\Intl
-   */
-  protected $intl;
-
-  /**
    * The untranslated route splitted into its parts.
    *
    * @var array
@@ -124,14 +118,12 @@ final class Route {
   /**
    * Instantiate new route.
    *
-   * @param \MovLib\Core\Intl $intl
-   *   Active Intl instance.
    * @param string $route
    *   The untranslated route.
    * @param array $options [optional]
    *   Additional options for this route.
    */
-  public function __construct(\MovLib\Core\Intl $intl, $route, array $options = []) {
+  public function __construct($route, array $options = []) {
     // Merge in defaults.
     $options += [
       "absolute" => false,
@@ -147,7 +139,6 @@ final class Route {
     $this->args     = $options["args"];
     $this->fragment = $options["fragment"];
     $this->hostname = $options["hostname"];
-    $this->intl     = $intl;
     $this->parts    = explode("/", $route);
     $this->query    = $options["query"];
     $this->route    = $route;
@@ -174,36 +165,30 @@ final class Route {
   /**
    * Recompile the route.
    *
-   * @param string $locale [optional]
-   *   Use different locale for recompilation of this route, defaults to <code>NULL</code> and the locale from the
-   *   Intl instance that was passed to the constructor is used. Note that this will affect the subdomain as well if
-   *   this is a absolute route.
+   * @param string $code [optional]
+   *   The system language's ISO 639-1 alpha-2 code to translate the route to, defaults to <code>NULL</code> and the
+   *   current language is used.
    * @return string
    *   The recompiled route.
+   * @throws \IntlException
    */
-  public function recompile($locale = null) {
-    // Translate, format and encode the route.
-    $this->compiled = URL::encodePath($this->intl->r($this->route, $this->args, $locale));
+  public function recompile($code = null) {
+    $intl = Intl::getInstance();
+    $code || ($code = $intl->code);
 
-    // Append optional parts.
+    // Translate, format and encode the route.
+    $this->compiled = URL::encodePath($intl->r($this->route, $this->args, $code));
+
+    // Honor optional options.
     $this->query    && ($this->compiled .= http_build_query($this->query, null, null, PHP_QUERY_RFC3986));
     $this->fragment && ($this->compiled .= $this->fragment);
-
-    // Compile absolute if necessary.
-    if ($this->absolute) {
-      // Format subdomain.
-      $subDomain = $locale ? "{$locale{0}}{$locale{1}}" : $this->intl->languageCode;
-
-      $this->compiled = "{$this->scheme}://{$subDomain}{$this->hostname}{$this->compiled}";
-    }
+    $this->absolute && ($this->compiled = "{$this->scheme}://{$code}{$this->hostname}{$this->compiled}");
 
     return $this->compiled;
   }
 
   /**
    * Empty the compilation cache of the route.
-   *
-   * Useful if the locale was changed and you want to reset it back to its initial locale.
    *
    * @return this
    */

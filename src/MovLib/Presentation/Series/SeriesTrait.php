@@ -49,7 +49,7 @@ trait SeriesTrait {
             "<h2 class='para'>{$this->getStructuredDisplayTitle($series)}</h2>" .
             $this->getStructuredOriginalTitle($series, "small") .
           "</div>" .
-          "<div class='s s1 rating-mean tac'>{$this->intl->format("{0,number}", $series->ratingMean)}</div>" .
+          "<div class='s s1 rating-mean tac'>{$this->intl->formatDecimal($series->ratingMean, 0, 1)}</div>" .
         "</article>" .
       "</li>"
     ;
@@ -71,7 +71,7 @@ trait SeriesTrait {
     foreach ($navItems as list($icon, $plural, $title, $count)) {
       $items[] = [
         $this->intl->r("/series/{0}/{$plural}", $this->entity->id),
-        "{$title} <span class='fr'>{$this->intl->format("{0,number}", $count)}</span>",
+        "{$title} <span class='fr'>{$this->intl->formatInteger($count)}</span>",
         [ "class" => "ico ico-{$icon}" ]
       ];
     }

@@ -49,7 +49,7 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    throw new TemporaryRedirectException((new Topic($this->intl->languageCode, $_SERVER["FORUM_ID"]))->route);
+    throw new TemporaryRedirectException((new Topic($this->intl->code, $_SERVER["FORUM_ID"]))->route);
   }
 
   /**

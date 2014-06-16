@@ -311,7 +311,7 @@ final class Join extends \MovLib\Presentation\AbstractPresenter {
       // No we can safely export the data to the user instance.
       $this->user->name = $data->name;
       $this->user->passwordHash = $data->passwordHash;
-      $this->user->languageCode = $this->intl->languageCode;
+      $this->user->languageCode = $this->intl->code;
 
       // Register the new account (this can't be done delayed because the user needs to validate directly after the
       // redirect) and stack the deletion of the temporary database entry.

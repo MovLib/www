@@ -17,6 +17,8 @@
  */
 namespace MovLib\Partial;
 
+use \MovLib\Core\Intl;
+
 /**
  * Defines the duration object.
  *
@@ -26,7 +28,7 @@ namespace MovLib\Partial;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Duration extends \MovLib\Core\Presentation\DependencyInjectionBase {
+final class Duration {
 
   /**
    * Get the seconds formatted as RFC 5545 (respectively ISO 8601) duration string.
@@ -50,7 +52,7 @@ final class Duration extends \MovLib\Core\Presentation\DependencyInjectionBase {
         $duration .= "{$value}{$type}";
       }
       // The T has to be present, it doesn't matter if we have any days or not.
-      if ($type == "D") {
+      if ($type === "D") {
         $duration .= "T";
       }
     }
@@ -65,15 +67,18 @@ final class Duration extends \MovLib\Core\Presentation\DependencyInjectionBase {
    * @param array $attributes [optional]
    *   Additional attributes that should be applied to the <code><time></code> element, note that <code>"datetime"</code>
    *   is always overwritten.
+   * @param string $languageCode [optional]
+   *   The language's ISO 639-1 alpha-2 code to format the duration, defaults to <code>NULL</code> and the current Intl
+   *   language is used.
    * @return string
    *   The formatted seconds.
+   * @throws \IntlException
    */
-  public function formatExact($seconds, array $attributes = null) {
-    $attributes["datetime"] = $this->format($seconds);
-    // @todo Number formatter only supports english durations right now, this isn't a problem for German but for other
-    //       languages.
-    $text = (new \NumberFormatter($this->intl->defaultLocale, \NumberFormatter::DURATION))->format($seconds);
-    return "<time{$this->presenter->expandTagAttributes($attributes)}>{$text}</time>";
+  public function formatExact($seconds, array $attributes = [], $languageCode = null) {
+    $attributes           = new HTMLAttributes($attributes, $languageCode);
+    $attributes->datetime = $this->format($seconds);
+    $time                 = Intl::getInstance()->formatDuration($seconds, $languageCode);
+    return "<time{$attributes}>{$time}</time>";
   }
 
   /**
@@ -86,11 +91,13 @@ final class Duration extends \MovLib\Core\Presentation\DependencyInjectionBase {
    *   is always overwritten.
    * @return string
    *   The formatted seconds.
+   * @throws \IntlException
    */
-  public function formatMinutes($seconds, array $attributes = null) {
-    $attributes["datetime"] = $this->format($seconds);
-    /// The "min." is short for "minutes"
-    return "<time{$this->presenter->expandTagAttributes($attributes)}>{$this->intl->format("{0,number,integer} min.", ceil($seconds / 60))}</time>";
+  public function formatMinutes($seconds, array $attributes = [], $languageCode = null) {
+    $attributes           = new HTMLAttributes($attributes, $languageCode);
+    $attributes->datetime = $this->format($seconds);
+    $time                 = Intl::getInstance()->t("{0,number,integer} min.", ceil($seconds / 60));
+    return "<time{$attributes}>{$time}</time>";
   }
 
 }

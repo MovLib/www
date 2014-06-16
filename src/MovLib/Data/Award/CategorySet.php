@@ -77,8 +77,8 @@ SELECT
   `created`,
   `deleted`,
   IFNULL(
-    COLUMN_GET(`dyn_names`, '{$this->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+    COLUMN_GET(`dyn_names`, '{$this->intl->code}' AS CHAR),
+    COLUMN_GET(`dyn_names`, '{$this->intl->defaultCode}' AS CHAR)
   ) AS `name`,
   `first_year` AS `firstYear`,
   `last_year` AS `lastYear`,

@@ -301,7 +301,7 @@ SELECT
   `count_contributions`,
   `country_code`,
   `currency_code`,
-  COLUMN_GET(`dyn_about_me`, '{$container->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`dyn_about_me`, '{$container->intl->code}' AS CHAR),
   `edits`,
   HEX(`image_cache_buster`),
   `image_extension`,
@@ -696,7 +696,7 @@ SQL
     $styles = serialize($this->imageStyles);
     $stmt = Database::getConnection()->prepare(<<<SQL
 UPDATE `users` SET
-  `dyn_about_me`       = COLUMN_ADD(`dyn_about_me`, '{$this->intl->languageCode}', ?),
+  `dyn_about_me`       = COLUMN_ADD(`dyn_about_me`, '{$this->intl->code}', ?),
   `birthdate`          = ?,
   `country_code`       = ?,
   `currency_code`      = ?,

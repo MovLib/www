@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Profile;
 
+use \MovLib\Core\Intl;
 use \MovLib\Component\Date;
 use \MovLib\Exception\RedirectException\SeeOtherException;
 use \MovLib\Partial\Country;
@@ -91,7 +92,7 @@ final class AccountSettings extends \MovLib\Presentation\Profile\AbstractProfile
     $birthYearMin = (new Date())->sub(new \DateInterval("P120Y"))->format('Y');
 
     $languageOptions = [];
-    foreach ($this->intl->systemLocales as $code => $locale) {
+    foreach (Intl::$systemLanguages as $code => $locale) {
       $languageOptions[$code] = \Locale::getDisplayLanguage($locale, $this->intl->locale);
     }
     (new \Collator($this->intl->locale))->asort($languageOptions);

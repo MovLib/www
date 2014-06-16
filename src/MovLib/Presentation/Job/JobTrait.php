@@ -43,7 +43,7 @@ trait JobTrait {
     foreach ($navItems as list($icon, $plural, $title, $count)) {
       $items[] = [
         $this->intl->r("/job/{0}/{$plural}", $this->entity->id),
-        "{$title} <span class='fr'>{$this->intl->format("{0,number}", $count)}</span>",
+        "{$title} <span class='fr'>{$this->intl->formatInteger($count)}</span>",
         [ "class" => "ico ico-{$icon}" ]
       ];
     }

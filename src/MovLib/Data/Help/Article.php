@@ -126,13 +126,13 @@ SELECT
   `created`,
   `deleted`,
   IFNULL(
-    COLUMN_GET(`dyn_texts`, '{$container->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`dyn_texts`, '{$container->intl->defaultLanguageCode}' AS CHAR)
+    COLUMN_GET(`dyn_texts`, '{$container->intl->code}' AS CHAR),
+    COLUMN_GET(`dyn_texts`, '{$container->intl->defaultCode}' AS CHAR)
   ),
-  COLUMN_GET(`dyn_titles`, '{$container->intl->defaultLanguageCode}' AS CHAR),
+  COLUMN_GET(`dyn_titles`, '{$container->intl->defaultCode}' AS CHAR),
   IFNULL(
-    COLUMN_GET(`dyn_titles`, '{$container->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`dyn_titles`, '{$container->intl->defaultLanguageCode}' AS CHAR)
+    COLUMN_GET(`dyn_titles`, '{$container->intl->code}' AS CHAR),
+    COLUMN_GET(`dyn_titles`, '{$container->intl->defaultCode}' AS CHAR)
   ),
   `view_count` as `viewCount`
 FROM `help_articles`
@@ -188,7 +188,7 @@ SQL
     // than the default one, in which case the user was required to enter a default name. Of course we have to export that
     // as well to our revision.
     if (isset($this->defaultTitle)) {
-      $revision->titles[$this->intl->defaultLanguageCode] = $this->defaultTitle;
+      $revision->titles[$this->intl->defaultCode] = $this->defaultTitle;
     }
 
     return $revision;
@@ -201,7 +201,7 @@ SQL
    */
   protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
     $this->text  = $this->getRevisionArrayValue($revision->texts);
-    $this->title = $this->getRevisionArrayValue($revision->titles, $revision->titles[$this->intl->languageCode]);
+    $this->title = $this->getRevisionArrayValue($revision->titles, $revision->titles[$this->intl->code]);
     $revision->category    && $this->category = $revision->category;
     $revision->subCategory && $this->category = $revision->subCategory;
 
@@ -249,7 +249,7 @@ SQL
       $titles = json_decode(Database::getConnection()->query("SELECT COLUMN_JSON(`dyn_titles`) FROM `help_articles` WHERE `id` = {$this->id} LIMIT 1")->fetch_all()[0][0], true);
     }
 
-    return isset($titles[$languageCode]) ? $titles[$languageCode] : $titles[$this->intl->defaultLanguageCode];
+    return isset($titles[$languageCode]) ? $titles[$languageCode] : $titles[$this->intl->defaultCode];
   }
 
 }

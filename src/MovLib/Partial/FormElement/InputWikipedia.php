@@ -65,7 +65,7 @@ class InputWikipedia extends \MovLib\Partial\FormElement\InputURL {
    */
   public function __toString() {
     if (empty($this->attributes["placeholder"])) {
-      $this->attributes["placeholder"] = "https://{$this->intl->languageCode}.wikipedia.org/";
+      $this->attributes["placeholder"] = "https://{$this->intl->code}.wikipedia.org/";
     }
     return parent::__toString();
   }
@@ -96,10 +96,10 @@ class InputWikipedia extends \MovLib\Partial\FormElement\InputURL {
       $errors[self::ERROR_WRONG_HOSTNAME] = $this->intl->t("Only links to articles on wikipedia.org are allowed.");
       return $url;
     }
-    if ($parts["host"] != "{$this->intl->languageCode}.wikipedia.org") {
+    if ($parts["host"] != "{$this->intl->code}.wikipedia.org") {
       $errors[self::ERROR_WRONG_LOCALE] = $this->intl->t(
         "Only links to Wikipedia in the current language ({0}) are allowed.",
-        [ $this->intl->getTranslations("languages")[$this->intl->languageCode]->name ]
+        [ $this->intl->getTranslations("languages")[$this->intl->code]->name ]
       );
       return $url;
     }

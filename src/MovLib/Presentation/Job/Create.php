@@ -59,16 +59,16 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
    * {@inheritdoc}
    */
   public function getContent() {
-    $translations = $this->intl->languageCode != $this->intl->defaultLanguageCode;
+    $translations = $this->intl->code != $this->intl->defaultCode;
     $attributes   = [ "aria-describedby" => [ "job-title-description" ], "required" => true ];
     $form         = new Form($this->container);
     $sex          = new Sex();
 
     $sex->addInputTextElements($this->container, $form, "title", $this->entity->titles, $attributes);
     if ($translations) {
-      $sex->addInputTextElements($this->container, $form, "title-{$this->intl->defaultLanguageCode}", $this->entity->defaultTitles, $attributes, $this->intl->t(
+      $sex->addInputTextElements($this->container, $form, "title-{$this->intl->defaultCode}", $this->entity->defaultTitles, $attributes, $this->intl->t(
         "{0} ({1})",
-        [ 1 => $this->intl->getTranslations("languages")[$this->intl->defaultLanguageCode]->name ]
+        [ 1 => $this->intl->getTranslations("languages")[$this->intl->defaultCode]->name ]
       ));
     }
 
@@ -94,7 +94,7 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
       $formContent = null;
       foreach ([ Sex::UNKNOWN, Sex::MALE, Sex::FEMALE ] as $code) {
         $formContent .= "<div class='r'>";
-        foreach ([ "", "-{$this->intl->defaultLanguageCode}" ] as $suffix) {
+        foreach ([ "", "-{$this->intl->defaultCode}" ] as $suffix) {
           $formContent .= "<div class='s s5'>{$form->elements["title{$suffix}-{$code}"]}</div>";
         }
         $formContent .= "</div>";

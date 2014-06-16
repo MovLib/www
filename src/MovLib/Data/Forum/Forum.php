@@ -17,8 +17,8 @@
  */
 namespace MovLib\Data\Forum;
 
+use \MovLib\Core\Intl;
 use \MovLib\Core\Database\Database;
-use \MovLib\Core\Database\Query\Select;
 
 /**
  * Defines the forum object.
@@ -141,14 +141,20 @@ final class Forum implements \MovLib\Core\Routing\RoutingInterface {
   /**
    * Instantiate new forum.
    *
-   * @param string $languageCode
-   *   The forum's (system) language code. The language code of a forum is usually provided by the request.
    * @param integer $id [optional]
    *   The forum's unique identifier to instantiate, defaults to <code>NULL</code> and an empty instance is created.
+   * @param string $languageCode [optional]
+   *   The forum's (system) language code, defaults to <code>NULL</code> and the current language code is used.
    * @throws \MovLib\Exception\ClientException\NotFoundException
    *   If <var>$id</var> was passed and the forum doesn't exist.
    */
-  public function __construct($languageCode, $id = null) {
+  public function __construct($id = null, $languageCode = null) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    assert($languageCode === null || isset(Intl::$systemLanguages[$languageCode]), "\$languageCode must be a valid system language code.");
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    $this->languageCode = $languageCode ?: Intl::getInstance()->code;
     if ($id) {
       try {
         $concreteForumClass  = static::class . $id;
@@ -160,11 +166,11 @@ final class Forum implements \MovLib\Core\Routing\RoutingInterface {
 
       $this->id          = (integer) $id;
       $this->categoryId  = $this->concreteForum->getCategoryId();
-      $this->description = $this->concreteForum->getDescription();
-      $this->title       = $this->concreteForum->getTitle();
       $this->countPosts  = $this->getPostCount();
       $this->countTopics = $this->getTopicCount();
-      $this->setRoute($this->concreteForum->getRoute());
+      $this->description = $this->concreteForum->getDescription();
+      $this->route       = $this->concreteForum->getRoute();
+      $this->title       = $this->concreteForum->getTitle();
     }
   }
 
@@ -175,15 +181,21 @@ final class Forum implements \MovLib\Core\Routing\RoutingInterface {
   /**
    * Get all forums.
    *
-   * @param \MovLib\Core\Container $container
-   *   The dependency injection container.
+   * @param string $languageCode [optional]
+   *   The system language's ISO 639-1 alpha-2 code, default to <code>NULL</code> and the current language is used.
    * @return array
    *   All forums.
    */
-  public static function getAll(\MovLib\Core\Container $container) {
-    return [
-      1 => new Forum($container, 1),
-    ];
+  public static function getAll($languageCode = null) {
+    static $forums = [];
+    $languageCode || ($languageCode = Intl::getInstance()->code);
+    if (empty($forums[$languageCode])) {
+      $forums[$languageCode] = [];
+      for ($i = 1; $i < 2; ++$i) {
+        $forums[$languageCode][$i] = new Forum($i, $languageCode);
+      }
+    }
+    return $forums[$languageCode];
   }
 
   /**
@@ -194,7 +206,7 @@ final class Forum implements \MovLib\Core\Routing\RoutingInterface {
    * with access to the repository are able to create new categories, and we can use the static translation system.
    *
    * @param \MovLib\Core\Intl $intl
-   *   Intl instance used to translate the category titles.
+   *   Intl instance for translation.
    * @return array
    *   All available forum categories.
    */

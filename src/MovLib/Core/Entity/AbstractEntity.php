@@ -185,7 +185,7 @@ abstract class AbstractEntity implements \MovLib\Core\Entity\EntityInterface {
     // @todo Maybe we can abstract this by using the parents array?
     if (!$this->route) {
       $routeKey    = strtolower(static::name);
-      $this->route = new Route($this->intl, "/{$routeKey}/{0}", [ "args" => [ $this->id ]]);
+      $this->route = new Route("/{$routeKey}/{0}", [ "args" => [ $this->id ] ]);
     }
 
     return $this;

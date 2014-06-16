@@ -76,14 +76,14 @@ SELECT
   `created`,
   `deleted`,
   IFNULL(
-    COLUMN_GET(`dyn_titles`, '{$this->intl->languageCode}' AS CHAR(255)),
-    COLUMN_GET(`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR(255))
+    COLUMN_GET(`dyn_titles`, '{$this->intl->code}' AS CHAR(255)),
+    COLUMN_GET(`dyn_titles`, '{$this->intl->defaultCode}' AS CHAR(255))
   ) AS `title`,
   IFNULL(
-    COLUMN_GET(`dyn_texts`, '{$this->intl->languageCode}' AS BINARY),
-    COLUMN_GET(`dyn_texts`, '{$this->intl->defaultLanguageCode}' AS BINARY)
+    COLUMN_GET(`dyn_texts`, '{$this->intl->code}' AS BINARY),
+    COLUMN_GET(`dyn_texts`, '{$this->intl->defaultCode}' AS BINARY)
   ) AS `text`,
-  COLUMN_GET(`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR(255)) AS `routeKey`
+  COLUMN_GET(`dyn_titles`, '{$this->intl->defaultCode}' AS CHAR(255)) AS `routeKey`
 FROM `system_pages`
 {$where}
 {$orderBy}

@@ -118,10 +118,9 @@ final class TranslationExtract extends \MovLib\Console\Command\AbstractCommand {
     $this->fs->registerFileForDeletion("dr://tmp/src", true);
 
     $this->writeVerbose("Updating po files for all languages...", self::MESSAGE_TYPE_INFO);
-    $defaultLanguageCode = Intl::getDefaultLanguageCode();
     foreach (Intl::$systemLanguages as $code => $locale) {
-      if ($code !== $defaultLanguageCode) {
-        $poPath = $this->fs->realpath("dr://var/intl/{$locale}/messages.po");
+      if ($code !== Intl::DEFAULT_CODE) {
+        $poPath = $this->fs->realpath("dr://var/intl/{$code}/messages.po");
         if (file_exists($poPath)) {
           $this->exec("msgmerge --backup='off' --no-wrap --previous --update {$poPath} {$potPath}");
         }

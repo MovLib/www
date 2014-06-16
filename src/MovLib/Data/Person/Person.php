@@ -204,14 +204,14 @@ SELECT
   `changed`,
   `deleted`,
   `name`,
-  COLUMN_GET(`dyn_biographies`, '{$container->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`dyn_biographies`, '{$container->intl->code}' AS CHAR),
   `sex`,
   `birthdate`,
   `birthplace_id`,
   `born_name`,
   `deathdate`,
   `deathplace_id`,
-  COLUMN_GET(`dyn_wikipedia`, '{$container->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`dyn_wikipedia`, '{$container->intl->code}' AS CHAR),
   `links`,
   `count_awards`,
   `count_movies`,
@@ -392,8 +392,8 @@ SQL
     $categories = new CategorySet($this->container);
     $categoryOrder = <<<SQL
 IFNULL(
-  COLUMN_GET(`dyn_names`, '{$this->intl->languageCode}' AS CHAR(255)),
-  COLUMN_GET(`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR(255))
+  COLUMN_GET(`dyn_names`, '{$this->intl->code}' AS CHAR(255)),
+  COLUMN_GET(`dyn_names`, '{$this->intl->defaultCode}' AS CHAR(255))
 ){$collation} ASC
 SQL
     ;

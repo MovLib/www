@@ -167,7 +167,7 @@ SELECT
   `release`.`country_code`,
   IFNULL(
     COLUMN_GET(`release`.`dyn_notes`, ? AS BINARY),
-    COLUMN_GET(`release`.`dyn_notes`, {$this->intl->defaultLanguageCode} AS BINARY)
+    COLUMN_GET(`release`.`dyn_notes`, {$this->intl->defaultCode} AS BINARY)
   ) AS `notes`,
   `release`.`title`,
   `release`.`publishing_date_rental`,
@@ -180,7 +180,7 @@ SELECT
   `media`.`bootleg` AS `medium_bootleg`,
   IFNULL(
     COLUMN_GET(`media`.`dyn_notes`, ? AS BINARY),
-    COLUMN_GET(`media`.`dyn_notes`, {$this->intl->defaultLanguageCode} AS BINARY)
+    COLUMN_GET(`media`.`dyn_notes`, {$this->intl->defaultCode} AS BINARY)
   ) AS `medium_notes`,
   `media`.`bin_format` AS `medium_format`,
   `media_movies`.`movie_id`,
@@ -220,7 +220,7 @@ LEFT JOIN `companies`
 WHERE `releases`.`id` = ?
 SQL
       );
-      $stmt->bind_param("ssd", $this->intl->languageCode, $this->intl->languageCode, $id);
+      $stmt->bind_param("ssd", $this->intl->code, $this->intl->code, $id);
       $stmt->execute();
       $stmt->bind_result(
         $this->changed,

@@ -55,7 +55,7 @@ trait MovieTrait {
             $this->getStructuredOriginalTitle($movie, "small") .
             (new Genre($this->container))->getLabels($movie->genreSet, [ "class" => "small" ]) .
           "</div>" .
-          "<div class='s s1 rating-mean tac'>{$this->intl->format("{0,number}", $movie->meanRating)}</div>" .
+          "<div class='s s1 rating-mean tac'>{$this->intl->formatDecimal($movie->meanRating, 0, 1)}</div>" .
         "</article>" .
       "</li>"
     ;
@@ -77,7 +77,7 @@ trait MovieTrait {
     ];
     foreach ($navItems as list($icon, $plural, $title, $count)) {
       if (isset($count)) {
-        $count =  "<span class='fr'>{$this->intl->format("{0,number}", $count)}</span>";
+        $count =  "<span class='fr'>{$this->intl->formatInteger($count)}</span>";
       }
       $items[] = [
         $this->intl->r("/movie/{0}/{$plural}", $this->entity->id),

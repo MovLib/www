@@ -96,8 +96,8 @@ SELECT
   `movies_crew`.`id`,
   `movies_crew`.`job_id` AS `jobId`,
   IFNULL(
-    COLUMN_GET(`jobs`.`dyn_titles_sex0`, '{$this->intl->languageCode}' AS CHAR(255)),
-    COLUMN_GET(`jobs`.`dyn_titles_sex0`, '{$this->intl->defaultLanguageCode}' AS CHAR(255))
+    COLUMN_GET(`jobs`.`dyn_titles_sex0`, '{$this->intl->code}' AS CHAR(255)),
+    COLUMN_GET(`jobs`.`dyn_titles_sex0`, '{$this->intl->defaultCode}' AS CHAR(255))
   ) AS `jobTitle`,
   `crew_alias`.`alias` AS `alias`,
   `jobs`.`changed` AS `jobChanged`,
@@ -119,8 +119,8 @@ WHERE `movies_crew`.`movie_id` = {$movie->id}
   AND `movies_crew`.`job_id` > {$castJobId}
   AND `jobs`.`deleted` = false
   AND (`persons`.`deleted` = false OR `companies`.`deleted` = false)
-ORDER BY `jobTitle`{$connection->collate($this->intl->languageCode)} ASC,
-  `entityName`{$connection->collate($this->intl->languageCode)} ASC
+ORDER BY `jobTitle`{$connection->collate($this->intl->code)} ASC,
+  `entityName`{$connection->collate($this->intl->code)} ASC
 SQL
     );
 

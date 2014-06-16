@@ -76,8 +76,8 @@ final class GenreSet extends \MovLib\Data\AbstractEntitySet {
       ->select("deleted")
       ->selectIfNull(
         "name",
-        "COLUMN_GET(`dyn_names`, '{$this->intl->languageCode}' AS CHAR(255))",
-        "COLUMN_GET(`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR(255))"
+        "COLUMN_GET(`dyn_names`, '{$this->intl->code}' AS CHAR(255))",
+        "COLUMN_GET(`dyn_names`, '{$this->intl->defaultCode}' AS CHAR(255))"
       )
       ->select("count_movies")
       ->select("count_series")
@@ -95,8 +95,8 @@ SELECT
   `genres`.`created` AS `created`,
   `genres`.`deleted` AS `deleted`,
   IFNULL(
-    COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+    COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->code}' AS CHAR),
+    COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->defaultCode}' AS CHAR)
   ) AS `name`,
   `genres`.`count_movies` AS `countMovies`,
   `genres`.`count_series` AS `countSeries`
@@ -118,8 +118,8 @@ SELECT
   `genres`.`created`,
   `genres`.`changed`,
   IFNULL(
-    COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+    COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->code}' AS CHAR),
+    COLUMN_GET(`genres`.`dyn_names`, '{$this->intl->defaultCode}' AS CHAR)
   ) AS `name`
 FROM `{$set::$tableName}_genres`
   INNER JOIN `genres` ON `genres`.`id` = `{$set::$tableName}_genres`.`genre_id`

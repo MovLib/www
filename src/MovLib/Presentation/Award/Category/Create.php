@@ -53,8 +53,8 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
     $category             = new Category($this->container);
     $category->award      = new Award($this->container, $_SERVER["AWARD_ID"]);
     $category->awardId    = $category->award->id;
-    $category->route      = new Route($this->intl, "/award/{0}/category/create", [ "args" => [ $category->award->id ]]);
-    $category->set->route = new Route($this->intl, "/award/{0}/categories", [ "args" => [ $category->award->id ]]);
+    $category->route      = new Route("/award/{0}/category/create", [ "args" => [ $category->award->id ] ]);
+    $category->set->route = new Route("/award/{0}/categories", [ "args" => [ $category->award->id ] ]);
 
     $this->initPage($this->intl->t("Create"), $this->intl->t("Create Category for {0}", [ $category->award->name ]));
     $this->breadcrumb->addCrumbs([
@@ -92,14 +92,14 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
         "placeholder"         => $this->intl->t("Describe the category."),
       ]))
       ->addElement(new InputWikipedia($this->container, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
-        "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/…",
+        "placeholder"         => "http://{$this->intl->code}.wikipedia.org/…",
         "data-allow-external" => "true",
       ]))
       ->addAction($this->intl->t("Create"), [ "class" => "btn btn-large btn-success" ])
     ;
 
-    if ($this->intl->languageCode !== $this->intl->defaultLanguageCode) {
-      $defaultLanguageArg = [ "default_language" =>  $this->intl->getTranslations("languages")[$this->intl->defaultLanguageCode]->name];
+    if ($this->intl->code !== $this->intl->defaultCode) {
+      $defaultLanguageArg = [ "default_language" =>  $this->intl->getTranslations("languages")[$this->intl->defaultCode]->name];
       $form
         ->addElement(new InputText($this->container, "default-name", $this->intl->t(
             "Name ({default_language})", $defaultLanguageArg

@@ -66,7 +66,7 @@ final class Cache {
    *
    */
   public function __construct() {
-    $this->uri = "dr://var/cache/{$i18n->languageCode}{$request->path}";
+    $this->uri = "dr://var/cache/{$i18n->code}{$request->path}";
     if ($request->path == "/") {
       $this->uri .= $_SERVER["PRESENTER"];
     }

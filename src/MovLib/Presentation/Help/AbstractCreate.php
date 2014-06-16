@@ -104,8 +104,8 @@ abstract class AbstractCreate extends \MovLib\Presentation\AbstractCreatePresent
       ]))
       ->addAction($this->intl->t("Create"), [ "class" => "btn btn-large btn-success" ])
     ;
-    if ($this->intl->languageCode !== $this->intl->defaultLanguageCode) {
-      $defaultLanguageArg = [ "default_language" =>  $this->intl->getTranslations("languages")[$this->intl->defaultLanguageCode]->name];
+    if ($this->intl->code !== $this->intl->defaultCode) {
+      $defaultLanguageArg = [ "default_language" =>  $this->intl->getTranslations("languages")[$this->intl->defaultCode]->name];
       $form
         ->addElement(new InputText($this->container, "default-title", $this->intl->t("Title ({default_language})", $defaultLanguageArg), $this->entity->defaultTitle, [
           "#help-popup" => $this->intl->t("We always need this information in our main Language ({default_language}).", $defaultLanguageArg),

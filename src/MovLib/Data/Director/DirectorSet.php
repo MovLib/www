@@ -60,8 +60,8 @@ SELECT
   `persons_aliases`.`alias`,
   `movies_crew`.`job_id` AS `jobId`,
   IFNULL(
-    COLUMN_GET(`jobs`.`dyn_titles_sex0`, '{$this->intl->languageCode}' AS BINARY),
-    COLUMN_GET(`jobs`.`dyn_titles_sex0`, '{$this->intl->defaultLanguageCode}' AS BINARY)
+    COLUMN_GET(`jobs`.`dyn_titles_sex0`, '{$this->intl->code}' AS BINARY),
+    COLUMN_GET(`jobs`.`dyn_titles_sex0`, '{$this->intl->defaultCode}' AS BINARY)
   ) AS `jobTitle`,
   `jobs`.`created`,
   `jobs`.`changed`

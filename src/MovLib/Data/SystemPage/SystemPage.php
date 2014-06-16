@@ -95,14 +95,14 @@ SELECT
   `created`,
   `deleted`,
   IFNULL(
-    COLUMN_GET(`dyn_titles`, '{$container->intl->languageCode}' AS CHAR(255)),
-    COLUMN_GET(`dyn_titles`, '{$container->intl->defaultLanguageCode}' AS CHAR(255))
+    COLUMN_GET(`dyn_titles`, '{$container->intl->code}' AS CHAR(255)),
+    COLUMN_GET(`dyn_titles`, '{$container->intl->defaultCode}' AS CHAR(255))
   ),
   IFNULL(
-    COLUMN_GET(`dyn_texts`, '{$container->intl->languageCode}' AS BINARY),
-    COLUMN_GET(`dyn_texts`, '{$container->intl->defaultLanguageCode}' AS BINARY)
+    COLUMN_GET(`dyn_texts`, '{$container->intl->code}' AS BINARY),
+    COLUMN_GET(`dyn_texts`, '{$container->intl->defaultCode}' AS BINARY)
   ),
-  COLUMN_GET(`dyn_titles`, '{$container->intl->defaultLanguageCode}' AS CHAR(255))
+  COLUMN_GET(`dyn_titles`, '{$container->intl->defaultCode}' AS CHAR(255))
 FROM `system_pages`
 WHERE `id` = ?
 LIMIT 1
@@ -184,7 +184,7 @@ SQL
     if (!$titles) {
       $titles = json_decode(Database::getConnection()->query("SELECT COLUMN_JSON(`dyn_titles`) FROM `system_pages` WHERE `id` = {$this->id} LIMIT 1")->fetch_all()[0][0], true);
     }
-    return isset($titles[$languageCode]) ? $titles[$languageCode] : $titles[$this->intl->defaultLanguageCode];
+    return isset($titles[$languageCode]) ? $titles[$languageCode] : $titles[$this->intl->defaultCode];
   }
 
 }

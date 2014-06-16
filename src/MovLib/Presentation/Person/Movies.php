@@ -113,7 +113,7 @@ class Movies extends \MovLib\Presentation\Person\AbstractPersonPresenter {
               (new Genre($this->container))->getLabels($jobs->genreSet, [ "class" => "small cf mb10" ]) .
               $jobList .
             "</div>" .
-            "<div class='s s1 rating-mean tac'>{$this->intl->format("{0,number}", $jobs->movie->meanRating)}</div>" .
+            "<div class='s s1 rating-mean tac'>{$this->intl->formatDecimal($jobs->movie->meanRating, 0, 1)}</div>" .
           "</article>" .
         "</li>"
       ;

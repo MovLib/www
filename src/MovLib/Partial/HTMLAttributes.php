@@ -17,7 +17,7 @@
  */
 namespace MovLib\Partial;
 
-use \MovLib\Core\HTTP\Request;
+use \MovLib\Core\Intl;
 
 /**
  * Defines the HTML attributes object.
@@ -660,24 +660,13 @@ final class HTMLAttributes {
    *   document is assumed to be the surrounding DOM.
    */
   public function __construct(array $attributes = [], $languageCode = null) {
-    static $requestLanguageCode = null;
-
     // Export all attributes to class scope.
     foreach ($attributes as $attribute => $value) {
       $this->$attribute = $value;
     }
 
     // Use the language code from the caller if passed.
-    if ($languageCode) {
-      $this->languageCode = $languageCode;
-    }
-    // Use the language code of the current request.
-    else {
-      if ($requestLanguageCode === null) {
-        $requestLanguageCode = Request::getLanguageCode();
-      }
-      $this->languageCode = $requestLanguageCode;
-    }
+    $this->languageCode = $languageCode ?: Intl::getInstance()->code;
   }
 
   /**

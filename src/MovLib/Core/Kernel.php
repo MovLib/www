@@ -105,7 +105,7 @@ final class Kernel {
    *   be used).
    * @return this
    */
-  protected function boot($documentRoot, $logName, $language = null) {
+  protected function boot($documentRoot, $logName) {
     // @devStart
     // @codeCoverageIgnoreStart
     assert(
@@ -137,7 +137,7 @@ final class Kernel {
     $this->container->kernel = $this;
     $this->container->log    = new Log($this->container->config, $logName, $this->http);
     $this->container->fs     = new FileSystem($documentRoot, $this->container->config->hostnameStatic);
-    $this->container->intl   = new Intl($this->container->config, $language);
+    $this->container->intl   = Intl::getInstance();
 
     return $this;
   }
@@ -186,7 +186,7 @@ final class Kernel {
 
     $this->http                = true;
     $this->container           = new HTTPContainer();
-    $this->boot($documentRoot, $_SERVER["SERVER_NAME"], $_SERVER["LANGUAGE_CODE"]);
+    $this->boot($documentRoot, $_SERVER["SERVER_NAME"]);
     $this->container->request  = new Request($this->container->intl);
     $this->container->response = new Response($this->container->request, $this->container->config->hostname);
     $this->container->session  = new Session($this->container);

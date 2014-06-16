@@ -51,10 +51,13 @@ interface RoutingInterface {
    *   The route to append to the concrete class's route.
    * @param array $args [optional]
    *   Additional arguments to format the route, defaults to an empty array.
+   * @param string $languageCode [optional]
+   *   The system language's ISO 639-1 alpha-2 code to translate the route to, defaults to <code>NULL</code> and the
+   *   current language is used.
    * @return string
    *   The translated and formatted route.
    * @throws \IntlException
    */
-  public function r($routePart, array $args = []);
+  public function r($routePart, array $args = [], $languageCode = null);
 
 }

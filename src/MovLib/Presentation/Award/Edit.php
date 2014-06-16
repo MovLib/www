@@ -75,7 +75,7 @@ class Edit extends \MovLib\Presentation\AbstractEditPresenter {
         "placeholder" => $this->intl->t("Describe the award."),
       ], [ "blockquote", "external", "headings", "lists", ]))
       ->addElement(new InputWikipedia($this->container, "wikipedia", $this->intl->t("Wikipedia"), $this->entity->wikipedia, [
-        "placeholder"         => "http://{$this->intl->languageCode}.wikipedia.org/..",
+        "placeholder"         => "http://{$this->intl->code}.wikipedia.org/..",
         "data-allow-external" => "true",
       ]))
       ->addElement(new TextareaLineURLArray($this->container, "links", $this->intl->t("Weblinks (line by line)"), $this->entity->links, [

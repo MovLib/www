@@ -98,7 +98,7 @@ SELECT
 FROM `series`
   LEFT JOIN `series_display_titles`
     ON `series_display_titles`.`series_id` = `series`.`id`
-    AND `series_display_titles`.`language_code` = '{$this->intl->languageCode}'
+    AND `series_display_titles`.`language_code` = '{$this->intl->code}'
   LEFT JOIN `series_titles` AS `display_title`
     ON `display_title`.`id` = `series_display_titles`.`title_id`
   LEFT JOIN `series_original_titles`

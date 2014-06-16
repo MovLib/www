@@ -17,6 +17,8 @@
  */
 namespace MovLib\Exception\RedirectException;
 
+use \MovLib\Core\Intl;
+
 /**
  * Defines the default implementation for redirect exceptions.
  *
@@ -46,8 +48,8 @@ abstract class AbstractRedirectException extends \RuntimeException implements \M
   public function getPresentation(\MovLib\Core\HTTP\Container $container) {
     $container->response->cacheable = false;
     $route = rawurldecode($this->message);
-    $code  = $this->getHttpStatusCode($container->request->protocol == "HTTP/1.0");
-    $title = $container->intl->translate($code, null, "http-status-codes", null);
+    $code  = (string) $this->getHttpStatusCode($container->request->protocol == "HTTP/1.0");
+    $title = Intl::getInstance()->getTranslations("http-status-codes")[$code];
 
     if (strpos($route, "//") === false) {
       $route = "{$container->request->scheme}://{$container->request->hostname}{$route}";

@@ -78,8 +78,8 @@ SELECT
   `help_articles`.`help_category_id` AS `category`,
   `help_articles`.`help_subcategory_id` AS `subCategory`,
   IFNULL(
-    COLUMN_GET(`help_articles`.`dyn_titles`, '{$this->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`help_articles`.`dyn_titles`, '{$this->intl->defaultLanguageCode}' AS CHAR)
+    COLUMN_GET(`help_articles`.`dyn_titles`, '{$this->intl->code}' AS CHAR),
+    COLUMN_GET(`help_articles`.`dyn_titles`, '{$this->intl->defaultCode}' AS CHAR)
   ) AS `title`,
   `help_articles`.`view_count` as `viewCount`
 FROM `help_articles`

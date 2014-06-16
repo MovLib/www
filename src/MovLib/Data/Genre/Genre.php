@@ -115,11 +115,11 @@ SELECT
   `created`,
   `deleted`,
   IFNULL(
-    COLUMN_GET(`dyn_names`, '{$container->intl->languageCode}' AS CHAR),
-    COLUMN_GET(`dyn_names`, '{$container->intl->defaultLanguageCode}' AS CHAR)
+    COLUMN_GET(`dyn_names`, '{$container->intl->code}' AS CHAR),
+    COLUMN_GET(`dyn_names`, '{$container->intl->defaultCode}' AS CHAR)
   ),
-  COLUMN_GET(`dyn_descriptions`, '{$container->intl->languageCode}' AS CHAR),
-  COLUMN_GET(`dyn_wikipedia`, '{$container->intl->languageCode}' AS CHAR),
+  COLUMN_GET(`dyn_descriptions`, '{$container->intl->code}' AS CHAR),
+  COLUMN_GET(`dyn_wikipedia`, '{$container->intl->code}' AS CHAR),
   `count_movies`,
   `count_series`
 FROM `genres`
@@ -173,7 +173,7 @@ SQL
     // the default one, in which case the user was required to enter a default name. Of course we have to export that
     // as well to our revision.
     if (isset($this->defaultName)) {
-      $revision->names[$this->intl->defaultLanguageCode] = $this->defaultName;
+      $revision->names[$this->intl->defaultCode] = $this->defaultName;
     }
 
     return $revision;
@@ -186,7 +186,7 @@ SQL
    */
   protected function doSetRevision(\MovLib\Core\Revision\RevisionInterface $revision) {
     $this->description = $this->getRevisionArrayValue($revision->descriptions);
-    $this->name        = $this->getRevisionArrayValue($revision->names, $revision->names[$this->intl->languageCode]);
+    $this->name        = $this->getRevisionArrayValue($revision->names, $revision->names[$this->intl->code]);
     $this->wikipedia   = $this->getRevisionArrayValue($revision->wikipediaLinks);
     return $this;
   }
@@ -210,7 +210,7 @@ SQL
       $names = json_decode(Database::getConnection()->query("SELECT COLUMN_JSON(`dyn_names`) FROM `genres` WHERE `id` = {$this->id} LIMIT 1")->fetch_all()[0][0], true);
     }
 
-    return isset($names[$languageCode]) ? $names[$languageCode] : $names[$this->intl->defaultLanguageCode];
+    return isset($names[$languageCode]) ? $names[$languageCode] : $names[$this->intl->defaultCode];
   }
 
 }
