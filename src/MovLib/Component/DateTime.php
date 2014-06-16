@@ -73,16 +73,6 @@ final class DateTime extends \DateTime {
     return $this->format(self::FORMAT);
   }
 
-  /**
-   * Implements <code>serialize()</code> callback.
-   *
-   * @return array
-   *   Array containing the names of the properties that should be serialized.
-   */
-  public function __sleep() {
-    return [ "date" ];
-  }
-
 
   // ------------------------------------------------------------------------------------------------------------------- Static Methods
 
