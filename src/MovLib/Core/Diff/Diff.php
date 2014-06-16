@@ -3,13 +3,13 @@
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
- * Copyright Â© 2006 Google Inc.
- * Copyright Â© 2013 Daniil Skrobov <yetanotherape@gmail.com>
+ * Copyright © 2006 Google Inc.
+ * Copyright © 2013 Daniil Skrobov <yetanotherape@gmail.com>
  *
- * Copyright Â© 2011 Raymond Hill {@link http://raymondhill.net/}
- * Copyright Â© 2013 Rob Crowe {@link http://cogpowered.com/}
+ * Copyright © 2011 Raymond Hill {@link http://raymondhill.net/}
+ * Copyright © 2013 Rob Crowe {@link http://cogpowered.com/}
  *
- * Copyright Â© 2013-present {@link https://movlib.org/ MovLib}.
+ * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
  *
  * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
  * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
@@ -43,7 +43,8 @@ namespace MovLib\Core\Diff;
  * open source world with our approach to the problem.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright Â© 2014 MovLib
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
@@ -75,13 +76,6 @@ final class Diff {
   const COPY = "c";
 
   /**
-   * Code for copy key.
-   *
-   * @var integer
-   */
-  const COPY_KEY = 0;
-
-  /**
    * Deadline for for diff generation.
    *
    * @var float
@@ -96,25 +90,11 @@ final class Diff {
   const DELETE = "d";
 
   /**
-   * Code for delete key.
-   *
-   * @var integer
-   */
-  const DELETE_KEY = -1;
-
-  /**
    * Code for insert transformations.
    *
    * @var string
    */
   const INSERT = "i";
-
-  /**
-   * Code for insert key.
-   *
-   * @var integer
-   */
-  const INSERT_KEY = 1;
 
   /**
    * The character that is used as separator within insert transformations.
@@ -156,9 +136,10 @@ final class Diff {
 
     // Patch as long as there are transformations available.
     while ($patchOffset < $patchLength) {
-      // Pop the next transformation code from the string. Note the usage of the non-multi-byte substr function at this
-      // point; a transformation code is always a non-multi-byte character.
-      $transformation = substr($patch, $patchOffset, 1);
+      // Pop the next transformation code from the string. Note that the multi-byte substr function cannot be used here
+      // to consume the non-multibyte transformation code, because the the non-multi-byte substr function will assume
+      // a wrong starting offset if a multi-byte character was encoutered before.
+      $transformation = mb_substr($patch, $patchOffset, 1);
 
       // Increase the patch offset, we just consumed a character.
       ++$patchOffset;
@@ -242,17 +223,17 @@ final class Diff {
     $patch = null;
     $c     = count($diffs);
     for ($i = 0; $i < $c; ++$i) {
-      if ($diffs[$i][0] === self::INSERT_KEY) {
-        $patch .= self::INSERT . ($diffs[$i][2] === 1 ? null : $diffs[$i][2]) . self::INSERT_SEPARATOR . $diffs[$i][1];
+      if ($diffs[$i]->code === self::INSERT) {
+        $patch .= self::INSERT . ($diffs[$i]->length === 1 ? null : $diffs[$i]->length) . self::INSERT_SEPARATOR . $diffs[$i]->text;
       }
       else {
-        if ($diffs[$i][0] === self::COPY_KEY) {
+        if ($diffs[$i]->code === self::COPY) {
           $patch .= self::COPY;
         }
-        else/*if($diffs[$i][0] === self::DELETE_KEY)*/ {
+        else/*if($diffs[$i][0] === self::DELETE)*/ {
           $patch .= self::DELETE;
         }
-        $patch .= $diffs[$i][2] === 1 ? null : $diffs[$i][2];
+        $patch .= $diffs[$i]->length === 1 ? null : $diffs[$i]->length;
       }
     }
     return $patch;
@@ -396,8 +377,8 @@ final class Diff {
     }
 
     return [
-      [ self::DELETE_KEY, $text1, $text1Length ],
-      [ self::INSERT_KEY, $text2, $text2Length ],
+      (object) [ "code" => self::DELETE, "text" => $text1, "length" => $text1Length ],
+      (object) [ "code" => self::INSERT, "text" => $text2, "length" => $text2Length ],
     ];
   }
 
@@ -502,17 +483,17 @@ final class Diff {
   protected function compute($text1, $text1Length, $text2, $text2Length, $deadline) {
     // Both texts are equal, simply return.
     if ($text1 === $text2) {
-      return [[ self::COPY_KEY, $text1, $text1Length ]];
+      return [ (object) [ "code" => self::COPY, "text" => $text1, "length" => $text1Length ] ];
     }
 
     // The first text is empty, simple insertion necessary.
     if ($text1Length === 0) {
-      return [[ self::INSERT_KEY, $text2, $text2Length ]];
+      return [ (object) [ "code" => self::INSERT, "text" => $text2, "length" => $text2Length ] ];
     }
 
     // The second text is empty, simple deletion necessary.
     if ($text2Length === 0) {
-      return [[ self::DELETE_KEY, $text1, $text1Length ]];
+      return [ (object) [ "code" => self::DELETE, "text" => $text1, "length" => $text1Length ] ];
     }
 
     // We don't want to repeat ourselves, therefore we create intermediate variables based on lengths.
@@ -532,15 +513,15 @@ final class Diff {
     // The shorter text is contained within the longer text.
     if (($i = mb_strpos($longText, $shortText)) !== false) {
       $diff = [
-        [ self::INSERT_KEY, mb_substr($longText, 0, $i), $i ],
-        [ self::COPY_KEY, $shortText, $shortLength ],
-        [ self::INSERT_KEY, mb_substr($longText, ($length = $i + $shortLength)), $longLength - $length ],
+        (object) [ "code" => self::INSERT, "text" => mb_substr($longText, 0, $i), "length" => $i ],
+        (object) [ "code" => self::COPY, "text" => $shortText, "length" => $shortLength ],
+        (object) [ "code" => self::INSERT, "text" => mb_substr($longText, ($length = $i + $shortLength)), "length" => $longLength - $length ],
       ];
 
       // Swap insertions with deletions if diff is reversed.
       if ($text2Length < $text1Length) {
-        $diff[0][0] = self::DELETE_KEY;
-        $diff[2][0] = self::DELETE_KEY;
+        $diff[0]->code = self::DELETE;
+        $diff[2]->code = self::DELETE;
       }
 
       return $diff;
@@ -548,7 +529,10 @@ final class Diff {
 
     // Single character, cannot be a copy operation because of previous checks.
     if ($shortLength === 1) {
-      return [[ self::DELETE_KEY, $text1, $text1Length ], [ self::INSERT_KEY, $text2, $text2Length ]];
+      return [
+        (object) [ "code" => self::DELETE, "text" => $text1, "length" => $text1Length ],
+        (object) [ "code" => self::INSERT, "text" => $text2, "length" => $text2Length ]
+      ];
     }
 
     // Don't risk returning a non-optimal patch if we can divide the texts.
@@ -560,7 +544,7 @@ final class Diff {
 
       // Compute differences of left and right hand side of the copy operation of the common middle characters.
       $diffs   = $this->diff($hm[0], mb_strlen($hm[0]), $hm[2], mb_strlen($hm[2]), $deadline);
-      $diffs[] = [ self::COPY_KEY, $hm[4], $hm[5] ];
+      $diffs[] = (object) [ "code" => self::COPY, "text" => $hm[4], "length" => $hm[5] ];
       return array_merge($diffs, $this->diff($hm[1], mb_strlen($hm[1]), $hm[3], mb_strlen($hm[3]), $deadline));
     }
 
@@ -595,7 +579,11 @@ final class Diff {
       // Simply copy the complete text and we're done. Note, we don't know if we're called in recursion or not, that's
       // why the public wrapper has to take care of any initial equality. We have to copy, because there might be other
       // transformations surrounding us.
-      return [[ self::COPY_KEY, $text1, $text1Length ]];
+      return [ (object) [
+        "code" => self::COPY,
+        "text" => $text1,
+        "length" => $text1Length,
+      ] ];
     }
 
     // Compute common prefix.
@@ -621,12 +609,12 @@ final class Diff {
 
     // Restore common prefix.
     if ($prefixLength !== 0) {
-      array_unshift($diffs, [ self::COPY_KEY, $prefix, $prefixLength ]);
+      array_unshift($diffs, (object) [ "code" => self::COPY, "text" => $prefix, "length" => $prefixLength ]);
     }
 
     // Append common suffix.
     if ($suffixLength !== 0) {
-      $diffs[] = [ self::COPY_KEY, $suffix, $suffixLength ];
+      $diffs[] = (object) [ "code" => self::COPY, "text" => $suffix, "length" => $suffixLength ];
     }
 
     // Clean the differences by merging as many operations as possible.
@@ -750,7 +738,7 @@ final class Diff {
    */
   protected function merge(array $diffs) {
     // Why are we adding an empty copy operation at this point?
-    $diffs[] = [ self::COPY_KEY, "", 0 ];
+    $diffs[] = (object) [ "code" => self::COPY, "text" => "", "length" => 0 ];
 
     // Declare variables for merge optimization.
     $pointer    = $countDelete = $countInsert = $lengthDelete = $lengthInsert = 0;
@@ -758,19 +746,19 @@ final class Diff {
 
     // Note that the diffs count changes while we're iterating over it, therefore we have to recount it all the time.
     while ($pointer < count($diffs)) {
-      if ($diffs[$pointer][0] === self::INSERT_KEY) {
-        $textInsert   .= $diffs[$pointer][1];
-        $lengthInsert += $diffs[$pointer][2];
+      if ($diffs[$pointer]->code === self::INSERT) {
+        $textInsert   .= $diffs[$pointer]->text;
+        $lengthInsert += $diffs[$pointer]->length;
         ++$countInsert;
         ++$pointer;
       }
-      elseif ($diffs[$pointer][0] === self::DELETE_KEY) {
-        $textDelete   .= $diffs[$pointer][1];
-        $lengthDelete += $diffs[$pointer][2];
+      elseif ($diffs[$pointer]->code === self::DELETE) {
+        $textDelete   .= $diffs[$pointer]->text;
+        $lengthDelete += $diffs[$pointer]->length;
         ++$countDelete;
         ++$pointer;
       }
-      else/*if ($diffs[$pointer][0] === self::COPY_KEY)*/ {
+      else/*if ($diffs[$pointer]->code === self::COPY)*/ {
         // Check for prior redundancies.
         if ($countDelete + $countInsert > 1) {
           if ($countDelete !== 0 && $countInsert !== 0) {
@@ -778,12 +766,12 @@ final class Diff {
             $prefix = $this->commonPrefix($textInsert, $lengthInsert, $textDelete, $lengthDelete);
             if ($prefix !== 0) {
               $x = $pointer - $countDelete - $countInsert - 1;
-              if ($x >= 0 && $diffs[$x][0] === self::COPY_KEY) {
-                $diffs[$x][1] .= mb_substr($textInsert, 0, $prefix);
-                $diffs[$x][2] += $prefix;
+              if ($x >= 0 && $diffs[$x]->code === self::COPY) {
+                $diffs[$x]->text .= mb_substr($textInsert, 0, $prefix);
+                $diffs[$x]->length += $prefix;
               }
               else {
-                array_unshift($diffs, [ self::COPY_KEY, mb_substr($textInsert, 0, $prefix), $prefix ]);
+                array_unshift($diffs, (object) [ "code" => self::COPY, "text" => mb_substr($textInsert, 0, $prefix), "length" => $prefix ]);
                 ++$pointer;
               }
               $textInsert    = mb_substr($textInsert, $prefix);
@@ -795,26 +783,26 @@ final class Diff {
             // Factor our common suffixes.
             $suffix = $this->commonSuffix($textInsert, $lengthInsert, $textDelete, $lengthDelete);
             if ($suffix !== 0) {
-              $diffs[$pointer][1]  = mb_substr($textInsert, -$suffix) . $diffs[$pointer][1];
-              $diffs[$pointer][2] += $suffix;
-              $textInsert          = mb_substr($textInsert, 0, -$suffix);
-              $lengthInsert       -= $suffix;
-              $textDelete          = mb_substr($textDelete, 0, -$suffix);
-              $lengthDelete       -= $suffix;
+              $diffs[$pointer]->text    = mb_substr($textInsert, -$suffix) . $diffs[$pointer]->text;
+              $diffs[$pointer]->length += $suffix;
+              $textInsert               = mb_substr($textInsert, 0, -$suffix);
+              $lengthInsert            -= $suffix;
+              $textDelete               = mb_substr($textDelete, 0, -$suffix);
+              $lengthDelete            -= $suffix;
             }
           }
 
           // Delete offending records and add the merged ones.
           if ($countDelete === 0) {
-            array_splice($diffs, $pointer - $countInsert, $countInsert, [[ self::INSERT_KEY, $textInsert, $lengthInsert ]]);
+            array_splice($diffs, $pointer - $countInsert, $countInsert, [ (object) [ "code" => self::INSERT, "text" => $textInsert, "length" => $lengthInsert ] ]);
           }
           elseif ($countInsert === 0) {
-            array_splice($diffs, $pointer - $countDelete, $countDelete, [[ self::DELETE_KEY, $textDelete, $lengthDelete ]]);
+            array_splice($diffs, $pointer - $countDelete, $countDelete, [ (object) [ "code" => self::DELETE, "text" => $textDelete, "length" => $lengthDelete ]]);
           }
           else {
             array_splice($diffs, $pointer - $countDelete - $countInsert, $countDelete + $countInsert, [
-              [ self::DELETE_KEY, $textDelete, $lengthDelete ],
-              [ self::INSERT_KEY, $textInsert, $lengthInsert ],
+              (object) [ "code" => self::DELETE, "text" => $textDelete, "length" => $lengthDelete ],
+              (object) [ "code" => self::INSERT, "text" => $textInsert, "length" => $lengthInsert ],
             ]);
           }
 
@@ -827,9 +815,9 @@ final class Diff {
           }
         }
         // Merge copy with previous copy.
-        elseif ($pointer !== 0 && $diffs[($previous = $pointer - 1)][0] === self::COPY_KEY) {
-          $diffs[$previous][1] .= $diffs[$pointer][1];
-          $diffs[$previous][2] += $diffs[$pointer][2];
+        elseif ($pointer !== 0 && $diffs[($previous = $pointer - 1)]->code === self::COPY) {
+          $diffs[$previous]->text   .= $diffs[$pointer]->text;
+          $diffs[$previous]->length += $diffs[$pointer]->length;
           array_splice($diffs, $pointer, 1);
         }
         // Advance the pointer and go to the next record.
@@ -844,7 +832,7 @@ final class Diff {
     }
 
     // Why are we removing the empty copy operation?
-    if ($diffs[count($diffs) - 1][1] === "") {
+    if ($diffs[count($diffs) - 1]->length === 0) {
       array_pop($diffs);
     }
 
@@ -860,20 +848,20 @@ final class Diff {
     $next    = 2;
     while ($pointer < count($diffs) - 1) {
       // Check if this transformation is actually surrounded by copy transformations.
-      if ($diffs[$prev][0] === self::COPY_KEY && $diffs[$next][0] === self::COPY_KEY) {
+      if ($diffs[$prev]->code === self::COPY && $diffs[$next]->code === self::COPY) {
         // Shift the transformation over the previous copy transformation.
-        if (mb_substr($diffs[$pointer][1], -$diffs[$prev][2]) === $diffs[$prev][1]) {
-          $diffs[$pointer][1]  = $diffs[$prev][1] . mb_substr($diffs[$pointer][1], 0, -$diffs[$prev][2]);
-          $diffs[$next][1]     = "{$diffs[$prev][1]}{$diffs[$next][1]}";
-          $diffs[$next][2]    += $diffs[$prev][2];
+        if (mb_substr($diffs[$pointer]->text, -$diffs[$prev]->length) === $diffs[$prev]->text) {
+          $diffs[$pointer]->text  = $diffs[$prev]->text . mb_substr($diffs[$pointer]->text, 0, -$diffs[$prev]->length);
+          $diffs[$next]->text     = "{$diffs[$prev]->text}{$diffs[$next]->text}";
+          $diffs[$next]->length  += $diffs[$prev]->length;
           array_splice($diffs, $prev, 1);
           $changes = true;
         }
         // Shift the transformation over the next copy transformation.
-        elseif (mb_substr($diffs[$pointer][1], 0, $diffs[$next][2]) === $diffs[$next][1]) {
-          $diffs[$prev][1]     = "{$diffs[$prev][1]}{$diffs[$next][1]}";
-          $diffs[$prev][2]    += $diffs[$next][2];
-          $diffs[$pointer][1]  = mb_substr($diffs[$pointer][1], $diffs[$next][2]) . $diffs[$next][1];
+        elseif (mb_substr($diffs[$pointer]->text, 0, $diffs[$next]->length) === $diffs[$next]->text) {
+          $diffs[$prev]->text     = "{$diffs[$prev]->text}{$diffs[$next]->text}";
+          $diffs[$prev]->length  += $diffs[$next]->length;
+          $diffs[$pointer]->text  = mb_substr($diffs[$pointer]->text, $diffs[$next]->length) . $diffs[$next]->text;
           array_splice($diffs, $next, 1);
           $changes = true;
         }
