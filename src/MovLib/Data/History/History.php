@@ -161,7 +161,10 @@ SQL
 
         // Check if this patch matches the newer requested revision and recreate the instance if it does.
         if ($patchRevisionId === $newRevisionId) {
-          $this->new = unserialize($revision);
+          $this->new          = unserialize($revision);
+          $this->new->id      = $patchRevisionId;
+          $this->new->userId  = $patchUserId;
+          $this->new->created = new \MovLib\Component\DateTime($this->new->id);
         }
       }
     }
@@ -174,7 +177,10 @@ SQL
 
     // The last patch returned by the database query is always the oldest revision.
     if ($patchRevisionId == $oldRevisionId) {
-      $this->old = unserialize($revision);
+      $this->old          = unserialize($revision);
+      $this->old->id      = $patchRevisionId;
+      $this->old->userId  = $patchUserId;
+      $this->old->created = new \MovLib\Component\DateTime($this->old->id);
     }
     else {
       throw new \RangeException("Couldn't find old revision {$oldRevisionId}.", static::RANGE_EXCEPTION_OLD);

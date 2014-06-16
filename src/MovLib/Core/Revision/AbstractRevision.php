@@ -22,6 +22,7 @@ use \MovLib\Core\Database\Query\Insert;
 use \MovLib\Core\Database\Query\Update;
 use \MovLib\Core\Diff\Diff;
 use \MovLib\Core\FileSystem;
+use \MovLib\Exception\NothingToCommitException;
 
 /**
  * Defines the base object for revision objects.
@@ -163,16 +164,14 @@ abstract class AbstractRevision implements RevisionInterface {
    * {@inheritdoc}
    */
   public function __sleep() {
-    static $properties = [ "deleted", "originatorId", "id", "userId" ];
+    static $properties = [ "deleted", "originatorId" ];
     return $properties;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function __wakeup() {
-    $this->created = new DateTime($this->id);
-  }
+  public function __wakeup() {}
 
 
   //-------------------------------------------------------------------------------------------------------------------- Abstract Methods
@@ -297,8 +296,13 @@ abstract class AbstractRevision implements RevisionInterface {
     $this->preCommit($connection, $oldRevision, $languageCode);
 
     // Now we can create the actual diff patch that we'll store in the revisions row of the old revision.
-    $diff = new Diff();
-    $diffPatch = $diff->getDiffPatch($diff->getDiff(serialize($this), $oldSerialized));
+    $diff            = new Diff();
+    $transformations = $diff->getDiff(serialize($this), $oldSerialized);
+    // If there were no changes at all, let the user know.
+    if (empty($transformations)) {
+      throw new NothingToCommitException;
+    }
+    $diffPatch = $diff->getDiffPatch($transformations);
 
     // Prepare the update query and set the default properties.
     $update = (new Update($connection, static::$tableName))->set("changed", $this->created)->where("id", $this->originatorId);
