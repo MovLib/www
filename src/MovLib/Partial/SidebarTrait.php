@@ -136,17 +136,17 @@ trait SidebarTrait {
     if ($entity->deleted) {
       $toolboxItems = [
         [ $this->entity->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
-        [ $this->entity->r("/discussion", [ $this->entity->route->args ]), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
-        [ $this->entity->r("/history", [ $this->entity->route->args ]), $this->intl->t("History"), [ "class" => "ico ico-history" ] ]
+        [ $this->entity->r("/discussion"), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
+        [ $this->entity->r("/history"), $this->intl->t("History"), [ "class" => "ico ico-history" ] ]
       ];
     }
     else {
       $toolboxItems = [
         [ $this->entity->route, $this->intl->t("View"), [ "class" => "ico ico-view" ] ],
-        [ $this->entity->r("/edit", [ $this->entity->route->args ]), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
-        [ $this->entity->r("/discussion", [ $this->entity->route->args ]), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
-        [ $this->entity->r("/history", [ $this->entity->route->args ]), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
-        [ $this->entity->r("/delete", [ $this->entity->route->args ]), $this->intl->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
+        [ $this->entity->r("/edit"), $this->intl->t("Edit"), [ "class" => "ico ico-edit" ] ],
+        [ $this->entity->r("/discussion"), $this->intl->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
+        [ $this->entity->r("/history"), $this->intl->t("History"), [ "class" => "ico ico-history" ] ],
+        [ $this->entity->r("/delete"), $this->intl->t("Delete"), [ "class" => "ico ico-delete separator" ] ],
       ];
     }
     if ($menuitems) {
