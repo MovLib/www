@@ -1923,48 +1923,21 @@ KEY_BLOCK_SIZE = 8;
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`de_post`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`de_post` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
 -- Table `movlib`.`de_topic`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`de_topic` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The topic’s unique identifier.',
-  `changed` DATETIME NULL,
   `closed` TINYINT(1) NOT NULL DEFAULT FALSE COMMENT 'Whether this topic is closed or not, defaults to not closed.',
-  `created` DATETIME NOT NULL,
-  `first_post_id` BIGINT UNSIGNED NULL,
-  `first_post_username` VARCHAR(40) NULL,
+  `edited` DATETIME NULL,
+  `editor_id` BIGINT UNSIGNED NULL,
   `forum_id` TINYINT UNSIGNED NOT NULL COMMENT 'The topic’s unique forum identifier it belongs to.',
-  `last_post_created` DATETIME NULL,
-  `last_post_id` BIGINT UNSIGNED NULL,
-  `last_post_username` VARCHAR(40) NULL,
   `sticky` TINYINT(1) NOT NULL DEFAULT FALSE COMMENT 'Whether this topic is sticky or not, defaults to not sticky.',
   `title` VARCHAR(255) NOT NULL COMMENT 'The topic’s title.',
   PRIMARY KEY (`id`),
-  INDEX `fk_de_topic_de_forum1_idx` (`forum_id` ASC),
-  INDEX `fk_de_topic_de_post1_idx` (`first_post_id` ASC),
-  INDEX `fk_de_topic_de_post2_idx` (`last_post_id` ASC),
-  CONSTRAINT `fk_de_topic_de_forum1`
-    FOREIGN KEY (`forum_id`)
-    REFERENCES `movlib`.`de_forum` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_de_topic_de_post1`
-    FOREIGN KEY (`first_post_id`)
-    REFERENCES `movlib`.`de_post` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_de_topic_de_post2`
-    FOREIGN KEY (`last_post_id`)
-    REFERENCES `movlib`.`de_post` (`id`)
+  INDEX `fk_de_topic_users1_idx` (`editor_id` ASC),
+  CONSTRAINT `fk_de_topic_users1`
+    FOREIGN KEY (`editor_id`)
+    REFERENCES `movlib`.`users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -1972,32 +1945,36 @@ ENGINE = InnoDB;
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`de_forum`
+-- Table `movlib`.`de_post`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`de_forum` (
-  `id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The forum’s unique identifier.',
-  `count_posts` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The forum’s total post count.',
-  `count_topics` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The forum’s total topic count.',
-  `last_post_created` DATETIME NULL COMMENT 'The forum’s last post’s creation date and time.',
-  `last_post_id` BIGINT UNSIGNED NULL COMMENT 'The forum’s last post’s unique identifier.',
-  `last_post_username` VARCHAR(40) NULL COMMENT 'The forum’s last post’s username.',
-  `last_topic_id` BIGINT UNSIGNED NULL COMMENT 'The forum’s last topic’s unique identifier.',
-  `last_topic_title` VARCHAR(255) NULL COMMENT 'The forum’s last topic’s title.',
+CREATE TABLE IF NOT EXISTS `movlib`.`de_post` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `topic_id` BIGINT UNSIGNED NOT NULL,
+  `created` DATETIME NOT NULL,
+  `creator_id` BIGINT UNSIGNED NOT NULL,
+  `edited` DATETIME NULL,
+  `editor_id` BIGINT UNSIGNED NULL,
+  `message` LONGTEXT NOT NULL,
   PRIMARY KEY (`id`),
-  INDEX `fk_de_forum_de_post1_idx` (`last_post_id` ASC),
-  INDEX `fk_de_forum_de_topic1_idx` (`last_topic_id` ASC),
-  CONSTRAINT `fk_de_forum_de_post1`
-    FOREIGN KEY (`last_post_id`)
-    REFERENCES `movlib`.`de_post` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_de_forum_de_topic1`
-    FOREIGN KEY (`last_topic_id`)
+  INDEX `fk_de_post_de_topic1_idx` (`topic_id` ASC),
+  INDEX `fk_de_post_users1_idx` (`creator_id` ASC),
+  INDEX `fk_de_post_users2_idx` (`editor_id` ASC),
+  CONSTRAINT `fk_de_post_de_topic1`
+    FOREIGN KEY (`topic_id`)
     REFERENCES `movlib`.`de_topic` (`id`)
     ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_de_post_users1`
+    FOREIGN KEY (`creator_id`)
+    REFERENCES `movlib`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_de_post_users2`
+    FOREIGN KEY (`editor_id`)
+    REFERENCES `movlib`.`users` (`id`)
+    ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB
-COMMENT = 'Contains caching data for German forums. The actual forums a /* comment truncated */ /*re defined in code.*/';
+ENGINE = InnoDB;
 
 SHOW WARNINGS;
 
