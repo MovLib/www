@@ -110,7 +110,7 @@ trait EntityTrait {
    * @see \MovLib\Core\Entity\EntitySetInterface::route()
    */
   final public function route($locale) {
-    return $this->route->recompile($locale);
+    return $this->route->compile($locale);
   }
 
 }
