@@ -144,12 +144,11 @@ final class Kernel {
    *   The real document root path.
    * @param string $logName
    *   The name for the log entries.
-   * @param string $language [optional]
-   *   An ISO 639-1 code (preferred) or a locale, defaults to <code>NULL</code> (default system locale from config will
-   *   be used).
+   * @param string $language
+   *   The system language's ISO 639-1 alpha-2 code.
    * @return this
    */
-  protected function boot($documentRoot, $logName) {
+  protected function boot($documentRoot, $logName, $language) {
     // @devStart
     // @codeCoverageIgnoreStart
     assert(
@@ -181,7 +180,7 @@ final class Kernel {
     $this->container->kernel = $this;
     $this->container->log    = new Log($this->container->config, $logName, $this->http);
     $this->container->fs     = new FileSystem($documentRoot, $this->container->config->hostnameStatic);
-    $this->container->intl   = Intl::getInstance();
+    $this->container->intl   = new Intl($language);
 
     return $this;
   }
@@ -201,9 +200,9 @@ final class Kernel {
     assert_options(ASSERT_BAIL, true);
     // @codeCoverageIgnoreEnd
     // @devEnd
-    $this->cli         = true;
+    $this->cli       = true;
     $this->container = new Container();
-    $this->boot($documentRoot, "{$basename}-cli");
+    $this->boot($documentRoot, "{$basename}-cli", Intl::DEFAULT_CODE);
     $this->container->fs->setProcessOwner($this->container->config->user, $this->container->config->group);
     $application = new Application($this->container, $basename);
     $application->setAutoExit(false);
@@ -230,7 +229,7 @@ final class Kernel {
 
     $this->http                = true;
     $this->container           = new HTTPContainer();
-    $this->boot($documentRoot, $_SERVER["SERVER_NAME"]);
+    $this->boot($documentRoot, $_SERVER["SERVER_NAME"], $_SERVER["LANGUAGE_CODE"]);
     $this->container->request  = new Request($this->container->intl);
     $this->container->response = new Response($this->container->request, $this->container->config->hostname);
     $this->container->session  = new Session($this->container);
