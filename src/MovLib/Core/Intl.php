@@ -125,7 +125,7 @@ final class Intl {
 
 
   /**
-   * ISO 639-1 alpha-2 language code. Supported language codes are defined via nginx configuration.
+   * Current ISO 639-1 alpha-2 code.
    *
    * @link https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
    * @var string
@@ -133,15 +133,17 @@ final class Intl {
   public $code;
 
   /**
-   * The default language code.
+   * Default ISO 639-1 alpha-2 code.
    *
+   * @see ::DEFAULT_CODE
    * @var string
    */
   public $defaultCode;
 
   /**
-   * The default locale.
+   * Default Intl ICU locale.
    *
+   * @see ::DEFAULT_LOCALE
    * @var string
    */
   public $defaultLocale;
@@ -155,7 +157,7 @@ final class Intl {
   public $direction = "ltr";
 
   /**
-   * Locale for the current language code, used for Intl ICU related classes and functions (e.g. collators).
+   * Current Intl ICU locale.
    *
    * @var string
    */
@@ -170,25 +172,25 @@ final class Intl {
    *
    * @param string $code
    *   ISO 639-1 alpha-2 system language code to use.
+   * @throws \IntlException
+   *   If <code>$code</code> isn't a valid system language's code.
    */
   final public function __construct($code) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert(
-      $code === null || isset(self::$systemLanguages[$code]) || in_array($code, self::$systemLanguages),
-      "\$language ({$code}) must be a valid system language's ISO 639-1 alpha-2 code."
-    );
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
     // Export default language code and locale to class scope. Providing public properties allows classes to directly
     // embed the code and locale in strings.
     $this->defaultCode   = self::DEFAULT_CODE;
     $this->defaultLocale = self::DEFAULT_LOCALE;
 
-    // Export current language code and locale to class scope.
-    $this->code   = $code;
-    $this->locale = self::$systemLanguages[$code];
+    // Export current language code and locale to class scope. This will fail if the provided code isn't within the
+    // static system languages array because we try to access a non existent offset.
+    try {
+      $this->code   = $code;
+      $this->locale = self::$systemLanguages[$code];
+    }
+    catch (\Exception $e) {
+      $valid = implode(", ", array_keys(self::$systemLanguages));
+      throw new \IntlException("The given code '{$code}' must be a valid system language's ISO 639-1 alpha-2 code. Valid codes are: {$valid}", null, $e);
+    }
   }
 
 
