@@ -17,9 +17,8 @@
  */
 namespace MovLib\Core\HTTP;
 
-use \MovLib\Component\URL;
-use \MovLib\Core\Intl;
 use \MovLib\Component\DateTime;
+use \MovLib\Component\URL;
 use \MovLib\Presentation\Error\Forbidden;
 
 /**
@@ -32,6 +31,10 @@ use \MovLib\Presentation\Error\Forbidden;
  * @since 0.0.1-dev
  */
 final class Request {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
 
   // @codingStandardsIgnoreStart
   /**
@@ -101,6 +104,13 @@ final class Request {
    * @var boolean
    */
   public $methodPOST = false;
+
+  /**
+   * The request's system language's ISO 639-1 alpha-2 code.
+   *
+   * @var string
+   */
+  public $languageCode = "en";
 
   /**
    * The request's path.
@@ -202,6 +212,7 @@ final class Request {
     $this->method        =  $_SERVER["REQUEST_METHOD"];
     $this->methodGET     =  $this->method == "GET";
     $this->methodPOST    = !$this->methodGET;
+    $this->languageCode  =  $_SERVER["LANGUAGE_CODE"];
     $this->path          =  URL::encodePath($_SERVER["REQUEST_PATH"]);
     $this->post          =& $_POST;
     $this->protocol      =  $_SERVER["SERVER_PROTOCOL"];
@@ -228,31 +239,6 @@ final class Request {
         )}</p>"
       );
     }
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Static Methods
-
-
-  /**
-   * Get the language code of the current request.
-   *
-   * @staticvar string $languageCode
-   *   Used to cache the request's language code.
-   * @return string
-   *   The language code of the current request.
-   */
-  public static function getLanguageCode() {
-    static $languageCode = null;
-    if ($languageCode === null) {
-      if (isset($_SERVER["LANGUAGE_CODE"])) {
-        $languageCode = $_SERVER["LANGUAGE_CODE"];
-      }
-      else {
-        $languageCode = Intl::getDefaultLanguageCode();
-      }
-    }
-    return $languageCode;
   }
 
 
