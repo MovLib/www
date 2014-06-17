@@ -17,6 +17,8 @@
  */
 namespace MovLib\Partial\FormElement;
 
+use \MovLib\Core\Kernel;
+
 /**
  * Input URL form element.
  *
@@ -243,7 +245,7 @@ class InputURL extends \MovLib\Partial\FormElement\AbstractInput {
         CURLOPT_SSL_VERIFYPEER => false,
         CURLOPT_TIMEOUT        => 5,
         // It's very important to let other webmasters know who's probing their servers.
-        CURLOPT_USERAGENT      => "Mozilla/5.0 (compatible; MovLib-Validation/{$this->config->version}; +https://{$this->config->hostname}/)",
+        CURLOPT_USERAGENT      => "Mozilla/5.0 (compatible; MovLib-Validation/" . Kernel::VERSION . "; +https://{$this->config->hostname}/)",
       ]);
       curl_exec($ch);
       $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);

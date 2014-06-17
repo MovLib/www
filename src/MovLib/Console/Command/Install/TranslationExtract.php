@@ -17,6 +17,7 @@
  */
 namespace MovLib\Console\Command\Install;
 
+use \MovLib\Core\Kernel;
 use \MovLib\Core\Intl;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -104,7 +105,7 @@ final class TranslationExtract extends \MovLib\Console\Command\AbstractCommand {
       "no-wrap"            => null,
       "add-comments"       => "/",
       "package-name"       => "{$this->config->sitename} Messages",
-      "package-version"    => $this->config->version,
+      "package-version"    => Kernel::VERSION,
       "msgid-bugs-address" => "https://github.com/MovLib/www/issues?labels=translation",
     ] as $option => $arg) {
       $command .= " --{$option}";

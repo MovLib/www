@@ -84,7 +84,7 @@ abstract class AbstractIntlCommand extends \MovLib\Console\Command\AbstractComma
         "The system locales for which translations should be generated, either a language code or locale. Note that " .
         "the default value 'all' is a special keyword, if 'all' is part of your supplied arguments any other argument " .
         "is simply ignored and translations for all available system locales will be generated. The following system " .
-        "locales are currently available:\n\n<info>" . implode("</info>, <info>", [ "all" ] + $this->config->locales) .
+        "locales are currently available:\n\n<info>" . implode("</info>, <info>", [ "all" ] + Intl::$systemLanguages) .
         "</info>",
         120
       )),

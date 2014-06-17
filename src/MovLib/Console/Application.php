@@ -17,6 +17,7 @@
  */
 namespace MovLib\Console;
 
+use \MovLib\Core\Kernel;
 use \MovLib\Core\Container;
 
 /**
@@ -52,7 +53,7 @@ final class Application extends \Symfony\Component\Console\Application {
    *   The basename of the executed binary (without extension).
    */
   public function __construct(Container $container, $basename) {
-    parent::__construct($basename, $container->config->version);
+    parent::__construct($basename, Kernel::VERSION);
     cli_set_process_title($basename);
 
     // Guess the directory containing the commands, if the result is "Lig" then the "movlib.php" binary was invoked

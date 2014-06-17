@@ -34,6 +34,8 @@ use \MovLib\Presentation\Error\InternalServerError;
 /**
  * The MovLib kernel.
  *
+ * The kernel takes care of bootstraping and instantiating the correct objects to handle a CLI or HTTP request.
+ *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -55,6 +57,48 @@ final class Kernel {
   const name = "Kernel";
   // @codingStandardsIgnoreEnd
 
+  /**
+   * The canonical absolute version string.
+   *
+   * @var string
+   */
+  const VERSION = "0.0.1-dev";
+
+  /**
+   * The version as zero-padded integer string.
+   *
+   * @var string
+   */
+  const VERSION_ID = "000010";
+
+  /**
+   * The major version part.
+   *
+   * @var string
+   */
+  const VERSION_MAJOR = "0";
+
+  /**
+   * The minor version part.
+   *
+   * @var string
+   */
+  const VERSION_MINOR = "0";
+
+  /**
+   * The release version part.
+   *
+   * @var string
+   */
+  const VERSION_RELEASE = "1";
+
+  /**
+   * The extra version part.
+   *
+   * @var string
+   */
+  const VERSION_EXTRA = "dev";
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
@@ -67,10 +111,10 @@ final class Kernel {
   public $cli = false;
 
   /**
-   * Used to collect methods that should executed after the response was sent to the client.
+   * Used to collect methods that should be executed after the response was sent to the client.
    *
-   * @see Kernel::delayMethodCall()
-   * @see Kernel::executeDelayedMethods()
+   * @see ::delayMethodCall
+   * @see ::executeDelayedMethods
    * @var array
    */
   protected $delayedMethods = [];

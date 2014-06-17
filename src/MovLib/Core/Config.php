@@ -52,31 +52,6 @@ class Config {
 
 
   /**
-   * The default currency code.
-   *
-   * @var string
-   */
-  public $defaultCurrencyCode = "USD";
-
-  /**
-   * The default language code.
-   *
-   * <b>NOTE</b><br>
-   * Automatically set based on default locale.
-   *
-   * @see Config::$defaultLocale
-   * @var string
-   */
-  public $defaultLanguageCode;
-
-  /**
-   * The default locale.
-   *
-   * @var string
-   */
-  public $defaultLocale = "en_US";
-
-  /**
    * The document root.
    *
    * Should point to the symbolic link that links to the real files. This is mainly used for CLI and configuration of
@@ -133,16 +108,6 @@ class Config {
   public $hostnameStatic = "movlib.org";
 
   /**
-   * Supported system language codes and locales.
-   *
-   * Each key contains a ISO 639-1 language code and the value is the associated locale (combination of aforementioned
-   * language code followed by an underline (<code>"_"</code>) and the ISO 3166-1 alpha-2 country code).
-   *
-   * @var array
-   */
-  public $locales = [ "de_AT", "en_US" ];
-
-  /**
    * The password hashing algorithm.
    *
    * @link http://php.net/manual/password.constants.php
@@ -192,69 +157,5 @@ class Config {
    * @var string
    */
   public $user = "movdev";
-
-  /**
-   * The full software version.
-   *
-   * @link http://semver.org/
-   * @var string
-   */
-  public $version = "0.0.1-dev";
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new default configuration.
-   */
-  public function __construct() {
-    $this->setDefaultLocale($this->defaultLocale);
-    $this->setLocales($this->locales);
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * Set the default locale.
-   *
-   * @param string $locale
-   *   The default locale to set.
-   * @return this
-   * @throws \InvalidArgumentException
-   */
-  public function setDefaultLocale($locale) {
-    if (strlen($locale) !== 5) {
-      throw new \InvalidArgumentException("A locale has to be exactly 5 characters long (e.g. 'en_US').");
-    }
-    if (!in_array($locale, $this->locales)) {
-      throw new \InvalidArgumentException("The default locale must be part of available system locales, currently the following system locales are configured: " . implode(", ", $this->languages));
-    }
-
-    $this->defaultLanguageCode = "{$locale[0]}{$locale[1]}";
-    $this->defaultLocale       = $locale;
-
-    return $this;
-  }
-
-  /**
-   * Set the locales.
-   *
-   * @param array $locales
-   *   The locales to set.
-   * @return this
-   */
-  public function setLocales($locales) {
-    if (!in_array($this->defaultLocale, $locales)) {
-      throw new \InvalidArgumentException("The current default locale '{$this->defaultLocale}' is not part of the new available locales: " . implode(", ", $locales));
-    }
-    $this->locales = [];
-    foreach ($locales as $locale) {
-      $this->locales["{$locale[0]}{$locale[1]}"] = $locale;
-    }
-    return $this;
-  }
 
 }
