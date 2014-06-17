@@ -17,7 +17,6 @@
  */
 namespace MovLib\Core\Routing;
 
-use \MovLib\Core\Intl;
 use \MovLib\Component\URL;
 
 /**
@@ -77,6 +76,13 @@ final class Route {
   public $fragment;
 
   /**
+   * The internationalization instance.
+   *
+   * @var \MovLib\Core\Intl
+   */
+  public $intl;
+
+  /**
    * The route's hostname including the leading subdomain separator.
    *
    * @var string
@@ -85,6 +91,10 @@ final class Route {
 
   /**
    * The untranslated route splitted into its parts.
+   *
+   * <b>NOTE</b><br>
+   * The parts still contain the Intl placeholders, you may access the placeholders values by directly accessing the
+   * public {@see ::$args} array.
    *
    * @var array
    */
@@ -118,12 +128,35 @@ final class Route {
   /**
    * Instantiate new route.
    *
-   * @param string $route
-   *   The untranslated route.
+   * <b>NOTE</b><br>
+   * Only use this object for internal routes, you may use the {@see \MovLib\Component\URL} object for external ones.
+   *
+   * @param \MovLib\Core\Intl $intl
+   *   The internationalization instance to use for route formatting and translation.
+   * @param string $path
+   *   The route's untranslated path.
    * @param array $options [optional]
-   *   Additional options for this route.
+   *   Additional options for this route, possible options are:
+   *   <ul>
+   *     <li><code>"absolute"</code> Either <code>TRUE</code> or <code>FALSE</code> (default):
+   *       <ul>
+   *         <li><code>TRUE</code> will create an absolute URL including scheme and domain.</li>
+   *         <li><code>FALSE</code> (default) will create a root relative URL.</li>
+   *       </ul>
+   *     </li>
+   *     <li><code>"args"</code> An array of arguments that should be used to format the route, this array will be
+   *     passed to {@see \MovLib\Core\Intl::r()}.</li>
+   *     <li><code>"fragment"</code> A fragment identifier (named anchor) to append to the URL. Do not include the
+   *     leading <code>"#"</code> character.</li>
+   *     <li><code>"hostname"</code> The hostname of the URL if <code>"absolute"</code> is set to <code>TRUE</code>. The
+   *     default value is <code>".movlib.org"</code>; note the leading dot. Hostname's with a leading dot will have the
+   *     current ISO 639-1 alpha-2 code prepended automatically.</li>
+   *     <li><code>"query"</code> An array of query key-value-pairs (without any URL encoding) to append.</li>
+   *     <li><code>"scheme"</code> The scheme of the URL if <code>"absolute"</code> is set to <code>TRUE</code>. The
+   *     default value is <code>"https"</code>.</li>
+   *   </ul>
    */
-  public function __construct($route, array $options = []) {
+  public function __construct(\MovLib\Core\Intl $intl, $path, array $options = []) {
     // Merge in defaults.
     $options += [
       "absolute" => false,
@@ -139,9 +172,10 @@ final class Route {
     $this->args     = $options["args"];
     $this->fragment = $options["fragment"];
     $this->hostname = $options["hostname"];
-    $this->parts    = explode("/", $route);
+    $this->intl     = $intl;
+    $this->parts    = explode("/", $path);
     $this->query    = $options["query"];
-    $this->route    = $route;
+    $this->route    = $path;
     $this->scheme   = $options["scheme"];
 
     // The first element is always empty because a route always starts with a slash.
@@ -155,7 +189,7 @@ final class Route {
    *   The route's string representation.
    */
   public function __toString() {
-    return $this->compiled ?: $this->recompile();
+    return $this->compiled ?: $this->compile();
   }
 
 
@@ -165,26 +199,49 @@ final class Route {
   /**
    * Recompile the route.
    *
-   * @param string $code [optional]
-   *   The system language's ISO 639-1 alpha-2 code to translate the route to, defaults to <code>NULL</code> and the
-   *   current language is used.
+   * @param string $languageCode [optional]
+   *   The system language's ISO 639-1 alpha-2 code to use for recompilation of the route, this will affect the target
+   *   language of the translation and (if absolute) the subdomain. Defaults to <code>NULL</code> and the current
+   *   language from the intl instance that was passed to the constructor will be used. Note that
    * @return string
    *   The recompiled route.
    * @throws \IntlException
    */
-  public function recompile($code = null) {
-    $intl = Intl::getInstance();
-    $code || ($code = $intl->code);
+  public function compile($languageCode = null) {
+    // Update our intl instance with the new language code if passed.
+    $languageCode || ($languageCode = $this->intl->code);
 
     // Translate, format and encode the route.
-    $this->compiled = URL::encodePath($intl->r($this->route, $this->args, $code));
+    $this->compiled = URL::encodePath($this->intl->r($this->route, $this->args, $languageCode));
 
     // Honor optional options.
     $this->query    && ($this->compiled .= http_build_query($this->query, null, null, PHP_QUERY_RFC3986));
     $this->fragment && ($this->compiled .= $this->fragment);
-    $this->absolute && ($this->compiled = "{$this->scheme}://{$code}{$this->hostname}{$this->compiled}");
+
+    // Compile absolute route if requested. Note that we'll prepend the language code only if the hostname starts with
+    // a dot (default).
+    if ($this->absolute) {
+      $hostname = $this->hostname{0} === "." ? "{$languageCode}{$this->hostname}" : $this->hostname;
+      $this->compiled = "{$this->scheme}://{$hostname}{$this->compiled}";
+    }
 
     return $this->compiled;
+  }
+
+  /**
+   * Get a part from the route's path.
+   *
+   * @param integer $index
+   *   The index to get, the route's path is splitted by the URL separator character, the slash (<code>"/"</code>). Part
+   *   <code>0</code> would be the first string after the first separator. Assume the route <code>"/foo/bar"</code>,
+   *   part <code>0</code> would be <code>"foo"</code> and so on.
+   * @return string|null
+   *   The route path's part at the index or <code>NULL</code> if no part exists for <var>$index</var>.
+   */
+  public function part($index) {
+    if (isset($this->parts[$index])) {
+      return $this->parts[$index];
+    }
   }
 
   /**

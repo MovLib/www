@@ -17,8 +17,6 @@
  */
 namespace MovLib\Core\Routing;
 
-use \MovLib\Core\Intl;
-
 /**
  * Defines the routing trait.
  *
@@ -62,7 +60,7 @@ trait RoutingTrait {
       if ($this->route->args) {
         $args = empty($args) ? $this->route->args : array_merge($this->route->args, $args);
       }
-      return Intl::getInstance()->r($routes[static::name][$routePart], $args, $languageCode);
+      return $this->intl->r($routes[static::name][$routePart], $args, $languageCode);
     }
 
     // The route will change if it contains placeholders, but later look-ups will be unprocessed, therefore we have to
@@ -100,7 +98,7 @@ trait RoutingTrait {
 
     // Add this route to our cache and we're done.
     $routes[static::name][$cacheKey] = "{$this->route->route}{$routePart}";
-    return Intl::getInstance()->r($routes[static::name][$cacheKey], $args, $languageCode);
+    return $this->intl->r($routes[static::name][$cacheKey], $args, $languageCode);
   }
 
 }
