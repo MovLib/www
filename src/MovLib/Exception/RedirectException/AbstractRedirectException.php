@@ -49,7 +49,7 @@ abstract class AbstractRedirectException extends \RuntimeException implements \M
     $container->response->cacheable = false;
     $route = rawurldecode($this->message);
     $code  = (string) $this->getHttpStatusCode($container->request->protocol == "HTTP/1.0");
-    $title = Intl::getInstance()->getTranslations("http-status-codes")[$code];
+    $title = $container->intl->getTranslations("http-status-codes")[$code];
 
     if (strpos($route, "//") === false) {
       $route = "{$container->request->scheme}://{$container->request->hostname}{$route}";
