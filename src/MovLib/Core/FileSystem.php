@@ -33,6 +33,10 @@ use \MovLib\Exception\FileSystemException;
  */
 final class FileSystem {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
   // @codingStandardsIgnoreStart
   /**
    * Short class name.
@@ -41,10 +45,6 @@ final class FileSystem {
    */
   const name = "FileSystem";
   // @codingStandardsIgnoreEnd
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
 
   /**
    * Default binary mode.
@@ -113,6 +113,10 @@ final class FileSystem {
   /**
    * Scheme class mapping for available stream wrappers.
    *
+   * <b>NOTE</b><br>
+   * This might be a total code smell at this point, but it's also very fast because we don't have to actually load the
+   * stream wrappers to get their scheme and canonical absolute class name.
+   *
    * @var array
    */
   protected static $streamWrappers = [
@@ -144,9 +148,13 @@ final class FileSystem {
     $this->documentRoot   = $documentRoot;
     $this->hostnameStatic = "//{$hostnameStatic}";
 
-    /* @var $class \MovLib\Core\StreamWrapper\AbstractLocalStream */
     foreach (self::$streamWrappers as $scheme => $class) {
-      $class::$fs = $this;
+      // PHP's stream wrapper implementation doesn't allow dependency injection, we're therefore force to static
+      // property injection to ensure that every instance of a stream wrapper will have access to the file system.
+      $class::$fileSystem = $this;
+
+      // We don't care at this point if a stream wrapper was already registered or not. Instantiating more than one
+      // file system instance isn't an error.
       stream_wrapper_register($scheme, $class);
     }
   }
@@ -229,24 +237,47 @@ final class FileSystem {
    *   A cache buster that should be appended to the URL, defaults to <code>NULL</code>.
    * @return string
    *   The external URL for the given URI.
+   * @throws \InvalidArgumentException
+   *   If no stream wrapper is registered for the scheme of <var>$uri</var>.
    * @throws \LogicException
-   *   If the given URI doesn't support external URLs.
+   *   If the stream wrapper for <var>$uri</var> doesn't support external URLs.
    */
   public function getExternalURL($uri, $cacheBuster = null) {
-    try {
-      static $streamWrappers = [], $urls = [];
-      if (isset($urls[$uri])) {
-        return $urls[$uri];
-      }
-      $scheme = explode("://", $uri, 2)[0];
-      if (empty($streamWrappers[$scheme])) {
-        $streamWrappers[$scheme] = new self::$streamWrappers[$scheme]();
-      }
-      return ($urls[$uri] = $streamWrappers[$scheme]->getExternalPath($uri, $cacheBuster));
+    static $streamWrappers = [], $urls = [];
+
+    // Directly return the cached URL for this URI if we have it.
+    if (isset($urls[$uri])) {
+      return $urls[$uri];
     }
-    catch (\ErrorException $e) {
-      throw new FileSystemException("Couldn'f generated external URL for {$uri}!", null, $e);
+
+    // Get the URI's scheme for stream wrapper look up.
+    $scheme = explode("://", $uri, 2)[0];
+
+    // Create new stream wrapper for this scheme if we have no cached instance.
+    if (empty($streamWrappers[$scheme])) {
+      // @devStart
+      // @codeCoverageIgnoreStart
+      if (empty(self::$streamWrappers[$scheme])) {
+        throw new \InvalidArgumentException("Unknown scheme '{$scheme}'.");
+      }
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+
+      // Instantiate and cache the stream wrapper instance.
+      $streamWrappers[$scheme] = new self::$streamWrappers[$scheme]();
+
+      // @devStart
+      // @codeCoverageIgnoreStart
+      if (!($streamWrappers[$scheme] instanceof StreamWrapper\ExternalStreamWrapperInterface)) {
+        throw new \LogicException("Stream wrapper for scheme '{$scheme}' doesn't support external URLs.");
+      }
+      // @codeCoverageIgnoreEnd
+      // @devEnd
     }
+
+    // Prepend the static hostname to the URL, all external URLs built via stream wrappers are file downloads, and cache
+    // the generated URL.
+    return ($urls[$uri] = "{$this->hostnameStatic}{$streamWrappers[$scheme]->getExternalURL($uri, $cacheBuster)}");
   }
 
   /**

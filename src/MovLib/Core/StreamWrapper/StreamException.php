@@ -18,7 +18,7 @@
 namespace MovLib\Core\StreamWrapper;
 
 /**
- * Defines the dr (document root) stream wrapper for the <code>"dr://"</code> scheme.
+ * Defines the stream exception which is thrown if something goes wrong while interacting with streams.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,25 +26,4 @@ namespace MovLib\Core\StreamWrapper;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class DocumentRootStreamWrapper extends \MovLib\Core\StreamWrapper\AbstractLocalStreamWrapper {
-
-  // @codingStandardsIgnoreStart
-  /**
-   * {@inheritdoc}
-   */
-  const name = "DocumentRootStreamWrapper";
-  // @codingStandardsIgnoreEnd
-
-  /**
-   * {@inheritdoc}
-   */
-  const SCHEME = "dr";
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getPath() {
-    return static::$fileSystem->documentRoot;
-  }
-
-}
+final class StreamException extends \RuntimeException {}

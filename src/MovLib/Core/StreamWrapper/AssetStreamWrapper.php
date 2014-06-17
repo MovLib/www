@@ -17,6 +17,8 @@
  */
 namespace MovLib\Core\StreamWrapper;
 
+use \MovLib\Component\URL;
+
 /**
  * Defines the asset stream wrapper for the <code>"asset://"</code> scheme.
  *
@@ -26,16 +28,23 @@ namespace MovLib\Core\StreamWrapper;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class AssetStreamWrapper extends \MovLib\Core\StreamWrapper\AbstractLocalStreamWrapper {
+final class AssetStreamWrapper extends AbstractLocalStreamWrapper implements ExternalStreamWrapperInterface {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
 
   // @codingStandardsIgnoreStart
   /**
-   * Short class name.
-   *
-   * @var string
+   * {@inheritdoc}
    */
   const name = "AssetStreamWrapper";
   // @codingStandardsIgnoreEnd
+
+  /**
+   * {@inheritdoc}
+   */
+  const SCHEME = "asset";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -51,11 +60,11 @@ final class AssetStreamWrapper extends \MovLib\Core\StreamWrapper\AbstractLocalS
    * @var array
    */
   protected static $cacheBusters = [
-    "css" => "{{ css_cache_buster }}",
-    "jpg" => "{{ jpg_cache_buster }}",
-    "js"  => "{{ js_cache_buster }}",
-    "png" => "{{ png_cache_buster }}",
-    "svg" => "{{ svg_cache_buster }}",
+    "css" => [ /* {{ css_cache_buster }} */ ],
+    "jpg" => [ /* {{ jpg_cache_buster }} */ ],
+    "js"  => [ /* {{ js_cache_buster }}  */ ],
+    "png" => [ /* {{ png_cache_buster }} */ ],
+    "svg" => [ /* {{ svg_cache_buster }} */ ],
   ];
 
 
@@ -65,33 +74,35 @@ final class AssetStreamWrapper extends \MovLib\Core\StreamWrapper\AbstractLocalS
   /**
    * {@inheritdoc}
    */
-  public function getExternalPath($uri = null, $cacheBuster = null) {
-    $target    = url_encode_path($this->getTarget($uri));
-    $extension = pathinfo($target, PATHINFO_EXTENSION);
+  public function getExternalURL($uri = null, $cacheBuster = null) {
+    // We use the final target as cache buster key because it's shorter and still unique.
+    $target = $this->getTarget($uri);
 
-    $hostnameStatic = self::$fs->hostnameStatic;
     if (!$cacheBuster) {
+      $extension = pathinfo($target, PATHINFO_EXTENSION);
       // @devStart
       // @codeCoverageIgnoreStart
-      if (!is_array(self::$cacheBusters[$extension])) {
-        self::$cacheBusters[$extension] = [];
-      }
-      if (!isset(self::$cacheBusters[$extension][$target])) {
+      if (empty(self::$cacheBusters[$extension][$target])) {
         self::$cacheBusters[$extension][$target] = md5_file($this->realpath($uri));
       }
       // @codeCoverageIgnoreEnd
       // @devEnd
       $cacheBuster = self::$cacheBusters[$extension][$target];
     }
-    return "{$hostnameStatic}/asset/{$target}?{$cacheBuster}";
+
+    // An asset always has a cache buster, also note that this is the last place were we can properly encode the path.
+    $target = URL::encodePath($target);
+    return "/asset/{$target}?{$cacheBuster}";
   }
 
   /**
    * {@inheritdoc}
+   * @staticvar string $path
+   *   Used to cache the internal path after the first build because it will never change during a single request.
    */
   public function getPath() {
-    $documentRoot = self::$fs->documentRoot;
-    return "{$documentRoot}/var/public/asset";
+    static $path;
+    return $path ?: ($path = "{$this::$fileSystem->documentRoot}/var/public/asset");
   }
 
 }

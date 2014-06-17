@@ -18,7 +18,7 @@
 namespace MovLib\Core\StreamWrapper;
 
 /**
- * Defines the dr (document root) stream wrapper for the <code>"dr://"</code> scheme.
+ * Defines the interface for external stream wrappers.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,25 +26,18 @@ namespace MovLib\Core\StreamWrapper;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class DocumentRootStreamWrapper extends \MovLib\Core\StreamWrapper\AbstractLocalStreamWrapper {
-
-  // @codingStandardsIgnoreStart
-  /**
-   * {@inheritdoc}
-   */
-  const name = "DocumentRootStreamWrapper";
-  // @codingStandardsIgnoreEnd
+interface ExternalStreamWrapperInterface extends LocalStreamWrapperInterface {
 
   /**
-   * {@inheritdoc}
+   * Get external URL.
+   *
+   * @param string $uri [optional]
+   *   The URI to get the external path for.
+   * @param string $cacheBuster [optional]
+   *   A cache buster string that should be appended to the file's URL.
+   * @return string
+   *   The external URL.
    */
-  const SCHEME = "dr";
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getPath() {
-    return static::$fileSystem->documentRoot;
-  }
+  public function getExternalURL($uri = null, $cacheBuster = null);
 
 }

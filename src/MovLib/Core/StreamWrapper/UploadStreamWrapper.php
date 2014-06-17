@@ -17,6 +17,8 @@
  */
 namespace MovLib\Core\StreamWrapper;
 
+use \MovLib\Component\URL;
+
 /**
  * Defines the upload stream wrapper for the <code>"upload://"</code> scheme.
  *
@@ -26,13 +28,15 @@ namespace MovLib\Core\StreamWrapper;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class UploadStreamWrapper extends \MovLib\Core\StreamWrapper\AbstractLocalStreamWrapper {
+final class UploadStreamWrapper extends AbstractLocalStreamWrapper implements ExternalStreamWrapperInterface {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
 
   // @codingStandardsIgnoreStart
   /**
-   * Short class name.
-   *
-   * @var string
+   * {@inheritdoc}
    */
   const name = "UploadStreamWrapper";
   // @codingStandardsIgnoreEnd
@@ -40,21 +44,27 @@ final class UploadStreamWrapper extends \MovLib\Core\StreamWrapper\AbstractLocal
   /**
    * {@inheritdoc}
    */
-  public function getExternalPath($uri = null, $cacheBuster = null) {
-    $hostnameStatic = self::$fs->hostnameStatic;
-    $target         = url_encode_path("/uploads/{$this->getTarget($uri)}");
-    if ($cacheBuster) {
-      $cacheBuster = "?{$cacheBuster}";
-    }
-    return "{$hostnameStatic}{$target}{$cacheBuster}";
+  const SCHEME = "upload";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getExternalURL($uri = null, $cacheBuster = null) {
+    $cacheBuster && ($cacheBuster = "?{$cacheBuster}");
+    $target = URL::encodePath($this->getTarget($uri));
+    return "/uploads/{$target}{$cacheBuster}";
   }
 
   /**
    * {@inheritdoc}
    */
   public function getPath() {
-    $documentRoot = self::$fs->documentRoot;
-    return "{$documentRoot}/var/public/uploads";
+    static $path;
+    return $path ?: ($path = "{$this::$fileSystem->documentRoot}/var/public/uploads");
   }
 
 }
