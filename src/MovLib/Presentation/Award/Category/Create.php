@@ -53,8 +53,8 @@ class Create extends \MovLib\Presentation\AbstractCreatePresenter {
     $category             = new Category($this->container);
     $category->award      = new Award($this->container, $_SERVER["AWARD_ID"]);
     $category->awardId    = $category->award->id;
-    $category->route      = new Route("/award/{0}/category/create", [ "args" => [ $category->award->id ] ]);
-    $category->set->route = new Route("/award/{0}/categories", [ "args" => [ $category->award->id ] ]);
+    $category->route      = new Route($this->intl, "/award/{0}/category/create", [ "args" => [ $category->award->id ] ]);
+    $category->set->route = new Route($this->intl, "/award/{0}/categories", [ "args" => [ $category->award->id ] ]);
 
     $this->initPage($this->intl->t("Create"), $this->intl->t("Create Category for {0}", [ $category->award->name ]));
     $this->breadcrumb->addCrumbs([
