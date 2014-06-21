@@ -68,4 +68,4 @@ if (basename($_SERVER["SCRIPT_FILENAME"]) == basename(__FILE__) && realpath($_SE
 }
 
 require dirname(__DIR__) . "/lib/autoload.php";
-(new \MovLib\Core\Kernel())->bootCLI(dirname(__DIR__), basename($_SERVER["PHP_SELF"], ".php"));
+(new \MovLib\Core\Kernel())->bootCLI(basename($_SERVER["PHP_SELF"], ".php"));

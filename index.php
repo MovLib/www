@@ -34,4 +34,4 @@
 
 // No need for IIFE because we aren't declaring any variables.
 require __DIR__ . "/lib/autoload.php";
-(new \MovLib\Core\Kernel())->bootHTTP(__DIR__);
+(new \MovLib\Core\Kernel())->bootHTTP();

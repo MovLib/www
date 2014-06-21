@@ -140,15 +140,13 @@ final class Kernel {
   /**
    * Boot kernel.
    *
-   * @param string $documentRoot
-   *   The real document root path.
    * @param string $logName
    *   The name for the log entries.
    * @param string $language
    *   The system language's ISO 639-1 alpha-2 code.
    * @return this
    */
-  protected function boot($documentRoot, $logName, $language) {
+  protected function boot($logName, $language) {
     // @devStart
     // @codeCoverageIgnoreStart
     assert(
@@ -179,7 +177,7 @@ final class Kernel {
 
     $this->container->kernel = $this;
     $this->container->log    = new Log($this->container->config, $logName, $this->http);
-    $this->container->fs     = new FileSystem($documentRoot, $this->container->config->hostnameStatic);
+    $this->container->fs     = new FileSystem();
     $this->container->intl   = new Intl($language);
 
     return $this;
@@ -188,13 +186,11 @@ final class Kernel {
   /**
    * Boot kernel to CLI mode.
    *
-   * @param string $documentRoot
-   *   The real document root path.
    * @param string $basename
    *   The base name of the invoked symbolic link.
    * @return this
    */
-  public function bootCLI($documentRoot, $basename) {
+  public function bootCLI($basename) {
     // @devStart
     // @codeCoverageIgnoreStart
     assert_options(ASSERT_BAIL, true);
@@ -202,7 +198,7 @@ final class Kernel {
     // @devEnd
     $this->cli       = true;
     $this->container = new Container();
-    $this->boot($documentRoot, "{$basename}-cli", Intl::DEFAULT_CODE);
+    $this->boot("{$basename}-cli", Intl::DEFAULT_CODE);
     $this->container->fs->setProcessOwner($this->container->config->user, $this->container->config->group);
     $application = new Application($this->container, $basename);
     $application->setAutoExit(false);
@@ -217,11 +213,9 @@ final class Kernel {
    * <b>NOTE</b><br>
    * The HTTP kernel shuts down automatically!
    *
-   * @param string $documentRoot
-   *   The real document root path.
    * @return this
    */
-  public function bootHTTP($documentRoot) {
+  public function bootHTTP() {
     set_error_handler([ $this, "errorHandler" ]);
     set_exception_handler([ $this, "exceptionHandler" ]);
     register_shutdown_function([ $this, "fatalErrorHandler" ]);
@@ -229,7 +223,7 @@ final class Kernel {
 
     $this->http                = true;
     $this->container           = new HTTPContainer();
-    $this->boot($documentRoot, $_SERVER["SERVER_NAME"], $_SERVER["LANGUAGE_CODE"]);
+    $this->boot($_SERVER["SERVER_NAME"], $_SERVER["LANGUAGE_CODE"]);
     $this->container->request  = new Request($this->container->intl);
     $this->container->response = new Response($this->container->request, $this->container->config->hostname);
     $this->container->session  = new Session($this->container);

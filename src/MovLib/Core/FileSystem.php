@@ -126,6 +126,13 @@ final class FileSystem {
   ];
 
   /**
+   * Whether the stream wrappers where already registered or not.
+   *
+   * @var boolean
+   */
+  protected static $streamWrappersRegistered = false;
+
+  /**
    * The process user.
    *
    * @var string
@@ -139,23 +146,27 @@ final class FileSystem {
   /**
    * Instantiate new file system object.
    *
-   * @param string $documentRoot
-   *   The canonical absolute document root path.
-   * @param string $hostnameStatic
-   *   The hostname for static content.
+   * @param string $hostnameStatic [optional]
+   *   The hostname for static content, will be used to build external URLs of static files.
    */
-  public function __construct($documentRoot, $hostnameStatic) {
-    $this->documentRoot   = $documentRoot;
+  public function __construct($hostnameStatic = "movlib.org") {
+    // We directly prepend two slashes to the static hostname and build us a "protocol relative" domain.
     $this->hostnameStatic = "//{$hostnameStatic}";
 
-    foreach (self::$streamWrappers as $scheme => $class) {
-      // PHP's stream wrapper implementation doesn't allow dependency injection, we're therefore force to static
-      // property injection to ensure that every instance of a stream wrapper will have access to the file system.
-      $class::$fileSystem = $this;
+    // Find the real document root by going up the current directory three times: /src/MovLib/Core
+    $this->documentRoot   = dirname(dirname(dirname(__DIR__)));
 
-      // We don't care at this point if a stream wrapper was already registered or not. Instantiating more than one
-      // file system instance isn't an error.
-      stream_wrapper_register($scheme, $class);
+    // Only register the stream wrappers if we haven't done so yet.
+    if (self::$streamWrappersRegistered === false) {
+      foreach (self::$streamWrappers as $scheme => $class) {
+        // PHP's stream wrapper implementation doesn't allow dependency injection, we're therefore forced to static
+        // property injection to ensure that every instance of a stream wrapper will have access to the file system.
+        $class::$fileSystem = $this;
+
+        // We don't care at this point if a stream wrapper was already registered or not.
+        stream_wrapper_register($scheme, $class);
+      }
+      self::$streamWrappersRegistered = true;
     }
   }
 
@@ -190,6 +201,34 @@ final class FileSystem {
   }
 
   /**
+   * Delete a directory and all of its content.
+   *
+   * @param string $uri
+   *   Canonical absolute URI to the directory.
+   * @return this
+   * @throws \MovLib\Core\StreamWrapper\StreamException
+   *   If deletion fails.
+   */
+  public function deleteRecursive($uri) {
+    if (is_dir($uri)) {
+      /* @var $fileinfo \SplFileInfo */
+      foreach ($this->getRecursiveIterator($uri) as $fileinfo) {
+        if ($fileinfo->isDir()) {
+          rmdir($fileinfo->getPathname());
+        }
+        else {
+          unlink($fileinfo->getPathname());
+        }
+      }
+      rmdir($uri);
+    }
+    else {
+      unlink($uri);
+    }
+    return $this;
+  }
+
+  /**
    * Delete all files that were registered for deletion.
    *
    * @param \MovLib\Core\Log $log
@@ -200,21 +239,10 @@ final class FileSystem {
     foreach (self::$registeredFiles as $uri => $recursive) {
       try {
         if ($recursive === true) {
-          /* @var $fileinfo \SplFileInfo */
-          foreach ($this->getRecursiveIterator($uri) as $fileinfo) {
-            if ($fileinfo->isDir()) {
-              rmdir($fileinfo->getPathname());
-            }
-            else {
-              unlink($fileinfo->getPathname());
-            }
-          }
-        }
-        if (is_dir($uri)) {
-          rmdir($uri);
+          $this->deleteRecursive($uri);
         }
         else {
-          unlink($uri);
+          is_dir($uri) ? rmdir($uri) : unlink($uri);
         }
       }
       catch (\Exception $e) {
