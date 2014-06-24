@@ -89,6 +89,45 @@ thead th {
   background-color: #f5f5f5;
 }
 
+.table-diff {
+  table-layout: fixed;
+}
+
+.table-diff col {
+  width: 50%;
+}
+
+.table-diff col.aside {
+  width: 30px;
+}
+
+.table-diff th {
+  text-align: left;
+}
+
+.table-diff th img {
+  float: left;
+  margin-right: 8px;
+}
+
+.table-diff td {
+  border: 1px solid #e5e5e5;
+  vertical-align: top;
+}
+
+.table-diff .aside {
+  background-color: transparent;
+  border: 0 none;
+  padding: 0;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.table-diff .diff-label {
+  background-color: #e5e5e5;
+  text-align: center;
+}
+
 tbody .success {
   background-color: #dff0d8;
 }

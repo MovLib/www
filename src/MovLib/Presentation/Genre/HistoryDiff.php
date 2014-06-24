@@ -52,16 +52,21 @@ final class HistoryDiff extends \MovLib\Core\Presentation\AbstractHistoryDiff {
   public function init() {
     $this->entity = new Genre($this->container, $_SERVER["GENRE_ID"]);
     $this->diff = new Diff();
-    return $this->initHistoryDiff();
+    return $this
+      ->initHistoryDiff()
+      ->addDiffLanguageProperty($this->intl->t("Name"), $this->history->old->names, $this->history->new->names)
+      ->addDiffLanguageProperty($this->intl->t("Description"), $this->history->old->descriptions, $this->history->new->descriptions)
+    ;
   }
 
-  public function getContent() {
-    $history = new \MovLib\Data\History\History((string) $this->entity, $this->entity->id, $_SERVER["REVISION_OLD"], $_SERVER["REVISION_NEW"]);
-    return (new \MovLib\Partial\Table\DiffTable($history->old, $history->new))
-      ->addDiffLanguageProperty($this->intl->t("Name"), $history->old->names, $history->new->names)
-    ;
-    $this->sectionAdd($this->intl->t("Name"), $this->formatDiffLanguageProperty($history->new->names, $history->old->names));
-    return $this->sections;
-  }
+//  public function getContent() {
+//    $history = new \MovLib\Data\History\History((string) $this->entity, $this->entity->id, $_SERVER["REVISION_OLD"], $_SERVER["REVISION_NEW"]);
+//    return (new \MovLib\Partial\Table\DiffTable($this->intl, $history))
+//      ->addDiffLanguageProperty($this->intl->t("Name"), $history->old->names, $history->new->names)
+//      ->render()
+//    ;
+//    $this->sectionAdd($this->intl->t("Name"), $this->formatDiffLanguageProperty($history->new->names, $history->old->names));
+//    return $this->sections;
+//  }
 
 }

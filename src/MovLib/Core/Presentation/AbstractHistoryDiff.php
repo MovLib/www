@@ -17,7 +17,12 @@
  */
 namespace MovLib\Core\Presentation;
 
+use \MovLib\Core\Diff\Diff;
+use \MovLib\Data\History\History;
+use \MovLib\Data\User\User;
 use \MovLib\Exception\RedirectException\TemporaryRedirectException;
+use \MovLib\Partial\DateTime;
+use \MovLib\Partial\Table\Table;
 
 /**
  * Defines base class for history diff presenter.
@@ -50,11 +55,32 @@ abstract class AbstractHistoryDiff extends \MovLib\Presentation\AbstractPresente
 
 
   /**
+   * The diff instance for computing differences.
+   *
+   * @var \MovLib\Core\Diff\Diff
+   */
+  protected $diff;
+
+  /**
    * The entity to present.
    *
    * @var \MovLib\Core\Entity\AbstractEntity
    */
   protected $entity;
+
+  /**
+   * The history object used for patching.
+   *
+   * @var \MovLib\Data\History\History
+   */
+  protected $history;
+
+  /**
+   * The table for displaying differences.
+   *
+   * @var \MovLib\Partial\Table\Table
+   */
+  protected $table;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -108,6 +134,24 @@ abstract class AbstractHistoryDiff extends \MovLib\Presentation\AbstractPresente
     $this->breadcrumb->addCrumb($this->entity->route, $this->entity->lemma);
     $this->breadcrumb->addCrumb($historyRoute, $this->intl->t("History"));
 
+    // Construct the diff table with the correct header.
+    $this->history = new History((string) $this->entity, $this->entity->id, $_SERVER["REVISION_OLD"], $_SERVER["REVISION_NEW"]);
+    $oldUser = new User($this->container, $this->history->old->userId, User::FROM_ID);
+    $newUser = new User($this->container, $this->history->new->userId, User::FROM_ID);
+    $dateTime = new DateTime($this->intl, $this, $this->session->userTimezone);
+
+    if ($this->history->new->id === $this->entity->changed->formatInteger()) {
+      $newRevisionName = $this->intl->t("Current Revision");
+    }
+    else {
+      $newRevisionName = $this->intl->t("Revision {0}", $this->history->new->id);
+    }
+
+    $this->table = (new Table([ "class" => "table-diff" ], [
+      [ "#content" => "{$this->img($oldUser->imageGetStyle("s1"), [], true, [ "class" => "fl" ])}<span class='big'>{$this->intl->t("Revision {0}", $this->history->old->id)}</span><br>{$this->intl->t("by {username} {time}", [ "username" => "<a href='{$oldUser->route}'>{$oldUser->name}</a>", "time" => $dateTime->formatRelative($this->history->old->created, $this->request->dateTime) ])}" ],
+      [ "#content" => "{$this->img($newUser->imageGetStyle("s1"), [], true, [ "class" => "fl" ])}<span class='big'>{$newRevisionName}</span><br>{$this->intl->t("by {username} {time}", [ "username" => "<a href='{$newUser->route}'>{$newUser->name}</a>", "time" => $dateTime->formatRelative($this->history->new->created, $this->request->dateTime) ])}" ]
+    ]))->addColGroup([ [], [], [ "class" => "aside" ] ]);
+
     return $this;
   }
 
@@ -122,7 +166,121 @@ abstract class AbstractHistoryDiff extends \MovLib\Presentation\AbstractPresente
     $history = new \MovLib\Data\History\History((string) $this->entity, $this->entity->id, $_SERVER["REVISION_OLD"], $_SERVER["REVISION_NEW"]);
 
     // @todo Should we try to recover from a backup?
-    return \Krumo::dump($history, KRUMO_RETURN);
+    if (empty($this->table->rows)) {
+      return $this->intl->t("No changes to show.");
+    }
+    return $this->table;
+  }
+
+  /**
+   * Add a simple (scalar) property to the diff table.
+   *
+   * @param string $name
+   *   The property's translated name.
+   * @param mixed $oldValue
+   *   The property's old value.
+   * @param mixed $newValue
+   *   The property's new value.
+   * @return $this
+   */
+  public function addDiffSimpleProperty($name, $oldValue, $newValue) {
+    if ($oldValue === $newValue) {
+      return $this;
+    }
+
+    list($oldValue, $newValue) = $this->formatStringDiff($oldValue, $newValue);
+
+    return $this->table
+      ->addRow([ [ "#content" => $name, "class" => "diff-label", "colspan" => 2 ], [ "class" => "aside" ] ])
+      ->addRow([ [ "#content" => $oldValue ], [ "#content" => $newValue ], [] ])
+    ;
+  }
+
+  /**
+   * Add a language dependent property (array keyed by language codes) to the diff table.
+   *
+   * @param string $name
+   *   The property's translated name.
+   * @param array $oldValue
+   *   The property's old values.
+   * @param array $newValue
+   *   The property's new values.
+   * @return $this
+   */
+  public function addDiffLanguageProperty($name, $oldValue, $newValue) {
+    // Prevent foreach and array_keys from null values.
+    $oldValue = (array) $oldValue;
+    $newValue = (array) $newValue;
+
+    // Look for changes in every language.
+    $languageKeys = array_keys($oldValue + $newValue);
+    $changes      = false;
+    foreach ($languageKeys as $languageCode) {
+      $oldValueLanguage = array_key_exists($languageCode, $oldValue) ? $oldValue[$languageCode] : null;
+      $newValueLanguage = array_key_exists($languageCode, $newValue) ? $newValue[$languageCode] : null;
+
+      // We have changes, append them.
+      if ($newValueLanguage !== $oldValueLanguage) {
+        // Add the property heading if it's the first change we encounter.
+        if ($changes === false) {
+          $changes = true;
+          $this->table->addRow([ [ "#content" => $name, "class" => "diff-label", "colspan" => 2 ], [ "class" => "aside" ] ]);
+        }
+        list($oldValueLanguage, $newValueLanguage) = $this->formatStringDiff($oldValueLanguage, $newValueLanguage);
+        $displayLanguage = \Locale::getDisplayLanguage($languageCode, $this->intl->locale);
+        $this->table->addRow([
+          [ "#content" => $oldValueLanguage ],
+          [ "#content" => $newValueLanguage ],
+          [ "#content" => "<div class='ico ico-help popup'><small class='content'>{$this->intl->t("Language: {language}", [ "language" => $displayLanguage ])}</small></div>", "class" => "aside" ]
+        ]);
+      }
+    }
+
+    return $this;
+  }
+
+  /**
+   * Format the textual difference between two values as HTML.
+   *
+   * @param type $oldValue
+   *   The old value for the diff.
+   * @param mixed $newValue
+   *   The new value for the diff.
+   * @return array
+   *   Contains 0 => formatted old difference, 1 => formatted new difference for use with list().
+   */
+  protected function formatStringDiff($oldValue, $newValue) {
+    $newValue = (string) $newValue;
+    $oldValue = (string) $oldValue;
+
+    if ($newValue === $oldValue) {
+      throw new \LogicException;
+    }
+
+    $newContent = $oldContent = null;
+    $oldPointer = $newPointer = 0;
+    $transformations          = $this->diff->getDiff($oldValue, $newValue);
+
+    foreach ($transformations as $trans) {
+      switch ($trans->code) {
+        case Diff::COPY:
+          $newContent .= mb_substr($newValue, $newPointer, $trans->length);
+          $newPointer += $trans->length;
+          $oldContent .= mb_substr($oldValue, $oldPointer, $trans->length);
+          $oldPointer += $trans->length;
+          break;
+        case Diff::INSERT:
+          $newContent .= "<ins>{$trans->text}</ins>";
+          $newPointer += $trans->length;
+          break;
+        case Diff::DELETE:
+          $oldContent .= "<del>" . mb_substr($oldValue, $oldPointer, $trans->length) . "</del>";
+          $oldPointer += $trans->length;
+          break;
+      }
+    }
+
+    return [ $oldContent, $newContent ];
   }
 
 }
