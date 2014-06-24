@@ -310,3 +310,15 @@ h6,
   color: #fff;
   background: #09c;
 }
+
+del, ins {
+  text-decoration: none;
+}
+
+del {
+  background-color: #fdd;
+}
+
+ins {
+  background-color: #dfd;
+}
