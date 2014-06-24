@@ -97,39 +97,54 @@
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------
- * Special formatting for help partial.
+ * Special formatting for help partial and diff table.
  * ------------------------------------------------------------------------------------------------------------------ */
 
-form .popup {
+form .popup,
+.table-diff .popup {
   margin: 0 0 0 5px;
   cursor: help;
 }
 
-form .popup:hover:after {
+form .popup:hover:after,
+.table-diff .popup:hover:after {
   left: -70px;
   right: -20px;
 }
 
 form .popup .content:before,
-form .popup .content:after {
+form .popup .content:after,
+.table-diff .popup .content:before,
+.table-diff .popup .content:after {
   left: auto;
   margin-left: auto;
 }
 
-form .popup .content:before {
+form .popup .content:before,
+.table-diff .popup .content:before {
   right: 19px;
+}
+
+form .popup .content,
+.table-diff .popup .content {
+  right: -20px;
 }
 
 form .popup .content {
   width: 320px;
-  right: -20px;
 }
 
-form .popup .content:after {
+.table-diff .popup .content {
+  width: 160px;
+}
+
+form .popup .content:after,
+.table-diff .popup .content:after {
   right: 20px;
 }
 
-form .ico-help {
+form .ico-help,
+.table-diff .aside .ico-help {
   color: #09c;
 }
 

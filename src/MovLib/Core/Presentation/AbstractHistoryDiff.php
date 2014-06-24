@@ -159,12 +159,6 @@ abstract class AbstractHistoryDiff extends \MovLib\Presentation\AbstractPresente
    * {@inheritdoc}
    */
   public function getContent() {
-    // Now we can restore the old revisions of the entity. Note that REVISION_OLD is always present, as it is
-    // validated by nginx via a regular expression in the location block and the REVISION_NEW is validated in our init
-    // method and either contains a revision identifier or is NULL, in which case we automatically load the current
-    // revision of the entity.
-    $history = new \MovLib\Data\History\History((string) $this->entity, $this->entity->id, $_SERVER["REVISION_OLD"], $_SERVER["REVISION_NEW"]);
-
     // @todo Should we try to recover from a backup?
     if (empty($this->table->rows)) {
       return $this->intl->t("No changes to show.");
