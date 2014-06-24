@@ -56,6 +56,13 @@ class Table {
   public $attributes;
 
   /**
+   * The table's colgroups as numeric array.
+   *
+   * @var array
+   */
+  public $colGroups = [];
+
+  /**
    * The table's header.
    *
    * @var array
@@ -115,6 +122,17 @@ class Table {
    *   The rendered HTML table.
    */
   public function __toString() {
+    $colGroups = null;
+    foreach ($this->colGroups as $colGroup) {
+      $cols = null;
+      foreach ($colGroup["cols"] as $colDef) {
+        $cols .= "<col{$colDef}>";
+      }
+      if ($cols) {
+        $colGroups .= "<colgroup{$colGroup["attributes"]}>{$cols}</colgroup>";
+      }
+    }
+
     $header = null;
 
     foreach ($this->header["cells"] as $cell) {
@@ -135,7 +153,7 @@ class Table {
       }
     }
 
-    return "<table{$this->attributes}>{$header}<tbody>{$body}</tbody></table>";
+    return "<table{$this->attributes}>{$colGroups}{$header}<tbody>{$body}</tbody></table>";
   }
 
 
@@ -172,6 +190,29 @@ class Table {
     $this->rows[] = [
       "attributes" => new HTMLAttributes($attributes),
       "cells"      => $rowCells,
+    ];
+
+    return $this;
+  }
+
+  /**
+   * Add a new colgroup definition to the table.
+   *
+   * @param array $cols
+   *   The cols as numeric array containing the col attributes as associative arrays.
+   * @param array $attributes
+   *   The colgroup's attributes, defaults to no attributes.
+   * @return $this
+   */
+  public function addColGroup(array $cols, array $attributes = []) {
+    $colDefs = [];
+    foreach ($cols as $col) {
+      $colDefs[] = new HTMLAttributes($col);
+    }
+
+    $this->colGroups[] = [
+      "attributes" => new HTMLAttributes($attributes),
+      "cols"       => $colDefs,
     ];
 
     return $this;
