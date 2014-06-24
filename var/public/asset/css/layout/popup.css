@@ -70,7 +70,7 @@
 }
 
 .popup .content:before {
-  bottom: -13px;
+  bottom: -14px;
   margin-left: -3.5px;
   border: 7px solid transparent;
   border-top-color: rgba(0, 0, 0, 0.2);
@@ -78,7 +78,7 @@
 }
 
 .popup .content:after {
-  bottom: -11px;
+  bottom: -12px;
   margin-left: -3px;
   border: 6px solid transparent;
   border-top-color: #fff;
