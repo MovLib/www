@@ -147,26 +147,16 @@ final class Kernel {
    * @return this
    */
   protected function boot($logName, $language) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert(
-      !empty($documentRoot) && is_string($documentRoot) && !is_link($documentRoot) && is_dir($documentRoot) && realpath($documentRoot) !== false,
-      "\$documentRoot cannot be empty, must be of type string and point to an existing directory."
-    );
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
     // Include PHP core extending procedural functions.
     require __DIR__ . "/functions.php";
 
-    // Build absolute path to the serialized config file and use it if present, if not fall back to the default config.
-    $serializedConfig = $documentRoot . Config::PATH;
-    if (file_exists($serializedConfig)) {
-      $this->container->config = unserialize(file_get_contents($serializedConfig));
-    }
-    else {
-      $this->container->config = new Config();
-    }
+    // Export the kernel to the container and instantiate file system and internationalization. Use the serialized
+    // special configuration if available and fall back to the default configuration.
+    $this->container->kernel = $this;
+    $this->container->fs     = new FileSystem();
+    $this->container->intl   = new Intl($language);
+    $this->container->config = is_file(Config::URI) ? unserialize(file_get_contents(Config::URI)) : new Config();
+    $this->container->log    = new Log($this->container->config, $logName, $this->http);
 
     // @devStart
     // @codeCoverageIgnoreStart
@@ -174,11 +164,6 @@ final class Kernel {
     $this->container->config->hostname = "alpha.movlib.org";
     // @codeCoverageIgnoreEnd
     // @devEnd
-
-    $this->container->kernel = $this;
-    $this->container->log    = new Log($this->container->config, $logName, $this->http);
-    $this->container->fs     = new FileSystem();
-    $this->container->intl   = new Intl($language);
 
     return $this;
   }
