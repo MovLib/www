@@ -91,12 +91,10 @@ interface PHPStreamWrapperInterface {
    *   Permission flags as octal integer.
    * @param integer $options
    *   Bit mask of <var>STREAM_REPORT_ERRORS</var> and <var>STREAM_MKDIR_RECURSIVE</var>.
-   * @param boolean $recursion [internal]
-   *   <code>TRUE</code> if in recursion.
    * @return boolean
    *   <code>TRUE</code> on success or <code>FALSE</code> on failure.
    */
-  public function mkdir($uri, $mode, $options, $recursion = false);
+  public function mkdir($uri, $mode, $options);
 
   /**
    * Rename (move) file.

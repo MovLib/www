@@ -30,25 +30,12 @@ use \MovLib\Component\URL;
  */
 final class AssetStreamWrapper extends AbstractLocalStreamWrapper implements ExternalStreamWrapperInterface {
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
   // @codingStandardsIgnoreStart
   /**
    * {@inheritdoc}
    */
   const name = "AssetStreamWrapper";
   // @codingStandardsIgnoreEnd
-
-  /**
-   * {@inheritdoc}
-   */
-  const SCHEME = "asset";
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
 
   /**
    * Associative array containing the cache busters for the various assets.
@@ -66,10 +53,6 @@ final class AssetStreamWrapper extends AbstractLocalStreamWrapper implements Ext
     "png" => [ /* {{ png_cache_buster }} */ ],
     "svg" => [ /* {{ svg_cache_buster }} */ ],
   ];
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
 
   /**
    * {@inheritdoc}
@@ -102,7 +85,14 @@ final class AssetStreamWrapper extends AbstractLocalStreamWrapper implements Ext
    */
   public function getPath() {
     static $path;
-    return $path ?: ($path = "{$this::$fileSystem->documentRoot}/var/public/asset");
+    return $path ?: ($path = "{$this::$root}/var/public/asset");
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getScheme() {
+    return "asset";
   }
 
 }

@@ -30,25 +30,12 @@ use \MovLib\Component\URL;
  */
 final class UploadStreamWrapper extends AbstractLocalStreamWrapper implements ExternalStreamWrapperInterface {
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
   // @codingStandardsIgnoreStart
   /**
    * {@inheritdoc}
    */
   const name = "UploadStreamWrapper";
   // @codingStandardsIgnoreEnd
-
-  /**
-   * {@inheritdoc}
-   */
-  const SCHEME = "upload";
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
 
   /**
    * {@inheritdoc}
@@ -64,7 +51,14 @@ final class UploadStreamWrapper extends AbstractLocalStreamWrapper implements Ex
    */
   public function getPath() {
     static $path;
-    return $path ?: ($path = "{$this::$fileSystem->documentRoot}/var/public/uploads");
+    return $path ?: ($path = "{$this::$root}/var/public/uploads");
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getScheme() {
+    return "upload";
   }
 
 }

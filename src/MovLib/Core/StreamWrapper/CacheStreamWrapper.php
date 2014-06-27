@@ -18,7 +18,7 @@
 namespace MovLib\Core\StreamWrapper;
 
 /**
- * Defines the dr (document root) stream wrapper for the <code>"dr://"</code> scheme.
+ * Defines the cache stream wrapper for the <code>"cache://"</code> scheme.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,27 +26,28 @@ namespace MovLib\Core\StreamWrapper;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class DocumentRootStreamWrapper extends \MovLib\Core\StreamWrapper\AbstractLocalStreamWrapper {
+final class CacheStreamWrapper extends AbstractLocalStreamWrapper {
 
   // @codingStandardsIgnoreStart
   /**
    * {@inheritdoc}
    */
-  const name = "DocumentRootStreamWrapper";
+  const name = "CacheStreamWrapper";
   // @codingStandardsIgnoreEnd
 
   /**
    * {@inheritdoc}
    */
   public function getPath() {
-    return static::$root;
+    static $path;
+    return $path ?: ($path = "{$this::$root}/var/cache");
   }
 
   /**
    * {@inheritdoc}
    */
   public static function getScheme() {
-    return "dr";
+    return "cache";
   }
 
 }

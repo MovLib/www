@@ -94,7 +94,7 @@ interface LocalStreamWrapperInterface extends PHPStreamWrapperInterface {
    * @return string
    *   The stream wrapper's scheme.
    */
-  public function getScheme();
+  public static function getScheme();
 
   /**
    * Get the absolute stream resource URI.
@@ -122,11 +122,16 @@ interface LocalStreamWrapperInterface extends PHPStreamWrapperInterface {
    *   work around. The register method will register the stream wrapper globally, the passed in <var>$fileSystem</var>
    *   will be export to a static class property and persist over multiple instantiations of the registered stream
    *   wrapper.
-   * @param \MovLib\Core\FileSystem $fileSystem
-   *   File system instance.
-   * @return this
+   * @param string $root
+   *   The canonical absolute root path.
+   * @param string $user [optional]
+   *   The name of the PHP user, defaults to <code>NULL</code> and the current process user is used.
+   * @param string $group [optional]
+   *   The name of the PHP group, defaults to <code>NULL</code> and the current process group is used.
+   * @return boolean
+   *   <code>TRUE</code> if the stream wrapper was successfully registered, <code>FALSE</code> otherwise.
    */
-  public function register(\MovLib\Core\FileSystem $fileSystem);
+  public static function register($root, $user = null, $group = null);
 
   /**
    * Set the absolute stream resource URI.

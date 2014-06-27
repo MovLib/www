@@ -17,6 +17,8 @@
  */
 namespace MovLib\Core\StreamWrapper;
 
+use \MovLib\Core\FileSystem;
+
 /**
  * Base class for all local stream wrappers.
  *
@@ -52,12 +54,30 @@ abstract class AbstractLocalStreamWrapper implements LocalStreamWrapperInterface
   const name = "AbstractLocalStreamWrapper";
   // @codingStandardsIgnoreEnd
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Static Properties
+
+
   /**
-   * The stream wrapper's scheme.
+   * The canonical absolute root path.
    *
    * @var string
    */
-  const SCHEME = "";
+  public static $root;
+
+  /**
+   * The file's owning user.
+   *
+   * @var null|string
+   */
+  public static $user;
+
+  /**
+   * The file's owning group.
+   *
+   * @var null|string
+   */
+  public static $group;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -69,14 +89,6 @@ abstract class AbstractLocalStreamWrapper implements LocalStreamWrapperInterface
    * @var resource
    */
   public $context;
-
-  /**
-   * Injected file system instance.
-   *
-   * @see ::register
-   * @var \MovLib\Core\FileSystem
-   */
-  public static $fileSystem;
 
   /**
    * Generic resource handle.
@@ -110,13 +122,11 @@ abstract class AbstractLocalStreamWrapper implements LocalStreamWrapperInterface
    */
   final public function chmod($realpath, $mode) {
     $status = chmod($realpath, $mode);
-    if (self::$fileSystem->privileged) {
-      if (isset(self::$fileSystem->user)) {
-        chown($this->realpath(), self::$fileSystem->user);
-      }
-      if (isset(self::$fileSystem->group)) {
-        chgrp($this->realpath(), self::$fileSystem->group);
-      }
+    if (static::$user) {
+      $this->chown($realpath, static::$user);
+    }
+    if (static::$group) {
+      $this->chgrp($realpath, static::$group);
     }
     clearstatcache(true, $realpath);
     return $status;
@@ -151,7 +161,7 @@ abstract class AbstractLocalStreamWrapper implements LocalStreamWrapperInterface
   final public function dir_opendir($uri) {
     try {
       $this->uri = $uri;
-      return (boolean) ($this->handle = opendir($this->realpath()));
+      return (boolean) ($this->handle = opendir($this->realpath($uri)));
     }
     catch (\ErrorException $e) {
       throw new StreamException("Couldn't open {$this->uri} directory handle", null, $e);
@@ -192,16 +202,12 @@ abstract class AbstractLocalStreamWrapper implements LocalStreamWrapperInterface
    * @throws \MovLib\Core\StreamWrapper\StreamException
    */
   final public function dirname($uri = null) {
-    static $dirnames = [];
     try {
       $uri || ($uri = $this->uri);
-      if (isset($dirnames[$uri])) {
-        return $dirnames[$uri];
+      if (($dirname = dirname($this->getTarget($uri))) === ".") {
+        $dirname = null;
       }
-      if (($dirnames[$uri] = dirname($this->getTarget($uri))) === ".") {
-        $dirnames[$uri] = "";
-      }
-      return ($dirnames[$uri] = "{$this->getScheme()}://{$dirnames[$uri]}");
+      return "{$this::getScheme()}://{$dirname}}";
     }
     catch (\ErrorException $e) {
       throw new StreamException("Couldn't get directory name of {$uri}", null, $e);
@@ -218,10 +224,9 @@ abstract class AbstractLocalStreamWrapper implements LocalStreamWrapperInterface
    * @throws \MovLib\Core\StreamWrapper\StreamException
    */
   final protected function getTarget($uri = null) {
-    static $targets = [];
     try {
       $uri || ($uri = $this->uri);
-      return isset($targets[$uri]) ? $targets[$uri] : ($targets[$uri] = trim(explode("://", $uri, 2)[1], "\\/"));
+      return trim(explode("://", $uri, 2)[1], "\\/");
     }
     catch (\ErrorException $e) {
       throw new StreamException("Couldn't generate target for {$uri}", null, $e);
@@ -237,57 +242,61 @@ abstract class AbstractLocalStreamWrapper implements LocalStreamWrapperInterface
 
   /**
    * {@inheritdoc}
-   */
-  final public function getScheme() {
-    return static::SCHEME;
-  }
-
-  /**
-   * {@inheritdoc}
    * @throws \MovLib\Core\StreamWrapper\StreamException
    */
-  final public function mkdir($uri, $mode, $options, $recursion = false) {
+  final public function mkdir($uri, $mode, $options) {
     try {
-      // Nothing to do if the directory already exists, but ensure correct permission mode.
-      if (is_dir($uri)) {
-        return chmod($uri, $mode);
+      $this->uri = $uri;
+      $recursive = (boolean) ($options & STREAM_MKDIR_RECURSIVE);
+
+      // Realpath fails if $uri has multiple levels of directories that don't exist yet.
+      $realpath = $recursive === true ? "{$this->getPath()}/{$this->getTarget($uri)}" : $this->realpath($uri);
+
+      // Do nothing if the directory already exists but ensure correct permission mode.
+      if (is_dir($realpath)) {
+        return $this->chmod($realpath, $mode);
       }
 
-      // The URI is already the real path if we're in recursion.
-      if ($recursion) {
-        $realpath = $uri;
-      }
-      else {
-        $this->uri = $uri;
-        $realpath  = $this->realpath($uri);
-      }
+      // If recursive create each non-existent parent directory.
+      if ($recursive) {
+        // Split the path into it's individual parts.
+        $parts = explode(DIRECTORY_SEPARATOR, $realpath);
 
-      // Check if we should generate parent directories.
-      if (($recursive = (boolean) ($options & STREAM_MKDIR_RECURSIVE)) === true) {
-        // Realpath doesn't return the correct path if the parent directories don't exist.
-        if ($recursion === false) {
-          $realpath = "{$this->getPath()}/{$this->getTarget()}";
-        }
+        // We are working with an absolute path, thus the first part is empty because it starts with a slash.
+        array_shift($parts);
 
-        // Try to create the parent directory.
-        if (is_dir(($parent = dirname($realpath)))) {
-          // The recursion has to end if the parent directory exists, regardless of whether the subdirectory could be
-          // created.
-          if (($status = mkdir($realpath))) {
-            $status = chmod($realpath, $mode);
+        // Don't handle the last directory in the following loop.
+        array_pop($parts);
+
+        // Start from the file system's root directory.
+        $path = DIRECTORY_SEPARATOR;
+
+        // Go through all parts and create the directory if necessary.
+        foreach ($parts as $part) {
+          // Append the next part to the full path.
+          $path .= $part;
+
+          // Only attempt to create the directory if it doesn't exist yet.
+          if (file_exists($path) === false) {
+            if (mkdir($path, $mode, false) === false) {
+              return false;
+            }
+            if ($this->chmod($path, $mode) === false) {
+              return false;
+            }
           }
 
-          return $recursion ? true : $status;
+          // Append the directory separator to the path for the next iteration.
+          $path .= DIRECTORY_SEPARATOR;
         }
-
-        // If the parent directory doesn't exist and couldn't be created walk the requested directory path back up until
-        // an existing directory is hit, and from there, recursively create the sub-directories. Only if that recursion
-        // succeeds create the final, originally requested sub-directory.
-        return $this->mkdir($parent, $mode, $options, true) && mkdir($realpath) && chmod($realpath, $mode);
       }
 
-      // Try to create the directory and change the mode.
-      return mkdir($realpath) && chmod($realpath, $mode);
+      // Don't check if the top-level directory already exists, as this condition must cause this function to fail.
+      if (mkdir($realpath, $mode, false) === false) {
+        return false;
+      }
+
+      return $this->chmod($realpath, $mode);
     }
     catch (\ErrorException $e) {
       throw new StreamException("Couldn't create directory {$this->uri}", null, $e);
@@ -348,17 +357,17 @@ abstract class AbstractLocalStreamWrapper implements LocalStreamWrapperInterface
 
   /**
    * {@inheritdoc}
-   * @throws \MovLib\Core\StreamWrapper\StreamException
-   *   If the stream wrapper is already registered.
    */
-  final public function register(\MovLib\Core\FileSystem $fileSystem) {
-    static::$fileSystem = $fileSystem;
-
-    if (stream_wrapper_register($this->getScheme(), static::class) === false) {
-      throw new StreamException("Stream wrapper for '{$this->getScheme()}' is already registered.");
+  final public static function register($root, $user = null, $group = null) {
+    // @devStart
+    if (is_dir($root) === false) {
+      throw new \InvalidArgumentException("The root path must exists on disk.");
     }
-
-    return $this;
+    // @devEnd
+    static::$root = $root;
+    $user && (static::$user = $user);
+    $group && (static::$group = $group);
+    return stream_wrapper_register(static::getScheme(), static::class);
   }
 
   /**
@@ -368,7 +377,12 @@ abstract class AbstractLocalStreamWrapper implements LocalStreamWrapperInterface
   final public function rmdir($uri) {
     try {
       $this->uri = $uri;
-      return rmdir($this->realpath());
+      $realpath = $this->realpath($uri);
+      if (is_dir($realpath)) {
+        chmod($realpath, 0700);
+        return rmdir($realpath);
+      }
+      return true;
     }
     catch (\ErrorException $e) {
       throw new StreamException("Couldn't delete {$this->uri} directory", null, $e);
@@ -398,14 +412,7 @@ abstract class AbstractLocalStreamWrapper implements LocalStreamWrapperInterface
   final public function stream_close() {
     try {
       $status = fclose($this->handle);
-      if (self::$fileSystem->privileged) {
-        if (isset(self::$fileSystem->user)) {
-          chown($this->uri, self::$fileSystem->user);
-        }
-        if (isset(self::$fileSystem->group)) {
-          chgrp($this->uri, self::$fileSystem->group);
-        }
-      }
+      $this->chmod($this->realpath(), FileSystem::MODE_FILE);
       return $status;
     }
     catch (\ErrorException $e) {
@@ -609,7 +616,7 @@ abstract class AbstractLocalStreamWrapper implements LocalStreamWrapperInterface
    * @throws \MovLib\Core\StreamWrapper\StreamException
    */
   final public function touch($realpath, $modificationTime = null, $accessTime = null) {
-    return touch($realpath, $modificationTime, $accessTime);
+    return touch($realpath, $modificationTime, $accessTime) && $this->chmod($realpath, FileSystem::MODE_FILE);
   }
 
   /**
@@ -621,6 +628,7 @@ abstract class AbstractLocalStreamWrapper implements LocalStreamWrapperInterface
       $this->uri = $uri;
       $realpath  = $this->realpath($uri);
       if (file_exists($realpath)) {
+        chmod($realpath, 0700);
         return unlink($realpath);
       }
       return true;
