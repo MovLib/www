@@ -120,6 +120,7 @@ final class FileSystem {
    * @var array
    */
   protected static $streamWrappers = [
+    "cache"  => "\\MovLib\\Core\\StreamWrapper\\CacheStreamWrapper",
     "dr"     => "\\MovLib\\Core\\StreamWrapper\\DocumentRootStreamWrapper",
     "asset"  => "\\MovLib\\Core\\StreamWrapper\\AssetStreamWrapper",
     "upload" => "\\MovLib\\Core\\StreamWrapper\\UploadStreamWrapper",
@@ -161,7 +162,7 @@ final class FileSystem {
       foreach (self::$streamWrappers as $scheme => $class) {
         // PHP's stream wrapper implementation doesn't allow dependency injection, we're therefore forced to static
         // property injection to ensure that every instance of a stream wrapper will have access to the file system.
-        $class::$fileSystem = $this;
+        $class::$root = $this->documentRoot;
 
         // We don't care at this point if a stream wrapper was already registered or not.
         stream_wrapper_register($scheme, $class);
@@ -374,7 +375,7 @@ final class FileSystem {
    *   <code>TRUE</code> if the directory is empty, <code>FALSE</code> otherwise.
    */
   public function isDirectoryEmpty($uri) {
-    return (count(glob("{$this->realpath($uri)}/*")) === 0);
+    return (boolean) (count(glob("{$this->realpath($uri)}/*")) === 0);
   }
 
   /**
@@ -468,6 +469,12 @@ final class FileSystem {
     }
     else {
       $this->group = posix_getgrgid(posix_getgid())["name"];
+    }
+
+    // Export the new user and group to each stream wrapper.
+    foreach (self::$streamWrappers as $streamWrapper) {
+      $streamWrapper::$user  = $this->user;
+      $streamWrapper::$group = $this->group;
     }
 
     return $this;
