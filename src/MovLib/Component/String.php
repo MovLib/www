@@ -69,4 +69,41 @@ abstract class String {
     return str_replace([ " ", "_" ], "", $string);
   }
 
+  /**
+   * Sanitizes a filename, replacing whitespace with dashes and transforming the string to lowercase.
+   *
+   * Removes special characters that are illegal in filenames on certain operating systems and special characters
+   * requiring special escaping to manipulate at the command line. Replaces spaces and consecutive dashes with a single
+   * dash. Trims period, dash und underscore from beginning and end of filename.
+   *
+   * @param string $filename
+   *   The filename to be sanitized.
+   * @return string
+   *   The sanitized filename.
+   * @throws \InvalidArgumentException
+   *   If <var>$filename</var> is invalid.
+   */
+  final public static function sanitizeFilename($filename) {
+    // @devStart
+    if (empty($filename)) {
+      throw new \InvalidArgumentException("A file's name cannot be empty.");
+    }
+    if (!is_string($filename)) {
+      throw new \InvalidArgumentException("A file's name must be of type string.");
+    }
+    // @devEnd
+
+    // Remove characters which aren't allowed in filenames.
+    $filename = str_replace([ "?", "[", "]", "/", "\\", "=", "<", ">", ":", ";", ",", "'", '"', "&", "$", "#", "*", "(", ")", "|", "~" ], "", $filename);
+
+    // Replace whitespace characters with dashes.
+    $filename = preg_replace("/[\s-]+/", "-", $filename);
+
+    // Remove characters which aren't allowed at the beginning and end of a filename.
+    $filename = trim($filename, ".-_");
+
+    // Always lowercase all filenames for better compatibility.
+    return mb_strtolower($filename);
+  }
+
 }

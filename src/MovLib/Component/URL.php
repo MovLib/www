@@ -28,6 +28,10 @@ namespace MovLib\Component;
  */
 final class URL {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
   // @codingStandardsIgnoreStart
   /**
    * Short class name.
@@ -41,20 +45,67 @@ final class URL {
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
+  /**
+   * The compiled URL.
+   *
+   * @var string
+   */
+  protected $compiled;
+
+  /**
+   * The URL's scheme (e.g. <code>"http"</code>).
+   *
+   * @var string
+   */
   public $scheme;
 
+  /**
+   * The URL's host (e.g. <code>"movlib.org"</code>).
+   *
+   * @var string
+   */
   public $host;
 
+  /**
+   * The URL's port (e.g. <code>80</code>).
+   *
+   * @var integer
+   */
   public $port;
 
+  /**
+   * The URL's user.
+   *
+   * @var string
+   */
   public $user;
 
+  /**
+   * The URL's password.
+   *
+   * @var string
+   */
   public $pass;
 
+  /**
+   * The URL's path.
+   *
+   * @var array
+   */
   public $path;
 
+  /**
+   * The URL's query.
+   *
+   * @var array
+   */
   public $query;
 
+  /**
+   * The URL's fragment (without leading hash character).
+   *
+   * @var string
+   */
   public $fragment;
 
 
@@ -66,9 +117,33 @@ final class URL {
    *
    * @param mixed $url
    *   The URL to parse and export into class scope.
+   * @throws \InvalidArgumentException
+   *   If <var>$url</var> is invalid.
    */
   public function __construct($url) {
+    // Use PHP's built-in function to parse the URL.
+    $parsed = parse_url($url);
 
+    // @devStart
+    if ($parsed === false) {
+      throw new \InvalidArgumentException("The URL seems to be invalid: {$url}");
+    }
+    // @devEnd
+
+    // Export the extracted parts to class scope.
+    foreach ($parsed as $part => $value) {
+      $this->$part = $value;
+    }
+
+    // Determine the individual parts of the path.
+    if ($this->path) {
+      $this->path = explode("/", substr($this->path, 1));
+    }
+
+    // Determine the individual parts of the query.
+    if ($this->query) {
+      parse_str($this->query, $this->query);
+    }
   }
 
   /**
@@ -78,7 +153,7 @@ final class URL {
    *   The URL's string representation.
    */
   public function __toString() {
-    return "";
+    return $this->compiled ?: $this->compile();
   }
 
 
@@ -94,10 +169,48 @@ final class URL {
    *   The encoded URL path.
    */
   public static function encodePath($path) {
-    if (empty($path) || $path == "/") {
+    if (empty($path) || $path === "/") {
       return $path;
     }
     return str_replace("%2F", "/", rawurlencode($path));
+  }
+
+  /**
+   * Extracts URLs from a string.
+   *
+   * @param string $text
+   *   The string containing URLs.
+   * @return array
+   *   Array containing all URLs that where found in <var>$text</var>.
+   */
+  public static function extract($text) {
+    preg_match_all("/(https?|ftps?)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\/\S*)?/", $text, $matches);
+    $urls = [];
+    foreach ($matches[0] as $url) {
+      $urls[] = new URL($url);
+    }
+    return $urls;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Compile the URL.
+   *
+   * @return string
+   *   The compiled URL.
+   */
+  public function compile() {
+    $pass           = $this->pass     ? ":{$this->pass}"               : null;
+    $credentials    = $this->user     ? "{$this->user}{$pass}@"        : null;
+    $port           = $this->port     ? ":{$this->port}"               : null;
+    $path           = $this->path     ? implode("/", $this->path)      : null;
+    $query          = $this->query    ? http_build_query($this->query) : null;
+    $fragment       = $this->fragment ? "#{$this->fragment}"           : null;
+    $this->compiled = "{$this->scheme}://{$credentials}{$this->host}{$port}/{$path}{$query}{$fragment}";
+    return $this->compiled;
   }
 
 }
