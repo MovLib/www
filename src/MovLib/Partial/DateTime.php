@@ -134,7 +134,8 @@ final class DateTime {
    *   Relative string representation of the date and time.
    */
   public function formatRelative(\MovLib\Component\DateTime $dateTime, \MovLib\Component\DateTime $requestDateTime, array $attributes = [], $timezone = null) {
-    $requestDateTime->setTimezone($timezone ?: $this->timezone);
+    $timezone || ($timezone = $this->timezone);
+    $requestDateTime->setTimezone($timezone);
     $interval = $requestDateTime->diff($dateTime, true);
 
     // The diff method returns FALSE upon failure, account for this by simply returning the original date and time
@@ -149,7 +150,7 @@ final class DateTime {
       $formatted = $this->intl->t("{0,plural,=1{last month}other{# months ago}}", $interval->m);
     }
     elseif ($interval->d > 0) {
-      $formatted = $this->intl->t("{0,plural,=1{today}=2{yesterday}other{# days ago}}", $interval->d);
+      $formatted = $this->intl->t("{0,plural,=1{yesterday}other{# days ago}}", $interval->d);
     }
     elseif ($interval->h > 0) {
       $formatted = $this->intl->t("{0,plural,=1{an hour ago}other{# hours ago}}", $interval->h);
@@ -162,6 +163,7 @@ final class DateTime {
     }
 
     $attributes["datetime"] = (string) $dateTime;
+    $attributes["title"]    = (new \IntlDateFormatter($this->intl->locale, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::MEDIUM, $timezone))->format($dateTime);
     return "<time{$this->presenter->expandTagAttributes($attributes)}>{$formatted}</time>";
   }
 
