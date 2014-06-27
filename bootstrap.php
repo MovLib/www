@@ -24,3 +24,8 @@
  * @since 0.0.1-dev
  */
 require __DIR__ . "/lib/autoload.php";
+
+// Transform all kinds of errors, warnings, etc. to exceptions.
+set_error_handler(function ($severity, $message, $file, $line) {
+  throw new \ErrorException($message, $severity, 0, $file, $line);
+});
