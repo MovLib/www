@@ -149,7 +149,8 @@ abstract class AbstractHistoryDiff extends \MovLib\Presentation\AbstractPresente
 
     $this->table = (new Table([ "class" => "table-diff" ], [
       [ "#content" => "{$this->img($oldUser->imageGetStyle("s1"), [], true, [ "class" => "fl" ])}<span class='big'>{$this->intl->t("Revision {0}", $this->history->old->id)}</span><br>{$this->intl->t("by {username} {time}", [ "username" => "<a href='{$oldUser->route}'>{$oldUser->name}</a>", "time" => $dateTime->formatRelative($this->history->old->created, $this->request->dateTime) ])}" ],
-      [ "#content" => "{$this->img($newUser->imageGetStyle("s1"), [], true, [ "class" => "fl" ])}<span class='big'>{$newRevisionName}</span><br>{$this->intl->t("by {username} {time}", [ "username" => "<a href='{$newUser->route}'>{$newUser->name}</a>", "time" => $dateTime->formatRelative($this->history->new->created, $this->request->dateTime) ])}" ]
+      [ "#content" => "{$this->img($newUser->imageGetStyle("s1"), [], true, [ "class" => "fl" ])}<span class='big'>{$newRevisionName}</span><br>{$this->intl->t("by {username} {time}", [ "username" => "<a href='{$newUser->route}'>{$newUser->name}</a>", "time" => $dateTime->formatRelative($this->history->new->created, $this->request->dateTime) ])}" ],
+      [ "class" => "aside" ],
     ]))->addColGroup([ [], [], [ "class" => "aside" ] ]);
 
     return $this;
@@ -161,33 +162,13 @@ abstract class AbstractHistoryDiff extends \MovLib\Presentation\AbstractPresente
   public function getContent() {
     // @todo Should we try to recover from a backup?
     if (empty($this->table->rows)) {
-      return $this->intl->t("No changes to show.");
+      return $this->table->addRow([ [
+        "#content" => "<div class='callout callout-info '>{$this->intl->t("No changes to show.")}</div>",
+        "class"    => "tac",
+        "colspan"  => 2
+      ], [ "class" => "aside" ] ]);
     }
     return $this->table;
-  }
-
-  /**
-   * Add a simple (scalar) property to the diff table.
-   *
-   * @param string $name
-   *   The property's translated name.
-   * @param mixed $oldValue
-   *   The property's old value.
-   * @param mixed $newValue
-   *   The property's new value.
-   * @return $this
-   */
-  public function addDiffSimpleProperty($name, $oldValue, $newValue) {
-    if ($oldValue === $newValue) {
-      return $this;
-    }
-
-    list($oldValue, $newValue) = $this->formatStringDiff($oldValue, $newValue);
-
-    return $this->table
-      ->addRow([ [ "#content" => $name, "class" => "diff-label", "colspan" => 2 ], [ "class" => "aside" ] ])
-      ->addRow([ [ "#content" => $oldValue ], [ "#content" => $newValue ], [] ])
-    ;
   }
 
   /**
@@ -218,9 +199,9 @@ abstract class AbstractHistoryDiff extends \MovLib\Presentation\AbstractPresente
         // Add the property heading if it's the first change we encounter.
         if ($changes === false) {
           $changes = true;
-          $this->table->addRow([ [ "#content" => $name, "class" => "diff-label", "colspan" => 2 ], [ "class" => "aside" ] ]);
+          $this->addPropertyHeading($name);
         }
-        list($oldValueLanguage, $newValueLanguage) = $this->formatStringDiff($oldValueLanguage, $newValueLanguage);
+        $this->formatStringDiff($oldValueLanguage, $newValueLanguage);
         $displayLanguage = \Locale::getDisplayLanguage($languageCode, $this->intl->locale);
         $this->table->addRow([
           [ "#content" => $oldValueLanguage ],
@@ -229,6 +210,42 @@ abstract class AbstractHistoryDiff extends \MovLib\Presentation\AbstractPresente
         ]);
       }
     }
+
+    return $this;
+  }
+
+  /**
+   * Add a property heading to the diff table.
+   *
+   * @param string $propertyName
+   *   The property's translated name.
+   * @return $this
+   */
+  protected function addPropertyHeading($propertyName) {
+    $this->table->addRow([ [ "#content" => $propertyName, "class" => "diff-label", "colspan" => 2 ], [ "class" => "aside" ] ]);
+    return $this;
+  }
+
+  /**
+   * Add a simple (scalar) property to the diff table.
+   *
+   * @param string $name
+   *   The property's translated name.
+   * @param mixed $oldValue
+   *   The property's old value.
+   * @param mixed $newValue
+   *   The property's new value.
+   * @return $this
+   */
+  public function addDiffSimpleProperty($name, $oldValue, $newValue) {
+    if ($oldValue === $newValue) {
+      return $this;
+    }
+
+    $this->formatStringDiff($oldValue, $newValue);
+
+    $this->addPropertyHeading($name);
+    $this->table->addRow([ [ "#content" => $oldValue ], [ "#content" => $newValue ], [ "class" => "aside" ] ]);
 
     return $this;
   }
@@ -243,7 +260,7 @@ abstract class AbstractHistoryDiff extends \MovLib\Presentation\AbstractPresente
    * @return array
    *   Contains 0 => formatted old difference, 1 => formatted new difference for use with list().
    */
-  protected function formatStringDiff($oldValue, $newValue) {
+  protected function formatStringDiff(&$oldValue, &$newValue) {
     $newValue = (string) $newValue;
     $oldValue = (string) $oldValue;
 
@@ -274,7 +291,7 @@ abstract class AbstractHistoryDiff extends \MovLib\Presentation\AbstractPresente
       }
     }
 
-    return [ $oldContent, $newContent ];
+    return $this;
   }
 
 }
