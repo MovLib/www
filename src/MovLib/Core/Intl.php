@@ -175,7 +175,7 @@ final class Intl {
    * @throws \IntlException
    *   If <code>$code</code> isn't a valid system language's code.
    */
-  final public function __construct($code) {
+  public function __construct($code) {
     // Export default language code and locale to class scope. Providing public properties allows classes to directly
     // embed the code and locale in strings.
     $this->defaultCode   = self::DEFAULT_CODE;
@@ -191,6 +191,28 @@ final class Intl {
       $valid = implode(", ", array_keys(self::$systemLanguages));
       throw new \IntlException("The given code '{$code}' must be a valid system language's ISO 639-1 alpha-2 code. Valid codes are: {$valid}", null, $e);
     }
+  }
+
+  /**
+   * Implements <code>serialize()</code> callback.
+   *
+   * @link http://php.net/language.oop5.magic#object.sleep
+   * @return array
+   *   Array containing the names of the properties that should be serialized.
+   */
+  public function __sleep() {
+    return [ "code" ];
+  }
+
+  /**
+   * Implements <code>unserialize()</code> callback.
+   *
+   * @link http://php.net/language.oop5.magic#object.wakeup
+   */
+  public function __wakeup() {
+    $this->defaultCode   = self::DEFAULT_CODE;
+    $this->defaultLocale = self::DEFAULT_LOCALE;
+    $this->locale        = self::$systemLanguages[$this->code];
   }
 
 
