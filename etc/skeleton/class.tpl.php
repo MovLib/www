@@ -41,14 +41,14 @@ class {className}Test extends \MovLib\TestCase {
 
 
   /**
-   * Called before each test.
+   * {@inheritdoc}
    */
   protected function setUp() {
     $this->{classPropertyName} = new {className}();
   }
 
   /**
-   * Called after each test.
+   * {@inheritdoc}
    */
   protected function tearDown() {
 
