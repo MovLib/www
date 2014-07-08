@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Forum;
+namespace MovLib\Data\Forum\Forums;
 
 /**
  * Defines the forum interface for all concrete forums.
@@ -45,31 +45,27 @@ interface ForumInterface {
    *
    * @internal
    *   Right now there's no way to get the description without the HTML because there's no need for it.
+   * @param \MovLib\Core\Intl $intl
+   *   The internationalization instance for translation.
    * @param string $languageCode
    *   The system language's ISO 639-1 alpha-2 code to translate the description to, defaults to <code>NULL</code> and
-   *   the current language is used.
+   *   the language from <var>$intl</var> will be used.
    * @return string
    *   The forum's translated description.
    */
-  public function getDescription($languageCode = null);
-
-  /**
-   * Get the forum's untranslated absolute route.
-   *
-   * @return string
-   *   The forum's untranslated absolute route.
-   */
-  public function getRoute();
+  public function getDescription(\MovLib\Core\Intl $intl, $languageCode = null);
 
   /**
    * Get the forum's translated title.
    *
+   * @param \MovLib\Core\Intl $intl
+   *   The internationalization instance for translation.
    * @param string $languageCode [optional]
    *   The system language's ISO 639-1 alpha-2 code to translate the description to, defaults to <code>NULL</code> and
-   *   the current language is used.
+   *   the language from <var>$intl</var> will be used.
    * @return string
    *   The forum's translated title.
    */
-  public function getTitle($languageCode = null);
+  public function getTitle(\MovLib\Core\Intl $intl, $languageCode = null);
 
 }

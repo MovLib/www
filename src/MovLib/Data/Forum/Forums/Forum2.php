@@ -15,9 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Forum;
-
-use \MovLib\Core\Intl;
+namespace MovLib\Data\Forum\Forums;
 
 /**
  * Defines the Announcements forum object.
@@ -28,7 +26,7 @@ use \MovLib\Core\Intl;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Forum1 implements \MovLib\Data\Forum\ForumInterface {
+final class Forum2 implements ForumInterface {
 
   /**
    * {@inheritdoc}
@@ -40,12 +38,11 @@ final class Forum1 implements \MovLib\Data\Forum\ForumInterface {
   /**
    * {@inheritdoc}
    */
-  public function getDescription($languageCode = null) {
-    return Intl::getInstance()->t(
-      "Important news around {0}our{1} website will be announced by the administrators in the {2}announcement " .
-      "forum{3}. Active users should have a look at this forum on a regular basis, because all important facts are " .
-      "posted here first.",
-      [ "<em>", "</em>", "<strong>", "</strong>" ],
+  public function getDescription(\MovLib\Core\Intl $intl, $languageCode = null) {
+    return $intl->t(
+      "You can ask questions that will be answered by other users in the {0}help forum{1}. You may want to check the " .
+      "{2}help{3}, frequent questions are already answered there.",
+      [ "<strong>", "</strong>", "<a href='{$intl->r("/help")}'>", "</a>" ],
       $languageCode
     );
   }
@@ -53,15 +50,8 @@ final class Forum1 implements \MovLib\Data\Forum\ForumInterface {
   /**
    * {@inheritdoc}
    */
-  public function getRoute() {
-    return "/forum/announcements";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getTitle($languageCode = null) {
-    return Intl::getInstance()->t("Announcements", null, $languageCode);
+  public function getTitle(\MovLib\Core\Intl $intl, $languageCode = null) {
+    return $intl->t("Help", null, $languageCode);
   }
 
 }
