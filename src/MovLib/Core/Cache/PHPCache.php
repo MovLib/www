@@ -224,7 +224,7 @@ final class PHPCache implements CacheInterface {
         throw new \InvalidArgumentException("A cache item's key cannot be empty.");
       }
       if (\MovLib\Component\String::sanitizeFilename($key) !== $key) {
-        throw new \InvalidArgumentException("The cache item's key contains invalid characters.");
+        throw new \InvalidArgumentException("The cache item's key contains invalid characters: {$key}");
       }
       // @devEnd
       $this->key = $key;
