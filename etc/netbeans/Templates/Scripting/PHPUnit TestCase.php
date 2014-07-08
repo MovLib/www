@@ -1,4 +1,5 @@
 <?php
+
 <#assign licenseFirst="/*!">
 <#assign licensePrefix=" *">
 <#assign licenseLast=" */">
@@ -7,23 +8,55 @@
 <#if namespace?? && namespace?length &gt; 0>
 namespace ${namespace};
 </#if>
+<#assign coveredClass=${name.substring(0, 4)}>
+
+use ${namespace}\${coveredClass};
 
 /**
- * @coversDefaultClass
+ * @coversDefaultClass ${namespace}\${coveredClass}
  * @author ${user}
  * @copyright © ${date?date?string("yyyy")} ${copyright}
  * @license ${license_link} ${license_name}
  * @link ${link}
  * @since ${version}
  */
-class ${name} extends \MovLib\Test\TestCase {
+final class ${name} extends \MovLib\TestCase {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /** @var ${namespace}\${coveredClass} */
+  protected $${coveredClass};
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Fixtures
+
 
   /**
-   * @covers ::__construct
-   * @group
+   * {@inheritdoc}
    */
-  public function testConstruct() {
+  public function setUp() {
+    $this->${coveredClass} = new ${coveredClass}();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function tearDown() {
 
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Data Provider
+
+
+  public function dataProviderExample() {
+    return [];
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Tests
+
 
 }
