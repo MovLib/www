@@ -39,6 +39,7 @@ interface RevisionInterface {
   /**
    * Implements <code>serialize()</code> callback.
    *
+   * @link http://php.net/language.oop5.magic#object.sleep
    * @staticvar array $properties
    *   Should be used internally to cache the property names.
    * @return array
@@ -48,6 +49,8 @@ interface RevisionInterface {
 
   /**
    * Implements <code>unserialize()</code> callback.
+   *
+   * @link http://php.net/language.oop5.magic#object.wakeup
    */
   public function __wakeup();
 
