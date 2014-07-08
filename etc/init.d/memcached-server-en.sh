@@ -1,13 +1,13 @@
 #!/bin/sh
 
 ### BEGIN INIT INFO
-# Provides:           memcached-server1
+# Provides:           memcached-server-en
 # Required-Start:     $local_fs $remote_fs $network $syslog $named
 # Required-Stop:      $local_fs $remote_fs $network $syslog $named
 # Default-Start:      2 3 4 5
 # Default-Stop:       0 1 6
-# Short-Description:  memcached-server1 LSB init script
-# Description:        memcached-server1 Linux Standards Base compliant init script.
+# Short-Description:  memcached-server-en LSB init script
+# Description:        memcached-server-en Linux Standards Base compliant init script.
 ### END INIT INFO
 
 # -----------------------------------------------------------------------------
@@ -30,7 +30,7 @@
 # -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
-# memcached-server1 Linux Standards Base compliant init script.
+# memcached-server-en Linux Standards Base compliant init script.
 #
 # LINK:       https://wiki.debian.org/LSBInitScripts
 # AUTHOR:     Richard Fussenegger <richard@fussenegger.info>
@@ -57,7 +57,7 @@
 
 
 # The name of the server (must be the first variable).
-NAME="server1"
+NAME="server-en"
 
 # The name of the service.
 SERVICE_NAME="memcached-${NAME}"
