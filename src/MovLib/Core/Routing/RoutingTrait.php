@@ -30,6 +30,17 @@ namespace MovLib\Core\Routing;
  */
 trait RoutingTrait {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * Array containing route parts that were already processed.
+   *
+   * @var array
+   */
+  protected $processedPaths = [];
+
   /**
    * The concrete object's route.
    *
@@ -37,11 +48,49 @@ trait RoutingTrait {
    */
   public $route;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
    * @see \MovLib\Core\Data\RoutingInterface::getRoute();
    */
-  final public function getRoute() {
-    return $this->route;
+  final public function getRoute($path = null, array $args = null, array $options = null) {
+    // No need to do anything if no path was given, note that we always return a clone and make sure that nobody is
+    // changing our route's instance.
+    if ($path === null) {
+      return clone $this->route;
+    }
+
+    // We already know this path, nothing to do.
+    if (empty($this->processedPaths[$path])) {
+      // We only need to process the passed path if our concrete object has any route arguments and the path contains
+      // placeholders.
+      if (isset($this->route->args) && strpos($path, "{") !== false) {
+        // We use a closure at this point, we'd have to expose the callback method if we'd implement it in class scope
+        // because the callback has to be public. We don't want to expose it to anyone.
+        $this->processedPaths[$path] = preg_replace_callback("/{([^}]+)}/", function () {
+          static $c = null;
+          $c === null && ($c = substr_count($this->route->path, "{") - 1); // Minus one, formatting starts at zero.
+          ++$c;
+          return "{{$c}}";
+        }, $path);
+      }
+      // Insert into cache for faster look-ups later.
+      else {
+        $this->processedPaths[$path] = $path;
+      }
+    }
+    $options["path"] = "{$this->route->path}{$this->processedPaths[$path]}";
+
+    // We always have to merge our arguments with the passed arguments.
+    isset($args) && ($options["args"] = array_merge($this->route->args, $args));
+
+    // Now we can simply clone our own route and export the new options.
+    $route = clone $this->route;
+    $route->setOptions($options);
+
+    return $route;
   }
 
   /**
@@ -82,7 +131,7 @@ trait RoutingTrait {
 
           // Count our placeholders if we haven't done so yet.
           if (!$c) {
-            $c = substr_count($this->route->route, "{") - 1; // Minus one because formatting starts at index zero.
+            $c = substr_count($this->route->path, "{") - 1; // Minus one because formatting starts at index zero.
           }
 
           // Increment, insert, return...
@@ -97,8 +146,24 @@ trait RoutingTrait {
     }
 
     // Add this route to our cache and we're done.
-    $routes[static::name][$cacheKey] = "{$this->route->route}{$routePart}";
+    $routes[static::name][$cacheKey] = "{$this->route->path}{$routePart}";
     return $this->intl->r($routes[static::name][$cacheKey], $args, $languageCode);
+  }
+
+  /**
+   * Set the concrete object's route.
+   *
+   * @param \MovLib\Core\Intl $intl
+   *   The internationalization instance for route translation.
+   * @param string $path
+   *   The concrete object's untranslated route path.
+   * @param array $args [optional]
+   *   The route's formatting arguments.
+   * @return this
+   */
+  protected function setRoute(\MovLib\Core\Intl $intl, $path, array $args = null) {
+    $this->route = new Route($intl, $path, isset($args) ? [ "args" => $args ] : null);
+    return $this;
   }
 
 }

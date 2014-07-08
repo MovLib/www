@@ -37,12 +37,12 @@ interface RoutingInterface {
   public function getRoute();
 
   /**
-   * Append a rout part to the data class's route and translate/format it.
+   * Append a route part to the object's route and translate/format it.
    *
    * This method can be used in abstracted classes to append certain parts that are the same for all data classes to the
    * route of the concrete class and get the translated and formatted route back. Note that you don't have to know the
-   * arguments count of the concrete class's route. Simply start from 0 (zero) as you're used to, the passed route part
-   * is processed by this method and the returned route is correctly formatted.
+   * arguments count of the concrete object's route. Simply start from <code>0</code> (zero) as you're used to, the
+   * passed route part is processed by this method and the returned route is correctly formatted.
    *
    * <b>EXAMPLE</b><br>
    * <pre>$genre->r("/history/{0}", $revision->id); // /genre/1/history/20140527145549</pre>
@@ -57,6 +57,7 @@ interface RoutingInterface {
    * @return string
    *   The translated and formatted route.
    * @throws \IntlException
+   *   If creation of the message formatter fails.
    */
   public function r($routePart, array $args = [], $languageCode = null);
 
