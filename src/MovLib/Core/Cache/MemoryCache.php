@@ -46,11 +46,11 @@ final class MemoryCache implements CacheCounterInterface {
 
 
   /**
-   * Current persistent memcached connection.
+   * Connections to the memory cache servers.
    *
-   * @var \Memcached
+   * @var array
    */
-  protected static $memcached;
+  protected static $connections = [];
 
   /**
    * Memcached default options.
@@ -62,18 +62,16 @@ final class MemoryCache implements CacheCounterInterface {
     \Memcached::OPT_LIBKETAMA_COMPATIBLE => true,
   ];
 
-  /**
-   * Memcached servers.
-   *
-   * @var array
-   */
-  protected static $servers = [
-    [ "/run/memcached/server.sock", 0 ],
-  ];
-
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
+
+  /**
+   * The current memory cache server connection.
+   *
+   * @var \Memcached
+   */
+  protected $connection;
 
   /**
    * The current cache key in use.
@@ -89,26 +87,28 @@ final class MemoryCache implements CacheCounterInterface {
   /**
    * Instantiate new memory cache.
    *
-   * @param string $key [optional]
-   *   The cache key, defaults to <code>NULL</code> and no key is set.
    * @param string $languageCode [optional]
    *   The ISO 639-1 alpha-2 language code of the Memcached server to use, defaults to <code>NULL</code> and the
    *   language independent server is used.
+   * @param string $key [optional]
+   *   The cache key, defaults to <code>NULL</code> and no key is set.
    * @throws \MemcachedException
    *   If setting the default options or servers of a newly created memcached instance fails.
    */
-  public function __construct($key = null, $languageCode = null) {
-    $this->key = $key;
-    if (!self::$memcached) {
-      self::$memcached = new \Memcached("_");
-      $languageCode && ($languageCode = "-{$languageCode}");
-      if (self::$memcached->setOptions(self::$options) === false || self::$memcached->addServers([ "/run/memcached/server{}.sock", 0 ]) === false) {
+  public function __construct($languageCode = null, $key = null) {
+    // Create a new connection if we have none for this language.
+    if (empty(self::$connections[$languageCode])) {
+      self::$connections[$languageCode] = new \Memcached($languageCode ?: "_");
+      $socket = $languageCode ? "-{$languageCode}" : null;
+      if (self::$connections[$languageCode]->setOptions(self::$options) === false || self::$connections[$languageCode]->addServer("/run/memcached/server{$socket}.sock", 0) === false) {
         // @codeCoverageIgnoreStart
         // This exception isn't easily created, we'd have to execute PHPUnit with root privileges and stop the server.
-        throw new \MemcachedException(self::$memcached->getResultMessage(), self::$memcached->getResultCode());
+        throw new \MemcachedException(self::$connections[$languageCode]->getResultMessage(), self::$connections[$languageCode]->getResultCode());
         // @codeCoverageIgnoreEnd
       }
     }
+    $this->connection = self::$connections[$languageCode];
+    $this->key        = $key;
   }
 
 
@@ -119,14 +119,21 @@ final class MemoryCache implements CacheCounterInterface {
    * {@inheritdoc}
    */
   public function decrement($key = null, $default = 0, $expire = CacheInterface::CACHE_PERMANENT, $by = 1) {
-    return $this->setKey($key)->exec("decrement", $this->key, $by, $default, $this->getExpiration($expire));
+    $this->setKey($key);
+    if (($result = $this->connection->decrement($this->key, $by, $default, $this->getExpiration($expire))) === false) {
+      throw new CacheException($this->connection->getResultMessage(), $this->connection->getResultCode());
+    }
+    return $result;
   }
 
   /**
    * {@inheritdoc}
    */
   public function delete($key = null) {
-    $this->setKey($key)->exec("delete", $this->key);
+    $this->setKey($key);
+    if ($this->connection->delete($this->key) === false && ($code = $this->connection->getResultCode()) !== \Memcached::RES_NOTFOUND) {
+      throw new CacheException($this->connection->getResultMessage(), $code);
+    }
     return $this;
   }
 
@@ -134,7 +141,9 @@ final class MemoryCache implements CacheCounterInterface {
    * {@inheritdoc}
    */
   public function deleteMultiple(array $keys) {
-    $this->exec("deleteMulti", $keys);
+    foreach ($keys as $key) {
+      $this->delete($key);
+    }
     return $this;
   }
 
@@ -150,7 +159,15 @@ final class MemoryCache implements CacheCounterInterface {
    * {@inheritdoc}
    */
   public function get($key = null) {
-    return $this->setKey($key)->exec("get", $this->key);
+    $this->setKey($key);
+    if (($data = $this->connection->get($this->key)) === false) {
+      // We want to return NULL in case the key doesn't exist.
+      if (($code = $this->connection->getResultCode()) === \Memcached::RES_NOTFOUND) {
+        return;
+      }
+      throw new CacheException($this->connection->getResultMessage(), $code);
+    }
+    return $data;
   }
 
   /**
@@ -159,7 +176,7 @@ final class MemoryCache implements CacheCounterInterface {
    * @return mixed
    *   The timestamp for the given expire time or <var>CacheInterface::CACHE_PERMANENT</var>.
    */
-  public function getExpiration($expire) {
+  protected function getExpiration($expire) {
     if ($expire === CacheInterface::CACHE_PERMANENT) {
       return CacheInterface::CACHE_PERMANENT;
     }
@@ -178,14 +195,24 @@ final class MemoryCache implements CacheCounterInterface {
    * {@inheritdoc}
    */
   public function getMultiple(array $keys) {
-    return $this->exec("getMulti", $keys);
+    $data = [];
+    foreach ($keys as $key) {
+      if (($value = $this->get($key))) {
+        $data[$key] = $value;
+      }
+    }
+    return $data;
   }
 
   /**
    * {@inheritdoc}
    */
   public function increment($key = null, $default = 0, $expire = CacheInterface::CACHE_PERMANENT, $by = 1) {
-    return $this->setKey($key)->exec("increment", $this->key, $by, $default, $this->getExpiration($expire));
+    $this->setKey($key);
+    if (($result = $this->connection->increment($key, $by, $default, $this->getExpiration($expire))) === false) {
+      throw new CacheException($this->connection->getResultMessage(), $this->connection->getResultCode());
+    }
+    return $result;
   }
 
   /**
@@ -193,7 +220,9 @@ final class MemoryCache implements CacheCounterInterface {
    */
   public function purge() {
     $this->key = null;
-    $this->exec("flush");
+    if ($this->connection->flush() === false) {
+      throw new CacheException($this->connection->getResultMessage(), $this->connection->getResultCode());
+    }
     return $this;
   }
 
@@ -201,7 +230,10 @@ final class MemoryCache implements CacheCounterInterface {
    * {@inheritdoc}
    */
   public function set($data, $key = null, $expire = CacheInterface::CACHE_PERMANENT) {
-    $this->setKey($key)->exec("set", $this->key, $data, $this->getExpiration($expire));
+    $this->setKey($key);
+    if ($this->connection->set($this->key, $data, $this->getExpiration($expire)) === false) {
+      throw new CacheException($this->connection->getResultMessage(), $this->connection->getResultCode());
+    }
     return $this;
   }
 
@@ -209,14 +241,22 @@ final class MemoryCache implements CacheCounterInterface {
    * {@inheritdoc}
    */
   public function setKey($key) {
-    if ($key === null) {
-      if ($this->key === null) {
-        throw new \BadMethodCallException("No cache item key is set to work with.");
+    if (isset($key)) {
+      // @devStart
+      if (empty($key)) {
+        throw new \InvalidArgumentException("A cache item's key cannot be empty.");
       }
-    }
-    else {
+      if (\MovLib\Component\String::sanitizeFilename($key) !== $key) {
+        throw new \InvalidArgumentException("The cache item's key contains invalid characters.");
+      }
+      // @devEnd
       $this->key = $key;
     }
+    // @devStart
+    elseif ($this->key === null) {
+      throw new \BadMethodCallException("No cache item key is set to work with.");
+    }
+    // @devEnd
     return $this;
   }
 
@@ -224,38 +264,10 @@ final class MemoryCache implements CacheCounterInterface {
    * {@inheritdoc}
    */
   public function setMultiple(array $data, $expire = CacheInterface::CACHE_PERMANENT) {
-    $this->exec("setMulti", $data, $this->getExpiration($expire));
+    foreach ($data as $key => $value) {
+      $this->set($value, $key, $expire);
+    }
     return $this;
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Protected Methods
-
-
-  /**
-   * Execute memcached method and throw exception if it fails.
-   *
-   * @param string $method
-   *   The name of the method to execute.
-   * @param mixed $args [variadic]
-   *   Arguments that should be passed to the method.
-   * @return mixed
-   *   The return value from the called method.
-   * @throws \MovLib\Core\Cache\CacheException
-   *   If the method returns <code>FALSE</code> or a {@see \MemcachedException} is thrown. Note that the return code
-   *   is checked and even if the code is {@see \Memcached::RES_NOTFOUND} no exception is thrown.
-   */
-  protected function exec($method, ...$args) {
-    try {
-      $result = self::$memcached->$method(...$args);
-      if ($result === false && ($code = self::$memcached->getResultCode()) !== \Memcached::RES_NOTFOUND) {
-        throw new CacheException(self::$memcached->getResultMessage(), self::$memcached->getResultCode());
-      }
-      return $result;
-    }
-    catch (\MemcachedException $e) {
-      throw new CacheException(self::$memcached->getResultMessage(), self::$memcached->getResultCode(), $e);
-    }
   }
 
 }
