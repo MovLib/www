@@ -373,6 +373,21 @@ SQL
   }
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Static Methods
+
+
+  public static function getInstance(\MovLib\Core\Container $container, $id) {
+    static $instances = [];
+    if (empty($instances[$id])) {
+      $cache = $container->getPersistentCache("user-{$id}");
+      if (($instances[$id] = $cache->get()) === null) {
+        $instances[$id] = new self($container, $id, self::FROM_ID);
+      }
+    }
+    return $instances[$id];
+  }
+
+
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
