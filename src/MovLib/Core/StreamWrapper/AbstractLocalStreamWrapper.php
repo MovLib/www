@@ -310,13 +310,8 @@ abstract class AbstractLocalStreamWrapper implements LocalStreamWrapperInterface
    * @throws \MovLib\Core\StreamWrapper\StreamException
    */
   final public function realpath($uri = null) {
-    static $realpaths = [];
     try {
       $uri || ($uri = $this->uri);
-
-      if (isset($realpaths[$uri])) {
-        return $realpaths[$uri];
-      }
 
       // Buld canonical absolute local file path.
       $basepath = $this->getPath();
@@ -329,13 +324,10 @@ abstract class AbstractLocalStreamWrapper implements LocalStreamWrapperInterface
 
       // Make sure we have a canonical absolute path by now.
       if ($realpath === false || strpos($realpath, $basepath) !== 0) {
-        $realpaths[$uri] = false;
-      }
-      else {
-        $realpaths[$uri] = $realpath;
+        return false;
       }
 
-      return $realpaths[$uri];
+      return $realpath;
     }
     catch (\ErrorException $e) {
       throw new StreamException("Couldn't generate real path for {$uri}", null, $e);
