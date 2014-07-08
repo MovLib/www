@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\Forum;
 
+use \MovLib\Core\Database\Database;
 use \MovLib\Core\Database\Query\Select;
 
 /**
@@ -28,8 +29,8 @@ use \MovLib\Core\Database\Query\Select;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Topic implements \MovLib\Core\Routing\RoutingInterface {
-  use \MovLib\Core\Routing\RoutingTrait;
+final class Topic extends AbstractBase {
+
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
@@ -44,15 +45,8 @@ final class Topic implements \MovLib\Core\Routing\RoutingInterface {
   // @codingStandardsIgnoreEnd
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
+  // ------------------------------------------------------------------------------------------------------------------- Public Properties
 
-
-  /**
-   * The topic's total post count.
-   *
-   * @var integer
-   */
-  public $countPosts;
 
   /**
    * Whether this topic is closed or not.
@@ -64,9 +58,6 @@ final class Topic implements \MovLib\Core\Routing\RoutingInterface {
   /**
    * The topic's date and time of the last edit.
    *
-   * This property is <code>NULL</code> if it was never edited.
-   *
-   * @see ::$editorId
    * @var \MovLib\Component\DateTime|null
    */
   public $edited;
@@ -74,41 +65,16 @@ final class Topic implements \MovLib\Core\Routing\RoutingInterface {
   /**
    * The topic's unique user identifier who last edited it.
    *
-   * This property is <code>NULL</code> if it was never edited.
-   *
-   * @see ::$edited
    * @var integer|null
    */
   public $editorId;
 
   /**
-   * The topic's unique forum identifier it belongs to.
+   * The topic's parent forum.
    *
-   * @var integer
+   * @var \MovLib\Data\Forum\Forum
    */
-  public $forumId;
-
-  /**
-   * The topic's unique identifier.
-   *
-   * @param integer
-   */
-  public $id;
-
-  /**
-   * The topic's ISO 639-1 language code.
-   *
-   * @see ::__construct
-   * @var string
-   */
-  protected $languageCode;
-
-  /**
-   * The topic's parent entities.
-   *
-   * @var array
-   */
-  public $parents = [];
+  public $forum;
 
   /**
    * Whether the topic is sticky or not.
@@ -118,21 +84,48 @@ final class Topic implements \MovLib\Core\Routing\RoutingInterface {
   public $sticky = false;
 
   /**
-   * The name of the database table that contains the topic.
-   *
-   * Each system language code has its own database table because there's no correlation between the languages.
-   *
-   * @see ::__construct
-   * @var string
-   */
-  protected $tableName;
-
-  /**
    * The topic's title.
    *
    * @var string
    */
   public $title;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Protected Properties
+
+
+  /**
+   * The topic's first post.
+   *
+   * @var \MovLib\Data\Forum\Post
+   */
+  protected $firstPost;
+
+  /**
+   * The topic's last post.
+   *
+   * @var \MovLib\Data\Forum\Post
+   */
+  protected $lastPost;
+
+  /**
+   * The topic's posts.
+   *
+   * This is an associative array where they key is a combination of limit and offset, the value is an array where the
+   * key is the post's unique identifier and the value the post itself. This allows you to load many posts, but always
+   * with limit and offset.
+   *
+   * @see ::getPosts
+   * @var array
+   */
+  protected $posts;
+
+  /**
+   * The topic's total post count.
+   *
+   * @var integer
+   */
+  protected $totalPostCount;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -141,55 +134,185 @@ final class Topic implements \MovLib\Core\Routing\RoutingInterface {
   /**
    * Instantiate new forum topic.
    *
-   * @param string $languageCode
-   *   The topic's (system) language code. The language code of a topic is usually provided by the request's language
-   *   code. Note that the language code is used to determine which table is queried.
+   * @param \MovLib\Core\Container $container
+   *   The dependency injection container.
    * @param integer $id [optional]
    *   The topic's unique identifier to load, defaults to <code>NULL</code> and an empty topic is created.
+   * @param \MovLib\Data\Forum\Forum $parentForum [internal]
+   *   The topic's parent forum, defaults to <code>NULL</code> and the forum is loaded.
+   * @throws \InvalidArgumentException
+   *   If the given <var>$forum</var> isn't the actual parent forum of this topic.
    */
-  public function __construct($languageCode, $id = null) {
-    $this->languageCode = $languageCode;
-    $this->tableName    = "{$languageCode}_topic";
+  public function __construct(\MovLib\Core\Container $container, $id = null, \MovLib\Data\Forum\Forum $parentForum = null) {
+    parent::__construct($container);
     if ($id) {
       (new Select())
         ->select("id")
         ->select("closed")
         ->select("edited")
         ->select("editor_id")
-        ->select("forum_id")
+        ->select("forum_id", [ "property" => "forum" ])
         ->select("sticky")
         ->select("title")
-        ->from($this->tableName)
+        ->from("{$this->intl->code}_topic")
         ->where("id", $id)
         ->fetchInto($this)
       ;
-      $this->parents[0] = new Forum($this->languageCode, $this->forumId);
-      $this->setRoute("/forum/{$this->parents[0]->title}/topic/{0}", $this->id);
+      // @devStart
+      if (isset($parentForum) && $parentForum->id !== $this->forum) {
+        throw new \InvalidArgumentException("The forum isn't the topic's parent.");
+      }
+      // @devEnd
+    }
+    if ($this->id) {
+      $this->setForum($parentForum ?: new Forum($this->container, $this->forum));
+      $this->setRoute($this->intl, $this->forum, "/forum/{0}/topic/{1}", [ $this->id ]);
     }
   }
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Methods
+  // ------------------------------------------------------------------------------------------------------------------- Public Methods
 
+
+  /**
+   * Decrement the topic's post count.
+   *
+   * @return integer
+   *   The decremented topic's post count.
+   */
+  public function decrementTotalPostCount() {
+    return ($this->totalPostCount = $this->container->getMemoryCache()->decrement($this->getCacheKey("post-count"), $this->getPostCount()));
+  }
+
+  /**
+   * Get the topic's first post.
+   *
+   * @return \MovLib\Data\Forum\Post
+   *   The topic's first post.
+   */
+  public function getFirstPost() {
+    if ($this->firstPost === null) {
+      $cache = $this->container->getPersistentCache($this->getCacheKey("first-post"));
+      if (($this->firstPost = $cache->get()) === null) {
+        $cache->set(($this->firstPost = $this->doGetPosts(1, null, "ASC")[0]));
+      }
+    }
+    return $this->firstPost;
+  }
+
+  /**
+   * Get the topic's last post.
+   *
+   * @return \MovLib\Data\Forum\Post
+   *   The topic's last post.
+   */
+  public function getLastPost() {
+    if ($this->lastPost === null) {
+      $cache = $this->container->getPersistentCache($this->getCacheKey("last-post"));
+      if (($this->lastPost = $cache->get()) === null) {
+        // The last post is the first post if we only have a single post in this topic.
+        $cache->set(($this->lastPost = $this->getTotalPostCount() === 1 ? $this->getFirstPost() : $this->doGetPosts(1, null, "DESC")[0]));
+      }
+    }
+  }
 
   /**
    * Get the topic's posts.
    *
+   * @param integer $limit
+   *   The amount of posts that should be fetched starting from <var>$offset</var>.
+   * @param integer $offset
+   *   The offset at which to start fetching posts.
    * @return array
    *   The topic's posts.
    */
-  public function getPosts() {
+  public function getPosts($limit, $offset) {
+    $key = "{$limit}-{$offset}";
+    if (empty($this->posts[$key])) {
+      $cache = $this->container->getPersistentCache($this->getCacheKey("posts-{$key}"));
+      if (($this->posts[$key] = $cache->get()) === null) {
+        $cache->set(($this->posts[$key] = $this->doGetPosts($limit, $offset, "DESC")));
+      }
+    }
+    return $this->posts[$key];
+  }
+
+  /**
+   * Get the topic's total post count.
+   *
+   * @return integer
+   *   The topic's total post count.
+   */
+  public function getTotalPostCount() {
+    if ($this->totalPostCount === null) {
+      $cache = $this->container->getMemoryCache("forum-topic-{$this->id}-post-count");
+      if (($this->totalPostCount = $cache->get()) === null) {
+        $cache->set(($this->totalPostCount = (integer) Database::getConnection()->query(
+          "SELECT COUNT(*) FROM `{$this->intl->code}_post` WHERE `topic_id` = {$this->id} LIMIT 1"
+        )->fetch_all()[0][0]));
+      }
+    }
+    return $this->totalPostCount;
+  }
+
+  /**
+   * Increment the topic's post count.
+   *
+   * @return integer
+   *   The incremented topic's post count.
+   */
+  public function incrementTotalPostCount() {
+    return ($this->totalPostCount = $this->container->getMemoryCache()->increment($this->getCacheKey("post-count"), $this->getPostCount()));
+  }
+
+  /**
+   * Set the topic's parent forum.
+   *
+   * @param \MovLib\Data\Forum\Forum $forum
+   *   The topic's parent forum.
+   * @return this
+   */
+  public function setForum(\MovLib\Data\Forum\Forum $forum) {
+    $this->parents = [ ($this->forum = $forum) ];
+    return $this;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Protected Methods
+
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getCacheKey($suffix) {
+    return "forum-{$this->forum->id}-topic-{$this->id}-{$suffix}";
+  }
+
+  /**
+   * Get posts from database for this topic.
+   *
+   * @param integer $limit
+   *   The select's limit.
+   * @param integer|null $offset
+   *   The select's offset.
+   * @param string|null $order
+   *   The select's order.
+   * @return array
+   *   Posts from the database for this topic.
+   */
+  protected function doGetPosts($limit, $offset, $order) {
     return (new Select())
       ->select("id")
-      ->select("topic_id")
       ->select("created")
       ->select("creator_id")
       ->select("edited")
       ->select("editor_id")
       ->select("message")
-      ->from("{$this->languageCode}_post")
+      ->from("{$this->intl->code}_post")
       ->where("topic_id", $this->id)
-      ->fetchObjects("\\MovLib\\Data\\Forum\\Post", [ $this->languageCode ])
+      ->orderBy("created", $order)
+      ->limit($limit, $offset)
+      ->fetchObjects("\\MovLib\\Data\\Forum\\Post", [ $this->container, null, $this ])
     ;
   }
 

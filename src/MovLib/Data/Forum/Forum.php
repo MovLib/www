@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data\Forum;
 
-use \MovLib\Core\Intl;
 use \MovLib\Core\Database\Database;
 
 /**
@@ -29,8 +28,7 @@ use \MovLib\Core\Database\Database;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Forum implements \MovLib\Core\Routing\RoutingInterface {
-  use \MovLib\Core\Routing\RoutingTrait;
+final class Forum extends AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -57,27 +55,6 @@ final class Forum implements \MovLib\Core\Routing\RoutingInterface {
   public $categoryId;
 
   /**
-   * The forum's concrete object that knows the category, description, and title.
-   *
-   * @var \MovLib\Data\Forum\ForumInterface
-   */
-  protected $concreteForum;
-
-  /**
-   * The forum's total post count.
-   *
-   * @var integer
-   */
-  public $countPosts;
-
-  /**
-   * The forum's total topic count.
-   *
-   * @var integer
-   */
-  public $countTopics;
-
-  /**
    * The forum's description in the current locale.
    *
    * @var string
@@ -92,40 +69,18 @@ final class Forum implements \MovLib\Core\Routing\RoutingInterface {
   public $icon;
 
   /**
-   * The forum's unique identifier.
-   *
-   * @var integer
-   */
-  public $id;
-
-  /**
-   * The forum's ISO 639-1 language code.
-   *
-   * @see ::__construct
-   * @var string
-   */
-  public $languageCode;
-
-  /**
-   * The forum's last post.
-   *
-   * @var \MovLib\Data\Forum\Post
-   */
-  public $lastPost;
-
-  /**
    * The forum's last topic.
    *
-   * @var \MovLib\Data\Forum\Topic
+   * @var \MovLib\Data\Forum\Topic|boolean
    */
-  public $lastTopic;
+  protected $lastTopic;
 
   /**
-   * The forum's parent entities.
+   * The forum's concrete storage object.
    *
-   * @var array
+   * @var \MovLib\Data\Forum\Storage\ForumInterface
    */
-  public $parents = [];
+  protected $concreteForum;
 
   /**
    * The forum's title in the current locale.
@@ -134,6 +89,20 @@ final class Forum implements \MovLib\Core\Routing\RoutingInterface {
    */
   public $title;
 
+  /**
+   * The forum's total post count.
+   *
+   * @var integer
+   */
+  protected $totalPostCount;
+
+  /**
+   * The forum's total topic count.
+   *
+   * @var integer
+   */
+  protected $totalTopicCount;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -141,23 +110,18 @@ final class Forum implements \MovLib\Core\Routing\RoutingInterface {
   /**
    * Instantiate new forum.
    *
+   * @param \MovLib\Core\Container $container
+   *   The dependency injection container.
    * @param integer $id [optional]
    *   The forum's unique identifier to instantiate, defaults to <code>NULL</code> and an empty instance is created.
-   * @param string $languageCode [optional]
-   *   The forum's (system) language code, defaults to <code>NULL</code> and the current language code is used.
    * @throws \MovLib\Exception\ClientException\NotFoundException
    *   If <var>$id</var> was passed and the forum doesn't exist.
    */
-  public function __construct($id = null, $languageCode = null) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert($languageCode === null || isset(Intl::$systemLanguages[$languageCode]), "\$languageCode must be a valid system language code.");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    $this->languageCode = $languageCode ?: Intl::getInstance()->code;
+  public function __construct(\MovLib\Core\Container $container, $id = null) {
+    parent::__construct($container);
     if ($id) {
       try {
-        $concreteForumClass  = static::class . $id;
+        $concreteForumClass  = static::class . "s\\Forum{$id}";
         $this->concreteForum = new $concreteForumClass();
       }
       catch (\Exception $e) {
@@ -166,11 +130,9 @@ final class Forum implements \MovLib\Core\Routing\RoutingInterface {
 
       $this->id          = (integer) $id;
       $this->categoryId  = $this->concreteForum->getCategoryId();
-      $this->countPosts  = $this->getPostCount();
-      $this->countTopics = $this->getTopicCount();
-      $this->description = $this->concreteForum->getDescription();
-      $this->route       = $this->concreteForum->getRoute();
-      $this->title       = $this->concreteForum->getTitle();
+      $this->description = $this->concreteForum->getDescription($this->intl);
+      $this->title       = $this->concreteForum->getTitle($this->intl);
+      $this->setRoute($this->intl, $this, "/forum/{0}");
     }
   }
 
@@ -181,21 +143,22 @@ final class Forum implements \MovLib\Core\Routing\RoutingInterface {
   /**
    * Get all forums.
    *
-   * @param string $languageCode [optional]
-   *   The system language's ISO 639-1 alpha-2 code, default to <code>NULL</code> and the current language is used.
+   * @staticvar array $forums
+   *   Used to cache the forums.
+   * @param \MovLib\Core\Container $container
+   *   The dependency injection container.
    * @return array
    *   All forums.
    */
-  public static function getAll($languageCode = null) {
+  public static function getAll(\MovLib\Core\Container $container) {
     static $forums = [];
-    $languageCode || ($languageCode = Intl::getInstance()->code);
-    if (empty($forums[$languageCode])) {
-      $forums[$languageCode] = [];
-      for ($i = 1; $i < 2; ++$i) {
-        $forums[$languageCode][$i] = new Forum($i, $languageCode);
+    if (empty($forums[$container->intl->code])) {
+      $forums[$container->intl->code] = [];
+      foreach (new \RegexIterator(new \DirectoryIterator("dr://src/MovLib/Data/Forum/Forums"), "/Forum([0-9]+)\.php/", \RegexIterator::GET_MATCH) as $matches) {
+        $forums[$container->intl->code][$matches[1]] = new static($container, $matches[1]);
       }
     }
-    return $forums[$languageCode];
+    return $forums[$container->intl->code];
   }
 
   /**
@@ -206,7 +169,7 @@ final class Forum implements \MovLib\Core\Routing\RoutingInterface {
    * with access to the repository are able to create new categories, and we can use the static translation system.
    *
    * @param \MovLib\Core\Intl $intl
-   *   Intl instance for translation.
+   *   The internationalization instance to translate the categories to.
    * @return array
    *   All available forum categories.
    */
@@ -224,13 +187,42 @@ final class Forum implements \MovLib\Core\Routing\RoutingInterface {
 
 
   /**
+   * Decrement the forum's total post count.
+   *
+   * @param boolean $force [optional]
+   *   Whether to use the cache or not, defaults to <code>FALSE</code> and cache will be used.
+   * @return this
+   */
+  public function decrementPostCount($force = false) {
+    return ($this->totalPostCount = $this->container->getMemoryCache()->decrement("forum-{$this->id}-post-count", $this->getPostCount($force)));
+  }
+
+  /**
+   * Decrement the forum's total topic count.
+   *
+   * @param boolean $force [optional]
+   *   Whether to use the cache or not, defaults to <code>FALSE</code> and cache will be used.
+   * @return this
+   */
+  public function decrementTopicCount($force = false) {
+    return ($this->totalTopicCount = $this->container->getMemoryCache()->decrement("forum-{$this->id}-topic-count", $this->getTopicCount($force)));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getCacheKey($suffix) {
+    return "forum-{$this->id}-{$suffix}";
+  }
+
+  /**
    * Get the forum's translated description.
    *
    * <b>NOTE</b><br>
    * If you need the description in the current locale simply use the public <var>$description</var> property.
    *
    * @param string $languageCode
-   *   The locale to translate the description to.
+   *   The system language's ISO 639-1 alpha-2 code to translate the description to.
    * @return string
    *   The forum's description.
    */
@@ -239,40 +231,81 @@ final class Forum implements \MovLib\Core\Routing\RoutingInterface {
   }
 
   /**
+   * Get the forum's last topic.
+   *
+   * @param boolean $force [optional]
+   *   Whether to use the cache or not, defaults to <code>FALSE</code> and cache will be used.
+   * @return \MovLib\Data\Forum\Topic|boolean
+   *   The forum's last topic or <code>FALSE</code> if this forum has no last topic.
+   */
+  public function getLastTopic($force = false) {
+    if ($this->lastTopic === null) {
+      $cache = $this->container->getPersistentCache("forum-{$this->id}-last-topic");
+      if ($force === true || ($this->lastTopic = $cache->get()) === null) {
+        $result = Database::getConnection()->query(<<<SQL
+SELECT `t`.`id`
+FROM `{$this->intl->code}_topic` AS `t`
+INNER JOIN `{$this->intl->code}_post` AS `p`
+  ON `p`.`topic_id` = `t`.`id`
+WHERE `t`.`forum_id` = {$this->id}
+ORDER BY `p`.`created` ASC
+LIMIT 1
+SQL
+        );
+        if (($this->lastTopic = ($result->num_rows == 1)) === true) {
+          $this->lastTopic = new Topic($this->container, $result->fetch_row()[0], $this);
+        }
+        $result->free();
+        $cache->set($this->lastTopic);
+      }
+    }
+    return $this->lastTopic;
+  }
+
+  /**
    * Get the forum's total post count.
    *
-   * <b>NOTE</b><br>
-   * This method will always execute and SQL query that counts the actual posts that belong to this forum. Usually you
-   * simply want the count the instance has fetched from cache, use the public <var>$countPosts</var> property to do so.
-   *
+   * @param boolean $force [optional]
+   *   Whether to use the cache or not, defaults to <code>FALSE</code> and cache will be used.
    * @return integer
    *   The forum's total post count.
    */
-  public function getPostCount() {
-    return (integer) Database::getConnection()->query(<<<SQL
+  public function getPostCount($force = false) {
+    if ($this->totalPostCount === null) {
+      $cache = $this->container->getMemoryCache("forum-{$this->id}-post-count");
+      if ($force === true || ($this->totalPostCount = $cache->get()) === null) {
+        $cache->set(($this->totalPostCount = (integer) Database::getConnection()->query(<<<SQL
 SELECT COUNT(*)
-FROM `{$this->languageCode}_post` AS `p`
-INNER JOIN `{$this->languageCode}_topic` AS `t`
+FROM `{$this->intl->code}_post` AS `p`
+INNER JOIN `{$this->intl->code}_topic` AS `t`
   ON `t`.`id` = `p`.`topic_id`
 WHERE `t`.`forum_id` = {$this->id}
 LIMIT 1
 SQL
-    )->fetch_all()[0][0];
+        )->fetch_all()[0][0]));
+      }
+    }
+    return $this->totalPostCount;
   }
 
   /**
    * Get the forum's total topic count.
    *
-   * <b>NOTE</b><br>
-   * This method will always execute an SQL query that counts the actual topics that belong to this forum. Usually you
-   * simply want the count the instance has fetched from the cache, use the public <var>$countTopics</var> property to
-   * do so.
-   *
+   * @param boolean $force [optional]
+   *   Whether to use the cache or not, defaults to <code>FALSE</code> and cache will be used.
    * @return integer
    *   The forum's total topic count.
    */
-  public function getTopicCount() {
-    return (integer) Database::getConnection()->query("SELECT COUNT(*) FROM `{$this->languageCode}_topic` WHERE `forum_id` = {$this->id} LIMIT 1")->fetch_all()[0][0];
+  public function getTopicCount($force = false) {
+    if ($this->totalTopicCount === null) {
+      $cache = $this->container->getMemoryCache("forum-{$this->id}-topic-count");
+      if ($force === true || ($this->totalTopicCount = $cache->get()) === null) {
+        $cache->set(($this->totalTopicCount = (integer) Database::getConnection()->query(
+          "SELECT COUNT(*) FROM `{$this->intl->code}_topic` WHERE `forum_id` = {$this->id} LIMIT 1"
+        )->fetch_all()[0][0]));
+      }
+    }
+    return $this->totalTopicCount;
   }
 
   /**
@@ -282,12 +315,53 @@ SQL
    * If you need the title in the current language simply use the public <var>$title</var> property.
    *
    * @param string $languageCode
-   *   The language code to translated the title to.
+   *   The system language's ISO 639-1 alpha-2 code to translate the title to.
    * @return string
    *   The forum's translated title.
    */
   public function getTitle($languageCode) {
-    return $languageCode === $this->languageCode ? $this->title : $this->concreteForum->getTitle($languageCode);
+    return $languageCode === $this->intl->code ? $this->title : $this->concreteForum->getTitle($this->intl, $languageCode);
+  }
+
+  /**
+   * Increment the forum's total post count.
+   *
+   * @param boolean $force [optional]
+   *   Whether to use the cache or not, defaults to <code>FALSE</code> and cache will be used.
+   * @return this
+   */
+  public function incrementPostCount($force = false) {
+    return ($this->totalPostCount = $this->container->getMemoryCache()->increment("forum-{$this->id}-post-count", $this->getPostCount($force)));
+  }
+
+  /**
+   * Increment the forum's total topic count.
+   *
+   * @param boolean $force [optional]
+   *   Whether to use the cache or not, defaults to <code>FALSE</code> and cache will be used.
+   * @return this
+   */
+  public function incrementTopicCount($force = false) {
+    return ($this->totalTopicCount = $this->container->getMemoryCache()->increment("forum-{$this->id}-topic-count", $this->getTopicCount($force)));
+  }
+
+  /**
+   * Set the forum's last topic.
+   *
+   * @param \MovLib\Data\Forum\Topic $lastTopic
+   *   The last topic to set.
+   * @return this
+   * @throws \InvalidArgumentException
+   *   If the topic doesn't belong to this forum.
+   */
+  public function setLastTopic(\MovLib\Data\Forum\Topic $lastTopic) {
+    // @devStart
+    if ($lastTopic->forum->id !== $this->id) {
+      throw new \InvalidArgumentException("The topic doesn't belong to this forum.");
+    }
+    // @devEnd
+    $this->container->getPersistentCache()->set(($this->lastTopic = $lastTopic), "forum-{$this->id}-last-topic");
+    return $this;
   }
 
 }

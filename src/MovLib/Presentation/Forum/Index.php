@@ -32,6 +32,10 @@ use \MovLib\Partial\DateTime;
  */
 final class Index extends \MovLib\Presentation\AbstractPresenter {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
   // @codingStandardsIgnoreStart
   /**
    * Short class name.
@@ -41,6 +45,10 @@ final class Index extends \MovLib\Presentation\AbstractPresenter {
   const name = "Index";
   // @codingStandardsIgnoreEnd
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
    * {@inheritdoc}
    */
@@ -48,27 +56,28 @@ final class Index extends \MovLib\Presentation\AbstractPresenter {
     $this->initPage($this->intl->t("Forums"));
     $this->initLanguageLinks("/forums");
     $this->stylesheets[] = "forum";
+
+    $this->container->getPersistentCache()->purge();
+    $this->container->getMemoryCache()->purge();
   }
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    $forums         = Forum::getAll();
-    $renderedForums = null;
-    $dateTime       = new DateTime($this->intl, $this, $this->session->userTimezone);
+    $forums   = null;
+    $dateTime = new DateTime($this->intl, $this, $this->session->userTimezone);
 
     /* @var $forum \MovLib\Data\Forum\Forum */
-    foreach ($forums as $forum) {
-      if ($forum->lastTopic->id) {
-        // Provide direct link to the last post (read by the signed in user) in the topic.
-        $lastPost = $forum->lastPost->id ? $this->a("#", ">") : null;
+    foreach (Forum::getAll($this->container) as $forum) {
+      $last = null;
+      if (($topic = $forum->getLastTopic()) && ($post = $topic->getLastPost())) {
         $last =
           "<article class='cf'>" .
-            "<h3 class='fl para'>{$forum->lastTopic->title}</h3>{$lastPost}" .
+            "<h3 class='fl para'><a href='{$topic->route}'>{$topic->title}</a></h3>" .
             "<p class='fr'>{$this->intl->t("by {username} {time}", [
-              "username" => "<a href='{}'>{$forum->lastPost->creator->name}</a>",
-              "time"     => $dateTime->formatRelative($forum->lastPost->created, $this->request->dateTime)
+              "username" => "<a href='{}'>{}</a>",
+              "time"     => $dateTime->formatRelative($post->created, $this->request->dateTime),
             ])}</p>" .
           "</article>"
         ;
@@ -78,30 +87,30 @@ final class Index extends \MovLib\Presentation\AbstractPresenter {
       }
 
       // Get the forum's category ID and check if we already created this offset in any of the previous iterations of
-      // this loop, if not initialize with NULL value.
-      if (empty($renderedForums[$forum->categoryId])) {
-        $renderedForums[$forum->categoryId] = null;
+      // this loop, if not initialize so we can append.
+      if (empty($forums[$forum->categoryId])) {
+        $forums[$forum->categoryId] = null;
       }
 
       // We can simply append the rendered forum to the array offset because of the previous check.
-      $renderedForums[$forum->categoryId] .=
+      $forums[$forum->categoryId] =
         "<tr>" .
           "<td>{$forum->icon}</td>" .
           "<td>{$this->a($forum->route, $forum->title)}</td>" .
           "<td>{$last}</td>" .
-          "<td class='tar'>{$this->intl->formatInteger($forum->countTopics)}</td>" .
-          "<td class='tar'>{$this->intl->formatInteger($forum->countPosts)}</td>" .
-        "</tr>"
+          "<td class='tar'>{$this->intl->formatInteger($forum->getTopicCount())}</td>" .
+          "<td class='tar'>{$this->intl->formatInteger($forum->getPostCount())}</td>" .
+        "</tr>{$forums[$forum->categoryId]}"
       ;
     }
 
     // We can only continue with the rendering process if we have at least a single forum.
-    if ($renderedForums) {
+    if (isset($forums)) {
       $categories = null;
 
       // Go through all defined categories, but only render it if there is at least a single forum assigned to it.
       foreach (Forum::getCategories($this->intl) as $id => $title) {
-        if (isset($renderedForums[$id])) {
+        if (isset($forums[$id])) {
           $categories .=
             "<table class='forums'>" .
               "<caption class='h2'>{$title}</caption>" .
@@ -118,7 +127,7 @@ final class Index extends \MovLib\Presentation\AbstractPresenter {
                 "<th>{$this->intl->t("Topics")}</th>" .
                 "<th>{$this->intl->t("Posts")}</th>" .
               "</tr></thead>" .
-              "<tbody>{$renderedForums[$id]}</tbody>" .
+              "<tbody>{$forums[$id]}</tbody>" .
             "</table>"
           ;
         }

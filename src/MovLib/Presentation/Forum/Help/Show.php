@@ -15,26 +15,18 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Forum\Topic;
-
-use \MovLib\Data\Forum\Topic;
-use \MovLib\Exception\RedirectException\TemporaryRedirectException;
+namespace MovLib\Presentation\Forum\Help;
 
 /**
- * Defines the topic show presentation.
- *
- * Allows the presentation of a single topic without knowing forum. Note that there's still the dependency for the
- * language code which is provided by the subdomain. We don't know which topic is which in case we have no language
- * code, we could only display a selection list to the client.
- *
- * @route /forum/topic/{id}
+ * {@inheritdoc}
+ * @route /forum/help/topic/{id}
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Show extends \MovLib\Presentation\AbstractPresenter {
+final class Show extends \MovLib\Presentation\Forum\AbstractTopic {
 
   // @codingStandardsIgnoreStart
   /**
@@ -44,19 +36,5 @@ final class Show extends \MovLib\Presentation\AbstractPresenter {
    */
   const name = "Show";
   // @codingStandardsIgnoreEnd
-
-  /**
-   * {@inheritdoc}
-   */
-  public function init() {
-    throw new TemporaryRedirectException((new Topic($this->intl->code, $_SERVER["FORUM_ID"]))->route);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getContent() {
-    // Nothing to, will always result in a redirect.
-  }
 
 }

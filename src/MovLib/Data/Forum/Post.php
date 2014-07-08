@@ -29,7 +29,7 @@ use \MovLib\Core\Database\Query\Select;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Post {
+final class Post extends AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -45,7 +45,7 @@ final class Post {
   // @codingStandardsIgnoreEnd
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
+  // ------------------------------------------------------------------------------------------------------------------- Public Properties
 
 
   /**
@@ -83,21 +83,6 @@ final class Post {
   public $editorId;
 
   /**
-   * The post's unique identifier.
-   *
-   * @var integer
-   */
-  public $id;
-
-  /**
-   * The post's ISO 639-1 language code.
-   *
-   * @see ::__construct
-   * @var string
-   */
-  public $languageCode;
-
-  /**
    * The post's message.
    *
    * @var string
@@ -105,21 +90,11 @@ final class Post {
   public $message;
 
   /**
-   * The name of the database table that contains the post.
+   * The post's topic it belongs to.
    *
-   * Each system language code has its own database table because there's no correlation between the languages.
-   *
-   * @see ::__construct
-   * @var string
+   * @var \MovLib\Data\Forum\Topic
    */
-  protected $tableName;
-
-  /**
-   * The post's unique topic identifier it belongs to.
-   *
-   * @var integer
-   */
-  public $topicId;
+  public $topic;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -128,36 +103,46 @@ final class Post {
   /**
    * Instantiate new forum post.
    *
-   * @param string $languageCode
-   *   The post's (system) language code. The language code of a post is usually provided by the topic a post belongs
-   *   to, and the request's language code should be used in case no topic exists for a post. Note that the language
-   *   code is used to determine which table is queried.
+   * @param \MovLib\Core\Container $container
+   *   The dependency injection container.
    * @param integer $id [optional]
    *   The post's unique identifier to load, defaults to <code>NULL</code> and an empty post is created.
+   * @param \MovLib\Data\Forum\Topic $parentTopic [internal]
+   *   The post's parent topic, defaults to <code>NULL</code> and the post is loaded.
+   * @throws \InvalidArgumentException
+   *   If <var>$topic</var> isn't the actual parent topic of this post.
    * @throws \MovLib\Exception\ClientException\NotFoundException
    *   If no post was found for <var>$id</var>.
    */
-  public function __construct($languageCode, $id = null) {
-    $this->languageCode = $languageCode;
-    $this->tableName    = "{$languageCode}_post";
+  public function __construct(\MovLib\Core\Container $container, $id = null, $parentTopic = null) {
+    parent::__construct($container);
     if ($id) {
       (new Select())
         ->select("id")
-        ->select("topic_id")
+        ->select("topic_id", [ "property" => "topic" ])
         ->select("created")
         ->select("creator_id")
         ->select("edited")
         ->select("editor_id")
         ->select("message")
-        ->from($this->tableName)
+        ->from("{$this->intl->code}_post")
         ->where("id", $id)
         ->fetchInto($this)
       ;
+      // @devStart
+      if (isset($parentTopic) && $parentTopic->id !== $this->topic) {
+        throw new \InvalidArgumentException("The topic isn't the post's parent.");
+      }
+      // @devEnd
+    }
+    if ($this->id) {
+      $this->setTopic($parentTopic ?: new Topic($this->container, $this->topic));
+      $this->setRoute($this->intl, $this->topic->forum, "/forum/{0}/topic/{1}/post-{2}", [ $this->topic->id, $this->id ]);
     }
   }
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Methods
+  // ------------------------------------------------------------------------------------------------------------------- Public Methods
 
 
   /**
@@ -169,22 +154,16 @@ final class Post {
    *   The date and time this post was created.
    * @param \MovLib\Data\User\User $creator
    *   The user who created this post.
-   * @param string $message
-   *   The post's message.
    * @return this
    * @throws \mysqli_sql_exception
    */
-  public function create(\MovLib\Data\Forum\Topic $topic, \MovLib\Component\DateTime $created, \MovLib\Data\User\User $creator, $message) {
+  public function create(\MovLib\Data\Forum\Topic $topic, \MovLib\Component\DateTime $created, \MovLib\Data\User\User $creator) {
     $connection = Database::getConnection();
 
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert(!empty($message), "\$message cannot be empty.");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
     // No need for the insert object at this point, this is called from topic and executed within a transaction.
-    $connection->real_query("INSERT INTO `{$this->tableName}` (`topic_id`, `created`, `creator_id`, `message`) VALUES ({$topic->id}, '{$created}', {$creator->id}, '{$connection->real_escape_string($message)}')");
+    $connection->real_query(
+      "INSERT INTO `{$this->tableName}` (`topic_id`, `created`, `creator_id`, `message`) VALUES ({$topic->id}, '{$created}', {$creator->id}, '{$connection->real_escape_string($this->message)}')"
+    );
 
     // Export new values to class scope.
     $this->id        = $connection->insert_id;
@@ -202,22 +181,14 @@ final class Post {
    *   The date and time the post was edited, usually the request's date and time.
    * @param \MovLib\Data\User\User $editor
    *   The user who edited the post.
-   * @param string $message
-   *   The new post message.
    * @return this
    * @throws \mysqli_sql_exception
    */
-  public function edit(\MovLib\Component\DateTime $edited, \MovLib\Data\User\User $editor, $message) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    assert(!empty($message), "\$message cannot be empty.");
-    assert($message !== $this->message, "\$message cannot be the same as current message.");
-    // @codeCoverageIgnoreEnd
-    // @devEnd
+  public function edit(\MovLib\Component\DateTime $edited, \MovLib\Data\User\User $editor) {
     $connection = Database::getConnection();
     $connection->autocommit(false);
     try {
-      $connection->real_query("UPDATE `{$this->tableName}` SET `edited` = '{$edited}', `editor_id` = {$editor->id}, `message` = '{$connection->real_escape_string($message)}' WHERE `id` = {$this->id}");
+      $connection->real_query("UPDATE `{$this->tableName}` SET `edited` = '{$edited}', `editor_id` = {$editor->id}, `message` = '{$connection->real_escape_string($this->message)}' WHERE `id` = {$this->id}");
       if ($connection->affected_rows !== 1) {
         throw new \mysqli_sql_exception("Wrong number of affected rows: '{$connection->affected_rows}'");
       }
@@ -231,6 +202,29 @@ final class Post {
       $connection->autocommit(true);
     }
     return $this;
+  }
+
+  /**
+   * Set the post's topic.
+   *
+   * @param \MovLib\Data\Forum\Topic $topic
+   *   The post's topic.
+   * @return this
+   */
+  public function setTopic(\MovLib\Data\Forum\Topic $topic) {
+    $this->parents = [ ($this->topic = $topic), $topic->forum ];
+    return $this;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Protected Methods
+
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getCacheKey($suffix) {
+    return "forum-{$this->topic->forum->id}-topic-{$this->topic->id}-post-{$this->id}-{$suffix}";
   }
 
 }
