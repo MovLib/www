@@ -125,14 +125,14 @@ class Container {
   }
 
   /**
-   * Get new volatile cache instance for the current language.
+   * Get new memory cache instance for the current language.
    *
    * @param string $key [optional]
    *   The cache item's key to set, defaults to <code>NULL</code>
    * @return \MovLib\Core\Cache\CacheCounterInterface
-   *   New volatile cache.
+   *   New memory cache.
    */
-  public function getVolatileCache($key = null) {
+  public function getMemoryCache($key = null) {
     return new MemoryCache($this->intl->code, $key);
   }
 
