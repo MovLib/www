@@ -18,6 +18,7 @@
 namespace MovLib\Core\Storage;
 
 use \MovLib\Core\Intl;
+use \MovLib\Core\StreamWrapper\StreamException;
 
 /**
  * Defines the read only file storage.
