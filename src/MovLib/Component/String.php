@@ -76,6 +76,14 @@ abstract class String {
    * requiring special escaping to manipulate at the command line. Replaces spaces and consecutive dashes with a single
    * dash. Trims period, dash und underscore from beginning and end of filename.
    *
+   * @staticvar array $reserved
+   *   Array containing characters that are reserved and thus have to be removed from a string for use as file name.
+   * @staticvar string $search
+   *   Regular expression search pattern that have to be replaced for use as file name.
+   * @staticvar string $replace
+   *   The replacement character for the regular expression search pattern.
+   * @staticvar string $trim
+   *   Characters that have to be removed from the beginning and end of a string for use as file name.
    * @param string $filename
    *   The filename to be sanitized.
    * @return string
@@ -84,23 +92,24 @@ abstract class String {
    *   If <var>$filename</var> is invalid.
    */
   final public static function sanitizeFilename($filename) {
+    static $reserved = [ "?", "[", "]", "/", "\\", "=", "<", ">", ":", ";", ",", "'", '"', "&", "$", "#", "*", "(", ")", "|", "~" ];
+    static $search = "/[\s-]+/", $replace = "-";
+    static $trim = ".-_";
+
     // @devStart
     if (empty($filename)) {
       throw new \InvalidArgumentException("A file's name cannot be empty.");
     }
-    if (!is_string($filename)) {
-      throw new \InvalidArgumentException("A file's name must be of type string.");
-    }
     // @devEnd
 
     // Remove characters which aren't allowed in filenames.
-    $filename = str_replace([ "?", "[", "]", "/", "\\", "=", "<", ">", ":", ";", ",", "'", '"', "&", "$", "#", "*", "(", ")", "|", "~" ], "", $filename);
+    $filename = str_replace($reserved, "", $filename);
 
     // Replace whitespace characters with dashes.
-    $filename = preg_replace("/[\s-]+/", "-", $filename);
+    $filename = preg_replace($search, $replace, $filename);
 
     // Remove characters which aren't allowed at the beginning and end of a filename.
-    $filename = trim($filename, ".-_");
+    $filename = trim($filename, $trim);
 
     // Always lowercase all filenames for better compatibility.
     return mb_strtolower($filename);
