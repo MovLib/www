@@ -66,12 +66,12 @@ trait RoutingTrait {
     if (empty($this->processedPaths[$path])) {
       // We only need to process the passed path if our concrete object has any route arguments and the path contains
       // placeholders.
-      if (isset($this->route->args) && strpos($path, "{") !== false) {
+      if ($this->route->hasArguments() === true && strpos($path, "{") !== false) {
         // We use a closure at this point, we'd have to expose the callback method if we'd implement it in class scope
         // because the callback has to be public. We don't want to expose it to anyone.
         $this->processedPaths[$path] = preg_replace_callback("/{([^}]+)}/", function () {
           static $c = null;
-          $c === null && ($c = substr_count($this->route->path, "{") - 1); // Minus one, formatting starts at zero.
+          $c === null && ($c = substr_count($this->route->getPath(), "{") - 1); // Minus one, formatting starts at zero.
           ++$c;
           return "{{$c}}";
         }, $path);
@@ -81,10 +81,10 @@ trait RoutingTrait {
         $this->processedPaths[$path] = $path;
       }
     }
-    $options["path"] = "{$this->route->path}{$this->processedPaths[$path]}";
+    $options["path"] = "{$this->route->getPath()}{$this->processedPaths[$path]}";
 
     // We always have to merge our arguments with the passed arguments.
-    isset($args) && ($options["args"] = array_merge($this->route->args, $args));
+    isset($args) && ($options["args"] = array_merge($this->route->getArguments(), $args));
 
     // Now we can simply clone our own route and export the new options.
     $route = clone $this->route;
@@ -96,58 +96,8 @@ trait RoutingTrait {
   /**
    * @see \MovLib\Core\Data\RoutingInterface::r()
    */
-  final public function r($routePart, array $args = [], $languageCode = null) {
-    // This array is used to cache previously generated routes. Note that we have to build a deep structure because this
-    // trait is shared among many entities. We use the class name to create that structure. This ensures that routes are
-    // correctly cached for each entity.
-    static $routes = [];
-
-    // Use the cached route if we already built this once.
-    if (isset($routes[static::name][$routePart])) {
-      // We have to rebuild the arguments each time, because we can't be certain that this is the same entity that
-      // was previously requested.
-      if ($this->route->args) {
-        $args = empty($args) ? $this->route->args : array_merge($this->route->args, $args);
-      }
-      return $this->intl->r($routes[static::name][$routePart], $args, $languageCode);
-    }
-
-    // The route will change if it contains placeholders, but later look-ups will be unprocessed, therefore we have to
-    // keep a copy and use the original route as cache key.
-    $cacheKey = $routePart;
-
-    // We only need to process the passed route part if our concrete class has any route arguments.
-    if ($this->route->args) {
-      // We have to renumber the placeholders from the passed route part to allow insertion of our own arguments.
-      if (strpos($routePart, "{") !== false) {
-        // We can safely assume that we have arguments, even if not, the signature contains an array default value and
-        // the merge is safe.
-        $args  = array_merge($this->route->args, $args);
-
-        // We use a closure at this point, we'd have to expose the callback method if we'd implement in class scope
-        // because the callback has to be public. We don't want to expose it.
-        $routePart = preg_replace_callback("/{([^}]+)}/", function ($matches) {
-          static $c = null;
-
-          // Count our placeholders if we haven't done so yet.
-          if (!$c) {
-            $c = substr_count($this->route->path, "{") - 1; // Minus one because formatting starts at index zero.
-          }
-
-          // Increment, insert, return...
-          ++$c;
-          return "{{$c}}";
-        }, $routePart);
-      }
-      // The passed part doesn't contain any placeholders, but we do.
-      else {
-        $args = $this->route->args;
-      }
-    }
-
-    // Add this route to our cache and we're done.
-    $routes[static::name][$cacheKey] = "{$this->route->path}{$routePart}";
-    return $this->intl->r($routes[static::name][$cacheKey], $args, $languageCode);
+  final public function r($path, array $args = null, $languageCode = null) {
+    return $this->getRoute($path, $args)->setLanguageCode($languageCode);
   }
 
   /**
@@ -158,11 +108,11 @@ trait RoutingTrait {
    * @param string $path
    *   The concrete object's untranslated route path.
    * @param array $args [optional]
-   *   The route's formatting arguments.
+   *   The route's formatting arguments, defaults to <code>NULL</code>.
    * @return this
    */
   protected function setRoute(\MovLib\Core\Intl $intl, $path, array $args = null) {
-    $this->route = new Route($intl, $path, isset($args) ? [ "args" => $args ] : null);
+    $this->route = new Route($intl, $path, $args);
     return $this;
   }
 

@@ -128,8 +128,6 @@ abstract class AbstractBase implements \MovLib\Core\Routing\RoutingInterface {
   /**
    * Set the concrete object's route.
    *
-   * @param \MovLib\Core\Intl $intl
-   *   The internationalization instance for route translation.
    * @param \MovLib\Data\Forum\Forum $forum
    *   The concrete object's parent forum.
    * @param string $path
@@ -139,9 +137,8 @@ abstract class AbstractBase implements \MovLib\Core\Routing\RoutingInterface {
    *   be included in the passed arguments array.
    * @return this
    */
-  public function setRoute(\MovLib\Core\Intl $intl, \MovLib\Data\Forum\Forum $forum, $path, array $args = []) {
-    array_unshift($args, String::sanitizeFilename($forum->title));
-    $this->route = new Route($intl, $forum, $path, [ "args" => $args ]);
+  public function setRoute(\MovLib\Data\Forum\Forum $forum, $path, array $args = null) {
+    $this->route = new Route($this->intl, $forum, $path, $args);
     return $this;
   }
 

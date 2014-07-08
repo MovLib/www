@@ -166,7 +166,7 @@ final class Topic extends AbstractBase {
     }
     if ($this->id) {
       $this->setForum($parentForum ?: new Forum($this->container, $this->forum));
-      $this->setRoute($this->intl, $this->forum, "/forum/{0}/topic/{1}", [ $this->id ]);
+      $this->setRoute($this->forum, "/forum/{0}/topic/{1}", [ $this->id ]);
     }
   }
 

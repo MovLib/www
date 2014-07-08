@@ -30,7 +30,7 @@ namespace MovLib\Core;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class Intl {
+class Intl {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -172,25 +172,18 @@ final class Intl {
    *
    * @param string $code
    *   ISO 639-1 alpha-2 system language code to use.
-   * @throws \IntlException
-   *   If <code>$code</code> isn't a valid system language's code.
+   * @throws \InvalidArgumentException
+   *   If <code>$code</code> is not a valid system language.
    */
   public function __construct($code) {
+    $this->setCode($code);
+
     // Export default language code and locale to class scope. Providing public properties allows classes to directly
     // embed the code and locale in strings.
+    //
+    // @todo Get rid of this!
     $this->defaultCode   = self::DEFAULT_CODE;
     $this->defaultLocale = self::DEFAULT_LOCALE;
-
-    // Export current language code and locale to class scope. This will fail if the provided code isn't within the
-    // static system languages array because we try to access a non existent offset.
-    try {
-      $this->code   = $code;
-      $this->locale = self::$systemLanguages[$code];
-    }
-    catch (\Exception $e) {
-      $valid = implode(", ", array_keys(self::$systemLanguages));
-      throw new \IntlException("The given code '{$code}' must be a valid system language's ISO 639-1 alpha-2 code. Valid codes are: {$valid}", null, $e);
-    }
   }
 
   /**
@@ -231,8 +224,8 @@ final class Intl {
    *   Instance in the current language.
    */
   public static function getInstance() {
-    static $instance;
-    return $instance ?: ($instance = new Intl(isset($_SERVER["LANGUAGE_CODE"]) ? $_SERVER["LANGUAGE_CODE"] : self::DEFAULT_CODE));
+    static $instance = null;
+    return $instance ?: ($instance = new static(isset($_SERVER["LANGUAGE_CODE"]) ? $_SERVER["LANGUAGE_CODE"] : static::DEFAULT_CODE));
   }
 
 
@@ -404,6 +397,26 @@ final class Intl {
   }
 
   /**
+   * Get the ISO 639-1 alpha-2 language code.
+   *
+   * @return string
+   *   The ISO 639-1 alpha-2 language code.
+   */
+  public function getCode() {
+    return $this->code;
+  }
+
+  /**
+   * Get the locale.
+   *
+   * @return string
+   *   The locale.
+   */
+  public function getLocale() {
+    return $this->locale;
+  }
+
+  /**
    * Get {@see \NumberFormatter} for the current language.
    *
    * @param integer $style
@@ -487,6 +500,46 @@ final class Intl {
       return $route;
     }
     return $this->translate($route, $args, "routes", $code);
+  }
+
+  /**
+   * Set the ISO 639-1 alpha-2 language code.
+   *
+   * @param string $code
+   *   The ISO 639-1 alpha-2 language code.
+   * @return this
+   * @throws \InvalidArgumentException
+   *   If <var>$code</var> is not a valid system language.
+   */
+  public function setCode($code) {
+    // @devStart
+    if (empty(self::$systemLanguages[$code])) {
+      throw new \InvalidArgumentException("Code is not a valid system language: {$code}");
+    }
+    // @devEnd
+    $this->code   = $code;
+    $this->locale = self::$systemLanguages[$code];
+    return $this;
+  }
+
+  /**
+   * Set the locale.
+   *
+   * @param string $locale
+   *   The locale to set.
+   * @return this
+   * @throws \InvalidArgumentException
+   *   If <var>$locale</var> is not a valid system language.
+   */
+  public function setLocale($locale) {
+    // @devStart
+    if (empty(array_flip(self::$systemLanguages)[$locale])) {
+      throw new \InvalidArgumentException("Locale is not a valid system language: {$locale}");
+    }
+    // @devEnd
+    $this->code   = "{$locale{0}}{$locale{1}}";
+    $this->locale = $locale;
+    return $this;
   }
 
   /**

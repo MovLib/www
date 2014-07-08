@@ -15,17 +15,31 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\Core;
 
 /**
+ * Defines the {@see \MovLib\Core\Intl} double for unit tests.
+ *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-require __DIR__ . "/lib/autoload.php";
+class IntlDouble extends Intl {
 
-// Transform all kinds of errors, warnings, etc. to exceptions.
-set_error_handler(function ($severity, $message, $file, $line) {
-  throw new \ErrorException($message, $severity, 0, $file, $line);
-});
+  /**
+   * Use the default code if none was given for tests.
+   */
+  public function __construct($code = self::DEFAULT_CODE) {
+    parent::__construct($code);
+  }
+
+  /**
+   * This ensures that we don't need any stream wrappers for our tests.
+   */
+  public function getTranslations($filename, $code = null) {
+    return [];
+  }
+
+}

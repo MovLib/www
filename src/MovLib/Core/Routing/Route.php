@@ -52,14 +52,14 @@ class Route implements RouteInterface {
    *
    * @var boolean
    */
-  public $absolute = false;
+  protected $absolute = false;
 
   /**
    * The route's arguments.
    *
    * @var array|null
    */
-  public $args;
+  protected $arguments;
 
   /**
    * Used to cache the route after it was built once.
@@ -73,7 +73,7 @@ class Route implements RouteInterface {
    *
    * @var string|null
    */
-  public $fragment;
+  protected $fragment;
 
   /**
    * The internationalization instance.
@@ -87,7 +87,7 @@ class Route implements RouteInterface {
    *
    * @var string
    */
-  public $hostname = ".movlib.org";
+  protected $hostname = ".movlib.org";
 
   /**
    * The untranslated route splitted into its parts.
@@ -98,28 +98,28 @@ class Route implements RouteInterface {
    *
    * @var array
    */
-  public $parts = [];
+  protected $parts = [];
 
   /**
    * The route's query parts.
    *
    * @var array|null
    */
-  public $query;
+  protected $query;
 
   /**
    * The route's untranslated path.
    *
    * @var string
    */
-  public $path;
+  protected $path;
 
   /**
    * The route's scheme, defaults to <code>"https"</code>
    *
    * @var string
    */
-  public $scheme = "https";
+  protected $scheme = "https";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -135,12 +135,14 @@ class Route implements RouteInterface {
    *   The internationalization instance to use for route formatting and translation.
    * @param string $path
    *   The route's untranslated path.
+   * @param array $arguments [optional]
+   *   The route's formatting arguments, defaults to <code>NULL</code>.
    * @param array $options [optional]
-   *   {@see ::setOptions}
+   *   {@see ::setOptions}, defaults to <code>NULL</code> and no additional options will be set.
    */
-  public function __construct(\MovLib\Core\Intl $intl, $path, array $options = null) {
+  public function __construct(\MovLib\Core\Intl $intl, $path, array $arguments = null, array $options = null) {
     $this->intl = $intl;
-    $this->path = $path;
+    $this->setPath($path, $arguments);
     isset($options) && $this->setOptions($options);
   }
 
@@ -165,36 +167,20 @@ class Route implements RouteInterface {
   /**
    * {@inheritdoc}
    */
-  public function arg($index) {
-    if (isset($this->args[$index])) {
-      return $this->args[$index];
+  public function compile() {
+    $this->compiled = URL::encodePath($this->intl->r($this->path, $this->arguments));
+
+    if (isset($this->query)) {
+      $this->compiled .= URL::buildQuery($this->query);
     }
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function compile($languageCode = null) {
-    // Use the current language code if none was passed.
-    $languageCode || ($languageCode = $this->intl->code);
-
-    // @devStart
-    if (empty(\MovLib\Core\Intl::$systemLanguages[$languageCode])) {
-      throw new \InvalidArgumentException("The passed language code must be a valid system language code: {$languageCode}");
+    if (isset($this->fragment)) {
+      $this->compiled .= "#{$this->fragment}";
     }
-    // @devEnd
 
-    // Translate, format and encode the route.
-    $this->compiled = URL::encodePath($this->intl->r($this->path, $this->args, $languageCode));
-
-    // Honor optional options.
-    $this->query    && ($this->compiled .= "?" . http_build_query($this->query, null, null, PHP_QUERY_RFC3986));
-    $this->fragment && ($this->compiled .= $this->fragment);
-
-    // Compile absolute route if requested. Note that we'll prepend the language code only if the hostname starts with
-    // a dot (default).
-    if ($this->absolute) {
-      $hostname = $this->hostname{0} === "." ? "{$languageCode}{$this->hostname}" : $this->hostname;
+    // Note that we'll prepend the language code only if the hostname starts with a dot (default).
+    if ($this->absolute === true) {
+      $hostname       = $this->hostname{0} === "." ? "{$this->intl->code}{$this->hostname}" : $this->hostname;
       $this->compiled = "{$this->scheme}://{$hostname}{$this->compiled}";
     }
 
@@ -204,10 +190,75 @@ class Route implements RouteInterface {
   /**
    * {@inheritdoc}
    */
-  public function part($index) {
+  public function getArgument($index) {
+    if (isset($this->arguments[$index])) {
+      return $this->arguments[$index];
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getArguments() {
+    return $this->arguments;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getFragment() {
+    return $this->fragment;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getLanguageCode() {
+    return $this->intl->getCode();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getHostname() {
+    return $this->hostname;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPath() {
+    return $this->path;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPathPart($index) {
     if (isset($this->parts[$index])) {
       return $this->parts[$index];
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hasArguments() {
+    return $this->arguments === null;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hasQuery() {
+    return $this->query === null;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function isAbsolute() {
+    return $this->absolute;
   }
 
   /**
@@ -220,13 +271,181 @@ class Route implements RouteInterface {
 
   /**
    * {@inheritdoc}
+   * @throws \InvalidArgumentException
+   *   If <var>$absolute</var> is not of type boolean.
+   */
+  public function setAbsolute($absolute) {
+    // @devStart
+    if (is_bool($absolute) === false) {
+      throw new \InvalidArgumentException("Absolute must be of type boolean.");
+    }
+    // @devEnd
+    $this->absolute = $absolute;
+    return $this->reset();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setArgument($argument, $index = null) {
+    if (isset($index)) {
+      $this->arguments[$index] = $argument;
+    }
+    else {
+      $this->arguments[] = $argument;
+    }
+    return $this->reset();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setArguments(array $arguments) {
+    $this->unsetArguments();
+    foreach ($arguments as $index => $argument) {
+      $this->setArgument($argument, $index);
+    }
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   * @throws \InvalidArgumentException
+   *   If <var>$fragment</var> is invalid.
+   */
+  public function setFragment($fragment) {
+    // @devStart
+    if (empty($fragment)) {
+      throw new \InvalidArgumentException("Fragment cannot be empty.");
+    }
+    if (strpos($fragment, "#") !== false) {
+      throw new \InvalidArgumentException("Fragment cannot contain a hash (#) character.");
+    }
+    // @devEnd
+    $this->fragment = (string) $fragment;
+    return $this->reset();
+  }
+
+  /**
+   * {@inheritdoc}
+   * @throws \InvalidArgumentException
+   *   If <var>$code</var> is not a valid system language.
+   */
+  public function setLanguageCode($code) {
+    $this->intl->setCode($code);
+    return $this->reset();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setHostname($hostname) {
+    $this->hostname = $hostname;
+    return $this->reset();
+  }
+
+  /**
+   * {@inheritdoc}
    */
   public function setOptions(array $options) {
     foreach ($options as $property => $value) {
-      $this->$property = $value;
+      $this->{"set{$property}"}($value);
     }
     $this->parts = explode("/", substr($this->path, 1));
     return $this->reset();
+  }
+
+  /**
+   * {@inheritdoc}
+   * @throws \InvalidArgumentException
+   *   If <var>$path</var> is not a string or empty.
+   */
+  public function setPath($path, array $arguments = null) {
+    // @devStart
+    if (empty($path)) {
+      throw new \InvalidArgumentException("Path cannot be empty.");
+    }
+    // @devEnd
+    $this->path      = (string) $path;
+    $this->parts     = explode("/", substr($this->path, 1));
+    $this->arguments = $arguments;
+    return $this->reset();
+  }
+
+  /**
+   * {@inheritdoc}
+   * @throws \InvalidArgumentException
+   *   If <var>$parameters</var> is empty.
+   */
+  public function setQuery(array $parameters) {
+    // @devStart
+    if (empty($parameters)) {
+      throw new \InvalidArgumentException("Parameters cannot be empty.");
+    }
+    // @devEnd
+    $this->unsetQuery();
+    foreach ($parameters as $key => $value) {
+      $this->setQueryParameter($key, $value);
+    }
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setQueryParameter($key, $value) {
+    $this->query[$key] = $value;
+    return $this->reset();
+  }
+
+  /**
+   * {@inheritdoc}
+   * @throws \InvalidArgumentException
+   *   If <var>$scheme</var> is not <code>"http"</code> or <code>"https"</code>.
+   */
+  public function setScheme($scheme) {
+    // @devStart
+    if ($scheme !== "http" && $scheme !== "https") {
+      throw new \InvalidArgumentException("Scheme must be either 'http' or 'https': {$scheme}");
+    }
+    // @devEnd
+    $this->scheme = $scheme;
+    return $this->reset();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function unsetArguments() {
+    $this->arguments = null;
+    return $this->reset();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function unsetFragment() {
+    $this->fragment = null;
+    return $this->reset();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function unsetQuery() {
+    $this->query = null;
+    return $this->reset();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function unsetQueryParameter($key) {
+    if (isset($this->query[$key])) {
+      unset($this->query[$key]);
+      return $this->reset();
+    }
+    return $this;
   }
 
 }

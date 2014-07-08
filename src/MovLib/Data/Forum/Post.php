@@ -137,7 +137,7 @@ final class Post extends AbstractBase {
     }
     if ($this->id) {
       $this->setTopic($parentTopic ?: new Topic($this->container, $this->topic));
-      $this->setRoute($this->intl, $this->topic->forum, "/forum/{0}/topic/{1}/post-{2}", [ $this->topic->id, $this->id ]);
+      $this->setRoute($this->topic->forum, "/forum/{0}/topic/{1}/post-{2}", [ $this->topic->id, $this->id ]);
     }
   }
 

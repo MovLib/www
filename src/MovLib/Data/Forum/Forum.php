@@ -112,28 +112,26 @@ final class Forum extends AbstractBase {
    *
    * @param \MovLib\Core\Container $container
    *   The dependency injection container.
-   * @param integer $id [optional]
-   *   The forum's unique identifier to instantiate, defaults to <code>NULL</code> and an empty instance is created.
+   * @param integer $id
+   *   The forum's unique identifier to instantiate.
    * @throws \MovLib\Exception\ClientException\NotFoundException
    *   If <var>$id</var> was passed and the forum doesn't exist.
    */
-  public function __construct(\MovLib\Core\Container $container, $id = null) {
+  public function __construct(\MovLib\Core\Container $container, $id) {
     parent::__construct($container);
-    if ($id) {
-      try {
-        $concreteForumClass  = static::class . "s\\Forum{$id}";
-        $this->concreteForum = new $concreteForumClass();
-      }
-      catch (\Exception $e) {
-        throw new NotFoundException("Couldn't find forum for '{$id}'.", null, $e);
-      }
-
-      $this->id          = (integer) $id;
-      $this->categoryId  = $this->concreteForum->getCategoryId();
-      $this->description = $this->concreteForum->getDescription($this->intl);
-      $this->title       = $this->concreteForum->getTitle($this->intl);
-      $this->setRoute($this->intl, $this, "/forum/{0}");
+    try {
+      $concreteForumClass  = static::class . "s\\Forum{$id}";
+      $this->concreteForum = new $concreteForumClass();
     }
+    catch (\Exception $e) {
+      throw new NotFoundException("Couldn't find forum for '{$id}'.", null, $e);
+    }
+
+    $this->id          = (integer) $id;
+    $this->categoryId  = $this->concreteForum->getCategoryId();
+    $this->description = $this->concreteForum->getDescription($this->intl);
+    $this->title       = $this->concreteForum->getTitle($this->intl);
+    $this->setRoute($this, "/forum/{0}");
   }
 
 

@@ -20,6 +20,10 @@ namespace MovLib\Core\Routing;
 /**
  * Defines the route interface.
  *
+ * <b>NOTE</b><br>
+ * The constructor isn't forced by this interface because extending classes might want to add additional parameters that
+ * are needed to generate a route.
+ *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -43,31 +47,67 @@ interface RouteInterface {
   public function __toString();
 
   /**
-   * Get and/or set an argument from the route's arguments.
+   * Compile the route.
+   *
+   * @return string
+   *   The compiled route.
+   * @throws \IntlException
+   *   If formatting of the route fails.
+   */
+  public function compile();
+
+  /**
+   * Get formatting argument.
    *
    * @param integer $index
    *   The index to get.
    * @return mixed
-   *   The route argument's argument at the index or <ocde>NULL</code> if no argument exists for <var>$index</var>.
+   *   The formatting argument or <code>NULL</code> if no argument exists at <var>$index</var>.
    */
-  public function arg($index);
+  public function getArgument($index);
 
   /**
-   * Compile the route.
+   * Get the formatting arguments.
    *
-   * @param string $languageCode [optional]
-   *   The system language's ISO 639-1 alpha-2 code to use for recompilation of the route, this will affect the target
-   *   language of the translation and (if absolute) the subdomain. Defaults to <code>NULL</code> and the current
-   *   language from the intl instance that was passed to the constructor will be used. Note that
-   * @return string
-   *   The recompiled route.
-   * @throws \IntlException
-   *   If formatting of the route fails.
+   * @return array|null
+   *   The formatting arguments or <code>NULL</code> if there are none.
    */
-  public function compile($languageCode = null);
+  public function getArguments();
 
   /**
-   * Get a part from the route's path.
+   * Get the fragment.
+   *
+   * @return string|null
+   *   The fragment without the leading <code>"#"</code> or <code>NULL</code> if no fragment is set.
+   */
+  public function getFragment();
+
+  /**
+   * Get the hostname.
+   *
+   * @return string
+   *   The hostname.
+   */
+  public function getHostname();
+
+  /**
+   * Get the ISO 639-1 alpha-2 language code.
+   *
+   * @return string
+   *   The ISO 639-1 alpha-2 language code.
+   */
+  public function getLanguageCode();
+
+  /**
+   * Get the path.
+   *
+   * @return string
+   *   The path.
+   */
+  public function getPath();
+
+  /**
+   * Get path part.
    *
    * @param integer $index
    *   The index to get, the route's path is splitted by the URL separator character, the slash (<code>"/"</code>). Part
@@ -76,7 +116,31 @@ interface RouteInterface {
    * @return string|null
    *   The route path's part at the index or <code>NULL</code> if no part exists for <var>$index</var>.
    */
-  public function part($index);
+  public function getPathPart($index);
+
+  /**
+   * Check whether this route has arguments or not.
+   *
+   * @return boolean
+   *   <code>TRUE</code> if it has arguments, <code>FALSE</code> otherwise.
+   */
+  public function hasArguments();
+
+  /**
+   * Check whether this route has a query or not.
+   *
+   * @return boolean
+   *   <code>TRUE</code> if it has a query, <code>FALSE</code> otherwise.
+   */
+  public function hasQuery();
+
+  /**
+   * Check whether this route is absolute or not.
+   *
+   * @return boolean
+   *   <code>TRUE</code> if it is absolute, <code>FALSE</code> otherwise.
+   */
+  public function isAbsolute();
 
   /**
    * Empty the compilation cache of the route.
@@ -86,10 +150,66 @@ interface RouteInterface {
   public function reset();
 
   /**
-   * Set the route's options.
+   * Set absolute.
+   *
+   * @param boolean $absolute
+   *   The new absolute state.
+   * @return this
+   */
+  public function setAbsolute($absolute);
+
+  /**
+   * Set argument.
+   *
+   * @param string $argument
+   *   The argument to set.
+   * @param mixed $index [optional]
+   *   The argument's index, defaults to <code>NULL</code> and the argument is simply appended to the current arguments.
+   * @return this
+   */
+  public function setArgument($argument, $index = null);
+
+  /**
+   * Set arguments.
+   *
+   * @param array $arguments
+   *   The arguments to set.
+   * @return this
+   */
+  public function setArguments(array $arguments);
+
+  /**
+   * Set fragment.
+   *
+   * @param string $fragment
+   *   The fragment to set.
+   * @return this
+   */
+  public function setFragment($fragment);
+
+  /**
+   * Set the ISO 639-1 alpha-2 language code.
+   *
+   * @param string $code
+   *   The ISO 639-1 alpha-2 language code to set.
+   * @return this
+   */
+  public function setLanguageCode($code);
+
+  /**
+   * Set the hostname.
+   *
+   * @param string $hostname
+   *   The hostname to set.
+   * @return this
+   */
+  public function setHostname($hostname);
+
+  /**
+   * Set options, this method allows you to set multiple options at once.
    *
    * @param array $options
-   *   Additional options for this route, possible options are:
+   *   Possible options are:
    *   <ul>
    *     <li><code>"absolute"</code> Either <code>TRUE</code> or <code>FALSE</code> (default):
    *       <ul>
@@ -111,5 +231,73 @@ interface RouteInterface {
    *   </ul>
    */
   public function setOptions(array $options);
+
+  /**
+   * Set the route's path.
+   *
+   * @param string $path
+   *   The route's path to set.
+   * @param array $args [optional]
+   *   The route's formatting arguments, defaults to <code>NULL</code>.
+   * @return this
+   */
+  public function setPath($path, array $args = null);
+
+  /**
+   * Set query.
+   *
+   * @param array $parameters
+   *   The route's query parameters to set.
+   * @return this
+   */
+  public function setQuery(array $parameters);
+
+  /**
+   * Set query parameter.
+   *
+   * @param string $key
+   *   The query parameter's key.
+   * @param mixed $value
+   *   The query parameter's value.
+   * @return this
+   */
+  public function setQueryParameter($key, $value);
+
+  /**
+   * Set the scheme.
+   *
+   * @param string $scheme
+   *   The scheme to set.
+   * @return this
+   */
+  public function setScheme($scheme);
+
+  /**
+   * Unset arguments.
+   *
+   * @return this
+   */
+  public function unsetArguments();
+
+  /**
+   * Unset fragment.
+   *
+   * @return this
+   */
+  public function unsetFragment();
+
+  /**
+   * Unset query.
+   *
+   * @return this
+   */
+  public function unsetQuery();
+
+  /**
+   * Unset query parameter.
+   *
+   * @return this
+   */
+  public function unsetQueryParameter($key);
 
 }

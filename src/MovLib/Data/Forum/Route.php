@@ -40,19 +40,33 @@ final class Route extends \MovLib\Core\Routing\Route {
   /**
    * {@inheritdoc}
    */
-  public function __construct(\MovLib\Core\Intl $intl, \MovLib\Data\Forum\Forum $forum, $path, array $options = array()) {
-    parent::__construct($intl, $path, $options);
+  public function __construct(\MovLib\Core\Intl $intl, \MovLib\Data\Forum\Forum $forum, $path, array $args = null, array $options = null) {
+    parent::__construct($intl, $path, $args, $options);
     $this->forum = $forum;
+
+    $title = String::sanitizeFilename($forum->title);
+    if ($this->arguments === null) {
+      $this->arguments = [ $title ];
+    }
+    else {
+      $this->arguments = array_unshift($this->arguments, $title);
+    }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function compile($languageCode = null) {
-    if ($languageCode !== $this->intl->code) {
-      $this->args[0] = String::sanitizeFilename($this->forum->getTitle($languageCode));
-    }
-    return parent::compile($languageCode);
+  public function __clone() {
+    parent::__clone();
+    $this->forum = clone $this->forum;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setLanguageCode($code) {
+    $this->arguments[0] = String::sanitizeFilename($this->forum->getTitle($code));
+    return parent::setLanguageCode($code);
   }
 
 }

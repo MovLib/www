@@ -42,15 +42,8 @@ final class URL {
   // @codingStandardsIgnoreEnd
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
+  // ------------------------------------------------------------------------------------------------------------------- Public Properties
 
-
-  /**
-   * The compiled URL.
-   *
-   * @var string
-   */
-  protected $compiled;
 
   /**
    * The URL's scheme (e.g. <code>"http"</code>).
@@ -90,7 +83,7 @@ final class URL {
   /**
    * The URL's path.
    *
-   * @var array
+   * @var string
    */
   public $path;
 
@@ -107,6 +100,24 @@ final class URL {
    * @var string
    */
   public $fragment;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Protected Properties
+
+
+  /**
+   * The compiled URL.
+   *
+   * @var string
+   */
+  protected $compiled;
+
+  /**
+   * The URL's path parts.
+   *
+   * @var array
+   */
+  protected $parts;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -136,12 +147,12 @@ final class URL {
     }
 
     // Determine the individual parts of the path.
-    if ($this->path) {
-      $this->path = explode("/", substr($this->path, 1));
+    if (isset($this->path)) {
+      $this->parts = explode("/", substr($this->path, 1));
     }
 
     // Determine the individual parts of the query.
-    if ($this->query) {
+    if (isset($this->query)) {
       parse_str($this->query, $this->query);
     }
   }
@@ -159,6 +170,18 @@ final class URL {
 
   // ------------------------------------------------------------------------------------------------------------------- Static Methods
 
+
+  /**
+   * Build URL encoded query string.
+   *
+   * @param array $query
+   *   Associative query array.
+   * @return string
+   *   URL encoded query string.
+   */
+  public static function buildQuery(array $query) {
+    return "?" . http_build_query($query, null, null, PHP_QUERY_RFC3986);
+  }
 
   /**
    * Encode URL path preserving slashes.
@@ -203,14 +226,27 @@ final class URL {
    *   The compiled URL.
    */
   public function compile() {
-    $pass           = $this->pass     ? ":{$this->pass}"               : null;
-    $credentials    = $this->user     ? "{$this->user}{$pass}@"        : null;
-    $port           = $this->port     ? ":{$this->port}"               : null;
-    $path           = $this->path     ? implode("/", $this->path)      : null;
-    $query          = $this->query    ? http_build_query($this->query) : null;
-    $fragment       = $this->fragment ? "#{$this->fragment}"           : null;
-    $this->compiled = "{$this->scheme}://{$credentials}{$this->host}{$port}/{$path}{$query}{$fragment}";
+    $pass           = $this->pass     ? ":{$this->pass}"                 : null;
+    $credentials    = $this->user     ? "{$this->user}{$pass}@"          : null;
+    $port           = $this->port     ? ":{$this->port}"                 : null;
+    $query          = $this->query    ? static::buildQuery($this->query) : null;
+    $fragment       = $this->fragment ? "#{$this->fragment}"             : null;
+    $this->compiled = "{$this->scheme}://{$credentials}{$this->host}{$port}/{$this->path}{$query}{$fragment}";
     return $this->compiled;
+  }
+
+  /**
+   * Get a part from the URL's path.
+   *
+   * @param integer $index
+   *   The path part's index.
+   * @return mixed
+   *   The path's part at <var>$index</var> or <code>NULL</code> if nothing exists at <var>$index</var>.
+   */
+  public function part($index) {
+    if (isset($this->parts[$index])) {
+      return $this->parts[$index];
+    }
   }
 
 }
