@@ -171,6 +171,7 @@ final class Date extends \DateTime {
   /**
    * Implements <code>serialize()</code> callback.
    *
+   * @link http://php.net/language.oop5.magic#object.sleep
    * @return array
    *   Array containing the names of the properties that should be serialized.
    */
@@ -180,6 +181,8 @@ final class Date extends \DateTime {
 
   /**
    * Implements <code>unserialize()</code> callback.
+   *
+   * @link http://php.net/language.oop5.magic#object.wakeup
    */
   public function __wakeup() {
     // Let PHP's DateTime object initialize itself since its properties are unknown.
