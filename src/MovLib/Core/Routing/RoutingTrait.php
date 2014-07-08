@@ -53,9 +53,13 @@ trait RoutingTrait {
 
 
   /**
-   * @see \MovLib\Core\Data\RoutingInterface::getRoute();
+   * @param string $path
+   * @param array $arguments [optional]
+   * @param array $options [optional]
+   * @return \MovLib\Core\Routing\Route
+   * @see \MovLib\Core\Data\RoutingInterface::getRoute
    */
-  final public function getRoute($path = null, array $args = null, array $options = null) {
+  final public function getRoute($path = null, array $arguments = null, array $options = null) {
     // No need to do anything if no path was given, note that we always return a clone and make sure that nobody is
     // changing our route's instance.
     if ($path === null) {
@@ -84,7 +88,7 @@ trait RoutingTrait {
     $options["path"] = "{$this->route->getPath()}{$this->processedPaths[$path]}";
 
     // We always have to merge our arguments with the passed arguments.
-    isset($args) && ($options["args"] = array_merge($this->route->getArguments(), $args));
+    isset($arguments) && ($options["args"] = array_merge($this->route->getArguments(), $arguments));
 
     // Now we can simply clone our own route and export the new options.
     $route = clone $this->route;

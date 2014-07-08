@@ -83,27 +83,31 @@ abstract class AbstractTopic extends \MovLib\Presentation\AbstractPresenter {
     $posts       = null;
     $routeReply  = $this->topic->getRoute("/reply");
     $routeReport = new Route($this->intl, "/forum/report");
+
     if ($this->topic->closed === false) {
       $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$routeReply}'>{$this->intl->t("Reply")}</a>";
     }
+
     /* @var $post \MovLib\Data\Forum\Post */
     foreach ($this->topic->getPosts($this->paginationLimit, $this->paginationOffset) as $post) {
-      $poster = User::getInstance($this->container, $post->creatorId);
-      $routeReply->query["post"] = $routeReport->query["post"] = $post->id;
+      $poster  = User::getInstance($this->container, $post->creatorId);
       $actions = null;
+
       if ($this->session->isAuthenticated === true) {
         $edit = null;
         if ($this->session->userId === $poster->id || $this->session->isAdmin() === true) {
-          $edit = "<a class='fr btn btn-small post-edit' href='{$post->r("/edit")}'>{$this->intl->t("Edit")}</a> ";
+          $edit = "<a class='fr btn btn-small post-edit' href='{$post->getRoute("/edit")}'>{$this->intl->t("Edit")}</a> ";
         }
+
         $actions =
           "<p class='cf post-actions'>" .
-            "<a class='fl btn btn-small post-reply' href='{$routeReply->compile()}'>{$this->intl->t("Reply")}</a> " . // ico ico-discussion
+            "<a class='fl btn btn-small post-reply' href='{$routeReply->setQueryParameter("post", $post->id)}'>{$this->intl->t("Reply")}</a> " . // ico ico-discussion
             $edit .
-            "<a class='fr btn btn-small post-report' href='{$routeReport->compile()}'>{$this->intl->t("Report")}</a>" . // ico ico-alert
+            "<a class='fr btn btn-small post-report' href='{$routeReport->setQueryParameter("post", $post->id)}'>{$this->intl->t("Report")}</a>" . // ico ico-alert
           "</p>"
         ;
       }
+
       $posts .=
         "<article id='post-{$post->id}' class='post'>" .
           "<p class='cf post-meta'>" .
@@ -120,6 +124,7 @@ abstract class AbstractTopic extends \MovLib\Presentation\AbstractPresenter {
         "</article>"
       ;
     }
+
     return "<div class='c'>{$posts}</div>";
   }
 
