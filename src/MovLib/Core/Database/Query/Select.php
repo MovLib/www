@@ -315,6 +315,11 @@ final class Select extends AbstractQuery {
 
       // Export all fields from the projection to the new instance.
       foreach ($result as $key => $value) {
+        // NULL is NULL, no need to do anything!
+        if ($value === null) {
+          continue;
+        }
+
         // Check if a custom class is desired for this value.
         if (isset($this->fields[$key]["class"])) {
           $value = new $this->fields[$key]["class"]($value);
@@ -394,7 +399,7 @@ final class Select extends AbstractQuery {
     // No need for the caller to check the returned value, directly throw the desired not found exception. This is the
     // exception callers want in 99% of all cases. Note that this is very different to the fetch objects method of our
     // class which silently returns an empty array.
-    throw new NotFoundException("Couldn't find " . $class::name . " with the given conditions.");
+    throw new NotFoundException("Couldn't find " . $object::name . " with the given conditions.");
   }
 
   /**
