@@ -18,7 +18,7 @@
 namespace MovLib\Core\Compressor;
 
 /**
- * Defines the zopfli compressor.
+ * Defines the default compressor object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,7 +26,7 @@ namespace MovLib\Core\Compressor;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class ZopfliCompressor extends AbstractCompressor {
+final class GzipCompressor extends AbstractCompressor {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -34,9 +34,11 @@ final class ZopfliCompressor extends AbstractCompressor {
 
   // @codingStandardsIgnoreStart
   /**
-   * {@inheritdoc}
+   * Short class name.
+   *
+   * @var string
    */
-  const name = "ZopfliCompressor";
+  const name = "Compressor";
   // @codingStandardsIgnoreEnd
 
 
@@ -47,7 +49,7 @@ final class ZopfliCompressor extends AbstractCompressor {
    * {@inheritdoc}
    */
   public function compress($data) {
-    if (($compressed = zopfli_encode($data, static::$levels[$this->level])) === false) {
+    if (($compressed = gzencode($data, static::$levels[$this->level])) === false) {
       throw new CompressorException("Couldn't compress data.");
     }
     return $compressed;
@@ -57,7 +59,7 @@ final class ZopfliCompressor extends AbstractCompressor {
    * {@inheritdoc}
    */
   public function decompress($data) {
-    if (($decompressed = zopfli_decode($data)) === false) {
+    if (($decompressed = gzdecode($data)) === false) {
       throw new CompressorException("Couldn't decompress data.");
     }
     return $decompressed;
@@ -68,9 +70,9 @@ final class ZopfliCompressor extends AbstractCompressor {
    */
   protected function getLevels() {
     return [
-      self::LEVEL_LOW  => 1,
-      self::LEVEL_AVG  => 7,
-      self::LEVEL_BEST => 15,
+      self::LEVEL_LOW  => 0,
+      self::LEVEL_AVG  => 4,
+      self::LEVEL_BEST => 9,
     ];
   }
 

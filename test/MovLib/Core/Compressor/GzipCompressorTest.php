@@ -18,7 +18,7 @@
 namespace MovLib\Core\Compressor;
 
 /**
- * @coversDefaultClass \MovLib\Core\Compressor\ZopfliCompressor
+ * @coversDefaultClass \MovLib\Core\Compressor\GzipCompressor
  * @group Compressor
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,14 +26,10 @@ namespace MovLib\Core\Compressor;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class ZopfliCompressorTest extends AbstractCompressorTest {
+final class GzipCompressorTest extends AbstractCompressorTest {
 
   protected function doCompressData($level) {
-    return zopfli_encode($this->getData(), $level);
-  }
-
-  public function testGzipCompatibility() {
-    $this->assertEquals($this->getData(), gzdecode($this->compressor->compress($this->getData())));
+    return gzencode($this->getData(), $level);
   }
 
 }

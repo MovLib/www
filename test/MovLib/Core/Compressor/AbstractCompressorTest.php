@@ -17,25 +17,23 @@
  */
 namespace MovLib\Core\Compressor;
 
-use \MovLib\Core\Compressor\Compressor;
-
 /**
- * @coversDefaultClass \MovLib\Core\Compressor\Compressor
- * @group Compressor
+ * Base class for all compressor tests.
+ *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class CompressorTest extends \MovLib\TestCase {
+abstract class AbstractCompressorTest extends \MovLib\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * @var \MovLib\Core\Compressor\Compressor
+   * @var \MovLib\Core\Compressor\CompressorInterface
    */
   protected $compressor;
 
@@ -47,8 +45,15 @@ class CompressorTest extends \MovLib\TestCase {
    * {@inheritdoc}
    */
   protected function setUp() {
-    $this->compressor = new Compressor();
+    $class = substr(static::class, 0, -4);
+    $this->compressor = new $class();
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
+
+
+  abstract protected function doCompressData($level);
 
 
   // ------------------------------------------------------------------------------------------------------------------- Helpers
@@ -56,19 +61,18 @@ class CompressorTest extends \MovLib\TestCase {
 
   protected function getData() {
     static $data = null;
-    return $data ?: ($data = serialize(new \DateTime()));
-  }
-
-  protected function getCompressedData($level = Compressor::DEFAULT_LEVEL) {
-    static $compressed = [];
-    if (isset($compressed[$level])) {
-      return $compressed[$level];
+    if (null === $data) {
+      $data = serialize($this);
     }
-    return ($compressed[$level] = $this->doCompressData($level));
+    return $data;
   }
 
-  protected function doCompressData($level) {
-    return gzencode($this->getData(), $level);
+  protected function getCompressedData($level = CompressorInterface::LEVEL_BEST) {
+    static $compressed = [];
+    if (false === isset($compressed[$level])) {
+      $compressed[$level] = $this->doCompressData($this->invoke($this->compressor, "getLevels")[$level]);
+    }
+    return $compressed[$level];
   }
 
 
@@ -76,7 +80,7 @@ class CompressorTest extends \MovLib\TestCase {
 
 
   public function dataProviderValidLevel() {
-    return [ [ 0 ], [ 9 ] ];
+    return [ [ CompressorInterface::LEVEL_LOW ], [ CompressorInterface::LEVEL_AVG ], [ CompressorInterface::LEVEL_BEST ] ];
   }
 
   public function dataProviderInvalidLevel() {

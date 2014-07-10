@@ -18,7 +18,7 @@
 namespace MovLib\Core\Compressor;
 
 /**
- * Defines the zopfli compressor.
+ * Defines the null compressor object which simply does nothing, useful for unit tests.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,7 +26,7 @@ namespace MovLib\Core\Compressor;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-final class ZopfliCompressor extends AbstractCompressor {
+final class NullCompressor extends AbstractCompressor {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -34,9 +34,11 @@ final class ZopfliCompressor extends AbstractCompressor {
 
   // @codingStandardsIgnoreStart
   /**
-   * {@inheritdoc}
+   * Short class name.
+   *
+   * @var string
    */
-  const name = "ZopfliCompressor";
+  const name = "NullCompressor";
   // @codingStandardsIgnoreEnd
 
 
@@ -47,31 +49,37 @@ final class ZopfliCompressor extends AbstractCompressor {
    * {@inheritdoc}
    */
   public function compress($data) {
-    if (($compressed = zopfli_encode($data, static::$levels[$this->level])) === false) {
-      throw new CompressorException("Couldn't compress data.");
-    }
-    return $compressed;
+    return $data;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function compressFile($uri) {
+    return $this->getURI($uri);
   }
 
   /**
    * {@inheritdoc}
    */
   public function decompress($data) {
-    if (($decompressed = zopfli_decode($data)) === false) {
-      throw new CompressorException("Couldn't decompress data.");
-    }
-    return $decompressed;
+    return $data;
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getLevels() {
-    return [
-      self::LEVEL_LOW  => 1,
-      self::LEVEL_AVG  => 7,
-      self::LEVEL_BEST => 15,
+  public function decompressFile($uri) {
+    return $this->getURI($uri);
+  }
+
+  protected function setLevels() {
+    static::$levels = [
+      self::LEVEL_LOW  => 0,
+      self::LEVEL_AVG  => 0,
+      self::LEVEL_BEST => 0,
     ];
+    return $this;
   }
 
 }

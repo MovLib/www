@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -18,7 +18,7 @@
 namespace MovLib\Core\Compressor;
 
 /**
- * Defines the default compressor object.
+ * Base class for all compressor objects.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -26,7 +26,7 @@ namespace MovLib\Core\Compressor;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Compressor implements CompressorInterface {
+abstract class AbstractCompressor implements CompressorInterface {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -38,40 +38,55 @@ class Compressor implements CompressorInterface {
    *
    * @var string
    */
-  const name = "Compressor";
+  const name = "AbstractCompressor";
   // @codingStandardsIgnoreEnd
-
-  /**
-   * The default compression level.
-   *
-   * @var integer
-   */
-  const DEFAULT_LEVEL = 9;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The desired compression level.
+   * Current compression level.
    *
    * @var integer
    */
-  protected $level = self::DEFAULT_LEVEL;
+  protected $level = self::LEVEL_BEST;
+
+  /**
+   * Array to map predefined levels to real levels.
+   *
+   * @var array
+   */
+  protected static $levels;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new compressor.
+   */
+  public function __construct() {
+    if (null === static::$levels) {
+      static::$levels = $this->getLevels();
+    }
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
+
+
+  /**
+   * Get the real compression levels.
+   *
+   * @return array
+   *   The real compression levels.
+   */
+  abstract protected function getLevels();
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-
-  /**
-   * {@inheritdoc}
-   */
-  public function compress($data) {
-    if (($compressed = gzencode($data, $this->level)) === false) {
-      throw new CompressorException("Couldn't compress data.");
-    }
-    return $compressed;
-  }
 
   /**
    * {@inheritdoc}
@@ -98,16 +113,6 @@ class Compressor implements CompressorInterface {
     catch (\Exception $e) {
       throw new CompressorException("Couldn't compress file: {$uri}", null, $e);
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function decompress($data) {
-    if (($decompressed = gzdecode($data)) === false) {
-      throw new CompressorException("Couldn't decompress data.");
-    }
-    return $decompressed;
   }
 
   /**
@@ -140,10 +145,7 @@ class Compressor implements CompressorInterface {
   }
 
   /**
-   * Get the compression level.
-   *
-   * @return integer
-   *   The compression level.
+   * {@inheritdoc}
    */
   public function getLevel() {
     return $this->level;
@@ -153,9 +155,12 @@ class Compressor implements CompressorInterface {
    * {@inheritdoc}
    */
   public function getURI($uri) {
-    $extLen = strlen(self::EXT);
-    if (substr($uri, $extLen) === self::EXT) {
-      return substr($uri, 0, -$extLen);
+    static $extensionLength = null;
+    if (null === $extensionLength) {
+      $extensionLength = strlen(self::EXT);
+    }
+    if (self::EXT === mb_substr($uri, $extensionLength)) {
+      return mb_substr($uri, 0, -$extensionLength);
     }
     return $uri . self::EXT;
   }
@@ -165,11 +170,11 @@ class Compressor implements CompressorInterface {
    */
   public function setLevel($level) {
     // @devStart
-    if ($level < 0 || $level > 9) {
-      throw new \InvalidArgumentException("Compression level must be between 0 and 9: {$level}");
+    if (false === isset(static::$levels[$level])) {
+      throw new \InvalidArgumentException("Level must be one of the predefined constants: {$level}");
     }
     // @devEnd
-    $this->level = (integer) $level;
+    $this->level = $level;
     return $this;
   }
 

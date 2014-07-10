@@ -28,12 +28,41 @@ namespace MovLib\Core\Compressor;
  */
 interface CompressorInterface {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
   /**
    * The file extension for compressed files (including leading dot).
    *
    * @var string
    */
   const EXT = ".gz";
+
+  /**
+   * Average compression level.
+   *
+   * @var integer
+   */
+  const LEVEL_AVG = 1;
+
+  /**
+   * Best compression level.
+   *
+   * @var integer
+   */
+  const LEVEL_BEST = 2;
+
+  /**
+   * Low compression level.
+   *
+   * @var integer
+   */
+  const LEVEL_LOW = 0;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * Compress data.
@@ -112,7 +141,7 @@ interface CompressorInterface {
    * Set the compression level.
    *
    * @param mixed $level
-   *   The compression level to set.
+   *   The compression level to set, one of the class's <var>LEVEL_*</var> constants.
    * @return this
    * @throws \InvalidArgumentException
    *   If <var>$level</var> is invalid.
