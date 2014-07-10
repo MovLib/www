@@ -24,7 +24,7 @@
  LINK:      https://movlib.org/
  SINCE:     0.0.1-dev
 -->
-<phpunit backupGlobals="true"
+<phpunit backupGlobals="false"
          backupStaticAttributes="false"
          bootstrap="bootstrap.php"
          colors="true"
@@ -32,11 +32,11 @@
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
          processIsolation="false"
-         stopOnError="false"
-         stopOnFailure="false"
-         stopOnSkipped="false"
-         stopOnIncomplete="false"
-         syntaxCheck="false"
+         stopOnError="true"
+         stopOnFailure="true"
+         stopOnSkipped="true"
+         stopOnIncomplete="true"
+         syntaxCheck="true"
 >
   <filter>
     <whitelist processUncoveredFilesFromWhitelist="true">

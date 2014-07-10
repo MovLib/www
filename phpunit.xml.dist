@@ -24,14 +24,14 @@
  LINK:      https://movlib.org/
  SINCE:     0.0.1-dev
 -->
-<phpunit backupGlobals="true"
+<phpunit backupGlobals="false"
          backupStaticAttributes="false"
          bootstrap="bootstrap.php"
          colors="true"
          convertErrorsToExceptions="true"
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
-         forceCoversAnnotation="true"
+         forceCoversAnnotation="false"
          processIsolation="false"
          stopOnError="false"
          stopOnFailure="false"
