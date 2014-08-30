@@ -176,6 +176,7 @@
   font-family: MovLib;
   src: url("/asset/font/movlib/movlib.eot?20140527");
   src: url("/asset/font/movlib/movlib.eot?20140527#iefix") format("embedded-opentype"),
+       url("/asset/font/movlib/movlib.woff2?20140527") format("woff2"),
        url("/asset/font/movlib/movlib.woff?20140527") format("woff"),
        url("/asset/font/movlib/movlib.ttf?20140527") format("truetype"),
        url("/asset/font/movlib/movlib.svg?20140527#movlib") format("svg")
