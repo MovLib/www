@@ -25,6 +25,7 @@ This will set up a full local development virtual machine that is similar to the
 * [Facebook](https://www.facebook.com/MovLib.org)
 * [Google+](https://google.com/+MovlibOrg)
 * [Twitter](https://twitter.com/MovLib)
+* [QUER*HOCH](https://portfolio.multimediaart.at/projects/2014-movlib-the-free-movie-library)
 * [Richard Fussenegger](http://richard.fussenegger.info/)
 * [Fachhochschule Salzburg GmbH](http://www.fh-salzburg.ac.at/)
 
